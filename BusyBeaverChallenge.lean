@@ -759,6 +759,36 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0LD_1LC0RA_1RA1LB_1LA1LE_1RF0LC_HHH0RE
 
+namespace M_1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_HHH1RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_---1RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def ps : TapePatternSet (Fin 2) (Fin 6) := [
+  -- 1. h = 0
+  (⟨.rep [1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.not (.ge_const 2 1))),
+  -- 2. h >= 3
+  (⟨.rep [1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.ge_const 2 3)),
+  -- 3. h = 2, g even
+  (⟨.rep [1, 1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.and (.ge_const 2 2) (.not (.ge_const 2 3)))),
+  -- 4. h = 2, g odd, a = 0
+  (⟨.rep [1] 1 .default, some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.and (.ge_const 2 2) (.not (.ge_const 2 3)))),
+  -- 5. h = 1, g even
+  (⟨.rep [1, 1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.and (.ge_const 2 1) (.not (.ge_const 2 2))))
+]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_HHH1RE
+
 namespace M_1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_HHH1RE
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_---1RE"
@@ -1081,6 +1111,44 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RBHHH
 
+namespace M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_D : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .default
+    head  := some D
+    right := .rep [1, 0] 0 (.rep [1, 1, 0] 1 (.rep [0] 2 (.rep [1] 3 .default))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_D, .not (.ge_const 2 2))]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+
+namespace M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_D : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .default
+    head  := some D
+    right := .rep [1, 0] 0 (.rep [1, 1, 0] 1 (.rep [0] 2 (.rep [1] 3 .default))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_D, .not (.ge_const 2 2))]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+
 namespace M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RC---"
@@ -1128,6 +1196,25 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH
+
+namespace M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1, 0] 1 (.rep [1] 0 .default)
+    head  := some F
+    right := .sym 0 (.sym 0 (.rep [1] 2 .default)) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
 
 namespace M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -1372,6 +1459,25 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0RB_1LC1RE_1LF0LD_1RA1LD_1RC1RB_HHH1LC
 
+namespace M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1] 0 (.rep [0, 1, 1, 1] 1 .default)
+    head  := some D
+    right := .sym 1 (.sym 1 (.rep [0, 1] 2 (.rep [1] 3 .default))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .not (.ge_const 1 2))]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+
 namespace M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_---0RA"
@@ -1427,6 +1533,25 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA
+
+namespace M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .sym 0 (.rep [1] 2 .default)
+    head  := some A
+    right := .sym 0 (.rep [1, 0] 1 (.rep [1] 0 .default)) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
 
 namespace M_1RB0RE_1LC1LD_0RA0LD_1LB0LA_1RF1RA_HHH1LB
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -1880,6 +2005,35 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1LC_1RC0LD_1LA0RB_1LB1LE_1RF0LA_HHH0RE
+
+namespace M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LF---_0RA1LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_Master : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [0, 0, 1] 1 (.rep [1] 2 (.rep [0, 0, 1, 1] 0 .default))
+    head  := some A
+    right := .default }
+
+def cond_Master : VarCond :=
+  .or (.and (.ge_const 1 1) (.and (.not (.ge_const 1 2)) (.not (.ge_const 2 1))))
+    (.or (.and (.ge_const 1 2) (.and (.not (.ge_const 1 3)) (.not (.ge_const 2 1))))
+      (.or (.and (.ge_const 1 1) (.and (.not (.ge_const 1 2)) (.and (.ge_const 2 3) (.not
+        (.ge_const 2 4)))))
+        (.or (.and (.ge_const 1 3) (.and (.not (.ge_const 1 4)) (.and (.ge_const 2 3) (.not
+          (.ge_const 2 4)))))
+             (.and (.ge_const 1 3) (.and (.not (.ge_const 1 4)) (.and (.ge_const 2 5) (.not
+               (.ge_const 2 6))))))))
+
+def ps : TapePatternSet (Fin 2) (Fin 6) := [(pat_Master, cond_Master)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+end M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
 
 namespace M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -2407,6 +2561,45 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE
 
+namespace M_1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_HHH1LC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_---1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1, 1] 1 (.rep [0, 1] 0 .default)
+    head  := some C
+    right := .rep [1, 1] 2 (.rep [1, 0] 3 (.sym 1 (.sym 1 (.sym 1 (.sym 1 .default))))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) := [(pat_A, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State
+  | mk (a k d c : ℕ)
+
+def start : State := .mk 0 0 0 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .mk a k d c => evalTapePattern pat_A (fun | 0 => a | 1 => k | 2 => d | 3 => c | _ => 0)
+
+def next : State → Option State
+  | .mk a (k + 1) d (c + 1) => some (.mk a k (d + 2) c)
+  | .mk a (k + 1) d 0       => some (.mk a (k + 1) 0 (d + 1))
+  | .mk (a + 1) 0 d (c + 2) => some (.mk a (d + 1) 2 c)
+  | .mk (a + 1) 0 d 1       => some (.mk a (d + 2) 0 1)
+  | .mk (a + 1) 0 d 0       => some (.mk a (d + 2) 0 0)
+  | .mk 0 0 d (c + 1)       => some (.mk (d + 1) 0 0 (c + 1))
+  | .mk 0 0 _ 0             => none
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_HHH1LC
+
 namespace M_1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_HHH0RA
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_---0RA"
@@ -2913,6 +3106,63 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE
 
+namespace M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_---0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_P1 : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1] 0 .default
+    head  := some A
+    right := .rep [1] 1 .default }
+
+/-- Hub Pattern 2: `P2(k, m, c) := 0^∞ (10)^(k+1) (11)^m A> 1^c 0^∞` (`k, m, c ∈ ℕ`). -/
+def pat_P2 : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1, 1] 1 (.sym 0 (.sym 1 (.rep [0, 1] 0 .default)))
+    head  := some A
+    right := .rep [1] 2 .default }
+
+/-- The closed 2-hub pattern set `ps`. -/
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_P1, .true), (pat_P2, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State
+  | P_1 (a c : Nat)
+  | P_2 (k m c : Nat)
+
+def start : State := .P_1 2 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .P_1 a c => evalTapePattern pat_P1 (fun | 0 => a | 1 => c | _ => 0)
+  | .P_2 k m c => evalTapePattern pat_P2 (fun | 0 => k | 1 => m | 2 => c | _ => 0)
+
+def next : State → Option State
+  | .P_1 a 0 => some (.P_1 2 (a + 1))
+  | .P_1 a 1 => some (.P_1 (a + 2) 0)
+  | .P_1 a (c + 2) =>
+    match a % 2 with
+    | 0 => some (.P_1 (a + 3) c)
+    | _ => match c with
+      | 0 => none
+      | 1 => some (.P_2 (a / 2) 1 0)
+      | d + 2 => some (.P_2 (a / 2) 2 d)
+  | .P_2 k m 1 => some (.P_2 k (m + 1) 0)
+  | .P_2 0 m 0 => some (.P_1 0 (2 * m + 3))
+  | .P_2 (k + 1) m 0 => some (.P_2 k 0 (2 * m + 3))
+  | .P_2 0 m (d + 2) => some (.P_1 (2 * m + 4) d)
+  | .P_2 (k + 1) m (d + 2) => some (.P_2 k (m + 2) d)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+
 namespace M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_---0RE"
@@ -3345,5 +3595,151 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD
+
+namespace M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_P1 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .rep [0, 1] 0 (.rep [1, 0] 1 (.sym 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 (.sym 1 (.sym 1 .default))) }
+
+def pat_P2 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [0, 1] 0 (.rep [1, 0] 1 (.sym 1 (.sym 1 .default))))
+    head := some D
+    right := .rep [1, 0] 2 (.sym 1 (.sym 1 (.sym 1 (.sym 1 .default)))) }
+
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_P1, .true), (pat_P2, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State where
+  | P_1 (a b c : ℕ)
+  | P_2 (a b c : ℕ)
+  deriving DecidableEq, Repr
+
+def start : State := .P_1 1 0 0
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .P_1 a b c => evalTapePattern pat_P1 (fun | 0 => a | 1 => b | 2 => c | _ => 0)
+  | .P_2 a b c => evalTapePattern pat_P2 (fun | 0 => a | 1 => b | 2 => c | _ => 0)
+
+def next : State → Option State
+  | .P_1 0 _ 0 => none
+  | .P_1 (a + 1) b 0 => some (.P_2 2 (b + 1) a)
+  | .P_1 a 0 1 => some (.P_2 2 0 (a + 1))
+  | .P_1 a 0 (c + 2) => some (.P_1 (a + 4) 0 c)
+  | .P_1 a (b + 1) (c + 1) => some (.P_1 (a + 2) b c)
+  | .P_2 a b 0 => some (.P_1 1 (b + 2) (a + 1))
+  | .P_2 a 0 1 => some (.P_2 2 0 (a + 4))
+  | .P_2 _ 0 2 => none
+  | .P_2 a 0 (c + 3) => some (.P_2 2 (a + 2) c)
+  | .P_2 a (b + 1) (c + 1) => some (.P_2 (a + 2) b c)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+
+namespace M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_P1 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 (.rep [0, 1] 3 (.sym 1 .default))) }
+
+def pat_P2 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 .default) }
+
+def pat_P3 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 .default }
+
+def pat_P4 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 (.rep [0, 1] 3 .default)) }
+
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_P1, .true), (pat_P2, .true), (pat_P3, .true), (pat_P4, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State where
+  | P_1 (a b c d : ℕ)
+  | P_2 (a b c : ℕ)
+  | P_3 (a b c : ℕ)
+  | P_4 (a b c d : ℕ)
+  deriving DecidableEq, Repr
+
+def start : State := .P_2 0 0 2
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .P_1 a b c d => evalTapePattern pat_P1 (fun | 0 => a | 1 => b | 2 => c | 3 => d | _ => 0)
+  | .P_2 a b c => evalTapePattern pat_P2 (fun | 0 => a | 1 => b | 2 => c | _ => 0)
+  | .P_3 a b c => evalTapePattern pat_P3 (fun | 0 => a | 1 => b | 2 => c | _ => 0)
+  | .P_4 a b c d => evalTapePattern pat_P4 (fun | 0 => a | 1 => b | 2 => c | 3 => d | _ => 0)
+
+def next : State → Option State
+  | .P_1 0 b c 0 =>
+    if b % 2 = 0 then some (.P_2 0 0 (b / 2 + c + 2))
+    else some (.P_1 (b / 2 + c) 4 1 2)
+  | .P_1 1 0 c 0 => some (.P_1 c 4 1 2)
+  | .P_1 1 1 c 0 => some (.P_1 0 0 1 (c + 2))
+  | .P_1 1 2 c 0 => some (.P_2 0 2 (c + 3))
+  | .P_1 1 (_ + 3) _ 0 => none
+  | .P_1 (a + 2) b c 0 => some (.P_1 a b 1 (c + 2))
+  | .P_1 0 0 0 (_ + 1) => none
+  | .P_1 0 0 (c + 1) (d + 1) => some (.P_4 c 4 1 (d + 2))
+  | .P_1 0 (b' + 1) c (d + 1) =>
+    if (b' + 1) % 2 = 0 then some (.P_4 (b' / 2 + c) 4 1 (d + 2))
+    else some (.P_1 0 0 (b' / 2 + c + 2) d)
+  | .P_1 (a + 1) b c (d + 1) => some (.P_1 a b (c + 2) d)
+  | .P_2 0 0 0 => none
+  | .P_2 0 0 (c + 1) => some (.P_1 c 4 1 1)
+  | .P_2 0 (b' + 1) c =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 1)
+    else some (.P_3 0 0 (b' / 2 + c + 2))
+  | .P_2 (a + 1) b c => some (.P_3 a b (c + 2))
+  | .P_3 0 0 0 => none
+  | .P_3 0 0 (c + 1) => some (.P_1 c 4 1 2)
+  | .P_3 0 (b' + 1) c =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 2)
+    else some (.P_2 0 0 (b' / 2 + c + 2))
+  | .P_3 (a + 1) b c => some (.P_2 a b (c + 2))
+  | .P_4 0 0 0 0 => none
+  | .P_4 0 0 (c + 1) 0 => some (.P_1 c 4 1 1)
+  | .P_4 0 (b' + 1) c 0 =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 1)
+    else some (.P_3 0 0 (b' / 2 + c + 2))
+  | .P_4 (a + 1) b c 0 => some (.P_3 a b (c + 2))
+  | .P_4 0 0 0 (_ + 1) => none
+  | .P_4 0 0 (c + 1) (d + 1) => some (.P_1 c 4 1 (d + 2))
+  | .P_4 0 (b' + 1) c (d + 1) =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 (d + 2))
+    else some (.P_4 0 0 (b' / 2 + c + 2) d)
+  | .P_4 (a + 1) b c (d + 1) => some (.P_4 a b (c + 2) d)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD
 
 end BusyBeaver
