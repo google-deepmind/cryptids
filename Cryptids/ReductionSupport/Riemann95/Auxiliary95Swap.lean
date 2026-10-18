@@ -15,13 +15,6 @@ open Turing ConjectureMachines
 /-- Only control states zero and 36 are exchanged; tape symbols are unchanged. -/
 def swap (q : Fin 98) : Fin 98 := if q = 0 then 36 else if q = 36 then 0 else q
 
-theorem swap_involutive (q : Fin 98) : swap (swap q) = q := by
-  by_cases h0 : q = 0
-  · subst q; rfl
-  by_cases h36 : q = 36
-  · subst q; rfl
-  simp only [swap, h0, h36, ↓reduceIte]
-
 def renameCfg (c : Cfg 98 2) : Cfg 98 2 := ⟨swap c.state, c.tape⟩
 
 theorem transition_rename : ∀ (q : Fin 98) (a : Fin 2),

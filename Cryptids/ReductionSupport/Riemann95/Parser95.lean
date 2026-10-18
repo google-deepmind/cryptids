@@ -70,20 +70,6 @@ theorem prefix_parse (n : Nat) (tail : List (Fin 2)) :
   rw [List.append_assoc, walkInternal_append, actual_prefix,
     Option.bind_some, repetitions_parse]
 
-theorem repetitions_length (n : Nat) : (repetitions n).length = 5 * n := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    simp only [repetitions, List.length_append, block, List.length_cons,
-      List.length_nil, ih]
-    omega
-
-theorem prefix_length (n : Nat) (tail : List (Fin 2)) :
-    (prefixBits ++ repetitions n ++ tail).length = 6 + 5 * n + tail.length := by
-  simp only [List.length_append, prefixBits, List.length_cons,
-    List.length_nil, repetitions_length]
-
-
 end CryptidsResearch.Recursive95Parser
 
 end
@@ -127,17 +113,6 @@ theorem walkInternal_nSteps (bits : List (Fin 2)) (q q' : Fin 95)
           simpa only [List.reverse_cons, ListBlank.append_assoc, ListBlank.append] using
             ih next q' (ListBlank.cons bit L) hwalk
         · simp only [ht, hw, ite_false] at hwalk; cases hwalk
-
-/-- The unbounded recursive prefix executes before every arbitrary parser suffix. -/
-theorem callerPrefix_nSteps (d : Nat) (L R : ListBlank (Fin 2)) :
-    nSteps (6 + 5 * d)
-      ⟨15, Tape.mk' L (ListBlank.append (prefixBits ++ repetitions d) R)⟩ =
-      some ⟨46, Tape.mk' (ListBlank.append (prefixBits ++ repetitions d).reverse L) R⟩ := by
-  have hparse : walkInternal 15 (prefixBits ++ repetitions d) = some 46 := by
-    simpa only [List.append_nil, walkInternal] using prefix_parse d []
-  have h := walkInternal_nSteps (prefixBits ++ repetitions d) 15 46 L R hparse
-  simpa only [List.length_append, prefixBits, List.length_cons, List.length_nil,
-    repetitions_length] using h
 
 end CryptidsResearch.Recursive95Parser
 
@@ -191,26 +166,6 @@ theorem entryWalk_parse (d : Nat) :
     walkInternal 15 (Schema.callerPrefix d ++ [0]) = some 58 := by
   rw [callerPrefix_eq, prefix_parse]
   rfl
-
-theorem localWalk_nSteps (d : Nat) (s : Fin 22) (L R : ListBlank (Fin 2)) :
-    nSteps (Schema.localWalk d s).length
-      ⟨15, Tape.mk' L (ListBlank.append (Schema.localWalk d s) R)⟩ =
-      some ⟨localTerminal s,
-        Tape.mk' (ListBlank.append (Schema.localWalk d s).reverse L) R⟩ :=
-  walkInternal_nSteps _ _ _ _ _ (localWalk_parse d s)
-
-theorem outsideWalk_nSteps (s : Fin 97) (L R : ListBlank (Fin 2)) :
-    nSteps (Schema.outsideWalk s).length
-      ⟨15, Tape.mk' L (ListBlank.append (Schema.outsideWalk s) R)⟩ =
-      some ⟨outsideTerminal s,
-        Tape.mk' (ListBlank.append (Schema.outsideWalk s).reverse L) R⟩ :=
-  walkInternal_nSteps _ _ _ _ _ (outsideTerminal_walk s)
-
-theorem entryWalk_nSteps (d : Nat) (L R : ListBlank (Fin 2)) :
-    nSteps (Schema.callerPrefix d ++ [0]).length
-      ⟨15, Tape.mk' L (ListBlank.append (Schema.callerPrefix d ++ [0]) R)⟩ =
-      some ⟨58, Tape.mk' (ListBlank.append (Schema.callerPrefix d ++ [0]).reverse L) R⟩ :=
-  walkInternal_nSteps _ _ _ _ _ (entryWalk_parse d)
 
 end CryptidsResearch.Recursive95Parser
 

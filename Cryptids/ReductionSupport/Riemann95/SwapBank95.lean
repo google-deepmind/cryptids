@@ -29,8 +29,6 @@ def swapInstr : RhInstr → RhInstr
   | .inc r n => .inc (swapReg r) n
   | .decnz r p z => .decnz (swapReg r) p z
 
-theorem swapBank_length (regs : List Nat) : (swapBank regs).length = 5 := rfl
-
 theorem swapBank_twice (regs : List Nat) (hlen : regs.length = 5) :
     swapBank (swapBank regs) = regs := by
   obtain ⟨a,b,c,d,e,rfl⟩ := ReferenceProgram.bank_five regs hlen

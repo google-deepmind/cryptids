@@ -45,10 +45,6 @@ theorem exactPad_ge (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) :
   unfold exactPad Riemann95Auxiliary.PhysicalRaw.exactPad
   omega
 
-theorem exactPad_of_lt (k : Fin 2) (walked : List (Fin 2)) (fill : Nat)
-    (h : k.val < walked.count 0) : exactPad k walked fill = walked.length + fill := by
-  simp only [exactPad, Riemann95Auxiliary.PhysicalRaw.exactPad, h, ite_true, Nat.add_zero]
-
 theorem exactPad_of_eq (k : Fin 2) (walked : List (Fin 2)) (fill : Nat)
     (h : k.val = walked.count 0) : exactPad k walked fill = walked.length + fill + 1 := by
   simp only [exactPad, Riemann95Auxiliary.PhysicalRaw.exactPad, h, lt_self_iff_false,

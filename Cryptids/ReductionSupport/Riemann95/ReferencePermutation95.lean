@@ -81,41 +81,4 @@ theorem step_encode (c : RhRegCfg) (hlen : c.regs.length = 5) :
     split <;> simp only [Option.map_some,encodeCfg]
     rw [encodeBank_set _ hlen]
 
-theorem logical_step_length (c next : RhRegCfg) (hs : ReferenceLogical.step c = some next) :
-    next.regs.length = c.regs.length := by
-  unfold ReferenceLogical.step at hs
-  cases h : ReferenceLogical.instruction c.stack with
-  | halt => simp only [h] at hs; contradiction
-  | jump target => simp only [h,Option.some.injEq] at hs; subst next; rfl
-  | inc r target =>
-    simp only [h,Option.some.injEq] at hs
-    subst next
-    simp
-  | decnz r positive zero =>
-    simp only [h] at hs
-    split at hs <;> simp only [Option.some.injEq] at hs <;> subst next <;> simp
-
-def BankRel (physical logical : RhRegCfg) : Prop :=
-  physical = encodeCfg logical ∧ logical.regs.length = 5
-
-theorem physProgramRespectsLogical :
-    StateTransition.Respects step ReferenceLogical.step BankRel := by
-  intro physical logical hrel
-  obtain ⟨rfl,hlen⟩ := hrel
-  rw [step_encode logical hlen]
-  cases hs : ReferenceLogical.step logical with
-  | none => rfl
-  | some next =>
-    refine ⟨next,⟨rfl,?_⟩,Relation.TransGen.single hs⟩
-    exact (logical_step_length logical next hs).trans hlen
-
-theorem stage_bank_related (M : Nat) : BankRel (stageCfg M) (ReferenceLogical.stageCfg M) :=
-  ⟨rfl,rfl⟩
-
-theorem stage_halts_iff_edited (M : Nat) :
-    (StateTransition.eval step (stageCfg M)).Dom ↔
-      (StateTransition.eval (rhRegStepOf true) (ReferenceLogical.stageCfg M)).Dom := by
-  exact (StateTransition.tr_eval_dom physProgramRespectsLogical
-    (stage_bank_related M)).symm.trans (ReferenceLogical.stage_halts_iff_edited M)
-
 end ConjectureMachines.Riemann95.ReferenceProgram

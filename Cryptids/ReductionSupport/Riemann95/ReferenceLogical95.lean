@@ -165,8 +165,6 @@ def oldWord (s : Fin 121) : Word := (row s).oldWord
 def rowInstr (s : Fin 121) : ControlInstr := (row s).instr
 def role (s : Fin 121) : Role := (row s).role
 
-def words : List Word := (List.finRange 121).map word
-
 def toInstr (target : Fin 121 → Word) : ControlInstr → RhInstr
   | .halt => .halt
   | .jump n => .jump (target n)
@@ -188,9 +186,6 @@ def step (c : RhRegCfg) : Option RhRegCfg :=
   | .decnz r positive zero =>
     if c.regs.getD r 0 == 0 then some ⟨zero,c.regs⟩
     else some ⟨positive,c.regs.set r (c.regs.getD r 0 - 1)⟩
-
-abbrev evalWord := instruction
-abbrev freshStep := step
 
 def ordinary (s : Fin 121) : Prop :=
   match role s with
@@ -246,11 +241,5 @@ instance (s : Fin 121) : Decidable (Spec s) := by
 theorem instruction_word : ∀ s : Fin 121, instruction (word s) = decoded s := by decide +kernel
 
 theorem specs : ∀ s : Fin 121, Spec s := by decide +kernel
-
-theorem word_length : ∀ s : Fin 121, (word s).length ≤ 16 := by decide +kernel
-
-theorem oldWord_valid : ∀ s : Fin 121, isValidStack (oldWord s) = true := by decide +kernel
-
-theorem words_nodup : words.Nodup := by decide +kernel
 
 end ConjectureMachines.Riemann95.ReferenceLogical

@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import Cryptids.ReductionSupport.Riemann95.ReferencePermutation95
-public import Cryptids.ReductionSupport.Riemann.ReferenceStageRange
+public import Cryptids.ReductionSupport.Riemann.FiniteStage
 
 @[expose] public section
 

@@ -64,19 +64,6 @@ theorem decScanShift98 (suff : List Nat) (m : Nat) (L : ListBlank (Fin 2)) : ∃
   simpa only [Renaming.renameCfg, show Renaming.swap 74 = 74 from rfl,
     show Renaming.swap 86 = 86 from rfl] using Renaming.of_raw h
 
-theorem fenceReturn98 (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfill : 3 ≤ fill) (hk :
-  k.val ≤ walked.count 0) (hguard : Riemann104.OnePassGuard.NoThreeZeros (1 :: (popBreakRev k.val
-  walked.reverse).reverse).reverse = true) (bank : List Nat) : ∃ pad' ≥ walked.length + fill, ∃ s
-  ≥ 1, nSteps s ⟨(if k = 0 then 9 else 63), Tape.mk' (ListBlank.append (List.replicate fill 1)
-  (stackLeftOf true walked)) (ListBlank.append [0, 0]
-  (ConjectureMachines.Semantics.Riemann.Layer1.regsTape bank))⟩ = some (rawRoot98 pad'
-  (popBreakRev k.val walked.reverse).reverse bank) := by
-  obtain ⟨pad', hp, s, hs, h⟩ := PhysicalRaw.fenceReturn98 k walked fill hfill hk hguard bank
-  refine ⟨pad', hp, s, hs, ?_⟩
-  have ht := Renaming.of_raw h
-  rw [rename_rawRoot] at ht
-  simpa only [Renaming.renameCfg, swap_fence] using ht
-
 theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (hpos : 0 <
   bank.getD r.val 0) (L : ListBlank (Fin 2)) : ∃ s ≥ 1, nSteps s ⟨decLeaf98 r, Tape.mk' L
   (ListBlank.append [1, 0] (ConjectureMachines.Semantics.Riemann.Layer1.regsTape bank))⟩ = some

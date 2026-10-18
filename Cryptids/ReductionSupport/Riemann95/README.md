@@ -28,7 +28,7 @@ physical register banks. This changes the register program and its tape
 implementation, so the proof establishes both program correctness and physical
 execution rather than a quotient of the 104-state transition table.
 
-The 52 new Lean modules include five shared reference-support modules. Related
+The 49 new Lean modules include two shared reference-support modules. Related
 decoder, control, bootstrap, return, and trace lemmas are grouped together.
 Read the layers in this order:
 
@@ -48,10 +48,11 @@ no remaining stage-simulation premise for a caller to supply. Its
 matching the reference's stage numbering.
 
 Shared reference facts live in [`../Riemann/`](../Riemann/).
-`ControlWords`, `ControlSoundness`, and `WordGuard` certify the reference control
-invariants; `FiniteStage` and `ReferenceStageRange` connect safe finite starting
-stages to the original blank run. These facts do not depend on another reduced
-machine.
+`WordGuard` defines the scanner predicate, while `FiniteStage` supplies the
+reference stage configuration and safety of the finite initial tests. The
+actual control-word guards are proved in `NoThree95` and `ControlStep95`.
+`Auxiliary95RawReturn` proves the scanner once; `Auxiliary95Return` transports
+it through the existing state renaming.
 
 All new proof modules use the pinned toolchain and existing Lean limits. The
 three public results are checked against the independent table specification in

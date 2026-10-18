@@ -34,13 +34,4 @@ theorem width_padding_le (j : ℕ) (hj : 1 ≤ j) :
     max_le (by omega) (by omega)
   omega
 
-/-- A uniform padding form that also covers the zero-clock input. -/
-theorem width_padding_le_max (j : ℕ) :
-    max 16 (10 + 5 * quarterClock j) + 5 ≤ max 21 (j + 20) := by
-  by_cases hj : 1 ≤ j
-  · exact le_trans (width_padding_le j hj) (le_max_right _ _)
-  · have hz : j = 0 := by omega
-    subst j
-    norm_num [quarterClock]
-
 end ConjectureMachines.Riemann95.Algorithm

@@ -20,7 +20,4 @@ def rawRootCfg (pad : Nat) (word : List (Fin 2)) (regs extra : List Nat) : Cfg 9
 
 abbrev rootCfg := rawRootCfg
 
-theorem initialRoot_eq_rawRootCfg :
-    initialRoot = rawRootCfg 22 [] [0,0,0,0,0] (List.replicate 4 0) := rfl
-
 end ConjectureMachines.Riemann95Auxiliary

@@ -419,12 +419,6 @@ def enterBodyId : Fin 22 := 0
 
 def unwind (d : Nat) : ControlWord := .local d unwindId
 
-theorem unwind_word (d : Nat) : word (unwind d) = callerPrefix d ++ [1,1,1,1,1] := rfl
-
-theorem finalTest_word : word (.outside finalTestId) = [1,1,1,1,1,1] := rfl
-
-theorem finalHalt_word : word (.outside finalHaltId) = [1,1,1,1,1,1,1] := rfl
-
 theorem entry_zero : instruction (.entry 0) =
     .decnz 4 (.local 0 enterBodyId) (.outside finalTestId) := rfl
 
@@ -442,8 +436,6 @@ theorem unwind_succ_succ (d : Nat) : instruction (unwind (d+2)) =
 
 theorem final_test : instruction (.outside finalTestId) =
     .decnz 2 (.outside finalHaltId) (.outside 0) := rfl
-
-theorem final_halt : instruction (.outside finalHaltId) = .halt := rfl
 
 end ConjectureMachines.Riemann95.Control
 

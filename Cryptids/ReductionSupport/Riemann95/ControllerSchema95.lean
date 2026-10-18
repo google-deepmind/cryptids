@@ -282,13 +282,6 @@ theorem outside_noThree : ∀ s : Fin 97,
     NoThreeZeros (1 :: outsideWord s) = true ∧
     NoThreeZeros (1 :: outsideWord s).reverse = true := by decide +kernel
 
-theorem suffix_finite : ∀ s : Fin 22,
-    (suffix s).length ≤ 8 ∧ (suffix s).head? = some 1 ∧
-    NoThreeZeros (0 :: suffix s) = true ∧
-    NoThreeZeros ((suffix s).reverse ++ [0]) = true := by decide +kernel
-
-theorem outside_length : ∀ s : Fin 97, (outsideWord s).length ≤ 16 := by decide +kernel
-
 theorem localWalkSuffix_length : ∀ s : Fin 22, (localWalkSuffix s).length ≤ 8 := by decide +kernel
 
 theorem outsideWalk_length : ∀ s : Fin 97, (outsideWalk s).length ≤ 16 := by decide +kernel
@@ -300,11 +293,6 @@ theorem callerPrefix_length (d : Nat) : (callerPrefix d).length = 5*d+6 := by
 
 theorem entry_length (d : Nat) : (entry d).length = 5*d+5 := by
   simp only [entry,List.length_dropLast,callerPrefix_length]
-  omega
-
-theorem local_length (d : Nat) (s : Fin 22) : (word (.local d s)).length ≤ 5*d+14 := by
-  simp only [word,List.length_append,callerPrefix_length]
-  have h := (suffix_finite s).1
   omega
 
 theorem localWalk_length (d : Nat) (s : Fin 22) : (localWalk d s).length ≤ 5*d+14 := by
