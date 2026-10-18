@@ -19,7 +19,8 @@ the existing mathematical Riemann criterion without an extra assumption.
 - [`Riemann95Definition.lean`](../../Cryptids/Riemann95Definition.lean): literal
   transition table and initial configuration.
 - [`Riemann95.lean`](../../Cryptids/Riemann95.lean):
-  `candidate_equivalent` and `candidate_fewer_states` relative to `Riemann104`.
+  `halts_candidate_iff_counterexample`, `candidate_equivalent`, and
+  `candidate_fewer_states` relative to `Riemann104`.
 - [`Semantics/Riemann95.lean`](../../Cryptids/Semantics/Riemann95.lean):
   `halts_candidate_iff_not_riemannHypothesis`.
 - [`ReductionSupport/Riemann95/README.md`](../../Cryptids/ReductionSupport/Riemann95/README.md):

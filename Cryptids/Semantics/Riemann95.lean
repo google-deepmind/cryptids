@@ -10,6 +10,7 @@ public import Cryptids.Semantics.Riemann120
 
 namespace ConjectureMachines.Riemann95.Semantics
 
+/-- Unconditional blank-tape correctness for Mathlib's Riemann Hypothesis. -/
 theorem halts_candidate_iff_not_riemannHypothesis :
     Halts ConjectureMachines.Riemann95.candidate ↔ ¬ RiemannHypothesis :=
   ConjectureMachines.Riemann95.candidate_equivalent.trans

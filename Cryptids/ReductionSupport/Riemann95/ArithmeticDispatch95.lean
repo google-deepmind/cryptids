@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.ReductionSupport.Riemann95.ParserTape95
+public import Cryptids.ReductionSupport.Riemann95.Parser95
 public import Cryptids.ReductionSupport.Riemann95.Padding95
 
 @[expose] public section

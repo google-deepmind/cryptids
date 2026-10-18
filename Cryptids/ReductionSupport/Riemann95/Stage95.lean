@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.ReductionSupport.Riemann95.Halt95
-public import Cryptids.ReductionSupport.Riemann95.WidthLift95
+public import Cryptids.ReductionSupport.Riemann95.Terminal95
+public import Cryptids.ReductionSupport.Riemann95.PhysicalTrace95
 public import Cryptids.ReductionSupport.Riemann95.TypedPrewidth95
 public import Cryptids.ReductionSupport.Riemann95.ClockBound95
 

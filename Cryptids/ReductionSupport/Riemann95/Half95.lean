@@ -4,8 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.ReductionSupport.Riemann95.TypedClosure95
-public import Cryptids.ReductionSupport.Riemann95.ControlRoles95
+public import Cryptids.ReductionSupport.Riemann95.ControlStep95
 
 @[expose] public section
 
