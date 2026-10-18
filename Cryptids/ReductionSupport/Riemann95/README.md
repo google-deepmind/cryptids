@@ -28,7 +28,7 @@ physical register banks. This changes the register program and its tape
 implementation, so the proof establishes both program correctness and physical
 execution rather than a quotient of the 104-state transition table.
 
-The 49 new Lean modules include two shared reference-support modules. Related
+The 47 new Lean modules include two shared reference-support modules. Related
 decoder, control, bootstrap, return, and trace lemmas are grouped together.
 Read the layers in this order:
 
@@ -38,6 +38,7 @@ Read the layers in this order:
 | Blank initialization | [`Bootstrap95.lean`](Bootstrap95.lean) | Checks all 3,634 steps, identifies the entire tape, and transfers halting to the initialized configuration. |
 | Reference program | [`ReferenceLogical95.lean`](ReferenceLogical95.lean), [`ReferenceLogicalSemantics95.lean`](ReferenceLogicalSemantics95.lean), [`ReferencePermutation95.lean`](ReferencePermutation95.lean), [`ReferenceBridge95.lean`](ReferenceBridge95.lean) | Relates the reordered program and register permutation to the original 104-state semantics, including the stopped pre-width computation. |
 | Decoder and control | [`Parser95.lean`](Parser95.lean), [`ControlStep95.lean`](ControlStep95.lean) | Proves recursive decoding, control flow labels, and closure of encoded configurations. |
+| Clock routine | [`WidthSteps95.lean`](WidthSteps95.lean), [`BoundedUnwind95.lean`](BoundedUnwind95.lean) | Proves the halving and unwind steps and their execution within the physical padding budget. |
 | Tape operations | [`Auxiliary95Contracts.lean`](Auxiliary95Contracts.lean), [`Return95.lean`](Return95.lean), [`Terminal95.lean`](Terminal95.lean) | Proves arithmetic, returns, jumps, and the halting transition, preserving the required tape frames. |
 | Physical execution | [`PhysicalTrace95.lean`](PhysicalTrace95.lean), [`PrecreditTrace95.lean`](PrecreditTrace95.lean) | Lifts program steps to the actual machine and handles growing padding and width changes. |
 | Complete stages and halting | [`Stage95.lean`](Stage95.lean), [`Witness95.lean`](Witness95.lean) | Proves outcomes for every stage and directly derives the unconditional counterexample criterion by cofinality. |
@@ -52,7 +53,8 @@ Shared reference facts live in [`../Riemann/`](../Riemann/).
 reference stage configuration and safety of the finite initial tests. The
 actual control-word guards are proved in `NoThree95` and `ControlStep95`.
 `Auxiliary95RawReturn` proves the scanner once; `Auxiliary95Return` transports
-it through the existing state renaming.
+it through the existing state renaming. Arithmetic and padding proofs share
+the tape moves in `Auxiliary95RawReturn` and the scans in `Auxiliary95RawPhysical`.
 
 All new proof modules use the pinned toolchain and existing Lean limits. The
 three public results are checked against the independent table specification in

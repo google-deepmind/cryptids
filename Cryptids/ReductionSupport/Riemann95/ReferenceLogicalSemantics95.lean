@@ -49,10 +49,6 @@ def RegRel (s : Fin 121) (fresh old : List Nat) : Prop :=
       base.length = 5 ∧ fresh = incReg r base ∧ old = incReg 4 base
   | _ => fresh.length = 5 ∧ old = fresh
 
-def R (fresh old : RhRegCfg) : Prop :=
-  ∃ s : Fin 121, fresh.stack = word s ∧ old.stack = oldWord s ∧
-    RegRel s fresh.regs old.regs
-
 theorem regRel_ordinary (s : Fin 121) (ho : ordinary s)
     (fresh old : List Nat) (hlen : fresh.length = 5) (heq : old = fresh) :
     RegRel s fresh old := by
@@ -75,7 +71,5 @@ theorem inc_commute (r : Nat) (regs : List Nat) (hlen : regs.length = 5)
   have he : rest = [] := List.eq_nil_of_length_eq_zero (by omega)
   subst rest
   rcases hr with rfl | rfl <;> rfl
-
-def stageCfg (M : Nat) : RhRegCfg := ⟨[],[M,0,0,0,0]⟩
 
 end ConjectureMachines.Riemann95.ReferenceLogical

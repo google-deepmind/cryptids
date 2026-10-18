@@ -1286,5 +1286,4 @@ theorem reference_prewidth_execution95 (M : Nat) : StateTransition.Reaches₁ Re
 
 end
 
-
 end ConjectureMachines.Riemann95

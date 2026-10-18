@@ -18,6 +18,4 @@ def rawRootCfg (pad : Nat) (word : List (Fin 2)) (regs extra : List Nat) : Cfg 9
     (ListBlank.mk (word ++ List.replicate (pad - word.length) 0 ++
       [1,0] ++ encodeRegs (regs ++ extra)))⟩
 
-abbrev rootCfg := rawRootCfg
-
 end ConjectureMachines.Riemann95Auxiliary

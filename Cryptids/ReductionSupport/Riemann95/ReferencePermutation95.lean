@@ -13,7 +13,7 @@ namespace ConjectureMachines.Riemann95.ReferenceProgram
 open Turing StateTransition ConjectureMachines.Riemann120
 open ConjectureMachines.Riemann120.Layer2
 
-attribute [local irreducible] rows row word oldWord rowInstr role decoded instruction
+attribute [local irreducible] word oldWord rowInstr decoded instruction
 attribute [local irreducible] ReferenceLogical.rows ReferenceLogical.row ReferenceLogical.word
   ReferenceLogical.oldWord ReferenceLogical.rowInstr ReferenceLogical.role
   ReferenceLogical.decoded ReferenceLogical.instruction

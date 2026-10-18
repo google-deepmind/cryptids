@@ -18,7 +18,7 @@ section
 /-! Actual recursive95 decoder prefix. This proves arbitrary repetition and
 arbitrary suffix behavior of the read-preserving rightward parser, not the
 whole machine or caller-language closure. -/
-namespace CryptidsResearch.Recursive95Parser
+namespace ConjectureMachines.Riemann95.Parser
 
 open Turing
 
@@ -70,7 +70,7 @@ theorem prefix_parse (n : Nat) (tail : List (Fin 2)) :
   rw [List.append_assoc, walkInternal_append, actual_prefix,
     Option.bind_some, repetitions_parse]
 
-end CryptidsResearch.Recursive95Parser
+end ConjectureMachines.Riemann95.Parser
 
 end
 
@@ -78,7 +78,7 @@ end
 
 section
 
-namespace CryptidsResearch.Recursive95Parser
+namespace ConjectureMachines.Riemann95.Parser
 
 open Turing ConjectureMachines
 open ConjectureMachines.Riemann95
@@ -114,7 +114,7 @@ theorem walkInternal_nSteps (bits : List (Fin 2)) (q q' : Fin 95)
             ih next q' (ListBlank.cons bit L) hwalk
         · simp only [ht, hw, ite_false] at hwalk; cases hwalk
 
-end CryptidsResearch.Recursive95Parser
+end ConjectureMachines.Riemann95.Parser
 
 end
 
@@ -122,7 +122,7 @@ end
 
 section
 
-namespace CryptidsResearch.Recursive95Parser
+namespace ConjectureMachines.Riemann95.Parser
 
 open Turing ConjectureMachines
 open ConjectureMachines.Riemann95
@@ -167,6 +167,6 @@ theorem entryWalk_parse (d : Nat) :
   rw [callerPrefix_eq, prefix_parse]
   rfl
 
-end CryptidsResearch.Recursive95Parser
+end ConjectureMachines.Riemann95.Parser
 
 end

@@ -6,8 +6,8 @@ module
 
 public import Cryptids.Riemann104
 
-/-! Proof-only98-label presentation of the95-state runtime. Labels61,72,95 duplicate label0.
-The counted machine is Riemann95.machine. -/
+/-! Auxiliary presentation for the physical proofs. Labels 61, 72, and 95 duplicate label 0.
+The machine counted in the bound is `Riemann95.machine`. -/
 
 @[expose] public section
 
@@ -118,20 +118,8 @@ def rows : List (List (Option (Fin 2 × Dir × Fin 98))) := [
 
 def machine : Machine 98 2 := Machine.ofRows rows
 
-abbrev candidate : BundledMachine 2 := machine.bundle
-
 def nSteps : Nat → Cfg 98 2 → Option (Cfg 98 2)
   | 0, c => some c
   | n + 1, c => (step machine c).bind (nSteps n)
-
-def initialRegs : List Nat := [0,0,0,0,0]
-
-def initialExtra : List Nat := List.replicate 4 0
-
-def initialRoot : Cfg 98 2 :=
-  ⟨15, Tape.mk' (ListBlank.cons 1 default)
-    (ListBlank.mk
-      (Riemann120.mapStack [] ++ List.replicate (22 - (Riemann120.mapStack []).length) 0 ++
-        [1,0] ++ Semantics.Riemann.Layer1.encodeRegs (initialRegs ++ initialExtra)))⟩
 
 end ConjectureMachines.Riemann95Auxiliary

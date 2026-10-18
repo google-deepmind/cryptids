@@ -33,7 +33,7 @@ def prefixRun95 : Nat → Fin 95 → List (Fin 2) → List (Fin 2) → Option (F
     | none => none
     | some (q', L', R') => prefixRun95 n q' L' R'
 
-theorem prefixRun96_sound {n : Nat} {q q' : Fin 95} {L R L' R' : List (Fin 2)} (hr :
+theorem prefixRun95_sound {n : Nat} {q q' : Fin 95} {L R L' R' : List (Fin 2)} (hr :
   prefixRun95 n q L R = some (q', L', R')) (L₀ R₀ : ListBlank (Fin 2)) : nSteps n ⟨q, Tape.mk'
   (ListBlank.append L L₀) (ListBlank.append R R₀)⟩ = some ⟨q', Tape.mk' (ListBlank.append L' L₀)
   (ListBlank.append R' R₀)⟩ := by

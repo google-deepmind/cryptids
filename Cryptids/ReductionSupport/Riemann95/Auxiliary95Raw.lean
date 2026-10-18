@@ -6,8 +6,8 @@ module
 
 public import Cryptids.ReductionSupport.Riemann95.Auxiliary95
 
-/-! Proof-only98-label presentation of the95-state runtime. Labels61,72,95 duplicate label0.
-The counted machine is Riemann95.machine. -/
+/-! Auxiliary table before the 0/36 renaming. Labels 61, 72, and 95 duplicate label 36.
+The machine counted in the bound is `Riemann95.machine`. -/
 
 @[expose] public section
 
@@ -117,8 +117,6 @@ def rows : List (List (Option (Fin 2 × Dir × Fin 98))) := [
 ]
 
 def machine : Machine 98 2 := Machine.ofRows rows
-
-abbrev candidate : BundledMachine 2 := machine.bundle
 
 def nSteps : Nat → Cfg 98 2 → Option (Cfg 98 2)
   | 0, c => some c

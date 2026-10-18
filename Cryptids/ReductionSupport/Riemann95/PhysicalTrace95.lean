@@ -172,7 +172,6 @@ theorem strict_exit_lift (B P : Nat) (hP : B ≤ P) (a b : Control.Cfg)
   rw [Dispatch.nSteps_composition,hrun]
   exact hfinal
 
-
 end ConjectureMachines.Riemann95.Trace
 
 end

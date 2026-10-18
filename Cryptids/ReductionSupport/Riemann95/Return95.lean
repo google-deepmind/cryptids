@@ -109,7 +109,7 @@ theorem jump43 (P : List (Fin 2)) (R : ListBlank (Fin 2))
       ⟨43, Tape.mk' (stackLeftOf true (P ++ [1, 0, 0, 1, 1])) (R.cons 1)⟩ =
       some ⟨15, Tape.mk' (rootLeftOf true)
         (ListBlank.append (P ++ [1]) (ListBlank.append [0, 0, 0, 0, 0] R))⟩ := by
-  have hp := prefixRun96_sound prefix43 (stackLeftOf true P) R
+  have hp := prefixRun95_sound prefix43 (stackLeftOf true P) R
   have hp' : nSteps 5
       ⟨43, Tape.mk' (stackLeftOf true (P ++ [1, 0, 0, 1, 1])) (R.cons 1)⟩ =
       some ⟨10, Tape.mk' (stackLeftOf true P)
@@ -138,7 +138,7 @@ theorem jump59 (P : List (Fin 2)) (R : ListBlank (Fin 2))
       ⟨59, Tape.mk' (stackLeftOf true (P ++ [1, 1])) (R.cons 1)⟩ =
       some ⟨15, Tape.mk' (rootLeftOf true)
         (ListBlank.append (P ++ [1]) (ListBlank.append [0, 0] R))⟩ := by
-  have hp := prefixRun96_sound prefix59 (stackLeftOf true P) R
+  have hp := prefixRun95_sound prefix59 (stackLeftOf true P) R
   have hp' : nSteps 4
       ⟨59, Tape.mk' (stackLeftOf true (P ++ [1, 1])) (R.cons 1)⟩ =
       some ⟨14, Tape.mk' (stackLeftOf true P)
@@ -164,7 +164,7 @@ theorem jump19 (P : List (Fin 2)) (R : ListBlank (Fin 2))
       ⟨19, Tape.mk' (stackLeftOf true (P ++ [1, 1])) (R.cons 1)⟩ =
       some ⟨15, Tape.mk' (rootLeftOf true)
         (ListBlank.append (P ++ [1]) (ListBlank.append [0, 0] R))⟩ := by
-  have hp := prefixRun96_sound prefix19 (stackLeftOf true P) R
+  have hp := prefixRun95_sound prefix19 (stackLeftOf true P) R
   have hp' : nSteps 2
       ⟨19, Tape.mk' (stackLeftOf true (P ++ [1, 1])) (R.cons 1)⟩ =
       some ⟨5, Tape.mkL (stackLeftOf true (P ++ [1]))
@@ -188,7 +188,7 @@ open Turing ConjectureMachines
 open ConjectureMachines.Riemann120 (rootLeftOf stackLeftOf)
 open Schema
 open FinitePrefix
-open CryptidsResearch.Recursive95Parser
+open ConjectureMachines.Riemann95.Parser
 
 theorem root_layout (pad : Nat) (bank : List Nat) (v : Word) (K : Nat)
     (hv : v.length ≤ K) (hK : K ≤ pad) :
@@ -286,7 +286,7 @@ theorem root_outside (i : Fin 97) (target : Word)
   unfold outsideCertificate at hc
   rw [h] at hc
   obtain ⟨hw, ht, hn, hr⟩ := hc
-  have he := prefixRun96_sound hr (default : ListBlank (Fin 2))
+  have he := prefixRun95_sound hr (default : ListBlank (Fin 2))
     (ListBlank.mk (List.replicate (pad - ((outsideWalk i).length + 3)) 0 ++ [1, 0] ++
       Semantics.Riemann.Layer1.encodeRegs bank))
   have hleft : ListBlank.append [1, 0, 0, 0] (default : ListBlank (Fin 2)) =

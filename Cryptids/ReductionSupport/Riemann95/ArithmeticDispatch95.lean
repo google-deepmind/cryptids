@@ -25,7 +25,7 @@ theorem arithmetic_dispatch_exact (pad : Nat) (word walked : List (Fin 2)) (bank
     (r : Fin 5) (inc : Bool) (hfill : 3 ≤ pad - walked.length)
     (htape : word ++ List.replicate (pad - word.length) 0 =
       walked ++ List.replicate (pad - walked.length) 0)
-    (hparse : CryptidsResearch.Recursive95Parser.walkInternal 15 walked =
+    (hparse : ConjectureMachines.Riemann95.Parser.walkInternal 15 walked =
       some (if inc then Physical.incLeaf r else Physical.decLeaf r))
     (hr : r.val < bank.length) (hk : inc = false → 1 ≤ walked.count 0)
     (hguard0 : Riemann104.OnePassGuard.NoThreeZeros
@@ -38,7 +38,7 @@ theorem arithmetic_dispatch_exact (pad : Nat) (word walked : List (Fin 2)) (bank
     ∃ s ≥ 1, nSteps s (Physical.rootCfg pad word bank) =
       some (Physical.rootCfg (Physical.exactPad k walked (pad - walked.length))
         (Riemann120.Layer2.popBreakRev k.val walked.reverse).reverse bank') := by
-  have hp := CryptidsResearch.Recursive95Parser.walkInternal_nSteps walked 15
+  have hp := ConjectureMachines.Riemann95.Parser.walkInternal_nSteps walked 15
     (if inc then Physical.incLeaf r else Physical.decLeaf r)
     (Riemann120.rootLeftOf true)
     (Turing.ListBlank.append (List.replicate (pad - walked.length) 0)

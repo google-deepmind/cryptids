@@ -47,23 +47,6 @@ theorem rename_rawRoot (pad : Nat) (word : List (Fin 2)) (bank : List Nat) :
 theorem swap_fence (k : Fin 2) :
     Renaming.swap (if k = 0 then 9 else 63) = (if k = 0 then 9 else 63) := by fin_cases k <;> rfl
 
-theorem nSteps98_eq (n : Nat) (c : Cfg 98 2) : nSteps n c =
-  ConjectureMachines.Semantics.Riemann.Layer1.nSteps machine n c := by
-  induction n generalizing c with
-  | zero => rfl
-  | succ n ih =>
-    simp only [nSteps, Semantics.Riemann.Layer1.nSteps, ih]
-
-theorem decScanShift98 (suff : List Nat) (m : Nat) (L : ListBlank (Fin 2)) : ∃ s ≥ 1, nSteps s
-  ⟨74, Tape.mk' (ListBlank.append (ConjectureMachines.Semantics.Riemann.Layer1.encodeReg
-  m).reverse (L.cons 0)) (ConjectureMachines.Semantics.Riemann.Layer1.regsTape suff)⟩ = some ⟨86,
-  ConjectureMachines.Semantics.Riemann.Layer1.Tape.mkL L
-  (ConjectureMachines.Semantics.Riemann.Layer1.regsTape (m :: (suff ++ [0])))⟩ := by
-  obtain ⟨s, hs, h⟩ := PhysicalRaw.decScanShift98 suff m L
-  refine ⟨s, hs, ?_⟩
-  simpa only [Renaming.renameCfg, show Renaming.swap 74 = 74 from rfl,
-    show Renaming.swap 86 = 86 from rfl] using Renaming.of_raw h
-
 theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (hpos : 0 <
   bank.getD r.val 0) (L : ListBlank (Fin 2)) : ∃ s ≥ 1, nSteps s ⟨decLeaf98 r, Tape.mk' L
   (ListBlank.append [1, 0] (ConjectureMachines.Semantics.Riemann.Layer1.regsTape bank))⟩ = some

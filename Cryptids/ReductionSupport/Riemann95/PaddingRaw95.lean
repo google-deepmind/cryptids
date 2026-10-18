@@ -12,6 +12,7 @@ namespace ConjectureMachines.Riemann95Auxiliary.PhysicalRaw
 open Turing ConjectureMachines
 open ConjectureMachines.Riemann120 ConjectureMachines.Riemann120.Layer2
 open ConjectureMachines.Semantics.Riemann.Layer1 (encodeRegs)
+open ReturnRaw (step_mkL_left step_mkL_right step_mk'_left step_mk'_right)
 
 /-- Exact padding change; exhausting the root marker creates one extra blank cell. -/
 def exactPad (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) : Nat :=
@@ -27,33 +28,6 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
   (popBreakRev k.val walked.reverse).reverse bank) := by
   let mkL := Semantics.Riemann.Layer1.Tape.mkL
   let ns := Semantics.Riemann.Layer1.nSteps Raw.machine
-  have sLL {q q' : Fin 98} {a b : Fin 2}
-      (h : Raw.machine.transition q a = some (b, .left, q')) (L R : ListBlank (Fin 2)) :
-      step Raw.machine ⟨q, mkL (L.cons a) R⟩ = some ⟨q', mkL L (R.cons b)⟩ := by
-    simp [step, mkL, Semantics.Riemann.Layer1.Tape.mkL, h, Tape.write, Tape.move]
-  have sLR {q q' : Fin 98} {a b : Fin 2}
-      (h : Raw.machine.transition q a = some (b, .right, q')) (L R : ListBlank (Fin 2)) :
-      step Raw.machine ⟨q, mkL (L.cons a) R⟩ = some ⟨q', Tape.mk' (L.cons b) R⟩ := by
-    simp [step, mkL, h, Tape.mk', Tape.write, Tape.move]
-  have sPL {q q' : Fin 98} {a b : Fin 2}
-      (h : Raw.machine.transition q a = some (b, .left, q')) (L R : ListBlank (Fin 2)) :
-      step Raw.machine ⟨q, Tape.mk' L (R.cons a)⟩ = some ⟨q', mkL L (R.cons b)⟩ := by
-    simp [step, mkL, Semantics.Riemann.Layer1.Tape.mkL, h, Tape.mk', Tape.write, Tape.move]
-  have sPR {q q' : Fin 98} {a b : Fin 2}
-      (h : Raw.machine.transition q a = some (b, .right, q')) (L R : ListBlank (Fin 2)) :
-      step Raw.machine ⟨q, Tape.mk' L (R.cons a)⟩ = some ⟨q', Tape.mk' (L.cons b) R⟩ := by
-    simp [step, h, Tape.mk', Tape.write, Tape.move]
-  have scanL {q : Fin 98} {a b : Fin 2}
-      (h : Raw.machine.transition q a = some (b, .left, q)) (n : Nat) (L R : ListBlank (Fin 2)) :
-      ns n ⟨q, mkL (ListBlank.append (List.replicate n a) L) R⟩ =
-        some ⟨q, mkL L (ListBlank.append (List.replicate n b) R)⟩ := by
-    dsimp [ns]
-    induction n generalizing R with
-    | zero => rfl
-    | succ n ih =>
-      rw [List.replicate_succ, ListBlank.append, Semantics.Riemann.Layer1.nSteps_succ, sLL h]
-      simp only [Option.bind_some]
-      rw [ih (R.cons b), Semantics.Riemann.Layer1.append_replicate_cons]
   have popscan (rev : List (Fin 2)) (j : Nat) (hj : j ≤ 1) (hc : j < rev.count 0)
       (L R : ListBlank (Fin 2)) :
       ∃ s ≥ 1, ns s ⟨(if j = 0 then 11 else 2), mkL (ListBlank.append rev L) R⟩ =
@@ -69,7 +43,7 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
           refine ⟨1, le_refl 1, ?_⟩
           simp only [popBreakRev, beq_self_eq_true, ↓reduceIte, List.length_cons,
             Nat.sub_self, List.replicate_zero, ListBlank.append, ListBlank.tail_cons]
-          exact Semantics.Riemann.Layer1.step_one (sLL (by rfl) _ _)
+          exact Semantics.Riemann.Layer1.step_one (step_mkL_left (by rfl) _ _)
         | succ j =>
           have hj0 : j = 0 := by omega
           subst j
@@ -81,8 +55,8 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
           rw [Semantics.Riemann.Layer1.append_replicate_cons, ← he] at ht
           refine ⟨s + 1, by omega, ?_⟩
           simpa only [popBreakRev, beq_self_eq_true, ↓reduceIte, ListBlank.append,
-            Nat.reduceEqDiff] using Semantics.Riemann.Layer1.step_nSteps (sLL (q := 2) (q' := 11)
-              (a := 0) (b := 0) (by rfl) _ _) ht
+            Nat.reduceEqDiff] using Semantics.Riemann.Layer1.step_nSteps
+              (step_mkL_left (q := 2) (q' := 11) (a := 0) (b := 0) (by rfl) _ _) ht
       · have hc' : j < xs.count 0 := by
           simpa only [List.count_cons, show ((1 : Fin 2) == 0) = false from rfl,
             Bool.false_eq_true, ite_false, Nat.add_zero] using hc
@@ -95,8 +69,8 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
         have htrans : Raw.machine.transition (if j = 0 then 11 else 2) 1 =
             some (0, .left, (if j = 0 then 11 else 2)) := by split <;> rfl
         refine ⟨s + 1, by omega, ?_⟩
-        simpa only [hp, ListBlank.append] using Semantics.Riemann.Layer1.step_nSteps (sLL htrans _
-          _) ht
+        simpa only [hp, ListBlank.append] using
+          Semantics.Riemann.Layer1.step_nSteps (step_mkL_left htrans _ _) ht
   let R := ListBlank.append [1, 0] (Semantics.Riemann.Layer1.regsTape bank)
   have hinit : ∃ t ≥ 1, ns t
       ⟨(if k = 0 then 9 else 63), Tape.mk'
@@ -107,10 +81,10 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
     rcases Semantics.Riemann.Layer1.fin2_cases k with rfl | rfl
     · obtain ⟨f, hf⟩ : ∃ f, fill = f + 1 := ⟨fill - 1, by omega⟩
       subst fill
-      have h1 := sPL (q := 9) (q' := 11) (a := 0) (b := 1) (by rfl)
+      have h1 := step_mk'_left (q := 9) (q' := 11) (a := 0) (b := 1) (by rfl)
         (ListBlank.append (List.replicate (f + 1) 1) (stackLeftOf true walked))
         ((Semantics.Riemann.Layer1.regsTape bank).cons 0)
-      have h2 := sLL (q := 11) (q' := 11) (a := 1) (b := 0) (by rfl)
+      have h2 := step_mkL_left (q := 11) (q' := 11) (a := 1) (b := 0) (by rfl)
         (ListBlank.append (List.replicate f 1) (stackLeftOf true walked)) R
       have hscan := scanL (q := 11) (a := 1) (b := 0) (by rfl) f
         (stackLeftOf true walked) (R.cons 0)
@@ -119,7 +93,7 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
       rw [Semantics.Riemann.Layer1.append_replicate_cons] at ht
       refine ⟨f + 1 + 1, by omega, ?_⟩
       simpa only [Fin.val_zero, ↓reduceIte, List.replicate_succ, ListBlank.append, R] using ht
-    · have h1 := sPL (q := 63) (q' := 2) (a := 0) (b := 1) (by rfl)
+    · have h1 := step_mk'_left (q := 63) (q' := 2) (a := 0) (b := 1) (by rfl)
         (ListBlank.append (List.replicate fill 1) (stackLeftOf true walked))
         ((Semantics.Riemann.Layer1.regsTape bank).cons 0)
       have hscan := scanL (q := 2) (a := 1) (b := 0) (by rfl) fill

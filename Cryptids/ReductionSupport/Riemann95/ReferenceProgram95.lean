@@ -14,9 +14,6 @@ open ConjectureMachines.Riemann120.Layer2
 
 abbrev Word := ReferenceLogical.Word
 abbrev ControlInstr := ReferenceLogical.ControlInstr
-abbrev Role := ReferenceLogical.Role
-abbrev Row := ReferenceLogical.Row
-
 def perm : Nat → Nat
   | 0 => 3
   | 1 => 4
@@ -37,14 +34,9 @@ def mapInstr : RhInstr → RhInstr
   | .inc r n => .inc (perm r) n
   | .decnz r p z => .decnz (perm r) p z
 
-def rows : Array Row := ReferenceLogical.rows.map fun r => {r with instr := mapControl r.instr}
-def row (s : Fin 121) : Row :=
-  let r := ReferenceLogical.row s
-  {r with instr := mapControl r.instr}
 def word (s : Fin 121) : Word := ReferenceLogical.word s
 def oldWord (s : Fin 121) : Word := ReferenceLogical.oldWord s
 def rowInstr (s : Fin 121) : ControlInstr := mapControl (ReferenceLogical.rowInstr s)
-def role (s : Fin 121) : Role := ReferenceLogical.role s
 abbrev toInstr := ReferenceLogical.toInstr
 
 def decoded (s : Fin 121) : RhInstr := toInstr word (rowInstr s)

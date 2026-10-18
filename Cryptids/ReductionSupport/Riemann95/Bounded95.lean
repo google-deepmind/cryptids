@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.ReductionSupport.Riemann95.Unwind95
+public import Cryptids.ReductionSupport.Riemann95.WidthSteps95
 
 @[expose] public section
 
@@ -131,7 +131,6 @@ theorem bounded_halff (B d m v f x j : Nat) (hB : 5 * d + 18 ≤ B) :
     Relation.TransGen (BoundedEdge B) ⟨.local d 14,[m,v,f,x,j]⟩
       ⟨.entry (d + 1),[m,0,f/2 + v,x,j]⟩ :=
   bounded_half_eval B 2 d m v f x j hB
-
 
 theorem entry_frontier_length (d : Nat) :
     (walked (.entry d)).length + 3 = 5 * d + 10 := by

@@ -55,6 +55,11 @@ theorem step_mk'_right {q q' : Fin 98} {a b : Fin 2}
     step Raw.machine ⟨q, Tape.mk' L (R.cons a)⟩ = some ⟨q', Tape.mk' (L.cons b) R⟩ := by
   simp [step, h, Tape.mk', Tape.write, Tape.move]
 
+theorem step_mk'_left {q q' : Fin 98} {a b : Fin 2}
+    (h : Raw.machine.transition q a = some (b, .left, q')) (L R : ListBlank (Fin 2)) :
+    step Raw.machine ⟨q, Tape.mk' L (R.cons a)⟩ = some ⟨q', Tape.mkL L (R.cons b)⟩ := by
+  simp [step, h, Tape.mkL, Tape.mk', Tape.write, Tape.move]
+
 theorem right_scan {q : Fin 98} {a b : Fin 2}
     (h : Raw.machine.transition q a = some (b, .right, q)) (k : Nat)
     (L R : ListBlank (Fin 2)) :
@@ -154,13 +159,12 @@ theorem scan_root_marker (R : ListBlank (Fin 2)) :
       some ⟨15, Tape.mk' (ListBlank.cons 1 default) R⟩ :=
   step_one (step_mk'_right (by decide) _ _)
 
-
 /-- The complete edited caller word, including its single-one root sentinel. -/
 theorem stackLeft_word (word : List (Fin 2)) :
     stackLeftOf true word = ListBlank.append (1 :: word).reverse default := by
   simp [stackLeftOf, rootLeftOf, List.reverse_cons, ListBlank.append_assoc, ListBlank.append]
 
-/-- Universal NoThree scanner for the exact98 table, with no leading gap. -/
+/-- The NoThree scanner returns arbitrary guarded words to root state 15. -/
 theorem run_return98 (word : List (Fin 2))
     (hok : NoThreeZeros (1 :: word).reverse = true) (R : ListBlank (Fin 2)) :
     ∃ s, 1 ≤ s ∧ Raw.nSteps s
@@ -175,7 +179,7 @@ theorem run_return98 (word : List (Fin 2))
   rw [stackLeft_word]
   exact htotal
 
-/-- Peel the first state5/ONE self-step; root15 proves a positive remaining run. -/
+/-- Remove the first state-5/ONE step; the distinct target state ensures a positive remainder. -/
 theorem run_return98_after_one (word : List (Fin 2))
     (hok : NoThreeZeros (1 :: word).reverse = true)
     (hhead : (stackLeftOf true word).head = 1) (R : ListBlank (Fin 2)) :
