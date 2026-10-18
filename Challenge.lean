@@ -115,6 +115,9 @@ namespace Machines
 /-- Rows of `riemann104`. -/ def riemann104Rows : List (List (Option (Fin 2 × Dir × Fin 104))) :=
   load_machine_rows% "artifacts/riemann_104/machine.txt"
 /-- 104-state RH candidate. -/ def riemann104 : Machine 104 2 := Machine.ofRows riemann104Rows
+/-- Rows of `riemann95`. -/ def riemann95Rows : List (List (Option (Fin 2 × Dir × Fin 95))) :=
+  load_machine_rows% "artifacts/riemann_95/machine.txt"
+/-- 95-state RH candidate. -/ def riemann95 : Machine 95 2 := Machine.ofRows riemann95Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -294,5 +297,18 @@ theorem halts_candidate_iff_not_riemannHypothesis :
     Halts candidate ↔ ¬ RiemannHypothesis := by sorry
 end Semantics
 end Riemann104
+
+namespace Riemann95
+/-- 104-state Riemann Hypothesis reference machine. -/
+abbrev reference : BundledMachine 2 := Machines.riemann104.bundle
+/-- 95-state Riemann Hypothesis candidate machine. -/
+abbrev candidate : BundledMachine 2 := Machines.riemann95.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_not_riemannHypothesis :
+    Halts candidate ↔ ¬ RiemannHypothesis := by sorry
+end Semantics
+end Riemann95
 
 end ConjectureMachines

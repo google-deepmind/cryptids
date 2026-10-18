@@ -42,18 +42,18 @@ For the reduced machines in [`artifacts/`](../artifacts/), the state-space trans
 - **`goldbach_21` (`339,411` vs. `170,966` steps through `n = 40`, `1.99x`):** Eliminating 4 states (`1, 8, 10, 17`) reverses the partition enumeration to test larger summands first and routes divisor acceptance through the main counter-tape scanner.
 - **`zf_380` (`+0.093%` step overhead at `1,000,000` steps; `0` step overhead during `39,753`-step bootstrap):** Eliminating 13 states (`65, 68, 266, 278, 322, 335, 341, 353, 359, 361, 379, 387, 389`) via a 5-cell sliding-window invariant (`validState`) and non-destructive leftward head bounces (`1, 3, 5, 7, 9` steps) preserves 100% bit-exact tape equality after every macro-step.
 - **`riemann_104` (`9,037` vs. `89,775,610` bootstrap steps, `9,934.23x` faster initialization; `498,382` vs. `111,294,346` total steps over the first `1,000` register instructions, `223.31x` speedup):** Eliminating 16 states (`120 -> 104`) splits merged scanner state `32` via a 5-cell window invariant (`120 -> 121`), replaces the two-phase `89.8M`-step bootstrap (`-9` states) with a self-bootstrapping header and dynamic on-demand zero padding (`padTotal -> padTotal + 1`), and consolidates return scanners and binary call-stack frames (`mapStack`, `-8` states).
+- **`riemann_95` (`3,634` vs. `9,037` bootstrap steps, `2.49x` faster initialization):** Retaining the stage counter after `FOLD` removes the subsequent counter transfer. A permutation of the physical register banks permits the shorter blank initializer. The proof covers its complete tape and all subsequent stages.
 
 ## Building and Verifying
 
-Build the `Cryptids`, `Challenge`, and `Riemann95Challenge` targets:
+Build the `Cryptids` and `Challenge` targets:
 
 ```bash
 lake exe cache get
 lake build
 ```
 
-Independently audit the proofs against [`Challenge.lean`](../Challenge.lean) and
-[`Riemann95Challenge.lean`](../Riemann95Challenge.lean) with
+Independently audit the proofs against [`Challenge.lean`](../Challenge.lean) with
 [`leanprover/comparator`](../comparator/README.md):
 
 ```bash
@@ -64,5 +64,4 @@ Run the standalone zero-dependency Python verifier (re-compiles upstream baselin
 
 ```bash
 python3 verify.py
-python3 artifacts/riemann_95/verify.py
 ```

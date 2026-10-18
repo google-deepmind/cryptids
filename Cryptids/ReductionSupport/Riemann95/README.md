@@ -28,13 +28,11 @@ physical register banks. This changes the register program and its tape
 implementation, so the proof establishes both program correctness and physical
 execution rather than a quotient of the 104-state transition table.
 
-The 46 new Lean modules include two shared reference-support modules. Related
-decoder, control, bootstrap, return, and trace lemmas are grouped together.
-Read the layers in this order:
+Read the proof layers in this order:
 
 | Layer | Entry points | Purpose |
 | --- | --- | --- |
-| Literal machine | [`../../Riemann95Definition.lean`](../../Riemann95Definition.lean) | Defines all 190 transition cells and the initial root configuration. |
+| Machine definition | [`../../Machines.lean`](../../Machines.lean), [`../../Riemann95Definition.lean`](../../Riemann95Definition.lean) | Loads all 190 transition cells from `machine.txt` and defines the initial root configuration. |
 | Blank initialization | [`Bootstrap95.lean`](Bootstrap95.lean) | Checks all 3,634 steps, identifies the entire tape, and transfers halting to the initialized configuration. |
 | Reference program | [`ReferenceLogical95.lean`](ReferenceLogical95.lean), [`ReferenceLogicalSemantics95.lean`](ReferenceLogicalSemantics95.lean), [`ReferencePermutation95.lean`](ReferencePermutation95.lean), [`ReferenceBridge95.lean`](ReferenceBridge95.lean) | Relates the reordered program and register permutation to the original 104-state semantics, including the stopped pre-width computation. |
 | Decoder and control | [`Parser95.lean`](Parser95.lean), [`ControlStep95.lean`](ControlStep95.lean) | Proves recursive decoding, control flow labels, and closure of encoded configurations. |
@@ -43,8 +41,7 @@ Read the layers in this order:
 | Physical execution | [`PhysicalTrace95.lean`](PhysicalTrace95.lean), [`PrecreditTrace95.lean`](PrecreditTrace95.lean) | Lifts program steps to the actual machine and handles growing padding and width changes. |
 | Complete stages and halting | [`Stage95.lean`](Stage95.lean), [`Witness95.lean`](Witness95.lean) | Proves outcomes for every stage and directly derives the unconditional counterexample criterion by cofinality. |
 
-`Witness95` uses the actual `physical_stage_outcomes` theorem directly. There is
-no remaining stage-simulation premise for a caller to supply. Its
+`Witness95` derives the counterexample criterion from `physical_stage_outcomes`. Its
 `counterexample_iff_positive_stage` lemma discharges the safe initial test when
 matching the reference's stage numbering.
 
@@ -59,6 +56,5 @@ Both auxiliary presentations are derived from the literal 95-state table:
 `Auxiliary95` expands labels using a state embedding and projection, while
 `Auxiliary95Raw` applies the involutive exchange of labels 0 and 36.
 
-All new proof modules use the pinned toolchain and existing Lean limits. The
-three public results are checked against the independent table specification in
-`Riemann95Challenge.lean` by `comparator/riemann_95.json` and `comparator/all.json`.
+The three public results are checked against the independent table specification
+in `Challenge.lean` by `comparator/riemann_95.json` and `comparator/all.json`.

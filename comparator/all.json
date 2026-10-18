@@ -1,5 +1,5 @@
 {
-  "challenge_module": "Riemann95Challenge",
+  "challenge_module": "Challenge",
   "solution_module": "Cryptids",
   "theorem_names": [
     "ConjectureMachines.Goldbach21.candidate_fewer_states",

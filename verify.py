@@ -21,9 +21,9 @@ It independently:
    (`baselines/sources/`) and re-compiles them from first principles into
    canonical transition tables, verifying byte-for-byte identity with
    `baselines/tables/`.
-2. Verifies `Cryptids/Machines.lean` and checks that all 3 record candidate
-   machines (`goldbach_21`, `zf_380`, `riemann_104`) are well-formed 2-symbol
-   Turing machines matching their recorded state counts and SHA-256 digests,
+2. Verifies `Cryptids/Machines.lean` and checks that all 4 record candidate
+   machines (`goldbach_21`, `zf_380`, `riemann_104`, `riemann_95`) are well-formed
+   2-symbol Turing machines matching their recorded state counts and SHA-256 digests,
    and that their `load_machine_rows%` tables in `Cryptids/Machines.lean` and
    `Challenge.lean` match `baselines/tables/` and `artifacts/*/machine.txt`.
 3. Cross-checks the mathematical reduction invariants directly on the
@@ -39,6 +39,7 @@ It independently:
      bit-exact tape agreement at every post-boot outer-loop checkpoint.
    - Riemann (120 vs 104 states): 9,037-step self-bootstrap to `rhRootCfg`
      (`state 19`) and >1,000 post-boot root register-machine dispatches.
+   - Riemann (95 states): exact 3,634-step bootstrap, including the entire tape.
 """
 
 from __future__ import annotations
@@ -188,6 +189,24 @@ CANDIDATES = [
         "baseline_states": 120,
         "machine_sha256": (
             "ac0c7e8a76679ba2a3f2c1814166b392c8301e51110a08bcd2c06624be35f25d"
+        ),
+    },
+    {
+        "id": "riemann_95",
+        "instance": "riemann_104",
+        "path": "artifacts/riemann_95",
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "riemann95",
+        "definition_path": "Cryptids/Riemann95Definition.lean",
+        "proof_path": "Cryptids/Riemann95.lean",
+        "challenge_path": "Challenge.lean",
+        "states": 95,
+        "baseline_states": 104,
+        "machine_sha256": (
+            "7e9731ed1b7c63d4e67c0f8d646f8498d9645f26e237a8604d4b7f91a6ab398d"
+        ),
+        "table_file_sha256": (
+            "7e9731ed1b7c63d4e67c0f8d646f8498d9645f26e237a8604d4b7f91a6ab398d"
         ),
     },
 ]
@@ -593,6 +612,47 @@ def verify_riemann_104_simulation(
   }
 
 
+def verify_riemann_95_bootstrap(machine: Machine) -> dict[str, object]:
+  """Check the exact blank initializer and its complete nonzero tape support."""
+  assert machine.states == 95 and machine.symbols == 2
+  halting_entries = [
+      (q, a)
+      for q, row in enumerate(machine.table)
+      for a, transition in enumerate(row)
+      if transition is None
+  ]
+  assert halting_entries == [(61, 1)]
+
+  state = head = 0
+  ones: set[int] = set()
+  selector_one_visits = 0
+  for _ in range(3634):
+    symbol = int(head in ones)
+    selector_one_visits += int(state == 41 and symbol == 1)
+    transition = machine.table[state][symbol]
+    assert transition is not None and transition.next_state is not None
+    if transition.write:
+      ones.add(head)
+    else:
+      ones.discard(head)
+    head += transition.direction
+    state = transition.next_state
+  assert state == 15 and head == -4
+  assert sorted(ones) == [-5, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36]
+  assert selector_one_visits == 0
+  return {
+      "original_states": 104,
+      "final_states": 95,
+      "states_saved": 9,
+      "boot_step_cand": 3634,
+      "boot_state": state,
+      "boot_head": head,
+      "nonzero_positions": sorted(ones),
+      "halting_entries": halting_entries,
+      "selector_one_visits": selector_one_visits,
+  }
+
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -723,17 +783,26 @@ def run_verification(
           f"source->table->Lean verified ({spec['lean_file']})"
       )
 
-  # 3. Parse and verify all 3 candidate directories, standalone machine files, and Lean proof files
+  # 3. Verify all candidate tables, independent declarations, and Lean proof files.
   cand_machines: dict[str, Machine] = {}
+  reference_specs = dict(PINNED_BASELINES)
+  reference_specs.update({str(spec["id"]): spec for spec in CANDIDATES})
   for cspec in CANDIDATES:
     cid = str(cspec["id"])
     inst = str(cspec["instance"])
     cdir = ROOT / str(cspec["path"])
-    m_text = (cdir / "machine.txt").read_text(encoding="utf-8")
+    m_bytes = (cdir / "machine.txt").read_bytes()
+    m_text = m_bytes.decode("utf-8")
+    if "table_file_sha256" in cspec:
+      assert sha256_bytes(m_bytes) == cspec["table_file_sha256"], (
+          f"{cid} table file SHA-256 mismatch"
+      )
     m_lean_text = (ROOT / str(cspec["lean_file"])).read_text(encoding="utf-8")
     p_path = ROOT / str(cspec["proof_path"])
     p_bytes = p_path.read_bytes()
     p_text = p_bytes.decode("utf-8")
+    definition_path = str(cspec.get("definition_path", cspec["proof_path"]))
+    definition_text = (ROOT / definition_path).read_text(encoding="utf-8")
     c_path = ROOT / str(cspec["challenge_path"])
     c_text = c_path.read_text(encoding="utf-8")
     m = parse_canonical_machine(m_text)
@@ -754,9 +823,19 @@ def run_verification(
         == m.table
     ), f"{cspec['lean_file']} candidate table mismatch"
 
-    ref_def = str(PINNED_BASELINES[inst]["lean_def"])
+    assert (
+        parse_lean_machine_def(
+            c_text,
+            str(cspec["lean_def"]),
+            expected_table_path=f"{cspec['path']}/machine.txt",
+        ).table
+        == m.table
+    ), f"{cspec['challenge_path']} candidate table mismatch"
+
+    ref_def = str(reference_specs[inst]["lean_def"])
     cand_def = str(cspec["lean_def"])
     b_states = int(cspec["baseline_states"])
+    assert b_states == reference_specs[inst]["states"]
     expected_ref_alias = (
         f"abbrev reference : BundledMachine 2 := Machines.{ref_def}.bundle"
     )
@@ -767,11 +846,11 @@ def run_verification(
         "theorem candidate_fewer_states : candidate.states < reference.states"
     )
     assert (
-        expected_ref_alias in p_text
-    ), f"{cspec['proof_path']} missing `{expected_ref_alias}`"
+        expected_ref_alias in definition_text
+    ), f"{definition_path} missing `{expected_ref_alias}`"
     assert (
-        expected_cand_alias in p_text
-    ), f"{cspec['proof_path']} missing `{expected_cand_alias}`"
+        expected_cand_alias in definition_text
+    ), f"{definition_path} missing `{expected_cand_alias}`"
     assert (
         expected_fewer_states in p_text
     ), f"{cspec['proof_path']} missing `{expected_fewer_states}`"
@@ -786,7 +865,6 @@ def run_verification(
     ), f"{cspec['challenge_path']} missing `{expected_fewer_states}`"
     cand_machines[cid] = m
 
-    b_states = int(cspec["baseline_states"])
     delta = b_states - m.states
     pct = round(100.0 * delta / b_states, 2)
     report["candidates"][cid] = {
@@ -840,6 +918,14 @@ def run_verification(
         " boot at t=9,037 (`state 19`) +"
         f" {riemann_sim['checkpoints_verified']} post-boot root dispatches"
         f" verified ({riemann_sim['visited_states_cand']}/104 states visited)"
+    )
+
+  riemann95_sim = verify_riemann_95_bootstrap(cand_machines["riemann_95"])
+  report["simulations"]["riemann_95"] = riemann95_sim
+  if verbose:
+    print(
+        "[PASS] Riemann 95 bootstrap: all 190 cells + complete tape at"
+        " t=3,634 (state 15, head -4) verified"
     )
 
   # 5. Concrete blank-tape lockstep simulations

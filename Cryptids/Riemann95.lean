@@ -26,12 +26,12 @@ theorem halts_candidate_iff_counterexample :
   simpa only [initialRegs, initialExtra] using physical_stage0_halts_iff_witness
 
 /-- The literal 95-state blank-tape machine preserves the reference's halting criterion. -/
-theorem candidate_equivalent : Halts candidate ↔ Halts Riemann104.candidate :=
+theorem candidate_equivalent : Halts candidate ↔ Halts reference :=
   halts_candidate_iff_counterexample.trans
     (counterexample_iff_positive_stage.trans reference_halts_iff_stage1_witness95.symm)
 
 /-- The new machine has nine fewer states than the 104-state reference. -/
-theorem candidate_fewer_states : candidate.states < Riemann104.candidate.states := by
+theorem candidate_fewer_states : candidate.states < reference.states := by
   decide +kernel
 
 end ConjectureMachines.Riemann95

@@ -26,7 +26,7 @@ Fetch the precompiled Mathlib cache:
 lake exe cache get
 ```
 
-Build the conjecture-checking library (`Cryptids`, `Challenge`, and `Riemann95Challenge`, default targets) and audit with [`leanprover/comparator`](comparator/README.md):
+Build the conjecture-checking library (`Cryptids` and `Challenge`, default targets) and audit with [`leanprover/comparator`](comparator/README.md):
 
 ```bash
 lake build
@@ -45,7 +45,7 @@ lake comparator --config comparator/busy_beaver.json
 
 - [`Cryptids/`](Cryptids/README.md) — Conjecture-checking Turing machines ([`Machines.lean`](Cryptids/Machines.lean), [`Propositions.lean`](Cryptids/Propositions.lean)), state-reduction proofs ([`Goldbach21.lean`](Cryptids/Goldbach21.lean), [`Zf380.lean`](Cryptids/Zf380.lean), [`Riemann95.lean`](Cryptids/Riemann95.lean)), and end-to-end mathematical semantics ([`Cryptids/Semantics/`](Cryptids/Semantics/README.md)).
 - [`BusyBeaver/`](BusyBeaver/README.md) — Busy Beaver holdout specifications ([`Defs.lean`](BusyBeaver/Defs.lean)), foundational lemmas ([`Basic.lean`](BusyBeaver/Basic.lean)), RLE loader and bridge to `ConjectureMachines` ([`Bridge.lean`](BusyBeaver/Bridge.lean)), and machine behavioral proofs.
-- [`Challenge.lean`](Challenge.lean), [`Riemann95Challenge.lean`](Riemann95Challenge.lean), [`BusyBeaverChallenge.lean`](BusyBeaverChallenge.lean) & [`comparator/`](comparator/) — Self-contained target theorem specifications and configuration files for [`leanprover/comparator`](comparator/README.md).
+- [`Challenge.lean`](Challenge.lean), [`BusyBeaverChallenge.lean`](BusyBeaverChallenge.lean) & [`comparator/`](comparator/) — Self-contained target theorem specifications and configuration files for [`leanprover/comparator`](comparator/README.md).
 - [`artifacts/`](artifacts/) — Canonical `machine.txt` transition tables and reduction write-ups for [`goldbach_21`](artifacts/goldbach_21/README.md), [`zf_380`](artifacts/zf_380/README.md), [`riemann_104`](artifacts/riemann_104/README.md), and [`riemann_95`](artifacts/riemann_95/README.md).
 - [`baselines/`](baselines/) — Verbatim upstream source files, canonical 5-tuple tables, and [`PROVENANCE.md`](baselines/PROVENANCE.md).
 - [`RELATED_WORK.md`](RELATED_WORK.md) — Literature lineage and `(Q, 2)` Turing machine conventions.

@@ -124,6 +124,9 @@ namespace Machines
 /-- Rows of `riemann104`. -/ def riemann104Rows : List (List (Option (Fin 2 × Dir × Fin 104))) :=
   load_machine_rows% "artifacts/riemann_104/machine.txt"
 /-- 104-state RH candidate. -/ def riemann104 : Machine 104 2 := Machine.ofRows riemann104Rows
+/-- Rows of `riemann95`. -/ def riemann95Rows : List (List (Option (Fin 2 × Dir × Fin 95))) :=
+  load_machine_rows% "artifacts/riemann_95/machine.txt"
+/-- 95-state RH candidate. -/ def riemann95 : Machine 95 2 := Machine.ofRows riemann95Rows
 end Machines
 
 /-- The configuration `n` steps in from `init`, or `none` once `M` has halted. -/
