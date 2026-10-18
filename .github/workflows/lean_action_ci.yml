@@ -46,8 +46,8 @@ jobs:
           sudo apt-get install -y -qq bubblewrap >/dev/null
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6 # v1
         with:
           build-args: "Cryptids Challenge Riemann95Challenge"
         env:
