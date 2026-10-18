@@ -29,4 +29,4 @@ machine.
 
 All new proof modules use the pinned toolchain and existing Lean limits. The
 three public results are checked against the independent table specification in
-`Challenge.lean` by `comparator/riemann_95.json` and `comparator/all.json`.
+`Riemann95Challenge.lean` by `comparator/riemann_95.json` and `comparator/all.json`.

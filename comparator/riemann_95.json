@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Riemann95Challenge",
+  "solution_module": "Cryptids.Semantics.Riemann95",
+  "theorem_names": [
+    "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.Riemann95.candidate_equivalent",
+    "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

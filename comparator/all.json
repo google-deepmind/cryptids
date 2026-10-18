@@ -1,5 +1,5 @@
 {
-  "challenge_module": "Challenge",
+  "challenge_module": "Riemann95Challenge",
   "solution_module": "Cryptids",
   "theorem_names": [
     "ConjectureMachines.Goldbach21.candidate_fewer_states",
@@ -20,7 +20,10 @@
     "ConjectureMachines.Riemann120.halts_riemann120_iff_not_riemannHypothesis",
     "ConjectureMachines.Riemann104.candidate_fewer_states",
     "ConjectureMachines.Riemann104.candidate_equivalent",
-    "ConjectureMachines.Riemann104.Semantics.halts_candidate_iff_not_riemannHypothesis"
+    "ConjectureMachines.Riemann104.Semantics.halts_candidate_iff_not_riemannHypothesis",
+    "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.Riemann95.candidate_equivalent",
+    "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis"
   ],
   "permitted_axioms": [
     "propext",

@@ -2,17 +2,21 @@
 
 This repository contains two Lean 4 (`v4.35.0-rc4`) formalization libraries for small Turing machines whose halting behavior encodes deep mathematical problems or complex dynamical invariants:
 
-1. **[Conjecture-Checking Turing Machines (`Cryptids/`)](Cryptids/README.md)** — Certified state reductions (`goldbach_21`, `zf_380`, `riemann_104`) and end-to-end Lean 4 mathematical semantics proofs (`Halts M ↔ ...`) for **Goldbach's Conjecture**, **ZF Set Theory Consistency**, and the **Riemann Hypothesis**.
+1. **[Conjecture-Checking Turing Machines (`Cryptids/`)](Cryptids/README.md)** — Certified state reductions (`goldbach_21`, `zf_380`, `riemann_95`) and end-to-end Lean 4 mathematical semantics proofs (`Halts M ↔ ...`) for **Goldbach's Conjecture**, **ZF Set Theory Consistency**, and the **Riemann Hypothesis**.
 2. **[Busy Beaver Holdouts (`BusyBeaver/`)](BusyBeaver/README.md)** — Kernel-verified behavioral proofs (`IsHalt`, `IsNotHalt`, `HasCollatzReduction`) for **Busy Beaver 6 (`BB(6)`)** holdouts (some are potential Cryptids, subject to community acceptance), connected to `ConjectureMachines.Machine` via [`BusyBeaver/Bridge.lean`](BusyBeaver/Bridge.lean).
 
 ## Overview
 
 | Library | Scope | Key Results | Documentation |
 | :--- | :--- | :--- | :--- |
-| [`Cryptids/`](Cryptids/) | `(Q, 2)` Turing machines for Goldbach, ZF consistency, and the Riemann Hypothesis | Certified state reductions (`25 → 21`, `393 → 380`, `120 → 104`) and end-to-end halting equivalences (`Halts M ↔ ¬ GoldbachConjecture`, `ZFInconsistent`, `¬ RiemannHypothesis`) | [`Cryptids/README.md`](Cryptids/README.md), [`Cryptids/Semantics/README.md`](Cryptids/Semantics/README.md) |
+| [`Cryptids/`](Cryptids/) | `(Q, 2)` Turing machines for Goldbach, ZF consistency, and the Riemann Hypothesis | Certified state reductions (`25 → 21`, `393 → 380`, `120 → 104 → 95`) and end-to-end halting equivalences (`Halts M ↔ ¬ GoldbachConjecture`, `ZFInconsistent`, `¬ RiemannHypothesis`) | [`Cryptids/README.md`](Cryptids/README.md), [`Cryptids/Semantics/README.md`](Cryptids/Semantics/README.md) |
 | [`BusyBeaver/`](BusyBeaver/) | `BB(6)` holdout `(6, 2)` Turing machines (some are potential Cryptids, subject to community acceptance) | Shared execution semantics (`BusyBeaver/Defs.lean`), foundational lemmas (`BusyBeaver/Basic.lean`), RLE loader and `ConjectureMachines` bridge (`BusyBeaver/Bridge.lean`), and certified behavioral proofs | [`BusyBeaver/README.md`](BusyBeaver/README.md) |
 
 All Lean 4 proofs are checked by the kernel without `sorry` and depend only on the standard axioms (`propext`, `Classical.choice`, `Quot.sound`).
+
+The [95-state Riemann machine](artifacts/riemann_95/README.md) has a kernel-checked
+blank-tape halting equivalence to the 104-state machine and to `¬ RiemannHypothesis`.
+Its transition table, complete 3,634-step initializer, and proof guide are included.
 
 ## Building and Verifying
 
@@ -22,7 +26,7 @@ Fetch the precompiled Mathlib cache:
 lake exe cache get
 ```
 
-Build the conjecture-checking library (`Cryptids` and `Challenge`, default targets) and audit with [`leanprover/comparator`](comparator/README.md):
+Build the conjecture-checking library (`Cryptids`, `Challenge`, and `Riemann95Challenge`, default targets) and audit with [`leanprover/comparator`](comparator/README.md):
 
 ```bash
 lake build
@@ -39,10 +43,10 @@ lake comparator --config comparator/busy_beaver.json
 
 ## Repository Structure
 
-- [`Cryptids/`](Cryptids/README.md) — Conjecture-checking Turing machines ([`Machines.lean`](Cryptids/Machines.lean), [`Propositions.lean`](Cryptids/Propositions.lean)), state-reduction proofs ([`Goldbach21.lean`](Cryptids/Goldbach21.lean), [`Zf380.lean`](Cryptids/Zf380.lean), [`Riemann104.lean`](Cryptids/Riemann104.lean)), and end-to-end mathematical semantics ([`Cryptids/Semantics/`](Cryptids/Semantics/README.md)).
+- [`Cryptids/`](Cryptids/README.md) — Conjecture-checking Turing machines ([`Machines.lean`](Cryptids/Machines.lean), [`Propositions.lean`](Cryptids/Propositions.lean)), state-reduction proofs ([`Goldbach21.lean`](Cryptids/Goldbach21.lean), [`Zf380.lean`](Cryptids/Zf380.lean), [`Riemann95.lean`](Cryptids/Riemann95.lean)), and end-to-end mathematical semantics ([`Cryptids/Semantics/`](Cryptids/Semantics/README.md)).
 - [`BusyBeaver/`](BusyBeaver/README.md) — Busy Beaver holdout specifications ([`Defs.lean`](BusyBeaver/Defs.lean)), foundational lemmas ([`Basic.lean`](BusyBeaver/Basic.lean)), RLE loader and bridge to `ConjectureMachines` ([`Bridge.lean`](BusyBeaver/Bridge.lean)), and machine behavioral proofs.
-- [`Challenge.lean`](Challenge.lean), [`BusyBeaverChallenge.lean`](BusyBeaverChallenge.lean) & [`comparator/`](comparator/) — Self-contained target theorem specifications and configuration files for [`leanprover/comparator`](comparator/README.md).
-- [`artifacts/`](artifacts/) — Canonical `machine.txt` transition tables and reduction write-ups for [`goldbach_21`](artifacts/goldbach_21/README.md), [`zf_380`](artifacts/zf_380/README.md), and [`riemann_104`](artifacts/riemann_104/README.md).
+- [`Challenge.lean`](Challenge.lean), [`Riemann95Challenge.lean`](Riemann95Challenge.lean), [`BusyBeaverChallenge.lean`](BusyBeaverChallenge.lean) & [`comparator/`](comparator/) — Self-contained target theorem specifications and configuration files for [`leanprover/comparator`](comparator/README.md).
+- [`artifacts/`](artifacts/) — Canonical `machine.txt` transition tables and reduction write-ups for [`goldbach_21`](artifacts/goldbach_21/README.md), [`zf_380`](artifacts/zf_380/README.md), [`riemann_104`](artifacts/riemann_104/README.md), and [`riemann_95`](artifacts/riemann_95/README.md).
 - [`baselines/`](baselines/) — Verbatim upstream source files, canonical 5-tuple tables, and [`PROVENANCE.md`](baselines/PROVENANCE.md).
 - [`RELATED_WORK.md`](RELATED_WORK.md) — Literature lineage and `(Q, 2)` Turing machine conventions.
 - [`verify.py`](verify.py) — Standalone Python 3 verification script for the conjecture-checking machines.

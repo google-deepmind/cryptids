@@ -105,6 +105,18 @@ theorem halts_candidate_iff_not_riemannHypothesis :
     Halts ConjectureMachines.Riemann104.candidate ↔ ¬ RiemannHypothesis
 ```
 
+The [95-state reduction](../Riemann95.lean) has the same unconditional criterion:
+
+```lean
+-- ConjectureMachines.Riemann95.Semantics
+theorem halts_candidate_iff_not_riemannHypothesis :
+    Halts ConjectureMachines.Riemann95.candidate ↔ ¬ RiemannHypothesis
+```
+
+The [proof guide](../ReductionSupport/Riemann95/README.md) explains the changed
+stage representation, physical operand permutation, exact blank initializer, and
+connection to the existing 104-state theorem.
+
 Here `MatiyasevichRiemannCounterexample (x : ℕ) : Prop` is the elementary integer inequality tested
 at stage $x > 253$ by the compiled NQL program `riemann.nql`:
 

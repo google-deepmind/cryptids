@@ -6,6 +6,7 @@ on:
       - 'Cryptids/**'
       - 'Cryptids.lean'
       - 'Challenge.lean'
+      - 'Riemann95Challenge.lean'
       - 'artifacts/**'
       - 'baselines/**'
       - 'comparator/**'
@@ -19,6 +20,7 @@ on:
       - 'Cryptids/**'
       - 'Cryptids.lean'
       - 'Challenge.lean'
+      - 'Riemann95Challenge.lean'
       - 'artifacts/**'
       - 'baselines/**'
       - 'comparator/**'
@@ -47,9 +49,12 @@ jobs:
       - uses: actions/checkout@v5
       - uses: leanprover/lean-action@v1
         with:
-          build-args: "Cryptids Challenge"
+          build-args: "Cryptids Challenge Riemann95Challenge"
         env:
           LEAN_NUM_THREADS: "1"
 
       - name: Verify solution against Challenge with comparator
         run: lake comparator --config comparator/all.json
+
+      - name: Verify Riemann95 table and blank initializer
+        run: python3 artifacts/riemann_95/verify.py
