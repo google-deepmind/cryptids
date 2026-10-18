@@ -7,7 +7,7 @@ module
 public import Cryptids.ReductionSupport.Riemann95.Auxiliary95Layout
 public import Cryptids.ReductionSupport.Riemann95.Auxiliary95Return
 public import Cryptids.ReductionSupport.Riemann95.Auxiliary95RawPhysical
-public import Cryptids.ReductionSupport.Riemann95.Auxiliary95Swap
+public import Cryptids.ReductionSupport.Riemann95.Auxiliary95Raw
 
 @[expose] public section
 

@@ -52,7 +52,9 @@ lake exe cache get
 lake build
 ```
 
-Independently audit the proofs against [`Challenge.lean`](../Challenge.lean) with [`leanprover/comparator`](../comparator/README.md):
+Independently audit the proofs against [`Challenge.lean`](../Challenge.lean) and
+[`Riemann95Challenge.lean`](../Riemann95Challenge.lean) with
+[`leanprover/comparator`](../comparator/README.md):
 
 ```bash
 lake comparator --config comparator/all.json

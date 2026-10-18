@@ -1,5 +1,4 @@
 /-
-Copyright (c) 2026. All rights reserved.
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
@@ -27,7 +26,7 @@ open ConjectureMachines.Riemann120 (rootLeftOf stackLeftOf)
 open ConjectureMachines.Semantics.Riemann.Layer1 (Tape.mkL)
 open ConjectureMachines.Riemann104.OnePassGuard (NoThreeZeros)
 
-/-- The intrinsic NoThree return scanner on the actual95-state machine. -/
+/-- The intrinsic NoThree return scanner on the 95-state machine. -/
 theorem run_return (word : List (Fin 2))
     (hok : NoThreeZeros (1 :: word).reverse = true) (R : ListBlank (Fin 2)) :
     ∃ s ≥ 1, nSteps s ⟨5, Tape.mkL (stackLeftOf true word) R⟩ =

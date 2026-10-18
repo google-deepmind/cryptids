@@ -1,5 +1,4 @@
 /-
-Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
@@ -15,7 +14,7 @@ public import Cryptids.ReductionSupport.Riemann95.ControllerSchema95
 
 section
 
-/-! Actual recursive95 decoder prefix. This proves arbitrary repetition and
+/-! Recursive decoder prefix for the 95-state machine. This proves arbitrary repetition and
 arbitrary suffix behavior of the read-preserving rightward parser, not the
 whole machine or caller-language closure. -/
 namespace ConjectureMachines.Riemann95.Parser

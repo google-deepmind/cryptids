@@ -66,7 +66,7 @@ theorem reference_step2 (f M : Nat) :
   rw [reference_step_word,ite_eq_right reference_word2_ne88,reference_decoded2]
   rfl
 
-/-- The old pure reference and actual95 share this initializer numerically. -/
+/-- The stopped reference initializer transfers M into the accumulator and reaches word 3. -/
 theorem reference_init (M f : Nat) :
     StateTransition.Reaches₁ ReferencePreStep95 ⟨ReferenceProgram.word 0,[0,0,f,M,0]⟩
       ⟨ReferenceProgram.word 3,[0,0,f+M,0,0]⟩ := by

@@ -14,7 +14,7 @@ namespace ConjectureMachines.Riemann95.Dispatch
 open Turing ConjectureMachines
 open Riemann120.Layer2
 
-/-- Every typed native arithmetic call executes on the complete actual95 tape frame. -/
+/-- Every typed native arithmetic call executes on the complete 95-state tape frame. -/
 theorem root_native (c : Schema.ControlWord) (r : Fin 5) (inc : Bool)
     (he : Control.effect c = if inc then .inc r else .decnz r)
     (pad : Nat) (bank : List Nat) (hr : r.val < bank.length)

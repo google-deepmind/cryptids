@@ -12,21 +12,19 @@ namespace ConjectureMachines.Riemann95.Projection
 
 open Turing ConjectureMachines
 
-/-- Three duplicate proof-only labels map to entry0; all95 actual labels are counted. -/
-def stateMap (q : Fin 98) : Fin 95 :=
-  if h : q.val = 61 ∨ q.val = 72 ∨ q.val = 95 then 0
-  else if h1 : q.val < 61 then ⟨q.val, by omega⟩
-  else if h2 : q.val < 72 then ⟨q.val - 1, by omega⟩
-  else if h3 : q.val < 95 then ⟨q.val - 2, by omega⟩
-  else ⟨q.val - 3, by omega⟩
-
 def cfgMap (c : Cfg 98 2) : Cfg 95 2 := ⟨stateMap c.state, c.tape⟩
 
 theorem transition_map : ∀ (q : Fin 98) (a : Fin 2),
     machine.transition (stateMap q) a =
       (Riemann95Auxiliary.machine.transition q a).map
         (fun e => (e.1, e.2.1, stateMap e.2.2)) := by
-  decide +kernel
+  intro q a
+  change _ = ((machine.transition (stateMap q) a).map _).map _
+  cases machine.transition (stateMap q) a with
+  | none => rfl
+  | some e =>
+    rcases e with ⟨b, d, q'⟩
+    simp only [Option.map_some, stateMap_liftState]
 
 theorem step_map (c : Cfg 98 2) :
     step machine (cfgMap c) = (step Riemann95Auxiliary.machine c).map cfgMap := by

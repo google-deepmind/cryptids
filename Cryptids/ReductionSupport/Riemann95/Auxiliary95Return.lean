@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import Cryptids.ReductionSupport.Riemann95.Auxiliary95RawReturn
-public import Cryptids.ReductionSupport.Riemann95.Auxiliary95Swap
+public import Cryptids.ReductionSupport.Riemann95.Auxiliary95Raw
 
 /-! The return scanner is proved once for the raw labels, then transported by renaming. -/
 

@@ -149,83 +149,98 @@ def rawRoot98 (pad : Nat) (w : List (Fin 2)) (bank : List Nat) : Cfg 98 2 :=
   ⟨15, Tape.mk' (rootLeftOf true) (ListBlank.append (w ++ List.replicate (pad - w.length) 0 ++ [1,
     0] ++ encodeRegs bank) default)⟩
 
+section
+
+open ConjectureMachines.Semantics.Riemann.Layer1
+
+/-- Both decrement branches use the same register-selection scan. -/
+private def decSelect : Nat → Fin 98
+  | 0 => 36 | 1 => 28 | 2 => 22 | 3 => 42 | 4 => 54 | _ => 41
+
+private theorem dec_select_zero (m : Nat) (hm : m < 5) :
+    Raw.machine.transition (decSelect (m + 1)) 0 = some (0, .right, decSelect m) := by
+  interval_cases m <;> rfl
+
+private theorem dec_select_one (m : Nat) (hm1 : 1 ≤ m) (hm4 : m ≤ 4) :
+    Raw.machine.transition (decSelect m) 1 = some (1, .right, decSelect m) := by
+  interval_cases m <;> rfl
+
+private theorem dec_leaf_transition (r : Fin 5) :
+    Raw.machine.transition (decLeaf98 r) 1 = some (0, .right, decSelect (r.val + 1)) := by
+  fin_cases r <;> rfl
+
+private theorem dec_select_scan : ∀ (pref : List Nat), pref.length ≤ 4 →
+    ∀ (L R : ListBlank (Fin 2)),
+    Semantics.Riemann.Layer1.nSteps Raw.machine ((encodeRegs pref).length + 1)
+      ⟨decSelect (pref.length + 1), Tape.mk' L ((ListBlank.append (encodeRegs pref) R).cons 0)⟩ =
+      some ⟨36, Tape.mk' (ListBlank.append (encodeRegs pref).reverse (L.cons 0)) R⟩ := by
+  intro pref
+  induction pref with
+  | nil =>
+    intro hpref L R
+    exact step_one (@step_mk'_right 28 36 0 0 (by rfl) L R)
+  | cons v vs ih =>
+    intro hpref L R
+    simp only [List.length_cons] at hpref ⊢
+    have h0 : step Raw.machine
+        ⟨decSelect (vs.length + 1 + 1), Tape.mk' L ((ListBlank.append (encodeRegs (v :: vs)) R).cons
+          0)⟩ =
+        some ⟨decSelect (vs.length + 1), Tape.mk' (L.cons 0)
+          (ListBlank.append (List.replicate (v + 1) 1) ((ListBlank.append (encodeRegs vs)
+            R).cons 0))⟩ := by
+      have h := @step_mk'_right _ _ 0 0 (dec_select_zero (vs.length + 1) (by omega)) L
+        (ListBlank.append (encodeRegs (v :: vs)) R)
+      conv at h => rhs; rw [encodeRegs_cons, ListBlank.append_assoc, append_encodeReg]
+      exact h
+    have hones := scanR (dec_select_one (vs.length + 1) (by omega) (by omega))
+      (v + 1) (L.cons 0) ((ListBlank.append (encodeRegs vs) R).cons 0)
+    have hrest := ih (by omega) (ListBlank.append (List.replicate (v + 1) 1) (L.cons 0)) R
+    rw [← append_encodeReg_reverse, ← ListBlank.append_assoc, ← List.reverse_append,
+      ← encodeRegs_cons] at hrest
+    have hcomb := step_nSteps h0 (nSteps_bind_eq hones hrest)
+    have hlen : (v + 1) + ((encodeRegs vs).length + 1) + 1 =
+        (encodeRegs (v :: vs)).length + 1 := by
+      simp only [encodeRegs_cons, List.length_append, encodeReg_length]
+      omega
+    rw [hlen] at hcomb
+    exact hcomb
+
+/-- Increment and positive decrement share the return scan through state 8. -/
+private theorem return_reg8 : ∀ (q : Fin 98), Raw.machine.transition q 0 = some (0, Dir.left, 9) →
+    ∀ (v : Nat) (L R : ListBlank (Fin 2)),
+    Semantics.Riemann.Layer1.nSteps Raw.machine (v + 2)
+      ⟨q, Tape.mkL (ListBlank.append (encodeReg v).reverse L) R⟩ =
+      some ⟨8, Tape.mkL L (ListBlank.append (encodeReg v) R)⟩ := by
+  intro q h v L R
+  rw [append_encodeReg_reverse, List.replicate_succ, ListBlank.append]
+  have h1 := @step_mkL_left q 9 0 0 h ((ListBlank.append (List.replicate v 1) L).cons 1) R
+  have h2 := @step_mkL_left 9 8 1 1 (by rfl) (ListBlank.append (List.replicate v 1) L) (R.cons 0)
+  have hs := scanL (q := 8) (a := 1) (b := 1) (by rfl) v L ((R.cons 0).cons 1)
+  have hc := step_nSteps h1 (step_nSteps h2 hs)
+  rw [hc, append_replicate_cons, append_cons_snoc]
+  rfl
+
+private theorem return_regs8 : ∀ (pref : List Nat) (L R : ListBlank (Fin 2)),
+    Semantics.Riemann.Layer1.nSteps Raw.machine (encodeRegs pref).length
+      ⟨8, Tape.mkL (ListBlank.append (encodeRegs pref).reverse L) R⟩ =
+      some ⟨8, Tape.mkL L (ListBlank.append (encodeRegs pref) R)⟩ := by
+  intro pref
+  induction pref with
+  | nil => intros; rfl
+  | cons v vs ih =>
+    intro L R
+    rw [encodeRegs_cons, List.reverse_append, ListBlank.append_assoc,
+      List.length_append, Nat.add_comm, nSteps_add]
+    rw [ih, Option.bind_some, encodeReg_length, return_reg8 8 (by rfl), ListBlank.append_assoc]
+
+end
+
 theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (hpos : 0 <
   bank.getD r.val 0) (L : ListBlank (Fin 2)) : ∃ s ≥ 1, Raw.nSteps s ⟨decLeaf98 r, Tape.mk' L
   (ListBlank.append [1, 0] (ConjectureMachines.Semantics.Riemann.Layer1.regsTape bank))⟩ = some
   ⟨9, Tape.mk' L (ListBlank.append [0, 0] (ConjectureMachines.Semantics.Riemann.Layer1.regsTape
   (bank.set r.val (bank.getD r.val 0 - 1) ++ [0])))⟩ := by
   open ConjectureMachines.Semantics.Riemann.Layer1 in
-  let chain : Nat → Fin 98 := fun m => match m with
-    | 0 => 36 | 1 => 28 | 2 => 22 | 3 => 42 | 4 => 54 | _ => 41
-  have chain0 : ∀ m, m < 5 → Raw.machine.transition (chain (m + 1)) 0 = some (0, Dir.right, chain m)
-    := by
-    intro m hm
-    interval_cases m <;> rfl
-  have chain1 : ∀ m, 1 ≤ m → m ≤ 4 →
-      Raw.machine.transition (chain m) 1 = some (1, Dir.right, chain m) := by
-    intro m hm1 hm5
-    interval_cases m <;> rfl
-  have leaf : Raw.machine.transition (decLeaf98 r) 1 = some (0, Dir.right, chain (r.val + 1)) := by
-    fin_cases r <;> rfl
-  have scan_pref : ∀ (pref : List Nat), pref.length ≤ 4 → ∀ (L R : ListBlank (Fin 2)),
-      Semantics.Riemann.Layer1.nSteps Raw.machine ((encodeRegs pref).length + 1)
-        ⟨chain (pref.length + 1), Tape.mk' L ((ListBlank.append (encodeRegs pref) R).cons 0)⟩ =
-        some ⟨36, Tape.mk' (ListBlank.append (encodeRegs pref).reverse (L.cons 0)) R⟩ := by
-    intro pref
-    induction pref with
-    | nil =>
-      intro hpref L R
-      exact step_one (@step_mk'_right 28 36 0 0 (by rfl) L R)
-    | cons v vs ih =>
-      intro hpref L R
-      simp only [List.length_cons] at hpref ⊢
-      have h0 : step Raw.machine
-          ⟨chain (vs.length + 1 + 1), Tape.mk' L ((ListBlank.append (encodeRegs (v :: vs)) R).cons
-            0)⟩ =
-          some ⟨chain (vs.length + 1), Tape.mk' (L.cons 0)
-            (ListBlank.append (List.replicate (v + 1) 1) ((ListBlank.append (encodeRegs vs)
-              R).cons 0))⟩ := by
-        have h := @step_mk'_right _ _ 0 0 (chain0 (vs.length + 1) (by omega)) L
-          (ListBlank.append (encodeRegs (v :: vs)) R)
-        conv at h => rhs; rw [encodeRegs_cons, ListBlank.append_assoc, append_encodeReg]
-        exact h
-      have hones := scanR (chain1 (vs.length + 1) (by omega) (by omega))
-        (v + 1) (L.cons 0) ((ListBlank.append (encodeRegs vs) R).cons 0)
-      have hrest := ih (by omega) (ListBlank.append (List.replicate (v + 1) 1) (L.cons 0)) R
-      rw [← append_encodeReg_reverse, ← ListBlank.append_assoc, ← List.reverse_append,
-        ← encodeRegs_cons] at hrest
-      have hcomb := step_nSteps h0 (nSteps_bind_eq hones hrest)
-      have hlen : (v + 1) + ((encodeRegs vs).length + 1) + 1 =
-          (encodeRegs (v :: vs)).length + 1 := by
-        simp only [encodeRegs_cons, List.length_append, encodeReg_length]
-        omega
-      rw [hlen] at hcomb
-      exact hcomb
-  have ret_reg : ∀ (q : Fin 98), Raw.machine.transition q 0 = some (0, Dir.left, 9) →
-      ∀ (v : Nat) (L R : ListBlank (Fin 2)),
-      Semantics.Riemann.Layer1.nSteps Raw.machine (v + 2)
-        ⟨q, Tape.mkL (ListBlank.append (encodeReg v).reverse L) R⟩ =
-        some ⟨8, Tape.mkL L (ListBlank.append (encodeReg v) R)⟩ := by
-    intro q h v L R
-    rw [append_encodeReg_reverse, List.replicate_succ, ListBlank.append]
-    have h1 := @step_mkL_left q 9 0 0 h ((ListBlank.append (List.replicate v 1) L).cons 1) R
-    have h2 := @step_mkL_left 9 8 1 1 (by rfl) (ListBlank.append (List.replicate v 1) L) (R.cons 0)
-    have hs := scanL (q := 8) (a := 1) (b := 1) (by rfl) v L ((R.cons 0).cons 1)
-    have hc := step_nSteps h1 (step_nSteps h2 hs)
-    rw [hc, append_replicate_cons, append_cons_snoc]
-    rfl
-  have ret_regs : ∀ (pref : List Nat) (L R : ListBlank (Fin 2)),
-      Semantics.Riemann.Layer1.nSteps Raw.machine (encodeRegs pref).length
-        ⟨8, Tape.mkL (ListBlank.append (encodeRegs pref).reverse L) R⟩ =
-        some ⟨8, Tape.mkL L (ListBlank.append (encodeRegs pref) R)⟩ := by
-    intro pref
-    induction pref with
-    | nil => intros; rfl
-    | cons v vs ih =>
-      intro L R
-      rw [encodeRegs_cons, List.reverse_append, ListBlank.append_assoc,
-        List.length_append, Nat.add_comm, nSteps_add]
-      rw [ih, Option.bind_some, encodeReg_length, ret_reg 8 (by rfl), ListBlank.append_assoc]
   have ret_fence : ∀ (pref : List Nat) (L R : ListBlank (Fin 2)),
       Semantics.Riemann.Layer1.nSteps Raw.machine ((encodeRegs pref).length + 1)
         ⟨86, Tape.mkL (ListBlank.append (encodeRegs pref).reverse ((L.cons 0).cons 0)) R⟩ =
@@ -247,8 +262,8 @@ theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length)
         | append_singleton xs x ih =>
           rw [encodeRegs_append, encodeRegs_cons, encodeRegs_nil, List.append_nil,
             List.reverse_append, ListBlank.append_assoc, List.length_append,
-            Nat.add_comm, nSteps_add, encodeReg_length, ret_reg 86 (by rfl),
-            Option.bind_some, ret_regs, ListBlank.append_assoc]
+            Nat.add_comm, nSteps_add, encodeReg_length, return_reg8 86 (by rfl),
+            Option.bind_some, return_regs8, ListBlank.append_assoc]
       have hs := hne (v :: vs) (List.cons_ne_nil _ _) ((L.cons 0).cons 0) R
       have hf := step_one (@step_mkL_left 8 9 0 0 (by rfl) (L.cons 0)
         (ListBlank.append (encodeRegs (v :: vs)) R))
@@ -269,12 +284,13 @@ theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length)
     rw [hb, regsTape_append]
   have h0 : step Raw.machine
       ⟨decLeaf98 r, Tape.mk' L (ListBlank.append [1, 0] (regsTape bank))⟩ =
-      some ⟨chain (pref.length + 1), Tape.mk' (L.cons 0)
+      some ⟨decSelect (pref.length + 1), Tape.mk' (L.cons 0)
         ((ListBlank.append (encodeRegs pref) (regsTape ((m + 1) :: suff))).cons 0)⟩ := by
     simp only [ListBlank.append]
     rw [hsplit, hplen]
-    exact @step_mk'_right _ _ 1 0 leaf _ _
-  have hpref := scan_pref pref (by have := r.isLt; omega) (L.cons 0) (regsTape ((m + 1) :: suff))
+    exact @step_mk'_right _ _ 1 0 (dec_leaf_transition r) _ _
+  have hpref := dec_select_scan pref (by have := r.isLt; omega)
+    (L.cons 0) (regsTape ((m + 1) :: suff))
   set A := ListBlank.append (encodeRegs pref).reverse ((L.cons 0).cons 0)
   have hinit : step Raw.machine ⟨36, Tape.mk' A (regsTape ((m + 1) :: suff))⟩ =
       some ⟨49, Tape.mk' (A.cons 0) (regsTape (m :: suff))⟩ := by
@@ -321,52 +337,6 @@ theorem unary98_dec_zero (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length
   bank))⟩ := by
   exact (open ConjectureMachines.Semantics.Riemann.Layer1 in by
     let run := ConjectureMachines.Semantics.Riemann.Layer1.nSteps Raw.machine
-    let sel : Nat → Fin 98 := fun k => match k with
-      | 0 => 36 | 1 => 28 | 2 => 22 | 3 => 42 | 4 => 54 | _ => 41
-    have selZ (m : Nat) (hm : m < 5) :
-        Raw.machine.transition (sel (m + 1)) 0 = some (0, .right, sel m) := by
-      interval_cases m <;> decide
-    have selO (m : Nat) (hm1 : 1 ≤ m) (hm4 : m ≤ 4) :
-        Raw.machine.transition (sel m) 1 = some (1, .right, sel m) := by
-      interval_cases m <;> decide
-    have leafO : Raw.machine.transition (decLeaf98 r) 1 =
-        some (0, .right, sel (r.val + 1)) := by
-      fin_cases r <;> decide
-    have select_scan (pref : List Nat) (hpref : pref.length ≤ 4)
-        (A B : ListBlank (Fin 2)) :
-        run ((encodeRegs pref).length + 1)
-          ⟨sel (pref.length + 1),
-            Tape.mk' A ((ListBlank.append (encodeRegs pref) B).cons 0)⟩ =
-          some ⟨36, Tape.mk'
-            (ListBlank.append (encodeRegs pref).reverse (A.cons 0)) B⟩ := by
-      induction pref generalizing A with
-      | nil => exact step_one (step_mk'_right (by decide) A B)
-      | cons v vs ih =>
-        simp only [List.length_cons] at hpref ⊢
-        have h0 : step Raw.machine
-            ⟨sel (vs.length + 1 + 1),
-              Tape.mk' A ((ListBlank.append (encodeRegs (v :: vs)) B).cons 0)⟩ =
-            some ⟨sel (vs.length + 1),
-              Tape.mk' (A.cons 0)
-                (ListBlank.append (List.replicate (v + 1) 1)
-                  ((ListBlank.append (encodeRegs vs) B).cons 0))⟩ := by
-          have h := step_mk'_right (selZ (vs.length + 1) (by omega)) A
-            (ListBlank.append (encodeRegs (v :: vs)) B)
-          conv at h => rhs; rw [encodeRegs_cons, ListBlank.append_assoc, append_encodeReg]
-          exact h
-        have hones := scanR (a := 1) (b := 1) (selO (vs.length + 1) (by omega) (by omega))
-          (v + 1) (A.cons 0) ((ListBlank.append (encodeRegs vs) B).cons 0)
-        have hrest := ih (by omega)
-          (ListBlank.append (List.replicate (v + 1) 1) (A.cons 0))
-        rw [← append_encodeReg_reverse, ← ListBlank.append_assoc,
-          ← List.reverse_append, ← encodeRegs_cons] at hrest
-        have hcomb := step_nSteps h0 (nSteps_bind_eq hones hrest)
-        have hlen : (v + 1) + ((encodeRegs vs).length + 1) + 1 =
-            (encodeRegs (v :: vs)).length + 1 := by
-          simp only [encodeRegs_cons, List.length_append, encodeReg_length]
-          omega
-        rw [hlen] at hcomb
-        exact hcomb
     have return_reg (v : Nat) (A B : ListBlank (Fin 2)) :
         run (v + 2) ⟨48, Tape.mkL (ListBlank.append (encodeReg v).reverse A) B⟩ =
           some ⟨48, Tape.mkL A (ListBlank.append (encodeReg v) B)⟩ := by
@@ -409,11 +379,11 @@ theorem unary98_dec_zero (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length
       exact (list_take_cons_drop bank r.val hr).symm
     have h0 : step Raw.machine
         ⟨decLeaf98 r, Tape.mk' L ((regsTape bank).cons 0 |>.cons 1)⟩ =
-        some ⟨sel (pref.length + 1), Tape.mk' (L.cons 0)
+        some ⟨decSelect (pref.length + 1), Tape.mk' (L.cons 0)
           ((ListBlank.append (encodeRegs pref) (regsTape (0 :: suff))).cons 0)⟩ := by
       rw [hregs_split, hpref_len]
-      exact step_mk'_right leafO L _
-    have hpref_scan := select_scan pref (by rw [hpref_len]; omega)
+      exact step_mk'_right (dec_leaf_transition r) L _
+    have hpref_scan := dec_select_scan pref (by rw [hpref_len]; omega)
       (L.cons 0) (regsTape (0 :: suff))
     let LP := ListBlank.append (encodeRegs pref).reverse ((L.cons 0).cons 0)
     have h1 : step Raw.machine ⟨36, Tape.mk' LP (regsTape (0 :: suff))⟩ =
@@ -451,33 +421,6 @@ theorem unary98_inc (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (L 
     classical
     simp only [nSteps98_eq]
     let run := Semantics.Riemann.Layer1.nSteps Raw.machine
-    have retReg (m : Nat) (L R : ListBlank (Fin 2)) :
-        run (m + 2) ⟨8, Tape.mkL (ListBlank.append (encodeReg m).reverse L) R⟩ =
-          some ⟨8, Tape.mkL L (ListBlank.append (encodeReg m) R)⟩ := by
-      rw [append_encodeReg_reverse, List.replicate_succ, ListBlank.append]
-      have h1 := step_mkL_left (q := 8) (q' := 9) (a := 0) (b := 0) (by decide)
-        ((ListBlank.append (List.replicate m 1) L).cons 1) R
-      have h2 := step_mkL_left (q := 9) (q' := 8) (a := 1) (b := 1) (by decide)
-        (ListBlank.append (List.replicate m 1) L) (R.cons 0)
-      have hscan := scanL (q := 8) (a := 1) (b := 1) (by decide)
-        m L ((R.cons 0).cons 1)
-      have hcomb := step_nSteps h1 (step_nSteps h2 hscan)
-      dsimp only [run]
-      rw [hcomb, append_replicate_cons, append_cons_snoc]
-      rfl
-    have retRegs (regs : List Nat) (L R : ListBlank (Fin 2)) :
-        run (encodeRegs regs).length
-          ⟨8, Tape.mkL (ListBlank.append (encodeRegs regs).reverse L) R⟩ =
-          some ⟨8, Tape.mkL L (ListBlank.append (encodeRegs regs) R)⟩ := by
-      induction regs generalizing L R with
-      | nil => rfl
-      | cons m ms ih =>
-        dsimp only [run] at ih ⊢
-        rw [encodeRegs_cons, List.reverse_append, ListBlank.append_assoc,
-          List.length_append, Nat.add_comm, nSteps_add]
-        rw [ih, Option.bind_some, encodeReg_length]
-        change run (m + 2) _ = _
-        rw [retReg, ListBlank.append_assoc]
     have shift (suff : List Nat) (m : Nat) (LP : ListBlank (Fin 2)) :
         ∃ s, 1 ≤ s ∧ run s
           ⟨6, Tape.mk' (ListBlank.append (List.replicate (m + 1) 1) LP) (regsTape suff)⟩ =
@@ -512,7 +455,7 @@ theorem unary98_inc (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (L 
           (regsTape vs)
         rw [← ListBlank.append, ← List.replicate_succ] at h2
         obtain ⟨s, hs1, hs⟩ := ih v (ListBlank.append (encodeReg m).reverse LP)
-        have hret := retReg m LP (regsTape (v :: vs))
+        have hret := return_reg8 8 (by rfl) m LP (regsTape (v :: vs))
         rw [← regsTape_cons] at hret
         have hcomb := step_nSteps h1 (nSteps_bind_eq hscan
           (step_nSteps h2 (nSteps_bind_eq hs hret)))
@@ -587,7 +530,7 @@ theorem unary98_inc (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (L 
       rw [hc] at hcomb
       exact hcomb
     obtain ⟨s, hs, hshift⟩ := shift suff (v + 1) LP
-    have hret := retRegs pref ((L.cons 0).cons 0) (regsTape ((v + 1) :: suff))
+    have hret := return_regs8 pref ((L.cons 0).cons 0) (regsTape ((v + 1) :: suff))
     have hset : ListBlank.append (encodeRegs pref) (regsTape ((v + 1) :: suff)) =
         regsTape (bank.set r.val (bank.getD r.val 0 + 1)) := by
       rw [← regsTape_append, List.getD_eq_getElem bank 0 hr]

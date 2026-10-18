@@ -1,125 +1,85 @@
 /-
-Copyright (c) 2026. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
 public import Cryptids.ReductionSupport.Riemann95.Auxiliary95
 
-/-! Auxiliary table before the 0/36 renaming. Labels 61, 72, and 95 duplicate label 36.
-The machine counted in the bound is `Riemann95.machine`. -/
+/-! Derive the raw auxiliary table by exchanging labels 0 and 36. -/
 
 @[expose] public section
 
-namespace ConjectureMachines.Riemann95Auxiliary.Raw
+namespace ConjectureMachines.Riemann95Auxiliary
 
 open Turing ConjectureMachines
 
-def rows : List (List (Option (Fin 2 × Dir × Fin 98))) := [
-  [some (1, .right, 6), some (1, .right, 0)],
-  [some (1, .right, 1), some (0, .right, 4)],
-  [some (0, .left, 11), some (0, .left, 2)],
-  [some (0, .right, 4), some (1, .right, 3)],
-  [some (0, .right, 0), some (1, .right, 4)],
-  [some (0, .left, 7), some (1, .left, 5)],
-  [some (0, .left, 8), some (0, .right, 0)],
-  [some (0, .left, 10), some (1, .left, 5)],
-  [some (0, .left, 9), some (1, .left, 8)],
-  [some (1, .left, 11), some (1, .left, 8)],
-  [some (0, .right, 12), some (1, .left, 5)],
-  [some (1, .left, 5), some (0, .left, 11)],
-  [some (0, .right, 12), some (1, .right, 15)],
-  [some (0, .left, 14), some (0, .right, 13)],
-  [some (1, .left, 5), some (0, .left, 5)],
-  [some (0, .right, 16), some (1, .right, 17)],
-  [some (0, .right, 31), some (1, .right, 19)],
-  [some (0, .right, 20), some (1, .right, 21)],
-  [some (1, .right, 18), some (0, .right, 28)],
-  [some (0, .right, 79), some (0, .left, 14)],
-  [some (0, .right, 24), some (1, .right, 25)],
-  [some (0, .right, 26), some (1, .right, 27)],
-  [some (0, .right, 28), some (1, .right, 22)],
-  [some (1, .right, 23), some (0, .right, 37)],
-  [some (0, .right, 55), some (1, .right, 30)],
-  [some (0, .right, 56), some (0, .left, 14)],
-  [some (0, .right, 58), some (1, .right, 33)],
-  [some (0, .right, 34), some (1, .right, 35)],
-  [some (0, .right, 36), some (1, .right, 28)],
-  [some (1, .right, 29), some (0, .right, 3)],
-  [some (0, .right, 39), some (1, .right, 40)],
-  [some (1, .right, 31), some (0, .right, 54)],
-  [some (1, .right, 32), some (0, .right, 22)],
-  [some (0, .right, 79), some (1, .right, 43)],
-  [some (0, .right, 44), some (1, .right, 45)],
-  [some (0, .right, 82), some (1, .right, 92)],
-  [some (1, .left, 48), some (0, .right, 49)],
-  [some (0, .right, 38), some (1, .right, 37)],
-  [some (0, .right, 3), some (1, .right, 38)],
-  [some (0, .right, 50), some (1, .right, 51)],
-  [some (0, .right, 52), some (1, .right, 53)],
-  [some (0, .right, 54), some (1, .right, 82)],
-  [some (0, .right, 22), some (1, .right, 42)],
-  [some (0, .right, 29), some (0, .left, 19)],
-  [some (0, .right, 31), some (1, .right, 57)],
-  [some (0, .right, 32), some (1, .right, 59)],
-  [some (0, .right, 58), some (1, .right, 60)],
-  [some (0, .right, 46), some (1, .right, 56)],
-  [some (0, .left, 63), some (1, .left, 48)],
-  [some (0, .left, 36), some (1, .right, 64)],
-  [some (0, .right, 58), some (1, .right, 65)],
-  [some (0, .right, 66), some (1, .right, 67)],
-  [some (0, .right, 32), some (1, .right, 68)],
-  [some (0, .right, 69), some (1, .right, 69)],
-  [some (0, .right, 42), some (1, .right, 54)],
-  [some (1, .right, 55), some (0, .right, 71)],
-  [some (1, .right, 56), some (0, .right, 42)],
-  [some (0, .right, 39), some (1, .right, 70)],
-  [some (1, .right, 58), some (0, .right, 41)],
-  [some (0, .right, 55), some (0, .left, 71)],
-  [some (0, .right, 84), some (1, .right, 78)],
-  [some (1, .left, 48), some (0, .right, 49)],
-  [some (0, .right, 56), none],
-  [some (1, .left, 2), some (1, .left, 48)],
-  [some (0, .right, 74), some (1, .right, 64)],
-  [some (0, .right, 29), some (0, .left, 14)],
-  [some (0, .right, 31), some (1, .right, 75)],
-  [some (0, .right, 18), some (1, .right, 76)],
-  [some (0, .right, 29), some (1, .right, 69)],
-  [some (0, .right, 66), some (1, .right, 77)],
-  [some (0, .right, 25), some (0, .left, 19)],
-  [some (0, .right, 37), some (0, .left, 13)],
-  [some (1, .left, 48), some (0, .right, 49)],
-  [some (0, .right, 23), some (0, .left, 19)],
-  [some (0, .left, 80), some (1, .right, 64)],
-  [some (0, .right, 1), some (0, .left, 14)],
-  [some (0, .right, 81), some (0, .left, 14)],
-  [some (0, .right, 82), some (1, .right, 83)],
-  [some (0, .right, 84), some (1, .right, 85)],
-  [some (1, .right, 79), some (0, .right, 38)],
-  [some (1, .left, 86), some (1, .left, 80)],
-  [some (0, .right, 45), some (1, .right, 87)],
-  [some (0, .right, 88), some (1, .right, 45)],
-  [some (0, .right, 18), some (1, .right, 73)],
-  [some (0, .right, 89), some (1, .right, 45)],
-  [some (0, .right, 90), some (1, .right, 47)],
-  [some (0, .left, 9), some (0, .left, 80)],
-  [some (0, .right, 50), some (1, .right, 23)],
-  [some (0, .right, 58), some (1, .right, 91)],
-  [some (0, .right, 58), some (1, .right, 97)],
-  [some (0, .right, 93), some (1, .right, 94)],
-  [some (0, .right, 23), some (1, .right, 43)],
-  [some (0, .right, 46), some (1, .right, 62)],
-  [some (0, .right, 56), some (1, .right, 96)],
-  [some (0, .right, 32), some (1, .right, 19)],
-  [some (1, .left, 48), some (0, .right, 49)],
-  [some (0, .right, 56), some (1, .right, 43)],
-  [some (0, .right, 58), some (1, .right, 43)]
-]
+namespace Renaming
 
-def machine : Machine 98 2 := Machine.ofRows rows
+/-- Only control states zero and 36 are exchanged; tape symbols are unchanged. -/
+def swap (q : Fin 98) : Fin 98 := if q = 0 then 36 else if q = 36 then 0 else q
+
+theorem swap_involutive (q : Fin 98) : swap (swap q) = q := by
+  by_cases h0 : q = 0
+  · subst q; rfl
+  by_cases h36 : q = 36
+  · subst q; rfl
+  simp only [swap, h0, h36, ↓reduceIte]
+
+end Renaming
+
+namespace Raw
+
+/-- The same auxiliary machine before renaming its control labels. -/
+def machine : Machine 98 2 :=
+  ⟨fun q a => (Riemann95Auxiliary.machine.transition (Renaming.swap q) a).map
+    (fun e => (e.1, e.2.1, Renaming.swap e.2.2))⟩
 
 def nSteps : Nat → Cfg 98 2 → Option (Cfg 98 2)
   | 0, c => some c
   | n + 1, c => (step machine c).bind (nSteps n)
 
-end ConjectureMachines.Riemann95Auxiliary.Raw
+end Raw
+
+namespace Renaming
+
+def renameCfg (c : Cfg 98 2) : Cfg 98 2 := ⟨swap c.state, c.tape⟩
+
+theorem transition_rename : ∀ (q : Fin 98) (a : Fin 2),
+    machine.transition (swap q) a = (Raw.machine.transition q a).map
+      (fun e => (e.1, e.2.1, swap e.2.2)) := by
+  intro q a
+  change _ = ((machine.transition (swap q) a).map _).map _
+  cases machine.transition (swap q) a with
+  | none => rfl
+  | some e =>
+    rcases e with ⟨b, d, q'⟩
+    simp only [Option.map_some, swap_involutive]
+
+theorem step_rename (c : Cfg 98 2) :
+    step machine (renameCfg c) = (step Raw.machine c).map renameCfg := by
+  rcases c with ⟨q, tape⟩
+  unfold step renameCfg
+  dsimp only
+  rw [transition_rename]
+  cases h : Raw.machine.transition q tape.head with
+  | none => rfl
+  | some e => rcases e with ⟨b, d, q'⟩; rfl
+
+theorem nSteps_rename (n : Nat) (c : Cfg 98 2) :
+    nSteps n (renameCfg c) = (Raw.nSteps n c).map renameCfg := by
+  induction n generalizing c with
+  | zero => rfl
+  | succ n ih =>
+    rw [nSteps, Raw.nSteps, step_rename]
+    cases h : step Raw.machine c with
+    | none => rfl
+    | some c' => exact ih c'
+
+theorem of_raw {n : Nat} {c c' : Cfg 98 2} (h : Raw.nSteps n c = some c') :
+    nSteps n (renameCfg c) = some (renameCfg c') := by
+  rw [nSteps_rename, h]
+  rfl
+
+end Renaming
+
+end ConjectureMachines.Riemann95Auxiliary

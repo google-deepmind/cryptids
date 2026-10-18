@@ -28,7 +28,7 @@ physical register banks. This changes the register program and its tape
 implementation, so the proof establishes both program correctness and physical
 execution rather than a quotient of the 104-state transition table.
 
-The 47 new Lean modules include two shared reference-support modules. Related
+The 46 new Lean modules include two shared reference-support modules. Related
 decoder, control, bootstrap, return, and trace lemmas are grouped together.
 Read the layers in this order:
 
@@ -55,6 +55,9 @@ actual control-word guards are proved in `NoThree95` and `ControlStep95`.
 `Auxiliary95RawReturn` proves the scanner once; `Auxiliary95Return` transports
 it through the existing state renaming. Arithmetic and padding proofs share
 the tape moves in `Auxiliary95RawReturn` and the scans in `Auxiliary95RawPhysical`.
+Both auxiliary presentations are derived from the literal 95-state table:
+`Auxiliary95` expands labels using a state embedding and projection, while
+`Auxiliary95Raw` applies the involutive exchange of labels 0 and 36.
 
 All new proof modules use the pinned toolchain and existing Lean limits. The
 three public results are checked against the independent table specification in
