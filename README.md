@@ -3,7 +3,7 @@
 This repository contains two Lean 4 (`v4.35.0-rc4`) formalization libraries for small Turing machines whose halting behavior encodes deep mathematical problems or complex dynamical invariants:
 
 1. **[Conjecture-Checking Turing Machines (`Cryptids/`)](Cryptids/README.md)** — Certified state reductions (`goldbach_21`, `zf_380`, `riemann_95`) and end-to-end Lean 4 mathematical semantics proofs (`Halts M ↔ ...`) for **Goldbach's Conjecture**, **ZF Set Theory Consistency**, and the **Riemann Hypothesis**.
-2. **[Busy Beaver Holdouts (`BusyBeaver/`)](BusyBeaver/README.md)** — Kernel-verified behavioral proofs (`IsHalt`, `IsNotHalt`, `HasCollatzReduction`) for **Busy Beaver 6 (`BB(6)`)** holdouts (some are potential Cryptids, subject to community acceptance), connected to `ConjectureMachines.Machine` via [`BusyBeaver/Bridge.lean`](BusyBeaver/Bridge.lean).
+2. **[Busy Beaver Holdouts (`BusyBeaver/`)](BusyBeaver/README.md)** — Kernel-verified behavioral proofs (`IsHalt`, `IsNotHalt`, `HasCollatzReduction`, `IsValidAcceleration`) for 53 **Busy Beaver 6 (`BB(6)`)** holdouts—33 community-documented machines and 20 novel Collatz-like accelerations discovered via the autonomous agentic pipeline of [*At the Limits of Computability: Steps Towards Autonomous AI Discovery on the Busy Beaver Frontier*](https://arxiv.org/abs/2610.22603) (some are potential Cryptids, subject to community acceptance)—connected to `ConjectureMachines.Machine` via [`BusyBeaver/Bridge.lean`](BusyBeaver/Bridge.lean).
 
 ## Overview
 
