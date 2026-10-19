@@ -759,6 +759,113 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0LD_1LC0RA_1RA1LB_1LA1LE_1RF0LC_HHH0RE
 
+namespace M_1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_HHH1RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_---1RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def ps : TapePatternSet (Fin 2) (Fin 6) := [
+  -- 1. h = 0
+  (⟨.rep [1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.not (.ge_const 2 1))),
+  -- 2. h >= 3
+  (⟨.rep [1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.ge_const 2 3)),
+  -- 3. h = 2, g even
+  (⟨.rep [1, 1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.and (.ge_const 2 2) (.not (.ge_const 2 3)))),
+  -- 4. h = 2, g odd, a = 0
+  (⟨.rep [1] 1 .default, some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.and (.ge_const 2 2) (.not (.ge_const 2 3)))),
+  -- 5. h = 1, g even
+  (⟨.rep [1, 1] 1 (.rep [1, 0] 0 .default), some SixState.A, .rep [1] 2 .default⟩,
+   .and (.ge_const 1 1) (.and (.ge_const 2 1) (.not (.ge_const 2 2))))
+]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+def Config_gen (a g h : Nat) : Cfg (Fin 2) (Fin 6) :=
+  let left := ListBlank.append (([1] : List (Fin 2)) ^ g)
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ a) default)
+  let right := ListBlank.append (([1] : List (Fin 2)) ^ h) default
+  ⟨some A, ⟨right.head, left, right.tail⟩⟩
+
+def S (k : Nat) : Nat :=
+  2^(k+1) - k - 1
+
+def find_k_fuel (a : Nat) (fuel : Nat) (k : Nat) : Nat :=
+  Nat.rec (motive := fun _ => Nat → Nat)
+    (fun k => k)
+    (fun _ ih k => if a < S (k+1) then k else ih (k+1))
+    fuel k
+
+def find_k (a : Nat) : Nat :=
+  find_k_fuel a a 0
+
+def a_new (a g : Nat) : Nat :=
+  let j := find_k a
+  let k_g := (g - 1) / 2
+  if a = S j then
+    2^(j+1) + k_g
+  else
+    S (j+1) - 1 - a
+
+inductive State where
+  | H0 (a g : ℕ)
+  | H3 (a g h : ℕ)
+  | H2_even (a k : ℕ)
+  | H2_odd0 (k : ℕ)
+  | H1_even (a k : ℕ)
+
+def start : State := .H2_odd0 0
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .H0 a g => Config_gen a (g + 1) 0
+  | .H3 a g h => Config_gen a (g + 1) (h + 3)
+  | .H2_even a k => Config_gen a (2 * (k + 1)) 2
+  | .H2_odd0 k => Config_gen 0 (2 * k + 1) 2
+  | .H1_even a k => Config_gen a (2 * (k + 1)) 1
+
+def classifyEven (a k h : ℕ) : State :=
+  Nat.casesOn h (.H1_even a k) fun h =>
+  Nat.casesOn h (.H2_even a k) fun h' =>
+  .H3 a (2 * k + 1) h'
+
+def next : State → Option State
+  | .H0 0 g => some (.H3 0 0 g)
+  | .H0 (a + 1) g => some (.H3 a 0 (g + 1))
+  | .H3 a g h =>
+    if (g + 1) % 2 = 0 then
+      let k := (g + 1) / 2
+      Nat.casesOn a (some (classifyEven (k + 1) 0 h)) fun a' =>
+      some (classifyEven a' (k + 1) h)
+    else
+      let k := (g + 1) / 2
+      Nat.casesOn a (some (classifyEven 0 (k + 1) h)) fun a =>
+      Nat.casesOn a (some (classifyEven (k + 2) 0 h)) fun a'' =>
+        let a_org := a'' + 2
+        let a_n := a_new a_org (2 * k + 1)
+        let k_n := if a_org = S (find_k a_org) then 1
+                   else (a_org + find_k a_org + 2 - a_n) + k
+        some (classifyEven a_n (k_n - 1) h)
+  | .H2_even 0 _ => none
+  | .H2_even (a + 1) k => some (.H0 a (2 * k + 5))
+  | .H2_odd0 k => some (.H0 0 (2 * k + 3))
+  | .H1_even 0 0 => none
+  | .H1_even (a + 1) 0 => some (.H0 a 3)
+  | .H1_even a (k + 1) => some (.H2_even a k)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_HHH1RE
+
 namespace M_1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_HHH1RE
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_---1RE"
@@ -1081,6 +1188,235 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RBHHH
 
+namespace M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_D : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .default
+    head  := some D
+    right := .rep [1, 0] 0 (.rep [1, 1, 0] 1 (.rep [0] 2 (.rep [1] 3 .default))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_D, .not (.ge_const 2 2))]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+def D_cfg (a b c d : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight D default
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ a)
+      (ListBlank.append (([1, 1, 0] : List (Fin 2)) ^ b)
+        (ListBlank.append (([0] : List (Fin 2)) ^ c)
+          (ListBlank.append (([1] : List (Fin 2)) ^ d) default))))
+
+def H_mid (a b m : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight D
+    (ListBlank.append [0] (ListBlank.append (([1, 1, 1] : List (Fin 2)) ^ b)
+      (ListBlank.append [1] (ListBlank.append (([0, 1] : List (Fin 2)) ^ a) default))))
+    (ListBlank.append (([1] : List (Fin 2)) ^ m) default)
+
+def B_mid (a k b d : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight B
+    (ListBlank.append (([1] : List (Fin 2)) ^ k)
+      (ListBlank.append (([0, 1] : List (Fin 2)) ^ a) default))
+    (ListBlank.append [0, 0] (ListBlank.append (([1, 1, 0] : List (Fin 2)) ^ b)
+      (ListBlank.append [0] (ListBlank.append (([1] : List (Fin 2)) ^ d) default))))
+
+def A_rem (a k q m : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headLeft A
+    (ListBlank.append (([1] : List (Fin 2)) ^ k)
+      (ListBlank.append (([0, 1] : List (Fin 2)) ^ a) default))
+    (ListBlank.append (([1, 1, 0] : List (Fin 2)) ^ q)
+      (ListBlank.append [0] (ListBlank.append (([1] : List (Fin 2)) ^ m) default)))
+
+inductive State
+  | D0 (a b d : ℕ)
+  | D1 (a b d : ℕ)
+  | H (a b m : ℕ)
+  | B (a k b d : ℕ)
+  | A_pos (a k q m : ℕ)
+  | A_zero (a q m : ℕ)
+
+def start : State := .D0 0 0 4
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .D0 a b d => D_cfg a b 0 d
+  | .D1 a b d => D_cfg a b 1 d
+  | .H a b m => H_mid a (b + 1) (m + 1)
+  | .B a k b d => B_mid a (k + 1) b d
+  | .A_pos a k q m => A_rem a (k + 1) q m
+  | .A_zero a q m => A_rem a 0 (q + 1) m
+
+def next : State → Option State
+  | .D1 0 0 d => some (.D1 0 0 (d + 1))
+  | .D1 0 (b + 1) d => some (.D1 1 b (d + 2))
+  | .D1 (a + 1) b d => some (.B a 0 b d)
+  | .D0 a b 0 =>
+    Nat.casesOn a
+      (Nat.casesOn b (some (.D1 0 0 1)) fun b => some (.D1 1 b 2))
+      fun a => some (.B a 0 b 0)
+  | .D0 a b 1 =>
+    Nat.casesOn b
+      (Nat.casesOn a (some (.D0 0 0 4)) fun a => some (.B (a + 1) 0 0 0))
+      fun b => some (.D1 (a + 2) b 3)
+  | .D0 a b 2 =>
+    Nat.casesOn a (some (.D1 1 b 2)) fun a => some (.B a 0 (b + 1) 0)
+  | .D0 a b (d + 3) => some (.D0 (a + 2) b (d + 1))
+  | .H a b 0 =>
+    Nat.casesOn a none fun a =>
+    some (.D1 (if a = 0 then 1 else a + 1) (b + 1) 5)
+  | .H a b 1 => some (.D1 (a + 2) (b + 1) 2)
+  | .H a b (m + 2) =>
+    Nat.casesOn a none fun a =>
+    Nat.casesOn a
+      (Nat.casesOn m (some (.D1 2 (b + 2) 3)) fun m =>
+       Nat.casesOn m (some (.D1 1 (b + 3) 2)) fun m =>
+       some (.D0 2 (b + 3) (m + 1)))
+      fun a => some (.H a (b + 2) m)
+  | .B a k (b + 1) d => some (.B a (k + 1) b (d + 2))
+  | .B a 0 0 d =>
+    Nat.casesOn a (some (.D0 0 0 (d + 4))) fun a =>
+    Nat.casesOn a none fun a =>
+    Nat.casesOn a
+      (Nat.casesOn d (some (.D1 1 2 2)) fun d => some (.D0 2 2 (d + 1)))
+      fun a => some (.H a 1 (d + 1))
+  | .B a (k + 1) 0 d => some (.A_pos a k 0 (d + 3))
+  | .A_zero a q m => some (.D1 (a + 2) q m)
+  | .A_pos a 0 q m =>
+    Nat.casesOn a none fun a =>
+    Nat.casesOn q
+      (some (.D1 (if a = 0 then 1 else a + 1) 0 (m + 2)))
+      fun q => some (.D1 (if a = 0 then 1 else a + 1) (q + 1) (m + 2))
+  | .A_pos a 1 q m =>
+    Nat.casesOn a (some (.D1 1 q m)) fun a =>
+    some (.A_pos a q 0 (m + 2 * q + 3))
+  | .A_pos a 2 q m => some (.A_zero a q m)
+  | .A_pos a (k + 3) q m => some (.A_pos a k (q + 1) m)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+
+namespace M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_D : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .default
+    head  := some D
+    right := .rep [1, 0] 0 (.rep [1, 1, 0] 1 (.rep [0] 2 (.rep [1] 3 .default))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_D, .not (.ge_const 2 2))]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+def D_cfg (a b c d : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight D default
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ a)
+      (ListBlank.append (([1, 1, 0] : List (Fin 2)) ^ b)
+        (ListBlank.append (([0] : List (Fin 2)) ^ c)
+          (ListBlank.append (([1] : List (Fin 2)) ^ d) default))))
+
+def A_ones (a k b d : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headLeft A
+    (ListBlank.append (([1] : List (Fin 2)) ^ (k + 1))
+      (ListBlank.append (([0, 1] : List (Fin 2)) ^ a) default))
+    (ListBlank.append (([1, 1, 0] : List (Fin 2)) ^ b)
+      (ListBlank.append ([0] : List (Fin 2))
+        (ListBlank.append (([1] : List (Fin 2)) ^ d) default)))
+
+def H_mid (a b m : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight D
+    (ListBlank.append [0] (ListBlank.append (([1, 1, 1] : List (Fin 2)) ^ b)
+      (ListBlank.append [1] (ListBlank.append (([0, 1] : List (Fin 2)) ^ a) default))))
+    (ListBlank.append (([1] : List (Fin 2)) ^ m) default)
+
+def B_mid (a k b d : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight B
+    (ListBlank.append (([1] : List (Fin 2)) ^ k)
+      (ListBlank.append (([0, 1] : List (Fin 2)) ^ a) default))
+    (ListBlank.append [0, 0] (ListBlank.append (([1, 1, 0] : List (Fin 2)) ^ b)
+      (ListBlank.append ([0] : List (Fin 2))
+        (ListBlank.append (([1] : List (Fin 2)) ^ d) default))))
+
+inductive State
+  | D0 (a b d : ℕ)
+  | D1 (a b d : ℕ)
+  | H (a b m : ℕ)
+  | B (a k b d : ℕ)
+  | A (a k b d : ℕ)
+
+def start : State := .D0 0 0 4
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .D0 a b d => D_cfg a b 0 d
+  | .D1 a b d => D_cfg a b 1 d
+  | .H a b m => H_mid a (b + 1) (m + 1)
+  | .B a k b d => B_mid a (k + 1) b d
+  | .A a k b d => A_ones a k b d
+
+def next : State → Option State
+  | .D1 0 0 d => some (.D1 0 0 (d + 1))
+  | .D1 0 (b + 1) d => some (.D1 1 b (d + 2))
+  | .D1 (a + 1) b d => some (.B a 0 b d)
+  | .D0 a b 0 =>
+    Nat.casesOn a
+      (Nat.casesOn b (some (.D1 0 0 1)) fun b => some (.D1 1 b 2))
+      fun a => some (.B a 0 b 0)
+  | .D0 a b 1 =>
+    Nat.casesOn b
+      (Nat.casesOn a (some (.D0 0 0 4)) fun a => some (.B (a + 1) 0 0 0))
+      fun b => some (.D1 (a + 2) b 3)
+  | .D0 a b 2 =>
+    Nat.casesOn a (some (.D1 1 b 2)) fun a => some (.B a 0 (b + 1) 0)
+  | .D0 a b (d + 3) => some (.D0 (a + 2) b (d + 1))
+  | .H a b 0 =>
+    Nat.casesOn a (some (.A 0 0 (b + 1) 3)) fun a =>
+    some (.A (a + 1) 0 (b + 1) 3)
+  | .H a b 1 => some (.D1 (a + 2) (b + 1) 2)
+  | .H a b (m + 2) =>
+    Nat.casesOn a none fun a =>
+    Nat.casesOn a
+      (Nat.casesOn m (some (.D1 2 (b + 2) 3)) fun m =>
+       Nat.casesOn m (some (.D1 1 (b + 3) 2)) fun m =>
+       some (.D0 2 (b + 3) (m + 1)))
+      fun a => some (.H a (b + 2) m)
+  | .B a k (b + 1) d => some (.B a (k + 1) b (d + 2))
+  | .B a 0 0 d =>
+    Nat.casesOn a (some (.D0 0 0 (d + 4))) fun a =>
+    Nat.casesOn a none fun a =>
+    Nat.casesOn a (some (.D0 0 2 (d + 2))) fun a =>
+    some (.H a 1 (d + 1))
+  | .B a (k + 1) 0 d => some (.A a k 0 (d + 3))
+  | .A a 0 b d =>
+    Nat.casesOn a none fun a =>
+    Nat.casesOn a (some (.D1 0 (b + 1) d)) fun a =>
+    some (.A a 2 b (d + 2))
+  | .A a 1 b d =>
+    Nat.casesOn a (some (.D1 1 b d)) fun a =>
+    some (.B a 1 b d)
+  | .A a 2 b d => some (.D1 (a + 2) b d)
+  | .A a (k + 3) b d => some (.A a k (b + 1) d)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+
 namespace M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RC---"
@@ -1128,6 +1464,111 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH
+
+namespace M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1, 0] 1 (.rep [1] 0 .default)
+    head  := some F
+    right := .sym 0 (.sym 0 (.rep [1] 2 .default)) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+def F_R (b k : Nat) (r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight F
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ k)
+      (ListBlank.append (([1] : List (Fin 2)) ^ b) default))
+    (ListBlank.append [0, 0] r)
+
+def cfg_A (b k c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight F
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ k)
+      (ListBlank.append (([1] : List (Fin 2)) ^ b) default))
+    (ListBlank.append [0, 0] (ListBlank.append (([1] : List (Fin 2)) ^ c) default))
+
+def Odd_cfg (p k n m c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  F_R (2 * p + 1) k
+    (ListBlank.append (([1] : List (Fin 2)) ^ (2 * n))
+      (ListBlank.append (([0, 1] : List (Fin 2)) ^ (m + 1))
+        (ListBlank.append (([1] : List (Fin 2)) ^ c) default)))
+
+def ETail_cfg (k m c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight E
+    (ListBlank.append (([1] : List (Fin 2)) ^ (2 * (k + 4) + 1)) default)
+    (ListBlank.append (([0, 1] : List (Fin 2)) ^ m)
+      (ListBlank.append (([1] : List (Fin 2)) ^ c) default))
+
+/-- Symbolic configuration state space for `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`. -/
+inductive State
+  /-- $A(b, k, c) := 0^\infty\,1^b\,(10)^k\,\mathrm{F}{>}\,0\,0\,1^c\,0^\infty$. -/
+  | A (b k c : ℕ)
+  /-- $Odd(p, k, n, m, c) :=
+  0^\infty\,1^{2p+1}\,(10)^k\,\mathrm{F}{>}\,0\,0\,1^{2n}\,(01)^{m+1}\,1^c\,0^\infty$. -/
+  | Odd (p k n m c : ℕ)
+  /-- $ETail(k, m, c) := 0^\infty\,1^{2k+9}\,\mathrm{E}{>}\,(01)^m\,1^c\,0^\infty$. -/
+  | ETail (k m c : ℕ)
+
+/-- Initial symbolic state $A(5, 0, 2)$, reached from the blank tape. -/
+def start : State := .A 5 0 2
+
+/-- Decode a symbolic `State` into a concrete Turing machine configuration. -/
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .A b k c => cfg_A b k c
+  | .Odd p k n m c => Odd_cfg p k n m c
+  | .ETail k m c => ETail_cfg k m c
+
+/-- Accelerated Collatz-like transition function. -/
+def next : State → Option State
+  | .A b k 0 =>
+    Nat.casesOn k
+      (Nat.casesOn b (some (.A 4 0 3)) fun b =>
+       Nat.casesOn b (some (.A 6 0 3)) fun b =>
+       Nat.casesOn b (some (.A 3 0 3)) fun b =>
+       Nat.casesOn b (some (.A 6 0 3)) fun b =>
+       Nat.casesOn b none fun b =>
+       some (.A (b + 1) 0 5))
+      fun k => some (.A b k 1)
+  | .A b k 1 =>
+    Nat.casesOn b (some (.A (2 * k + 6) 0 3)) fun b =>
+    Nat.casesOn b (some (.A (2 * k + 8) 0 3)) fun b =>
+    Nat.casesOn b
+      (Nat.casesOn k (some (.A 5 0 0)) fun k => some (.Odd 2 0 0 k 0)) fun b =>
+    Nat.casesOn b (some (.A (2 * k + 8) 0 3)) fun b =>
+    Nat.casesOn b none fun b =>
+    some (.A (b + 1) 0 (2 * k + 7))
+  | .A b k (c + 2) =>
+    Nat.casesOn b (some (.A 1 (k + 1) c)) fun b =>
+    Nat.casesOn b (some (.A 1 (k + 2) c)) fun b =>
+    Nat.casesOn b
+      (Nat.casesOn k (some (.A 5 0 (c + 1))) fun k => some (.Odd 2 0 0 k (c + 1))) fun b =>
+    some (.A (b + 1) (k + 2) c)
+  | .Odd p k (n + 1) m c =>
+    Nat.casesOn p (some (.Odd 0 (k + 2) n m c)) fun p =>
+    some (.Odd p (k + 2) n m c)
+  | .Odd p k 0 m c =>
+    Nat.casesOn p (some (.ETail k m c)) fun p =>
+    Nat.casesOn p (some (.ETail k m c)) fun p =>
+    Nat.casesOn m (some (.A (2 * p + 1) 0 (2 * (k + 3) + c))) fun m =>
+    some (.Odd p 0 (k + 3) m c)
+  | .ETail k 0 c => some (.A (2 * k + c + 7) 0 3)
+  | .ETail k 1 c => some (.A (2 * (k + 4) + 1) 0 c)
+  | .ETail k (m + 2) c => some (.Odd (k + 4) 0 0 m c)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
 
 namespace M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -1372,6 +1813,108 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0RB_1LC1RE_1LF0LD_1RA1LD_1RC1RB_HHH1LC
 
+namespace M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1] 0 (.rep [0, 1, 1, 1] 1 .default)
+    head  := some D
+    right := .sym 1 (.sym 1 (.rep [0, 1] 2 (.rep [1] 3 .default))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .not (.ge_const 1 2))]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+abbrev cfg_A (l : ListBlank (Fin 2)) (k j c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight D (ListBlank.append (([1] : List (Fin 2)) ^ k) l)
+    (ListBlank.append [1, 1] (ListBlank.append (([0, 1] : List (Fin 2)) ^ j)
+      (ListBlank.append (([1] : List (Fin 2)) ^ c) default)))
+
+abbrev l_hat : ListBlank (Fin 2) :=
+  ListBlank.append [0] (ListBlank.append (([1] : List (Fin 2)) ^ 3) default)
+
+abbrev l_ones3 : ListBlank (Fin 2) :=
+  ListBlank.append (([1] : List (Fin 2)) ^ 3) default
+
+abbrev cfg_C001 (l : ListBlank (Fin 2)) (a b : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight C l
+    (ListBlank.append [0, 0, 1] (ListBlank.append (([0, 1] : List (Fin 2)) ^ a)
+      (ListBlank.append (([1] : List (Fin 2)) ^ b) default)))
+
+inductive State where
+  | S_def (k j c : ℕ)
+  | S_hat (k j c : ℕ)
+  | C_def (a b : ℕ)
+  | C_hat (a b : ℕ)
+  | C_ones3 (a b : ℕ)
+
+def start : State := .S_def 2 0 0
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .S_def k j c => cfg_A default k j c
+  | .S_hat k j c => cfg_A l_hat k j c
+  | .C_def a b => cfg_C001 default a b
+  | .C_hat a b => cfg_C001 l_hat a b
+  | .C_ones3 a b => cfg_C001 l_ones3 a b
+
+def next : State → Option State
+  | .S_def 0 0 c => some (.C_def 0 (c + 2))
+  | .S_def 0 (j + 1) c => some (.C_hat j c)
+  | .S_def 1 j 0 => some (.S_def 0 0 (2 * j + 3))
+  | .S_def 1 j (c + 1) => some (.C_def (j + 1) c)
+  | .S_def 2 j 0 => some (.S_def 0 0 (2 * j + 5))
+  | .S_def 2 j (c + 1) => some (.C_def (j + 2) c)
+  | .S_def (k + 3) j 0 => some (.S_def (k + 1) 0 (2 * j + 5))
+  | .S_def (k + 3) j (c + 1) => some (.S_def k (j + 2) c)
+  | .S_hat 0 0 c => some (.S_def 2 0 (c + 2))
+  | .S_hat 0 (j + 1) c => some (.S_def 6 (j + 1) c)
+  | .S_hat 1 j 0 => some (.S_def 1 1 (2 * j + 5))
+  | .S_hat 1 j (c + 1) => some (.C_ones3 (j + 1) c)
+  | .S_hat 2 j 0 => some (.S_hat 0 0 (2 * j + 5))
+  | .S_hat 2 j (c + 1) => some (.S_def 1 (j + 3) c)
+  | .S_hat (k + 3) j 0 => some (.S_hat (k + 1) 0 (2 * j + 5))
+  | .S_hat (k + 3) j (c + 1) => some (.S_hat k (j + 2) c)
+  | .C_def a b =>
+    if a % 2 = 0 then
+      Nat.casesOn b none fun b =>
+      Nat.casesOn b (some (.S_def (4 * (a / 2) + 2) 0 0)) fun b =>
+      Nat.casesOn b (some (.S_def (4 * (a / 2) + 2) 0 3)) fun c =>
+      some (.S_def (4 * (a / 2) + 4) 0 c)
+    else
+      Nat.casesOn b (some (.S_def (4 * (a / 2) + 4) 0 1)) fun c =>
+      some (.S_def (4 * (a / 2) + 3) 0 (c + 1))
+  | .C_hat a b =>
+    if a % 2 = 0 then
+      Nat.casesOn b none fun b =>
+      Nat.casesOn b (some (.S_hat (4 * (a / 2) + 2) 0 0)) fun b =>
+      Nat.casesOn b (some (.S_hat (4 * (a / 2) + 2) 0 3)) fun c =>
+      some (.S_hat (4 * (a / 2) + 4) 0 c)
+    else
+      Nat.casesOn b (some (.S_hat (4 * (a / 2) + 4) 0 1)) fun c =>
+      some (.S_hat (4 * (a / 2) + 3) 0 (c + 1))
+  | .C_ones3 a b =>
+    if a % 2 = 0 then
+      Nat.casesOn b none fun b =>
+      Nat.casesOn b (some (.S_def (3 + (4 * (a / 2) + 2)) 0 0)) fun b =>
+      Nat.casesOn b (some (.S_def (3 + (4 * (a / 2) + 2)) 0 3)) fun c =>
+      some (.S_def (3 + (4 * (a / 2) + 4)) 0 c)
+    else
+      Nat.casesOn b (some (.S_def (3 + (4 * (a / 2) + 4)) 0 1)) fun c =>
+      some (.S_def (3 + (4 * (a / 2) + 3)) 0 (c + 1))
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+
 namespace M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_---0RA"
@@ -1427,6 +1970,120 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA
+
+namespace M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .sym 0 (.rep [1] 2 .default)
+    head  := some A
+    right := .sym 0 (.rep [1, 0] 1 (.rep [1] 0 .default)) }
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+def F_R (b k : Nat) (r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight F
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ k)
+      (ListBlank.append (([1] : List (Fin 2)) ^ b) default))
+    (ListBlank.append [0, 0] r)
+
+def cfg_F (b k c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight F
+    (ListBlank.append (([1, 0] : List (Fin 2)) ^ k)
+      (ListBlank.append (([1] : List (Fin 2)) ^ b) default))
+    (ListBlank.append [0, 0] (ListBlank.append (([1] : List (Fin 2)) ^ c) default))
+
+def Odd_cfg (p k n m c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  F_R (2 * p + 1) k
+    (ListBlank.append (([1] : List (Fin 2)) ^ (2 * n))
+      (ListBlank.append (([0, 1] : List (Fin 2)) ^ (m + 1))
+        (ListBlank.append (([1] : List (Fin 2)) ^ c) default)))
+
+def ETail_cfg (k m c : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight E
+    (ListBlank.append (([1] : List (Fin 2)) ^ (2 * (k + 4) + 1)) default)
+    (ListBlank.append (([0, 1] : List (Fin 2)) ^ m)
+      (ListBlank.append (([1] : List (Fin 2)) ^ c) default))
+
+def π : Fin 6 -> Fin 6
+  | 0 => 1
+  | 1 => 2
+  | 2 => 5
+  | 3 => 3
+  | 4 => 4
+  | 5 => 0
+
+def mirrorTape : Tape (Fin 2) -> Tape (Fin 2)
+  | ⟨head, l, r⟩ => ⟨head, r, l⟩
+
+def mirrorCfg (c : Cfg (Fin 2) (Fin 6)) : Cfg (Fin 2) (Fin 6) :=
+  ⟨c.q.map π, mirrorTape c.tape⟩
+
+inductive State
+  | A (b k c : ℕ)
+  | Odd (p k n m c : ℕ)
+  | ETail (k m c : ℕ)
+
+def start : State := .A 4 0 3
+
+def encode_F : State → Cfg (Fin 2) (Fin 6)
+  | .A b k c => cfg_F b k c
+  | .Odd p k n m c => Odd_cfg p k n m c
+  | .ETail k m c => ETail_cfg k m c
+
+def encode (s : State) : Cfg (Fin 2) (Fin 6) :=
+  mirrorCfg (encode_F s)
+
+def next : State → Option State
+  | .A b k 0 =>
+    Nat.casesOn k
+      (Nat.casesOn b (some (.A 4 0 3)) fun b =>
+       Nat.casesOn b (some (.A 6 0 3)) fun b =>
+       Nat.casesOn b (some (.A 3 0 3)) fun b =>
+       Nat.casesOn b (some (.A 6 0 3)) fun b =>
+       Nat.casesOn b none fun b =>
+       some (.A (b + 1) 0 5))
+      fun k => some (.A b k 1)
+  | .A b k 1 =>
+    Nat.casesOn b (some (.A (2 * k + 6) 0 3)) fun b =>
+    Nat.casesOn b (some (.A (2 * k + 8) 0 3)) fun b =>
+    Nat.casesOn b
+      (Nat.casesOn k (some (.A 5 0 0)) fun k => some (.Odd 2 0 0 k 0)) fun b =>
+    Nat.casesOn b (some (.A (2 * k + 8) 0 3)) fun b =>
+    Nat.casesOn b none fun b =>
+    some (.A (b + 1) 0 (2 * k + 7))
+  | .A b k (c + 2) =>
+    Nat.casesOn b (some (.A 1 (k + 1) c)) fun b =>
+    Nat.casesOn b (some (.A 1 (k + 2) c)) fun b =>
+    Nat.casesOn b
+      (Nat.casesOn k (some (.A 5 0 (c + 1))) fun k => some (.Odd 2 0 0 k (c + 1))) fun b =>
+    some (.A (b + 1) (k + 2) c)
+  | .Odd p k (n + 1) m c =>
+    Nat.casesOn p (some (.Odd 0 (k + 2) n m c)) fun p =>
+    some (.Odd p (k + 2) n m c)
+  | .Odd p k 0 m c =>
+    Nat.casesOn p (some (.ETail k m c)) fun p =>
+    Nat.casesOn p (some (.ETail k m c)) fun p =>
+    Nat.casesOn m (some (.A (2 * p + 1) 0 (2 * (k + 3) + c))) fun m =>
+    some (.Odd p 0 (k + 3) m c)
+  | .ETail k 0 c => some (.A (2 * k + c + 7) 0 3)
+  | .ETail k 1 c => some (.A (2 * (k + 4) + 1) 0 c)
+  | .ETail k (m + 2) c => some (.Odd (k + 4) 0 0 m c)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
 
 namespace M_1RB0RE_1LC1LD_0RA0LD_1LB0LA_1RF1RA_HHH1LB
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -1880,6 +2537,265 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1LC_1RC0LD_1LA0RB_1LB1LE_1RF0LA_HHH0RE
+
+namespace M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LF---_0RA1LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_Master : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [0, 0, 1] 1 (.rep [1] 2 (.rep [0, 0, 1, 1] 0 .default))
+    head  := some A
+    right := .default }
+
+def cond_Master : VarCond :=
+  .or (.and (.ge_const 1 1) (.and (.not (.ge_const 1 2)) (.not (.ge_const 2 1))))
+    (.or (.and (.ge_const 1 2) (.and (.not (.ge_const 1 3)) (.not (.ge_const 2 1))))
+      (.or (.and (.ge_const 1 1) (.and (.not (.ge_const 1 2)) (.and (.ge_const 2 3) (.not
+        (.ge_const 2 4)))))
+        (.or (.and (.ge_const 1 3) (.and (.not (.ge_const 1 4)) (.and (.ge_const 2 3) (.not
+          (.ge_const 2 4)))))
+             (.and (.ge_const 1 3) (.and (.not (.ge_const 1 4)) (.and (.ge_const 2 5) (.not
+               (.ge_const 2 6))))))))
+
+def ps : TapePatternSet (Fin 2) (Fin 6) := [(pat_Master, cond_Master)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+/-! ### Level B: accelerated state machine -/
+
+/-- Left stack block `[0, 0, 1, 1]` (representing `1100` from left to right on the tape). -/
+abbrev U4 : List (Fin 2) := [0, 0, 1, 1]
+
+/-- Canonical left tape `LA a := [0, 0, 1, 1] ^ a` (blank beyond). -/
+def LA (a : Nat) : ListBlank (Fin 2) := ListBlank.append (U4 ^ a) default
+
+def R1_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight A (ListBlank.append [0, 0, 1] (LA n)) default
+
+def R2_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight A (ListBlank.append [0, 0, 1, 0, 0, 1] (LA n)) default
+
+def Q_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight A (ListBlank.append [0, 0, 1, 1, 1, 1] (LA n)) default
+
+def S4_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight A (ListBlank.append [0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1] (LA n)) default
+
+def S6_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) :=
+  Cfg.headRight A (ListBlank.append [0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1] (LA n)) default
+
+inductive State where
+  | R1 (n : ℕ)
+  | R2 (n : ℕ)
+  | Q (n : ℕ)
+  | S4 (n : ℕ)
+  | S6 (n : ℕ)
+
+def start : State := .S6 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .R1 n => R1_cfg n
+  | .R2 n => R2_cfg n
+  | .Q n => Q_cfg n
+  | .S4 n => S4_cfg n
+  | .S6 n => S6_cfg n
+
+/-- `P_cfg n` (`LA n {{A}}> default`): `P 0 ↦ S6 1`, `P 1 ↦ S4 0`, `P (n + 2) ↦ S6 n`. -/
+def next_P (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.S6 1)) fun n =>
+  Nat.casesOn n (some (.S4 0)) fun n' =>
+  some (.S6 n')
+
+/-- `R1 0 ↦ R1 4`, `R1 1 ↦ R1 6`, `R1 (n + 2) ↦ R1 (n + 7)`. -/
+def next_R1 (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.R1 4)) fun n =>
+  Nat.casesOn n (some (.R1 6)) fun n' =>
+  some (.R1 (n' + 7))
+
+/-- `T1_cfg n`: `T1 0 ↦ R1 7`, `T1 (n + 1) ↦ R1 (n + 8)`. -/
+def next_T1 (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.R1 7)) fun n' =>
+  some (.R1 (n' + 8))
+
+/-- `R3_cfg n`: `R3 0 ↦ T1 4`, `R3 1 ↦ T1 6`, `R3 (n + 2) ↦ T1 (n + 7)`. -/
+def next_R3 (n : ℕ) : Option State :=
+  Nat.casesOn n (next_T1 4) fun n =>
+  Nat.casesOn n (next_T1 6) fun n' =>
+  next_T1 (n' + 7)
+
+/-- `HubTail (a + 7) w r_R2`: consume `W8` blocks five at a time (`a ↦ a + 31`), branching on the
+remainder `w mod 5`. -/
+def next_HubTail_r_R2 : ℕ → ℕ → Option State
+  | a, 0 => some (.R1 (a + 8))
+  | a, 1 => some (.R2 (a + 11))
+  | a, 2 => some (.Q (a + 19))
+  | a, 3 => some (.R2 (a + 26))
+  | a, 4 => next_R3 (a + 32)
+  | a, w' + 5 => next_HubTail_r_R2 (a + 31) w'
+
+/-- `HubTail (a + 7) w r_3`; the remainder `w = 3` halts. -/
+def next_HubTail_r_3 : ℕ → ℕ → Option State
+  | a, 0 => some (.R1 (a + 10))
+  | a, 1 => some (.Q (a + 16))
+  | a, 2 => some (.R2 (a + 23))
+  | _, 3 => none
+  | a, 4 => some (.R2 (a + 37))
+  | a, w' + 5 => next_HubTail_r_3 (a + 31) w'
+
+/-- `HubTail (a + 7) w r_4`. -/
+def next_HubTail_r_4 : ℕ → ℕ → Option State
+  | a, 0 => next_T1 (a + 9)
+  | a, 1 => some (.R2 (a + 15))
+  | a, 2 => some (.R1 (a + 25))
+  | a, 3 => some (.S6 (a + 28))
+  | a, 4 => some (.R2 (a + 41))
+  | a, w' + 5 => next_HubTail_r_4 (a + 31) w'
+
+/-- `HubTail (a + 7) w r_5`. -/
+def next_HubTail_r_5 : ℕ → ℕ → Option State
+  | a, 0 => some (.R1 (a + 12))
+  | a, 1 => some (.R1 (a + 15))
+  | a, 2 => some (.R2 (a + 26))
+  | a, 3 => some (.Q (a + 34))
+  | a, 4 => next_T1 (a + 38)
+  | a, w' + 5 => next_HubTail_r_5 (a + 31) w'
+
+/-- Successor maps of the seven `Scan` prefixes `p0`, `p001010`, `p0010`, `p0010110`, `p00`,
+`p010`, `pnil`, each as a function of the offset `a` of `LA (a + 4)`, together with the two carry
+components `p0_next`/`p0010_next` giving the `p0`/`p0010` successor maps one `B4` block further
+(these let the bundles be defined by plain structural recursion on the block count). -/
+structure NextScanBundle where
+  p0 : ℕ → Option State
+  p001010 : ℕ → Option State
+  p0010 : ℕ → Option State
+  p0010110 : ℕ → Option State
+  p00 : ℕ → Option State
+  p010 : ℕ → Option State
+  pnil : ℕ → Option State
+  p0_next : ℕ → Option State
+  p0010_next : ℕ → Option State
+
+/-- `HubW8 (a + 7) w b rend`: consume `W8` blocks five at a time, then hand over to the `Scan`
+prefix selected by the remainder `w mod 5`. -/
+def next_HubW8 (nb : NextScanBundle) : ℕ → ℕ → Option State
+  | a, 0 => nb.p0 (a + 4)
+  | a, 1 => nb.p010 (a + 7)
+  | a, 2 => nb.p00 (a + 16)
+  | a, 3 => nb.p0010 (a + 22)
+  | a, 4 => nb.p001010 (a + 28)
+  | a, w' + 5 => next_HubW8 nb (a + 31) w'
+
+/-- `Scan (a + 4) b pfx r_Q` successor maps, by recursion on the number `b` of `B4` blocks. -/
+def next_ScanBundle_r_Q (b : ℕ) : NextScanBundle :=
+  Nat.rec
+    { p0 := fun a => some (.R1 (a + 4))
+      p001010 := fun a => next_P (a + 8)
+      p0010 := fun a => some (.R2 (a + 4))
+      p0010110 := fun a => next_P (a + 10)
+      p00 := fun a => some (.R1 (a + 4))
+      p010 := fun a => next_P (a + 7)
+      pnil := fun a => next_P (a + 5)
+      p0_next := fun a => some (.S6 (a + 2))
+      p0010_next := fun a => some (.R1 (a + 9)) }
+    (fun _ nb =>
+      { p0 := nb.p0_next
+        p001010 := fun a => nb.p0 (a + 6)
+        p0010 := nb.p0010_next
+        p0010110 := fun a => nb.p00 (a + 9)
+        p00 := fun a => nb.p010 (a + 3)
+        p010 := fun a => nb.pnil (a + 4)
+        pnil := fun a => nb.p0 (a + 3)
+        p0_next := fun a => next_HubW8 nb 0 ((a + 3) / 2)
+        p0010_next := fun a => nb.p0010110 (a + 5) })
+    b
+
+/-- `Scan (a + 4) b pfx r_S6` successor maps; the prefix `p0010110` with `b = 0` halts. -/
+def next_ScanBundle_r_S6 (b : ℕ) : NextScanBundle :=
+  Nat.rec
+    { p0 := fun a => some (.S4 (a + 9))
+      p001010 := fun a => next_T1 (a + 11)
+      p0010 := fun a => some (.R1 (a + 10))
+      p0010110 := fun _ => none
+      p00 := fun a => some (.R2 (a + 11))
+      p010 := fun a => some (.R1 (a + 14))
+      pnil := fun a => next_T1 (a + 8)
+      p0_next := fun a => next_HubTail_r_4 0 ((a + 1) / 2 + 1)
+      p0010_next := fun a => next_HubTail_r_3 0 ((a + 8) / 2) }
+    (fun _ nb =>
+      { p0 := nb.p0_next
+        p001010 := fun a => nb.p0 (a + 6)
+        p0010 := nb.p0010_next
+        p0010110 := fun a => nb.p00 (a + 9)
+        p00 := fun a => nb.p010 (a + 3)
+        p010 := fun a => nb.pnil (a + 4)
+        pnil := fun a => nb.p0 (a + 3)
+        p0_next := fun a => next_HubW8 nb 0 ((a + 3) / 2)
+        p0010_next := fun a => nb.p0010110 (a + 5) })
+    b
+
+/-- `Scan (a + 4) b pfx r_S4` successor maps. -/
+def next_ScanBundle_r_S4 (b : ℕ) : NextScanBundle :=
+  Nat.rec
+    { p0 := fun a => some (.R2 (a + 7))
+      p001010 := fun a => some (.R1 (a + 9))
+      p0010 := fun a => some (.R1 (a + 9))
+      p0010110 := fun a => some (.S4 (a + 9))
+      p00 := fun a => next_T1 (a + 4)
+      p010 := fun a => some (.Q (a + 9))
+      pnil := fun a => some (.R1 (a + 6))
+      p0_next := fun a => next_HubTail_r_5 0 ((a + 1) / 2 + 1)
+      p0010_next := fun a => some (.R1 (a + 13)) }
+    (fun _ nb =>
+      { p0 := nb.p0_next
+        p001010 := fun a => nb.p0 (a + 6)
+        p0010 := nb.p0010_next
+        p0010110 := fun a => nb.p00 (a + 9)
+        p00 := fun a => nb.p010 (a + 3)
+        p010 := fun a => nb.pnil (a + 4)
+        pnil := fun a => nb.p0 (a + 3)
+        p0_next := fun a => next_HubW8 nb 0 ((a + 3) / 2)
+        p0010_next := fun a => nb.p0010110 (a + 5) })
+    b
+
+/-- `R2 0 ↦ R1 4`; `R2 (n + 1)` drains `n` stack blocks in pairs into `HubTail 7 (n / 2) r_R2`. -/
+def next_R2 (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.R1 4)) fun n' =>
+  next_HubTail_r_R2 0 (n' / 2)
+
+/-- `Q 0 ↦ R1 6`; `Q (n + 1)` sweeps into `Scan 6 n p0010110 r_Q`. -/
+def next_Q (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.R1 6)) fun n' =>
+  (next_ScanBundle_r_Q n').p0010110 2
+
+/-- `S4 0 ↦ R1 10`; `S4 (n + 1)` sweeps into `Scan 6 n p0010110 r_S4`. -/
+def next_S4 (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.R1 10)) fun n' =>
+  (next_ScanBundle_r_S4 n').p0010110 2
+
+/-- `S6 0 ↦ R1 9`; `S6 1` drains into `HubTail 7 2 r_3`; `S6 (n + 2)` sweeps into
+`Scan 6 n p0010110 r_S6`. -/
+def next_S6 (n : ℕ) : Option State :=
+  Nat.casesOn n (some (.R1 9)) fun n =>
+  Nat.casesOn n (next_HubTail_r_3 0 2) fun n' =>
+  (next_ScanBundle_r_S6 n').p0010110 2
+
+/-- The accelerated Collatz-like transition function on the five core families. -/
+def next : State → Option State
+  | .R1 n => next_R1 n
+  | .R2 n => next_R2 n
+  | .Q n => next_Q n
+  | .S4 n => next_S4 n
+  | .S6 n => next_S6 n
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
 
 namespace M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -2407,6 +3323,46 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE
 
+namespace M_1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_HHH1LC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_---1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1, 1] 1 (.rep [0, 1] 0 .default)
+    head  := some C
+    right := .rep [1, 1] 2 (.rep [1, 0] 3 (.sym 1 (.sym 1 (.sym 1 (.sym 1 .default))))) }
+def ps : TapePatternSet (Fin 2) (Fin 6) := [(pat_A, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State
+  | mk (a k d c : ℕ)
+
+def start : State := .mk 0 0 0 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .mk a k d c => evalTapePattern pat_A fun i =>
+      if i = 0 then a else if i = 1 then k else if i = 2 then d else if i = 3 then c else 0
+
+def next : State → Option State
+  | .mk a (k + 1) d (c + 1) => some (.mk a k (d + 2) c)
+  | .mk a (k + 1) d 0       => some (.mk a (k + 1) 0 (d + 1))
+  | .mk (a + 1) 0 d (c + 2) => some (.mk a (d + 1) 2 c)
+  | .mk (a + 1) 0 d 1       => some (.mk a (d + 2) 0 1)
+  | .mk (a + 1) 0 d 0       => some (.mk a (d + 2) 0 0)
+  | .mk 0 0 d (c + 1)       => some (.mk (d + 1) 0 0 (c + 1))
+  | .mk 0 0 _ 0             => none
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_HHH1LC
+
 namespace M_1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_HHH0RA
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_---0RA"
@@ -2913,6 +3869,63 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE
 
+namespace M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_---0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_P1 : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1] 0 .default
+    head  := some A
+    right := .rep [1] 1 .default }
+
+/-- Hub Pattern 2: `P2(k, m, c) := 0^∞ (10)^(k+1) (11)^m A> 1^c 0^∞` (`k, m, c ∈ ℕ`). -/
+def pat_P2 : TapePattern (Fin 2) (Fin 6) :=
+  { left  := .rep [1, 1] 1 (.sym 0 (.sym 1 (.rep [0, 1] 0 .default)))
+    head  := some A
+    right := .rep [1] 2 .default }
+
+/-- The closed 2-hub pattern set `ps`. -/
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_P1, .true), (pat_P2, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State
+  | P_1 (a c : Nat)
+  | P_2 (k m c : Nat)
+
+def start : State := .P_1 2 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .P_1 a c => evalTapePattern pat_P1 (fun i => if i = 0 then a else if i = 1 then c else 0)
+  | .P_2 k m c => evalTapePattern pat_P2
+      (fun i => if i = 0 then k else if i = 1 then m else if i = 2 then c else 0)
+
+def next : State → Option State
+  | .P_1 a 0 => some (.P_1 2 (a + 1))
+  | .P_1 a 1 => some (.P_1 (a + 2) 0)
+  | .P_1 a (c + 2) =>
+    if a % 2 = 0 then some (.P_1 (a + 3) c)
+    else
+      Nat.casesOn c none fun c =>
+      Nat.casesOn c (some (.P_2 (a / 2) 1 0)) fun d =>
+      some (.P_2 (a / 2) 2 d)
+  | .P_2 k m 1 => some (.P_2 k (m + 1) 0)
+  | .P_2 0 m 0 => some (.P_1 0 (2 * m + 3))
+  | .P_2 (k + 1) m 0 => some (.P_2 k 0 (2 * m + 3))
+  | .P_2 0 m (d + 2) => some (.P_1 (2 * m + 4) d)
+  | .P_2 (k + 1) m (d + 2) => some (.P_2 k (m + 2) d)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+
 namespace M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_---0RE"
@@ -3345,5 +4358,157 @@ theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD
+
+namespace M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_P1 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .rep [0, 1] 0 (.rep [1, 0] 1 (.sym 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 (.sym 1 (.sym 1 .default))) }
+
+def pat_P2 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [0, 1] 0 (.rep [1, 0] 1 (.sym 1 (.sym 1 .default))))
+    head := some D
+    right := .rep [1, 0] 2 (.sym 1 (.sym 1 (.sym 1 (.sym 1 .default)))) }
+
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_P1, .true), (pat_P2, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State where
+  | P_1 (a b c : ℕ)
+  | P_2 (a b c : ℕ)
+  deriving DecidableEq, Repr
+
+def start : State := .P_1 1 0 0
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .P_1 a b c => evalTapePattern pat_P1
+      (fun i => if i = 0 then a else if i = 1 then b else if i = 2 then c else 0)
+  | .P_2 a b c => evalTapePattern pat_P2
+      (fun i => if i = 0 then a else if i = 1 then b else if i = 2 then c else 0)
+
+def next : State → Option State
+  | .P_1 0 _ 0 => none
+  | .P_1 (a + 1) b 0 => some (.P_2 2 (b + 1) a)
+  | .P_1 a 0 1 => some (.P_2 2 0 (a + 1))
+  | .P_1 a 0 (c + 2) => some (.P_1 (a + 4) 0 c)
+  | .P_1 a (b + 1) (c + 1) => some (.P_1 (a + 2) b c)
+  | .P_2 a b 0 => some (.P_1 1 (b + 2) (a + 1))
+  | .P_2 a 0 1 => some (.P_2 2 0 (a + 4))
+  | .P_2 _ 0 2 => none
+  | .P_2 a 0 (c + 3) => some (.P_2 2 (a + 2) c)
+  | .P_2 a (b + 1) (c + 1) => some (.P_2 (a + 2) b c)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+
+namespace M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_P1 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 (.rep [0, 1] 3 (.sym 1 .default))) }
+
+def pat_P2 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 .default) }
+
+def pat_P3 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 .default }
+
+def pat_P4 : TapePattern (Fin 2) (Fin 6) :=
+  { left := .sym 1 (.rep [1, 0] 0 (.rep [1] 1 .default))
+    head := some C
+    right := .rep [0, 1] 2 (.sym 1 (.rep [0, 1] 3 .default)) }
+
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_P1, .true), (pat_P2, .true), (pat_P3, .true), (pat_P4, .true)]
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+
+inductive State where
+  | P_1 (a b c d : ℕ)
+  | P_2 (a b c : ℕ)
+  | P_3 (a b c : ℕ)
+  | P_4 (a b c d : ℕ)
+  deriving DecidableEq, Repr
+
+def start : State := .P_2 0 0 2
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .P_1 a b c d => evalTapePattern pat_P1 fun i =>
+      if i = 0 then a else if i = 1 then b else if i = 2 then c else if i = 3 then d else 0
+  | .P_2 a b c => evalTapePattern pat_P2 fun i =>
+      if i = 0 then a else if i = 1 then b else if i = 2 then c else 0
+  | .P_3 a b c => evalTapePattern pat_P3 fun i =>
+      if i = 0 then a else if i = 1 then b else if i = 2 then c else 0
+  | .P_4 a b c d => evalTapePattern pat_P4 fun i =>
+      if i = 0 then a else if i = 1 then b else if i = 2 then c else if i = 3 then d else 0
+
+def next : State → Option State
+  | .P_1 0 b c 0 =>
+    if b % 2 = 0 then some (.P_2 0 0 (b / 2 + c + 2))
+    else some (.P_1 (b / 2 + c) 4 1 2)
+  | .P_1 1 0 c 0 => some (.P_1 c 4 1 2)
+  | .P_1 1 1 c 0 => some (.P_1 0 0 1 (c + 2))
+  | .P_1 1 2 c 0 => some (.P_2 0 2 (c + 3))
+  | .P_1 1 (_ + 3) _ 0 => none
+  | .P_1 (a + 2) b c 0 => some (.P_1 a b 1 (c + 2))
+  | .P_1 0 0 0 (_ + 1) => none
+  | .P_1 0 0 (c + 1) (d + 1) => some (.P_4 c 4 1 (d + 2))
+  | .P_1 0 (b' + 1) c (d + 1) =>
+    if (b' + 1) % 2 = 0 then some (.P_4 (b' / 2 + c) 4 1 (d + 2))
+    else some (.P_1 0 0 (b' / 2 + c + 2) d)
+  | .P_1 (a + 1) b c (d + 1) => some (.P_1 a b (c + 2) d)
+  | .P_2 0 0 0 => none
+  | .P_2 0 0 (c + 1) => some (.P_1 c 4 1 1)
+  | .P_2 0 (b' + 1) c =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 1)
+    else some (.P_3 0 0 (b' / 2 + c + 2))
+  | .P_2 (a + 1) b c => some (.P_3 a b (c + 2))
+  | .P_3 0 0 0 => none
+  | .P_3 0 0 (c + 1) => some (.P_1 c 4 1 2)
+  | .P_3 0 (b' + 1) c =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 2)
+    else some (.P_2 0 0 (b' / 2 + c + 2))
+  | .P_3 (a + 1) b c => some (.P_2 a b (c + 2))
+  | .P_4 0 0 0 0 => none
+  | .P_4 0 0 (c + 1) 0 => some (.P_1 c 4 1 1)
+  | .P_4 0 (b' + 1) c 0 =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 1)
+    else some (.P_3 0 0 (b' / 2 + c + 2))
+  | .P_4 (a + 1) b c 0 => some (.P_3 a b (c + 2))
+  | .P_4 0 0 0 (_ + 1) => none
+  | .P_4 0 0 (c + 1) (d + 1) => some (.P_1 c 4 1 (d + 2))
+  | .P_4 0 (b' + 1) c (d + 1) =>
+    if (b' + 1) % 2 = 0 then some (.P_1 (b' / 2 + c) 4 1 (d + 2))
+    else some (.P_4 0 0 (b' / 2 + c + 2) d)
+  | .P_4 (a + 1) b c (d + 1) => some (.P_4 a b (c + 2) d)
+
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+end M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD
 
 end BusyBeaver

@@ -325,8 +325,8 @@ theorem list_pow_zero (l : List Γ) : l ^ (0 : ℕ) = [] :=
 theorem list_pow_one (l : List Γ) : l ^ (1 : ℕ) = l := by
   simp [HPow.hPow]
 
-theorem list_pow_succ (l : List Γ) (n : ℕ) : l ^ (n + 1) = l ++ l ^ n := by
-  simp [HPow.hPow, List.replicate_succ]
+theorem list_pow_succ (l : List Γ) (n : ℕ) : l ^ (n + 1) = l ++ l ^ n :=
+  rfl
 
 theorem list_pow_add (l : List Γ) (m n : ℕ) : l ^ (m + n) = l ^ m ++ l ^ n := by
   change (List.replicate (m + n) l).flatten =
@@ -603,6 +603,22 @@ theorem StepsToClosed.of_reachesPlus {M : Machine Γ Λ} {ps : TapePatternSet Γ
   obtain ⟨cfg', h', h_end⟩ := hc₂
   exact ⟨cfg', h.trans h', h_end⟩
 
+theorem StepsToClosed.of_reachesStar {M : Machine Γ Λ} {ps : TapePatternSet Γ Λ}
+    {c₁ c₂ : Cfg Γ Λ} (h : ReachesStar M c₁ c₂) (hc₂ : StepsToClosed M ps c₂) :
+    StepsToClosed M ps c₁ := by
+  obtain ⟨cfg', h', h_end⟩ := hc₂
+  exact ⟨cfg', h.trans_plus h', h_end⟩
+
+theorem StepsToClosed.of_isInPatternSet {M : Machine Γ Λ} {ps : TapePatternSet Γ Λ}
+    {c₁ c₂ : Cfg Γ Λ} (h : ReachesPlus M c₁ c₂) (hc₂ : IsInPatternSet ps c₂) :
+    StepsToClosed M ps c₁ :=
+  ⟨c₂, h, Or.inl hc₂⟩
+
+theorem StepsToClosed.of_halting {M : Machine Γ Λ} {ps : TapePatternSet Γ Λ}
+    {c₁ c₂ : Cfg Γ Λ} (h : ReachesPlus M c₁ c₂) (hc₂ : (step M c₂).isNone) :
+    StepsToClosed M ps c₁ :=
+  ⟨c₂, h, Or.inr hc₂⟩
+
 /-! ## Collatz-Like Acceleration (`CollatzHalts`, `IsValidAcceleration`) -/
 
 theorem CollatzHalts.of_next_eq_none {S : Type*} {next : S → Option S} {s : S}
@@ -733,5 +749,71 @@ macro "bb_halt" : tactic =>
       ListBlank.head_default, ListBlank.head_default_fin, ListBlank.tail_default,
       ListBlank.cons_default_default, ListBlank.cons_zero_default]
     rfl))
+
+
+/-! ## Directed-Head and Reachability Notations -/
+
+@[inherit_doc ListBlank.cons]
+scoped notation:67 s:67 " << " a:68 => ListBlank.cons a s
+
+@[inherit_doc ListBlank.cons]
+scoped infixr:67 " >> " => ListBlank.cons
+
+@[inherit_doc ListBlank.append]
+scoped notation:67 s:67 " <+ " l:68 => ListBlank.append l s
+
+@[inherit_doc ListBlank.append]
+scoped infixr:67 " +> " => ListBlank.append
+
+@[inherit_doc Cfg.headRight]
+scoped notation3 l " {{" q "}}> " r => Cfg.headRight q l r
+
+@[inherit_doc Cfg.headLeft]
+scoped notation3 l " <{{" q "}} " r => Cfg.headLeft q l r
+
+@[inherit_doc step]
+scoped notation3 c₁ " [" M "]⊢ " c₂ => step M c₁ = some c₂
+
+@[inherit_doc multiStep]
+scoped notation3 c₁ " [" M "]⊢^{" n "} " c₂ => multiStep M c₁ n = some c₂
+
+@[inherit_doc ReachesStar]
+scoped notation3 c₁ " [" M "]⊢* " c₂ => ReachesStar M c₁ c₂
+
+@[inherit_doc ReachesPlus]
+scoped notation3 c₁ " [" M "]⊢⁺ " c₂ => ReachesPlus M c₁ c₂
+
+/-! ## Additional Half-Tape Power Lemmas -/
+
+theorem ListBlank.append_pow_add_rev (s : ListBlank Γ) (u : List Γ) (m n : ℕ) :
+    ListBlank.append (u ^ (m + n)) s = ListBlank.append (u ^ n) (ListBlank.append (u ^ m) s) := by
+  rw [Nat.add_comm, ListBlank.append_pow_add]
+
+theorem ListBlank.append_pow_succ' (u : List Γ) (k : ℕ) (r : ListBlank Γ) :
+    ListBlank.append (u ^ k) (ListBlank.append u r) = ListBlank.append (u ^ (k + 1)) r := by
+  rw [ListBlank.append_append, list_pow_succ']
+
+theorem default_append_01_pow (c : ℕ) :
+    ListBlank.append (([0, 1] : List (Fin 2)) ^ c) default =
+      ListBlank.cons 0 (ListBlank.append (([1, 0] : List (Fin 2)) ^ c) default) := by
+  conv_lhs => rw [ListBlank.default_eq_append_zero]
+  exact append_01_pow_zero c default
+
+theorem IsValidAcceleration.of_step {M : Machine Γ Λ} {S : Type*}
+    {start : S} {encode : S → Cfg Γ Λ} {next : S → Option S}
+    (h_init : ReachesStar M (init []) (encode start))
+    (h_step : ∀ s, match next s with
+      | some s' => ReachesPlus M (encode s) (encode s')
+      | none => ∃ cfg', ReachesStar M (encode s) cfg' ∧ (step M cfg').isNone) :
+    IsValidAcceleration M start encode next where
+  init_reaches := h_init
+  step_some s s' h := by
+    have hs := h_step s
+    rw [h] at hs
+    exact hs
+  step_none s h := by
+    have hs := h_step s
+    rw [h] at hs
+    exact hs
 
 end BusyBeaver
