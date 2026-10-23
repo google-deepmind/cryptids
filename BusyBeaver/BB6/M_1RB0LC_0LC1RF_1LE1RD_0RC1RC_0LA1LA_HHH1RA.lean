@@ -10,36 +10,37 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_---1RA`
 
-We define the configuration for $a, k, c \ge 0$:
+We define the configuration for $p \in \{0, 1\}$ (representing `false` and `true`) and $k, c \ge 0$:
 
 $$
-E(a, k, c) := 0^\infty \ 1^a \ \mathrm{A}{>} \ 0 \ (11)^k \ 0 \ 1^c \ 0^\infty.
+E(p, k, c) := 0^\infty \ 1^{3 + p} \ \mathrm{A}{>} \ 0 \ (11)^k \ 0 \ 1^c \ 0^\infty.
 $$
 
-Starting from $E(3, 0, 2)$ (reached after 23 steps from the blank tape), the machine follows the
-map $T$:
+Starting from $E(0, 0, 2)$ (i.e., $0^\infty \ 1^3 \ \mathrm{A}{>} \ 0 \ 0 \ 1^2 \ 0^\infty$,
+reached after 23 steps from the blank tape), every return to the $E$-family after draining the
+intermediate $k = 1$ / even-$c$ accumulation phases lands back in $a \in \{3, 4\}$
+($p \in \{0, 1\}$), following the closed-form map $T$:
 
 $$
-T(E(a, k, c)) = \begin{cases}
-  E(3, 0, a + 2) & \text{if } k = 0,\ c = 0, \\
-  E(3, m, 2j + 1) & \text{if } a = 2m,\ k = 0,\ c = 2j + 1, \\
-  E(4, m + 1, 2j + 1) & \text{if } a = 2m + 1,\ k = 0,\ c = 2j + 1, \\
-  E(0, 1, 2m + 2) & \text{if } a = 2m,\ k = 0,\ c = 2, \\
-  E(1, 1, 2m + 4) & \text{if } a = 2m + 1,\ k = 0,\ c = 2, \\
-  E(3, m + 1, 2j + 2) & \text{if } a = 2m,\ k = 0,\ c = 2j + 4, \\
-  E(4, m + 2, 2j + 2) & \text{if } a = 2m + 1,\ k = 0,\ c = 2j + 4, \\
-  E(a + 3, m, 0) & \text{if } k = 1,\ c = 2m, \\
-  \text{Halt} & \text{if } k = 1,\ c = 1, \\
-  E(3, 0, a + 7) & \text{if } k = 1,\ c = 3, \\
-  E(1, 1, 2m + 8) & \text{if } a = 2m,\ k = 1,\ c = 5, \\
-  E(0, 1, 2m + 8) & \text{if } a = 2m + 1,\ k = 1,\ c = 5, \\
-  E(4, m + 4, 2j + 2) & \text{if } a = 2m,\ k = 1,\ c = 2j + 7, \\
-  E(3, m + 4, 2j + 2) & \text{if } a = 2m + 1,\ k = 1,\ c = 2j + 7, \\
-  E(3, m + 1, 2k' + 1) & \text{if } a = 2m,\ k = k' + 2,\ c = 0, \\
-  E(4, m + 2, 2k' + 1) & \text{if } a = 2m + 1,\ k = k' + 2,\ c = 0, \\
-  E(a + 6\lfloor k/2 \rfloor, k \bmod 2, 2j + 1) & \text{if } k \ge 2,\ c = 2j + 1, \\
-  E(a + 3, 1, 2k' + 2) & \text{if } k = k' + 2,\ c = 2, \\
-  E(a + 6, k' + 1, 2j + 2) & \text{if } k = k' + 2,\ c = 2j + 4.
+T(E(p, k, c)) = \begin{cases}
+  E(1 - p,\ 3\lfloor k / 2 \rfloor + 2,\ c)
+    & \text{if } c \equiv 1 \pmod 2,\ k \equiv 0 \pmod 2, \\
+  \text{Halt}
+    & \text{if } c = 1,\ k \equiv 1 \pmod 2, \\
+  E(0,\ 0,\ 6\lfloor k / 2 \rfloor + 10 + p)
+    & \text{if } c = 3,\ k \equiv 1 \pmod 2, \\
+  E(p,\ 3\lfloor k / 2 \rfloor + 5 + p,\ c - 5)
+    & \text{if } c \ge 5,\ c \equiv 1 \pmod 2,\ k \equiv 1 \pmod 2, \\
+  E(0,\ 0,\ 6k + 5 + p)
+    & \text{if } c \equiv 0 \pmod 2,\ c = 2k, \\
+  E(0,\ 0,\ 6k + 2 + p)
+    & \text{if } c \equiv 0 \pmod 2,\ 2k = c + 2, \\
+  E(1 - p,\ 3(c / 2) + 3,\ 2k - c - 3)
+    & \text{if } c \equiv 0 \pmod 2,\ 2k \ge c + 4, \\
+  E(1 - p,\ 3,\ c - 2)
+    & \text{if } c \equiv 0 \pmod 2,\ c \ge 2,\ k = 0, \\
+  E(p,\ 3k + 1 + p,\ c - 2k - 1)
+    & \text{if } c \equiv 0 \pmod 2,\ c \ge 2k + 2,\ k \ge 1.
 \end{cases}
 $$
 -/
@@ -966,26 +967,18 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 
 /-! ## High-Level Collatz-Like Acceleration -/
 
-/-- Single-family high-level symbolic configuration state space for
-`1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_---1RA`. -/
-inductive HighLevelState where
-  /-- $E(a, k, c) := 0^\infty\,1^a\,\mathrm{A}{>}\,0\,(11)^k\,0\,1^c\,0^\infty$. -/
+private inductive PrevState where
   | E (a k c : ℕ)
 
-/-- Initial high-level symbolic state $E(3, 0, 2)$. -/
-def highLevelStart : HighLevelState := .E 3 0 2
+private def prevStart : PrevState := .E 3 0 2
 
-/-- Embed a `HighLevelState` into `State`. -/
-def toState : HighLevelState → State
+private def prevToState : PrevState → State
   | .E a k c => .E a k c
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
-  encode (toState s)
+private def prevEncode (s : PrevState) : Cfg (Fin 2) (Fin 6) :=
+  encode (prevToState s)
 
-/-- High-level accelerated transition function on $E(a, k, c)$, obtained by composing transitions
-through $M_1$ and $M_0$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
+private def prevNext : PrevState → Option PrevState
   | .E a 0 0 => some (.E 3 0 (a + 2))
   | .E a 0 (d + 1) =>
     if d % 2 = 0 then
@@ -1094,22 +1087,20 @@ private theorem reaches_E_odd_drain (a k d : ℕ) (hd : d % 2 ≠ 0) (hd1 : d �
   rw [hk1, hd1', ha, hk2, hd2] at h_star
   exact CollatzReachesPlus.head h1 (CollatzReachesStar.head h2 h_star)
 
-/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
-of `target`. -/
-theorem is_valid_highLevel_acceleration :
-    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := toState)
+private theorem is_valid_prev_acceleration :
+    IsValidAcceleration target prevStart prevEncode prevNext := by
+  refine is_valid_acceleration.of_collatz (embed := prevToState)
     (CollatzReachesStar.refl next start) ?_
   rintro ⟨a, k, c⟩
   rcases k with _ | _ | k
   · rcases c with _ | d
     · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
-    · dsimp [highLevelNext]
+    · dsimp [prevNext]
       split_ifs <;>
-        exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, *]))
+        exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, prevToState, *]))
   · by_cases hc2 : c % 2 = 0
-    · simp only [highLevelNext, hc2, ↓reduceIte]
-      exact CollatzStepsTo.of_eq (by simp [next, toState, hc2])
+    · simp only [prevNext, hc2, ↓reduceIte]
+      exact CollatzStepsTo.of_eq (by simp [next, prevToState, hc2])
     · by_cases hc1 : c = 1
       · subst hc1
         exact CollatzStepsTo.of_eq rfl
@@ -1118,49 +1109,362 @@ theorem is_valid_highLevel_acceleration :
           exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
         · by_cases hc5 : c = 5
           · subst hc5
-            dsimp [highLevelNext]
+            dsimp [prevNext]
             split_ifs with ha
-            · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, ha]))
-            · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, ha]))
+            · exact CollatzStepsTo.head rfl
+                (CollatzStepsTo.of_eq (by simp [next, prevToState, ha]))
+            · exact CollatzStepsTo.head rfl
+                (CollatzStepsTo.of_eq (by simp [next, prevToState, ha]))
           · have h_sub : c - 3 = (c - 4) + 1 := by omega
             have h_mod : (c - 4) % 2 ≠ 0 := by omega
             have h_ne1 : c - 4 ≠ 1 := by omega
             have h_sub2 : c - 4 - 1 = c - 5 := by omega
             have h_step1 : next (.E a 1 c) = some (.M_0 (a + 5) ((c - 4) + 1)) := by
               simp [next, hc2, hc1, h_sub]
-            simp only [highLevelNext, hc2, hc1, hc3, hc5, ↓reduceIte]
+            simp only [prevNext, hc2, hc1, hc3, hc5, ↓reduceIte]
             split_ifs with ha
             · exact CollatzStepsTo.head h_step1
-                (CollatzStepsTo.of_eq (by simp [next, toState, h_mod, h_ne1, ha, h_sub2]))
+                (CollatzStepsTo.of_eq (by simp [next, prevToState, h_mod, h_ne1, ha, h_sub2]))
             · exact CollatzStepsTo.head h_step1
-                (CollatzStepsTo.of_eq (by simp [next, toState, h_mod, h_ne1, ha, h_sub2]))
+                (CollatzStepsTo.of_eq (by simp [next, prevToState, h_mod, h_ne1, ha, h_sub2]))
   · rcases c with _ | d
     · have hd_mod : (2 * k) % 2 = 0 := by omega
       have h_step1 : next (.E a (k + 2) 0) = some (.M_0 (a + 2) (2 * k + 1)) := rfl
-      dsimp [highLevelNext]
+      dsimp [prevNext]
       split_ifs with ha
       · have ha' : a % 2 = 0 := by omega
         exact CollatzStepsTo.head h_step1
-          (CollatzStepsTo.of_eq (by simp [next, toState, hd_mod, ha']))
+          (CollatzStepsTo.of_eq (by simp [next, prevToState, hd_mod, ha']))
       · have ha' : a % 2 ≠ 0 := by omega
         exact CollatzStepsTo.head h_step1
-          (CollatzStepsTo.of_eq (by simp [next, toState, hd_mod, ha']))
+          (CollatzStepsTo.of_eq (by simp [next, prevToState, hd_mod, ha']))
     · by_cases hd : d % 2 = 0
-      · have h_eq : Option.map toState (highLevelNext (.E a (k + 2) (d + 1))) =
+      · have h_eq : Option.map prevToState (prevNext (.E a (k + 2) (d + 1))) =
             some (.E (a + 6 * (k / 2 + 1)) (k % 2) (d + 1)) := by
-          dsimp [highLevelNext]; split_ifs; rfl
+          dsimp [prevNext]; split_ifs; rfl
         rw [h_eq]
         exact reaches_E_even_drain a k d hd
       · by_cases hd1 : d = 1
         · subst hd1
           exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
-        · have h_eq : Option.map toState (highLevelNext (.E a (k + 2) (d + 1))) =
+        · have h_eq : Option.map prevToState (prevNext (.E a (k + 2) (d + 1))) =
               some (.E (a + 6 * min (k + 1) (d / 2))
                 (k + 2 - min (k + 1) (d / 2))
                 (d + 1 - 2 * min (k + 1) (d / 2))) := by
-            dsimp [highLevelNext]; split_ifs; rfl
+            dsimp [prevNext]; split_ifs; rfl
           rw [h_eq]
           exact reaches_E_odd_drain a k d hd hd1
+
+/-- Reduced high-level symbolic configuration state space for
+`1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_---1RA`, restricting $a$ to $\{3, 4\}$ via `p : Bool`. -/
+inductive HighLevelState where
+  /-- $E(p, k, c) := 0^\infty\,1^{3 + p}\,\mathrm{A}{>}\,0\,(11)^k\,0\,1^c\,0^\infty$ where
+  `p = false` encodes $a = 3$ and `p = true` encodes $a = 4$. -/
+  | E (p : Bool) (k c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $E(\mathrm{false}, 0, 2) = E(3, 0, 2)$. -/
+def highLevelStart : HighLevelState := .E false 0 2
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .E p k c => .E (if p then 4 else 3) k c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Closed-form high-level accelerated transition function on $E(p, k, c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E p k c =>
+    if c % 2 = 1 then
+      if k % 2 = 0 then some (.E (!p) (3 * (k / 2) + 2) c)
+      else if c = 1 then none
+      else if c = 3 then some (.E false 0 (6 * (k / 2) + (if p then 11 else 10)))
+      else some (.E p (3 * (k / 2) + (if p then 6 else 5)) (c - 5))
+    else if c = 2 * k then
+      some (.E false 0 (6 * k + (if p then 6 else 5)))
+    else if 2 * k = c + 2 then
+      some (.E false 0 (6 * k + (if p then 3 else 2)))
+    else if 2 * k ≥ c + 4 then
+      some (.E (!p) (3 * (c / 2) + 3) (2 * k - c - 3))
+    else if k = 0 then
+      some (.E (!p) 3 (c - 2))
+    else
+      some (.E p (3 * k + (if p then 2 else 1)) (c - 2 * k - 1))
+
+private def toPrev : HighLevelState → PrevState
+  | .E p k c => .E (if p then 4 else 3) k c
+
+local macro "some_E_omega" : tactic =>
+  `(tactic| (rw [Option.some.injEq, PrevState.E.injEq]; refine ⟨by omega, by omega, by omega⟩))
+
+local macro "prev_eq" : tactic =>
+  `(tactic|
+    (simp only [prevNext]; split_ifs <;> first | rfl | contradiction | omega | some_E_omega))
+
+local macro "hl_eq" : tactic =>
+  `(tactic| (unfold highLevelNext; split_ifs <;>
+    first | rfl | contradiction | omega | (dsimp only [Option.map, toPrev, Bool.not]; split_ifs <;>
+      first | rfl | contradiction | some_E_omega)))
+
+private theorem stepsTo_odd_c (p : Bool) (k c : ℕ) (hc_odd : c % 2 = 1) :
+    CollatzStepsTo prevNext (toPrev (.E p k c)) ((highLevelNext (.E p k c)).map toPrev) := by
+  have hc_pos : c = (c - 1) + 1 := by omega
+  by_cases hk_even : k % 2 = 0
+  · have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+        some (.E (if !p then 4 else 3) (3 * (k / 2) + 2) c) := by cases p <;> hl_eq
+    rw [hrhs]
+    rcases k with _ | _ | kp
+    · rw [hc_pos]
+      cases p <;> (dsimp only [toPrev, Bool.not]; exact CollatzStepsTo.of_eq (by prev_eq))
+    · omega
+    · rw [hc_pos]
+      cases p <;> dsimp only [toPrev, Bool.not]
+      · have s1 : prevNext (.E 3 (kp + 2) ((c - 1) + 1)) =
+            some (.E (3 + 6 * (kp / 2 + 1)) 0 ((c - 1) + 1)) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.of_eq (by prev_eq))
+      · have s1 : prevNext (.E 4 (kp + 2) ((c - 1) + 1)) =
+            some (.E (4 + 6 * (kp / 2 + 1)) 0 ((c - 1) + 1)) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.of_eq (by prev_eq))
+  · have h1 : ∀ (a0 q : ℕ),
+        (a0 = 3 ∧ p = false ∨ a0 = 4 ∧ p = true) →
+        CollatzStepsTo prevNext (.E (a0 + 6 * q) 1 c)
+          (if c = 1 then none
+           else if c = 3 then some (.E 3 0 (6 * q + (if p then 11 else 10)))
+           else some (.E a0 (3 * q + (if p then 6 else 5)) (c - 5))) := by
+      rintro a0 q (⟨rfl, rfl⟩ | ⟨rfl, rfl⟩)
+      · by_cases hc1 : c = 1
+        · subst hc1; exact CollatzStepsTo.of_eq rfl
+        · by_cases hc3 : c = 3
+          · subst hc3
+            rw [show (if 3 = 1 then none else if 3 = 3 then _ else _) =
+              some (PrevState.E 3 0 (6 * q + 10)) by rfl]
+            exact CollatzStepsTo.of_eq (by prev_eq)
+          · have hr : (if c = 1 then none
+                else if c = 3 then some (PrevState.E 3 0 (6 * q + (if false then 11 else 10)))
+                else some (PrevState.E 3 (3 * q + (if false then 6 else 5)) (c - 5))) =
+                some (.E 3 (3 * q + 5) (c - 5)) := by
+              split_ifs <;> first | rfl | contradiction
+            rw [hr]
+            by_cases hc5 : c = 5
+            · subst hc5
+              have s1 : prevNext (.E (3 + 6 * q) 1 5) = some (.E 0 1 (10 + 6 * q)) := by prev_eq
+              exact CollatzStepsTo.head s1 (CollatzStepsTo.of_eq (by prev_eq))
+            · exact CollatzStepsTo.of_eq (by prev_eq)
+      · by_cases hc1 : c = 1
+        · subst hc1; exact CollatzStepsTo.of_eq rfl
+        · by_cases hc3 : c = 3
+          · subst hc3
+            rw [show (if 3 = 1 then none else if 3 = 3 then _ else _) =
+              some (PrevState.E 3 0 (6 * q + 11)) by rfl]
+            exact CollatzStepsTo.of_eq (by prev_eq)
+          · have hr : (if c = 1 then none
+                else if c = 3 then some (PrevState.E 3 0 (6 * q + (if true then 11 else 10)))
+                else some (PrevState.E 4 (3 * q + (if true then 6 else 5)) (c - 5))) =
+                some (.E 4 (3 * q + 6) (c - 5)) := by
+              split_ifs <;> first | rfl | contradiction
+            rw [hr]
+            by_cases hc5 : c = 5
+            · subst hc5
+              have s1 : prevNext (.E (4 + 6 * q) 1 5) = some (.E 1 1 (12 + 6 * q)) := by prev_eq
+              exact CollatzStepsTo.head s1 (CollatzStepsTo.of_eq (by prev_eq))
+            · exact CollatzStepsTo.of_eq (by prev_eq)
+    have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+        (if c = 1 then none
+         else if c = 3 then some (.E 3 0 (6 * (k / 2) + (if p then 11 else 10)))
+         else some (.E (if p then 4 else 3) (3 * (k / 2) + (if p then 6 else 5)) (c - 5))) := by
+      cases p <;> hl_eq
+    rw [hrhs]
+    rcases k with _ | _ | kp
+    · omega
+    · have h0 : (if p then 4 else 3) = (if p then 4 else 3) + 6 * (1 / 2) := by omega
+      dsimp only [toPrev]
+      rw [h0]
+      exact h1 (if p then 4 else 3) (1 / 2) (by cases p <;> simp)
+    · have s1 : prevNext (.E (if p then 4 else 3) (kp + 2) ((c - 1) + 1)) =
+          some (.E ((if p then 4 else 3) + 6 * ((kp + 2) / 2)) 1 ((c - 1) + 1)) := by
+        cases p <;> prev_eq
+      rw [← hc_pos] at s1
+      exact CollatzStepsTo.head s1
+        (h1 (if p then 4 else 3) ((kp + 2) / 2) (by cases p <;> simp))
+
+private theorem stepsTo_even_near (p : Bool) (k c : ℕ) (hc_odd : ¬c % 2 = 1)
+    (hnear : c = 2 * k ∨ 2 * k = c + 2) :
+    CollatzStepsTo prevNext (toPrev (.E p k c)) ((highLevelNext (.E p k c)).map toPrev) := by
+  by_cases hc_eq_2k : c = 2 * k
+  · have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+        some (.E 3 0 (6 * k + (if p then 6 else 5))) := by cases p <;> hl_eq
+    rw [hrhs]
+    subst hc_eq_2k
+    rcases k with _ | _ | kp
+    · cases p <;> exact CollatzStepsTo.of_eq rfl
+    · cases p <;>
+        exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl))
+    · cases p <;> dsimp only [toPrev]
+      · have s1 : prevNext (.E 3 (kp + 2) ((2 * kp + 3) + 1)) =
+            some (.E (3 + 6 * (kp + 1)) 1 2) := by prev_eq
+        rw [show (2 * kp + 3) + 1 = 2 * (kp + 2) by omega] at s1
+        have s2 : prevNext (.E (3 + 6 * (kp + 1)) 1 2) =
+            some (.E (6 + 6 * (kp + 1)) 1 0) := by prev_eq
+        have s3 : prevNext (.E (6 + 6 * (kp + 1)) 1 0) =
+            some (.E (9 + 6 * (kp + 1)) 0 0) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.head s2
+          (CollatzStepsTo.head s3 (CollatzStepsTo.of_eq (by prev_eq))))
+      · have s1 : prevNext (.E 4 (kp + 2) ((2 * kp + 3) + 1)) =
+            some (.E (4 + 6 * (kp + 1)) 1 2) := by prev_eq
+        rw [show (2 * kp + 3) + 1 = 2 * (kp + 2) by omega] at s1
+        have s2 : prevNext (.E (4 + 6 * (kp + 1)) 1 2) =
+            some (.E (7 + 6 * (kp + 1)) 1 0) := by prev_eq
+        have s3 : prevNext (.E (7 + 6 * (kp + 1)) 1 0) =
+            some (.E (10 + 6 * (kp + 1)) 0 0) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.head s2
+          (CollatzStepsTo.head s3 (CollatzStepsTo.of_eq (by prev_eq))))
+  · have h2k_eq_c2 : 2 * k = c + 2 := by omega
+    have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+        some (.E 3 0 (6 * k + (if p then 3 else 2))) := by cases p <;> hl_eq
+    rw [hrhs]
+    rcases k with _ | _ | _ | kp
+    · omega
+    · have hc0 : c = 0 := by omega
+      subst hc0
+      cases p <;> exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+    · have hc2 : c = 2 := by omega
+      subst hc2
+      cases p <;> exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl
+        (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)))
+    · have hc_eq : c = (2 * kp + 3) + 1 := by omega
+      rw [hc_eq]
+      cases p <;> dsimp only [toPrev]
+      · have s1 : prevNext (.E 3 (kp + 3) ((2 * kp + 3) + 1)) =
+            some (.E (3 + 6 * (kp + 1)) 2 2) := by prev_eq
+        have s2 : prevNext (.E (3 + 6 * (kp + 1)) 2 2) =
+            some (.E (6 + 6 * (kp + 1)) 1 2) := by prev_eq
+        have s3 : prevNext (.E (6 + 6 * (kp + 1)) 1 2) =
+            some (.E (9 + 6 * (kp + 1)) 1 0) := by prev_eq
+        have s4 : prevNext (.E (9 + 6 * (kp + 1)) 1 0) =
+            some (.E (12 + 6 * (kp + 1)) 0 0) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.head s2
+          (CollatzStepsTo.head s3 (CollatzStepsTo.head s4 (CollatzStepsTo.of_eq (by prev_eq)))))
+      · have s1 : prevNext (.E 4 (kp + 3) ((2 * kp + 3) + 1)) =
+            some (.E (4 + 6 * (kp + 1)) 2 2) := by prev_eq
+        have s2 : prevNext (.E (4 + 6 * (kp + 1)) 2 2) =
+            some (.E (7 + 6 * (kp + 1)) 1 2) := by prev_eq
+        have s3 : prevNext (.E (7 + 6 * (kp + 1)) 1 2) =
+            some (.E (10 + 6 * (kp + 1)) 1 0) := by prev_eq
+        have s4 : prevNext (.E (10 + 6 * (kp + 1)) 1 0) =
+            some (.E (13 + 6 * (kp + 1)) 0 0) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.head s2
+          (CollatzStepsTo.head s3 (CollatzStepsTo.head s4 (CollatzStepsTo.of_eq (by prev_eq)))))
+
+private theorem stepsTo_even_ge (p : Bool) (k c : ℕ) (hc_odd : ¬c % 2 = 1)
+    (hc_eq_2k : ¬c = 2 * k) (h2k_eq_c2 : ¬2 * k = c + 2) (h2k_ge : 2 * k ≥ c + 4) :
+    CollatzStepsTo prevNext (toPrev (.E p k c)) ((highLevelNext (.E p k c)).map toPrev) := by
+  have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+      some (.E (if !p then 4 else 3) (3 * (c / 2) + 3) (2 * k - c - 3)) := by
+    cases p <;> hl_eq
+  rw [hrhs]
+  rcases k with _ | _ | kp
+  · omega
+  · omega
+  · by_cases hc0 : c = 0
+    · subst hc0
+      cases p <;> (dsimp only [toPrev, Bool.not]; exact CollatzStepsTo.of_eq (by prev_eq))
+    · by_cases hc2 : c = 2
+      · subst hc2
+        cases p <;> dsimp only [toPrev, Bool.not]
+        · have s1 : prevNext (.E 3 (kp + 2) 2) = some (.E 6 1 (2 * kp + 2)) := rfl
+          have s2 : prevNext (.E 6 1 (2 * kp + 2)) =
+              some (.E 9 ((kp - 1) + 2) 0) := by prev_eq
+          exact CollatzStepsTo.head s1
+            (CollatzStepsTo.head s2 (CollatzStepsTo.of_eq (by prev_eq)))
+        · have s1 : prevNext (.E 4 (kp + 2) 2) = some (.E 7 1 (2 * kp + 2)) := rfl
+          have s2 : prevNext (.E 7 1 (2 * kp + 2)) =
+              some (.E 10 ((kp - 1) + 2) 0) := by prev_eq
+          exact CollatzStepsTo.head s1
+            (CollatzStepsTo.head s2 (CollatzStepsTo.of_eq (by prev_eq)))
+      · have hc_eq : c = (c - 1) + 1 := by omega
+        cases p <;> dsimp only [toPrev, Bool.not]
+        · have s1 : prevNext (.E 3 (kp + 2) c) =
+              some (.E (3 + 6 * (c / 2 - 1)) ((kp + 1 - c / 2) + 2) 2) := by
+            rw [hc_eq]; prev_eq
+          have s2 : prevNext (.E (3 + 6 * (c / 2 - 1)) ((kp + 1 - c / 2) + 2) 2) =
+              some (.E (6 + 6 * (c / 2 - 1)) 1 (2 * (kp + 1 - c / 2) + 2)) := by prev_eq
+          have s3 : prevNext (.E (6 + 6 * (c / 2 - 1)) 1 (2 * (kp + 1 - c / 2) + 2)) =
+              some (.E (3 + 6 * (c / 2)) ((kp - c / 2) + 2) 0) := by prev_eq
+          exact CollatzStepsTo.head s1 (CollatzStepsTo.head s2
+            (CollatzStepsTo.head s3 (CollatzStepsTo.of_eq (by prev_eq))))
+        · have s1 : prevNext (.E 4 (kp + 2) c) =
+              some (.E (4 + 6 * (c / 2 - 1)) ((kp + 1 - c / 2) + 2) 2) := by
+            rw [hc_eq]; prev_eq
+          have s2 : prevNext (.E (4 + 6 * (c / 2 - 1)) ((kp + 1 - c / 2) + 2) 2) =
+              some (.E (7 + 6 * (c / 2 - 1)) 1 (2 * (kp + 1 - c / 2) + 2)) := by prev_eq
+          have s3 : prevNext (.E (7 + 6 * (c / 2 - 1)) 1 (2 * (kp + 1 - c / 2) + 2)) =
+              some (.E (4 + 6 * (c / 2)) ((kp - c / 2) + 2) 0) := by prev_eq
+          exact CollatzStepsTo.head s1 (CollatzStepsTo.head s2
+            (CollatzStepsTo.head s3 (CollatzStepsTo.of_eq (by prev_eq))))
+
+private theorem stepsTo_even_lt (p : Bool) (k c : ℕ) (hc_odd : ¬c % 2 = 1)
+    (hc_eq_2k : ¬c = 2 * k) (h2k_eq_c2 : ¬2 * k = c + 2) (h2k_ge : ¬2 * k ≥ c + 4) :
+    CollatzStepsTo prevNext (toPrev (.E p k c)) ((highLevelNext (.E p k c)).map toPrev) := by
+  by_cases hk0 : k = 0
+  · have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+        some (.E (if !p then 4 else 3) 3 (c - 2)) := by cases p <;> hl_eq
+    rw [hrhs]
+    subst hk0
+    by_cases hc2 : c = 2
+    · subst hc2
+      cases p <;> exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+    · have hc_eq : c = (c - 1) + 1 := by omega
+      rw [hc_eq]
+      cases p <;> (dsimp only [toPrev, Bool.not]; exact CollatzStepsTo.of_eq (by prev_eq))
+  · have hrhs : ((highLevelNext (.E p k c)).map toPrev) =
+        some (.E (if p then 4 else 3) (3 * k + (if p then 2 else 1))
+          (c - 2 * k - 1)) := by cases p <;> hl_eq
+    rw [hrhs]
+    rcases k with _ | _ | kp
+    · omega
+    · cases p <;> dsimp only [toPrev]
+      · have s1 : prevNext (.E 3 1 c) = some (.E 6 ((c / 2 - 2) + 2) 0) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.of_eq (by prev_eq))
+      · have s1 : prevNext (.E 4 1 c) = some (.E 7 ((c / 2 - 2) + 2) 0) := by prev_eq
+        exact CollatzStepsTo.head s1 (CollatzStepsTo.of_eq (by prev_eq))
+    · have hc_eq : c = (c - 1) + 1 := by omega
+      rw [hc_eq]
+      cases p <;> dsimp only [toPrev]
+      · have s1 : prevNext (.E 3 (kp + 2) ((c - 1) + 1)) =
+            some (.E (3 + 6 * (kp + 1)) 1 (c - 2 * kp - 2)) := by prev_eq
+        have s2 : prevNext (.E (3 + 6 * (kp + 1)) 1 (c - 2 * kp - 2)) =
+            some (.E (6 + 6 * (kp + 1)) ((c / 2 - kp - 3) + 2) 0) := by prev_eq
+        exact CollatzStepsTo.head s1
+          (CollatzStepsTo.head s2 (CollatzStepsTo.of_eq (by prev_eq)))
+      · have s1 : prevNext (.E 4 (kp + 2) ((c - 1) + 1)) =
+            some (.E (4 + 6 * (kp + 1)) 1 (c - 2 * kp - 2)) := by prev_eq
+        have s2 : prevNext (.E (4 + 6 * (kp + 1)) 1 (c - 2 * kp - 2)) =
+            some (.E (7 + 6 * (kp + 1)) ((c / 2 - kp - 3) + 2) 0) := by prev_eq
+        exact CollatzStepsTo.head s1
+          (CollatzStepsTo.head s2 (CollatzStepsTo.of_eq (by prev_eq)))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  have h_enc : highLevelEncode = fun u => prevEncode (toPrev u) := by
+    funext ⟨_, _, _⟩
+    rfl
+  rw [h_enc]
+  refine is_valid_prev_acceleration.of_collatz (embed := toPrev)
+    (CollatzReachesStar.refl prevNext prevStart) ?_
+  rintro ⟨p, k, c⟩
+  by_cases hc_odd : c % 2 = 1
+  · exact stepsTo_odd_c p k c hc_odd
+  · by_cases hc_eq_2k : c = 2 * k
+    · exact stepsTo_even_near p k c hc_odd (Or.inl hc_eq_2k)
+    · by_cases h2k_eq_c2 : 2 * k = c + 2
+      · exact stepsTo_even_near p k c hc_odd (Or.inr h2k_eq_c2)
+      · by_cases h2k_ge : 2 * k ≥ c + 4
+        · exact stepsTo_even_ge p k c hc_odd hc_eq_2k h2k_eq_c2 h2k_ge
+        · exact stepsTo_even_lt p k c hc_odd hc_eq_2k h2k_eq_c2 h2k_ge
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

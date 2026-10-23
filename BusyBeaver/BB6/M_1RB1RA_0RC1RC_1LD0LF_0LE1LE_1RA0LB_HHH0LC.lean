@@ -70,6 +70,13 @@ D296(0, b, c+1, d)  -> D231(b+2, 0, c, d)
 
 Start: D7(0, 0), reached after 12 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+`HighLevelState` and `highLevelNext` collapse all 12 `State` families (`D7..D296`, up to 4
+counters) with zero recursive helpers into a single closed-form map over `D(p, x, d)` (`p : Bool`,
+`x d : ℕ`), where `D(false, x, d)` encodes `D76(0, x, d)` and `D(true, x, d)` encodes
+`D231(0, 0, x, d)`, starting from `D(true, 3, 1)`.
 -/
 
 @[expose] public section
@@ -1064,5 +1071,361 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Single-family state space `D(p, x, d)` for the high-level Collatz-like acceleration
+(`p = false` represents `D76(0, x, d)`; `p = true` represents `D231(0, 0, x, d)`). -/
+inductive HighLevelState where
+  | D (p : Bool) (x d : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial state `D true 3 1` (`D231(0, 0, 3, 1)`), reached from `start = D7(0, 0)` in 4 steps. -/
+def highLevelStart : HighLevelState := .D true 3 1
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .D false x d => .D76 0 x d
+  | .D true x d => .D231 0 0 x d
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- High-level closed-form transition function collapsing all 12 `State` families into
+`D(p, x, d)`. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .D false x 0 =>
+    let k := (x + 2) / 2
+    if x % 2 = 0 then
+      if (3 * k + 4) % 2 = 0 then none
+      else some (.D true 3 (3 * ((3 * k + 4) / 2) + 4))
+    else
+      some (.D true 3 (3 * k + 6))
+  | .D false x (d + 1) =>
+    let k := (x + 2) / 2
+    if x % 2 = 0 then some (.D true (3 * k + 3) d)
+    else some (.D false (3 * k + 3) d)
+  | .D true x d =>
+    let k := x / 2
+    if x % 2 = 0 then some (.D false (3 * k + 1) d)
+    else if d = 0 then
+      if (3 * k + 6) % 2 = 0 then none
+      else some (.D true 3 (3 * ((3 * k + 6) / 2) + 4))
+    else some (.D true (3 * k + 5) (d - 1))
+
+private theorem reachesStar_trans {s₁ s₂ s₃ : State}
+    (h₁ : CollatzReachesStar next s₁ s₂) (h₂ : CollatzReachesStar next s₂ s₃) :
+    CollatzReachesStar next s₁ s₃ := by
+  obtain ⟨m, hm⟩ := h₁
+  obtain ⟨n, hn⟩ := h₂
+  refine ⟨m + n, ?_⟩
+  unfold CollatzReachesIn at *
+  rw [Nat.add_comm, Function.iterate_add_apply, hm, hn]
+
+private theorem shift_D7 : ∀ (a b : ℕ),
+    CollatzReachesStar next (.D7 a b) (.D7 0 (a + b))
+  | 0, b => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b => by
+    have ih := shift_D7 a (b + 1)
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D74 : ∀ (a b : ℕ),
+    CollatzReachesStar next (.D74 a b) (.D74 0 (a + b))
+  | 0, b => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b => by
+    have ih := shift_D74 a (b + 1)
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D75 : ∀ (a b c : ℕ),
+    CollatzReachesStar next (.D75 a b c) (.D75 0 (a + b) c)
+  | 0, b, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c => by
+    have ih := shift_D75 a (b + 1) c
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D76 : ∀ (a b c : ℕ),
+    CollatzReachesStar next (.D76 a b c) (.D76 0 (a + b) c)
+  | 0, b, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c => by
+    have ih := shift_D76 a (b + 1) c
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D77 : ∀ (a b c d : ℕ),
+    CollatzReachesStar next (.D77 a b c d) (.D77 0 (a + b) c d)
+  | 0, b, _, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c, d => by
+    have ih := shift_D77 a (b + 1) c d
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D158 : ∀ (a b c : ℕ),
+    CollatzReachesStar next (.D158 a b c) (.D158 0 (a + b) c)
+  | 0, b, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c => by
+    have ih := shift_D158 a (b + 1) c
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D160 : ∀ (a b c : ℕ),
+    CollatzReachesStar next (.D160 a b c) (.D160 0 (a + b) c)
+  | 0, b, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c => by
+    have ih := shift_D160 a (b + 1) c
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D162 : ∀ (a b c d : ℕ),
+    CollatzReachesStar next (.D162 a b c d) (.D162 0 (a + b) c d)
+  | 0, b, _, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c, d => by
+    have ih := shift_D162 a (b + 1) c d
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D230 : ∀ (a b c : ℕ),
+    CollatzReachesStar next (.D230 a b c) (.D230 0 (a + b) c)
+  | 0, b, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c => by
+    have ih := shift_D230 a (b + 1) c
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D231 : ∀ (a b c d : ℕ),
+    CollatzReachesStar next (.D231 a b c d) (.D231 0 (a + b) c d)
+  | 0, b, _, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c, d => by
+    have ih := shift_D231 a (b + 1) c d
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D294 : ∀ (a b c : ℕ),
+    CollatzReachesStar next (.D294 a b c) (.D294 0 (a + b) c)
+  | 0, b, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c => by
+    have ih := shift_D294 a (b + 1) c
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem shift_D296 : ∀ (a b c d : ℕ),
+    CollatzReachesStar next (.D296 a b c d) (.D296 0 (a + b) c d)
+  | 0, b, _, _ => by rw [Nat.zero_add]; exact CollatzReachesStar.refl next _
+  | a + 1, b, c, d => by
+    have ih := shift_D296 a (b + 1) c d
+    have hab : a + (b + 1) = a + 1 + b := by omega
+    rw [hab] at ih
+    exact CollatzReachesStar.head rfl ih
+
+private theorem drain_D75 : ∀ (k n r : ℕ),
+    CollatzReachesStar next (.D75 0 n (2 * k + r)) (.D75 0 (n + 3 * k) r)
+  | 0, n, r => by
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | k + 1, n, r => by
+    have h1 : next (.D75 0 n (2 * (k + 1) + r)) = some (.D160 (n + 1) 0 (2 * k + r + 1)) := by
+      have hc : 2 * (k + 1) + r = (2 * k + r + 1) + 1 := by omega
+      rw [hc]
+      rfl
+    have ih := drain_D75 k (n + 3) r
+    have hn : n + 3 + 3 * k = n + 3 * (k + 1) := by omega
+    rw [hn] at ih
+    exact CollatzReachesStar.head h1
+      (reachesStar_trans (shift_D160 (n + 1) 0 _)
+        (CollatzReachesStar.head rfl
+          (reachesStar_trans (shift_D75 (n + 3) 0 _) ih)))
+
+private theorem drain_D77 : ∀ (k n r d : ℕ),
+    CollatzReachesStar next (.D77 0 n (2 * k + r) d) (.D77 0 (n + 3 * k) r d)
+  | 0, n, r, _ => by
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | k + 1, n, r, d => by
+    have h1 : next (.D77 0 n (2 * (k + 1) + r) d) =
+        some (.D162 (n + 1) 0 (2 * k + r + 1) d) := by
+      have hc : 2 * (k + 1) + r = (2 * k + r + 1) + 1 := by omega
+      rw [hc]
+      rfl
+    have ih := drain_D77 k (n + 3) r d
+    have hn : n + 3 + 3 * k = n + 3 * (k + 1) := by omega
+    rw [hn] at ih
+    exact CollatzReachesStar.head h1
+      (reachesStar_trans (shift_D162 (n + 1) 0 _ d)
+        (CollatzReachesStar.head rfl
+          (reachesStar_trans (shift_D77 (n + 3) 0 _ d) ih)))
+
+private theorem drain_D230 : ∀ (k n r : ℕ),
+    CollatzReachesStar next (.D230 0 n (2 * k + r)) (.D230 0 (n + 3 * k) r)
+  | 0, n, r => by
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | k + 1, n, r => by
+    have h1 : next (.D230 0 n (2 * (k + 1) + r)) = some (.D294 (n + 1) 0 (2 * k + r)) := by
+      have hc : 2 * (k + 1) + r = (2 * k + r) + 2 := by omega
+      rw [hc]
+      rfl
+    have ih := drain_D230 k (n + 3) r
+    have hn : n + 3 + 3 * k = n + 3 * (k + 1) := by omega
+    rw [hn] at ih
+    exact CollatzReachesStar.head h1
+      (reachesStar_trans (shift_D294 (n + 1) 0 _)
+        (CollatzReachesStar.head rfl
+          (reachesStar_trans (shift_D230 (n + 3) 0 _) ih)))
+
+private theorem drain_D231 : ∀ (k n r d : ℕ),
+    CollatzReachesStar next (.D231 0 n (2 * k + r) d) (.D231 0 (n + 3 * k) r d)
+  | 0, n, r, _ => by
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | k + 1, n, r, d => by
+    have h1 : next (.D231 0 n (2 * (k + 1) + r) d) =
+        some (.D296 (n + 1) 0 (2 * k + r + 1) d) := by
+      have hc : 2 * (k + 1) + r = (2 * k + r + 1) + 1 := by omega
+      rw [hc]
+      rfl
+    have ih := drain_D231 k (n + 3) r d
+    have hn : n + 3 + 3 * k = n + 3 * (k + 1) := by omega
+    rw [hn] at ih
+    exact CollatzReachesStar.head h1
+      (reachesStar_trans (shift_D296 (n + 1) 0 _ d)
+        (CollatzReachesStar.head rfl
+          (reachesStar_trans (shift_D231 (n + 3) 0 _ d) ih)))
+
+private theorem stepsTo_D74 (b : ℕ) :
+    CollatzStepsTo next (.D74 0 b) (some (.D231 0 0 3 (b + 3))) :=
+  CollatzStepsTo.head rfl
+    (CollatzStepsTo.of_reachesStar (shift_D7 (b + 2) 0)
+      (CollatzStepsTo.head rfl
+        (CollatzStepsTo.head rfl
+          (CollatzStepsTo.head rfl
+            (CollatzStepsTo.of_eq rfl)))))
+
+private theorem stepsTo_D230 (c : ℕ) :
+    CollatzStepsTo next (.D230 0 0 c)
+      ((if c % 2 = 0 then none
+        else some (HighLevelState.D true 3 (3 * (c / 2) + 4))).map toState) := by
+  have h_drain := drain_D230 (c / 2) 0 (c % 2)
+  have hc : 2 * (c / 2) + c % 2 = c := by omega
+  rw [hc, Nat.zero_add] at h_drain
+  refine CollatzStepsTo.of_reachesStar h_drain ?_
+  by_cases hr0 : c % 2 = 0
+  · simp only [hr0, ↓reduceIte]
+    exact CollatzStepsTo.of_eq rfl
+  · have hr1 : c % 2 = 1 := by omega
+    simp only [hr1]
+    exact CollatzStepsTo.head rfl
+      (CollatzStepsTo.of_reachesStar (shift_D74 (3 * (c / 2) + 1) 0)
+        (stepsTo_D74 (3 * (c / 2) + 1)))
+
+private theorem start_reaches_highLevelStart :
+    CollatzReachesStar next start (toState highLevelStart) :=
+  CollatzReachesStar.head rfl
+    (CollatzReachesStar.head rfl
+      (CollatzReachesStar.head rfl
+        (CollatzReachesStar.single rfl)))
+
+private theorem stepsTo_D_false_zero (x : ℕ) :
+    CollatzStepsTo next (.D76 0 x 0) ((highLevelNext (.D false x 0)).map toState) := by
+  refine CollatzStepsTo.head rfl ?_
+  have h_drain := drain_D75 ((x + 2) / 2) 0 ((x + 2) % 2)
+  have hx : 2 * ((x + 2) / 2) + (x + 2) % 2 = x + 2 := by omega
+  rw [hx, Nat.zero_add] at h_drain
+  refine CollatzStepsTo.of_reachesStar h_drain ?_
+  dsimp only [highLevelNext]
+  by_cases hx0 : x % 2 = 0
+  · have hx2 : (x + 2) % 2 = 0 := by omega
+    simp only [hx0, ↓reduceIte, hx2]
+    exact CollatzStepsTo.head rfl
+      (CollatzStepsTo.of_reachesStar (shift_D158 (3 * ((x + 2) / 2) + 1) 0 0)
+        (CollatzStepsTo.head rfl
+          (stepsTo_D230 (3 * ((x + 2) / 2) + 4))))
+  · have hx2 : (x + 2) % 2 = 1 := by omega
+    simp only [hx0, ↓reduceIte, hx2]
+    exact CollatzStepsTo.head rfl
+      (CollatzStepsTo.of_reachesStar (shift_D160 (3 * ((x + 2) / 2) + 1) 0 0)
+        (CollatzStepsTo.head rfl
+          (CollatzStepsTo.of_reachesStar (shift_D74 (3 * ((x + 2) / 2) + 3) 0)
+            (stepsTo_D74 (3 * ((x + 2) / 2) + 3)))))
+
+private theorem stepsTo_D_false_succ (x d : ℕ) :
+    CollatzStepsTo next (.D76 0 x (d + 1))
+      ((highLevelNext (.D false x (d + 1))).map toState) := by
+  refine CollatzStepsTo.head rfl ?_
+  have h_drain := drain_D77 ((x + 2) / 2) 0 ((x + 2) % 2) d
+  have hx : 2 * ((x + 2) / 2) + (x + 2) % 2 = x + 2 := by omega
+  rw [hx, Nat.zero_add] at h_drain
+  refine CollatzStepsTo.of_reachesStar h_drain ?_
+  dsimp only [highLevelNext]
+  by_cases hx0 : x % 2 = 0
+  · have hx2 : (x + 2) % 2 = 0 := by omega
+    simp only [hx0, ↓reduceIte, hx2]
+    exact CollatzStepsTo.head rfl
+      (CollatzStepsTo.of_reachesStar (shift_D158 (3 * ((x + 2) / 2) + 1) 0 (d + 1))
+        (CollatzStepsTo.of_eq rfl))
+  · have hx2 : (x + 2) % 2 = 1 := by omega
+    simp only [hx0, ↓reduceIte, hx2]
+    exact CollatzStepsTo.head rfl
+      (CollatzStepsTo.of_reachesStar (shift_D162 (3 * ((x + 2) / 2) + 1) 0 0 d)
+        (CollatzReachesPlus.head rfl (shift_D76 (3 * ((x + 2) / 2) + 3) 0 d)))
+
+private theorem stepsTo_D_true (x d : ℕ) :
+    CollatzStepsTo next (.D231 0 0 x d) ((highLevelNext (.D true x d)).map toState) := by
+  have h_drain := drain_D231 (x / 2) 0 (x % 2) d
+  have hx : 2 * (x / 2) + x % 2 = x := by omega
+  rw [hx, Nat.zero_add] at h_drain
+  refine CollatzStepsTo.of_reachesStar h_drain ?_
+  dsimp only [highLevelNext]
+  by_cases hx0 : x % 2 = 0
+  · simp only [hx0, ↓reduceIte]
+    exact CollatzReachesPlus.head rfl (shift_D76 (3 * (x / 2) + 1) 0 d)
+  · have hx1 : x % 2 = 1 := by omega
+    simp only [hx1]
+    refine CollatzStepsTo.head rfl
+      (CollatzStepsTo.of_reachesStar (shift_D296 (3 * (x / 2) + 1) 0 0 d)
+        (CollatzStepsTo.head rfl
+          (CollatzStepsTo.of_reachesStar (shift_D158 (3 * (x / 2) + 3) 0 d) ?_)))
+    rcases d with _ | d
+    · simp only [↓reduceIte]
+      exact CollatzStepsTo.head rfl (stepsTo_D230 (3 * (x / 2) + 6))
+    · have hd_ne : d + 1 ≠ 0 := by omega
+      simp only [hd_ne, ↓reduceIte, Nat.add_sub_cancel]
+      exact CollatzStepsTo.of_eq rfl
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState) start_reaches_highLevelStart ?_
+  rintro ⟨_ | _, x, d⟩
+  · rcases d with _ | d
+    · exact stepsTo_D_false_zero x
+    · exact stepsTo_D_false_succ x d
+  · exact stepsTo_D_true x d
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1RA_0RC1RC_1LD0LF_0LE1LE_1RA0LB_HHH0LC

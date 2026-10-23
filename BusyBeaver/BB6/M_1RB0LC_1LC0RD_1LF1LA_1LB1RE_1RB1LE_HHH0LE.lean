@@ -43,6 +43,16 @@ C(1, 2k+1, 1, d) -> C(0, 0, k+2, d+1)
 
 Start: C(2, 0, 0, 0), reached after 118 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Eliminating $a$ and $f$ reduces the 4-counter dynamics $C(a, f, g, d)$ to the 2-counter family
+$\{C_0(g, d), C_2(g, d), C_5(g, d)\}$ corresponding to $C(a_0, 0, g, d)$ with
+$a_0 \in \{0, 2, 5\}$, starting at $C_2(0, 0)$:
+- Every configuration drains $a$ modulo $2$ via
+  $C(a, f, g, d) \to^* C(a \bmod 2, f + 3\lfloor a / 2 \rfloor, g, d)$.
+- `scanG` collapses the entire $g \mapsto g - 2$ scan together with the interleaved parity drains
+  on $a$ until $g \in \{0, 1\}$, exiting directly to $C_0$, $C_2$, $C_5$, or halting (`none`).
 -/
 
 @[expose] public section
@@ -1161,5 +1171,141 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Two-counter symbolic state space for the high-level Collatz-like acceleration of
+`1RB0LC_1LC0RD_1LF1LA_1LB1RE_1RB1LE_---0LE`, corresponding to $C(a_0, 0, g, d)$ with
+$a_0 \in \{0, 2, 5\}$. -/
+inductive HighLevelState where
+  /-- $C_0(g, d) := C(0, 0, g, d)$. -/
+  | C0 (g d : ℕ)
+  /-- $C_2(g, d) := C(2, 0, g, d)$. -/
+  | C2 (g d : ℕ)
+  /-- $C_5(g, d) := C(5, 0, g, d)$. -/
+  | C5 (g d : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $C_2(0, 0) = C(2, 0, 0, 0)$. -/
+def highLevelStart : HighLevelState := .C2 0 0
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C0 g d => .C 0 0 g d
+  | .C2 g d => .C 2 0 g d
+  | .C5 g d => .C 5 0 g d
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Scan the counter $g$ from $C(\text{if } r \text{ then } 1 \text{ else } 0, f, g, d)$,
+collapsing each $g \mapsto g - 2$ step together with the subsequent parity drain of $a$ until
+$g \in \{0, 1\}$. -/
+def scanG (r : Bool) (f g d : ℕ) : Option HighLevelState :=
+  if g = 0 then
+    if !r then
+      if f % 2 = 0 then some (.C2 (f / 2 + 2) d)
+      else some (.C5 (f / 2 + 1) d)
+    else
+      if f % 2 = 0 then some (.C0 (f / 2 + 3) d)
+      else none
+  else if g = 1 then
+    if !r then
+      if f = 0 then some (.C2 0 (d + 2))
+      else if f % 2 = 0 then some (.C5 (f / 2 - 1) (d + 1))
+      else some (.C2 (f / 2 + 1) (d + 1))
+    else
+      if f % 2 = 0 then none
+      else some (.C0 (f / 2 + 2) (d + 1))
+  else
+    let s := f + 3 + if r then 1 else 0
+    scanG (decide (s % 2 = 1)) (3 * (s / 2) + 3) (g - 2) d
+termination_by g
+decreasing_by omega
+
+/-- High-level accelerated Collatz-like transition function on $C_0(g, d)$, $C_2(g, d)$, and
+$C_5(g, d)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C0 g d => scanG false 0 g d
+  | .C2 g d => scanG false 3 g d
+  | .C5 g d => scanG true 6 g d
+
+private theorem reaches_drain_a (k : ℕ) : ∀ (r f g d : ℕ),
+    CollatzReachesStar next (.C (2 * k + r) f g d) (.C r (f + 3 * k) g d) := by
+  induction k with
+  | zero =>
+    intro r f g d
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | succ k ih =>
+    intro r f g d
+    have hstep : next (.C (2 * (k + 1) + r) f g d) = some (.C (2 * k + r) (f + 3) g d) := by
+      rw [show 2 * (k + 1) + r = (2 * k + r) + 2 by omega]
+      rfl
+    have ih' := ih r (f + 3) g d
+    rw [show f + 3 + 3 * k = f + 3 * (k + 1) by omega] at ih'
+    exact CollatzReachesStar.head hstep ih'
+
+private theorem stepsTo_scanG (g : ℕ) : ∀ (r : Bool) (f d : ℕ),
+    CollatzStepsTo next (.C (if r then 1 else 0) f g d) ((scanG r f g d).map toState) := by
+  induction g using Nat.strong_induction_on with
+  | _ g ih =>
+    intro r f d
+    rw [scanG]
+    rcases eq_or_ne g 0 with rfl | hg0
+    · simp only [↓reduceIte]
+      cases r
+      · by_cases hf : f % 2 = 0 <;>
+          exact CollatzStepsTo.of_eq (by simp [next, hf, toState])
+      · by_cases hf : f % 2 = 0 <;>
+          exact CollatzStepsTo.of_eq (by simp [next, hf, toState])
+    · rcases eq_or_ne g 1 with rfl | hg1
+      · simp only [hg0, ↓reduceIte]
+        cases r
+        · by_cases hf0 : f = 0
+          · subst hf0
+            exact CollatzStepsTo.of_eq rfl
+          · by_cases hf : f % 2 = 0 <;>
+              exact CollatzStepsTo.of_eq (by simp [next, hf0, hf, toState])
+        · by_cases hf : f % 2 = 0 <;>
+            exact CollatzStepsTo.of_eq (by simp [next, hf, toState])
+      · simp only [hg0, hg1, ↓reduceIte]
+        obtain ⟨g', rfl⟩ : ∃ g', g = g' + 2 := ⟨g - 2, by omega⟩
+        simp only [Nat.add_sub_cancel]
+        set s := f + 3 + if r then 1 else 0
+        have hstep : next (.C (if r then 1 else 0) f (g' + 2) d) = some (.C s 3 g' d) := by
+          cases r <;> rfl
+        have hd := reaches_drain_a (s / 2) (s % 2) 3 g' d
+        rw [Nat.div_add_mod] at hd
+        have h_rem : s % 2 = if decide (s % 2 = 1) then 1 else 0 := by
+          rcases Nat.mod_two_eq_zero_or_one s with hs | hs <;> simp [hs]
+        have h_div : 3 + 3 * (s / 2) = 3 * (s / 2) + 3 := by omega
+        rw [h_rem, h_div] at hd
+        exact CollatzStepsTo.head hstep
+          (CollatzStepsTo.of_reachesStar hd
+            (ih g' (by omega) (decide (s % 2 = 1)) (3 * (s / 2) + 3) d))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState) (CollatzReachesStar.refl next start) ?_
+  rintro (⟨g, d⟩ | ⟨g, d⟩ | ⟨g, d⟩)
+  · exact stepsTo_scanG g false 0 d
+  · exact CollatzStepsTo.head rfl (stepsTo_scanG g false 3 d)
+  · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_scanG g true 6 d))
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0LC_1LC0RD_1LF1LA_1LB1RE_1RB1LE_HHH0LE

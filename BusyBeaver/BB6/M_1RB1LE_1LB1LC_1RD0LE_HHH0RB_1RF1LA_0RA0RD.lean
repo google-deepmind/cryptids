@@ -50,6 +50,25 @@ F(d, 2k+5, b, 0)      -> E((d+1) % 2, d+1, 2k+1, b+3)
 
 Start: E(1, 3, 0, 0), reached after 12 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Restricting to canonical parity $q = a \bmod 2$ (`E(a, b, c) := E(a \bmod 2, a, b, c)`),
+contracting the odd-$a$ drain $E(1, 2k + 5, b, c) \to E(1, 2k + 3, b + 6, c)$ in closed form, and
+eliminating the even-block $F$-sweeps via `evalF0`, `evalF1`, and `evalFGe2` yields a
+single-family, 3-counter map $T$ on $E(a, b, c)$ starting at $E(3, 0, 0)$:
+
+$$
+T(E(a, b, c)) = \begin{cases}
+  F_0(\lfloor a / 2 \rfloor, b, c) & \text{if } a \text{ is even}, \\
+  \text{Halt} & \text{if } a = 1, \\
+  E(b + 3a - 6, c + 3, 0) & \text{if } a \ge 3 \text{ is odd},
+\end{cases}
+$$
+
+where $F_0(k, b, c)$, $F_1(k, b, c)$, and $F_{\ge 2}(d, k, b, c)$ (corresponding to
+$F(0, 2k, b, c)$, $F(1, 2k, b, c)$, and $F(d + 2, 2k, b, c)$) evaluate to $E(a', b', c')$ or
+$\text{Halt}$ with termination measure $5k + 3b + 4c$ on $F_{\ge 2}$.
 -/
 
 @[expose] public section
@@ -1068,5 +1087,262 @@ theorem is_closed_pattern_set : IsClosedPatternSet target ps := by
 /-- `1RB1LE_1LB1LC_1RD0LE_---0RB_1RF1LA_0RA0RD` has a Collatz-like reduction. -/
 theorem has_collatz_reduction : HasCollatzReduction target :=
   ⟨ps, is_closed_pattern_set⟩
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Single-family high-level symbolic configuration state space
+$E(a, b, c) := 0^\infty\,\mathrm{E}{>}\,0\,0^{a \bmod 2}\,1^a\,0\,1^b\,0\,1^c\,0^\infty$
+for `1RB1LE_1LB1LC_1RD0LE_---0RB_1RF1LA_0RA0RD`. -/
+inductive HighLevelState where
+  /-- $E(a, b, c) := 0^\infty\,\mathrm{E}{>}\,0\,0^{a \bmod 2}\,1^a\,0\,1^b\,0\,1^c\,0^\infty$. -/
+  | E (a b c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $E(3, 0, 0)$, corresponding to $E(1, 3, 0, 0)$. -/
+def highLevelStart : HighLevelState := .E 3 0 0
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .E a b c => mkE a b c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Outcome of $F(d + 2, 2k, b, c)$ when run until returning to $E$ or halting. -/
+def evalFGe2 (d k b c : ℕ) : Option HighLevelState :=
+  if k = 0 then
+    if b = 0 then
+      if c = 0 then some (.E (d + 3) 3 0)
+      else evalFGe2 (d + 1) 0 c 0
+    else if b % 2 = 0 then evalFGe2 (d + 1) (b / 2) c 0
+    else if b = 1 then none
+    else if b = 3 then some (.E (d + c + 5) 3 0)
+    else some (.E (d + 4) (b - 4) (c + 3))
+  else if k = 1 then
+    some (.E (d + 1) (b + 4) c)
+  else
+    evalFGe2 (d + 1) (k - 2) (b + 3) c
+termination_by 5 * k + 3 * b + 4 * c
+decreasing_by all_goals omega
+
+/-- Outcome of $F(1, 2k, b, c)$ when run until returning to $E$ or halting. -/
+def evalF1 (k b c : ℕ) : Option HighLevelState :=
+  if k = 0 then
+    if b = 0 then
+      if c = 0 then some (.E 2 3 0)
+      else evalFGe2 0 0 c 0
+    else if b % 2 = 0 then evalFGe2 0 (b / 2) c 0
+    else if b = 1 then none
+    else if b = 3 then some (.E (c + 4) 3 0)
+    else some (.E 3 (b - 4) (c + 3))
+  else if k = 1 then
+    if b % 2 = 1 then some (.E (b + 4) c 0)
+    else evalFGe2 0 (b / 2) (c + 3) 0
+  else
+    evalFGe2 0 (k - 2) (b + 3) c
+
+/-- Outcome of $F(0, 2k, b, c)$ when run until returning to $E$ or halting. -/
+def evalF0 (k b c : ℕ) : Option HighLevelState :=
+  if k = 0 then
+    if b = 0 then
+      if c = 0 then some (.E 1 3 0)
+      else evalF1 0 c 0
+    else if b % 2 = 0 then evalF1 (b / 2) c 0
+    else if b = 1 then none
+    else if b = 3 then some (.E (c + 3) 3 0)
+    else some (.E 2 (b - 4) (c + 3))
+  else if k = 1 then
+    some (.E (b + 2) (c + 3) 0)
+  else
+    evalF1 (k - 2) (b + 3) c
+
+/-- High-level accelerated Collatz-like transition function on $E(a, b, c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E a b c =>
+    if a % 2 = 0 then evalF0 (a / 2) b c
+    else if a = 1 then none
+    else some (.E (b + 3 * a - 6) (c + 3) 0)
+
+private theorem stepsTo_evalFGe2_aux (M : ℕ) :
+    ∀ d k b c, 5 * k + 3 * b + 4 * c = M →
+      CollatzStepsTo next (.F_even (d + 2) k b c) ((evalFGe2 d k b c).map toState) := by
+  induction M using Nat.strongRecOn with
+  | ind M ih =>
+    intro d k b c hM
+    rw [evalFGe2]
+    split_ifs with hk0 hb0 hc0 hb_even hb1 hb3 hk1
+    · subst hk0 hb0 hc0
+      exact CollatzStepsTo.of_eq rfl
+    · subst hk0 hb0
+      obtain ⟨c', rfl⟩ : ∃ c', c = c' + 1 := ⟨c - 1, by omega⟩
+      exact CollatzStepsTo.head rfl
+        (ih (5 * 0 + 3 * (c' + 1) + 4 * 0) (by omega) (d + 1) 0 (c' + 1) 0 rfl)
+    · subst hk0
+      obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+      have h1 :
+          next (.F_even (d + 2) 0 (b' + 1) c) =
+            some (.F_even ((d + 1) + 2) ((b' + 1) / 2) c 0) := by
+        simp [next, enterF_c0, hb_even]
+      exact CollatzStepsTo.head h1
+        (ih (5 * ((b' + 1) / 2) + 3 * c + 4 * 0) (by omega)
+          (d + 1) ((b' + 1) / 2) c 0 rfl)
+    · subst hk0 hb1
+      exact CollatzStepsTo.of_eq rfl
+    · subst hk0 hb3
+      refine CollatzStepsTo.of_eq ?_
+      change some (mkE (d + 2 + 1 + c + 2) 3 0) = some (mkE (d + c + 5) 3 0)
+      exact congrArg (fun m => some (mkE m 3 0)) (by omega)
+    · subst hk0
+      obtain ⟨b', rfl⟩ : ∃ b', b = b' + 5 := ⟨b - 5, by omega⟩
+      refine CollatzStepsTo.of_eq ?_
+      simp [next, enterF_c0, hb_even, toState]
+    · subst hk1
+      exact CollatzStepsTo.of_eq rfl
+    · obtain ⟨k', rfl⟩ : ∃ k', k = k' + 2 := ⟨k - 2, by omega⟩
+      exact CollatzStepsTo.head rfl
+        (ih (5 * k' + 3 * (b + 3) + 4 * c) (by omega) (d + 1) k' (b + 3) c rfl)
+
+private theorem stepsTo_evalFGe2 (d k b c : ℕ) :
+    CollatzStepsTo next (.F_even (d + 2) k b c) ((evalFGe2 d k b c).map toState) :=
+  stepsTo_evalFGe2_aux (5 * k + 3 * b + 4 * c) d k b c rfl
+
+private theorem stepsTo_evalF1 (k b c : ℕ) :
+    CollatzStepsTo next (.F_even 1 k b c) ((evalF1 k b c).map toState) := by
+  unfold evalF1
+  split_ifs with hk0 hb0 hc0 hb_even hb1 hb3 hk1 hb_odd
+  · subst hk0 hb0 hc0
+    exact CollatzStepsTo.of_eq rfl
+  · subst hk0 hb0
+    obtain ⟨c', rfl⟩ : ∃ c', c = c' + 1 := ⟨c - 1, by omega⟩
+    exact CollatzStepsTo.head rfl (stepsTo_evalFGe2 0 0 (c' + 1) 0)
+  · subst hk0
+    obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+    have h1 :
+        next (.F_even 1 0 (b' + 1) c) =
+          some (.F_even 2 ((b' + 1) / 2) c 0) := by
+      simp [next, enterF_c0, hb_even]
+    exact CollatzStepsTo.head h1 (stepsTo_evalFGe2 0 ((b' + 1) / 2) c 0)
+  · subst hk0 hb1
+    exact CollatzStepsTo.of_eq rfl
+  · subst hk0 hb3
+    refine CollatzStepsTo.of_eq ?_
+    change some (mkE (1 + 1 + c + 2) 3 0) = some (mkE (c + 4) 3 0)
+    exact congrArg (fun m => some (mkE m 3 0)) (by omega)
+  · subst hk0
+    obtain ⟨b', rfl⟩ : ∃ b', b = b' + 5 := ⟨b - 5, by omega⟩
+    refine CollatzStepsTo.of_eq ?_
+    simp [next, enterF_c0, hb_even, toState]
+  · subst hk1
+    have hpar : (b + 4) % 2 = 1 := by omega
+    refine CollatzStepsTo.of_eq ?_
+    simp [next, toState, mkE, hpar]
+  · subst hk1
+    have h1 : next (.F_even 1 1 b c) = some (.E true ((b + 3) + 1) c 0) := rfl
+    have hb4_even : (b + 4) % 2 = 0 := by omega
+    have h2 : next (.E true ((b + 3) + 1) c 0) = some (.F_even 1 (b / 2 + 2) c 0) := by
+      change enterF_d1 (b + 4) c 0 = _
+      simp only [enterF_d1, hb4_even, ite_true, Option.some.injEq, State.F_even.injEq,
+        true_and, and_true]
+      omega
+    have h3 : next (.F_even 1 (b / 2 + 2) c 0) = some (.F_even 2 (b / 2) (c + 3) 0) := rfl
+    exact CollatzStepsTo.head h1
+      (CollatzStepsTo.head h2
+        (CollatzStepsTo.head h3 (stepsTo_evalFGe2 0 (b / 2) (c + 3) 0)))
+  · obtain ⟨k', rfl⟩ : ∃ k', k = k' + 2 := ⟨k - 2, by omega⟩
+    exact CollatzStepsTo.head rfl (stepsTo_evalFGe2 0 k' (b + 3) c)
+
+private theorem stepsTo_evalF0 (k b c : ℕ) :
+    CollatzStepsTo next (.F_even 0 k b c) ((evalF0 k b c).map toState) := by
+  unfold evalF0
+  split_ifs with hk0 hb0 hc0 hb_even hb1 hb3 hk1
+  · subst hk0 hb0 hc0
+    exact CollatzStepsTo.of_eq rfl
+  · subst hk0 hb0
+    obtain ⟨c', rfl⟩ : ∃ c', c = c' + 1 := ⟨c - 1, by omega⟩
+    exact CollatzStepsTo.head rfl (stepsTo_evalF1 0 (c' + 1) 0)
+  · subst hk0
+    obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+    have h1 :
+        next (.F_even 0 0 (b' + 1) c) =
+          some (.F_even 1 ((b' + 1) / 2) c 0) := by
+      simp [next, enterF_c0, hb_even]
+    exact CollatzStepsTo.head h1 (stepsTo_evalF1 ((b' + 1) / 2) c 0)
+  · subst hk0 hb1
+    exact CollatzStepsTo.of_eq rfl
+  · subst hk0 hb3
+    refine CollatzStepsTo.of_eq ?_
+    change some (mkE (0 + 1 + c + 2) 3 0) = some (mkE (c + 3) 3 0)
+    exact congrArg (fun m => some (mkE m 3 0)) (by omega)
+  · subst hk0
+    obtain ⟨b', rfl⟩ : ∃ b', b = b' + 5 := ⟨b - 5, by omega⟩
+    refine CollatzStepsTo.of_eq ?_
+    simp [next, enterF_c0, hb_even, toState]
+  · subst hk1
+    exact CollatzStepsTo.of_eq rfl
+  · obtain ⟨k', rfl⟩ : ∃ k', k = k' + 2 := ⟨k - 2, by omega⟩
+    exact CollatzStepsTo.head rfl (stepsTo_evalF1 k' (b + 3) c)
+
+private theorem reaches_E_odd_drain : ∀ (m b c : ℕ),
+    CollatzReachesStar next (.E true (2 * m + 3) b c) (.E true 3 (b + 6 * m) c)
+  | 0, b, c => by
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | m + 1, b, c => by
+    have h1 : next (.E true (2 * (m + 1) + 3) b c) =
+        some (.E true (2 * m + 3) (b + 6) c) := by
+      have ha : 2 * (m + 1) + 3 = (2 * m + 4) + 1 := by omega
+      have hodd : (2 * m + 5) % 2 = 1 := by omega
+      rw [ha]
+      change enterF_d1 (2 * m + 5) b c = _
+      simp only [enterF_d1, hodd, one_ne_zero, ite_false]
+      split_ifs with h1' h3'
+      · omega
+      · omega
+      · exact congrArg (fun x => some (State.E true x (b + 6) c)) (by omega)
+    have ih := reaches_E_odd_drain m (b + 6) c
+    have hb : b + 6 + 6 * m = b + 6 * (m + 1) := by omega
+    rw [hb] at ih
+    exact CollatzReachesStar.head h1 ih
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨a, b, c⟩
+  dsimp only [highLevelNext]
+  split_ifs with ha_even ha1
+  · have hmk : toState (.E a b c) = .E false a b c := by
+      simp [toState, mkE, ha_even]
+    rw [hmk]
+    have h1 : next (.E false a b c) = some (.F_even 0 (a / 2) b c) := by
+      simp [next, enterF_d0, ha_even]
+    exact CollatzStepsTo.head h1 (stepsTo_evalF0 (a / 2) b c)
+  · subst ha1
+    exact CollatzStepsTo.of_eq rfl
+  · obtain ⟨m, rfl⟩ : ∃ m, a = 2 * m + 3 := ⟨(a - 3) / 2, by omega⟩
+    have hodd : (2 * m + 3) % 2 = 1 := by omega
+    have hmk : toState (.E (2 * m + 3) b c) = .E true (2 * m + 3) b c := by
+      simp [toState, mkE, hodd]
+    rw [hmk]
+    refine CollatzStepsTo.of_reachesStar (reaches_E_odd_drain m b c) ?_
+    refine CollatzStepsTo.of_eq ?_
+    change some (mkE (b + 6 * m + 3) (c + 3) 0) =
+      some (mkE (b + 3 * (2 * m + 3) - 6) (c + 3) 0)
+    exact congrArg (fun x => some (mkE x (c + 3) 0)) (by omega)
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LE_1LB1LC_1RD0LE_HHH0RB_1RF1LA_0RA0RD

@@ -38,6 +38,16 @@ C(d+1, k, a+1, b)     -> C(d, k+1, a+1, b)
 
 Start: C(1, 0, 0, 0), reached after 7 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Eliminating the auxiliary counters $(k, a, b)$ reduces the dynamics to a single-counter map on
+$N(d) := C(d, 0, 0, 0)$ starting at $N(1)$:
+- Every configuration with $a \ge 1$ collapses in closed form via
+  $C(d, k, a + 1, b) \to^+ C(a + 2d + 2k + 2, 0, b, 0)$.
+- From $N(d) = C(d, 0, 0, 0)$, `scanEven` repeatedly halves even $d > 0$ via
+  $(d, b) \mapsto (d / 2 - 1, b + d / 2 + 2)$, halting at $d = 0$, stepping to $N(b + 4)$ at
+  $d = 1$, and stepping to $N(b + 5(\lfloor d / 2 \rfloor - 1) + 9)$ for odd $d \ge 3$.
 -/
 
 @[expose] public section
@@ -452,5 +462,156 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Single-counter symbolic state space for the high-level Collatz-like acceleration of
+`1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_---0LD`, corresponding to $C(d, 0, 0, 0)$. -/
+inductive HighLevelState where
+  /-- $N(d) := C(d, 0, 0, 0) = 0^\infty\,0\,1^{d+1}\,\mathrm{C}{>}\,0^\infty$. -/
+  | N (d : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $N(1) = C(1, 0, 0, 0)$. -/
+def highLevelStart : HighLevelState := .N 1
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .N d => .C d 0 0 0
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Collapse the even-$d$ halving loop on $C(d, 0, 0, b)$ until $d$ becomes odd (triggering the
+closed-form $a \ge 1$ cycle) or hits $0$ and halts. -/
+def scanEven (d b : ℕ) : Option HighLevelState :=
+  if d % 2 = 0 then
+    if d = 0 then none
+    else scanEven (d / 2 - 1) (b + d / 2 + 2)
+  else if d = 1 then
+    some (.N (b + 4))
+  else
+    some (.N (b + 5 * (d / 2 - 1) + 9))
+termination_by d
+decreasing_by omega
+
+/-- High-level accelerated Collatz-like transition function on the single counter $N(d)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .N d => scanEven d 0
+
+private theorem reaches_pos_d (d : ℕ) : ∀ (k a b : ℕ),
+    CollatzReachesStar next (.C d k (a + 1) b) (.C 0 (k + d) (a + 1) b) := by
+  induction d with
+  | zero =>
+    intro k a b
+    simp only [Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | succ d ih =>
+    intro k a b
+    have hstep : next (.C (d + 1) k (a + 1) b) = some (.C d (k + 1) (a + 1) b) := by
+      simp only [next]
+    have ih' := ih (k + 1) a b
+    rw [show k + 1 + d = k + (d + 1) by omega] at ih'
+    exact CollatzReachesStar.head hstep ih'
+
+private theorem stepsTo_pos_cycle_aux (m : ℕ) : ∀ (d k a b : ℕ), k + d = m →
+    CollatzStepsTo next (.C d k (a + 1) b) (some (.C (a + 2 * m + 2) 0 b 0)) := by
+  induction m with
+  | zero =>
+    intro d k a b hm
+    obtain ⟨rfl, rfl⟩ : d = 0 ∧ k = 0 := by omega
+    exact CollatzStepsTo.of_eq rfl
+  | succ m ih =>
+    intro d k a b hm
+    have h1 := reaches_pos_d d k a b
+    rw [hm] at h1
+    refine CollatzStepsTo.of_reachesStar h1 ?_
+    have h2 : next (.C 0 (m + 1) (a + 1) b) = some (.C m 0 (a + 3) b) := rfl
+    have h3 := ih m 0 (a + 2) b (by omega)
+    rw [show a + 2 + 2 * m + 2 = a + 2 * (m + 1) + 2 by omega] at h3
+    exact CollatzStepsTo.head h2 h3
+
+private theorem stepsTo_pos_cycle (d k a b : ℕ) :
+    CollatzStepsTo next (.C d k (a + 1) b) (some (.C (a + 2 * d + 2 * k + 2) 0 b 0)) := by
+  have h := stepsTo_pos_cycle_aux (k + d) d k a b rfl
+  rwa [show a + 2 * (k + d) + 2 = a + 2 * d + 2 * k + 2 by omega] at h
+
+private theorem reaches_a0_drain (q : ℕ) : ∀ (r k b : ℕ),
+    CollatzReachesStar next (.C (2 * q + r) k 0 b) (.C r (k + q) 0 (b + q)) := by
+  induction q with
+  | zero =>
+    intro r k b
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | succ q ih =>
+    intro r k b
+    have hstep : next (.C (2 * (q + 1) + r) k 0 b) =
+        some (.C (2 * q + r) (k + 1) 0 (b + 1)) := by
+      rw [show 2 * (q + 1) + r = (2 * q + r) + 2 by omega]
+      rfl
+    have ih' := ih r (k + 1) (b + 1)
+    rw [show k + 1 + q = k + (q + 1) by omega,
+        show b + 1 + q = b + (q + 1) by omega] at ih'
+    exact CollatzReachesStar.head hstep ih'
+
+private theorem stepsTo_scanEven (d : ℕ) : ∀ (b : ℕ),
+    CollatzStepsTo next (.C d 0 0 b) ((scanEven d b).map toState) := by
+  induction d using Nat.strong_induction_on with
+  | _ d ih =>
+    intro b
+    have hd := reaches_a0_drain (d / 2) (d % 2) 0 b
+    rw [Nat.div_add_mod, Nat.zero_add] at hd
+    refine CollatzStepsTo.of_reachesStar hd ?_
+    rw [scanEven]
+    by_cases heven : d % 2 = 0
+    · rw [heven]
+      rcases eq_or_ne d 0 with rfl | hne
+      · simp only [↓reduceIte, Nat.zero_div, Option.map_none]
+        exact CollatzStepsTo.of_eq rfl
+      · obtain ⟨q, hq⟩ : ∃ q, d / 2 = q + 1 := ⟨d / 2 - 1, by omega⟩
+        simp only [↓reduceIte, hne, hq, Nat.add_sub_cancel]
+        have hstep : next (.C 0 (q + 1) 0 (b + (q + 1))) =
+            some (.C q 0 0 (b + (q + 1) + 2)) := rfl
+        exact CollatzStepsTo.head hstep (ih q (by omega) (b + (q + 1) + 2))
+    · have hmod1 : d % 2 = 1 := by omega
+      by_cases hd1 : d = 1
+      · subst hd1
+        simp only [heven, ↓reduceIte, Option.map_some, toState]
+        have hstep : next (.C 1 0 0 b) = some (.C 1 0 (b + 1) 0) := rfl
+        have hcyc := stepsTo_pos_cycle 1 0 b 0
+        rw [show b + 2 * 1 + 2 * 0 + 2 = b + 4 by omega] at hcyc
+        exact CollatzStepsTo.head hstep hcyc
+      · obtain ⟨q, hq⟩ : ∃ q, d / 2 = q + 1 := ⟨d / 2 - 1, by omega⟩
+        simp only [heven, hd1, ↓reduceIte, hq, Nat.add_sub_cancel, Option.map_some, toState]
+        rw [hmod1]
+        have hstep : next (.C 1 (q + 1) 0 (b + (q + 1))) =
+            some (.C q 0 2 (b + (q + 1) + 1)) := rfl
+        have hcyc1 := stepsTo_pos_cycle q 0 1 (b + (q + 1) + 1)
+        rw [show 1 + 2 * q + 2 * 0 + 2 = 2 * q + 3 by omega,
+            show b + (q + 1) + 1 = (b + q + 1) + 1 by omega] at hcyc1
+        have hcyc2 := stepsTo_pos_cycle (2 * q + 3) 0 (b + q + 1) 0
+        rw [show (b + q + 1) + 2 * (2 * q + 3) + 2 * 0 + 2 = b + 5 * q + 9 by omega] at hcyc2
+        exact CollatzStepsTo.head hstep (CollatzStepsTo.of_reachesStar hcyc1.to_star hcyc2)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState) (CollatzReachesStar.refl next start) ?_
+  rintro ⟨d⟩
+  exact stepsTo_scanEven d 0
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_HHH0LD

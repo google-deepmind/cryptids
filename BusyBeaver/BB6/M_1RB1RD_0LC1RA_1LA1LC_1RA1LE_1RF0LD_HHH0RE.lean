@@ -25,20 +25,19 @@ T(P_1(a, c)) = \begin{cases}
   P_1(a+2, 0) & \text{if } c = 1, \\
   P_1(a+3, c-2) & \text{if } c \ge 2 \text{ and } a \text{ is even}, \\
   \text{Halt} & \text{if } c = 2 \text{ and } a \text{ is odd}, \\
-  F(\lfloor a/2 \rfloor, 1, 0) & \text{if } c = 3 \text{ and } a \text{ is odd}, \\
-  F(\lfloor a/2 \rfloor, 2, c-4) & \text{if } c \ge 4 \text{ and } a \text{ is odd},
+  G(\lfloor a/2 \rfloor, 1) & \text{if } c = 3 \text{ and } a \text{ is odd}, \\
+  G(\lfloor a/2 \rfloor + 1, c-2) & \text{if } c \ge 4 \text{ and } a \text{ is odd},
 \end{cases}
 $$
 
-where $F(k, m, c)$ is defined recursively by:
+where $G(k, c)$ (the outcome of the countdown configuration $P_2(k, 0, c)$, with its diagonal
+drain $P_2(k+1, m, c+2) \to P_2(k, m+2, c)$ collapsed) is defined recursively by:
 
 $$
-F(k, m, c) = \begin{cases}
-  P_1(0, 2m+3) & \text{if } k = 0 \text{ and } c = 0, \\
-  F(k-1, 0, 2m+3) & \text{if } k \ge 1 \text{ and } c = 0, \\
-  F(k, m+1, 0) & \text{if } c = 1, \\
-  P_1(2m+4, c-2) & \text{if } k = 0 \text{ and } c \ge 2, \\
-  F(k-1, m+2, c-2) & \text{if } k \ge 1 \text{ and } c \ge 2.
+G(k, c) = \begin{cases}
+  P_1(0, 2c+3) & \text{if } 2k \le c \le 2k+1, \\
+  P_1(4k+4, c-2k-2) & \text{if } c \ge 2k+2, \\
+  G(k - \lfloor c/2 \rfloor - 1, 2c+3) & \text{if } c < 2k.
 \end{cases}
 $$
 -/
@@ -636,15 +635,14 @@ def toState : HighLevelState → State
 def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
   encode (toState s)
 
-/-- Outcome of the intermediate countdown family $P_2(k, m, c)$ when run until it returns to
-$P_1$. -/
-def evalP2 : ℕ → ℕ → ℕ → HighLevelState
-  | 0, m, 0 => .P_1 0 (2 * m + 3)
-  | k + 1, m, 0 => evalP2 k 0 (2 * m + 3)
-  | 0, m, 1 => .P_1 0 (2 * (m + 1) + 3)
-  | k + 1, m, 1 => evalP2 k 0 (2 * (m + 1) + 3)
-  | 0, m, d + 2 => .P_1 (2 * m + 4) d
-  | k + 1, m, d + 2 => evalP2 k (m + 2) d
+/-- Outcome of the countdown family $P_2(k, 0, c)$ when run until it returns to $P_1$: the
+diagonal drain $P_2(k + 1, m, c + 2) \to P_2(k, m + 2, c)$ is collapsed into a single step. -/
+def evalP2 (k c : ℕ) : HighLevelState :=
+  if 2 * k ≤ c then
+    if c ≤ 2 * k + 1 then .P_1 0 (2 * c + 3) else .P_1 (4 * k + 4) (c - 2 * k - 2)
+  else evalP2 (k - c / 2 - 1) (2 * c + 3)
+termination_by k
+decreasing_by omega
 
 /-- High-level accelerated Collatz-like transition function on $P_1(a, c)$. -/
 def highLevelNext : HighLevelState → Option HighLevelState
@@ -652,20 +650,106 @@ def highLevelNext : HighLevelState → Option HighLevelState
   | .P_1 a 1 => some (.P_1 (a + 2) 0)
   | .P_1 a (c + 2) =>
     if a % 2 = 0 then some (.P_1 (a + 3) c)
-    else
-      Nat.casesOn c none fun c =>
-      Nat.casesOn c (some (evalP2 (a / 2) 1 0)) fun d =>
-      some (evalP2 (a / 2) 2 d)
+    else if c = 0 then none
+    else if c = 1 then some (evalP2 (a / 2) 1)
+    else some (evalP2 (a / 2 + 1) c)
 
-private theorem stepsTo_P2 : ∀ (k m c : ℕ),
-    CollatzStepsTo next (.P_2 k m c) (some (toState (evalP2 k m c)))
-  | 0, _, 0 => CollatzStepsTo.of_eq rfl
-  | k + 1, m, 0 => CollatzStepsTo.head rfl (stepsTo_P2 k 0 (2 * m + 3))
-  | 0, _, 1 => CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
-  | k + 1, m, 1 =>
-    CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_P2 k 0 (2 * (m + 1) + 3)))
-  | 0, _, _ + 2 => CollatzStepsTo.of_eq rfl
-  | k + 1, m, d + 2 => CollatzStepsTo.head rfl (stepsTo_P2 k (m + 2) d)
+/-- Outcome of $P_2(k, m, c)$ with the diagonal drain collapsed (general `m`). -/
+private def evalP2m (k m c : ℕ) : HighLevelState :=
+  if k ≤ c / 2 then
+    if c ≤ 2 * k + 1 then .P_1 0 (2 * m + 2 * c + 3)
+    else .P_1 (2 * m + 4 * k + 4) (c - 2 * k - 2)
+  else evalP2 (k - c / 2 - 1) (2 * m + 2 * c + 3)
+
+private theorem evalP2_eq (k c : ℕ) : evalP2 k c = evalP2m k 0 c := by
+  rw [evalP2, evalP2m]
+  split_ifs <;> first
+    | omega
+    | exact congrArg₂ HighLevelState.P_1 (by omega) (by omega)
+    | exact congrArg₂ evalP2 (by omega) (by omega)
+
+private theorem evalP2_one_eq (k : ℕ) : evalP2 k 1 = evalP2m k 1 0 := by
+  rw [evalP2, evalP2m]
+  split_ifs <;> first
+    | omega
+    | exact congrArg₂ HighLevelState.P_1 (by omega) (by omega)
+    | exact congrArg₂ evalP2 (by omega) (by omega)
+
+private theorem evalP2_succ_eq (k c : ℕ) : evalP2 (k + 1) (c + 2) = evalP2m k 2 c := by
+  rw [evalP2, evalP2m]
+  have h : (c + 2) / 2 = c / 2 + 1 := by omega
+  split_ifs <;> first
+    | omega
+    | exact congrArg₂ HighLevelState.P_1 (by omega) (by omega)
+    | exact congrArg₂ evalP2 (by omega) (by omega)
+
+private theorem drain_P2 : ∀ (t k m c : ℕ),
+    CollatzReachesStar next (.P_2 (k + t) m (c + 2 * t)) (.P_2 k (m + 2 * t) c)
+  | 0, _, _, _ => CollatzReachesStar.refl _ _
+  | t + 1, k, m, c => by
+    have h : next (.P_2 (k + (t + 1)) m (c + 2 * (t + 1))) =
+        some (.P_2 (k + t) (m + 2) (c + 2 * t)) := by
+      rw [show c + 2 * (t + 1) = c + 2 * t + 2 by omega]
+      rfl
+    refine CollatzReachesStar.head h ?_
+    rw [show m + 2 * (t + 1) = m + 2 + 2 * t by omega]
+    exact drain_P2 t k (m + 2) c
+
+private theorem stepsTo_P2 (k : ℕ) : ∀ (m c : ℕ),
+    CollatzStepsTo next (.P_2 k m c) (some (toState (evalP2m k m c))) := by
+  induction k using Nat.strong_induction_on with
+  | _ k ih =>
+    intro m c
+    by_cases hk : k ≤ c / 2
+    · obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 * k := ⟨c - 2 * k, by omega⟩
+      have hd := drain_P2 k 0 m e
+      rw [Nat.zero_add] at hd
+      refine CollatzStepsTo.of_reachesStar hd ?_
+      rcases e with _ | _ | e
+      · have hv : evalP2m k m (0 + 2 * k) = .P_1 0 (2 * (m + 2 * k) + 3) := by
+          rw [evalP2m]
+          split_ifs <;> first
+          | omega
+          | exact congrArg₂ HighLevelState.P_1 (by omega) (by omega)
+        rw [hv]
+        exact CollatzStepsTo.of_eq rfl
+      · have hv : evalP2m k m (1 + 2 * k) = .P_1 0 (2 * (m + 2 * k + 1) + 3) := by
+          rw [evalP2m]
+          split_ifs <;> first
+          | omega
+          | exact congrArg₂ HighLevelState.P_1 (by omega) (by omega)
+        rw [hv]
+        exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+      · have hv : evalP2m k m (e + 2 + 2 * k) = .P_1 (2 * (m + 2 * k) + 4) e := by
+          rw [evalP2m]
+          split_ifs <;> first
+          | omega
+          | exact congrArg₂ HighLevelState.P_1 (by omega) (by omega)
+        rw [hv]
+        exact CollatzStepsTo.of_eq rfl
+    · obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 + c / 2 := ⟨k - 1 - c / 2, by omega⟩
+      have hc : c = c % 2 + 2 * (c / 2) := by omega
+      have hd := drain_P2 (c / 2) (k' + 1) m (c % 2)
+      rw [← hc] at hd
+      refine CollatzStepsTo.of_reachesStar hd ?_
+      have hr : evalP2m (k' + 1 + c / 2) m c = evalP2m k' 0 (2 * m + 2 * c + 3) := by
+        simp only [evalP2m, hk, ↓reduceIte]
+        rw [evalP2_eq]
+        congr 1
+        omega
+      rw [hr]
+      have ih' := ih k' (by omega) 0 (2 * m + 2 * c + 3)
+      rcases Nat.mod_two_eq_zero_or_one c with h2 | h2
+      · rw [h2]
+        refine CollatzStepsTo.head ?_ ih'
+        change some (State.P_2 k' 0 (2 * (m + 2 * (c / 2)) + 3)) = _
+        congr 2
+        omega
+      · rw [h2]
+        refine CollatzStepsTo.head rfl (CollatzStepsTo.head ?_ ih')
+        change some (State.P_2 k' 0 (2 * (m + 2 * (c / 2) + 1) + 3)) = _
+        congr 2
+        omega
 
 /-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
 of `target`. -/
@@ -676,13 +760,18 @@ theorem is_valid_highLevel_acceleration :
   rcases c with _ | _ | c
   · exact CollatzStepsTo.of_eq rfl
   · exact CollatzStepsTo.of_eq rfl
-  · dsimp [toState, highLevelNext, next]
-    split_ifs with heven
-    · exact CollatzStepsTo.of_eq (by simp [next, toState, heven])
+  · by_cases heven : a % 2 = 0
+    · exact CollatzStepsTo.of_eq (by simp [highLevelNext, next, toState, heven])
     · rcases c with _ | _ | d
-      · exact CollatzStepsTo.of_eq (by simp [next, heven])
-      · exact CollatzStepsTo.head (by simp [next, heven]) (stepsTo_P2 (a / 2) 1 0)
-      · exact CollatzStepsTo.head (by simp [next, heven]) (stepsTo_P2 (a / 2) 2 d)
+      · exact CollatzStepsTo.of_eq (by simp [highLevelNext, next, toState, heven])
+      · have h : highLevelNext (.P_1 a 3) = some (evalP2 (a / 2) 1) := by
+          simp [highLevelNext, heven]
+        rw [h, Option.map_some, evalP2_one_eq]
+        exact CollatzStepsTo.head (by simp [next, toState, heven]) (stepsTo_P2 (a / 2) 1 0)
+      · have h : highLevelNext (.P_1 a (d + 4)) = some (evalP2 (a / 2 + 1) (d + 2)) := by
+          simp [highLevelNext, heven]
+        rw [h, Option.map_some, evalP2_succ_eq]
+        exact CollatzStepsTo.head (by simp [next, toState, heven]) (stepsTo_P2 (a / 2) 2 d)
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

@@ -42,6 +42,17 @@ C(c, 0, 0, d)   -> Halt                   if (c+d) % 2 = 1
 
 Start: C(0, 0, 0, 0), reached after 2 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Eliminating $c$ (via base-$3$ reduction of $b$) and draining $a$ to $0$ reduces the 4-counter
+dynamics $C(c, b, a, d)$ to a single counter $b \in \mathbb{N}$ plus a parity bit
+$p \in \mathrm{Bool}$ representing
+$L(p, b) := C(0, b, 0, \text{if } p \text{ then } 1 \text{ else } 0)$, starting at
+$L(\mathrm{false}, 0)$:
+- `drainA` collapses the $a \ge 1$ cascade from $C(0, b, a, d)$ ($d \in \{0, 1\}$) until $a = 0$.
+- `highLevelNext` advances $L(p, b)$ directly to the next $L(p', b')$ or halts when
+  $p = \mathrm{true}$ and $b \equiv 0 \pmod{3}$.
 -/
 
 @[expose] public section
@@ -714,5 +725,228 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- One-counter-plus-bit symbolic state space for the high-level Collatz-like acceleration of
+`1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_---0RA` (Lucy's Moonlight), corresponding to
+$C(0, b, 0, d)$ with $d \in \{0, 1\}$. -/
+inductive HighLevelState where
+  /-- $L(p, b) := C(0, b, 0, \text{if } p \text{ then } 1 \text{ else } 0)$. -/
+  | L (p : Bool) (b : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $L(\mathrm{false}, 0) = C(0, 0, 0, 0)$. -/
+def highLevelStart : HighLevelState := .L false 0
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .L p b => .C 0 b 0 (if p then 1 else 0)
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Drain the counter $a$ starting from $C(0, b, a, \text{if } p \text{ then } 1 \text{ else } 0)$
+until $a = 0$, collapsing each base-$3$ reduction of $b$ into a single step. -/
+def drainA (b a : ℕ) (p : Bool) : HighLevelState :=
+  if a = 0 then
+    .L p b
+  else if a = 1 then
+    let q := b / 3
+    if b % 3 = 0 then .L false (8 * q + if p then 8 else 7)
+    else if b % 3 = 1 then .L false (8 * q + if p then 14 else 13)
+    else .L p (8 * q + 8)
+  else
+    let q := b / 3
+    let b' := if b % 3 = 0 then 8 * q + 10 else if b % 3 = 1 then 8 * q + 16 else 8 * q + 8
+    drainA b' (a - (2 - b % 3 / 2)) p
+termination_by a
+decreasing_by omega
+
+/-- High-level accelerated Collatz-like transition function on $L(p, b)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .L false b =>
+    let q := b / 3
+    if b % 3 = 0 then some (drainA 0 (2 * q + 1) true)
+    else some (.L false (8 * q + 5))
+  | .L true b =>
+    let q := b / 3
+    if b % 3 = 0 then none
+    else if b % 3 = 1 then some (drainA 0 (2 * q + 3) true)
+    else some (.L false (8 * q + 6))
+
+private theorem reachesStar_trans {s₁ s₂ s₃ : State}
+    (h₁ : CollatzReachesStar next s₁ s₂) (h₂ : CollatzReachesStar next s₂ s₃) :
+    CollatzReachesStar next s₁ s₃ := by
+  obtain ⟨m, hm⟩ := h₁
+  obtain ⟨n, hn⟩ := h₂
+  refine ⟨m + n, ?_⟩
+  unfold CollatzReachesIn at *
+  rw [Nat.add_comm, Function.iterate_add_apply, hm, hn]
+
+private theorem reaches_drain_b (q : ℕ) : ∀ (c r a d : ℕ),
+    CollatzReachesStar next (.C c (3 * q + r) a d) (.C (c + 4 * q) r a d) := by
+  induction q with
+  | zero =>
+    intro c r a d
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | succ q ih =>
+    intro c r a d
+    have hstep : next (.C c (3 * (q + 1) + r) a d) = some (.C (c + 4) (3 * q + r) a d) := by
+      rw [show 3 * (q + 1) + r = (3 * q + r) + 3 by omega]
+      rfl
+    have ih' := ih (c + 4) r a d
+    rw [show c + 4 + 4 * q = c + 4 * (q + 1) by omega] at ih'
+    exact CollatzReachesStar.head hstep ih'
+
+private theorem reaches_drainA (a : ℕ) : ∀ (b : ℕ) (p : Bool),
+    CollatzReachesStar next (.C 0 b a (if p then 1 else 0)) (toState (drainA b a p)) := by
+  induction a using Nat.strong_induction_on with
+  | _ a ih =>
+    intro b p
+    rw [drainA]
+    rcases eq_or_ne a 0 with rfl | ha0
+    · simp only [↓reduceIte, toState]
+      exact CollatzReachesStar.refl next _
+    · have hb := reaches_drain_b (b / 3) 0 (b % 3) a (if p then 1 else 0)
+      rw [Nat.div_add_mod, Nat.zero_add] at hb
+      refine reachesStar_trans hb ?_
+      rcases eq_or_ne a 1 with rfl | ha1
+      · simp only [ha0, ↓reduceIte]
+        by_cases hr0 : b % 3 = 0
+        · rw [hr0]
+          simp only [↓reduceIte]
+          cases p
+          · simp only [↓reduceIte, Bool.false_eq_true, toState]
+            refine CollatzReachesStar.single ?_
+            change some (State.C 0 (2 * (4 * (b / 3) + 1) + 5) 0 0) = _
+            congr 2; omega
+          · simp only [↓reduceIte, toState]
+            refine CollatzReachesStar.single ?_
+            change some (State.C 0 (2 * (4 * (b / 3) + 1) + 6) 0 0) = _
+            congr 2; omega
+        · by_cases hr1 : b % 3 = 1
+          · rw [hr1]
+            simp only [Nat.one_ne_zero, ↓reduceIte]
+            have h1 : next (.C (4 * (b / 3)) 1 1 (if p then 1 else 0)) =
+                some (.C (4 * (b / 3) + 3) 0 1 (if p then 1 else 0)) := by
+              cases p <;> rfl
+            refine CollatzReachesStar.head h1 ?_
+            cases p
+            · simp only [↓reduceIte, Bool.false_eq_true, toState]
+              refine CollatzReachesStar.single ?_
+              change some (State.C 0 (2 * (4 * (b / 3) + 3 + 1) + 5) 0 0) = _
+              congr 2; omega
+            · simp only [↓reduceIte, toState]
+              refine CollatzReachesStar.single ?_
+              change some (State.C 0 (2 * (4 * (b / 3) + 3 + 1) + 6) 0 0) = _
+              congr 2; omega
+          · have hr2 : b % 3 = 2 := by omega
+            simp only [hr0, hr1, ↓reduceIte, toState]
+            rw [hr2]
+            refine CollatzReachesStar.single ?_
+            change some (State.C 0 (2 * (4 * (b / 3)) + 8) 0 (if p then 1 else 0)) = _
+            congr 2; omega
+      · simp only [ha0, ha1, ↓reduceIte]
+        obtain ⟨a', rfl⟩ : ∃ a', a = a' + 2 := ⟨a - 2, by omega⟩
+        by_cases hr0 : b % 3 = 0
+        · rw [hr0]
+          simp only [↓reduceIte, Nat.zero_div, Nat.sub_zero, Nat.add_sub_cancel]
+          have hstep : next (.C (4 * (b / 3)) 0 (a' + 2) (if p then 1 else 0)) =
+              some (.C 0 (8 * (b / 3) + 10) a' (if p then 1 else 0)) := by
+            change some (State.C 0 (2 * (4 * (b / 3) + 1) + 8) a' (if p then 1 else 0)) = _
+            congr 2; omega
+          exact CollatzReachesStar.head hstep (ih a' (by omega) (8 * (b / 3) + 10) p)
+        · by_cases hr1 : b % 3 = 1
+          · rw [hr1]
+            have h1div : 1 / 2 = 0 := rfl
+            simp only [Nat.one_ne_zero, ↓reduceIte, h1div, Nat.sub_zero, Nat.add_sub_cancel]
+            have h1 : next (.C (4 * (b / 3)) 1 (a' + 2) (if p then 1 else 0)) =
+                some (.C (4 * (b / 3) + 3) 0 (a' + 2) (if p then 1 else 0)) := rfl
+            have h2 : next (.C (4 * (b / 3) + 3) 0 (a' + 2) (if p then 1 else 0)) =
+                some (.C 0 (8 * (b / 3) + 16) a' (if p then 1 else 0)) := by
+              change some (State.C 0 (2 * (4 * (b / 3) + 3 + 1) + 8) a' (if p then 1 else 0)) = _
+              congr 2; omega
+            exact CollatzReachesStar.head h1
+              (CollatzReachesStar.head h2 (ih a' (by omega) (8 * (b / 3) + 16) p))
+          · have hr2 : b % 3 = 2 := by omega
+            simp only [hr0, hr1, ↓reduceIte]
+            rw [hr2]
+            have hsub : a' + 2 - (2 - 2 / 2) = a' + 1 := by omega
+            rw [hsub]
+            have h1 : next (.C (4 * (b / 3)) 2 ((a' + 1) + 1) (if p then 1 else 0)) =
+                some (.C 0 (8 * (b / 3) + 8) (a' + 1) (if p then 1 else 0)) := by
+              change some (State.C 0 (2 * (4 * (b / 3)) + 8) (a' + 1) (if p then 1 else 0)) = _
+              congr 2; omega
+            exact CollatzReachesStar.head h1 (ih (a' + 1) (by omega) (8 * (b / 3) + 8) p)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState) (CollatzReachesStar.refl next start) ?_
+  rintro ⟨p, b⟩
+  have hb := reaches_drain_b (b / 3) 0 (b % 3) 0 (if p then 1 else 0)
+  rw [Nat.div_add_mod, Nat.zero_add] at hb
+  refine CollatzStepsTo.of_reachesStar hb ?_
+  cases p
+  · by_cases hr0 : b % 3 = 0
+    · simp only [highLevelNext, hr0, ↓reduceIte, Option.map_some]
+      have hev : (4 * (b / 3) + 0) % 2 = 0 := by omega
+      have hdiv : (4 * (b / 3) + 0) / 2 + 1 = 2 * (b / 3) + 1 := by omega
+      have h1 : next (.C (4 * (b / 3)) 0 0 0) = some (.C 0 0 (2 * (b / 3) + 1) 1) := by
+        simp only [next, hev, ↓reduceIte, hdiv]
+      exact CollatzReachesPlus.head h1 (reaches_drainA (2 * (b / 3) + 1) 0 true)
+    · simp only [highLevelNext, hr0, ↓reduceIte, Option.map_some, toState]
+      have hrem : b % 3 = 1 ∨ b % 3 = 2 := by omega
+      rcases hrem with hr | hr
+      · rw [hr]
+        refine CollatzStepsTo.of_eq ?_
+        change some (State.C 0 (2 * (4 * (b / 3)) + 5) 0 0) = _
+        congr 2; omega
+      · rw [hr]
+        refine CollatzStepsTo.of_eq ?_
+        change some (State.C 0 (2 * (4 * (b / 3)) + 5) 0 0) = _
+        congr 2; omega
+  · by_cases hr0 : b % 3 = 0
+    · simp only [highLevelNext, hr0, ↓reduceIte, Option.map_none]
+      have hodd : (4 * (b / 3) + 1) % 2 ≠ 0 := by omega
+      exact CollatzStepsTo.of_eq (by simp only [next, hodd, ↓reduceIte])
+    · by_cases hr1 : b % 3 = 1
+      · have hhl : highLevelNext (.L true b) = some (drainA 0 (2 * (b / 3) + 3) true) := by
+          dsimp only [highLevelNext]
+          rw [hr1]
+          rfl
+        rw [hhl, Option.map_some, hr1]
+        have h1 : next (.C (4 * (b / 3)) 1 0 1) = some (.C (4 * (b / 3) + 3) 0 0 1) := rfl
+        have hev : (4 * (b / 3) + 3 + 1) % 2 = 0 := by omega
+        have hdiv : (4 * (b / 3) + 3 + 1) / 2 + 1 = 2 * (b / 3) + 3 := by omega
+        have h2 : next (.C (4 * (b / 3) + 3) 0 0 1) = some (.C 0 0 (2 * (b / 3) + 3) 1) := by
+          simp only [next, hev, ↓reduceIte, hdiv]
+        exact CollatzReachesPlus.head h1
+          (CollatzReachesStar.head h2 (reaches_drainA (2 * (b / 3) + 3) 0 true))
+      · have hr2 : b % 3 = 2 := by omega
+        have hhl : highLevelNext (.L true b) = some (.L false (8 * (b / 3) + 6)) := by
+          dsimp only [highLevelNext]
+          rw [hr2]
+          rfl
+        rw [hhl, Option.map_some, toState, hr2]
+        refine CollatzStepsTo.of_eq ?_
+        change some (State.C 0 (2 * (4 * (b / 3)) + 6) 0 0) = _
+        congr 2; omega
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA

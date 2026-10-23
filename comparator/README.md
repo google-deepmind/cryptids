@@ -17,7 +17,7 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   `TapePatternSet`, `StackPatternSet`, and Collatz-like acceleration semantics (`IsClosedPatternSet`,
   `HasCollatzReduction`, `IsClosedStackPatternSet`, `HasStackedCollatzReduction`,
   `IsValidAcceleration`, `CollatzHalts`, `IsHalt`, `IsNotHalt`), and `load_rle_machine%` once,
-  and states all 299 `BB(6)` and `BB(3, 3)` holdout theorems (`is_closed_pattern_set` /
+  and states all 335 `BB(6)` and `BB(3, 3)` holdout theorems (`is_closed_pattern_set` /
   `is_closed_stack_pattern_set`, `has_collatz_reduction` / `has_stacked_collatz_reduction`,
   `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`,
   `isHalt_iff_highLevel_acceleration`, and `acceleration_iff_highLevel_acceleration` across the 59
@@ -53,7 +53,7 @@ that:
 | :--- | :--- | :--- | :--- | :--- |
 | [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 10 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), and `Riemann95.candidate_fewer_states` |
 | [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 22 conjecture-checking state-reduction, equivalence, and semantics theorems |
-| [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 299 `BB(6)` and `BB(3, 3)` holdout Level A and Level B theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) |
+| [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 335 `BB(6)` and `BB(3, 3)` holdout Level A and Level B theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) |
 | [`goldbach_21.json`](./goldbach_21.json) | `Challenge` | `Cryptids.Goldbach21` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`goldbach_semantics.json`](./goldbach_semantics.json) | `Challenge` | `Cryptids.Semantics.Goldbach` | `propext`, `Quot.sound`, `Classical.choice` | `halts_reference_iff_not_goldbach`, `halts_candidate_iff_not_goldbach` |
 | [`zf_380.json`](./zf_380.json) | `Challenge` | `Cryptids.Zf380` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |

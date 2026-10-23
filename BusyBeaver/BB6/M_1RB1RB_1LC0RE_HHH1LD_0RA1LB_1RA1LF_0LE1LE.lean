@@ -16,23 +16,25 @@ $$
 C(2k, 2m, f) := 0^\infty \ (11)^k \ 0 \ (11)^m \ 0 \ \mathrm{D}{>} \ 1 \ 1^f \ 0^\infty.
 $$
 
-Starting from $C(6, 2, 2)$ (reached after 76 steps from the blank tape), the machine follows the
-map $T$:
+At the start of every macro step the last counter is $2$ or $5$, so for $a, b \ge 0$ and
+$p \in \lbrace 0, 1 \rbrace$ we set
 
 $$
-T(C(2k, 2m, f)) = \begin{cases}
-  C(2, 2m-2k+2, f+6k-6) & \text{if } 2 \le k < m, \\
-  C(2k-2m+2, 2, f+6m-6) & \text{if } 2 \le m < k, \\
-  C(2, 2, f+6k-6) & \text{if } k = m \ge 2, \\
-  C(2k-4, 2j+8, 2) & \text{if } k \ge 3,\ m = 1,\ f = 2j \text{ with } j \ge 1, \\
-  C(2k-4, 2j+8, 5) & \text{if } k \ge 3,\ m = 1,\ f = 2j+1 \text{ with } j \ge 0, \\
-  C(2j+4, 6, 5) & \text{if } k = 2,\ m = 1,\ f = 2j \text{ with } j \ge 1, \\
-  C(2j+8, 2, 2) & \text{if } k = 2,\ m = 1,\ f = 2j+1 \text{ with } j \ge 0, \\
-  C(2m-6, 2j+10, 5) & \text{if } k = 1,\ m \ge 4,\ f = 2j \text{ with } j \ge 1, \\
-  C(2m-6, 2j+12, 2) & \text{if } k = 1,\ m \ge 4,\ f = 2j+1 \text{ with } j \ge 0, \\
-  C(2j+10, 2, 2) & \text{if } k = 1,\ m = 3,\ f = 2j \text{ with } j \ge 1, \\
-  C(2j+8, 6, 5) & \text{if } k = 1,\ m = 3,\ f = 2j+1 \text{ with } j \ge 0, \\
-  \text{Halt} & \text{if } k = 1,\ m \in \lbrace 1, 2 \rbrace.
+D_p(a, b) := C(2a+2, 2b+2, 2+3p).
+$$
+
+Starting from $D_0(2, 0) = C(6, 2, 2)$ (reached after 76 steps from the blank tape), the machine
+follows the map $T$:
+
+$$
+T(D_p(a, b)) = \begin{cases}
+  D_p(a-b-2, 3b+p+4) & \text{if } a \ge b+2, \\
+  D_0(3b+5, 0) & \text{if } a = b+1,\ p = 1, \\
+  D_1(3b+2, 2) & \text{if } a = b+1,\ p = 0, \\
+  \text{Halt} & \text{if } a \le b \le a+1, \\
+  D_1(3a+5, 2) & \text{if } b = a+2,\ p = 1, \\
+  D_0(3a+5, 0) & \text{if } b = a+2,\ p = 0, \\
+  D_{1-p}(b-a-3, 3a+2p+5) & \text{if } b \ge a+3.
 \end{cases}
 $$
 -/
@@ -847,23 +849,98 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 /-! ## High-Level Collatz-Like Acceleration -/
 
 /-- High-level symbolic configuration state space for
-`1RB1RB_1LC0RE_---1LD_0RA1LB_1RA1LF_0LE1LE` (`.C k m f` encodes $C(2(k+1), 2(m+1), f+1)$). -/
-abbrev HighLevelState := State
+`1RB1RB_1LC0RE_---1LD_0RA1LB_1RA1LF_0LE1LE`: at every high-level step the last counter of
+`State.C` is $1$ or $4$, so it is replaced by a flag. -/
+inductive HighLevelState where
+  /-- $D_p(a, b) := C(2(a+1), 2(b+1), 2 + 3p)$, i.e. `.C a b (if p then 4 else 1)`. -/
+  | C (a b : ℕ) (p : Bool)
+  deriving DecidableEq, Repr
 
-/-- Initial high-level symbolic state `.C 2 0 1`, encoding $C(6, 2, 2)$. -/
-def highLevelStart : HighLevelState := start
+/-- Initial high-level symbolic state $D_0(2, 0)$, encoding $C(6, 2, 2)$. -/
+def highLevelStart : HighLevelState := .C 2 0 false
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C a b p => .C a b (if p then 4 else 1)
 
 /-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode : HighLevelState → Cfg (Fin 2) (Fin 6) := encode
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
 
-/-- High-level accelerated transition function on $C(2(k+1), 2(m+1), f+1)$. -/
-def highLevelNext : HighLevelState → Option HighLevelState := next
+/-- High-level accelerated transition function on $D_p(a, b)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C a b p =>
+    let r := if p then 1 else 0
+    if a ≥ b + 2 then some (.C (a - b - 2) (3 * b + r + 4) p)
+    else if a = b + 1 then
+      if p then some (.C (3 * b + 5) 0 false) else some (.C (3 * b + 2) 2 true)
+    else if b ≤ a + 1 then none
+    else if b = a + 2 then
+      if p then some (.C (3 * a + 5) 2 true) else some (.C (3 * a + 5) 0 false)
+    else some (.C (b - a - 3) (3 * a + 2 * r + 5) (!p))
+
+private theorem next_C_succ_succ (a b f : ℕ) :
+    next (.C (a + 1) (b + 1) f) =
+      if a < b then some (.C 0 (b - a) (f + 6 * (a + 1)))
+      else if b < a then some (.C (a - b) 0 (f + 6 * (b + 1)))
+      else some (.C 0 0 (f + 6 * (a + 1))) := by
+  simp [next]
 
 /-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
 of `target`. -/
 theorem is_valid_highLevel_acceleration :
-    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext :=
-  is_valid_acceleration
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState) (CollatzReachesStar.refl next _) ?_
+  rintro ⟨a, b, p⟩
+  rcases a with _ | a
+  · rcases b with _ | _ | _ | b
+    · cases p <;> exact CollatzStepsTo.of_eq rfl
+    · cases p <;> exact CollatzStepsTo.of_eq rfl
+    · cases p <;> exact CollatzStepsTo.of_eq rfl
+    · cases p <;> exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, next])
+  · rcases b with _ | b
+    · rcases a with _ | a
+      · cases p <;> exact CollatzStepsTo.of_eq rfl
+      · cases p <;> exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, next])
+    · rcases lt_trichotomy a b with h | rfl | h
+      · obtain ⟨t, rfl⟩ : ∃ t, b = a + 1 + t := ⟨b - a - 1, by omega⟩
+        have h1 : next (toState (.C (a + 1) (a + 1 + t + 1) p)) =
+            some (.C 0 (t + 1) ((if p then 4 else 1) + 6 * (a + 1))) := by
+          simp only [toState, next_C_succ_succ]
+          split_ifs <;> simp only [Option.some.injEq, State.C.injEq, true_and, and_true] <;> omega
+        refine CollatzStepsTo.head h1 (CollatzStepsTo.of_eq ?_)
+        rcases t with _ | _ | t <;> cases p
+        all_goals
+          simp only [next, highLevelNext, Bool.false_eq_true, ↓reduceIte, Bool.not_false,
+            Bool.not_true]
+          split_ifs <;>
+            (try simp only [Option.map_some, Option.map_none, toState, Option.some.injEq,
+              State.C.injEq, ↓reduceIte, Bool.false_eq_true, and_true, reduceCtorEq]) <;>
+            omega
+      · have h1 : next (toState (.C (a + 1) (a + 1) p)) =
+            some (.C 0 0 ((if p then 4 else 1) + 6 * (a + 1))) := by
+          simp [toState, next_C_succ_succ]
+        refine CollatzStepsTo.head h1 (CollatzStepsTo.of_eq ?_)
+        cases p
+        all_goals
+          simp only [next, highLevelNext, Bool.false_eq_true, ↓reduceIte, Bool.not_false,
+            Bool.not_true]
+          split_ifs <;> (try simp only [Option.map_some, Option.map_none, toState,
+            ↓reduceIte, Bool.false_eq_true, reduceCtorEq]) <;> omega
+      · obtain ⟨t, rfl⟩ : ∃ t, a = b + 1 + t := ⟨a - b - 1, by omega⟩
+        have h1 : next (toState (.C (b + 1 + t + 1) (b + 1) p)) =
+            some (.C (t + 1) 0 ((if p then 4 else 1) + 6 * (b + 1))) := by
+          simp only [toState, next_C_succ_succ]
+          split_ifs <;> simp only [Option.some.injEq, State.C.injEq, and_true] <;> omega
+        refine CollatzStepsTo.head h1 (CollatzStepsTo.of_eq ?_)
+        rcases t with _ | t <;> cases p
+        all_goals
+          simp only [next, highLevelNext, Bool.false_eq_true, ↓reduceIte, Bool.not_false,
+            Bool.not_true]
+          split_ifs <;>
+            (try simp only [Option.map_some, Option.map_none, toState, Option.some.injEq,
+              State.C.injEq, ↓reduceIte, Bool.false_eq_true, and_true, reduceCtorEq]) <;>
+            omega
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

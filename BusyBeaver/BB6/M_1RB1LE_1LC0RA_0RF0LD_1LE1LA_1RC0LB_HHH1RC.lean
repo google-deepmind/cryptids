@@ -42,6 +42,33 @@ B(b+k+1, b, c) -> A(2, 2(b+k+1)+2c+2)
 
 Start: A(2, 0), reached after 15 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Writing $a = 2k + 2$ ($k \ge 0$), eliminating the auxiliary family $B(a, b, c)$ via `evalB`, and
+contracting the $a < b$ phases of both $A$ and $B$ via `drainA` yields a single-family, 2-counter
+map $T$ on $A(k, b) := A(2k + 2, b)$ starting at $A(0, 0)$:
+
+$$
+T(A(k, b)) = \begin{cases}
+  T(A(2k+2, b - 2k - 3)) & \text{if } 2k + 2 < b, \\
+  \text{Halt} & \text{if } 2k + 2 = b, \\
+  A\bigl(\lfloor (2k + 1 - b) / 2 \rfloor,\ 2b + 2\bigr)
+    & \text{if } 2k + 2 > b \text{ and } 2k + 1 - b \text{ is even}, \\
+  B\bigl(2,\ 2\lfloor (2k + 1 - b) / 2 \rfloor + 1,\ b + 1\bigr)
+    & \text{if } 2k + 2 > b \text{ and } 2k + 1 - b \text{ is odd},
+\end{cases}
+$$
+
+where $B(a, b, c)$ evaluates to $A(0, b')$ via:
+
+$$
+B(a, b, c) = \begin{cases}
+  B(2a + 2, b - a - 1, c) & \text{if } a < b, \\
+  A(0, 4a + 2c + 6) & \text{if } a = b, \\
+  A(0, 2a + 2c + 2) & \text{if } a > b.
+\end{cases}
+$$
 -/
 
 @[expose] public section
@@ -1322,5 +1349,107 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Single-family high-level symbolic configuration state space
+$A(k, b) := 0^\infty\,{<}\mathrm{C}\,(10)^{2k+2}\,110\,(10)^b\,0^\infty$
+for `1RB1LE_1LC0RA_0RF0LD_1LE1LA_1RC0LB_---1RC`. -/
+inductive HighLevelState where
+  /-- $A(k, b) := 0^\infty\,{<}\mathrm{C}\,(10)^{2k+2}\,110\,(10)^b\,0^\infty$. -/
+  | A (k b : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $A(0, 0)$, corresponding to $A(2, 0)$. -/
+def highLevelStart : HighLevelState := .A 0 0
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .A k b => .A (2 * k + 2) b
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Outcome of the intermediate family $B(a, b, c)$ when run until returning to $A(0, b')$. -/
+def evalB (a b c : ℕ) : HighLevelState :=
+  if a < b then evalB (2 * a + 2) (b - a - 1) c
+  else if a = b then .A 0 (4 * a + 2 * c + 6)
+  else .A 0 (2 * a + 2 * c + 2)
+termination_by b
+decreasing_by omega
+
+/-- Contracted transition from $A(k, b)$ across $2k + 2 < b$ steps and $B$-sweeps. -/
+def drainA (k b : ℕ) : Option HighLevelState :=
+  let a := 2 * k + 2
+  if a < b then drainA (2 * k + 2) (b - a - 1)
+  else if a = b then none
+  else if (a - b - 1) % 2 = 0 then
+    some (.A ((a - b - 1) / 2) (2 * b + 2))
+  else
+    some (evalB 2 (2 * ((a - b - 1) / 2) + 1) (b + 1))
+termination_by b
+decreasing_by omega
+
+/-- High-level accelerated Collatz-like transition function on $A(k, b)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .A k b => drainA k b
+
+private theorem stepsTo_evalB (a b c : ℕ) :
+    CollatzStepsTo next (.B a b c) (some (toState (evalB a b c))) := by
+  induction b using Nat.strongRecOn generalizing a with
+  | ind b ih =>
+    rw [evalB]
+    split_ifs with hlt heq
+    · have h1 : next (.B a b c) = some (.B (2 * a + 2) (b - a - 1) c) := by
+        simp [next, hlt]
+      exact CollatzStepsTo.head h1 (ih (b - a - 1) (by omega) (2 * a + 2))
+    · refine CollatzStepsTo.of_eq ?_
+      simp [next, heq, toState]
+    · refine CollatzStepsTo.of_eq ?_
+      simp [next, hlt, heq, toState]
+
+private theorem stepsTo_drainA (k b : ℕ) :
+    CollatzStepsTo next (toState (.A k b)) ((drainA k b).map toState) := by
+  induction b using Nat.strongRecOn generalizing k with
+  | ind b ih =>
+    rw [drainA]
+    split_ifs with hlt heq hpar
+    · have h1 :
+          next (toState (.A k b)) =
+            some (toState (.A (2 * k + 2) (b - (2 * k + 2) - 1))) := by
+        simp [toState, next, hlt]
+      exact CollatzStepsTo.head h1 (ih (b - (2 * k + 2) - 1) (by omega) (2 * k + 2))
+    · refine CollatzStepsTo.of_eq ?_
+      simp [toState, next, heq]
+    · refine CollatzStepsTo.of_eq ?_
+      simp [toState, next, hlt, heq, hpar]
+    · have h1 :
+          next (toState (.A k b)) =
+            some (.B 2 (2 * ((2 * k + 2 - b - 1) / 2) + 1) (b + 1)) := by
+        simp [toState, next, hlt, heq, hpar]
+      simpa only [Option.map_some] using
+        CollatzStepsTo.head h1 (stepsTo_evalB 2 (2 * ((2 * k + 2 - b - 1) / 2) + 1) (b + 1))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨k, b⟩
+  exact stepsTo_drainA k b
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LE_1LC0RA_0RF0LD_1LE1LA_1RC0LB_HHH1RC

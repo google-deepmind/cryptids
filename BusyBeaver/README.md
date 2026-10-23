@@ -59,7 +59,7 @@ theorem isNotHalt_toBB_iff_not_halts (M : ConjectureMachines.Machine states symb
 
 ## Formalized Machine Catalogs
 
-- **[`BB(6)` Holdouts (`BusyBeaver/BB6/`)](./BB6/README.md)** — 53 6-state 2-symbol holdouts (275 theorems).
+- **[`BB(6)` Holdouts (`BusyBeaver/BB6/`)](./BB6/README.md)** — 53 6-state 2-symbol holdouts (311 theorems).
 - **[`BB(3, 3)` Holdouts (`BusyBeaver/BB33/`)](./BB33/README.md)** — 6 3-state 3-symbol holdouts (24 theorems).
 
 ## Building and Verifying

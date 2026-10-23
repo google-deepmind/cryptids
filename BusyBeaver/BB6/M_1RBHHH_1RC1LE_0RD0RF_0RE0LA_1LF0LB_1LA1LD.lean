@@ -11,39 +11,23 @@ public import BusyBeaver.Cert
 /-!
 # Busy Beaver Holdout `1RB---_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD`
 
-We define the configuration for $a, b, c, d \ge 0$:
+We define the configuration for $a, d \ge 0$:
 
 $$
-P_1(a, b, c, d) := 0^\infty \ 1^b \ (01)^a \ 1 \ \mathrm{C}{>} \ (01)^c \ 1 \ (01)^d \ 1 \ 0^\infty.
+P(a, d) := 0^\infty \ 1111 \ (01)^a \ 1 \ \mathrm{C}{>} \ 011 \ (01)^d \ 1 \ 0^\infty.
 $$
 
-Starting from $P_1(1, 4, 1, 1)$ (reached after 70 steps from the blank tape), the machine follows
+Starting from $P(1, 1)$ (reached after 70 steps from the blank tape), the machine follows
 the map $T$:
 
 $$
-T(P_1(a, b, c, d)) = \begin{cases}
-  P_1(k+c+1, 4, 1, 1) & \text{if } a = 0,\ b = 2k,\text{ and } d = 0, \\
-  P_1(k+c, 4, 1, 2) & \text{if } a = 0,\ b = 2k+1,\text{ and } d = 0, \\
-  P_1(c, 4, 1, 2) & \text{if } a = 1,\ b = 0,\text{ and } d = 0, \\
-  P_1(0, 0, 1, c+2) & \text{if } a = 1,\ b = 1,\text{ and } d = 0, \\
-  P_1(c+3, 4, 1, 1) & \text{if } a = 1,\ b = 2,\text{ and } d = 0, \\
-  \text{Halt} & \text{if } a = 1,\ b \ge 3,\text{ and } d = 0, \\
-  P_1(a-2, b, 1, c+2) & \text{if } a \ge 2 \text{ and } d = 0, \\
-  \text{Halt} & \text{if } a = 0,\ b = 0,\ c = 0,\text{ and } d \ge 1, \\
-  F(c-1, 1, d+1) & \text{if } a = 0,\ b = 0,\ c \ge 1,\text{ and } d \ge 1, \\
-  F(k+c, 1, d+1) & \text{if } a = 0,\ b = 2k+2,\text{ and } d \ge 1, \\
-  P_1(0, 0, k+c+2, d-1) & \text{if } a = 0,\ b = 2k+1,\text{ and } d \ge 1, \\
-  P_1(a-m, b, c+2m, d-m) & \text{if } a \ge 1 \text{ and } d \ge 1,
-\end{cases}
-$$
-
-where $m = \min(a, d)$ and $F(m, c, d)$ is defined by:
-
-$$
-F(m, c, d) = \begin{cases}
-  P_1(2m+c+1, 4, 1, d+1-m) & \text{if } m \le d, \\
-  P_1(2m+c+1, 4, 1, 2) & \text{if } m > d \text{ and } m - d \text{ is odd}, \\
-  P_1(2m+c+1, 4, 1, 1) & \text{if } m > d \text{ and } m - d \text{ is even}.
+T(P(a, d)) = \begin{cases}
+  P(a-d-2, 2d+3) & \text{if } a \ge d+2, \\
+  \text{Halt} & \text{if } a = d+1, \\
+  P(2a+4, 1) & \text{if } a = d, \\
+  P(4a+6, d-3a) & \text{if } a < d \text{ and } 3a+1 \le d, \\
+  P(4a+6, 2) & \text{if } a < d < 3a+1 \text{ and } d - a \text{ is even}, \\
+  P(4a+6, 1) & \text{if } a < d < 3a+1 \text{ and } d - a \text{ is odd}.
 \end{cases}
 $$
 -/
@@ -1868,58 +1852,81 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 /-! ## High-Level Collatz-Like Acceleration -/
 
 /-- Single-family state space
-$P_1(a, b, c, d) := 0^\infty\,1^b\,(01)^a\,1\,\mathrm{C}{>}\,(01)^c\,1\,(01)^d\,1\,0^\infty$
+$P(a, d) := 0^\infty\,1111\,(01)^a\,1\,\mathrm{C}{>}\,011\,(01)^d\,1\,0^\infty$
 for the high-level Collatz-like acceleration. -/
 inductive HighLevelState where
-  /-- $P_1(a, b, c, d) :=
-    0^\infty\,1^b\,(01)^a\,1\,\mathrm{C}{>}\,(01)^c\,1\,(01)^d\,1\,0^\infty$. -/
-  | P_1 (a b c d : ℕ)
+  /-- $P(a, d) := 0^\infty\,1111\,(01)^a\,1\,\mathrm{C}{>}\,011\,(01)^d\,1\,0^\infty$. -/
+  | P (a d : ℕ)
   deriving DecidableEq, Repr
 
-/-- Initial state $P_1(1, 4, 1, 1)$ for the high-level Collatz-like acceleration. -/
-def highLevelStart : HighLevelState := .P_1 1 4 1 1
+/-- Initial state $P(1, 1)$ for the high-level Collatz-like acceleration. -/
+def highLevelStart : HighLevelState := .P 1 1
 
 /-- Embed a `HighLevelState` into `State`. -/
 def toState : HighLevelState → State
-  | .P_1 a b c d => .P_1 a b c d
+  | .P a d => .P_1 a 4 1 d
 
 /-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
 def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
   encode (toState s)
 
-/-- Outcome of `P_2 a 4 c` (`isP3 = false`) and `P_3 a 4 c` (`isP3 = true`) when run until
-returning to `P_1`. -/
-def evalP23_4 : Bool → ℕ → ℕ → HighLevelState
-  | false, 0, c => .P_1 (1 + c) 4 1 1
-  | true, 0, c => .P_1 (1 + c) 4 1 2
+/-- High-level accelerated Collatz-like transition function on $P(a, d)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .P a d =>
+    if a ≥ d + 2 then some (.P (a - d - 2) (2 * d + 3))
+    else if a = d + 1 then none
+    else if a = d then some (.P (2 * a + 4) 1)
+    else if 3 * a + 1 ≤ d then some (.P (4 * a + 6) (d - 3 * a))
+    else if (d - a) % 2 = 0 then some (.P (4 * a + 6) 2)
+    else some (.P (4 * a + 6) 1)
+
+private def evalP23_4 : Bool → ℕ → ℕ → HighLevelState
+  | false, 0, c => .P (1 + c) 1
+  | true, 0, c => .P (1 + c) 2
   | false, a + 1, c => evalP23_4 true a (c + 2)
   | true, a + 1, c => evalP23_4 false a (c + 2)
 
-/-- Outcome of `P_4 a 4 c d` when run until returning to `P_1`. -/
-def evalP4_4 : ℕ → ℕ → ℕ → HighLevelState
-  | 0, c, 0 => .P_1 (1 + c) 4 1 1
+private def evalP4_4 : ℕ → ℕ → ℕ → HighLevelState
+  | 0, c, 0 => .P (1 + c) 1
   | a + 1, c, 0 => evalP23_4 true a (c + 2)
-  | 0, c, d + 1 => .P_1 (1 + c) 4 1 (d + 2)
+  | 0, c, d + 1 => .P (1 + c) (d + 2)
   | a + 1, c, d + 1 => evalP4_4 a (c + 2) d
 
-/-- High-level accelerated Collatz-like transition function on $P_1(a, b, c, d)$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
-  | .P_1 0 b c 0 =>
-    if b % 2 = 0 then some (.P_1 (b / 2 + c + 1) 4 1 1)
-    else some (.P_1 (b / 2 + c) 4 1 2)
-  | .P_1 1 0 c 0 => some (.P_1 c 4 1 2)
-  | .P_1 1 1 c 0 => some (.P_1 0 0 1 (c + 2))
-  | .P_1 1 2 c 0 => some (.P_1 (c + 3) 4 1 1)
-  | .P_1 1 (_ + 3) _ 0 => none
-  | .P_1 (a + 2) b c 0 => some (.P_1 a b 1 (c + 2))
-  | .P_1 0 0 0 (_ + 1) => none
-  | .P_1 0 0 (c + 1) (d + 1) => some (evalP4_4 c 1 (d + 2))
-  | .P_1 0 (b' + 1) c (d + 1) =>
-    if (b' + 1) % 2 = 0 then some (evalP4_4 (b' / 2 + c) 1 (d + 2))
-    else some (.P_1 0 0 (b' / 2 + c + 2) d)
-  | .P_1 (a + 1) b c (d + 1) =>
-    let k := min (a + 1) (d + 1)
-    some (.P_1 (a + 1 - k) b (c + 2 * k) (d + 1 - k))
+private theorem evalP23_4_eq (isP3 : Bool) (a c : ℕ) :
+    evalP23_4 isP3 a c =
+      .P (2 * a + c + 1) (if (if isP3 then a % 2 = 0 else a % 2 = 1) then 2 else 1) := by
+  induction a generalizing isP3 c with
+  | zero => cases isP3 <;> simp [evalP23_4, Nat.add_comm]
+  | succ a ih =>
+    cases isP3
+    · rw [evalP23_4, ih true (c + 2)]
+      congr 1
+      · omega
+      · have : (a % 2 = 0) ↔ ((a + 1) % 2 = 1) := by omega
+        simp [this]
+    · rw [evalP23_4, ih false (c + 2)]
+      congr 1
+      · omega
+      · have : (a % 2 = 1) ↔ ((a + 1) % 2 = 0) := by omega
+        simp [this]
+
+private theorem evalP4_4_eq (a c d : ℕ) :
+    evalP4_4 a c d =
+      if a ≤ d then .P (2 * a + c + 1) (d - a + 1)
+      else if (a - d) % 2 = 1 then .P (2 * a + c + 1) 2
+      else .P (2 * a + c + 1) 1 := by
+  induction a generalizing c d with
+  | zero =>
+    cases d <;> simp [evalP4_4] <;> omega
+  | succ a ih =>
+    cases d with
+    | zero =>
+      rw [evalP4_4, evalP23_4_eq]
+      simp only [↓reduceIte]
+      split_ifs <;> congr 1 <;> omega
+    | succ d =>
+      rw [evalP4_4, ih (c + 2) d]
+      split_ifs <;> congr 1 <;> omega
 
 private theorem reaches_P1_diag (k : ℕ) (a b c d : ℕ) :
     CollatzReachesStar next (.P_1 (a + k) b c (d + k)) (.P_1 a b (c + 2 * k) d) := by
@@ -1938,26 +1945,6 @@ private theorem reaches_P1_diag (k : ℕ) (a b c d : ℕ) :
     have hc : c + 2 + 2 * k = c + 2 * (k + 1) := by omega
     rw [hc] at ih'
     exact CollatzReachesStar.head h_next ih'
-
-private theorem reaches_P1_drain (a b c d : ℕ) :
-    CollatzStepsTo next (.P_1 (a + 1) b c (d + 1))
-      (some (.P_1 (a + 1 - min (a + 1) (d + 1)) b
-        (c + 2 * min (a + 1) (d + 1))
-        (d + 1 - min (a + 1) (d + 1)))) := by
-  let k := min (a + 1) (d + 1)
-  have hk_pos : 0 < k := by
-    dsimp [k]
-    have : 0 < a + 1 := Nat.succ_pos a
-    have : 0 < d + 1 := Nat.succ_pos d
-    exact Nat.lt_min.mpr ⟨‹_›, ‹_›⟩
-  obtain ⟨m, hm⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hk_pos)
-  have h_head : next (.P_1 (a + 1) b c (d + 1)) = some (.P_1 a b (c + 2) d) := by simp [next]
-  have h_star := reaches_P1_diag m (a + 1 - k) b (c + 2) (d + 1 - k)
-  have ha : a + 1 - k + m = a := by omega
-  have hd : d + 1 - k + m = d := by omega
-  have hc : c + 2 + 2 * m = c + 2 * k := by omega
-  rw [ha, hd, hc] at h_star
-  exact CollatzReachesPlus.head h_head h_star
 
 private theorem stepsTo_P23_4 : ∀ (isP3 : Bool) (a c : ℕ),
     CollatzStepsTo next (if isP3 then .P_3 a 4 c else .P_2 a 4 c)
@@ -1981,38 +1968,89 @@ theorem is_valid_highLevel_acceleration :
   have h_init : CollatzReachesStar next start (toState highLevelStart) :=
     CollatzReachesStar.head rfl (CollatzReachesStar.refl next _)
   refine is_valid_acceleration.of_collatz (embed := toState) h_init ?_
-  rintro ⟨a, b, c, d⟩
-  rcases d with _ | d
-  · rcases a with _ | _ | a
-    · dsimp [toState, highLevelNext, next]
-      split_ifs with hb
-      · have h1 : next (.P_1 0 b c 0) = some (.P_2 0 0 ((b / 2 + c + 1) + 1)) := by
-          simp [next, hb, Nat.add_assoc]
-        exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq rfl)
-      · exact CollatzStepsTo.of_eq (by simp [next, toState, hb])
-    · rcases b with _ | _ | _ | b
-      · exact CollatzStepsTo.of_eq rfl
-      · exact CollatzStepsTo.of_eq rfl
-      · exact CollatzStepsTo.head rfl
-          (CollatzStepsTo.of_eq (by simp [next, toState, highLevelNext]))
-      · exact CollatzStepsTo.of_eq rfl
-    · exact CollatzStepsTo.of_eq rfl
-  · rcases a with _ | a
-    · rcases b with _ | b'
-      · rcases c with _ | c
-        · exact CollatzStepsTo.of_eq rfl
-        · exact CollatzStepsTo.head rfl (stepsTo_P4_4 c 1 (d + 2))
-      · dsimp [toState, highLevelNext, next]
-        split_ifs with hb
-        · exact CollatzStepsTo.head (by simp [next, hb]) (stepsTo_P4_4 (b' / 2 + c) 1 (d + 2))
-        · exact CollatzStepsTo.of_eq (by simp [next, toState, hb])
-    · have h_eq : Option.map toState (highLevelNext (HighLevelState.P_1 (a + 1) b c (d + 1))) =
-          some (.P_1 (a + 1 - min (a + 1) (d + 1)) b
-            (c + 2 * min (a + 1) (d + 1))
-            (d + 1 - min (a + 1) (d + 1))) := by
-        simp [highLevelNext, toState]
-      rw [h_eq]
-      exact reaches_P1_drain a b c d
+  rintro ⟨a, d⟩
+  dsimp [toState, highLevelNext]
+  split_ifs with h1 h2 h3 h4 h5
+  · have h_diag := reaches_P1_diag d (a - d) 4 1 0
+    have ha : a - d + d = a := by omega
+    have hd : 0 + d = d := by omega
+    rw [ha, hd] at h_diag
+    have h_step : next (.P_1 (a - d) 4 (1 + 2 * d) 0) =
+        some (.P_1 (a - d - 2) 4 1 (2 * d + 3)) := by
+      have ha2 : a - d = (a - d - 2) + 2 := by omega
+      have hc2 : 1 + 2 * d + 2 = 2 * d + 3 := by omega
+      rw [ha2]
+      simp [next, hc2]
+    exact CollatzStepsTo.of_reachesStar h_diag (CollatzStepsTo.of_eq h_step)
+  · subst h2
+    have h_diag := reaches_P1_diag d 1 4 1 0
+    have hd : 0 + d = d := by omega
+    have ha : 1 + d = d + 1 := by omega
+    rw [ha, hd] at h_diag
+    exact CollatzStepsTo.of_reachesStar h_diag (CollatzStepsTo.of_eq rfl)
+  · subst h3
+    have h_diag := reaches_P1_diag a 0 4 1 0
+    simp only [Nat.zero_add] at h_diag
+    have h_step1 : next (.P_1 0 4 (1 + 2 * a) 0) = some (.P_2 0 0 ((2 * a + 4) + 1)) := by
+      simp [next]
+      omega
+    exact CollatzStepsTo.of_reachesStar h_diag
+      (CollatzStepsTo.head h_step1 (CollatzStepsTo.of_eq rfl))
+  · have h_diag := reaches_P1_diag a 0 4 1 (d - a)
+    have hd : d - a + a = d := by omega
+    simp only [Nat.zero_add, hd] at h_diag
+    have h_step1 : next (.P_1 0 4 (1 + 2 * a) (d - a)) =
+        some (.P_4 (2 * a + 2) 4 1 (d - a + 1)) := by
+      have hda : d - a = (d - a - 1) + 1 := by omega
+      rw [hda]
+      simp [next]
+      omega
+    have h_p4 := stepsTo_P4_4 (2 * a + 2) 1 (d - a + 1)
+    have h_eq : evalP4_4 (2 * a + 2) 1 (d - a + 1) = .P (4 * a + 6) (d - 3 * a) := by
+      rw [evalP4_4_eq]
+      have hle : 2 * a + 2 ≤ d - a + 1 := by omega
+      simp only [hle, ↓reduceIte]
+      congr 1 <;> omega
+    rw [h_eq] at h_p4
+    exact CollatzStepsTo.of_reachesStar h_diag (CollatzStepsTo.head h_step1 h_p4)
+  · have h_diag := reaches_P1_diag a 0 4 1 (d - a)
+    have hd : d - a + a = d := by omega
+    simp only [Nat.zero_add, hd] at h_diag
+    have h_step1 : next (.P_1 0 4 (1 + 2 * a) (d - a)) =
+        some (.P_4 (2 * a + 2) 4 1 (d - a + 1)) := by
+      have hda : d - a = (d - a - 1) + 1 := by omega
+      rw [hda]
+      simp [next]
+      omega
+    have h_p4 := stepsTo_P4_4 (2 * a + 2) 1 (d - a + 1)
+    have h_eq : evalP4_4 (2 * a + 2) 1 (d - a + 1) = .P (4 * a + 6) 2 := by
+      rw [evalP4_4_eq]
+      have hle : ¬ (2 * a + 2 ≤ d - a + 1) := by omega
+      have hpar : (2 * a + 2 - (d - a + 1)) % 2 = 1 := by omega
+      simp only [hle, ↓reduceIte, hpar]
+      congr 1
+      omega
+    rw [h_eq] at h_p4
+    exact CollatzStepsTo.of_reachesStar h_diag (CollatzStepsTo.head h_step1 h_p4)
+  · have h_diag := reaches_P1_diag a 0 4 1 (d - a)
+    have hd : d - a + a = d := by omega
+    simp only [Nat.zero_add, hd] at h_diag
+    have h_step1 : next (.P_1 0 4 (1 + 2 * a) (d - a)) =
+        some (.P_4 (2 * a + 2) 4 1 (d - a + 1)) := by
+      have hda : d - a = (d - a - 1) + 1 := by omega
+      rw [hda]
+      simp [next]
+      omega
+    have h_p4 := stepsTo_P4_4 (2 * a + 2) 1 (d - a + 1)
+    have h_eq : evalP4_4 (2 * a + 2) 1 (d - a + 1) = .P (4 * a + 6) 1 := by
+      rw [evalP4_4_eq]
+      have hle : ¬ (2 * a + 2 ≤ d - a + 1) := by omega
+      have hpar : ¬ ((2 * a + 2 - (d - a + 1)) % 2 = 1) := by omega
+      simp only [hle, ↓reduceIte, hpar]
+      congr 1
+      omega
+    rw [h_eq] at h_p4
+    exact CollatzStepsTo.of_reachesStar h_diag (CollatzStepsTo.head h_step1 h_p4)
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

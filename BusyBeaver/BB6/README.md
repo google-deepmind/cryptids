@@ -1,6 +1,6 @@
 # Busy Beaver 6 Holdouts (`BusyBeaver/BB6/`)
 
-This directory contains formal Lean 4 specifications and kernel-verified Collatz-like reductions for 53 Busy Beaver 6 (`BB(6)`, 6-state 2-symbol) holdout Turing machines. Each machine module exposes both **Level A** (`ps`, `is_closed_pattern_set`, `has_collatz_reduction`) and **Level B** (`State`, `start`, `encode`, `next`, `is_valid_acceleration`, `isHalt_iff_acceleration`), and each novel discovery module additionally exposes the higher-level Collatz-like acceleration (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`); see [`BusyBeaver/README.md`](../README.md) for definitions of the behavioral predicates.
+This directory contains formal Lean 4 specifications and kernel-verified Collatz-like reductions for 53 Busy Beaver 6 (`BB(6)`, 6-state 2-symbol) holdout Turing machines. Each machine module exposes both **Level A** (`ps`, `is_closed_pattern_set`, `has_collatz_reduction`) and **Level B** (`State`, `start`, `encode`, `next`, `is_valid_acceleration`, `isHalt_iff_acceleration`), and 33 modules (all 20 novel discovery modules together with 13 multi-family or multi-counter wiki/busycoq holdouts) additionally expose a higher-level Collatz-like acceleration (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`); see [`BusyBeaver/README.md`](../README.md) for definitions of the behavioral predicates.
 
 ## Formalized `BB(6)` Machines
 
@@ -62,214 +62,187 @@ This directory contains formal Lean 4 specifications and kernel-verified Collatz
 
 ## High-Level Acceleration Equations
 
-### [`1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_---1RA`](./M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA.lean)
+### [`1RB0LB_1LC0RE_1LA1LD_0LC---_0RB0RF_1RE1RB`](./M_1RB0LB_1LC0RE_1LA1LD_0LCHHH_0RB0RF_1RE1RB.lean)
 
-We define the configuration for $a, k, c \ge 0$:
-
-$$
-E(a, k, c) := 0^\infty \ 1^a \ \mathrm{A}{>} \ 0 \ (11)^k \ 0 \ 1^c \ 0^\infty.
-$$
-
-Starting from $E(3, 0, 2)$ (reached after 23 steps from the blank tape), the machine follows the map $T$:
+Contracting all five $\bmod\ 3$ sweeps (`S0p`, `T1`, `T11`, `T3`, `T10`, `T0`) and eliminating `S0z`, `Ea`, and `Ec` reduces the 12-constructor `State` system to a closed-form map (with zero recursive helpers) over $S(b, c) := S_{0+}(0, b, c)$, $T(m) := T_1(0, m)$, and the three non-halting self-loops $T_n(j)$, $E_b(k, t)$, and $E_d(k, t)$. Starting from $T(1)$, the machine follows:
 
 $$
-T(E(a, k, c)) = \begin{cases}
-  E(3, 0, a + 2) & \text{if } k = 0,\ c = 0, \\
-  E(3, m, 2j + 1) & \text{if } a = 2m,\ k = 0,\ c = 2j + 1, \\
-  E(4, m + 1, 2j + 1) & \text{if } a = 2m + 1,\ k = 0,\ c = 2j + 1, \\
-  E(0, 1, 2m + 2) & \text{if } a = 2m,\ k = 0,\ c = 2, \\
-  E(1, 1, 2m + 4) & \text{if } a = 2m + 1,\ k = 0,\ c = 2, \\
-  E(3, m + 1, 2j + 2) & \text{if } a = 2m,\ k = 0,\ c = 2j + 4, \\
-  E(4, m + 2, 2j + 2) & \text{if } a = 2m + 1,\ k = 0,\ c = 2j + 4, \\
-  E(a + 3, m, 0) & \text{if } k = 1,\ c = 2m, \\
-  \text{Halt} & \text{if } k = 1,\ c = 1, \\
-  E(3, 0, a + 7) & \text{if } k = 1,\ c = 3, \\
-  E(1, 1, 2m + 8) & \text{if } a = 2m,\ k = 1,\ c = 5, \\
-  E(0, 1, 2m + 8) & \text{if } a = 2m + 1,\ k = 1,\ c = 5, \\
-  E(4, m + 4, 2j + 2) & \text{if } a = 2m,\ k = 1,\ c = 2j + 7, \\
-  E(3, m + 4, 2j + 2) & \text{if } a = 2m + 1,\ k = 1,\ c = 2j + 7, \\
-  E(3, m + 1, 2k' + 1) & \text{if } a = 2m,\ k = k' + 2,\ c = 0, \\
-  E(4, m + 2, 2k' + 1) & \text{if } a = 2m + 1,\ k = k' + 2,\ c = 0, \\
-  E(a + 6\lfloor k/2 \rfloor, k \bmod 2, c) & \text{if } k \ge 2,\ c \ge 1,\ c \text{ is odd}, \\
-  E(a + 3, 1, 2k - 2) & \text{if } k \ge 2,\ c = 2, \\
-  E(a + 6m, k - m, c - 2m) & \text{if } k \ge 2,\ c \ge 4,\ c \text{ is even with } m = \min(k - 1, \lfloor (c - 1)/2 \rfloor).
+\begin{aligned}
+  T_{\mathrm{HL}}(S(b, c)) &= \begin{cases}
+    S(4\lfloor b/3 \rfloor + 1,\ c + 4) & \text{if } b \equiv 0 \pmod{3}, \\
+    S(4\lfloor b/3 \rfloor + 5,\ c + 6) & \text{if } b \equiv 1 \pmod{3}, \\
+    T(4\lfloor b/3 \rfloor + 7) & \text{if } b \equiv 2 \pmod{3} \text{ and } c = 0, \\
+    S(4\lfloor b/3 \rfloor + 8,\ c - 1) & \text{if } b \equiv 2 \pmod{3} \text{ and } c \ge 1,
+  \end{cases} \\
+  T_{\mathrm{HL}}(T_n(j)) &= T_n(j + 2), \quad T_{\mathrm{HL}}(E_b(k, t)) = E_b(k + 1, t), \quad T_{\mathrm{HL}}(E_d(k, t)) = E_d(k + 1, t),
+\end{aligned}
+$$
+
+while from $T(m)$, writing $j_0 = 2\lfloor m/3 \rfloor$, $m_1 = 2j_0 + 7$, $j_1 = 2\lfloor m_1/3 \rfloor$, $m_2 = 2j_1 + 7$, $j_2 = 2\lfloor m_2/3 \rfloor$, $m_3 = 2j_2 + 7$, $j_3 = 2\lfloor m_3/3 \rfloor$, $m_4 = 2j_3 + 6$, and $j_4 = 2\lfloor m_4/3 \rfloor$:
+
+$$
+T_{\mathrm{HL}}(T(m)) = \begin{cases}
+  T_n(0) & \text{if } m \equiv 0 \pmod{3}, \\
+  S(2j_0 + 5,\ 3) & \text{if } m \equiv 2 \pmod{3}, \\
+  T(2j_1 + 6) & \text{if } m \equiv 1 \text{ and } m_1 \equiv 0 \pmod{3}, \\
+  E_b(0,\ 2j_1 + 1) & \text{if } m \equiv 1 \text{ and } m_1 \equiv 2 \pmod{3}, \\
+  T(2j_2 + 8) & \text{if } m \equiv 1,\ m_1 \equiv 1,\text{ and } m_2 \equiv 0 \pmod{3}, \\
+  E_d(0,\ 2j_2 + 1) & \text{if } m \equiv 1,\ m_1 \equiv 1,\text{ and } m_2 \equiv 2 \pmod{3}, \\
+  \text{Halt} & \text{if } m \equiv 1,\ m_1 \equiv 1,\ m_2 \equiv 1,\text{ and } (m_3 \not\equiv 0 \text{ or } m_4 \equiv 1 \pmod{3}), \\
+  T(2j_4 + 5) & \text{if } m \equiv 1,\ m_1 \equiv 1,\ m_2 \equiv 1,\ m_3 \equiv 0,\text{ and } m_4 \equiv 0 \pmod{3}, \\
+  T(2j_4 + 7) & \text{if } m \equiv 1,\ m_1 \equiv 1,\ m_2 \equiv 1,\ m_3 \equiv 0,\text{ and } m_4 \equiv 2 \pmod{3}.
 \end{cases}
 $$
+
+This transition map is identical to that of [`1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RB---`](./M_1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RBHHH.lean), which starts from $S(1, 3)$.
+
+### [`1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_---1RA`](./M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA.lean)
+
+Restricting $E(a, k, c) := 0^\infty \ 1^a \ \mathrm{A}{>} \ 0 \ (11)^k \ 0 \ 1^c \ 0^\infty$ to the canonical return section $a \in \lbrace 3, 4 \rbrace$ (`E_p(k, c) := E(3 + p, k, c)` for $p \in \lbrace 0, 1 \rbrace$) and composing through transient accumulation steps yields a closed-form 2-counter + 1-bit map $T$ (with zero helper functions), starting from $E_0(0, 2)$ (encoded as `.E false 0 2`, reached after 23 steps):
+
+$$
+T(E_p(k, c)) = \begin{cases}
+  E_{1-p}(3\lfloor k/2 \rfloor + 2,\ c) & \text{if } c \text{ is odd and } k \text{ is even}, \\
+  \text{Halt} & \text{if } c = 1 \text{ and } k \text{ is odd}, \\
+  E_0(0,\ 6\lfloor k/2 \rfloor + 10 + p) & \text{if } c = 3 \text{ and } k \text{ is odd}, \\
+  E_p(3\lfloor k/2 \rfloor + 5 + p,\ c - 5) & \text{if } c \ge 5 \text{ is odd and } k \text{ is odd}, \\
+  E_0(0,\ 6k + 5 + p) & \text{if } c = 2k, \\
+  E_0(0,\ 6k + 2 + p) & \text{if } c \text{ is even and } 2k = c + 2, \\
+  E_{1-p}(3(c/2) + 3,\ 2k - c - 3) & \text{if } c \text{ is even and } 2k \ge c + 4, \\
+  E_{1-p}(3,\ c - 2) & \text{if } c \ge 2 \text{ is even and } k = 0, \\
+  E_p(3k + 1 + p,\ c - 2k - 1) & \text{if } c \text{ is even and } 2 \le 2k \le c - 2.
+\end{cases}
+$$
+
+### [`1RB0LC_1LC0RD_1LF1LA_1LB1RE_1RB1LE_---0LE`](./M_1RB0LC_1LC0RD_1LF1LA_1LB1RE_1RB1LE_HHH0LE.lean)
+
+Eliminating $(a, f)$ from the 4-counter configuration $C(a, f, g, d) := 0^\infty \ 1^a \ (110)^f \ 1 \ \mathrm{C}{>} \ 0 \ (10)^g \ 1 \ (00)^d \ 0^\infty$ reduces the dynamics to two counters $(g, d)$ over the three entry families $C_0(g, d) := C(0, 0, g, d)$, $C_2(g, d) := C(2, 0, g, d)$, and $C_5(g, d) := C(5, 0, g, d)$. Starting from $C_2(0, 0)$, the machine follows:
+
+$$
+T(C_0(g, d)) = G(0, 0, g, d), \quad T(C_2(g, d)) = G(0, 3, g, d), \quad T(C_5(g, d)) = G(1, 6, g, d),
+$$
+
+where the $g$-scan $G(r, f, g, d)$ (`scanG`, for $r \in \lbrace 0, 1 \rbrace$) is defined recursively on $g$ (with $s = f + 3 + r$):
+
+$$
+G(r, f, g, d) = \begin{cases}
+  C_2(\lfloor f/2 \rfloor + 2,\ d) & \text{if } g = 0,\ r = 0,\text{ and } f \text{ is even}, \\
+  C_5(\lfloor f/2 \rfloor + 1,\ d) & \text{if } g = 0,\ r = 0,\text{ and } f \text{ is odd}, \\
+  C_0(\lfloor f/2 \rfloor + 3,\ d) & \text{if } g = 0,\ r = 1,\text{ and } f \text{ is even}, \\
+  \text{Halt} & \text{if } (g = 0,\ r = 1,\ f \text{ odd}) \text{ or } (g = 1,\ r = 1,\ f \text{ even}), \\
+  C_2(0,\ d + 2) & \text{if } g = 1,\ r = 0,\text{ and } f = 0, \\
+  C_5(\lfloor f/2 \rfloor - 1,\ d + 1) & \text{if } g = 1,\ r = 0,\text{ and } f \ge 2 \text{ is even}, \\
+  C_2(\lfloor f/2 \rfloor + 1,\ d + 1) & \text{if } g = 1,\ r = 0,\text{ and } f \text{ is odd}, \\
+  C_0(\lfloor f/2 \rfloor + 2,\ d + 1) & \text{if } g = 1,\ r = 1,\text{ and } f \text{ is odd}, \\
+  G(s \bmod 2,\ 3\lfloor s/2 \rfloor + 3,\ g - 2,\ d) & \text{if } g \ge 2.
+\end{cases}
+$$
+
+### [`1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_---1RE`](./M_1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_HHH1RE.lean)
+
+Eliminating `H3`, `H2_even`, `H2_odd0`, and `H1_even` reduces the 5-constructor `CubicCapLoop_v2` system to a single-family 2-counter map on $H(a, g) := 0^\infty \ (01)^a \ 1^{g+1} \ \mathrm{A}{>} \ 0^\infty$, starting from $H(0, 3)$:
+
+$$
+T(H(a, g)) = \begin{cases}
+  D(0, 1, g) & \text{if } a = 0, \\
+  D(0, 1, g + 1) & \text{if } a = 1, \\
+  D(2, 0, g + 1) & \text{if } a = 2, \\
+  D(a', k' - 1, g + 1) & \text{if } a \ge 3,
+\end{cases}
+$$
+
+where for $a_0 = a - 1 \ge 2$, $S(j) = 2^{j+1} - j - 1$, and $S(j) \le a_0 < S(j + 1)$, we set $(a', k') = (2^{j+1}, 1)$ if $a_0 = S(j)$ and $(a', k') = (S(j + 1) - 1 - a_0,\ a_0 + j + 2 - a')$ otherwise, and `drainEven` ($D(a, k, h)$) is defined recursively on $h$:
+
+$$
+D(a, k, h) = \begin{cases}
+  \text{Halt} & \text{if } h \le 1 \text{ and } a = 0, \\
+  H(a - 1,\ 2k + 3 + 2h) & \text{if } h \le 1 \text{ and } a \ge 1, \\
+  D(k + 2,\ 0,\ h - 2) & \text{if } h \ge 2 \text{ and } a = 0, \\
+  D(a - 1,\ k + 2,\ h - 2) & \text{if } h \ge 2 \text{ and } a \ge 1.
+\end{cases}
+$$
+
+### [`1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RB---`](./M_1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RBHHH.lean)
+
+Contracting all five $\bmod\ 3$ sweeps reduces the 12-constructor `State` system to the exact same closed-form transition map $T_{\mathrm{HL}}$ over $\lbrace S(b, c),\ T(m),\ T_n(j),\ E_b(k, t),\ E_d(k, t) \rbrace$ (with zero recursive helpers) as [`1RB0LB_1LC0RE_1LA1LD_0LC---_0RB0RF_1RE1RB`](./M_1RB0LB_1LC0RE_1LA1LD_0LCHHH_0RB0RF_1RE1RB.lean), starting from $S(1, 3)$.
 
 ### [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean)
 
-We define the configuration for $a, b, d \ge 0$ and $c \in \lbrace 0, 1 \rbrace$:
+Restricting $D(a, b, d) := 0^\infty \ \mathrm{D}{>} \ (10)^{a+1} \ (110)^b \ 0 \ 1^d \ 0^\infty$ to the $b = 0$ Poincaré section $D(a, d) := D(a, 0, d)$ (draining $b \ge 1$ via $B$, since each base-3 evaluation $A$ sends $b \mapsto b' \le \lfloor (b - 1)/3 \rfloor < b$) gives a 2-counter map $T$ starting from $D(0, 7)$ (reached after 66 steps):
 
 $$
-D(a, b, c, d) := 0^\infty \ \mathrm{D}{>} \ (10)^a \ (110)^b \ 0^c \ 1^d \ 0^\infty.
+T(D(a, d)) = \begin{cases}
+  B(d + 1,\ 2,\ 2) & \text{if } a = 0 \text{ and } d \text{ is odd}, \\
+  D(d,\ 7) & \text{if } a = 0 \text{ and } d \text{ is even}, \\
+  B(a - d - 5,\ d + 3,\ 5) & \text{if } a \ge d + 5 \text{ and } d \text{ is odd}, \\
+  B(a - d - 2,\ d + 2,\ 2) & \text{if } a \ge d + 3 \text{ and } d \text{ is even}, \\
+  \text{Halt} & \text{otherwise, if } a \text{ is odd}, \\
+  B(0,\ a,\ 2) & \text{otherwise, if } a = d + 2, \\
+  B(d + 4 - a,\ a - 1,\ 3) & \text{otherwise, if } d \text{ is odd}, \\
+  B(A(d + 1 - a,\ a,\ 2a + 5)) & \text{otherwise (} 2 \le a \le d \text{ both even),}
+\end{cases}
 $$
 
-Starting from $D(0, 0, 0, 4)$ (reached after 6 steps from the blank tape), the machine follows the map $T$:
+where $A(a, 3j + r, m)$ ($r \in \lbrace 0, 1, 2 \rbrace$) and $B(a, b, d)$ (`evalA` and `drainB`) are defined recursively on $a$ and $b$:
 
 $$
-\begin{aligned}
-  T(D(a, b, 0, d)) &= \begin{cases}
-    D(0, 0, 1, 1) & \text{if } a = 0,\ b = 0,\text{ and } d = 0, \\
-    D(1, b-1, 1, 2) & \text{if } a = 0,\ b \ge 1,\text{ and } d = 0, \\
-    B(a-1, 0, b, 0) & \text{if } a \ge 1 \text{ and } d = 0, \\
-    D(0, 0, 0, 4) & \text{if } a = 0,\ b = 0,\text{ and } d = 1, \\
-    B(a, 0, 0, 0) & \text{if } a \ge 1,\ b = 0,\text{ and } d = 1, \\
-    D(a+2, b-1, 1, 3) & \text{if } b \ge 1 \text{ and } d = 1, \\
-    D(1, b, 1, 2) & \text{if } a = 0 \text{ and } d = 2, \\
-    B(a-1, 0, b+1, 0) & \text{if } a \ge 1 \text{ and } d = 2, \\
-    D(a + d - 1, b, 0, 1) & \text{if } d \ge 3 \text{ and } d \text{ is odd}, \\
-    D(a + d - 2, b, 0, 2) & \text{if } d \ge 3 \text{ and } d \text{ is even},
-  \end{cases} \\
-  T(D(a, b, 1, d)) &= \begin{cases}
-    D(0, 0, 1, d+1) & \text{if } a = 0 \text{ and } b = 0, \\
-    D(1, b-1, 1, d+2) & \text{if } a = 0 \text{ and } b \ge 1, \\
-    B(a-1, 0, b, d) & \text{if } a \ge 1,
-  \end{cases}
-\end{aligned}
+A(a, 3j + r, m) = \begin{cases}
+  (a + 1, j, m) & \text{if } r = 2, \\
+  \text{Halt} & \text{if } r = 0 \text{ and } a = 0, \\
+  (a - 1, j, m + 2) & \text{if } r = 0 \text{ and } a \ge 1, \\
+  (0, j, m) & \text{if } r = 1 \text{ and } a = 0, \\
+  A(a - 1, j, m + 2j + 3) & \text{if } r = 1 \text{ and } a \ge 1,
+\end{cases}
+\qquad
+B(a, b, d) = \begin{cases}
+  D(a, d) & \text{if } b = 0, \\
+  B(A(a, b - 1, d + 2b + 3)) & \text{if } b \ge 1.
+\end{cases}
 $$
 
-where $B(a, k, b, d)$, $H(a, b, m)$, and $A(a, k, q, m)$ are defined recursively by:
-
-$$
-\begin{aligned}
-  B(a, k, b+1, d) &= B(a, k+1, b, d+2), \\
-  B(a, 0, 0, d) &= \begin{cases}
-    D(0, 0, 0, d+4) & \text{if } a = 0, \\
-    \text{Halt} & \text{if } a = 1, \\
-    D(1, 2, 1, 2) & \text{if } a = 2 \text{ and } d = 0, \\
-    D(2, 2, 0, d) & \text{if } a = 2 \text{ and } d \ge 1, \\
-    H(a-3, 1, d+1) & \text{if } a \ge 3,
-  \end{cases} \\
-  B(a, k+1, 0, d) &= A(a, k, 0, d+3), \\
-  H(a, b, m) &= \begin{cases}
-    \text{Halt} & \text{if } a = 0 \text{ and } m \ne 1, \\
-    D(1, b+1, 1, 5) & \text{if } a = 1 \text{ and } m = 0, \\
-    D(a, b+1, 1, 5) & \text{if } a \ge 2 \text{ and } m = 0, \\
-    D(a+2, b+1, 1, 2) & \text{if } m = 1, \\
-    D(2, b+2, 1, 3) & \text{if } a = 1 \text{ and } m = 2, \\
-    D(1, b+3, 1, 2) & \text{if } a = 1 \text{ and } m = 3, \\
-    D(2, b+3, 0, m-3) & \text{if } a = 1 \text{ and } m \ge 4, \\
-    H(a-2, b+2, m-2) & \text{if } a \ge 2 \text{ and } m \ge 2,
-  \end{cases} \\
-  A(a, k, q, m) &= \begin{cases}
-    \text{Halt} & \text{if } a = 0 \text{ and } k = 0, \\
-    D(1, q, 1, m+2) & \text{if } a = 1 \text{ and } k = 0, \\
-    D(a, q, 1, m+2) & \text{if } a \ge 2 \text{ and } k = 0, \\
-    D(1, q, 1, m) & \text{if } a = 0 \text{ and } k = 1, \\
-    A(a-1, q, 0, m+2q+3) & \text{if } a \ge 1 \text{ and } k = 1, \\
-    D(a+2, q, 1, m) & \text{if } k = 2, \\
-    A(a, k-3, q+1, m) & \text{if } k \ge 3.
-  \end{cases}
-\end{aligned}
-$$
+This 2-counter system is identical to that of [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean), proving that the two machines have identical halting behavior.
 
 ### [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean)
 
-We define the configuration for $a, b, d \ge 0$ and $c \in \lbrace 0, 1 \rbrace$:
-
-$$
-D(a, b, c, d) := 0^\infty \ \mathrm{D}{>} \ (10)^a \ (110)^b \ 0^c \ 1^d \ 0^\infty.
-$$
-
-Starting from $D(0, 0, 0, 4)$ (reached after 6 steps from the blank tape), the machine follows the map $T$:
-
-$$
-\begin{aligned}
-  T(D(a, b, 0, d)) &= \begin{cases}
-    D(0, 0, 1, 1) & \text{if } a = 0,\ b = 0,\text{ and } d = 0, \\
-    D(1, b-1, 1, 2) & \text{if } a = 0,\ b \ge 1,\text{ and } d = 0, \\
-    B(a-1, 0, b, 0) & \text{if } a \ge 1 \text{ and } d = 0, \\
-    D(0, 0, 0, 4) & \text{if } a = 0,\ b = 0,\text{ and } d = 1, \\
-    B(a, 0, 0, 0) & \text{if } a \ge 1,\ b = 0,\text{ and } d = 1, \\
-    D(a+2, b-1, 1, 3) & \text{if } b \ge 1 \text{ and } d = 1, \\
-    D(1, b, 1, 2) & \text{if } a = 0 \text{ and } d = 2, \\
-    B(a-1, 0, b+1, 0) & \text{if } a \ge 1 \text{ and } d = 2, \\
-    D(a + d - 1, b, 0, 1) & \text{if } d \ge 3 \text{ and } d \text{ is odd}, \\
-    D(a + d - 2, b, 0, 2) & \text{if } d \ge 3 \text{ and } d \text{ is even},
-  \end{cases} \\
-  T(D(a, b, 1, d)) &= \begin{cases}
-    D(0, 0, 1, d+1) & \text{if } a = 0 \text{ and } b = 0, \\
-    D(1, b-1, 1, d+2) & \text{if } a = 0 \text{ and } b \ge 1, \\
-    B(a-1, 0, b, d) & \text{if } a \ge 1,
-  \end{cases}
-\end{aligned}
-$$
-
-where $B(a, k, b, d)$, $H(a, b, m)$, and $A(a, k, b, d)$ are defined recursively by:
-
-$$
-\begin{aligned}
-  B(a, k, b+1, d) &= B(a, k+1, b, d+2), \\
-  B(a, 0, 0, d) &= \begin{cases}
-    D(0, 0, 0, d+4) & \text{if } a = 0, \\
-    \text{Halt} & \text{if } a = 1, \\
-    D(0, 2, 0, d+2) & \text{if } a = 2, \\
-    H(a-3, 1, d+1) & \text{if } a \ge 3,
-  \end{cases} \\
-  B(a, k+1, 0, d) &= A(a, k, 0, d+3), \\
-  H(a, b, m) &= \begin{cases}
-    A(a, 0, b+1, 3) & \text{if } m = 0, \\
-    D(a+2, b+1, 1, 2) & \text{if } m = 1, \\
-    \text{Halt} & \text{if } a = 0 \text{ and } m \ge 2, \\
-    D(2, b+2, 1, 3) & \text{if } a = 1 \text{ and } m = 2, \\
-    D(1, b+3, 1, 2) & \text{if } a = 1 \text{ and } m = 3, \\
-    D(2, b+3, 0, m-3) & \text{if } a = 1 \text{ and } m \ge 4, \\
-    H(a-2, b+2, m-2) & \text{if } a \ge 2 \text{ and } m \ge 2,
-  \end{cases} \\
-  A(a, k, b, d) &= \begin{cases}
-    \text{Halt} & \text{if } a = 0 \text{ and } k = 0, \\
-    D(0, b+1, 1, d) & \text{if } a = 1 \text{ and } k = 0, \\
-    A(a-2, 2, b, d+2) & \text{if } a \ge 2 \text{ and } k = 0, \\
-    D(1, b, 1, d) & \text{if } a = 0 \text{ and } k = 1, \\
-    A(a-1, b, 0, d+2b+3) & \text{if } a \ge 1 \text{ and } k = 1, \\
-    D(a+2, b, 1, d) & \text{if } k = 2, \\
-    A(a, k-3, b+1, d) & \text{if } k \ge 3.
-  \end{cases}
-\end{aligned}
-$$
+Restricting $D(a, b, d) := 0^\infty \ \mathrm{D}{>} \ (10)^{a+1} \ (110)^b \ 0 \ 1^d \ 0^\infty$ to the $b = 0$ Poincaré section $D(a, d) := D(a, 0, d)$ gives the exact same 2-counter map $T$ (with initial state $D(0, 7)$, reached after 68 steps, and helpers $A$ and $B$) as [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean).
 
 ### [`1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean)
 
-We define the configuration for $b, k, c \ge 0$:
+We define the configuration for $b, c \ge 0$:
 
 $$
-A(b, k, c) := 0^\infty \ 1^b \ (01)^k \ \mathrm{F}{>} \ 00 \ 1^c \ 0^\infty.
+A(b, c) := 0^\infty \ 1^b \ \mathrm{F}{>} \ 00 \ 1^c \ 0^\infty.
 $$
 
-Starting from $A(5, 0, 2)$ (reached after 33 steps from the blank tape), the machine follows the map $T$:
+Starting from $A(5, 2)$ (reached after 33 steps from the blank tape), the machine follows the map $T$, where $h = \lfloor c/2 \rfloor$:
 
 $$
-T(A(b, k, c)) = \begin{cases}
-  A(4, 0, 3) & \text{if } b = 0,\ k = 0,\text{ and } c = 0, \\
-  A(6, 0, 3) & \text{if } b \in \lbrace 1, 3 \rbrace,\ k = 0,\text{ and } c = 0, \\
-  A(3, 0, 3) & \text{if } b = 2,\ k = 0,\text{ and } c = 0, \\
-  \text{Halt} & \text{if } b = 4,\ k = 0,\text{ and } c = 0, \\
-  A(b-4, 0, 5) & \text{if } b \ge 5,\ k = 0,\text{ and } c = 0, \\
-  A(b, k-1, 1) & \text{if } k \ge 1 \text{ and } c = 0, \\
-  A(2k+6, 0, 3) & \text{if } b = 0 \text{ and } c = 1, \\
-  A(2k+8, 0, 3) & \text{if } b \in \lbrace 1, 3 \rbrace \text{ and } c = 1, \\
-  \text{Halt} & \text{if } b = 4 \text{ and } c = 1, \\
-  A(b-4, 0, 2k+7) & \text{if } b \ge 5 \text{ and } c = 1, \\
-  A(5, 0, c-1) & \text{if } b = 2,\ k = 0,\text{ and } c \ge 1, \\
-  F(k-1, 2, 0, 0, c-1) & \text{if } b = 2,\ k \ge 1,\text{ and } c \ge 1, \\
-  A(1, k + 2\lfloor c/2 \rfloor - 1, c \bmod 2) & \text{if } b = 0 \text{ and } c \ge 2, \\
-  A(1, k + 2\lfloor c/2 \rfloor, c \bmod 2) & \text{if } b = 1 \text{ and } c \ge 2, \\
-  A(b - \lfloor c/2 \rfloor, k + 2\lfloor c/2 \rfloor, c \bmod 2) & \text{if } b \ge 3 \text{ and } c \ge 2,
+T(A(b, c)) = \begin{cases}
+  A(2c+4, 3) & \text{if } b = 0, \\
+  A(3, 3) & \text{if } b = 2 \text{ and } c = 0, \\
+  A(5, c-1) & \text{if } b = 2 \text{ and } c \ge 1, \\
+  A(b-2h-4, 2c+5) & \text{if } b \ge 2h+5, \\
+  A(2c+6, 3) & \text{if } b \text{ is odd and } b \le 2h+3, \\
+  F(b-3, 2, 0, c-b+1) & \text{if } b \ge 4 \text{ is even and } b \le 2h, \\
+  F(b-4+(c \bmod 2), 2, 0, 0) & \text{if } b \ge 4 \text{ is even and } b = 2h+2, \\
+  \text{Halt} & \text{if } b \ge 4 \text{ is even and } b = 2h+4,
 \end{cases}
 $$
 
-where $F(m, p, k, n, c)$ is defined recursively on $m$ (with $k' = k + 2n$):
+where $F(m, p, n, c)$ is defined recursively on $m$:
 
 $$
-F(m, p, k, n, c) = \begin{cases}
-  A(2k'+c+7, 0, 3) & \text{if } m = 0 \text{ and } p \le n+1, \\
-  A(2(p-n-2)+1, 0, 2(k'+3)+c) & \text{if } m = 0 \text{ and } p \ge n+2, \\
-  A(2(k'+4)+1, 0, c) & \text{if } m = 1 \text{ and } p \le n+1, \\
-  F(0, p-n-2, 0, k'+3, c) & \text{if } m = 1 \text{ and } p \ge n+2, \\
-  F(m-2, k'+4, 0, 0, c) & \text{if } m \ge 2 \text{ and } p \le n+1, \\
-  F(m-1, p-n-2, 0, k'+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
+F(m, p, n, c) = \begin{cases}
+  A(4n+c+7, 3) & \text{if } m = 0 \text{ and } p \le n+1, \\
+  A(2(p-n-2)+1, 4n+c+6) & \text{if } m = 0 \text{ and } p \ge n+2, \\
+  A(4n+9, c) & \text{if } m = 1 \text{ and } p \le n+1, \\
+  F(0, p-n-2, 2n+3, c) & \text{if } m = 1 \text{ and } p \ge n+2, \\
+  F(m-2, 2n+4, 0, c) & \text{if } m \ge 2 \text{ and } p \le n+1, \\
+  F(m-1, p-n-2, 2n+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
 \end{cases}
 $$
+
+This machine shares the exact same transition map $T$ and helper $F$ with [`1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean), which starts from $A(4, 3)$.
 
 ### [`1RB0LF_1LC1RA_0RE0RD_---1LE_1LF1RC_1LC1LA`](./M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean)
 
@@ -295,145 +268,189 @@ $$
 
 ### [`1RB0LF_1RC1RA_0RD0RB_1LE---_0LA1LE_1RD1LA`](./M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA.lean)
 
-We define the configuration for $u, v, w \ge 0$:
+We define the configuration for $u, w \ge 0$:
 
 $$
-J(u, v, w) := 0^\infty \ 1^5 \ (10)^u \ 1 \ \mathrm{A}{>} \ 11 \ (01)^v \ 1^w \ 01 \ 0^\infty.
+J(u, w) := 0^\infty \ 1^5 \ (10)^u \ 1 \ \mathrm{A}{>} \ 1^{w+2} \ 01 \ 0^\infty.
 $$
 
-Starting from $J(0, 0, 0)$ (reached after 35 steps from the blank tape), the machine follows the map $T$:
+Starting from $J(0, 0)$ (reached after 35 steps from the blank tape), with $m = \lfloor w/2 \rfloor$ and $d = u - m$, the machine follows the map $T$:
 
 $$
-T(J(u, v, w)) = \begin{cases}
-  J(0, 0, 2v+12) & \text{if } u = 0,\ w = 0,\ v \text{ is even}, \\
-  J(2, 4, 2v+7) & \text{if } u = 0,\ w = 0,\ v \text{ is odd}, \\
-  J(2, 4, 2v+9) & \text{if } u = 0,\ w = 1,\ v \text{ is even}, \\
-  J(0, 0, 2v+14) & \text{if } u = 0,\ w = 1,\ v \text{ is odd}, \\
-  J(2, v+4, 1) & \text{if } u = 0,\ w = 2,\ v \text{ is even}, \\
-  J(0, v+4, 1) & \text{if } u = 0,\ w = 2,\ v \text{ is odd}, \\
-  J(v+3, 0, w-3) & \text{if } u = 0,\ w \ge 3, \\
-  J(0, 0, 2v+12) & \text{if } u = 1,\ w = 0, \\
-  J(2, 4, 2u+2v+5) & \text{if } u \ge 2,\ w = 0,\ u \text{ is even}, \\
-  J(0, 0, 2u+2v+10) & \text{if } u \ge 3,\ w = 0,\ u \text{ is odd}, \\
-  \text{Halt} & \text{if } u = 1,\ w = 1, \\
-  J(0, 0, 2v+10) & \text{if } u = 2,\ w = 1, \\
-  J(2, u, 2v+5) & \text{if } u \ge 4,\ w = 1,\ u \text{ is even}, \\
-  J(0, u, 2v+5) & \text{if } u \ge 3,\ w = 1,\ u \text{ is odd}, \\
-  J(u - k, v + 2k, w - 2k) & \text{if } u \ge 1,\ w \ge 2 \text{ with } k = \min(u, \lfloor w/2 \rfloor).
+T(J(u, w)) = \begin{cases}
+  J(2u+3, w-2u-3) & \text{if } w \ge 2u+3, \\
+  J(0, 4u+18) & \text{if } w = 2u+2, \\
+  J(11, 4u+2) & \text{if } w = 2u+1, \\
+  J(0, 4u+12) & \text{if } w = 2u, \\
+  J(0, 2w+12) & \text{if } w = 2m < 2u \text{ and } d = 1, \\
+  J(11, 2u+w-2) & \text{if } w = 2m < 2u \text{ and } d \ge 2 \text{ is even}, \\
+  J(0, 2u+w+10) & \text{if } w = 2m < 2u \text{ and } d \ge 3 \text{ is odd}, \\
+  \text{Halt} & \text{if } w = 2m+1 < 2u \text{ and } d = 1, \\
+  J(0, 2w+8) & \text{if } w = 2m+1 < 2u \text{ and } d = 2, \\
+  J(11, 2u+10) & \text{if } w = 1 < 2u \text{ and } d \ge 4 \text{ is even}, \\
+  J(d+7, 2w-4) & \text{if } w = 2m+1 \ge 3,\ w < 2u,\text{ and } d \ge 4 \text{ is even}, \\
+  J(d+3, 2w) & \text{if } w = 2m+1 < 2u \text{ and } d \ge 3 \text{ is odd}.
 \end{cases}
 $$
 
 ### [`1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD`](./M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD.lean)
 
-We define the configuration for $p \in \lbrace 0, 1 \rbrace$ and $k, j, c \ge 0$:
+We define the configuration for $p \in \lbrace 0, 1 \rbrace$ and $k, c \ge 0$:
 
 $$
-S(p, k, j, c) := 0^\infty \ (1110)^p \ 1^k \ \mathrm{D}{>} \ 11 \ (01)^j \ 1^c \ 0^\infty.
+S(p, k, c) := 0^\infty \ (1110)^p \ 1^k \ \mathrm{D}{>} \ 11 \ 1^c \ 0^\infty.
 $$
 
-Starting from $S(0, 2, 0, 0)$ (reached after 10 steps from the blank tape), the machine follows the map $T$:
+Starting from $S(0, 2, 0)$ (encoded as `.S false 2 0`, reached after 10 steps from the blank tape), writing $k = 3q + r$ with $r \in \lbrace 0, 1, 2 \rbrace$ and $d = c - q$, the machine follows the map $T$:
 
 $$
-T(S(p, k, j, c)) = \begin{cases}
-  S(p, k - 3m, j + 2m, c - m) & \text{if } k \ge 3,\ c \ge 1 \text{ with } m = \min(\lfloor k/3 \rfloor, c), \\
-  S(p, k' + 1, 0, 2j + 5) & \text{if } k = k' + 3,\ c = 0, \\
-  S(0, \Phi(j + 2, c')) & \text{if } p = 0,\ k = 2,\ c = c' + 1, \\
-  S(0, 0, 0, 2j + 5) & \text{if } p = 0,\ k = 2,\ c = 0, \\
-  S(0, \Phi(j + 1, c')) & \text{if } p = 0,\ k = 1,\ c = c' + 1, \\
-  S(0, 0, 0, 2j + 3) & \text{if } p = 0,\ k = 1,\ c = 0, \\
-  S(1, \Phi(j', c)) & \text{if } p = 0,\ k = 0,\ j = j' + 1, \\
-  S(0, \Phi(0, c + 2)) & \text{if } p = 0,\ k = 0,\ j = 0, \\
-  S(0, 1, j + 3, c') & \text{if } p = 1,\ k = 2,\ c = c' + 1, \\
-  S(1, 0, 0, 2j + 5) & \text{if } p = 1,\ k = 2,\ c = 0, \\
-  S(0, (3, 0, 0) + \Phi(j + 1, c')) & \text{if } p = 1,\ k = 1,\ c = c' + 1, \\
-  S(0, 1, 1, 2j + 5) & \text{if } p = 1,\ k = 1,\ c = 0, \\
-  S(0, 6, j' + 1, c) & \text{if } p = 1,\ k = 0,\ j = j' + 1, \\
-  S(0, 2, 0, c + 2) & \text{if } p = 1,\ k = 0,\ j = 0,
+\begin{aligned}
+  T(S(p, k, c)) &= S(p, k - 3c - 2, 4c + 5) \quad \text{if } c < q, \\
+  T(S(p, 3q, c)) &= \begin{cases}
+    S(0, 2, 3) & \text{if } c \ge q,\ p = 0,\ q = 0,\text{ and } c = 0, \\
+    S(0, 4, c - 1) & \text{if } c \ge q,\ p = 0,\ q = 0,\text{ and } c \ge 1, \\
+    S(1, 4q, 1) & \text{if } c \ge q,\ p = 0,\ q \ge 1,\text{ and } d = 0, \\
+    S(1, 4q - 1, d) & \text{if } c \ge q,\ p = 0,\ q \ge 1,\text{ and } d \ge 1, \\
+    S(0, 2, c + 2) & \text{if } c \ge q,\ p = 1,\text{ and } q = 0, \\
+    S(0, 4, 4q + 5) & \text{if } c \ge q,\ p = 1,\ q \ge 1,\text{ and } d = 0, \\
+    S(0, 1, 4q + 9) & \text{if } c \ge q,\ p = 1,\ q \ge 1,\text{ and } d = 1, \\
+    S(1, 4q + 8, 1) & \text{if } c \ge q,\ p = 1,\ q \ge 1,\text{ and } d = 2, \\
+    S(1, 4q + 7, d - 2) & \text{if } c \ge q,\ p = 1,\ q \ge 1,\text{ and } d \ge 3,
+  \end{cases} \\
+  T(S(p, 3q + 1, c)) &= \begin{cases}
+    S(0, 0, 4q + 3) & \text{if } c \ge q,\ p = 0,\text{ and } d = 0, \\
+    S(0, 8, 4q + 1) & \text{if } c \ge q,\ p = 1,\text{ and } d = 0, \\
+    S(0, 4q + 3p + 4, 1) & \text{if } c \ge q \text{ and } d = 1, \\
+    S(0, 4q + 3p + 3, d - 1) & \text{if } c \ge q \text{ and } d \ge 2,
+  \end{cases} \\
+  T(S(p, 3q + 2, c)) &= \begin{cases}
+    S(p, 0, 4q + 5) & \text{if } c \ge q \text{ and } d = 0, \\
+    S(0, 0, 4q + 9) & \text{if } c \ge q,\ p = 1,\text{ and } d = 1, \\
+    \text{Halt} & \text{if } c \ge q \text{ and } d = p + 1, \\
+    S(0, 4q + 4p + 6, 0) & \text{if } c \ge q \text{ and } d = p + 2, \\
+    S(0, 4q + 4p + 6, 3) & \text{if } c \ge q \text{ and } d = p + 3, \\
+    S(0, 4q + 4p + 8, d - p - 4) & \text{if } c \ge q \text{ and } d \ge p + 4.
+  \end{cases}
+\end{aligned}
+$$
+
+### [`1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_---0RA`](./M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA.lean)
+
+Eliminating $(c, a)$ from the 4-counter *Lucy's Moonlight* configuration $C(c, b, a, d)$ reduces the dynamics to a single counter $b \ge 0$ and bit $p \in \lbrace 0, 1 \rbrace$ on $L_p(b) := C(0, b, 0, p)$, starting from $L_0(0)$ (encoded as `.L false 0`). Writing $q = \lfloor b/3 \rfloor$:
+
+$$
+T(L_0(b)) = \begin{cases}
+  D(0,\ 2q + 1,\ 1) & \text{if } b \equiv 0 \pmod{3}, \\
+  L_0(8q + 5) & \text{if } b \not\equiv 0 \pmod{3},
+\end{cases}
+\qquad
+T(L_1(b)) = \begin{cases}
+  \text{Halt} & \text{if } b \equiv 0 \pmod{3}, \\
+  D(0,\ 2q + 3,\ 1) & \text{if } b \equiv 1 \pmod{3}, \\
+  L_0(8q + 6) & \text{if } b \equiv 2 \pmod{3},
 \end{cases}
 $$
 
-where $\Phi(j, c)$ is defined by:
+where `drainA` ($D(b, a, p)$) drains $a$ strictly to $0$ (with $q = \lfloor b/3 \rfloor$):
 
 $$
-\Phi(j, c) = \begin{cases}
-  \text{Halt} & \text{if } j = 2m \text{ and } c = 0, \\
-  (4m + 2, 0, 0) & \text{if } j = 2m \text{ and } c = 1, \\
-  (4m + 2, 0, 3) & \text{if } j = 2m \text{ and } c = 2, \\
-  (4m + 4, 0, c - 3) & \text{if } j = 2m \text{ and } c \ge 3, \\
-  (4m + 4, 0, 1) & \text{if } j = 2m + 1 \text{ and } c = 0, \\
-  (4m + 3, 0, c) & \text{if } j = 2m + 1 \text{ and } c \ge 1.
+D(b, a, p) = \begin{cases}
+  L_p(b) & \text{if } a = 0, \\
+  L_0(8q + 7 + p) & \text{if } a = 1 \text{ and } b \equiv 0 \pmod{3}, \\
+  L_0(8q + 13 + p) & \text{if } a = 1 \text{ and } b \equiv 1 \pmod{3}, \\
+  L_p(8q + 8) & \text{if } a = 1 \text{ and } b \equiv 2 \pmod{3}, \\
+  D(8q + 10,\ a - 2,\ p) & \text{if } a \ge 2 \text{ and } b \equiv 0 \pmod{3}, \\
+  D(8q + 16,\ a - 2,\ p) & \text{if } a \ge 2 \text{ and } b \equiv 1 \pmod{3}, \\
+  D(8q + 8,\ a - 1,\ p) & \text{if } a \ge 2 \text{ and } b \equiv 2 \pmod{3}.
 \end{cases}
 $$
 
 ### [`1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean)
 
-We define the configuration for $b, k, c \ge 0$:
+We define the configuration for $b, c \ge 0$:
 
 $$
-A(b, k, c) := 0^\infty \ 1^c \ 0 \ \mathrm{A}{>} \ 0 \ (10)^k \ 1^b \ 0^\infty.
+A(b, c) := 0^\infty \ 1^c \ 0 \ \mathrm{A}{>} \ 0 \ 1^b \ 0^\infty.
 $$
 
-Starting from $A(4, 0, 3)$ (reached after 27 steps from the blank tape), the machine follows the map $T$:
+Starting from $A(4, 3)$ (reached after 27 steps from the blank tape), the machine follows the map $T$, where $h = \lfloor c/2 \rfloor$:
 
 $$
-T(A(b, k, c)) = \begin{cases}
-  A(4, 0, 3) & \text{if } b = 0,\ k = 0,\text{ and } c = 0, \\
-  A(6, 0, 3) & \text{if } b \in \lbrace 1, 3 \rbrace,\ k = 0,\text{ and } c = 0, \\
-  A(3, 0, 3) & \text{if } b = 2,\ k = 0,\text{ and } c = 0, \\
-  \text{Halt} & \text{if } b = 4,\ k = 0,\text{ and } c = 0, \\
-  A(b-4, 0, 5) & \text{if } b \ge 5,\ k = 0,\text{ and } c = 0, \\
-  A(b, k-1, 1) & \text{if } k \ge 1 \text{ and } c = 0, \\
-  A(2k+6, 0, 3) & \text{if } b = 0 \text{ and } c = 1, \\
-  A(2k+8, 0, 3) & \text{if } b \in \lbrace 1, 3 \rbrace \text{ and } c = 1, \\
-  \text{Halt} & \text{if } b = 4 \text{ and } c = 1, \\
-  A(b-4, 0, 2k+7) & \text{if } b \ge 5 \text{ and } c = 1, \\
-  A(5, 0, c-1) & \text{if } b = 2,\ k = 0,\text{ and } c \ge 1, \\
-  F(k-1, 2, 0, 0, c-1) & \text{if } b = 2,\ k \ge 1,\text{ and } c \ge 1, \\
-  A(1, k + 2\lfloor c/2 \rfloor - 1, c \bmod 2) & \text{if } b = 0 \text{ and } c \ge 2, \\
-  A(1, k + 2\lfloor c/2 \rfloor, c \bmod 2) & \text{if } b = 1 \text{ and } c \ge 2, \\
-  A(b - \lfloor c/2 \rfloor, k + 2\lfloor c/2 \rfloor, c \bmod 2) & \text{if } b \ge 3 \text{ and } c \ge 2,
+T(A(b, c)) = \begin{cases}
+  A(2c+4, 3) & \text{if } b = 0, \\
+  A(3, 3) & \text{if } b = 2 \text{ and } c = 0, \\
+  A(5, c-1) & \text{if } b = 2 \text{ and } c \ge 1, \\
+  A(b-2h-4, 2c+5) & \text{if } b \ge 2h+5, \\
+  A(2c+6, 3) & \text{if } b \text{ is odd and } b \le 2h+3, \\
+  F(b-3, 2, 0, c-b+1) & \text{if } b \ge 4 \text{ is even and } b \le 2h, \\
+  F(b-4+(c \bmod 2), 2, 0, 0) & \text{if } b \ge 4 \text{ is even and } b = 2h+2, \\
+  \text{Halt} & \text{if } b \ge 4 \text{ is even and } b = 2h+4,
 \end{cases}
 $$
 
-where $F(m, p, k, n, c)$ is defined recursively on $m$ (with $k' = k + 2n$):
+where $F(m, p, n, c)$ is defined recursively on $m$:
 
 $$
-F(m, p, k, n, c) = \begin{cases}
-  A(2k'+c+7, 0, 3) & \text{if } m = 0 \text{ and } p \le n+1, \\
-  A(2(p-n-2)+1, 0, 2(k'+3)+c) & \text{if } m = 0 \text{ and } p \ge n+2, \\
-  A(2(k'+4)+1, 0, c) & \text{if } m = 1 \text{ and } p \le n+1, \\
-  F(0, p-n-2, 0, k'+3, c) & \text{if } m = 1 \text{ and } p \ge n+2, \\
-  F(m-2, k'+4, 0, 0, c) & \text{if } m \ge 2 \text{ and } p \le n+1, \\
-  F(m-1, p-n-2, 0, k'+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
+F(m, p, n, c) = \begin{cases}
+  A(4n+c+7, 3) & \text{if } m = 0 \text{ and } p \le n+1, \\
+  A(2(p-n-2)+1, 4n+c+6) & \text{if } m = 0 \text{ and } p \ge n+2, \\
+  A(4n+9, c) & \text{if } m = 1 \text{ and } p \le n+1, \\
+  F(0, p-n-2, 2n+3, c) & \text{if } m = 1 \text{ and } p \ge n+2, \\
+  F(m-2, 2n+4, 0, c) & \text{if } m \ge 2 \text{ and } p \le n+1, \\
+  F(m-1, p-n-2, 2n+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
+\end{cases}
+$$
+
+This machine shares the exact same transition map $T$ and helper $F$ with [`1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean), which starts from $A(5, 2)$.
+
+### [`1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_---0LD`](./M_1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_HHH0LD.lean)
+
+Eliminating $(k, a, b)$ from the 4-counter *Space Needle* (`BMO6`) configuration $C(d, k, a, b)$ reduces the dynamics to a **single-counter** map on $N(d) := C(d, 0, 0, 0)$, starting from $N(1)$:
+
+$$
+T(N(d)) = S(d, 0), \qquad
+S(d, b) = \begin{cases}
+  \text{Halt} & \text{if } d = 0, \\
+  S(d/2 - 1,\ b + d/2 + 2) & \text{if } d \ge 2 \text{ is even}, \\
+  N(b + 4) & \text{if } d = 1, \\
+  N\bigl(b + 5(\lfloor d/2 \rfloor - 1) + 9\bigr) & \text{if } d \ge 3 \text{ is odd}.
 \end{cases}
 $$
 
 ### [`1RB1LA_1LC0RE_1LF1LD_1RE0LC_1LB1RA_---0LA`](./M_1RB1LA_1LC0RE_1LF1LD_1RE0LC_1LB1RA_HHH0LA.lean)
 
-We define the configuration for $a, b, c \ge 0$ and $d \in \lbrace 3, 6 \rbrace$:
+Contracting the Syracuse $c + 2 \mapsto c$ sweep $(r, b) \mapsto \bigl((b + r) \bmod 2,\ 3\lfloor (b + r)/2 \rfloor + 9\bigr)$ (`syracuseScan`) on $C_d(r, b, c) := 0^\infty \ 1^{r+1} \ \mathrm{C}{>} \ 00 \ 1^{b+4} \ (01)^c \ 1^d \ 011 \ 0^\infty$ restricts $b \in \lbrace 0, 12 \rbrace$ and reduces the machine to a **single counter** $c \ge 0$ across $C_{3,0}(r, c) := C_3(r, 0, c)$, $C_{3,12}(c) := C_3(0, 12, c)$, $C_{6,0}(r, c) := C_6(r, 0, c)$, and $C_{6,12}(c) := C_6(0, 12, c)$. Starting from $C_{3,0}(0, 6)$ (encoded as `.C3_0 false 6`, reached after 204 steps), let $\Sigma(r, b, k)$ iterate $(r, b) \mapsto \bigl((b + r) \bmod 2,\ 3\lfloor (b + r)/2 \rfloor + 9\bigr)$ $k$ times; then:
 
 $$
-C(a, b, c, d) := 0^\infty \ 1^{a+1} \ \mathrm{C}{>} \ 00 \ 1^{b+4} \ (01)^c \ 1^d \ 011 \ 0^\infty,
+\begin{aligned}
+  T(C_{3,0}(r, c)) &= F_3(\Sigma(r, 0, \lfloor c/2 \rfloor),\ c \bmod 2), &
+  T(C_{3,12}(c)) &= F_3(\Sigma(0, 12, \lfloor c/2 \rfloor),\ c \bmod 2), \\
+  T(C_{6,0}(r, c)) &= F_6(\Sigma(r, 0, \lfloor c/2 \rfloor),\ c \bmod 2), &
+  T(C_{6,12}(c)) &= F_6(\Sigma(0, 12, \lfloor c/2 \rfloor),\ c \bmod 2),
+\end{aligned}
 $$
 
-noting that at $c = 0$ the two families satisfy $C(a, b, 0, 6) = C(a, b+3, 0, 3)$.
+where `finishC3` ($F_3$) and `finishC6` ($F_6$) evaluate the terminal $c \bmod 2 \in \lbrace 0, 1 \rbrace$ exit in closed form.
 
-Starting from $C(4, 0, 0, 3)$ (reached after 162 steps from the blank tape), the machine follows the map $T$ (with $r = a \bmod 2$ and $b' = b + 3\lfloor a/2 \rfloor$):
+### [`1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`](./M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean)
+
+Contracting the diagonal sweep $P_{270}(a + 2, b, c + 4) \to P_{270}(a, b + 3, c)$ via $k = \min(\lfloor a/2 \rfloor, \lfloor c/4 \rfloor)$ and draining any intermediate $P_{61}(a', c')$ with $a' > 0$ (which decreases $c$ by at least $6$) reduces the *Pomme* / Baker machine to a **single-counter** map on $P(c) := P_{61}(0, c) = 0^\infty \ 1 \ \mathrm{B}{>} \ 1^{c+3} \ 01 \ 0^\infty$, starting from $P(7)$:
 
 $$
-T(C(a, b, c, d)) = \begin{cases}
-  C(b' + r + 4, 3, c - 2, d) & \text{if } c \ge 2, \\
-  C(b' + r + 4, 0, 3, 3) & \text{if } c = 1,\ d = 6, \\
-  C(r, 0, k + 3, 3) & \text{if } b' = 2k,\ c = 0,\ d = 3, \\
-  \text{Halt} & \text{if } r = 0,\ b' = 2k + 1,\ c = 0,\ d = 3, \\
-  C(6, 3, k, 3) & \text{if } r = 1,\ b' = 2k + 1,\ c = 0,\ d = 3, \\
-  \text{Halt} & \text{if } r = 0,\ b' = 2k,\ c = 0,\ d = 6, \\
-  C(6, 3, k + 1, 3) & \text{if } r = 1,\ b' = 2k,\ c = 0,\ d = 6, \\
-  C(r, 0, k + 5, 3) & \text{if } b' = 2k + 1,\ c = 0,\ d = 6, \\
-  C(r, 0, k + 3, 6) & \text{if } b' = 2k + 1,\ c = 1,\ d = 3, \\
-  \text{Halt} & \text{if } r = 0,\ b' = 2k,\ c = 1,\ d = 3, \\
-  C(6, 0, 3, 3) & \text{if } r = 1,\ b' = 0,\ c = 1,\ d = 3, \\
-  C(6, 3, k, 6) & \text{if } r = 1,\ b' = 2k + 2,\ c = 1,\ d = 3.
+T(P(c)) = D(0, c),
+$$
+
+where `drainP` ($D(a, c)$) is defined recursively on $c$ (writing $c_0 = c - 3$, $k = \min(\lfloor a/2 \rfloor, \lfloor c_0/4 \rfloor)$, $a_1 = a - 2k$, $b_1 = 3k$, and $c_1 = c_0 - 4k$ when $c \ge 3$):
+
+$$
+D(a, c) = \begin{cases}
+  P(4a + 4\lfloor a/2 \rfloor + 15) & \text{if } c = 0, \\
+  P(2a + 11) & \text{if } c = 1, \\
+  \text{Halt} & \text{if } c = 2, \text{ or } (c \ge 3,\ c_1 \le 1,\ a_1 < 2), \text{ or } (c \ge 3,\ c_1 = 3,\ a_1 \ge 2), \\
+  P\bigl(4(a_1 - 2) + 4\lfloor (a_1 - 2)/2 \rfloor + 4b_1 + 35 - 8c_1\bigr) & \text{if } c \ge 3,\ c_1 \in \lbrace 0, 1 \rbrace,\text{ and } a_1 \ge 2, \\
+  P(2a_1 + 2b_1 + 13) & \text{if } c \ge 3 \text{ and } c_1 = 2, \\
+  P(12b_1 + 63 + 12a_1) & \text{if } c \ge 3,\ c_1 = 3,\text{ and } a_1 \in \lbrace 0, 1 \rbrace, \\
+  D(2b_1 + 8 + 2a_1,\ c_1 - 3) & \text{if } c \ge 3 \text{ and } c_1 \ge 4 \text{ (here } a_1 \in \lbrace 0, 1 \rbrace\text{)}.
 \end{cases}
 $$
 
@@ -515,56 +532,80 @@ $$
 
 ### [`1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_---1RD`](./M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD.lean)
 
-We define the configuration for $a, b, d \ge 0$:
+Restricting $C(a, b, d) := 0^\infty \ 1^a \ (10)^b \ \mathrm{A}{>} \ 1^d \ 0^\infty$ to the $a = 0$ Poincaré section $C(b, d) := C(0, b, d)$ reduces the machine to 2 counters starting from the blank tape $C(0, 0)$:
 
 $$
-C(a, b, d) := 0^\infty \ 1^a \ (10)^b \ \mathrm{A}{>} \ 1^d \ 0^\infty.
-$$
-
-Starting from $C(0, 0, 0)$ (the blank tape, 0 steps), the machine follows the map $T$:
-
-$$
-T(C(a, b, d)) = \begin{cases}
-  C(a+1, 0, 2b+2) & \text{if } d = 0, \\
-  C(a - 3k, b + 2k, d - k) & \text{if } a \ge 3,\ d \ge 1 \text{ with } k = \min(\lfloor a/3 \rfloor, d), \\
-  C(0, b+1, d-1) & \text{if } a = 2,\ d \ge 1, \\
-  C(1, b+3, d-1) & \text{if } a = 1,\ b \ge 1,\ d \ge 1, \\
-  C(0, 0, d+2) & \text{if } a = 1,\ b = 0,\ d \ge 1, \\
-  C(0, 2, 5) & \text{if } a = 0,\ b = 0,\ d = 1, \\
-  C(0, 2, 2b+1) & \text{if } a = 0,\ b \ge 1,\ d = 1, \\
-  C(3d-4, 3, 2b-2d+3) & \text{if } a = 0,\ d \ge 2,\ b \ge d-1, \\
-  \text{Halt} & \text{if } a = 0,\ d = b+2, \\
-  C(3b+2, 0, 6) & \text{if } a = 0,\ d = b+3, \\
-  C(3b+4, 0, 4) & \text{if } a = 0,\ d = b+4, \\
-  C(3b+3, 2, d-b-5) & \text{if } a = 0,\ d \ge b+5.
+T(C(b, d)) = \begin{cases}
+  C(0,\ 2b + 4) & \text{if } d = 0, \\
+  C(2,\ 5) & \text{if } b = 0 \text{ and } d = 1, \\
+  C(2,\ 2b + 1) & \text{if } b \ge 1 \text{ and } d = 1, \\
+  D(3d - 4,\ 3,\ 2b - 2d + 3) & \text{if } d \ge 2 \text{ and } b \ge d - 1, \\
+  \text{Halt} & \text{if } d = b + 2, \\
+  D(3b + 2,\ 0,\ 6) & \text{if } d = b + 3, \\
+  D(3b + 4,\ 0,\ 4) & \text{if } d = b + 4, \\
+  D(3b + 3,\ 2,\ d - b - 5) & \text{if } d \ge b + 5,
 \end{cases}
 $$
 
-### [`1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_---0RE`](./M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE.lean)
-
-We define the configuration for $a, b, c \ge 0$:
+where `drainA` ($D(a, b, d)$) drains $a$ strictly to $0$ (writing $(a_1, b_1, d_1) = (a + 1, 0, 2b + 2)$ when $d = 0$ and $(a_1, b_1, d_1) = (a, b, d)$ when $d \ge 1$, and $k = \min(\lfloor a_1/3 \rfloor, d_1)$):
 
 $$
-E(a, b, c) := 0^\infty \ (10)^b \ (11)^{a+1} \ \mathrm{E}{>} \ 1^{c+1} \ 0^\infty.
+D(a, b, d) = \begin{cases}
+  C(b, d) & \text{if } a = 0, \\
+  C(1,\ 2b + 1) & \text{if } a = 1 \text{ and } d = 0, \\
+  C(0,\ d + 2) & \text{if } a = 1,\ b = 0,\text{ and } d \ge 1, \\
+  C(1,\ 2b + 4d + 1) & \text{if } a = 1,\ b \ge 1,\text{ and } d \ge 1, \\
+  C(b + 1,\ d - 1) & \text{if } a = 2 \text{ and } d \ge 1, \\
+  D(a_1 - 3k,\ b_1 + 2k,\ d_1 - k) & \text{otherwise.}
+\end{cases}
 $$
 
-Starting from $E(1, 0, 2)$ (reached after 28 steps from the blank tape), the machine follows the map $T$:
+### [`1RB1LE_1LB1LC_1RD0LE_---0RB_1RF1LA_0RA0RD`](./M_1RB1LE_1LB1LC_1RD0LE_HHH0RB_1RF1LA_0RA0RD.lean)
+
+Restricting to canonical parity $q = a \bmod 2$, contracting the odd-$a$ drain, and eliminating all even-block $F$-sweeps (`evalF0`, `evalF1`, `evalFGe2` with termination measure $5k + 3b + 4c$) reduces the machine to a single-family, 3-counter map on $E(a, b, c) := 0^\infty \ \mathrm{E}{>} \ 0 \ 0^{a \bmod 2} \ 1^a \ 0 \ 1^b \ 0 \ 1^c \ 0^\infty$, starting from $E(3, 0, 0)$:
 
 $$
 T(E(a, b, c)) = \begin{cases}
-  E(a-1, b, 1) & \text{if } a \ge 1,\ c = 0, \\
-  E(1, 0, 1) & \text{if } a = 0,\ b = 0,\ c = 0, \\
-  E(1, 0, 2) & \text{if } a = 0,\ b = 1,\ c = 0, \\
-  E(1, 0, 6) & \text{if } a = 0,\ b = 2,\ c = 0, \\
-  E(1, b-3, 4) & \text{if } a = 0,\ b \ge 3,\ c = 0, \\
-  E(1, 0, 2a+2c+1) & \text{if } b = 0,\ 1 \le c \le 2, \\
-  \text{Halt} & \text{if } b = 0,\ c = 3, \\
-  E(1, a+1, 2c-6) & \text{if } b = 0,\ 4 \le c \le 6, \\
-  E(1, a+3, c-6) & \text{if } b = 0,\ c \ge 7, \\
-  E(1, 0, 2a+2c+2) & \text{if } b = 1,\ 1 \le c \le 2, \\
-  E(1, 2, 2a+2c) & \text{if } b = 2,\ 1 \le c \le 2, \\
-  E(1, b-3, 2a+2c+4) & \text{if } b \ge 3,\ 1 \le c \le 2, \\
-  E(a + 2k, b - k, c - 2k) & \text{if } b \ge 1,\ c \ge 3 \text{ with } k = \min(b, \lfloor (c-1)/2 \rfloor).
+  F_0(\lfloor a/2 \rfloor, b, c) & \text{if } a \text{ is even}, \\
+  \text{Halt} & \text{if } a = 1, \\
+  E(b + 3a - 6,\ c + 3,\ 0) & \text{if } a \ge 3 \text{ is odd}.
+\end{cases}
+$$
+
+### [`1RB1LE_1LC0RA_0RF0LD_1LE1LA_1RC0LB_---1RC`](./M_1RB1LE_1LC0RA_0RF0LD_1LE1LA_1RC0LB_HHH1RC.lean)
+
+Eliminating the auxiliary family $B(a, b, c)$ via `evalB` and draining $2k + 2 < b$ via `drainA` reduces the machine to a single-family, 2-counter map on $A(k, b) := 0^\infty \ {<}\mathrm{C} \ (10)^{2k+2} \ 110 \ (10)^b \ 0^\infty$, starting from $A(0, 0)$:
+
+$$
+T(A(k, b)) = \begin{cases}
+  T(A(2k + 2,\ b - 2k - 3)) & \text{if } 2k + 2 < b, \\
+  \text{Halt} & \text{if } 2k + 2 = b, \\
+  A\bigl(\lfloor (2k + 1 - b)/2 \rfloor,\ 2b + 2\bigr) & \text{if } 2k + 2 > b \text{ and } 2k + 1 - b \text{ is even}, \\
+  B\bigl(2,\ 2\lfloor (2k + 1 - b)/2 \rfloor + 1,\ b + 1\bigr) & \text{if } 2k + 2 > b \text{ and } 2k + 1 - b \text{ is odd},
+\end{cases}
+$$
+
+where $B(a, b, c)$ evaluates to $A(0, b')$ via $B(a, b, c) = B(2a + 2, b - a - 1, c)$ for $a < b$, $A(0, 4a + 2c + 6)$ for $a = b$, and $A(0, 2a + 2c + 2)$ for $a > b$.
+
+### [`1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_---0RE`](./M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE.lean)
+
+We define the configuration for $b, d \ge 0$:
+
+$$
+E(b, d) := 0^\infty \ (10)^b \ 1111 \ \mathrm{E}{>} \ 1^{d+2} \ 0^\infty.
+$$
+
+Starting from $E(0, 1)$ (reached after 28 steps from the blank tape), with $c = d + 1$ and $m = \lfloor d / 2 \rfloor$, the machine follows the map $T$:
+
+$$
+T(E(b, d)) = \begin{cases}
+  E(0, 2c+3) & \text{if } b = m+1, \\
+  E(2, 2c+1) & \text{if } b = m+2, \\
+  E(b-m-3, 2c+5) & \text{if } b \ge m+3, \\
+  E(0, 2c+2) & \text{if } b \le m \text{ and } c - 2b \le 2, \\
+  \text{Halt} & \text{if } b \le m \text{ and } c - 2b = 3, \\
+  E(2b+2, 2(c-2b)-7) & \text{if } b \le m \text{ and } 4 \le c - 2b \le 6, \\
+  E(2b+4, c-2b-7) & \text{if } b \le m \text{ and } c - 2b \ge 7.
 \end{cases}
 $$
 
@@ -590,96 +631,140 @@ T(C(a, b)) = \begin{cases}
 \end{cases}
 $$
 
+### [`1RB1LF_1RC1RF_0LD1RE_---1LC_0RB1RE_1LA0LE`](./M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE.lean)
+
+Eliminating the four transient families $W, M, S, R$ (via `evalCPos`, `evalW`, `evalM` with termination measure $k$, `evalS`, and `evalR`) reduces the 5-constructor, up-to-5-counter system to the two canonical return families $C_0(a, b) := C(a, b, 0, 0)$ and $C_1(a, b, c) := C(a, b, c, 1)$, starting from $C_0(0, 3)$:
+
+$$
+\begin{aligned}
+  T(C_0(a, b)) &= \begin{cases}
+    \mathrm{evalCPos}(2, 1, 0, 0) & \text{if } a = 0 \text{ and } b = 0, \\
+    \text{Halt} & \text{if } a = 0 \text{ and } b = 1, \\
+    \mathrm{evalCPos}(2, b - 2, 0, 0) & \text{if } a = 0 \text{ and } b \ge 2, \\
+    \mathrm{evalCPos}(a, b, 0, 0) & \text{if } a \ge 1,
+  \end{cases} \\
+  T(C_1(a, b, c)) &= \begin{cases}
+    \text{Halt} & \text{if } a = 0,\ b = 0,\text{ and } c = 0, \\
+    \mathrm{evalCPos}(2, 1, c, 1) & \text{if } a = 0,\ b = 0,\text{ and } c \ge 1, \\
+    C_0(c + 2,\ 0) & \text{if } a = 0 \text{ and } b = 1, \\
+    \mathrm{evalCPos}(2, b - 2, c, 1) & \text{if } a = 0 \text{ and } b \ge 2, \\
+    \mathrm{evalCPos}(a, b, c, 1) & \text{if } a \ge 1.
+  \end{cases}
+\end{aligned}
+$$
+
 ### [`1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_---1LC`](./M_1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_HHH1LC.lean)
 
-We define the configuration for $a, k, d, c \ge 0$:
+Restricting $C(a, k, d, c) := 0^\infty \ (10)^a \ (11)^k \ \mathrm{C}{>} \ (11)^d \ (10)^c \ 1111 \ 0^\infty$ to the $k = 0,\ d = 0$ Poincaré section $D(a, c) := C(a, 0, 0, c)$ reduces the machine to a single-family, 2-counter map starting from $D(0, 1)$ (reached after 27 steps):
 
 $$
-C(a, k, d, c) := 0^\infty \ (10)^a \ (11)^k \ \mathrm{C}{>} \ (11)^d \ (10)^c \ 1111 \ 0^\infty.
+T(D(a, c)) = \Delta(a, 0, c),
 $$
 
-Starting from $C(0, 0, 0, 1)$ (reached after 27 steps from the blank tape), the machine follows the map $T$:
+where `evalK` ($K(k, c)$, writing $c_1 = \max(c, 1)$) and `drainD` ($\Delta(a, d, c)$) are defined recursively on $k$ and $a$:
 
 $$
-T(C(a, k, d, c)) = \begin{cases}
-  C(a, k - c, 0, d + 2c + 1) & \text{if } k \ge 1,\ k > c, \\
-  C(a, 0, d + 2k, c - k) & \text{if } k \ge 1,\ k \le c, \\
-  C(a', d + 1, 2, c') & \text{if } a = a' + 1,\ k = 0,\ c = c' + 2, \\
-  C(a', d + 2, 0, 1) & \text{if } a = a' + 1,\ k = 0,\ c = 1, \\
-  C(a', d + 2, 0, 0) & \text{if } a = a' + 1,\ k = 0,\ c = 0, \\
-  C(d + 1, 0, 0, c' + 1) & \text{if } a = 0,\ k = 0,\ c = c' + 1, \\
-  \text{Halt} & \text{if } a = 0,\ k = 0,\ c = 0.
+K(k, c) = \begin{cases}
+  K(k - c_1,\ 2c_1 + 1) & \text{if } c_1 \le k, \\
+  (2k + 2,\ c_1 - k - 1) & \text{if } c_1 > k,
 \end{cases}
+\qquad
+\Delta(a, d, c) = \begin{cases}
+  \text{Halt} & \text{if } a = 0 \text{ and } c = 0, \\
+  D(d + 1,\ c) & \text{if } a = 0 \text{ and } c \ge 1, \\
+  \Delta\bigl(a - 1,\ K(d + 1,\ 0)\bigr) & \text{if } a \ge 1 \text{ and } c = 0, \\
+  \Delta\bigl(a - 1,\ K(d + 2 - c,\ 2c - 1)\bigr) & \text{if } a \ge 1 \text{ and } 1 \le c \le d + 2, \\
+  \Delta(a - 1,\ 2d + 4,\ c - d - 3) & \text{if } a \ge 1 \text{ and } c \ge d + 3.
+\end{cases}
+$$
+
+### [`1RB1RA_0RC1RC_1LD0LF_0LE1LE_1RA0LB_---0LC`](./M_1RB1RA_0RC1RC_1LD0LF_0LE1LE_1RA0LB_HHH0LC.lean)
+
+Collapsing all 12 `State` families (`D7..D296`, up to 4 counters) into $D_0(x, d) := D_{76}(0, x, d)$ and $D_1(x, d) := D_{231}(0, 0, x, d)$ reduces *Counter6* to a single-constructor, 2-counter + 1-bit closed-form map (with zero recursive helpers) starting from $D_1(3, 1)$ (encoded as `.D true 3 1`):
+
+$$
+\begin{aligned}
+  T(D_0(2m, 0)) &= \begin{cases}
+    \text{Halt} & \text{if } m \text{ is odd}, \\
+    D_1\bigl(3,\ 3\lfloor (3m + 7)/2 \rfloor + 4\bigr) & \text{if } m \text{ is even},
+  \end{cases} \\
+  T(D_0(2m + 1, 0)) &= D_1(3,\ 3m + 9), \\
+  T(D_0(x, d + 1)) &= D_{1 - (x \bmod 2)}\bigl(3\lfloor (x + 2)/2 \rfloor + 3,\ d\bigr), \\
+  T(D_1(2m, d)) &= D_0(3m + 1,\ d), \\
+  T(D_1(2m + 1, 0)) &= \begin{cases}
+    \text{Halt} & \text{if } m \text{ is even}, \\
+    D_1\bigl(3,\ 3\lfloor (3m + 6)/2 \rfloor + 4\bigr) & \text{if } m \text{ is odd},
+  \end{cases} \\
+  T(D_1(2m + 1, d + 1)) &= D_1(3m + 5,\ d).
+\end{aligned}
 $$
 
 ### [`1RB1RB_1LC0RE_---1LD_0RA1LB_1RA1LF_0LE1LE`](./M_1RB1RB_1LC0RE_HHH1LD_0RA1LB_1RA1LF_0LE1LE.lean)
 
-We define the configuration for $k \ge 1$, $m \ge 1$, $f \ge 1$:
+We define the configuration for $a, b \ge 0$ and $p \in \lbrace 0, 1 \rbrace$:
 
 $$
-C(2k, 2m, f) := 0^\infty \ (11)^k \ 0 \ (11)^m \ 0 \ \mathrm{D}{>} \ 1 \ 1^f \ 0^\infty.
+D_p(a, b) := 0^\infty \ (11)^{a+1} \ 0 \ (11)^{b+1} \ 0 \ \mathrm{D}{>} \ 1 \ 1^{2+3p} \ 0^\infty.
 $$
 
-Starting from $C(6, 2, 2)$ (encoded as `.C 2 0 1`, reached after 76 steps from the blank tape), the machine follows the map $T$:
+Starting from $D_0(2, 0)$ (encoded as `.C 2 0 false`, reached after 76 steps from the blank tape), the machine follows the map $T$:
 
 $$
-T(C(2k, 2m, f)) = \begin{cases}
-  C(2, 2m-2k+2, f+6k-6) & \text{if } 2 \le k < m, \\
-  C(2k-2m+2, 2, f+6m-6) & \text{if } 2 \le m < k, \\
-  C(2, 2, f+6k-6) & \text{if } k = m \ge 2, \\
-  C(2k-4, 2j+8, 2) & \text{if } k \ge 3,\ m = 1,\ f = 2j \text{ with } j \ge 1, \\
-  C(2k-4, 2j+8, 5) & \text{if } k \ge 3,\ m = 1,\ f = 2j+1 \text{ with } j \ge 0, \\
-  C(2j+4, 6, 5) & \text{if } k = 2,\ m = 1,\ f = 2j \text{ with } j \ge 1, \\
-  C(2j+8, 2, 2) & \text{if } k = 2,\ m = 1,\ f = 2j+1 \text{ with } j \ge 0, \\
-  C(2m-6, 2j+10, 5) & \text{if } k = 1,\ m \ge 4,\ f = 2j \text{ with } j \ge 1, \\
-  C(2m-6, 2j+12, 2) & \text{if } k = 1,\ m \ge 4,\ f = 2j+1 \text{ with } j \ge 0, \\
-  C(2j+10, 2, 2) & \text{if } k = 1,\ m = 3,\ f = 2j \text{ with } j \ge 1, \\
-  C(2j+8, 6, 5) & \text{if } k = 1,\ m = 3,\ f = 2j+1 \text{ with } j \ge 0, \\
-  \text{Halt} & \text{if } k = 1,\ m \in \lbrace 1, 2 \rbrace.
+T(D_p(a, b)) = \begin{cases}
+  D_p(a-b-2, 3b+p+4) & \text{if } a \ge b+2, \\
+  D_0(3b+5, 0) & \text{if } a = b+1,\ p = 1, \\
+  D_1(3b+2, 2) & \text{if } a = b+1,\ p = 0, \\
+  \text{Halt} & \text{if } a \le b \le a+1, \\
+  D_1(3a+5, 2) & \text{if } b = a+2,\ p = 1, \\
+  D_0(3a+5, 0) & \text{if } b = a+2,\ p = 0, \\
+  D_{1-p}(b-a-3, 3a+2p+5) & \text{if } b \ge a+3.
 \end{cases}
 $$
 
 ### [`1RB1RC_1LC1LC_1RE0LD_1LB1RF_---1RA_0RD1RD`](./M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD.lean)
 
-We define the configuration for $a, b, c \ge 0$:
+We define the configuration for $a, c \ge 0$:
 
 $$
-C(a, b, c) := 0^\infty \ 1^{a+2} \ \mathrm{E}{>} \ 1^{2b+2} \ 0 \ 1^{2c+2} \ 0^\infty.
+C(a, c) := 0^\infty \ 1^{a+2} \ \mathrm{E}{>} \ 110 \ 1^{2c+2} \ 0^\infty.
 $$
 
-Starting from $C(5, 2, 0)$ (reached after 100 steps from the blank tape), the machine follows the map $T$:
+Starting from $C(8, 1)$ (reached after 167 steps from the blank tape), with $k = \lfloor a / 2 \rfloor$, the machine follows the map $T$:
 
 $$
-T(C(a, b, c)) = \begin{cases}
-  \text{Halt} & \text{if } b = 0,\ c = 0, \\
-  C(5, 2, k + 1) & \text{if } a = 2k,\ b = 0,\ c = 1, \\
-  C(2, 0, k + 3) & \text{if } a = 2k + 1,\ b = 0,\ c = 1, \\
-  C(2, k + 3, d) & \text{if } a = 2k,\ b = 0,\ c = d + 2, \\
-  C(5, k + 3, d) & \text{if } a = 2k + 1,\ b = 0,\ c = d + 2, \\
-  C(a + 6b, 0, c - b) & \text{if } 1 \le b \le c, \\
-  C(a + 6c + 3, 0, b - c - 1) & \text{if } b \ge c + 1.
+T(C(a, c)) = \begin{cases}
+  \text{Halt} & \text{if } c = 0, \\
+  C(2, k + 3) & \text{if } c = 1 \text{ and } a \text{ is odd}, \\
+  C(14, 0) & \text{if } a = 0 \text{ and } c = 1, \\
+  C(17, k - 1) & \text{if } a \ge 2 \text{ is even and } c = 1, \\
+  C(3a + 20, d - k - 3) & \text{if } c = d + 2 \text{ and } k + 3 \le d, \\
+  C(6d + 3(a \bmod 2) + 5, k + 2 - d) & \text{if } c = d + 2 \text{ and } d \le k + 2.
 \end{cases}
 $$
 
 ### [`1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_---0RE`](./M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE.lean)
 
-We define the configuration for $a, w \ge 0$ and $b \ge 1$ (with $b$ odd when $a \ge 1$):
+Restricting $D(a, k, w) := 0^\infty \ (10)^a \ 1^{2k+1} \ \mathrm{D}{>} \ 1^{w+1} \ 0^\infty$ to the $k = 0$ Poincaré section $D(a, w) := D(a, 0, w)$ reduces the machine to 2 counters starting from $D(0, 1)$ (reached after 13 steps), with $m = \lfloor w/2 \rfloor$:
 
 $$
-D(a, b, w) := 0^\infty \ (10)^a \ 1^b \ \mathrm{D}{>} \ 1^{w+1} \ 0^\infty.
+T(D(a, w)) = \begin{cases}
+  D(a - m - 1,\ 2w + 3) & \text{if } a > m, \\
+  D(0,\ 2w + 2) & \text{if } a = m, \\
+  \text{Halt} & \text{if } w = 2a + 2, \\
+  D(2a + 2,\ 2w - 4a - 5) & \text{if } 2a + 3 \le w \le 2a + 5, \\
+  K_2(2a + 2,\ w - 2a - 6) & \text{if } w \ge 2a + 6,
+\end{cases}
 $$
 
-Starting from $D(0, 1, 1)$ (reached after 13 steps from the blank tape), the machine follows the map $T$:
+where `evalK2` ($K_2(a, w)$, evaluating $D(a, 2, w)$ with $m = \lfloor w/2 \rfloor$) decreases strictly in $w$:
 
 $$
-T(D(a, b, w)) = \begin{cases}
-  D(0, 1, 2k + 2w + 2) & \text{if } a = 0,\ b = 2k + 1,\ w \le 1, \\
-  D(0, 2k + 4, w') & \text{if } a = 0,\ b = 2k + 1,\ w = w' + 2, \\
-  \text{Halt} & \text{if } a = 0,\ b = 2k + 2,\ w = 0, \\
-  D(k + 1, 1, 2w - 1) & \text{if } a = 0,\ b = 2k + 2,\ 1 \le w \le 3, \\
-  D(k + 1, 5, w') & \text{if } a = 0,\ b = 2k + 2,\ w = w' + 4, \\
-  D(a', 1, 2k + 2w + 3) & \text{if } a = a' + 1,\ b = 2k + 1,\ w \le 1, \\
-  D(a - m, 2k + 1 + 4m, w - 2m) & \text{if } a \ge 1,\ b = 2k + 1,\ w \ge 2 \text{ with } m = \min(a, \lfloor w/2 \rfloor).
+K_2(a, w) = \begin{cases}
+  D(a - m - 1,\ 2w + 7) & \text{if } a > m, \\
+  D(0,\ 2w + 6) & \text{if } a = m, \\
+  \text{Halt} & \text{if } w = 2a + 2, \\
+  D(2a + 4,\ 2w - 4a - 5) & \text{if } 2a + 3 \le w \le 2a + 5, \\
+  K_2(2a + 4,\ w - 2a - 6) & \text{if } w \ge 2a + 6.
 \end{cases}
 $$
 
@@ -699,101 +784,116 @@ T(P_1(a, c)) = \begin{cases}
   P_1(a+2, 0) & \text{if } c = 1, \\
   P_1(a+3, c-2) & \text{if } c \ge 2 \text{ and } a \text{ is even}, \\
   \text{Halt} & \text{if } c = 2 \text{ and } a \text{ is odd}, \\
-  F(\lfloor a/2 \rfloor, 1, 0) & \text{if } c = 3 \text{ and } a \text{ is odd}, \\
-  F(\lfloor a/2 \rfloor, 2, c-4) & \text{if } c \ge 4 \text{ and } a \text{ is odd},
+  G(\lfloor a/2 \rfloor, 1) & \text{if } c = 3 \text{ and } a \text{ is odd}, \\
+  G(\lfloor a/2 \rfloor + 1, c-2) & \text{if } c \ge 4 \text{ and } a \text{ is odd},
 \end{cases}
 $$
 
-where $F(k, m, c)$ is defined recursively by:
+where $G(k, c)$ is defined recursively by:
 
 $$
-F(k, m, c) = \begin{cases}
-  P_1(0, 2m+3) & \text{if } k = 0 \text{ and } c = 0, \\
-  F(k-1, 0, 2m+3) & \text{if } k \ge 1 \text{ and } c = 0, \\
-  F(k, m+1, 0) & \text{if } c = 1, \\
-  P_1(2m+4, c-2) & \text{if } k = 0 \text{ and } c \ge 2, \\
-  F(k-1, m+2, c-2) & \text{if } k \ge 1 \text{ and } c \ge 2.
+G(k, c) = \begin{cases}
+  P_1(0, 2c+3) & \text{if } 2k \le c \le 2k+1, \\
+  P_1(4k+4, c-2k-2) & \text{if } c \ge 2k+2, \\
+  G(k - \lfloor c/2 \rfloor - 1, 2c+3) & \text{if } c < 2k.
 \end{cases}
 $$
 
 ### [`1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_---0RE`](./M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE.lean)
 
-We define the configuration for $a, w \ge 0$ and $z \ge 1$ (with $z$ odd when $a \ge 1$):
+Encoding $j \in \lbrace 0, 1 \rbrace$ as a Boolean bit $p$ on $D_p(a, w) := 0^\infty \ (10)^a \ 1^{2p+3} \ \mathrm{D}{>} \ 1 \ 1^w \ 0^\infty$ and contracting the quadratic $w$-drain via `drainJ1` ($J_1$) gives a 2-counter + 1-bit map starting from $D_0(0, 3)$ (encoded as `.D false 0 3`, reached after 38 steps), with $m = \lfloor w/2 \rfloor$:
 
 $$
-D_1(a, z, w) := 0^\infty \ (10)^a \ 1^z \ \mathrm{D}{>} \ 1 \ 1^w \ 0^\infty.
+T(D_0(a, w)) = \begin{cases}
+  D_0(a - m - 2,\ 2w + 5) & \text{if } a \ge m + 2, \\
+  D_1(1,\ 2w + 1) & \text{if } a = m + 1, \\
+  D_1(1,\ 2w) & \text{if } a = m, \\
+  \text{Halt} & \text{if } w = 2a + 2, \\
+  D_0(2a + 2,\ 2w - 4a - 5) & \text{if } 2a + 3 \le w \le 2a + 5, \\
+  J_1(2a + 3,\ w - 2a - 6) & \text{if } w \ge 2a + 6,
+\end{cases}
+\qquad
+T(D_1(a, w)) = J_1(a, w),
 $$
 
-Starting from $D_1(0, 2, 2)$ (reached after 16 steps from the blank tape), the machine follows the map $T$:
+where $J_1(a, w)$ (`drainJ1`, with $m = \lfloor w/2 \rfloor$) decreases strictly in $w$:
 
 $$
-T(D_1(a, z, w)) = \begin{cases}
-  D_1(0, 2, 2k + 2w + 2) & \text{if } a = 0,\ z = 2k + 1,\ w \le 1, \\
-  D_1(0, 2k + 4, w') & \text{if } a = 0,\ z = 2k + 1,\ w = w' + 2, \\
-  \text{Halt} & \text{if } a = 0,\ z = 2k + 2,\ w = 0, \\
-  D_1(k, 3, 2w - 1) & \text{if } a = 0,\ z = 2k + 2,\ 1 \le w \le 3, \\
-  D_1(k + 1, 5, w') & \text{if } a = 0,\ z = 2k + 2,\ w = w' + 4, \\
-  D_1(0, 2, 2k + 2w + 3) & \text{if } a = 1,\ z = 2k + 1,\ w \le 1, \\
-  D_1(a', 3, 2k + 2w + 3) & \text{if } a = a' + 2,\ z = 2k + 1,\ w \le 1, \\
-  D_1(a - m, 2k + 1 + 4m, w - 2m) & \text{if } a \ge 1,\ z = 2k + 1,\ w \ge 2 \text{ with } m = \min(a, \lfloor w/2 \rfloor).
+J_1(a, w) = \begin{cases}
+  D_0(a - m - 2,\ 2w + 7) & \text{if } a \ge m + 2, \\
+  D_1(1,\ 2w + 3) & \text{if } a = m + 1, \\
+  D_1(1,\ 2w + 2) & \text{if } a = m, \\
+  \text{Halt} & \text{if } w = 2a + 2, \\
+  D_0(2a + 3,\ 2w - 4a - 5) & \text{if } 2a + 3 \le w \le 2a + 5, \\
+  J_1(2a + 4,\ w - 2a - 6) & \text{if } w \ge 2a + 6.
+\end{cases}
+$$
+
+### [`1RB1RE_1LC0RA_1RD0LB_1LB1RC_1LF0RD_---0LE`](./M_1RB1RE_1LC0RA_1RD0LB_1LB1RC_1LF0RD_HHH0LE.lean)
+
+Contracting the $C_2(a, b) \to^* C_1(2a + 2b + 7)$ sweep and evaluating the $D(a, b, c)$ diagonal drain $k = \min(\lfloor b/2 \rfloor, c)$ across cycles $D(a, b + 6, 0) \to D(0, b, a + 4)$ reduces the three-family system to a **single-counter** map on $C(a) := C_1(a) = 0^\infty \ 1^{a+1} \ \mathrm{C}{>} \ 0^\infty$, starting from $C(3)$:
+
+$$
+T(C(0)) = \text{Halt}, \qquad T(C(1)) = C(9), \qquad T(C(a + 2)) = D_0(a, 1),
+$$
+
+where `evalD0` ($D_0(b, c)$, writing $k = \min(\lfloor b/2 \rfloor, c)$, $a_1 = 2k$, $b_1 = b - 2k$, and $c_1 = c - k$) decreases strictly in $b$:
+
+$$
+D_0(b, c) = \begin{cases}
+  C(4a_1 + 2c_1 + 11) & \text{if } c_1 > 0 \text{ and } b_1 = 0, \\
+  C(4a_1 + 15) & \text{if } c_1 = 1 \text{ and } b_1 = 1, \\
+  C(4a_1 + 2c_1 + 13) & \text{if } c_1 \ge 2 \text{ and } b_1 = 1, \\
+  C(4a_1 + 11 + 2b_1) & \text{if } c_1 = 0 \text{ and } b_1 \in \lbrace 0, 1 \rbrace, \\
+  C(4a_1 + 17) & \text{if } c_1 = 0 \text{ and } b_1 = 2, \\
+  \text{Halt} & \text{if } c_1 = 0 \text{ and } b_1 \in \lbrace 3, 4 \rbrace, \\
+  C(2a_1 + 15) & \text{if } c_1 = 0 \text{ and } b_1 = 5, \\
+  D_0(b_1 - 6,\ a_1 + 4) & \text{if } c_1 = 0 \text{ and } b_1 \ge 6.
 \end{cases}
 $$
 
 ### [`1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB`](./M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean)
 
-We define the configuration for $a, b, c \ge 0$:
+We define the configuration for $b, c \ge 0$:
 
 $$
-P_2(a, b, c) := 0^\infty \ 11 \ (01)^b \ (10)^a \ 1 \ \mathrm{D}{>} \ (10)^c \ 1111 \ 0^\infty.
+P(b, c) := 0^\infty \ 11 \ (01)^b \ 10101 \ \mathrm{D}{>} \ (10)^c \ 1111 \ 0^\infty.
 $$
 
-Starting from $P_2(2, 1, 0)$ (reached after 73 steps from the blank tape), the machine follows the map $T$:
+Starting from $P(1, 0)$ (reached after 73 steps from the blank tape), the machine follows the map $T$:
 
 $$
-T(P_2(a, b, c)) = \begin{cases}
-  P_2(2, b+2-a, 2a+2) & \text{if } c = 0 \text{ and } a \le b+1, \\
-  P_2(2, 1, 2a+2) & \text{if } c = 0,\ a \ge b+2,\text{ and } a - b \text{ is odd}, \\
-  P_2(2, 0, 2a+2) & \text{if } c = 0,\ a \ge b+2,\text{ and } a - b \text{ is even}, \\
-  P_2(2, 0, a+4) & \text{if } b = 0 \text{ and } c = 1, \\
-  \text{Halt} & \text{if } b = 0 \text{ and } c = 2, \\
-  P_2(2, a+2, c-3) & \text{if } b = 0 \text{ and } c \ge 3, \\
-  P_2(a + 2k, b - k, c - k) & \text{if } b \ge 1 \text{ and } c \ge 1 \text{ with } k = \min(b, c).
+T(P(b, c)) = \begin{cases}
+  P(2b+4, c-b-3) & \text{if } c \ge b+3, \\
+  \text{Halt} & \text{if } c = b+2, \\
+  P(0, 2b+6) & \text{if } c = b+1, \\
+  P(b-3c, 4c+6) & \text{if } c \le b \text{ and } 3c+1 \le b, \\
+  P(1, 4c+6) & \text{if } b < 3c+1 \le 3b+1 \text{ and } b - c \text{ is odd}, \\
+  P(0, 4c+6) & \text{if } b < 3c+1 \le 3b+1 \text{ and } b - c \text{ is even}.
 \end{cases}
 $$
+
+Under $(a, d) = (c, b + 1)$, this map is identical to that of [`1RB---_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD`](./M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD.lean), which starts from $P(1, 1)$.
 
 ### [`1RB---_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD`](./M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD.lean)
 
-We define the configuration for $a, b, c, d \ge 0$:
+We define the configuration for $a, d \ge 0$:
 
 $$
-P_1(a, b, c, d) := 0^\infty \ 1^b \ (01)^a \ 1 \ \mathrm{C}{>} \ (01)^c \ 1 \ (01)^d \ 1 \ 0^\infty.
+P(a, d) := 0^\infty \ 1111 \ (01)^a \ 1 \ \mathrm{C}{>} \ 011 \ (01)^d \ 1 \ 0^\infty.
 $$
 
-Starting from $P_1(1, 4, 1, 1)$ (reached after 70 steps from the blank tape), the machine follows the map $T$:
+Starting from $P(1, 1)$ (reached after 70 steps from the blank tape), the machine follows the map $T$:
 
 $$
-T(P_1(a, b, c, d)) = \begin{cases}
-  P_1(k+c+1, 4, 1, 1) & \text{if } a = 0,\ b = 2k,\text{ and } d = 0, \\
-  P_1(k+c, 4, 1, 2) & \text{if } a = 0,\ b = 2k+1,\text{ and } d = 0, \\
-  P_1(c, 4, 1, 2) & \text{if } a = 1,\ b = 0,\text{ and } d = 0, \\
-  P_1(0, 0, 1, c+2) & \text{if } a = 1,\ b = 1,\text{ and } d = 0, \\
-  P_1(c+3, 4, 1, 1) & \text{if } a = 1,\ b = 2,\text{ and } d = 0, \\
-  \text{Halt} & \text{if } a = 1,\ b \ge 3,\text{ and } d = 0, \\
-  P_1(a-2, b, 1, c+2) & \text{if } a \ge 2 \text{ and } d = 0, \\
-  \text{Halt} & \text{if } a = 0,\ b = 0,\ c = 0,\text{ and } d \ge 1, \\
-  F(c-1, 1, d+1) & \text{if } a = 0,\ b = 0,\ c \ge 1,\text{ and } d \ge 1, \\
-  F(k+c, 1, d+1) & \text{if } a = 0,\ b = 2k+2,\text{ and } d \ge 1, \\
-  P_1(0, 0, k+c+2, d-1) & \text{if } a = 0,\ b = 2k+1,\text{ and } d \ge 1, \\
-  P_1(a - k, b, c + 2k, d - k) & \text{if } a \ge 1 \text{ and } d \ge 1 \text{ with } k = \min(a, d),
+T(P(a, d)) = \begin{cases}
+  P(a-d-2, 2d+3) & \text{if } a \ge d+2, \\
+  \text{Halt} & \text{if } a = d+1, \\
+  P(2a+4, 1) & \text{if } a = d, \\
+  P(4a+6, d-3a) & \text{if } a < d \text{ and } 3a+1 \le d, \\
+  P(4a+6, 2) & \text{if } a < d < 3a+1 \text{ and } d - a \text{ is even}, \\
+  P(4a+6, 1) & \text{if } a < d < 3a+1 \text{ and } d - a \text{ is odd}.
 \end{cases}
 $$
 
-where $F(m, c, d)$ is defined by:
-
-$$
-F(m, c, d) = \begin{cases}
-  P_1(2m+c+1, 4, 1, d+1-m) & \text{if } m \le d, \\
-  P_1(2m+c+1, 4, 1, 2) & \text{if } m > d \text{ and } m - d \text{ is odd}, \\
-  P_1(2m+c+1, 4, 1, 1) & \text{if } m > d \text{ and } m - d \text{ is even}.
-\end{cases}
-$$
+Under $(a, d) = (c, b + 1)$ (for $d \ge 1$), this map is identical to that of [`1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB`](./M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean), which starts from $(b, c) = (1, 0)$ (corresponding to $(a, d) = (0, 2)$).

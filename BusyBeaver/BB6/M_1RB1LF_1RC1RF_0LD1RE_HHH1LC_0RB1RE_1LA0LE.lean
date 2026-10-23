@@ -78,6 +78,15 @@ R(a, b+3, c, d)   -> C(a+3, b, c, d)
 
 Start: C(0, 3, 0, 0), reached after 33 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Along the trajectory from $C(0, 3, 0, 0)$, every canonical return configuration has either
+$c = d = 0$ or $d = 1$. Eliminating the transient families $W$, $M$, $S$, and $R$ (via `evalW`, the
+recursive loop `evalM` decreasing in $k$, `evalS`, and `evalR`) yields a high-level Collatz-like
+acceleration `highLevelNext` on the two canonical families
+$$C_0(a, b) := C(a, b, 0, 0), \qquad C_1(a, b, c) := C(a, b, c, 1),$$
+starting from $C_0(0, 3)$.
 -/
 
 @[expose] public section
@@ -1400,5 +1409,264 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Canonical high-level state space eliminating the transient families `W`, `M`, `S`, and `R`. -/
+inductive HighLevelState where
+  /-- $C_0(a, b) := C(a, b, 0, 0) = 0^\infty\,1^b\,\mathrm{C}{>}\,110\,(10)^a\,1\,0^\infty$. -/
+  | C0 (a b : ℕ)
+  /-- $C_1(a, b, c) := C(a, b, c, 1) =
+    0^\infty\,1\,(10)^c\,1^b\,\mathrm{C}{>}\,110\,(10)^a\,1\,0^\infty$. -/
+  | C1 (a b c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial state $C_0(0, 3)$ for the high-level Collatz-like acceleration. -/
+def highLevelStart : HighLevelState := .C0 0 3
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C0 a b => .C a b 0 0
+  | .C1 a b c => .C a b c 1
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Outcome of `State.R a b (if d1 then c else 0) (if d1 then 1 else 0)`. -/
+def evalR (a b c : ℕ) (d1 : Bool) : Option HighLevelState :=
+  if b = 0 then
+    if !d1 then some (.C0 0 (2 * a + 7))
+    else some (.C0 0 (2 * (a + c) + 5))
+  else if b = 1 then
+    if !d1 then some (.C0 0 (2 * a + 5))
+    else if c = 0 then none
+    else some (.C1 0 (2 * a + 5) c)
+  else if b = 2 then
+    if !d1 then none
+    else some (.C0 (a + c + 3) 0)
+  else
+    if !d1 then some (.C0 (a + 3) (b - 3))
+    else some (.C1 (a + 3) (b - 3) c)
+
+/-- Outcome of `State.S a b (if d1 then c else 0) (if d1 then 1 else 0)`. -/
+def evalS (a b c : ℕ) (d1 : Bool) : Option HighLevelState :=
+  if b = 0 then
+    if !d1 then some (.C0 (a + 2) 0)
+    else some (.C0 0 (2 * (a + c) + 4))
+  else if b = 1 then
+    if !d1 then some (.C0 0 (2 * a + 4))
+    else if c = 0 then evalR (a + 1) 0 0 false
+    else some (.C1 0 (2 * a + 4) c)
+  else
+    evalR (a + 1) (b - 2) c d1
+
+/-- Outcome of `State.M k u b (if d1 then c else 0) (if d1 then 1 else 0)`, decreasing in `k`. -/
+def evalM (k u b c : ℕ) (d1 : Bool) : Option HighLevelState :=
+  if k = 0 then
+    evalS (u + 2) b c d1
+  else
+    let k' := k - 1
+    if b = 0 then
+      if !d1 then
+        if k = 1 then some (.C1 0 0 (u + 5))
+        else if k = 2 then some (.C1 0 3 (u + 5))
+        else if k = 3 then some (.C1 0 4 (u + 5))
+        else if k = 4 then some (.C1 2 2 (u + 5))
+        else if k = 5 then evalS 0 5 (u + 5) true
+        else evalM (k - 6) 0 3 (u + 5) true
+      else
+        if k' = 0 then some (.C0 2 (2 * (u + c) + 6))
+        else if k' = 1 then evalS 0 (2 * (u + c) + 9) 0 false
+        else evalM (k' - 2) 0 (2 * (u + c) + 7) 0 false
+    else if b = 1 then
+      if !d1 then
+        if k' = 0 then some (.C0 2 (2 * u + 6))
+        else if k' = 1 then evalS 0 (2 * u + 9) 0 false
+        else evalM (k' - 2) 0 (2 * u + 7) 0 false
+      else if c = 0 then
+        evalM k' (u + 2) 0 0 false
+      else
+        if k' = 0 then some (.C1 2 (2 * u + 6) c)
+        else if k' = 1 then evalS 0 (2 * u + 9) c true
+        else evalM (k' - 2) 0 (2 * u + 7) c true
+    else
+      evalM k' (u + 2) (b - 2) c d1
+termination_by k
+decreasing_by all_goals omega
+
+/-- Outcome of `State.W k b (if d1 then c else 0) (if d1 then 1 else 0)`. -/
+def evalW (k b c : ℕ) (d1 : Bool) : Option HighLevelState :=
+  if k = 0 then
+    if d1 then some (.C1 2 b c) else some (.C0 2 b)
+  else if k = 1 then
+    evalS 0 (b + 3) c d1
+  else
+    evalM (k - 2) 0 (b + 1) c d1
+
+/-- Outcome of `State.C a b (if d1 then c else 0) (if d1 then 1 else 0)` for `a ≥ 1`. -/
+def evalCPos (a b c : ℕ) (d1 : Bool) : Option HighLevelState :=
+  if b = 0 then
+    if d1 && c == 0 then
+      if a = 1 then evalS 0 2 0 false
+      else evalM (a - 2) 0 0 0 false
+    else
+      if a = 1 then evalS 0 1 c d1
+      else evalW (a - 2) 2 c d1
+  else
+    if a = 1 then evalS 0 (b + 1) c d1
+    else evalM (a - 2) 0 (b - 1) c d1
+
+/-- High-level accelerated Collatz-like transition function on `C0` and `C1`. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C0 a b =>
+    if a = 0 then
+      if b = 0 then evalCPos 2 1 0 false
+      else if b = 1 then none
+      else evalCPos 2 (b - 2) 0 false
+    else
+      evalCPos a b 0 false
+  | .C1 a b c =>
+    if a = 0 then
+      if b = 0 then
+        if c = 0 then none
+        else evalCPos 2 1 c true
+      else if b = 1 then
+        some (.C0 (c + 2) 0)
+      else
+        evalCPos 2 (b - 2) c true
+    else
+      evalCPos a b c true
+
+private def cOf (c : ℕ) (d1 : Bool) : ℕ := if d1 then c else 0
+
+private def dOf (d1 : Bool) : ℕ := if d1 then 1 else 0
+
+private theorem stepsTo_R (a b c : ℕ) (d1 : Bool) :
+    CollatzStepsTo next (.R a b (cOf c d1) (dOf d1)) ((evalR a b c d1).map toState) := by
+  cases d1 <;> rcases b with _ | _ | _ | b'
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+  · rcases c with _ | c' <;> exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+
+private theorem stepsTo_S (a b c : ℕ) (d1 : Bool) :
+    CollatzStepsTo next (.S a b (cOf c d1) (dOf d1)) ((evalS a b c d1).map toState) := by
+  cases d1 <;> rcases b with _ | _ | b'
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.head rfl (stepsTo_R (a + 1) b' c false)
+  · exact CollatzStepsTo.of_eq rfl
+  · rcases c with _ | c'
+    · exact CollatzStepsTo.head rfl (stepsTo_R (a + 1) 0 0 false)
+    · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.head rfl (stepsTo_R (a + 1) b' c true)
+
+private theorem stepsTo_M (k : ℕ) :
+    ∀ (u b c : ℕ) (d1 : Bool),
+      CollatzStepsTo next (.M k u b (cOf c d1) (dOf d1)) ((evalM k u b c d1).map toState) := by
+  induction k using Nat.strongRecOn with
+  | ind k ih =>
+    intro u b c d1
+    rw [evalM]
+    rcases k with _ | k'
+    · exact CollatzStepsTo.head rfl (stepsTo_S (u + 2) b c d1)
+    · rcases b with _ | _ | b'
+      · cases d1
+        · rcases k' with _ | _ | _ | _ | _ | k''
+          · exact CollatzStepsTo.of_eq rfl
+          · exact CollatzStepsTo.of_eq rfl
+          · exact CollatzStepsTo.of_eq rfl
+          · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+          · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_S 0 5 (u + 5) true))
+          · exact CollatzStepsTo.head (s₂ := .W (k'' + 2) 2 (u + 5) 1) rfl
+              (CollatzStepsTo.head rfl (ih k'' (by omega) 0 3 (u + 5) true))
+        · refine CollatzStepsTo.head (s₂ := .W k' (2 * (u + c) + 6) 0 0)
+            (by simp [next, cOf, dOf]) ?_
+          rcases k' with _ | _ | k''
+          · exact CollatzStepsTo.of_eq rfl
+          · exact CollatzStepsTo.head rfl (stepsTo_S 0 (2 * (u + c) + 9) 0 false)
+          · exact CollatzStepsTo.head rfl (ih k'' (by omega) 0 (2 * (u + c) + 7) 0 false)
+      · cases d1
+        · refine CollatzStepsTo.head (s₂ := .W k' (2 * u + 6) 0 0) (by simp [next, cOf, dOf]) ?_
+          rcases k' with _ | _ | k''
+          · exact CollatzStepsTo.of_eq rfl
+          · exact CollatzStepsTo.head rfl (stepsTo_S 0 (2 * u + 9) 0 false)
+          · exact CollatzStepsTo.head rfl (ih k'' (by omega) 0 (2 * u + 7) 0 false)
+        · rcases c with _ | c'
+          · exact CollatzStepsTo.head (by simp [next, cOf, dOf])
+              (ih k' (by omega) (u + 2) 0 0 false)
+          · refine CollatzStepsTo.head (s₂ := .W k' (2 * u + 6) (c' + 1) 1)
+              (by simp [next, cOf, dOf]) ?_
+            rcases k' with _ | _ | k''
+            · exact CollatzStepsTo.of_eq rfl
+            · exact CollatzStepsTo.head rfl (stepsTo_S 0 (2 * u + 9) (c' + 1) true)
+            · exact CollatzStepsTo.head rfl (ih k'' (by omega) 0 (2 * u + 7) (c' + 1) true)
+      · exact CollatzStepsTo.head (by simp [next]) (ih k' (by omega) (u + 2) b' c d1)
+
+private theorem stepsTo_W (k b c : ℕ) (d1 : Bool) :
+    CollatzStepsTo next (.W k b (cOf c d1) (dOf d1)) ((evalW k b c d1).map toState) := by
+  rcases k with _ | _ | k'
+  · cases d1 <;> exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.head rfl (stepsTo_S 0 (b + 3) c d1)
+  · exact CollatzStepsTo.head rfl (stepsTo_M k' 0 (b + 1) c d1)
+
+private theorem stepsTo_CPos (a' b c : ℕ) (d1 : Bool) :
+    CollatzStepsTo next (.C (a' + 1) b (cOf c d1) (dOf d1))
+      ((evalCPos (a' + 1) b c d1).map toState) := by
+  rcases b with _ | b'
+  · cases d1
+    · rcases a' with _ | k
+      · exact CollatzStepsTo.head rfl (stepsTo_S 0 1 c false)
+      · exact CollatzStepsTo.head rfl (stepsTo_W k 2 c false)
+    · rcases c with _ | c'
+      · rcases a' with _ | k
+        · exact CollatzStepsTo.head rfl (stepsTo_S 0 2 0 false)
+        · exact CollatzStepsTo.head rfl (stepsTo_M k 0 0 0 false)
+      · rcases a' with _ | k
+        · exact CollatzStepsTo.head rfl (stepsTo_S 0 1 (c' + 1) true)
+        · exact CollatzStepsTo.head rfl (stepsTo_W k 2 (c' + 1) true)
+  · rcases a' with _ | k
+    · exact CollatzStepsTo.head rfl (stepsTo_S 0 (b' + 2) c d1)
+    · exact CollatzStepsTo.head rfl (stepsTo_M k 0 b' c d1)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro (⟨a, b⟩ | ⟨a, b, c⟩)
+  · rcases a with _ | a'
+    · rcases b with _ | _ | b'
+      · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_CPos 1 1 0 false))
+      · exact CollatzStepsTo.of_eq rfl
+      · exact CollatzStepsTo.head rfl (stepsTo_CPos 1 b' 0 false)
+    · exact stepsTo_CPos a' b 0 false
+  · rcases a with _ | a'
+    · rcases b with _ | _ | b'
+      · rcases c with _ | c'
+        · exact CollatzStepsTo.of_eq rfl
+        · exact CollatzStepsTo.head rfl
+            (CollatzStepsTo.head rfl (stepsTo_CPos 1 1 (c' + 1) true))
+      · exact CollatzStepsTo.of_eq rfl
+      · exact CollatzStepsTo.head rfl (stepsTo_CPos 1 b' c true)
+    · exact stepsTo_CPos a' b c true
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE

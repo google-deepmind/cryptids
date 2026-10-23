@@ -10,36 +10,31 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB0LF_1RC1RA_0RD0RB_1LE---_0LA1LE_1RD1LA`
 
-We define the configuration for $u, v, w \ge 0$:
+We define the configuration for $u, w \ge 0$:
 
 $$
-J(u, v, w) := 0^\infty \ 1^5 \ (10)^u \ 1 \ \mathrm{A}{>} \ 11 \ (01)^v \ 1^w \ 01 \ 0^\infty.
+J(u, w) := 0^\infty \ 1^5 \ (10)^u \ 1 \ \mathrm{A}{>} \ 1^{w+2} \ 01 \ 0^\infty.
 $$
 
-Starting from $J(0, 0, 0)$ (reached after 35 steps from the blank tape), the machine follows the
-map $T$:
+Starting from $J(0, 0)$ (reached after 35 steps from the blank tape), with $m = \lfloor w/2 \rfloor$
+and $d = u - m$, the machine follows the map $T$:
 
 $$
-T(J(u, v, w)) = \begin{cases}
-  J(0, 0, 2v+12) & \text{if } u = 0,\ w = 0,\ v \text{ is even}, \\
-  J(2, 4, 2v+7) & \text{if } u = 0,\ w = 0,\ v \text{ is odd}, \\
-  J(2, 4, 2v+9) & \text{if } u = 0,\ w = 1,\ v \text{ is even}, \\
-  J(0, 0, 2v+14) & \text{if } u = 0,\ w = 1,\ v \text{ is odd}, \\
-  J(2, v+4, 1) & \text{if } u = 0,\ w = 2,\ v \text{ is even}, \\
-  J(0, v+4, 1) & \text{if } u = 0,\ w = 2,\ v \text{ is odd}, \\
-  J(v+3, 0, w-3) & \text{if } u = 0,\ w \ge 3, \\
-  J(0, 0, 2v+12) & \text{if } u = 1,\ w = 0, \\
-  J(2, 4, 2u+2v+5) & \text{if } u \ge 2,\ w = 0,\ u \text{ is even}, \\
-  J(0, 0, 2u+2v+10) & \text{if } u \ge 3,\ w = 0,\ u \text{ is odd}, \\
-  \text{Halt} & \text{if } u = 1,\ w = 1, \\
-  J(0, 0, 2v+10) & \text{if } u = 2,\ w = 1, \\
-  J(2, u, 2v+5) & \text{if } u \ge 4,\ w = 1,\ u \text{ is even}, \\
-  J(0, u, 2v+5) & \text{if } u \ge 3,\ w = 1,\ u \text{ is odd}, \\
-  J(u-m, v+2m, w-2m) & \text{if } u \ge 1,\ w \ge 2,
+T(J(u, w)) = \begin{cases}
+  J(2u+3, w-2u-3) & \text{if } w \ge 2u+3, \\
+  J(0, 4u+18) & \text{if } w = 2u+2, \\
+  J(11, 4u+2) & \text{if } w = 2u+1, \\
+  J(0, 4u+12) & \text{if } w = 2u, \\
+  J(0, 2w+12) & \text{if } w = 2m < 2u \text{ and } d = 1, \\
+  J(11, 2u+w-2) & \text{if } w = 2m < 2u \text{ and } d \ge 2 \text{ is even}, \\
+  J(0, 2u+w+10) & \text{if } w = 2m < 2u \text{ and } d \ge 3 \text{ is odd}, \\
+  \text{Halt} & \text{if } w = 2m+1 < 2u \text{ and } d = 1, \\
+  J(0, 2w+8) & \text{if } w = 2m+1 < 2u \text{ and } d = 2, \\
+  J(11, 2u+10) & \text{if } w = 1 < 2u \text{ and } d \ge 4 \text{ is even}, \\
+  J(d+7, 2w-4) & \text{if } w = 2m+1 \ge 3,\ w < 2u,\text{ and } d \ge 4 \text{ is even}, \\
+  J(d+3, 2w) & \text{if } w = 2m+1 < 2u \text{ and } d \ge 3 \text{ is odd}.
 \end{cases}
 $$
-
-where $m = \min(u, \lfloor w/2 \rfloor)$.
 -/
 
 @[expose] public section
@@ -1219,28 +1214,28 @@ from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
 
-/-! ## High-Level Collatz-Like Acceleration -/
+/-! ## Intermediate Collatz-Like Acceleration -/
 
-/-- Single-family high-level symbolic configuration state space for
+/-- Intermediate single-family symbolic configuration state space for
 `1RB0LF_1RC1RA_0RD0RB_1LE---_0LA1LE_1RD1LA`. -/
-inductive HighLevelState where
+private inductive MidState where
   /-- $J(u, v, w) := 0^\infty\,1^5\,(10)^u\,1\,\mathrm{A}{>}\,11\,(01)^v\,1^w\,01\,0^\infty$. -/
   | J (u v w : ℕ)
 
-/-- Initial high-level symbolic state $J(0, 0, 0)$. -/
-def highLevelStart : HighLevelState := .J 0 0 0
+/-- Initial intermediate symbolic state $J(0, 0, 0)$. -/
+private def midStart : MidState := .J 0 0 0
 
-/-- Embed a `HighLevelState` into `State`. -/
-def toState : HighLevelState → State
+/-- Embed a `MidState` into `State`. -/
+private def midToState : MidState → State
   | .J u v w => .J u v w
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
-  encode (toState s)
+/-- Decode a `MidState` into a concrete Turing machine configuration. -/
+private def midEncode (s : MidState) : Cfg (Fin 2) (Fin 6) :=
+  encode (midToState s)
 
-/-- High-level accelerated transition function on $J(u, v, w)$, obtained by composing transitions
+/-- Intermediate accelerated transition function on $J(u, v, w)$, obtained by composing transitions
 through $S_E$, $S_{E,0}$, and $S_{E,1}$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
+private def midNext : MidState → Option MidState
   | .J 0 v 0 =>
     if v % 2 = 0 then some (.J 0 0 (2 * v + 12))
     else some (.J 2 4 (2 * v + 7))
@@ -1337,16 +1332,15 @@ private theorem reaches_SE1 : ∀ (b m n : ℕ),
     rw [h1, h2]
     exact CollatzReachesStar.head rfl ih
 
-/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
-of `target`. -/
-theorem is_valid_highLevel_acceleration :
-    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := toState)
+/-- `midStart`, `midEncode`, and `midNext` form a valid Collatz-like acceleration of `target`. -/
+private theorem is_valid_mid_acceleration :
+    IsValidAcceleration target midStart midEncode midNext := by
+  refine is_valid_acceleration.of_collatz (embed := midToState)
     (CollatzReachesStar.refl next start) ?_
   rintro ⟨u, v, w⟩
   rcases u with _ | _ | u
   · rcases w with _ | _ | _ | w
-    · dsimp [highLevelNext]
+    · dsimp [midNext]
       have h1 := reaches_SE0 (v + 3) 0
       split_ifs with hv
       · have hm : (v + 3) % 2 = 1 := by omega
@@ -1355,7 +1349,7 @@ theorem is_valid_highLevel_acceleration :
         rw [hm, hd] at h1
         exact CollatzStepsTo.head rfl
           (CollatzStepsTo.of_reachesStar h1
-            (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, hw]))))
+            (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, midToState, hw]))))
       · have hm : (v + 3) % 2 = 0 := by omega
         have hd : 0 + (v + 3) / 2 = v / 2 + 2 := by omega
         have hw : 2 * (2 * (v / 2 + 2)) + 1 = 2 * v + 7 := by omega
@@ -1363,8 +1357,8 @@ theorem is_valid_highLevel_acceleration :
         exact CollatzStepsTo.head rfl
           (CollatzStepsTo.of_reachesStar h1
             (CollatzStepsTo.head rfl
-              (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, hw])))))
-    · dsimp [highLevelNext]
+              (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, midToState, hw])))))
+    · dsimp [midNext]
       have h1 := reaches_SE1 (v + 2) 0 0
       split_ifs with hv
       · have hm : (v + 2) % 2 = 0 := by omega
@@ -1374,15 +1368,15 @@ theorem is_valid_highLevel_acceleration :
         exact CollatzStepsTo.head rfl
           (CollatzStepsTo.of_reachesStar h1
             (CollatzStepsTo.head rfl
-              (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, hw])))))
+              (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, midToState, hw])))))
       · have hm : (v + 2) % 2 = 1 := by omega
         have hd : 0 + (v + 2) / 2 = v / 2 + 1 := by omega
         have hw : 2 * (2 * (v / 2 + 1) + 0 + 3) + 6 = 2 * v + 14 := by omega
         rw [hm, hd] at h1
         exact CollatzStepsTo.head rfl
           (CollatzStepsTo.of_reachesStar h1
-            (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, hw]))))
-    · dsimp [highLevelNext]
+            (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, midToState, hw]))))
+    · dsimp [midNext]
       have h1 := reaches_SE (v + 2) 0 0
       split_ifs with hv
       · have hm : (v + 2) % 2 = 0 := by omega
@@ -1390,22 +1384,24 @@ theorem is_valid_highLevel_acceleration :
         have hv' : 2 * (v / 2) + 4 = v + 4 := by omega
         rw [hm, hd] at h1
         exact CollatzStepsTo.head rfl
-          (CollatzStepsTo.of_reachesStar h1 (CollatzStepsTo.of_eq (by simp [next, toState, hv'])))
+          (CollatzStepsTo.of_reachesStar h1
+            (CollatzStepsTo.of_eq (by simp [next, midToState, hv'])))
       · have hm : (v + 2) % 2 = 1 := by omega
         have hd : 0 + (v + 2) / 2 = v / 2 + 1 := by omega
         have hv' : 2 * (v / 2 + 1) + 3 = v + 4 := by omega
         rw [hm, hd] at h1
         exact CollatzStepsTo.head rfl
-          (CollatzStepsTo.of_reachesStar h1 (CollatzStepsTo.of_eq (by simp [next, toState, hv'])))
+          (CollatzStepsTo.of_reachesStar h1
+            (CollatzStepsTo.of_eq (by simp [next, midToState, hv'])))
     · exact CollatzStepsTo.of_eq rfl
   · rcases w with _ | _ | w
     · have hw : 2 * (v + 3) + 6 = 2 * v + 12 := by omega
       exact CollatzStepsTo.head rfl
-        (CollatzStepsTo.of_eq (by simp [next, toState, highLevelNext, hw]))
+        (CollatzStepsTo.of_eq (by simp [next, midToState, midNext, hw]))
     · exact CollatzStepsTo.of_eq rfl
     · exact reaches_J_drain 0 v w
   · rcases w with _ | _ | w
-    · dsimp [highLevelNext]
+    · dsimp [midNext]
       have h1 := reaches_SE1 u 0 (v + 2)
       split_ifs with hu
       · have hm : u % 2 = 0 := hu
@@ -1415,19 +1411,19 @@ theorem is_valid_highLevel_acceleration :
         exact CollatzStepsTo.head rfl
           (CollatzStepsTo.of_reachesStar h1
             (CollatzStepsTo.head rfl
-              (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, hw])))))
+              (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, midToState, hw])))))
       · have hm : u % 2 = 1 := by omega
         have hd : 0 + u / 2 = u / 2 := by omega
         have hw : 2 * (2 * (u / 2) + (v + 2) + 3) + 6 = 2 * (u + 2) + 2 * v + 10 := by omega
         rw [hm, hd] at h1
         exact CollatzStepsTo.head rfl
           (CollatzStepsTo.of_reachesStar h1
-            (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, toState, hw]))))
+            (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by simp [next, midToState, hw]))))
     · rcases u with _ | u
       · have hw : 2 * (v + 2) + 6 = 2 * v + 10 := by omega
         exact CollatzStepsTo.head rfl
-          (CollatzStepsTo.of_eq (by simp [next, toState, highLevelNext, hw]))
-      · dsimp [highLevelNext]
+          (CollatzStepsTo.of_eq (by simp [next, midToState, midNext, hw]))
+      · dsimp [midNext]
         have h1 := reaches_SE (u + 1) 0 (v + 2)
         split_ifs with hu
         · have hm : (u + 1) % 2 = 0 := hu
@@ -1437,7 +1433,7 @@ theorem is_valid_highLevel_acceleration :
           rw [hm, hd] at h1
           exact CollatzStepsTo.head rfl
             (CollatzStepsTo.of_reachesStar h1
-              (CollatzStepsTo.of_eq (by simp [next, toState, hu', hw])))
+              (CollatzStepsTo.of_eq (by simp [next, midToState, hu', hw])))
         · have hm : (u + 1) % 2 = 1 := by omega
           have hd : 0 + (u + 1) / 2 = u / 2 := by omega
           have hu' : 2 * (u / 2) + 3 = u + 3 := by omega
@@ -1445,8 +1441,205 @@ theorem is_valid_highLevel_acceleration :
           rw [hm, hd] at h1
           exact CollatzStepsTo.head rfl
             (CollatzStepsTo.of_reachesStar h1
-              (CollatzStepsTo.of_eq (by simp [next, toState, hu', hw])))
+              (CollatzStepsTo.of_eq (by simp [next, midToState, hu', hw])))
     · exact reaches_J_drain (u + 1) v w
+
+
+/-! ## High-Level Collatz-Like Acceleration -/
+
+/-- High-level symbolic configuration state space for
+`1RB0LF_1RC1RA_0RD0RB_1LE---_0LA1LE_1RD1LA`. -/
+inductive HighLevelState where
+  /-- $J(u, w) := 0^\infty\,1^5\,(10)^u\,1\,\mathrm{A}{>}\,1^{w+2}\,01\,0^\infty$. -/
+  | J (u w : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $J(0, 0)$. -/
+def highLevelStart : HighLevelState := .J 0 0
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .J u w => .J u 0 w
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Embed a `HighLevelState` into the intermediate `MidState`. -/
+private def toMid : HighLevelState → MidState
+  | .J u w => .J u 0 w
+
+/-- High-level accelerated transition function on $J(u, w)$; see the module docstring. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .J u w =>
+    let m := w / 2
+    if w ≥ 2 * u + 3 then some (.J (2 * u + 3) (w - 2 * u - 3))
+    else if w = 2 * u + 2 then some (.J 0 (4 * u + 18))
+    else if w = 2 * u + 1 then some (.J 11 (4 * u + 2))
+    else if w = 2 * u then some (.J 0 (4 * u + 12))
+    else
+      let d := u - m
+      if w % 2 = 0 then
+        if d = 1 then some (.J 0 (2 * w + 12))
+        else if d % 2 = 0 then some (.J 11 (2 * u + w - 2))
+        else some (.J 0 (2 * u + w + 10))
+      else
+        if d = 1 then none
+        else if d = 2 then some (.J 0 (2 * w + 8))
+        else if d % 2 = 0 then
+          if w = 1 then some (.J 11 (2 * u + 10))
+          else some (.J (d + 7) (2 * w - 4))
+        else some (.J (d + 3) (2 * w))
+
+private theorem mid_drain (u v w a v' b k : ℕ) (hu : u = a + k) (hw : w = b + 2 * k)
+    (hv : v' = v + 2 * k) (hk : 1 ≤ k) (hab : a = 0 ∨ b ≤ 1) :
+    midNext (.J u v w) = some (.J a v' b) := by
+  obtain ⟨k, rfl⟩ : ∃ t, k = t + 1 := ⟨k - 1, by omega⟩
+  subst hu hw hv
+  have h1 : a + (k + 1) = (a + k) + 1 := by omega
+  have h2 : b + 2 * (k + 1) = (b + 2 * k) + 2 := by omega
+  have hmin : min (a + k + 1) ((b + 2 * k + 2) / 2) = k + 1 := by omega
+  have hd : midNext (.J ((a + k) + 1) v ((b + 2 * k) + 2)) =
+      some (.J (a + k + 1 - min (a + k + 1) ((b + 2 * k + 2) / 2))
+        (v + 2 * min (a + k + 1) ((b + 2 * k + 2) / 2))
+        (b + 2 * k + 2 - 2 * min (a + k + 1) ((b + 2 * k + 2) / 2))) := by
+    rcases a + k with _ | _ | _ <;> rfl
+  rw [h1, h2, hd]
+  simp only [Option.some.injEq, MidState.J.injEq]
+  omega
+
+private theorem drainTo (u v w a v' b k : ℕ) {res : Option MidState} (hu : u = a + k)
+    (hw : w = b + 2 * k) (hv : v' = v + 2 * k) (hab : a = 0 ∨ b ≤ 1)
+    (h : CollatzStepsTo midNext (.J a v' b) res) :
+    CollatzStepsTo midNext (.J u v w) res := by
+  rcases Nat.eq_zero_or_pos k with hk | hk
+  · subst hk hu hw hv
+    simpa using h
+  · exact CollatzStepsTo.head (mid_drain u v w a v' b k hu hw hv hk hab) h
+
+private theorem mid_z3 (v w a b : ℕ) (hw : w = b + 3) (ha : a = v + 3) :
+    midNext (.J 0 v w) = some (.J a 0 b) := by
+  subst hw ha
+  rfl
+
+private theorem mid_z2 (v a : ℕ) (hv : v % 2 = 0) (ha : a = v + 4) :
+    midNext (.J 0 v 2) = some (.J 2 a 1) := by
+  subst ha
+  simp [midNext, hv]
+
+private theorem mid_z1 (v w : ℕ) (hv : v % 2 = 0) (hw : w = 2 * v + 9) :
+    midNext (.J 0 v 1) = some (.J 2 4 w) := by
+  subst hw
+  simp [midNext, hv]
+
+private theorem mid_z0 (v w : ℕ) (hv : v % 2 = 0) (hw : w = 2 * v + 12) :
+    midNext (.J 0 v 0) = some (.J 0 0 w) := by
+  subst hw
+  simp [midNext, hv]
+
+private theorem mid_one0 (v w : ℕ) (hw : w = 2 * v + 12) :
+    midNext (.J 1 v 0) = some (.J 0 0 w) := by
+  subst hw
+  rfl
+
+private theorem mid_big0_even (u v w : ℕ) (hu : 2 ≤ u) (hu2 : u % 2 = 0)
+    (hw : w = 2 * u + 2 * v + 5) : midNext (.J u v 0) = some (.J 2 4 w) := by
+  obtain ⟨u, rfl⟩ : ∃ t, u = t + 2 := ⟨u - 2, by omega⟩
+  subst hw
+  have : u % 2 = 0 := by omega
+  simp [midNext, this]
+
+private theorem mid_big0_odd (u v w : ℕ) (hu : 2 ≤ u) (hu2 : u % 2 = 1)
+    (hw : w = 2 * u + 2 * v + 10) : midNext (.J u v 0) = some (.J 0 0 w) := by
+  obtain ⟨u, rfl⟩ : ∃ t, u = t + 2 := ⟨u - 2, by omega⟩
+  subst hw
+  have : u % 2 = 1 := by omega
+  simp [midNext, this]
+
+private theorem mid_one1 (v : ℕ) : midNext (.J 1 v 1) = none := rfl
+
+private theorem mid_two1 (v w : ℕ) (hw : w = 2 * v + 10) :
+    midNext (.J 2 v 1) = some (.J 0 0 w) := by
+  subst hw
+  rfl
+
+private theorem mid_big1_even (u v w : ℕ) (hu : 3 ≤ u) (hu2 : u % 2 = 0)
+    (hw : w = 2 * v + 5) : midNext (.J u v 1) = some (.J 2 u w) := by
+  obtain ⟨u, rfl⟩ : ∃ t, u = t + 3 := ⟨u - 3, by omega⟩
+  subst hw
+  have : (u + 1) % 2 = 0 := by omega
+  simp [midNext, this]
+
+private theorem mid_big1_odd (u v w : ℕ) (hu : 3 ≤ u) (hu2 : u % 2 = 1)
+    (hw : w = 2 * v + 5) : midNext (.J u v 1) = some (.J 0 u w) := by
+  obtain ⟨u, rfl⟩ : ∃ t, u = t + 3 := ⟨u - 3, by omega⟩
+  subst hw
+  have : (u + 1) % 2 = 1 := by omega
+  simp [midNext, this]
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  have h := is_valid_mid_acceleration.of_collatz (embed := toMid) (highLevelStart := highLevelStart)
+    (highLevelNext := highLevelNext)
+    (CollatzReachesStar.refl midNext midStart) ?_
+  · have he : (fun s => midEncode (toMid s)) = highLevelEncode := by
+      funext s
+      cases s
+      rfl
+    rw [he] at h
+    exact h
+  rintro ⟨u, w⟩
+  simp only [toMid, highLevelNext]
+  split_ifs <;> simp only [Option.map_some, Option.map_none, toMid]
+  · exact drainTo u 0 w 0 (2 * u) (w - 2 * u) u (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.of_eq (mid_z3 _ _ _ _ (by omega) (by omega)))
+  · exact drainTo u 0 w 0 (2 * u) 2 u (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.head (mid_z2 (2 * u) (2 * u + 4) (by omega) rfl)
+        (CollatzStepsTo.of_eq (mid_two1 _ _ (by omega))))
+  · exact drainTo u 0 w 0 (2 * u) 1 u (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.head (mid_z1 (2 * u) (4 * u + 9) (by omega) (by omega))
+        (CollatzStepsTo.head (mid_drain 2 4 (4 * u + 9) 0 8 (4 * u + 5) 2
+            (by omega) (by omega) (by omega) (by omega) (by omega))
+          (CollatzStepsTo.of_eq (mid_z3 _ _ _ _ (by omega) (by omega)))))
+  · exact drainTo u 0 w 0 (2 * u) 0 u (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.of_eq (mid_z0 _ _ (by omega) (by omega)))
+  · exact drainTo u 0 w 1 w 0 (w / 2) (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.of_eq (mid_one0 _ _ (by omega)))
+  · exact drainTo u 0 w (u - w / 2) w 0 (w / 2) (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.head (mid_big0_even (u - w / 2) w (2 * (u - w / 2) + 2 * w + 5)
+          (by omega) (by omega) rfl)
+        (CollatzStepsTo.head (mid_drain 2 4 (2 * (u - w / 2) + 2 * w + 5) 0 8
+            (2 * (u - w / 2) + 2 * w + 1) 2 (by omega) (by omega) (by omega) (by omega)
+            (by omega))
+          (CollatzStepsTo.of_eq (mid_z3 _ _ _ _ (by omega) (by omega)))))
+  · exact drainTo u 0 w (u - w / 2) w 0 (w / 2) (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.of_eq (mid_big0_odd _ _ _ (by omega) (by omega) (by omega)))
+  · exact drainTo u 0 w 1 (w - 1) 1 (w / 2) (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.of_eq (mid_one1 _))
+  · exact drainTo u 0 w 2 (w - 1) 1 (w / 2) (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.of_eq (mid_two1 _ _ (by omega)))
+  · exact drainTo u 0 w u 0 1 0 (by omega) (by omega) (by omega) (by omega)
+      (CollatzStepsTo.head (mid_big1_even u 0 5 (by omega) (by omega) rfl)
+        (CollatzStepsTo.head (mid_drain 2 u 5 0 (u + 4) 1 2
+            (by omega) (by omega) (by omega) (by omega) (by omega))
+          (CollatzStepsTo.head (mid_z1 (u + 4) (2 * u + 17) (by omega) (by omega))
+            (CollatzStepsTo.head (mid_drain 2 4 (2 * u + 17) 0 8 (2 * u + 13) 2
+                (by omega) (by omega) (by omega) (by omega) (by omega))
+              (CollatzStepsTo.of_eq (mid_z3 _ _ _ _ (by omega) (by omega)))))))
+  · exact drainTo u 0 w (u - w / 2) (w - 1) 1 (w / 2) (by omega) (by omega) (by omega)
+      (by omega)
+      (CollatzStepsTo.head (mid_big1_even (u - w / 2) (w - 1) (2 * w + 3)
+          (by omega) (by omega) (by omega))
+        (CollatzStepsTo.head (mid_drain 2 (u - w / 2) (2 * w + 3) 0 (u - w / 2 + 4)
+            (2 * w - 1) 2 (by omega) (by omega) (by omega) (by omega) (by omega))
+          (CollatzStepsTo.of_eq (mid_z3 _ _ _ _ (by omega) (by omega)))))
+  · exact drainTo u 0 w (u - w / 2) (w - 1) 1 (w / 2) (by omega) (by omega) (by omega)
+      (by omega)
+      (CollatzStepsTo.head (mid_big1_odd (u - w / 2) (w - 1) (2 * w + 3)
+          (by omega) (by omega) (by omega))
+        (CollatzStepsTo.of_eq (mid_z3 _ _ _ _ (by omega) (by omega))))
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

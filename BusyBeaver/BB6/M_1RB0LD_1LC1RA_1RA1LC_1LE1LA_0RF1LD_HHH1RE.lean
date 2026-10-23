@@ -32,6 +32,35 @@ The closed pattern set `ps` partitions the canonical configurations into 5 famil
 5. `H1_even (a, k)`: `h = 1` with even `g = 2(k + 1)`, which steps to `Config_gen a (2k) 2`
    (halting if `k = 0, a = 0`, stepping to `Config_gen (a - 1) 4 0` if `k = 0, a ≥ 1`, and landing
    in `H2_even (a, k - 1)` if `k ≥ 1`).
+
+## High-Level Collatz-like Acceleration
+
+Eliminating the transient families `H3`, `H2_even`, `H2_odd0`, and `H1_even` yields a single-family
+2-counter acceleration on $H(a, g) := \mathrm{Config\_gen}(a, g + 1, 0)$, starting from $H(0, 3)$:
+
+$$
+T(H(a, g)) = \begin{cases}
+  D(0, 1, g) & \text{if } a = 0, \\
+  D(0, 1, g + 1) & \text{if } a = 1, \\
+  D(2, 0, g + 1) & \text{if } a = 2, \\
+  D(a', k' - 1, g + 1) & \text{if } a \ge 3,
+\end{cases}
+$$
+
+where for $a_0 = a - 1 \ge 2$ and $j = \mathrm{find\_k}(a_0)$ (with $S(j) \le a_0 < S(j + 1)$),
+$(a', k') = (0, 1)$ when $a_0 = S(j)$ and $(a', k') = (S(j + 1) - 1 - a_0,\, a_0 + j + 2 - a')$
+otherwise, and the even-left-exponent drain $D(a, k, h)$ (`drainEven`) is defined recursively on
+$h$ by:
+
+$$
+D(a, k, h) = \begin{cases}
+  \text{Halt} & \text{if } h \le 1 \text{ and } a = 0, \\
+  H(a - 1, 2k + 3) & \text{if } h = 0 \text{ and } a \ge 1, \\
+  H(a - 1, 2k + 5) & \text{if } h = 1 \text{ and } a \ge 1, \\
+  D(k + 2, 0, h - 2) & \text{if } h \ge 2 \text{ and } a = 0, \\
+  D(a - 1, k + 2, h - 2) & \text{if } h \ge 2 \text{ and } a \ge 1.
+\end{cases}
+$$
 -/
 
 @[expose] public section
@@ -3215,5 +3244,108 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- Single-family high-level state space `H(a, g)` representing `Config_gen a (g + 1) 0`. -/
+inductive HighLevelState where
+  /-- Canonical return configuration `Config_gen a (g + 1) 0` (`State.H0 a g`). -/
+  | H (a g : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial state `H(0, 3)` for the high-level Collatz-like acceleration. -/
+def highLevelStart : HighLevelState := .H 0 3
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .H a g => .H0 a g
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Outcome of draining `classifyEven a k h` (`Config_gen a (2 * (k + 1)) (h + 1)`) until it either
+halts or returns to `H(a', g')`. -/
+def drainEven (a k h : ℕ) : Option HighLevelState :=
+  if h = 0 then
+    if a = 0 then none else some (.H (a - 1) (2 * k + 3))
+  else if h = 1 then
+    if a = 0 then none else some (.H (a - 1) (2 * k + 5))
+  else if a = 0 then
+    drainEven (k + 2) 0 (h - 2)
+  else
+    drainEven (a - 1) (k + 2) (h - 2)
+termination_by h
+decreasing_by all_goals omega
+
+/-- High-level accelerated Collatz-like transition function on `H(a, g)`. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .H a g =>
+    if a = 0 then
+      drainEven 0 1 g
+    else if a = 1 then
+      drainEven 0 1 (g + 1)
+    else if a = 2 then
+      drainEven 2 0 (g + 1)
+    else
+      let a0 := a - 1
+      let a_n := a_new a0 1
+      let k_n := if a0 = S (find_k a0) then 1 else a0 + find_k a0 + 2 - a_n
+      drainEven a_n (k_n - 1) (g + 1)
+
+private theorem stepsTo_drainEven :
+    ∀ a k h, CollatzStepsTo next (classifyEven a k h) ((drainEven a k h).map toState)
+  | a, k, 0 => by
+    rw [drainEven]
+    rcases k with _ | k'
+    · rcases a with _ | a'
+      · exact CollatzStepsTo.of_eq rfl
+      · exact CollatzStepsTo.of_eq rfl
+    · rcases a with _ | a'
+      · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+      · exact CollatzStepsTo.head rfl
+          (CollatzStepsTo.of_eq (by simp [next, toState]; omega))
+  | a, k, 1 => by
+    rw [drainEven]
+    rcases a with _ | a'
+    · exact CollatzStepsTo.of_eq rfl
+    · exact CollatzStepsTo.of_eq rfl
+  | a, k, h' + 2 => by
+    have h_even : (2 * k + 1 + 1) % 2 = 0 := by omega
+    have h_div : (2 * k + 1 + 1) / 2 = k + 1 := by omega
+    rw [drainEven]
+    rcases a with _ | a'
+    · have h_step : next (classifyEven 0 k (h' + 2)) = some (classifyEven (k + 2) 0 h') := by
+        simp [classifyEven, next, h_even, h_div]
+      simpa using CollatzStepsTo.head h_step (stepsTo_drainEven (k + 2) 0 h')
+    · have h_step :
+          next (classifyEven (a' + 1) k (h' + 2)) = some (classifyEven a' (k + 2) h') := by
+        simp [classifyEven, next, h_even, h_div]
+      simpa using CollatzStepsTo.head h_step (stepsTo_drainEven a' (k + 2) h')
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.single rfl) ?_
+  rintro ⟨a, g⟩
+  rcases a with _ | _ | _ | a''
+  · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_drainEven 0 1 g))
+  · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_drainEven 0 1 (g + 1)))
+  · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_drainEven 2 0 (g + 1)))
+  · exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (stepsTo_drainEven _ _ (g + 1)))
+
+/-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
+halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` if and only if the high-level acceleration
+`highLevelNext` halts from `highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0LD_1LC1RA_1RA1LC_1LE1LA_0RF1LD_HHH1RE

@@ -10,68 +10,58 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA`
 
-We define the configuration for $a, b, d \ge 0$ and $c \in \lbrace 0, 1 \rbrace$:
+We consider the three-parameter configuration family for $a, b, d \ge 0$:
 
 $$
-D(a, b, c, d) := 0^\infty \ \mathrm{D}{>} \ (10)^a \ (110)^b \ 0^c \ 1^d \ 0^\infty.
+D_3(a, b, d) := 0^\infty \ \mathrm{D}{>} \ (10)^{a+1} \ (110)^b \ 0 \ 1^d \ 0^\infty,
 $$
 
-Starting from $D(0, 0, 0, 4)$ (reached after 6 steps from the blank tape), the machine follows the
-map $T$:
+and restrict to the $b = 0$ Poincaré section (`HighLevelState`) for $a, d \ge 0$:
 
 $$
-\begin{aligned}
-  T(D(a, b, 0, d)) &= \begin{cases}
-    D(0, 0, 1, 1) & \text{if } a = 0,\ b = 0,\text{ and } d = 0, \\
-    D(1, b-1, 1, 2) & \text{if } a = 0,\ b \ge 1,\text{ and } d = 0, \\
-    B(a-1, 0, b, 0) & \text{if } a \ge 1 \text{ and } d = 0, \\
-    D(0, 0, 0, 4) & \text{if } a = 0,\ b = 0,\text{ and } d = 1, \\
-    B(a, 0, 0, 0) & \text{if } a \ge 1,\ b = 0,\text{ and } d = 1, \\
-    D(a+2, b-1, 1, 3) & \text{if } b \ge 1 \text{ and } d = 1, \\
-    D(1, b, 1, 2) & \text{if } a = 0 \text{ and } d = 2, \\
-    B(a-1, 0, b+1, 0) & \text{if } a \ge 1 \text{ and } d = 2, \\
-    D(a+d-1, b, 0, 1) & \text{if } d \ge 3 \text{ and } d \text{ is odd}, \\
-    D(a+d-2, b, 0, 2) & \text{if } d \ge 3 \text{ and } d \text{ is even},
-  \end{cases} \\
-  T(D(a, b, 1, d)) &= \begin{cases}
-    D(0, 0, 1, d+1) & \text{if } a = 0 \text{ and } b = 0, \\
-    D(1, b-1, 1, d+2) & \text{if } a = 0 \text{ and } b \ge 1, \\
-    B(a-1, 0, b, d) & \text{if } a \ge 1,
-  \end{cases}
-\end{aligned}
+D(a, d) := D_3(a, 0, d) = 0^\infty \ \mathrm{D}{>} \ (10)^{a+1} \ 0 \ 1^d \ 0^\infty.
 $$
 
-where $B(a, k, b, d)$, $H(a, b, m)$, and $A(a, k, q, m)$ are defined recursively by:
+For the intermediate family $A(a, k, m)$ (`evalA`), writing $k = 3j + r$ with
+$r \in \lbrace 0, 1, 2 \rbrace$:
 
 $$
-\begin{aligned}
-  B(a, k, b+1, d) &= B(a, k+1, b, d+2), \\
-  B(a, k, 0, d) &= \begin{cases}
-    D(0, 0, 0, d+4) & \text{if } a = 0 \text{ and } k = 0, \\
-    \text{Halt} & \text{if } a = 1 \text{ and } k = 0, \\
-    D(1, 2, 1, 2) & \text{if } a = 2,\ k = 0,\text{ and } d = 0, \\
-    D(2, 2, 0, d) & \text{if } a = 2,\ k = 0,\text{ and } d \ge 1, \\
-    H(a-3, 1, d+1) & \text{if } a \ge 3 \text{ and } k = 0, \\
-    A(a, k-1, 0, d+3) & \text{if } k \ge 1,
-  \end{cases} \\
-  H(a, b, m) &= \begin{cases}
-    \text{Halt} & \text{if } a = 0 \text{ and } m \neq 1, \\
-    D(a, b+1, 1, 5) & \text{if } a \ge 1 \text{ and } m = 0, \\
-    D(a+2, b+1, 1, 2) & \text{if } m = 1, \\
-    D(2, b+2, 1, 3) & \text{if } a = 1 \text{ and } m = 2, \\
-    D(1, b+3, 1, 2) & \text{if } a = 1 \text{ and } m = 3, \\
-    D(2, b+3, 0, m-3) & \text{if } a = 1 \text{ and } m \ge 4, \\
-    H(a-2, b+2, m-2) & \text{if } a \ge 2 \text{ and } m \ge 2,
-  \end{cases} \\
-  A(a, k, q, m) &= \begin{cases}
-    \text{Halt} & \text{if } a = 0 \text{ and } k = 0, \\
-    D(a, q, 1, m+2) & \text{if } a \ge 1 \text{ and } k = 0, \\
-    D(1, q, 1, m) & \text{if } a = 0 \text{ and } k = 1, \\
-    A(a-1, q, 0, m+2q+3) & \text{if } a \ge 1 \text{ and } k = 1, \\
-    D(a+2, q, 1, m) & \text{if } k = 2, \\
-    A(a, k-3, q+1, m) & \text{if } k \ge 3.
-  \end{cases}
-\end{aligned}
+A(a, 3j + r, m) = \begin{cases}
+  D_3(a+1, j, m) & \text{if } r = 2, \\
+  \text{Halt} & \text{if } r = 0 \text{ and } a = 0, \\
+  D_3(a-1, j, m+2) & \text{if } r = 0 \text{ and } a \ge 1, \\
+  D_3(0, j, m) & \text{if } r = 1 \text{ and } a = 0, \\
+  A(a-1, j, m+2j+3) & \text{if } r = 1 \text{ and } a \ge 1.
+\end{cases}
+$$
+
+Whenever $b \ge 1$, $D_3(a, b, d)$ transitions to $A(a, b-1, d+2b+3)$ with $b' \le \lfloor (b-1)/3
+\rfloor < b$. Iterating this drain until $b = 0$ defines $\mathrm{drainB}(a, b, d)$ (`drainB`):
+
+$$
+\mathrm{drainB}(a, b, d) = \begin{cases}
+  D(a, d) & \text{if } b = 0, \\
+  \text{Halt} & \text{if } b \ge 1 \text{ and } A(a, b-1, d+2b+3) = \text{Halt}, \\
+  \mathrm{drainB}(a', b', d') & \text{if } b \ge 1 \text{ and }
+    A(a, b-1, d+2b+3) = D_3(a', b', d').
+\end{cases}
+$$
+
+Starting from $D(0, 7)$ (`highLevelStart`, reached after 66 steps from the blank tape), the
+high-level map $T_{\mathrm{HL}}$ (`highLevelNext`) on $D(a, d)$ is:
+
+$$
+T_{\mathrm{HL}}(D(a, d)) = \begin{cases}
+  \mathrm{drainB}(d+1, 2, 2) & \text{if } a = 0 \text{ and } d \text{ is odd}, \\
+  D(d, 7) & \text{if } a = 0 \text{ and } d \text{ is even}, \\
+  \mathrm{drainB}(a-d-5, d+3, 5) & \text{if } d \text{ is odd and } a \ge d+5, \\
+  \mathrm{drainB}(a-d-2, d+2, 2) & \text{if } d \text{ is even and } a \ge d+3, \\
+  \text{Halt} & \text{otherwise, if } a \text{ is odd}, \\
+  \mathrm{drainB}(0, a, 2) & \text{otherwise, if } a = d+2, \\
+  \mathrm{drainB}(d+4-a, a-1, 3) & \text{otherwise, if } d \text{ is odd}, \\
+  \mathrm{drainB}(a', b', d') & \text{otherwise, if } A(d+1-a, a, 2a+5) = D_3(a', b', d'), \\
+  \text{Halt} & \text{otherwise } (A(d+1-a, a, 2a+5) = \text{Halt}).
+\end{cases}
 $$
 -/
 
@@ -1291,76 +1281,36 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 
 /-! ## High-Level Collatz-Like Acceleration -/
 
-/-- State space $D(a, b, c, d) := 0^\infty\,\mathrm{D}{>}\,(10)^a\,(110)^b\,0^c\,1^d\,0^\infty$
-($c \in \{0, 1\}$) for the high-level Collatz-like acceleration. -/
-inductive HighLevelState where
-  /-- $D(a, b, 0, d) := 0^\infty\,\mathrm{D}{>}\,(10)^a\,(110)^b\,1^d\,0^\infty$. -/
-  | D0 (a b d : ℕ)
-  /-- $D(a, b, 1, d) := 0^\infty\,\mathrm{D}{>}\,(10)^a\,(110)^b\,0\,1^d\,0^\infty$. -/
-  | D1 (a b d : ℕ)
+private inductive PrevState where
+  | D (a b d : ℕ)
 
-/-- Initial state $D(0, 0, 0, 4)$ for the high-level Collatz-like acceleration. -/
-def highLevelStart : HighLevelState := .D0 0 0 4
+private def prevStart : PrevState := .D 0 0 7
 
-/-- Embed a `HighLevelState` into `State`. -/
-def toState : HighLevelState → State
-  | .D0 a b d => .D0 a b d
-  | .D1 a b d => .D1 a b d
+private def prevToState : PrevState → State
+  | .D a b d => .D1 (a + 1) b d
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
-  encode (toState s)
+private def prevEncode (s : PrevState) : Cfg (Fin 2) (Fin 6) :=
+  encode (prevToState s)
 
-/-- Outcome of the intermediate family `H a b m` when run until returning to `D` or halting. -/
-def evalH : ℕ → ℕ → ℕ → Option HighLevelState
-  | 0, _, 0 => none
-  | a + 1, b, 0 => some (.D1 (if a = 0 then 1 else a + 1) (b + 1) 5)
-  | a, b, 1 => some (.D1 (a + 2) (b + 1) 2)
-  | 0, _, _ + 2 => none
-  | 1, b, 2 => some (.D1 2 (b + 2) 3)
-  | 1, b, 3 => some (.D1 1 (b + 3) 2)
-  | 1, b, m + 4 => some (.D0 2 (b + 3) (m + 1))
-  | a + 2, b, m + 2 => evalH a (b + 2) m
+private def prevEvalA (a k m : ℕ) : Option PrevState :=
+  if k % 3 = 2 then some (.D (a + 1) (k / 3) m)
+  else if a = 0 then (if k % 3 = 0 then none else some (.D 0 (k / 3) m))
+  else if k % 3 = 0 then some (.D (a - 1) (k / 3) (m + 2))
+  else prevEvalA (a - 1) (k / 3) (m + 2 * (k / 3) + 3)
+termination_by a
+decreasing_by omega
 
-/-- Outcome of the intermediate family `A_pos a k q m` when run until returning to `D` or
-halting. -/
-def evalA_pos : ℕ → ℕ → ℕ → ℕ → Option HighLevelState
-  | 0, 0, _, _ => none
-  | a + 1, 0, 0, m => some (.D1 (if a = 0 then 1 else a + 1) 0 (m + 2))
-  | a + 1, 0, q + 1, m => some (.D1 (if a = 0 then 1 else a + 1) (q + 1) (m + 2))
-  | 0, 1, q, m => some (.D1 1 q m)
-  | a + 1, 1, q, m => evalA_pos a q 0 (m + 2 * q + 3)
-  | a, 2, q, m => some (.D1 (a + 2) q m)
-  | a, k + 3, q, m => evalA_pos a k (q + 1) m
-
-/-- Outcome of the intermediate family `B a k b d` when run until returning to `D` or halting. -/
-def evalB : ℕ → ℕ → ℕ → ℕ → Option HighLevelState
-  | a, k, b + 1, d => evalB a (k + 1) b (d + 2)
-  | 0, 0, 0, d => some (.D0 0 0 (d + 4))
-  | 1, 0, 0, _ => none
-  | 2, 0, 0, 0 => some (.D1 1 2 2)
-  | 2, 0, 0, d + 1 => some (.D0 2 2 (d + 1))
-  | a + 3, 0, 0, d => evalH a 1 (d + 1)
-  | a, k + 1, 0, d => evalA_pos a k 0 (d + 3)
-
-/-- High-level accelerated Collatz-like transition function on $D(a, b, c, d)$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
-  | .D1 0 0 d => some (.D1 0 0 (d + 1))
-  | .D1 0 (b + 1) d => some (.D1 1 b (d + 2))
-  | .D1 (a + 1) b d => evalB a 0 b d
-  | .D0 a b 0 =>
-    Nat.casesOn a
-      (Nat.casesOn b (some (.D1 0 0 1)) fun b => some (.D1 1 b 2))
-      fun a => evalB a 0 b 0
-  | .D0 a b 1 =>
-    Nat.casesOn b
-      (Nat.casesOn a (some (.D0 0 0 4)) fun a => evalB (a + 1) 0 0 0)
-      fun b => some (.D1 (a + 2) b 3)
-  | .D0 a b 2 =>
-    Nat.casesOn a (some (.D1 1 b 2)) fun a => evalB a 0 (b + 1) 0
-  | .D0 a b (d + 3) =>
-    if d % 2 = 0 then some (.D0 (a + d + 2) b 1)
-    else some (.D0 (a + d + 1) b 2)
+private def prevNext : PrevState → Option PrevState
+  | .D a b d =>
+    if b ≥ 1 then prevEvalA a (b - 1) (d + 2 * b + 3)
+    else if a = 0 then
+      if d % 2 = 1 then some (.D (d + 1) 2 2) else some (.D d 0 7)
+    else if d % 2 = 1 ∧ a ≥ d + 5 then some (.D (a - d - 5) (d + 3) 5)
+    else if d % 2 = 0 ∧ a ≥ d + 3 then some (.D (a - d - 2) (d + 2) 2)
+    else if a % 2 = 1 then none
+    else if a = d + 2 then some (.D 0 a 2)
+    else if d % 2 = 1 then some (.D (d + 4 - a) (a - 1) 3)
+    else prevEvalA (d + 1 - a) a (2 * a + 5)
 
 private theorem reaches_D0_step : ∀ (k : ℕ) (a b w : ℕ),
     1 ≤ w → CollatzReachesStar next (.D0 a b (2 * k + w)) (.D0 (a + 2 * k) b w)
@@ -1382,96 +1332,389 @@ private theorem reaches_D0_step : ∀ (k : ℕ) (a b w : ℕ),
     rw [ha] at ih
     exact CollatzReachesStar.head h_step ih
 
-private theorem reaches_D0_drain (a b d : ℕ) :
-    CollatzStepsTo next (.D0 a b (d + 3))
-      (if d % 2 = 0 then some (.D0 (a + d + 2) b 1)
-       else some (.D0 (a + d + 1) b 2)) := by
-  have h_head : next (.D0 a b (d + 3)) = some (.D0 (a + 2) b (d + 1)) := by simp [next]
-  split_ifs with hd
-  · have h_star := reaches_D0_step (d / 2) (a + 2) b 1 (by omega)
-    have hd_eq : 2 * (d / 2) + 1 = d + 1 := by omega
-    have ha_eq : a + 2 + 2 * (d / 2) = a + d + 2 := by omega
-    rw [hd_eq, ha_eq] at h_star
-    exact CollatzReachesPlus.head h_head h_star
-  · have h_star := reaches_D0_step (d / 2) (a + 2) b 2 (by omega)
-    have hd_eq : 2 * (d / 2) + 2 = d + 1 := by omega
-    have ha_eq : a + 2 + 2 * (d / 2) = a + d + 1 := by omega
-    rw [hd_eq, ha_eq] at h_star
-    exact CollatzReachesPlus.head h_head h_star
+private theorem reaches_B : ∀ (b a k d : ℕ),
+    CollatzReachesStar next (.B a k b d) (.B a (k + b) 0 (d + 2 * b))
+  | 0, a, k, d => by
+    simp only [Nat.add_zero, Nat.mul_zero]
+    exact CollatzReachesStar.refl next _
+  | b + 1, a, k, d => by
+    have ih := reaches_B b a (k + 1) (d + 2)
+    have hk : k + 1 + b = k + (b + 1) := by omega
+    have hd : d + 2 + 2 * b = d + 2 * (b + 1) := by omega
+    rw [hk, hd] at ih
+    exact CollatzReachesStar.head rfl ih
 
-private theorem stepsTo_H : ∀ (a b m : ℕ),
-    CollatzStepsTo next (.H a b m) ((evalH a b m).map toState)
-  | 0, _, 0 => CollatzStepsTo.of_eq (by simp [next, evalH])
-  | a + 1, b, 0 => CollatzStepsTo.of_eq (by simp [next, toState, evalH])
-  | a, b, 1 => CollatzStepsTo.of_eq (by simp [next, toState, evalH])
-  | 0, _, _ + 2 => CollatzStepsTo.of_eq (by simp [next, evalH])
-  | 1, b, 2 => CollatzStepsTo.of_eq (by simp [next, toState, evalH])
-  | 1, b, 3 => CollatzStepsTo.of_eq (by simp [next, toState, evalH])
-  | 1, b, m + 4 => CollatzStepsTo.of_eq (by simp [next, toState, evalH])
-  | a + 2, b, m + 2 => by
-    rw [evalH]
-    exact CollatzStepsTo.head rfl (stepsTo_H a (b + 2) m)
+private theorem reaches_H : ∀ (t a b m : ℕ),
+    CollatzReachesStar next (.H (a + 2 * t) b (m + 2 * t)) (.H a (b + 2 * t) m)
+  | 0, a, b, m => by
+    simp only [Nat.add_zero, Nat.mul_zero]
+    exact CollatzReachesStar.refl next _
+  | t + 1, a, b, m => by
+    have ih := reaches_H t a (b + 2) m
+    have hb : b + 2 + 2 * t = b + 2 * (t + 1) := by omega
+    rw [hb] at ih
+    have h_step : next (.H (a + 2 * (t + 1)) b (m + 2 * (t + 1))) =
+        some (.H (a + 2 * t) (b + 2) (m + 2 * t)) := by
+      have ha : a + 2 * (t + 1) = (a + 2 * t) + 2 := by omega
+      have hm : m + 2 * (t + 1) = (m + 2 * t) + 2 := by omega
+      rw [ha, hm]
+      rfl
+    exact CollatzReachesStar.head h_step ih
 
-private theorem stepsTo_A_pos : ∀ (a k q m : ℕ),
-    CollatzStepsTo next (.A_pos a k q m) ((evalA_pos a k q m).map toState)
-  | 0, 0, _, _ => CollatzStepsTo.of_eq (by simp [next, evalA_pos])
-  | a + 1, 0, 0, m => CollatzStepsTo.of_eq (by simp [next, toState, evalA_pos])
-  | a + 1, 0, q + 1, m => CollatzStepsTo.of_eq (by simp [next, toState, evalA_pos])
-  | 0, 1, q, m => CollatzStepsTo.of_eq (by simp [next, toState, evalA_pos])
-  | a + 1, 1, q, m => by
-    rw [evalA_pos]
-    exact CollatzStepsTo.head rfl (stepsTo_A_pos a q 0 (m + 2 * q + 3))
-  | a, 2, q, m => by
-    rw [evalA_pos]
-    exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
-  | a, k + 3, q, m => by
-    rw [evalA_pos]
-    exact CollatzStepsTo.head (by simp [next]) (stepsTo_A_pos a k (q + 1) m)
+private theorem reaches_A_drain : ∀ (j a r q m : ℕ),
+    CollatzReachesStar next (.A_pos a (3 * j + r) q m) (.A_pos a r (q + j) m)
+  | 0, a, r, q, m => by
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | j + 1, a, r, q, m => by
+    have ih := reaches_A_drain j a r (q + 1) m
+    have hq : q + 1 + j = q + (j + 1) := by omega
+    rw [hq] at ih
+    have h_step :
+        next (.A_pos a (3 * (j + 1) + r) q m) = some (.A_pos a (3 * j + r) (q + 1) m) := by
+      have hk : 3 * (j + 1) + r = (3 * j + r) + 3 := by omega
+      rw [hk]
+      simp [next]
+    exact CollatzReachesStar.head h_step ih
 
-private theorem stepsTo_B : ∀ (a k b d : ℕ),
-    CollatzStepsTo next (.B a k b d) ((evalB a k b d).map toState)
-  | a, k, b + 1, d => by
-    rw [evalB]
-    exact CollatzStepsTo.head rfl (stepsTo_B a (k + 1) b (d + 2))
-  | 0, 0, 0, d => CollatzStepsTo.of_eq rfl
-  | 1, 0, 0, _ => CollatzStepsTo.of_eq rfl
-  | 2, 0, 0, 0 => CollatzStepsTo.of_eq rfl
-  | 2, 0, 0, d + 1 => CollatzStepsTo.of_eq rfl
-  | a + 3, 0, 0, d => by
-    rw [evalB]
-    exact CollatzStepsTo.head rfl (stepsTo_H a 1 (d + 1))
-  | a, k + 1, 0, d => by
-    rw [evalB]
-    exact CollatzStepsTo.head (by simp [next]) (stepsTo_A_pos a k 0 (d + 3))
+private theorem next_A_pos_succ_zero (a q m : ℕ) :
+    next (.A_pos (a + 1) 0 q m) = some (.D1 (a + 1) q (m + 2)) := by
+  rcases q with _ | q <;> rcases a with _ | a <;> simp [next]
+
+private theorem stepsTo_prevEvalA (a : ℕ) : ∀ (k m : ℕ),
+    CollatzStepsTo next (.A_pos a k 0 m) ((prevEvalA a k m).map prevToState) := by
+  induction a with
+  | zero =>
+    intro k m
+    obtain ⟨j, r, hr, rfl⟩ : ∃ j r, r < 3 ∧ k = 3 * j + r :=
+      ⟨k / 3, k % 3, Nat.mod_lt _ (by omega), (Nat.div_add_mod k 3).symm⟩
+    have h1 : (3 * j + r) % 3 = r := by omega
+    have h2 : (3 * j + r) / 3 = j := by omega
+    have h_drain := reaches_A_drain j 0 r 0 m
+    rw [Nat.zero_add] at h_drain
+    refine CollatzStepsTo.of_reachesStar h_drain ?_
+    rw [prevEvalA]
+    simp only [h1, h2, ↓reduceIte, zero_add]
+    interval_cases r
+    · exact CollatzStepsTo.of_eq rfl
+    · exact CollatzStepsTo.of_eq rfl
+    · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+  | succ a ih =>
+    intro k m
+    obtain ⟨j, r, hr, rfl⟩ : ∃ j r, r < 3 ∧ k = 3 * j + r :=
+      ⟨k / 3, k % 3, Nat.mod_lt _ (by omega), (Nat.div_add_mod k 3).symm⟩
+    have h1 : (3 * j + r) % 3 = r := by omega
+    have h2 : (3 * j + r) / 3 = j := by omega
+    have h_drain := reaches_A_drain j (a + 1) r 0 m
+    rw [Nat.zero_add] at h_drain
+    refine CollatzStepsTo.of_reachesStar h_drain ?_
+    rw [prevEvalA]
+    simp only [h1, h2, Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte, Nat.add_sub_cancel]
+    interval_cases r
+    · exact CollatzStepsTo.of_eq (next_A_pos_succ_zero a j m)
+    · exact CollatzStepsTo.head rfl (ih j (m + 2 * j + 3))
+    · exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+
+private theorem next_H_succ_zero (x b : ℕ) :
+    next (.H (x + 1) b 0) = some (.D1 (x + 1) (b + 1) 5) := by
+  rcases x with _ | x <;> simp [next]
+
+private theorem prevEvalA_zero_succ (a m : ℕ) : prevEvalA (a + 1) 0 m = some (.D a 0 (m + 2)) := by
+  rw [prevEvalA]
+  simp
+
+private theorem stepsTo_D0_odd (x B j : ℕ) :
+    CollatzStepsTo next (.D0 x (B + 1) (2 * j + 1)) (some (.D1 (x + 2 * j + 2) B 3)) :=
+  CollatzStepsTo.of_reachesStar (reaches_D0_step j x (B + 1) 1 (le_refl 1))
+    (CollatzStepsTo.of_eq rfl)
+
+private theorem stepsTo_D0_even (x B j : ℕ) :
+    CollatzStepsTo next (.D0 (x + 1) B (2 * j + 2))
+      ((prevEvalA (x + 2 * j) B (2 * B + 5)).map prevToState) := by
+  have h_drain := reaches_D0_step j (x + 1) B 2 (by omega)
+  have hx : x + 1 + 2 * j = x + 2 * j + 1 := by omega
+  rw [hx] at h_drain
+  have h_B := reaches_B (B + 1) (x + 2 * j) 0 0
+  have hk : 0 + (B + 1) = B + 1 := by omega
+  have hd : 0 + 2 * (B + 1) = 2 * B + 2 := by omega
+  rw [hk, hd] at h_B
+  refine CollatzStepsTo.of_reachesStar h_drain (CollatzStepsTo.head rfl ?_)
+  refine CollatzStepsTo.of_reachesStar h_B (CollatzStepsTo.head ?_ (stepsTo_prevEvalA _ B _))
+  simp [next]
+
+private theorem is_valid_prev_acceleration :
+    IsValidAcceleration target prevStart prevEncode prevNext := by
+  have h_init : CollatzReachesStar next start (prevToState prevStart) := ⟨5, rfl⟩
+  refine is_valid_acceleration.of_collatz (embed := prevToState) h_init ?_
+  rintro ⟨a, b, d⟩
+  dsimp only [prevNext, prevToState]
+  split_ifs with hb ha hd h4 h5 h6 h7 h8
+  · obtain ⟨b, rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+    have h_B := reaches_B (b + 1) a 0 d
+    rw [Nat.zero_add] at h_B
+    rw [Nat.add_sub_cancel]
+    exact CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h_B
+      (CollatzStepsTo.head (by simp [next]) (stepsTo_prevEvalA a b _)))
+  · obtain rfl : b = 0 := by omega
+    subst ha
+    obtain ⟨j, rfl⟩ : ∃ j, d = 2 * j + 1 := ⟨d / 2, by omega⟩
+    have h := reaches_D0_step (j + 2) 0 0 1 (le_refl 1)
+    rw [show 2 * (j + 2) + 1 = 2 * j + 1 + 4 by omega,
+      show 0 + 2 * (j + 2) = 2 * j + 1 + 3 by omega] at h
+    exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h
+      (CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)))))
+  · obtain rfl : b = 0 := by omega
+    subst ha
+    obtain ⟨j, rfl⟩ : ∃ j, d = 2 * j := ⟨d / 2, by omega⟩
+    have h := stepsTo_D0_even 1 0 j
+    rw [show 1 + 2 * j = 2 * j + 1 by omega, prevEvalA_zero_succ] at h
+    exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.head rfl h))
+  · obtain rfl : b = 0 := by omega
+    obtain ⟨j, rfl⟩ : ∃ j, d = 2 * j + 1 := ⟨d / 2, by omega⟩
+    obtain ⟨x, rfl⟩ : ∃ x, a = x + 2 * j + 6 := ⟨a - 2 * j - 6, by omega⟩
+    have h := reaches_H (j + 1) (x + 1) 1 0
+    rw [show x + 1 + 2 * (j + 1) = x + 2 * j + 3 by omega,
+      show 0 + 2 * (j + 1) = 2 * j + 1 + 1 by omega,
+      show 1 + 2 * (j + 1) = 2 * j + 3 by omega] at h
+    rw [show x + 2 * j + 6 - (2 * j + 1) - 5 = x by omega]
+    exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h
+      (CollatzStepsTo.of_eq (next_H_succ_zero x _))))
+  · obtain rfl : b = 0 := by omega
+    obtain ⟨j, rfl⟩ : ∃ j, d = 2 * j := ⟨d / 2, by omega⟩
+    obtain ⟨x, rfl⟩ : ∃ x, a = x + 2 * j + 3 := ⟨a - 2 * j - 3, by omega⟩
+    have h := reaches_H j x 1 1
+    rw [show 1 + 2 * j = 2 * j + 1 by omega] at h
+    rw [show x + 2 * j + 3 - 2 * j - 2 = x + 1 by omega]
+    exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h
+      (CollatzStepsTo.of_eq rfl)))
+  · obtain rfl : b = 0 := by omega
+    rcases Nat.lt_or_ge a 3 with h3 | h3
+    · obtain rfl : a = 1 := by omega
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+    · obtain ⟨t, rfl⟩ : ∃ t, a = 2 * t + 3 := ⟨a / 2 - 1, by omega⟩
+      obtain ⟨e, he, he1⟩ : ∃ e, d + 1 = e + 2 * t ∧ e ≠ 1 := ⟨d + 1 - 2 * t, by omega, by omega⟩
+      have h := reaches_H t 0 1 e
+      rw [Nat.zero_add, ← he] at h
+      refine CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h ?_))
+      rcases e with _ | _ | e
+      · exact CollatzStepsTo.of_eq rfl
+      · omega
+      · exact CollatzStepsTo.of_eq rfl
+  · obtain rfl : b = 0 := by omega
+    subst h7
+    rcases Nat.lt_or_ge d 2 with hd2 | hd2
+    · obtain rfl : d = 0 := by omega
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+    · obtain ⟨t, rfl⟩ : ∃ t, d = 2 * t + 2 := ⟨d / 2 - 1, by omega⟩
+      have h := reaches_H t 1 1 3
+      rw [show 1 + 2 * t = 2 * t + 1 by omega, show 3 + 2 * t = 2 * t + 2 + 1 by omega] at h
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h
+        (CollatzStepsTo.of_eq rfl)))
+  · obtain rfl : b = 0 := by omega
+    rcases Nat.lt_or_ge a 3 with h3 | h3
+    · obtain rfl : a = 2 := by omega
+      obtain ⟨j, rfl⟩ : ∃ j, d = 2 * j + 1 := ⟨d / 2, by omega⟩
+      have h := stepsTo_D0_odd 2 1 j
+      rw [show 2 + 2 * j + 2 = 2 * j + 1 + 4 - 2 + 1 by omega] at h
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl h)
+    · obtain ⟨t, rfl⟩ : ∃ t, a = 2 * t + 4 := ⟨a / 2 - 2, by omega⟩
+      obtain ⟨s, rfl⟩ : ∃ s, d = 2 * t + 2 * s + 1 := ⟨(d - 2 * t - 1) / 2, by omega⟩
+      have h := reaches_H t 1 1 (2 * s + 2)
+      rw [show 1 + 2 * t = 2 * t + 1 by omega,
+        show 2 * s + 2 + 2 * t = 2 * t + 2 * s + 1 + 1 by omega] at h
+      rw [show 2 * t + 2 * s + 1 + 4 - (2 * t + 4) = 2 * s + 1 by omega,
+        show 2 * t + 4 - 1 = 2 * t + 3 by omega]
+      refine CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h ?_))
+      rcases s with _ | s
+      · exact CollatzStepsTo.of_eq rfl
+      · have h2 := stepsTo_D0_odd 2 (2 * t + 3) s
+        rw [show 2 + 2 * s + 2 = 2 * (s + 1) + 1 + 1 by omega] at h2
+        exact CollatzStepsTo.head rfl h2
+  · obtain rfl : b = 0 := by omega
+    rcases Nat.lt_or_ge a 3 with h3 | h3
+    · obtain rfl : a = 2 := by omega
+      obtain ⟨j, rfl⟩ : ∃ j, d = 2 * j + 2 := ⟨d / 2 - 1, by omega⟩
+      have h := stepsTo_D0_even 1 2 j
+      rw [show 1 + 2 * j = 2 * j + 2 + 1 - 2 by omega] at h
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl h)
+    · obtain ⟨t, rfl⟩ : ∃ t, a = 2 * t + 4 := ⟨a / 2 - 2, by omega⟩
+      obtain ⟨s, rfl⟩ : ∃ s, d = 2 * t + 2 * s + 4 := ⟨(d - 2 * t - 4) / 2, by omega⟩
+      have h := reaches_H t 1 1 (2 * s + 5)
+      rw [show 1 + 2 * t = 2 * t + 1 by omega,
+        show 2 * s + 5 + 2 * t = 2 * t + 2 * s + 4 + 1 by omega] at h
+      have h2 := stepsTo_D0_even 1 (2 * t + 4) s
+      rw [show 1 + 2 * s = 2 * t + 2 * s + 4 + 1 - (2 * t + 4) by omega] at h2
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_reachesStar h
+        (CollatzStepsTo.head rfl h2)))
+
+/-- Reduced single-family state space
+$D(a, d) := 0^\infty\,\mathrm{D}{>}\,(10)^{a+1}\,0\,1^d\,0^\infty$ ($b = 0$ Poincaré section)
+for the high-level Collatz-like acceleration. -/
+inductive HighLevelState where
+  /-- $D(a, d) := 0^\infty\,\mathrm{D}{>}\,(10)^{a+1}\,0\,1^d\,0^\infty$. -/
+  | D (a d : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial state $D(0, 7)$ for the high-level Collatz-like acceleration. -/
+def highLevelStart : HighLevelState := .D 0 7
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .D a d => .D1 (a + 1) 0 d
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Outcome $(a', b', d')$ of the intermediate family $A(a, k, m)$ when run until returning to
+$D_3(a', b', d')$ or halting. -/
+def evalA (a k m : ℕ) : Option (ℕ × ℕ × ℕ) :=
+  if k % 3 = 2 then some (a + 1, k / 3, m)
+  else if a = 0 then (if k % 3 = 0 then none else some (0, k / 3, m))
+  else if k % 3 = 0 then some (a - 1, k / 3, m + 2)
+  else evalA (a - 1) (k / 3) (m + 2 * (k / 3) + 3)
+termination_by a
+decreasing_by omega
+
+/-- Drain the $(110)^b$ block of $D_3(a, b, d)$ until reaching $b = 0$ ($D(a', d')$) or halting. -/
+def drainB (a b d : ℕ) : Option HighLevelState :=
+  if b = 0 then some (.D a d)
+  else
+    (evalA a (b - 1) (d + 2 * b + 3)).bind fun p =>
+      if p.2.1 < b then drainB p.1 p.2.1 p.2.2 else none
+termination_by b
+decreasing_by omega
+
+/-- High-level accelerated Collatz-like transition function on $D(a, d)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .D a d =>
+    if a = 0 then
+      if d % 2 = 1 then drainB (d + 1) 2 2 else some (.D d 7)
+    else if d % 2 = 1 ∧ a ≥ d + 5 then drainB (a - d - 5) (d + 3) 5
+    else if d % 2 = 0 ∧ a ≥ d + 3 then drainB (a - d - 2) (d + 2) 2
+    else if a % 2 = 1 then none
+    else if a = d + 2 then drainB 0 a 2
+    else if d % 2 = 1 then drainB (d + 4 - a) (a - 1) 3
+    else (evalA (d + 1 - a) a (2 * a + 5)).bind fun p => drainB p.1 p.2.1 p.2.2
+
+private def toPrev : HighLevelState → PrevState
+  | .D a d => .D a 0 d
+
+private theorem prevEvalA_eq_evalA (a : ℕ) : ∀ (k m : ℕ),
+    prevEvalA a k m = (evalA a k m).map fun p => .D p.1 p.2.1 p.2.2 := by
+  induction a with
+  | zero =>
+    intro k m
+    rw [prevEvalA, evalA]
+    simp only [↓reduceIte]
+    split_ifs <;> rfl
+  | succ a ih =>
+    intro k m
+    rw [prevEvalA, evalA]
+    simp only [Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte, Nat.add_sub_cancel]
+    split_ifs with h1 h2
+    · rfl
+    · rfl
+    · exact ih (k / 3) (m + 2 * (k / 3) + 3)
+
+private theorem evalA_b_le (a : ℕ) : ∀ (k m : ℕ) (p : ℕ × ℕ × ℕ),
+    evalA a k m = some p → p.2.1 ≤ k / 3 := by
+  induction a with
+  | zero =>
+    rintro k m ⟨p1, p2, p3⟩ h
+    rw [evalA] at h
+    simp only [↓reduceIte] at h
+    split_ifs at h <;> cases h <;> exact Nat.le_refl _
+  | succ a ih =>
+    rintro k m ⟨p1, p2, p3⟩ h
+    rw [evalA] at h
+    simp only [Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte, Nat.add_sub_cancel] at h
+    split_ifs at h with h1 h2
+    · cases h; exact Nat.le_refl _
+    · cases h; exact Nat.le_refl _
+    · have hle := ih (k / 3) (m + 2 * (k / 3) + 3) (p1, p2, p3) h
+      dsimp only at hle ⊢
+      omega
+
+private theorem reaches_drainB (b : ℕ) : ∀ (a d : ℕ),
+    match drainB a b d with
+    | some s' => CollatzReachesStar prevNext (.D a b d) (toPrev s')
+    | none => CollatzHalts prevNext (.D a b d) := by
+  induction b using Nat.strong_induction_on with
+  | h b ih =>
+    intro a d
+    rw [drainB]
+    split_ifs with hb
+    · subst hb
+      exact CollatzReachesStar.refl prevNext _
+    · have hstep_eq : prevNext (.D a b d) =
+          (evalA a (b - 1) (d + 2 * b + 3)).map fun p => .D p.1 p.2.1 p.2.2 := by
+        have hb1 : b ≥ 1 := by omega
+        simp only [prevNext, hb1, ↓reduceIte, prevEvalA_eq_evalA]
+      rcases hev : evalA a (b - 1) (d + 2 * b + 3) with _ | p
+      · simp only [Option.bind_none]
+        rw [hev, Option.map_none] at hstep_eq
+        exact CollatzHalts.of_next_eq_none hstep_eq
+      · simp only [Option.bind_some]
+        have hle := evalA_b_le a (b - 1) (d + 2 * b + 3) p hev
+        have hlt : p.2.1 < b := by omega
+        simp only [hlt, ↓reduceIte]
+        rw [hev, Option.map_some] at hstep_eq
+        have ih_p := ih p.2.1 hlt p.1 p.2.2
+        rcases hdr : drainB p.1 p.2.1 p.2.2 with _ | s'
+        · simp only [hdr] at ih_p ⊢
+          exact CollatzHalts.of_next_eq_some hstep_eq ih_p
+        · simp only [hdr] at ih_p ⊢
+          exact CollatzReachesStar.head hstep_eq ih_p
+
+private theorem stepsTo_of_step_drain {s₀ : PrevState} {a b d : ℕ}
+    (h₁ : prevNext s₀ = some (.D a b d)) :
+    CollatzStepsTo prevNext s₀ ((drainB a b d).map toPrev) := by
+  have h₂ := reaches_drainB b a d
+  rcases hdr : drainB a b d with _ | s'
+  · simp only [hdr, Option.map_none] at h₂ ⊢
+    exact CollatzHalts.of_next_eq_some h₁ h₂
+  · simp only [hdr, Option.map_some] at h₂ ⊢
+    exact CollatzReachesPlus.head h₁ h₂
 
 /-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
 of `target`. -/
 theorem is_valid_highLevel_acceleration :
     IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := toState) (CollatzReachesStar.refl next start) ?_
-  rintro (⟨a, b, d⟩ | ⟨a, b, d⟩)
-  · rcases d with _ | _ | _ | d
-    · rcases a with _ | a
-      · rcases b with _ | b <;> exact CollatzStepsTo.of_eq rfl
-      · exact CollatzStepsTo.head rfl (stepsTo_B a 0 b 0)
-    · rcases b with _ | b
-      · rcases a with _ | a
-        · exact CollatzStepsTo.of_eq rfl
-        · exact CollatzStepsTo.head rfl (stepsTo_B (a + 1) 0 0 0)
-      · exact CollatzStepsTo.of_eq (by simp [next, toState, highLevelNext])
-    · rcases a with _ | a
-      · exact CollatzStepsTo.of_eq rfl
-      · exact CollatzStepsTo.head rfl (stepsTo_B a 0 (b + 1) 0)
-    · have h_eq : Option.map toState (highLevelNext (HighLevelState.D0 a b (d + 3))) =
-          (if d % 2 = 0 then some (.D0 (a + d + 2) b 1)
-           else some (.D0 (a + d + 1) b 2)) := by
-        dsimp [highLevelNext]
-        split_ifs <;> rfl
-      rw [h_eq]
-      exact reaches_D0_drain a b d
-  · rcases a with _ | a
-    · rcases b with _ | b <;> exact CollatzStepsTo.of_eq rfl
-    · exact CollatzStepsTo.head rfl (stepsTo_B a 0 b d)
+  have h_enc : highLevelEncode = fun u => prevEncode (toPrev u) := by
+    funext ⟨_, _⟩
+    rfl
+  rw [h_enc]
+  refine is_valid_prev_acceleration.of_collatz (embed := toPrev)
+    (CollatzReachesStar.refl prevNext prevStart) ?_
+  rintro ⟨a, d⟩
+  dsimp only [highLevelNext, toPrev]
+  have hp : prevNext (.D a 0 d) =
+      if a = 0 then
+        if d % 2 = 1 then some (.D (d + 1) 2 2) else some (.D d 0 7)
+      else if d % 2 = 1 ∧ a ≥ d + 5 then some (.D (a - d - 5) (d + 3) 5)
+      else if d % 2 = 0 ∧ a ≥ d + 3 then some (.D (a - d - 2) (d + 2) 2)
+      else if a % 2 = 1 then none
+      else if a = d + 2 then some (.D 0 a 2)
+      else if d % 2 = 1 then some (.D (d + 4 - a) (a - 1) 3)
+      else prevEvalA (d + 1 - a) a (2 * a + 5) := by
+    simp only [prevNext, show ¬(0 ≥ 1) by decide, ↓reduceIte]
+  split_ifs at hp ⊢
+  · exact stepsTo_of_step_drain hp
+  · exact CollatzStepsTo.of_eq hp
+  · exact stepsTo_of_step_drain hp
+  · exact stepsTo_of_step_drain hp
+  · exact CollatzStepsTo.of_eq hp
+  · exact stepsTo_of_step_drain hp
+  · exact stepsTo_of_step_drain hp
+  · rw [prevEvalA_eq_evalA] at hp
+    rcases hev : evalA (d + 1 - a) a (2 * a + 5) with _ | p
+    · simp only [Option.bind_none, Option.map_none]
+      rw [hev, Option.map_none] at hp
+      exact CollatzStepsTo.of_eq hp
+    · simp only [Option.bind_some]
+      rw [hev, Option.map_some] at hp
+      exact stepsTo_of_step_drain hp
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

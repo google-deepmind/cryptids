@@ -52,6 +52,14 @@ P270(a+2, b, c+4)   -> P270(a, b+3, c)
 
 Start: P61(0, 7), reached after 44 raw TM steps
 ```
+
+## High-Level Collatz-like Acceleration
+
+Contracting the diagonal sweep $P_{270}(a + 2, b, c + 4) \to P_{270}(a, b + 3, c)$ via
+$k = \min(\lfloor a/2 \rfloor, \lfloor c/4 \rfloor)$ eliminates $P_{270}$ in closed form, and
+draining any return $P_{61}(a', c')$ with $a' > 0$ (which satisfies $c' \le c - 6 < c$) reduces the
+two-family system to a **single-counter** Collatz-like map on $P(c) := P_{61}(0, c)$ starting at
+$P(7)$.
 -/
 
 @[expose] public section
@@ -5864,5 +5872,183 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 /-- Halting of `target` is equivalent to halting of the accelerated system `(next, start)`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Collatz-like Acceleration -/
+
+/-- High-level symbolic state $P(c) := P_{61}(0, c)$ on a single counter $c$. -/
+inductive HighLevelState where
+  | P (c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $P(7)$. -/
+def highLevelStart : HighLevelState := .P 7
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .P c => .P61 0 c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Evaluate $P_{61}(a, c)$ across the $P_{270}$ diagonal sweep and any intermediate $a' > 0$
+returns (which strictly decrease $c$ by at least $6$) until reaching $P_{61}(0, c')$ or halting. -/
+def drainP (a c : ℕ) : Option HighLevelState :=
+  if c = 0 then some (.P (4 * a + 4 * (a / 2) + 15))
+  else if c = 1 then some (.P (2 * a + 11))
+  else if c = 2 then none
+  else
+    let c0 := c - 3
+    let k := min (a / 2) (c0 / 4)
+    let a1 := a - 2 * k
+    let b1 := 3 * k
+    let c1 := c0 - 4 * k
+    if c1 = 0 then
+      if a1 < 2 then none
+      else some (.P (4 * (a1 - 2) + 4 * ((a1 - 2) / 2) + 4 * b1 + 35))
+    else if c1 = 1 then
+      if a1 < 2 then none
+      else some (.P (4 * (a1 - 2) + 4 * ((a1 - 2) / 2) + 4 * b1 + 27))
+    else if c1 = 2 then
+      some (.P (2 * a1 + 2 * b1 + 13))
+    else if c1 = 3 then
+      if a1 = 0 then some (.P (12 * b1 + 63))
+      else if a1 = 1 then some (.P (12 * b1 + 75))
+      else none
+    else if a1 = 0 then drainP (2 * b1 + 8) (c1 - 3)
+    else drainP (2 * b1 + 10) (c1 - 3)
+termination_by c
+decreasing_by
+  all_goals exact Nat.lt_of_le_of_lt (Nat.le_trans (Nat.sub_le _ _) (Nat.sub_le _ _)) (by omega)
+
+/-- High-level single-counter Collatz-like transition function on $P(c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .P c => drainP 0 c
+
+private theorem reaches_P270_diag (k : ℕ) (a b c : ℕ) :
+    CollatzReachesStar next (.P270 (a + 2 * k) b (c + 4 * k)) (.P270 a (b + 3 * k) c) := by
+  induction k generalizing b with
+  | zero =>
+    simp only [Nat.mul_zero, Nat.add_zero]
+    exact CollatzReachesStar.refl next _
+  | succ k ih =>
+    have h_step : next (.P270 (a + 2 * (k + 1)) b (c + 4 * (k + 1))) =
+        some (.P270 (a + 2 * k) (b + 3) (c + 4 * k)) := by
+      have ha : a + 2 * (k + 1) = (a + 2 * k) + 2 := by omega
+      have hc : c + 4 * (k + 1) = (c + 4 * k) + 4 := by omega
+      rw [ha, hc]
+      simp [next]
+    have ih' := ih (b + 3)
+    have hb : b + 3 + 3 * k = b + 3 * (k + 1) := by omega
+    rw [hb] at ih'
+    exact CollatzReachesStar.head h_step ih'
+
+private theorem stepsTo_drainP (c : ℕ) : ∀ (a : ℕ),
+    CollatzStepsTo next (.P61 a c) ((drainP a c).map toState) := by
+  induction c using Nat.strongRecOn with
+  | ind c ih =>
+    intro a
+    rw [drainP]
+    rcases c with _ | _ | _ | c0
+    · exact CollatzStepsTo.of_eq rfl
+    · exact CollatzStepsTo.of_eq rfl
+    · exact CollatzStepsTo.of_eq rfl
+    · have hc_ne0 : c0 + 1 + 1 + 1 ≠ 0 := by omega
+      have hc_ne1 : c0 + 1 + 1 + 1 ≠ 1 := by omega
+      have hc_ne2 : c0 + 1 + 1 + 1 ≠ 2 := by omega
+      have hc_sub : c0 + 1 + 1 + 1 - 3 = c0 := by omega
+      simp only [hc_ne0, hc_ne1, hc_ne2, ↓reduceIte, hc_sub]
+      refine CollatzStepsTo.head rfl ?_
+      let k := min (a / 2) (c0 / 4)
+      have h_diag := reaches_P270_diag k (a - 2 * k) 0 (c0 - 4 * k)
+      have ha_eq : a - 2 * k + 2 * k = a := by omega
+      have hc_eq : c0 - 4 * k + 4 * k = c0 := by omega
+      rw [Nat.zero_add, ha_eq, hc_eq] at h_diag
+      refine CollatzStepsTo.of_reachesStar h_diag ?_
+      change CollatzStepsTo next (.P270 (a - 2 * k) (3 * k) (c0 - 4 * k))
+        ((let a1 := a - 2 * k
+          let b1 := 3 * k
+          let c1 := c0 - 4 * k
+          if c1 = 0 then
+            if a1 < 2 then none
+            else some (.P (4 * (a1 - 2) + 4 * ((a1 - 2) / 2) + 4 * b1 + 35))
+          else if c1 = 1 then
+            if a1 < 2 then none
+            else some (.P (4 * (a1 - 2) + 4 * ((a1 - 2) / 2) + 4 * b1 + 27))
+          else if c1 = 2 then
+            some (.P (2 * a1 + 2 * b1 + 13))
+          else if c1 = 3 then
+            if a1 = 0 then some (.P (12 * b1 + 63))
+            else if a1 = 1 then some (.P (12 * b1 + 75))
+            else none
+          else if a1 = 0 then drainP (2 * b1 + 8) (c1 - 3)
+          else drainP (2 * b1 + 10) (c1 - 3)).map toState)
+      set a1 := a - 2 * k
+      set b1 := 3 * k
+      set c1 := c0 - 4 * k
+      rcases c1 with _ | _ | _ | _ | c2
+      · simp only [↓reduceIte]
+        rcases a1 with _ | _ | a2
+        · exact CollatzStepsTo.of_eq rfl
+        · exact CollatzStepsTo.of_eq rfl
+        · have hlt : ¬ (a2 + 2 < 2) := by omega
+          have hsub2 : a2 + 2 - 2 = a2 := by omega
+          simp only [hlt, ↓reduceIte, hsub2, Option.map, toState]
+          exact CollatzStepsTo.of_eq rfl
+      · simp only [↓reduceIte]
+        rcases a1 with _ | _ | a2
+        · exact CollatzStepsTo.of_eq rfl
+        · exact CollatzStepsTo.of_eq rfl
+        · have hlt : ¬ (a2 + 2 < 2) := by omega
+          have hsub2 : a2 + 2 - 2 = a2 := by omega
+          simp only [hlt, ↓reduceIte, hsub2, Option.map, toState]
+          exact CollatzStepsTo.of_eq rfl
+      · simp only [Nat.reduceEqDiff, ↓reduceIte, Option.map, toState]
+        rcases a1 with _ | _ | a2 <;> exact CollatzStepsTo.of_eq rfl
+      · simp only [Nat.reduceEqDiff, ↓reduceIte]
+        rcases a1 with _ | _ | a2
+        · simp only [↓reduceIte, Option.map, toState]
+          refine CollatzStepsTo.head rfl ?_
+          have h_eq : 4 * (2 * b1 + 8) + 4 * ((2 * b1 + 8) / 2) + 15 = 12 * b1 + 63 := by omega
+          exact CollatzStepsTo.of_eq (by simp [next, h_eq])
+        · simp only [Nat.reduceEqDiff, ↓reduceIte, Option.map, toState]
+          refine CollatzStepsTo.head rfl ?_
+          have h_eq : 4 * (2 * b1 + 10) + 4 * ((2 * b1 + 10) / 2) + 15 = 12 * b1 + 75 := by omega
+          exact CollatzStepsTo.of_eq (by simp [next, h_eq])
+        · have hne0 : a2 + 2 ≠ 0 := by omega
+          have hne1 : a2 + 2 ≠ 1 := by omega
+          simp only [hne0, hne1, ↓reduceIte, Option.map]
+          exact CollatzStepsTo.of_eq rfl
+      · have hne0 : c2 + 1 + 1 + 1 + 1 ≠ 0 := by omega
+        have hne1 : c2 + 1 + 1 + 1 + 1 ≠ 1 := by omega
+        have hne2 : c2 + 1 + 1 + 1 + 1 ≠ 2 := by omega
+        have hne3 : c2 + 1 + 1 + 1 + 1 ≠ 3 := by omega
+        have ha1_lt : a1 < 2 := by omega
+        have hsub : c2 + 1 + 1 + 1 + 1 - 3 = c2 + 1 := by omega
+        have hlt_c : c2 + 1 < c0 + 1 + 1 + 1 := by omega
+        simp only [hne0, hne1, hne2, hne3, ↓reduceIte, hsub]
+        interval_cases a1
+        · simp only [↓reduceIte]
+          exact CollatzStepsTo.head rfl (ih (c2 + 1) hlt_c (2 * b1 + 8))
+        · simp only [Nat.reduceEqDiff, ↓reduceIte]
+          exact CollatzStepsTo.head rfl (ih (c2 + 1) hlt_c (2 * b1 + 10))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState) (CollatzReachesStar.refl next _) ?_
+  rintro ⟨c⟩
+  exact stepsTo_drainP c 0
+
+/-- Halting of `target` is equivalent to halting of `(highLevelNext, highLevelStart)`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- Equivalence between the low-level and high-level Collatz-like accelerations. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH

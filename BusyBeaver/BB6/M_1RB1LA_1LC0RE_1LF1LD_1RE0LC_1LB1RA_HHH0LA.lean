@@ -10,34 +10,46 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB1LA_1LC0RE_1LF1LD_1RE0LC_1LB1RA_---0LA`
 
-We define the configuration for $a, b, c \ge 0$ and $d \in \lbrace 3, 6 \rbrace$:
+We define the configuration for $r \in \lbrace 0, 1 \rbrace$, $b, c \ge 0$, and
+$d \in \lbrace 3, 6 \rbrace$:
 
 $$
-C(a, b, c, d) := 0^\infty \ 1^{a+1} \ \mathrm{C}{>} \ 00 \ 1^{b+4} \ (01)^c \ 1^d \ 011 \ 0^\infty,
+C_d(r, b, c) := 0^\infty \ 1^{r+1} \ \mathrm{C}{>} \ 00 \ 1^{b+4} \ (01)^c \ 1^d \ 011 \ 0^\infty.
 $$
 
-where $C(a, b, 0, 6) = C(a, b+3, 0, 3)$.
-
-Starting from $C(4, 0, 0, 3)$ (reached after 162 steps from the blank tape), the machine follows
-the map $T$:
+Starting from $C_3(0, 6, 0)$ (reached after 200 steps from the blank tape), writing $s = b + r$ and
+$k = \lfloor b / 2 \rfloor$, the intermediate map $T$ is:
 
 $$
-T(C(a, b, c, d)) = \begin{cases}
-  C(a \bmod 2, b + 3\lfloor a/2 \rfloor, c, d) & \text{if } a \ge 2, \\
-  C(a + b + 3\lfloor c/2 \rfloor + 1, 3, c \bmod 2, d) & \text{if } a \le 1,\ c \ge 2, \\
-  C(a+b+4, 0, 3, 3) & \text{if } a \le 1,\ c = 1,\ d = 6, \\
-  C(a, 0, k+3, 3) & \text{if } a \le 1,\ b = 2k,\ c = 0,\ d = 3, \\
-  \text{Halt} & \text{if } a = 0,\ b = 2k+1,\ c = 0,\ d = 3, \\
-  C(6, 3, k, 3) & \text{if } a = 1,\ b = 2k+1,\ c = 0,\ d = 3, \\
-  C(a, 0, k+5, 3) & \text{if } a \le 1,\ b = 2k+1,\ c = 0,\ d = 6, \\
-  \text{Halt} & \text{if } a = 0,\ b = 2k,\ c = 0,\ d = 6, \\
-  C(6, 3, k+1, 3) & \text{if } a = 1,\ b = 2k,\ c = 0,\ d = 6, \\
-  C(a, 0, k+3, 6) & \text{if } a \le 1,\ b = 2k+1,\ c = 1,\ d = 3, \\
-  \text{Halt} & \text{if } a = 0,\ b = 2k,\ c = 1,\ d = 3, \\
-  C(6, 0, 3, 3) & \text{if } a = 1,\ b = 0,\ c = 1,\ d = 3, \\
-  C(6, 3, k, 6) & \text{if } a = 1,\ b = 2k+2,\ c = 1,\ d = 3.
-\end{cases}
+\begin{aligned}
+T(C_3(r, b, 0)) &= \begin{cases}
+  C_3(r, 0, k + 3) & \text{if } b \text{ is even}, \\
+  C_3(0, 12, k) & \text{if } b \text{ is odd and } r = 1, \\
+  \text{Halt} & \text{if } b \text{ is odd and } r = 0,
+\end{cases} \\
+T(C_3(r, b, 1)) &= \begin{cases}
+  C_6(r, 0, k + 3) & \text{if } b \text{ is odd}, \\
+  \text{Halt} & \text{if } b \text{ is even and } r = 0, \\
+  C_3(0, 9, 3) & \text{if } b = 0 \text{ and } r = 1, \\
+  C_6(0, 12, k - 1) & \text{if } b \ge 2 \text{ is even and } r = 1,
+\end{cases} \\
+T(C_3(r, b, c + 2)) &= C_3(s \bmod 2, 3\lfloor s / 2 \rfloor + 9, c), \\
+T(C_6(r, b, 0)) &= \begin{cases}
+  C_3(r, 0, k + 5) & \text{if } b \text{ is odd}, \\
+  C_3(0, 12, k + 1) & \text{if } b \text{ is even and } r = 1, \\
+  \text{Halt} & \text{if } b \text{ is even and } r = 0,
+\end{cases} \\
+T(C_6(r, b, 1)) &= C_3(s \bmod 2, 3\lfloor s / 2 \rfloor + 6, 3), \\
+T(C_6(r, b, c + 2)) &= C_6(s \bmod 2, 3\lfloor s / 2 \rfloor + 9, c).
+\end{aligned}
 $$
+
+Contracting the $\lfloor c / 2 \rfloor$-step Syracuse scan $(r, b) \mapsto (s \bmod 2,
+3\lfloor s / 2 \rfloor + 9)$ via `syracuseScan` and resolving the terminal $c \bmod 2 \in \{0, 1\}$
+step via `finishC3` / `finishC6` (including $C_3(1, 0, 1) \to C_3(0, 9, 3) \to C_3(1, 21, 1) \to
+C_6(1, 0, 13)$) restricts the dynamics to a single `ℕ` counter $c$ on the $b \in \{0, 12\}$
+Poincaré section (`HighLevelState`: `C3_0 r c`, `C3_12 c`, `C6_0 r c`, `C6_12 c`), starting from
+`highLevelStart = .C3_0 false 6`.
 -/
 
 @[expose] public section
@@ -1118,91 +1130,42 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 
 /-! ## High-Level Collatz-Like Acceleration -/
 
-/-- High-level symbolic configuration state space for
-`1RB1LA_1LC0RE_1LF1LD_1RE0LC_1LB1RA_---0LA`. -/
-inductive HighLevelState where
-  /-- $C(a, b, c, 3) :=
-  0^\infty\,1^{a+1}\,\mathrm{C}{>}\,00\,1^{b+4}\,(01)^c\,111\,011\,0^\infty$. -/
-  | C_3 (a b c : ℕ)
-  /-- $C(a, b, c, 6) :=
-  0^\infty\,1^{a+1}\,\mathrm{C}{>}\,00\,1^{b+4}\,(01)^c\,111111\,011\,0^\infty$. -/
-  | C_6 (a b c : ℕ)
+private inductive PrevState where
+  | C_3 (r : Bool) (b c : ℕ)
+  | C_6 (r : Bool) (b c : ℕ)
 
-/-- Initial high-level symbolic state $C(4, 0, 0, 3)$. -/
-def highLevelStart : HighLevelState := .C_3 4 0 0
+private def prevStart : PrevState := .C_3 false 6 0
 
-/-- Embed a `HighLevelState` into `State`. -/
-def toState : HighLevelState → State
-  | .C_3 a b c => .C_3 a b c
-  | .C_6 a b c => .C_6 a b c
+private def prevToState : PrevState → State
+  | .C_3 r b c => .C_3 (if r then 1 else 0) b c
+  | .C_6 r b c => .C_6 (if r then 1 else 0) b c
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
-  encode (toState s)
+private def prevEncode (s : PrevState) : Cfg (Fin 2) (Fin 6) :=
+  encode (prevToState s)
 
-/-- Outcome of the intermediate family `L_3 a b`. -/
-def stepL3 (a : Bool) (b : ℕ) : Option HighLevelState :=
-  if b % 2 = 0 then some (.C_3 (if a then 1 else 0) 0 (b / 2 + 3))
-  else if a then some (.C_3 6 3 (b / 2))
-  else none
-
-/-- Outcome of the intermediate family `L_6 a b`. -/
-def stepL6 (a : Bool) (b : ℕ) : Option HighLevelState :=
-  if b % 2 = 1 then some (.C_6 (if a then 1 else 0) 0 (b / 2 + 3))
-  else if !a then none
-  else if b = 0 then some (.C_3 6 0 3)
-  else some (.C_6 6 3 (b / 2 - 1))
-
-/-- Outcome of the intermediate family `M_3 a b c`. -/
-def stepM3 (a : Bool) (b c : ℕ) : Option HighLevelState :=
-  Nat.casesOn c (stepL3 a b) fun c =>
-  Nat.casesOn c (stepL6 a b) fun c =>
-  some (.C_3 (b + 4 + if a then 1 else 0) 3 c)
-
-/-- Outcome of the intermediate family `M_6_pos a b c`. -/
-def stepM6Pos (a : Bool) (b c : ℕ) : Option HighLevelState :=
-  Nat.casesOn c (some (.C_3 (b + 4 + if a then 1 else 0) 0 3)) fun c =>
-  some (.C_6 (b + 4 + if a then 1 else 0) 3 c)
-
-/-- High-level accelerated transition function on $C(a, b, c, d)$, obtained by composing transitions
-through $M$ and $L$ and accelerating the linear drain on $a$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
-  | .C_3 a b c =>
-    if a % 2 = 0 then stepM3 false (b + 3 * (a / 2)) c
-    else stepM3 true (b + 3 * (a / 2)) c
-  | .C_6 a b 0 =>
-    if a % 2 = 0 then stepM3 false (b + 3 * (a / 2) + 3) 0
-    else stepM3 true (b + 3 * (a / 2) + 3) 0
-  | .C_6 a b (c + 1) =>
-    if a % 2 = 0 then stepM6Pos false (b + 3 * (a / 2)) c
-    else stepM6Pos true (b + 3 * (a / 2)) c
-
-private theorem stepsTo_L3 (a : Bool) (b : ℕ) :
-    CollatzStepsTo next (.L_3 a b) ((stepL3 a b).map toState) := by
-  cases a <;>
-    (dsimp [stepL3]; split_ifs with h1 <;> exact CollatzStepsTo.of_eq (by simp [next, toState, h1]))
-
-private theorem stepsTo_L6 (a : Bool) (b : ℕ) :
-    CollatzStepsTo next (.L_6 a b) ((stepL6 a b).map toState) := by
-  cases a
-  · dsimp [stepL6]
-    split_ifs with h1 <;> exact CollatzStepsTo.of_eq (by simp [next, toState, h1])
-  · dsimp [stepL6]
-    split_ifs with h1 h2
-    · exact CollatzStepsTo.of_eq (by simp [next, toState, h1])
-    · exact CollatzStepsTo.of_eq (by simp [next, toState, h2])
-    · exact CollatzStepsTo.of_eq (by simp [next, toState, h1, h2])
-
-private theorem stepsTo_M3 (a : Bool) (b c : ℕ) :
-    CollatzStepsTo next (.M_3 a b c) ((stepM3 a b c).map toState) := by
-  rcases c with _ | _ | c
-  · exact CollatzStepsTo.head rfl (stepsTo_L3 a b)
-  · exact CollatzStepsTo.head rfl (stepsTo_L6 a b)
-  · exact CollatzStepsTo.of_eq rfl
-
-private theorem stepsTo_M6Pos (a : Bool) (b c : ℕ) :
-    CollatzStepsTo next (.M_6_pos a b c) ((stepM6Pos a b c).map toState) := by
-  rcases c with _ | c <;> exact CollatzStepsTo.of_eq rfl
+private def prevNext : PrevState → Option PrevState
+  | .C_3 r b 0 =>
+    if b % 2 = 0 then some (.C_3 r 0 (b / 2 + 3))
+    else if r then some (.C_3 false 12 (b / 2))
+    else none
+  | .C_3 r b 1 =>
+    if b % 2 = 1 then some (.C_6 r 0 (b / 2 + 3))
+    else if !r then none
+    else if b = 0 then some (.C_3 false 9 3)
+    else some (.C_6 false 12 (b / 2 - 1))
+  | .C_3 r b (c + 2) =>
+    let s := b + if r then 1 else 0
+    some (.C_3 (decide (s % 2 = 1)) (3 * (s / 2) + 9) c)
+  | .C_6 r b 0 =>
+    if b % 2 = 1 then some (.C_3 r 0 (b / 2 + 5))
+    else if r then some (.C_3 false 12 (b / 2 + 1))
+    else none
+  | .C_6 r b 1 =>
+    let s := b + if r then 1 else 0
+    some (.C_3 (decide (s % 2 = 1)) (3 * (s / 2) + 6) 3)
+  | .C_6 r b (c + 2) =>
+    let s := b + if r then 1 else 0
+    some (.C_6 (decide (s % 2 = 1)) (3 * (s / 2) + 9) c)
 
 private theorem reaches_C3_drain (k : ℕ) (a b c : ℕ) :
     CollatzReachesStar next (.C_3 (2 * k + a) b c) (.C_3 a (b + 3 * k) c) := by
@@ -1236,67 +1199,319 @@ private theorem reaches_C6_drain (k : ℕ) (a b c : ℕ) :
     rw [h_arith] at ih'
     exact CollatzReachesStar.head h_next ih'
 
+private theorem drain_C3 {a b c b' : ℕ} {r : Bool} (hr : (if r then 1 else 0) = a % 2)
+    (hb : b' = b + 3 * (a / 2)) :
+    CollatzReachesStar next (.C_3 a b c) (prevToState (.C_3 r b' c)) := by
+  have h := reaches_C3_drain (a / 2) (a % 2) b c
+  rw [Nat.div_add_mod, ← hb, ← hr] at h
+  exact h
+
+private theorem drain_C6 {a b c b' : ℕ} {r : Bool} (hr : (if r then 1 else 0) = a % 2)
+    (hb : b' = b + 3 * (a / 2)) :
+    CollatzReachesStar next (.C_6 a b c) (prevToState (.C_6 r b' c)) := by
+  have h := reaches_C6_drain (a / 2) (a % 2) b c
+  rw [Nat.div_add_mod, ← hb, ← hr] at h
+  exact h
+
+private theorem is_valid_prev_acceleration :
+    IsValidAcceleration target prevStart prevEncode prevNext := by
+  have h_init : CollatzReachesStar next start (prevToState prevStart) :=
+    CollatzReachesStar.head rfl (CollatzReachesStar.head rfl (CollatzReachesStar.refl next _))
+  refine is_valid_acceleration.of_collatz (embed := prevToState) h_init ?_
+  rintro (⟨r, b, c⟩ | ⟨r, b, c⟩)
+  · have h1 (c : ℕ) : next (prevToState (.C_3 r b c)) = some (.M_3 r b c) := by cases r <;> rfl
+    match c with
+    | 0 =>
+      have h2 : next (.M_3 r b 0) = some (.L_3 r b) := rfl
+      by_cases hb : b % 2 = 0
+      · have h3 : next (.L_3 r b) = some (prevToState (.C_3 r 0 (b / 2 + 3))) := by
+          simp [next, hb, prevToState]
+        have h4 : prevNext (.C_3 r b 0) = some (.C_3 r 0 (b / 2 + 3)) := by
+          simp [prevNext, hb]
+        rw [h4]
+        exact CollatzStepsTo.head (h1 0) (CollatzStepsTo.head h2 (CollatzStepsTo.of_eq h3))
+      · cases r
+        · have h3 : next (.L_3 false b) = none := by simp [next, hb]
+          have h4 : prevNext (.C_3 false b 0) = none := by simp [prevNext, hb]
+          rw [h4]
+          exact CollatzStepsTo.head (h1 0) (CollatzStepsTo.head h2 (CollatzStepsTo.of_eq h3))
+        · have h3 : next (.L_3 true b) = some (.C_3 6 3 (b / 2)) := by simp [next, hb]
+          have h4 : prevNext (.C_3 true b 0) = some (.C_3 false 12 (b / 2)) := by
+            simp [prevNext, hb]
+          rw [h4]
+          exact CollatzReachesPlus.head (h1 0)
+            (CollatzReachesStar.head h2 (CollatzReachesStar.head h3 (drain_C3 rfl rfl)))
+    | 1 =>
+      have h2 : next (.M_3 r b 1) = some (.L_6 r b) := rfl
+      by_cases hb : b % 2 = 1
+      · have h3 : next (.L_6 r b) = some (prevToState (.C_6 r 0 (b / 2 + 3))) := by
+          simp [next, hb, prevToState]
+        have h4 : prevNext (.C_3 r b 1) = some (.C_6 r 0 (b / 2 + 3)) := by
+          simp [prevNext, hb]
+        rw [h4]
+        exact CollatzStepsTo.head (h1 1) (CollatzStepsTo.head h2 (CollatzStepsTo.of_eq h3))
+      · cases r
+        · have h3 : next (.L_6 false b) = none := by simp [next, hb]
+          have h4 : prevNext (.C_3 false b 1) = none := by simp [prevNext, hb]
+          rw [h4]
+          exact CollatzStepsTo.head (h1 1) (CollatzStepsTo.head h2 (CollatzStepsTo.of_eq h3))
+        · rcases Nat.eq_zero_or_pos b with rfl | hpos
+          · exact CollatzReachesPlus.head (h1 1)
+              (CollatzReachesStar.head h2 (CollatzReachesStar.head rfl (drain_C3 rfl rfl)))
+          · have h3 : next (.L_6 true b) = some (.C_6 6 3 (b / 2 - 1)) := by
+              simp [next, hb, Nat.pos_iff_ne_zero.mp hpos]
+            have h4 : prevNext (.C_3 true b 1) = some (.C_6 false 12 (b / 2 - 1)) := by
+              simp [prevNext, hb, Nat.pos_iff_ne_zero.mp hpos]
+            rw [h4]
+            exact CollatzReachesPlus.head (h1 1)
+              (CollatzReachesStar.head h2 (CollatzReachesStar.head h3 (drain_C6 rfl rfl)))
+    | c + 2 =>
+      have h2 : next (.M_3 r b (c + 2)) = some (.C_3 (b + 4 + if r then 1 else 0) 3 c) := rfl
+      exact CollatzReachesPlus.head (h1 (c + 2)) (CollatzReachesStar.head h2
+        (drain_C3 (by cases r <;> dsimp [prevNext] <;> simp only [decide_eq_true_eq] <;>
+            split_ifs <;> omega)
+          (by cases r <;> dsimp [prevNext] <;> omega)))
+  · match c with
+    | 0 =>
+      have h1 : next (prevToState (.C_6 r b 0)) = some (.M_3 r (b + 3) 0) := by cases r <;> rfl
+      have h2 : next (.M_3 r (b + 3) 0) = some (.L_3 r (b + 3)) := rfl
+      by_cases hb : b % 2 = 1
+      · have e1 : (b + 3) % 2 = 0 := by omega
+        have e2 : (b + 3) / 2 + 3 = b / 2 + 5 := by omega
+        have h3 : next (.L_3 r (b + 3)) = some (prevToState (.C_3 r 0 (b / 2 + 5))) := by
+          simp [next, e1, e2, prevToState]
+        have h4 : prevNext (.C_6 r b 0) = some (.C_3 r 0 (b / 2 + 5)) := by
+          simp [prevNext, hb]
+        rw [h4]
+        exact CollatzStepsTo.head h1 (CollatzStepsTo.head h2 (CollatzStepsTo.of_eq h3))
+      · have e1 : ¬(b + 3) % 2 = 0 := by omega
+        cases r
+        · have h3 : next (.L_3 false (b + 3)) = none := by simp [next, e1]
+          have h4 : prevNext (.C_6 false b 0) = none := by simp [prevNext, hb]
+          rw [h4]
+          exact CollatzStepsTo.head h1 (CollatzStepsTo.head h2 (CollatzStepsTo.of_eq h3))
+        · have e2 : (b + 3) / 2 = b / 2 + 1 := by omega
+          have h3 : next (.L_3 true (b + 3)) = some (.C_3 6 3 (b / 2 + 1)) := by
+            simp [next, e1, e2]
+          have h4 : prevNext (.C_6 true b 0) = some (.C_3 false 12 (b / 2 + 1)) := by
+            simp [prevNext, hb]
+          rw [h4]
+          exact CollatzReachesPlus.head h1
+            (CollatzReachesStar.head h2 (CollatzReachesStar.head h3 (drain_C3 rfl rfl)))
+    | 1 =>
+      have h1 : next (prevToState (.C_6 r b 1)) = some (.M_6_pos r b 0) := by cases r <;> rfl
+      have h2 : next (.M_6_pos r b 0) = some (.C_3 (b + 4 + if r then 1 else 0) 0 3) := rfl
+      exact CollatzReachesPlus.head h1 (CollatzReachesStar.head h2
+        (drain_C3 (by cases r <;> dsimp [prevNext] <;> simp only [decide_eq_true_eq] <;>
+            split_ifs <;> omega)
+          (by cases r <;> dsimp [prevNext] <;> omega)))
+    | c + 2 =>
+      have h1 : next (prevToState (.C_6 r b (c + 2))) = some (.M_6_pos r b (c + 1)) := by
+        cases r <;> rfl
+      have h2 : next (.M_6_pos r b (c + 1)) = some (.C_6 (b + 4 + if r then 1 else 0) 3 c) := rfl
+      exact CollatzReachesPlus.head h1 (CollatzReachesStar.head h2
+        (drain_C6 (by cases r <;> dsimp [prevNext] <;> simp only [decide_eq_true_eq] <;>
+            split_ifs <;> omega)
+          (by cases r <;> dsimp [prevNext] <;> omega)))
+
+/-- High-level symbolic configuration state space for
+`1RB1LA_1LC0RE_1LF1LD_1RE0LC_1LB1RA_---0LA`: the single-counter $b \in \{0, 12\}$ Poincaré
+section. -/
+inductive HighLevelState where
+  /-- $C(r, 0, c, 3)$ for $r \in \{0, 1\}$. -/
+  | C3_0 (r : Bool) (c : ℕ)
+  /-- $C(0, 12, c, 3)$. -/
+  | C3_12 (c : ℕ)
+  /-- $C(r, 0, c, 6)$ for $r \in \{0, 1\}$. -/
+  | C6_0 (r : Bool) (c : ℕ)
+  /-- $C(0, 12, c, 6)$. -/
+  | C6_12 (c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $C(0, 0, 6, 3)$. -/
+def highLevelStart : HighLevelState := .C3_0 false 6
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C3_0 r c => .C_3 (if r then 1 else 0) 0 c
+  | .C3_12 c => .C_3 0 12 c
+  | .C6_0 r c => .C_6 (if r then 1 else 0) 0 c
+  | .C6_12 c => .C_6 0 12 c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Contract $k$ Syracuse-like pairs $c + 2 \mapsto c$ on $(r, b)$ via
+$(r, b) \mapsto ((b + r) \bmod 2, 3\lfloor (b + r)/2 \rfloor + 9)$. -/
+def syracuseScan (r : Bool) (b k : ℕ) : Bool × ℕ :=
+  if k = 0 then (r, b)
+  else
+    let s := b + if r then 1 else 0
+    syracuseScan (decide (s % 2 = 1)) (3 * (s / 2) + 9) (k - 1)
+termination_by k
+decreasing_by omega
+
+/-- Resolve the terminal $c \in \{0, 1\}$ case of $C_3(r, b, c)$ back onto the $b \in \{0, 12\}$
+Poincaré section. -/
+def finishC3 (r : Bool) (b rem : ℕ) : Option HighLevelState :=
+  if rem = 0 then
+    if b % 2 = 0 then some (.C3_0 r (b / 2 + 3))
+    else if r then some (.C3_12 (b / 2))
+    else none
+  else
+    if b % 2 = 1 then some (.C6_0 r (b / 2 + 3))
+    else if !r then none
+    else if b = 0 then some (.C6_0 true 13)
+    else some (.C6_12 (b / 2 - 1))
+
+/-- Resolve the terminal $c \in \{0, 1\}$ case of $C_6(r, b, c)$ back onto the $b \in \{0, 12\}$
+Poincaré section. -/
+def finishC6 (r : Bool) (b rem : ℕ) : Option HighLevelState :=
+  if rem = 0 then
+    if b % 2 = 1 then some (.C3_0 r (b / 2 + 5))
+    else if r then some (.C3_12 (b / 2 + 1))
+    else none
+  else
+    let s := b + if r then 1 else 0
+    let s1 := (3 * (s / 2) + 6) + if s % 2 = 1 then 1 else 0
+    finishC3 (decide (s1 % 2 = 1)) (3 * (s1 / 2) + 9) 1
+
+/-- High-level accelerated transition function on the single-counter $b \in \{0, 12\}$ Poincaré
+section, contracting the Syracuse scan over $\lfloor c / 2 \rfloor$ steps into a single step. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C3_0 r c => let p := syracuseScan r 0 (c / 2); finishC3 p.1 p.2 (c % 2)
+  | .C3_12 c => let p := syracuseScan false 12 (c / 2); finishC3 p.1 p.2 (c % 2)
+  | .C6_0 r c => let p := syracuseScan r 0 (c / 2); finishC6 p.1 p.2 (c % 2)
+  | .C6_12 c => let p := syracuseScan false 12 (c / 2); finishC6 p.1 p.2 (c % 2)
+
+private def toPrev : HighLevelState → PrevState
+  | .C3_0 r c => .C_3 r 0 c
+  | .C3_12 c => .C_3 false 12 c
+  | .C6_0 r c => .C_6 r 0 c
+  | .C6_12 c => .C_6 false 12 c
+
+private theorem reaches_scan_C3 (k : ℕ) (r : Bool) (b rem : ℕ) :
+    CollatzReachesStar prevNext (.C_3 r b (2 * k + rem))
+      (.C_3 (syracuseScan r b k).1 (syracuseScan r b k).2 rem) := by
+  induction k generalizing r b with
+  | zero =>
+    rw [syracuseScan.eq_def]
+    simp only [Nat.mul_zero, Nat.zero_add, ↓reduceIte]
+    exact CollatzReachesStar.refl prevNext _
+  | succ k ih =>
+    rw [syracuseScan.eq_def]
+    simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
+    have hc : 2 * (k + 1) + rem = (2 * k + rem) + 2 := by omega
+    rw [hc]
+    exact CollatzReachesStar.head rfl (ih _ _)
+
+private theorem reaches_scan_C6 (k : ℕ) (r : Bool) (b rem : ℕ) :
+    CollatzReachesStar prevNext (.C_6 r b (2 * k + rem))
+      (.C_6 (syracuseScan r b k).1 (syracuseScan r b k).2 rem) := by
+  induction k generalizing r b with
+  | zero =>
+    rw [syracuseScan.eq_def]
+    simp only [Nat.mul_zero, Nat.zero_add, ↓reduceIte]
+    exact CollatzReachesStar.refl prevNext _
+  | succ k ih =>
+    rw [syracuseScan.eq_def]
+    simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
+    have hc : 2 * (k + 1) + rem = (2 * k + rem) + 2 := by omega
+    rw [hc]
+    exact CollatzReachesStar.head rfl (ih _ _)
+
+private theorem stepsTo_finishC3_0 (r : Bool) (b : ℕ) :
+    CollatzStepsTo prevNext (.C_3 r b 0) ((finishC3 r b 0).map toPrev) := by
+  by_cases hb : b % 2 = 0
+  · simp only [finishC3, hb, ↓reduceIte, Option.map_some, toPrev]
+    exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, ↓reduceIte])
+  · cases r
+    · simp only [finishC3, hb, Bool.false_eq_true, ↓reduceIte, Option.map_none]
+      exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, Bool.false_eq_true, ↓reduceIte])
+    · simp only [finishC3, hb, ↓reduceIte, Option.map_some, toPrev]
+      exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, ↓reduceIte])
+
+private theorem stepsTo_finishC3_1 (r : Bool) (b : ℕ) :
+    CollatzStepsTo prevNext (.C_3 r b 1) ((finishC3 r b 1).map toPrev) := by
+  by_cases hb : b % 2 = 1
+  · simp only [finishC3, Nat.one_ne_zero, hb, ↓reduceIte, Option.map_some, toPrev]
+    exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, ↓reduceIte])
+  · cases r
+    · simp only [finishC3, Nat.one_ne_zero, hb, Bool.not_false, ↓reduceIte, Option.map_none]
+      exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, Bool.not_false, ↓reduceIte])
+    · rcases Nat.eq_zero_or_pos b with rfl | hpos
+      · simp only [finishC3, Nat.one_ne_zero, hb, Bool.not_true, Bool.false_eq_true, ↓reduceIte,
+          Option.map_some, toPrev]
+        exact CollatzStepsTo.head rfl (CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl))
+      · have hne : b ≠ 0 := Nat.pos_iff_ne_zero.mp hpos
+        simp only [finishC3, Nat.one_ne_zero, hb, Bool.not_true, Bool.false_eq_true, hne,
+          ↓reduceIte, Option.map_some, toPrev]
+        exact CollatzStepsTo.of_eq
+          (by simp only [prevNext, hb, Bool.not_true, Bool.false_eq_true, hne, ↓reduceIte])
+
+private theorem stepsTo_scan_C3 (r : Bool) (b c : ℕ) :
+    CollatzStepsTo prevNext (.C_3 r b c)
+      ((let p := syracuseScan r b (c / 2); finishC3 p.1 p.2 (c % 2)).map toPrev) := by
+  have h_scan := reaches_scan_C3 (c / 2) r b (c % 2)
+  rw [Nat.div_add_mod] at h_scan
+  have h_mod : c % 2 = 0 ∨ c % 2 = 1 := by omega
+  rcases h_mod with hm | hm
+  · rw [hm] at h_scan ⊢
+    exact CollatzStepsTo.of_reachesStar h_scan (stepsTo_finishC3_0 _ _)
+  · rw [hm] at h_scan ⊢
+    exact CollatzStepsTo.of_reachesStar h_scan (stepsTo_finishC3_1 _ _)
+
+private theorem stepsTo_finishC6_0 (r : Bool) (b : ℕ) :
+    CollatzStepsTo prevNext (.C_6 r b 0) ((finishC6 r b 0).map toPrev) := by
+  by_cases hb : b % 2 = 1
+  · simp only [finishC6, hb, ↓reduceIte, Option.map_some, toPrev]
+    exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, ↓reduceIte])
+  · cases r
+    · simp only [finishC6, hb, Bool.false_eq_true, ↓reduceIte, Option.map_none]
+      exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, Bool.false_eq_true, ↓reduceIte])
+    · simp only [finishC6, hb, ↓reduceIte, Option.map_some, toPrev]
+      exact CollatzStepsTo.of_eq (by simp only [prevNext, hb, ↓reduceIte])
+
+private theorem stepsTo_finishC6_1 (r : Bool) (b : ℕ) :
+    CollatzStepsTo prevNext (.C_6 r b 1) ((finishC6 r b 1).map toPrev) := by
+  let s := b + if r then 1 else 0
+  let s1 := (3 * (s / 2) + 6) + if s % 2 = 1 then 1 else 0
+  have h1 : prevNext (.C_6 r b 1) = some (.C_3 (decide (s % 2 = 1)) (3 * (s / 2) + 6) 3) := rfl
+  have h2 : prevNext (.C_3 (decide (s % 2 = 1)) (3 * (s / 2) + 6) 3) =
+      some (.C_3 (decide (s1 % 2 = 1)) (3 * (s1 / 2) + 9) 1) := by
+    simp only [prevNext, decide_eq_true_eq, s1]
+  have h_fin : finishC6 r b 1 = finishC3 (decide (s1 % 2 = 1)) (3 * (s1 / 2) + 9) 1 := by
+    simp only [finishC6, Nat.one_ne_zero, ↓reduceIte, s, s1]
+  rw [h_fin]
+  exact CollatzStepsTo.head h1 (CollatzStepsTo.head h2 (stepsTo_finishC3_1 _ _))
+
+private theorem stepsTo_scan_C6 (r : Bool) (b c : ℕ) :
+    CollatzStepsTo prevNext (.C_6 r b c)
+      ((let p := syracuseScan r b (c / 2); finishC6 p.1 p.2 (c % 2)).map toPrev) := by
+  have h_scan := reaches_scan_C6 (c / 2) r b (c % 2)
+  rw [Nat.div_add_mod] at h_scan
+  have h_mod : c % 2 = 0 ∨ c % 2 = 1 := by omega
+  rcases h_mod with hm | hm
+  · rw [hm] at h_scan ⊢
+    exact CollatzStepsTo.of_reachesStar h_scan (stepsTo_finishC6_0 _ _)
+  · rw [hm] at h_scan ⊢
+    exact CollatzStepsTo.of_reachesStar h_scan (stepsTo_finishC6_1 _ _)
+
 /-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
 of `target`. -/
 theorem is_valid_highLevel_acceleration :
     IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := toState)
-    (CollatzReachesStar.refl next start) ?_
-  rintro (⟨a, b, c⟩ | ⟨a, b, c⟩)
-  · have h_drain : CollatzReachesStar next (.C_3 a b c) (.C_3 (a % 2) (b + 3 * (a / 2)) c) := by
-      have h_eq : a = 2 * (a / 2) + a % 2 := (Nat.div_add_mod a 2).symm
-      conv_lhs => rw [h_eq]
-      exact reaches_C3_drain (a / 2) (a % 2) b c
-    rcases Nat.mod_two_eq_zero_or_one a with hmod | hmod
-    · have h_step : CollatzStepsTo next (.C_3 0 (b + 3 * (a / 2)) c)
-          ((highLevelNext (.C_3 a b c)).map toState) := by
-        dsimp [highLevelNext]
-        rw [hmod]
-        exact CollatzStepsTo.head rfl (stepsTo_M3 false (b + 3 * (a / 2)) c)
-      rw [hmod] at h_drain
-      exact CollatzStepsTo.of_reachesStar h_drain h_step
-    · have h_step : CollatzStepsTo next (.C_3 1 (b + 3 * (a / 2)) c)
-          ((highLevelNext (.C_3 a b c)).map toState) := by
-        dsimp [highLevelNext]
-        rw [hmod]
-        exact CollatzStepsTo.head rfl (stepsTo_M3 true (b + 3 * (a / 2)) c)
-      rw [hmod] at h_drain
-      exact CollatzStepsTo.of_reachesStar h_drain h_step
-  · have h_drain : CollatzReachesStar next (.C_6 a b c) (.C_6 (a % 2) (b + 3 * (a / 2)) c) := by
-      have h_eq : a = 2 * (a / 2) + a % 2 := (Nat.div_add_mod a 2).symm
-      conv_lhs => rw [h_eq]
-      exact reaches_C6_drain (a / 2) (a % 2) b c
-    rcases c with _ | c
-    · rcases Nat.mod_two_eq_zero_or_one a with hmod | hmod
-      · have h_step : CollatzStepsTo next (.C_6 0 (b + 3 * (a / 2)) 0)
-            ((highLevelNext (.C_6 a b 0)).map toState) := by
-          dsimp [highLevelNext]
-          rw [hmod]
-          exact CollatzStepsTo.head rfl (stepsTo_M3 false (b + 3 * (a / 2) + 3) 0)
-        rw [hmod] at h_drain
-        exact CollatzStepsTo.of_reachesStar h_drain h_step
-      · have h_step : CollatzStepsTo next (.C_6 1 (b + 3 * (a / 2)) 0)
-            ((highLevelNext (.C_6 a b 0)).map toState) := by
-          dsimp [highLevelNext]
-          rw [hmod]
-          exact CollatzStepsTo.head rfl (stepsTo_M3 true (b + 3 * (a / 2) + 3) 0)
-        rw [hmod] at h_drain
-        exact CollatzStepsTo.of_reachesStar h_drain h_step
-    · rcases Nat.mod_two_eq_zero_or_one a with hmod | hmod
-      · have h_step : CollatzStepsTo next (.C_6 0 (b + 3 * (a / 2)) (c + 1))
-            ((highLevelNext (.C_6 a b (c + 1))).map toState) := by
-          dsimp [highLevelNext]
-          rw [hmod]
-          exact CollatzStepsTo.head rfl (stepsTo_M6Pos false (b + 3 * (a / 2)) c)
-        rw [hmod] at h_drain
-        exact CollatzStepsTo.of_reachesStar h_drain h_step
-      · have h_step : CollatzStepsTo next (.C_6 1 (b + 3 * (a / 2)) (c + 1))
-            ((highLevelNext (.C_6 a b (c + 1))).map toState) := by
-          dsimp [highLevelNext]
-          rw [hmod]
-          exact CollatzStepsTo.head rfl (stepsTo_M6Pos true (b + 3 * (a / 2)) c)
-        rw [hmod] at h_drain
-        exact CollatzStepsTo.of_reachesStar h_drain h_step
+  have h_enc : (fun u => prevEncode (toPrev u)) = highLevelEncode :=
+    funext fun u => by cases u <;> rfl
+  rw [← h_enc]
+  refine is_valid_prev_acceleration.of_collatz (embed := toPrev)
+    (CollatzReachesStar.single rfl) ?_
+  rintro (⟨r, c⟩ | ⟨c⟩ | ⟨r, c⟩ | ⟨c⟩)
+  · exact stepsTo_scan_C3 r 0 c
+  · exact stepsTo_scan_C3 false 12 c
+  · exact stepsTo_scan_C6 r 0 c
+  · exact stepsTo_scan_C6 false 12 c
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

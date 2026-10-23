@@ -10,24 +10,24 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB1RC_1LC1LC_1RE0LD_1LB1RF_---1RA_0RD1RD`
 
-We define the configuration for $a, b, c \ge 0$:
+We define the configuration for $a, c \ge 0$:
 
 $$
-C(a, b, c) := 0^\infty \ 1^{a+2} \ \mathrm{E}{>} \ 1^{2b+2} \ 0 \ 1^{2c+2} \ 0^\infty.
+C(a, c) := 0^\infty \ 1^{a+2} \ \mathrm{E}{>} \ 110 \ 1^{2c+2} \ 0^\infty.
 $$
 
-Starting from $C(5, 2, 0)$ (reached after 100 steps from the blank tape), the machine follows the
-map $T$:
+Starting from $C(8, 1)$ (reached after 167 steps from the blank tape), with
+$k = \lfloor a / 2 \rfloor$,
+the machine follows the map $T$:
 
 $$
-T(C(a, b, c)) = \begin{cases}
-  \text{Halt} & \text{if } b = 0,\ c = 0, \\
-  C(5, 2, k + 1) & \text{if } a = 2k,\ b = 0,\ c = 1, \\
-  C(2, 0, k + 3) & \text{if } a = 2k + 1,\ b = 0,\ c = 1, \\
-  C(2, k + 3, d) & \text{if } a = 2k,\ b = 0,\ c = d + 2, \\
-  C(5, k + 3, d) & \text{if } a = 2k + 1,\ b = 0,\ c = d + 2, \\
-  C(a + 6b, 0, c - b) & \text{if } 1 \le b \le c, \\
-  C(a + 6c + 3, 0, b - c - 1) & \text{if } b \ge c + 1.
+T(C(a, c)) = \begin{cases}
+  \text{Halt} & \text{if } c = 0, \\
+  C(2, k + 3) & \text{if } c = 1 \text{ and } a \text{ is odd}, \\
+  C(14, 0) & \text{if } a = 0 \text{ and } c = 1, \\
+  C(17, k - 1) & \text{if } a \ge 2 \text{ is even and } c = 1, \\
+  C(3a + 20, d - k - 3) & \text{if } c = d + 2 \text{ and } k + 3 \le d, \\
+  C(6d + 3(a \bmod 2) + 5, k + 2 - d) & \text{if } c = d + 2 \text{ and } d \le k + 2.
 \end{cases}
 $$
 -/
@@ -907,25 +907,18 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 
 /-! ## High-Level Collatz-Like Acceleration -/
 
-/-- Single-family high-level symbolic configuration state space for
-`1RB1RC_1LC1LC_1RE0LD_1LB1RF_---1RA_0RD1RD`. -/
-inductive HighLevelState where
-  /-- $C(a, b, c) := 0^\infty\,1^{a+2}\,\mathrm{E}{>}\,1^{2b+2}\,0\,1^{2c+2}\,0^\infty$. -/
+private inductive MidState where
   | C (a b c : ℕ)
 
-/-- Initial high-level symbolic state $C(5, 2, 0)$. -/
-def highLevelStart : HighLevelState := .C 5 2 0
+private def midStart : MidState := .C 5 2 0
 
-/-- Embed a `HighLevelState` into `State`. -/
-def toState : HighLevelState → State
+private def midToState : MidState → State
   | .C a b c => if a % 2 = 0 then .C_0 (a / 2) b c else .C_1 (a / 2) b c
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
-  encode (toState s)
+private def midEncode (s : MidState) : Cfg (Fin 2) (Fin 6) :=
+  encode (midToState s)
 
-/-- High-level accelerated transition function on $C(a, b, c)$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
+private def midNext : MidState → Option MidState
   | .C _ 0 0 => none
   | .C a 0 1 =>
     if a % 2 = 0 then some (.C 5 2 (a / 2 + 1))
@@ -1017,62 +1010,148 @@ private theorem reaches_C1_drain_gt (b c : ℕ) (a : ℕ) (hbc : ¬(b + 1 ≤ c)
     rfl
   exact CollatzStepsTo.of_reachesStar h_star (CollatzStepsTo.of_eq h_step)
 
-/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
-of `target`. -/
-theorem is_valid_highLevel_acceleration :
-    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := toState)
+private theorem is_valid_mid_acceleration :
+    IsValidAcceleration target midStart midEncode midNext := by
+  refine is_valid_acceleration.of_collatz (embed := midToState)
     (CollatzReachesStar.refl next start) ?_
   rintro ⟨a, b, c⟩
   by_cases ha : a % 2 = 0
   · rcases b with _ | b
     · rcases c with _ | _ | d
-      · exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, ha, next])
-      · exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, ha, next])
-      · exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, ha, next])
+      · exact CollatzStepsTo.of_eq (by simp [midToState, midNext, ha, next])
+      · exact CollatzStepsTo.of_eq (by simp [midToState, midNext, ha, next])
+      · exact CollatzStepsTo.of_eq (by simp [midToState, midNext, ha, next])
     · by_cases hbc : b + 1 ≤ c
       · have h_step := reaches_C0_drain_le b (a / 2) c hbc
         have hmod : (a + 6 * (b + 1)) % 2 = 0 := by omega
         have hdiv : (a + 6 * (b + 1)) / 2 = a / 2 + 3 * (b + 1) := by omega
-        dsimp [highLevelNext]
+        dsimp [midNext]
         split_ifs
-        simp only [Option.map_some, toState]
+        simp only [Option.map_some, midToState]
         split_ifs
         rw [hdiv]
         exact h_step
       · have h_step := reaches_C0_drain_gt b c (a / 2) hbc
         have hmod : (a + 6 * c + 3) % 2 ≠ 0 := by omega
         have hdiv : (a + 6 * c + 3) / 2 = a / 2 + 3 * c + 1 := by omega
-        dsimp [highLevelNext]
+        dsimp [midNext]
         split_ifs
-        simp only [Option.map_some, toState]
+        simp only [Option.map_some, midToState]
         split_ifs
         rw [hdiv]
         exact h_step
   · rcases b with _ | b
     · rcases c with _ | _ | d
-      · exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, ha, next])
-      · exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, ha, next])
-      · exact CollatzStepsTo.of_eq (by simp [toState, highLevelNext, ha, next])
+      · exact CollatzStepsTo.of_eq (by simp [midToState, midNext, ha, next])
+      · exact CollatzStepsTo.of_eq (by simp [midToState, midNext, ha, next])
+      · exact CollatzStepsTo.of_eq (by simp [midToState, midNext, ha, next])
     · by_cases hbc : b + 1 ≤ c
       · have h_step := reaches_C1_drain_le b (a / 2) c hbc
         have hmod : (a + 6 * (b + 1)) % 2 ≠ 0 := by omega
         have hdiv : (a + 6 * (b + 1)) / 2 = a / 2 + 3 * (b + 1) := by omega
-        dsimp [highLevelNext]
+        dsimp [midNext]
         split_ifs
-        simp only [Option.map_some, toState]
+        simp only [Option.map_some, midToState]
         split_ifs
         rw [hdiv]
         exact h_step
       · have h_step := reaches_C1_drain_gt b c (a / 2) hbc
         have hmod : (a + 6 * c + 3) % 2 = 0 := by omega
         have hdiv : (a + 6 * c + 3) / 2 = a / 2 + 3 * c + 2 := by omega
-        dsimp [highLevelNext]
+        dsimp [midNext]
         split_ifs
-        simp only [Option.map_some, toState]
+        simp only [Option.map_some, midToState]
         split_ifs
         rw [hdiv]
         exact h_step
+
+/-- Single-family high-level symbolic configuration state space for
+`1RB1RC_1LC1LC_1RE0LD_1LB1RF_---1RA_0RD1RD`. -/
+inductive HighLevelState where
+  /-- $C(a, c) := 0^\infty\,1^{a+2}\,\mathrm{E}{>}\,110\,1^{2c+2}\,0^\infty$. -/
+  | C (a c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $C(8, 1)$. -/
+def highLevelStart : HighLevelState := .C 8 1
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C a c => if a % 2 = 0 then .C_0 (a / 2) 0 c else .C_1 (a / 2) 0 c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+private def toMid : HighLevelState → MidState
+  | .C a c => .C a 0 c
+
+/-- High-level accelerated transition function on $C(a, c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C _ 0 => none
+  | .C a 1 =>
+    if a % 2 = 1 then some (.C 2 (a / 2 + 3))
+    else if a = 0 then some (.C 14 0)
+    else some (.C 17 (a / 2 - 1))
+  | .C a (d + 2) =>
+    let k := a / 2
+    if k + 3 ≤ d then some (.C (3 * a + 20) (d - k - 3))
+    else some (.C (6 * d + 3 * (a % 2) + 5) (k + 2 - d))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  have h_init : CollatzReachesStar midNext midStart (toMid highLevelStart) :=
+    CollatzReachesStar.head rfl (CollatzReachesStar.refl midNext _)
+  refine is_valid_mid_acceleration.of_collatz (embed := toMid) h_init ?_
+  rintro ⟨a, c⟩
+  rcases c with _ | _ | d
+  · exact CollatzStepsTo.of_eq rfl
+  · dsimp [toMid, highLevelNext]
+    split_ifs with h1 h2
+    · have h0 : ¬ (a % 2 = 0) := by omega
+      exact CollatzStepsTo.of_eq (by simp [midNext, h0, toMid])
+    · subst h2
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+    · have h0 : a % 2 = 0 := by omega
+      have h_step1 : midNext (.C a 0 1) = some (.C 5 2 (a / 2 + 1)) := by simp [midNext, h0]
+      have h_step2 : midNext (.C 5 2 (a / 2 + 1)) = some (.C 17 0 (a / 2 - 1)) := by
+        simp [midNext]
+        omega
+      exact CollatzStepsTo.head h_step1 (CollatzStepsTo.of_eq h_step2)
+  · dsimp [toMid, highLevelNext]
+    by_cases ha : a % 2 = 0
+    · have h_step1 : midNext (.C a 0 (d + 2)) = some (.C 2 ((a / 2 + 2) + 1) d) := by
+        simp [midNext, ha]
+      split_ifs with hk
+      · have h_step2 : midNext (.C 2 ((a / 2 + 2) + 1) d) =
+            some (.C (3 * a + 20) 0 (d - a / 2 - 3)) := by
+          dsimp only [midNext]
+          split_ifs <;> (try simp only [Option.some.injEq, MidState.C.injEq, true_and])
+            <;> omega
+        exact CollatzStepsTo.head h_step1 (CollatzStepsTo.of_eq h_step2)
+      · have h_step2 : midNext (.C 2 ((a / 2 + 2) + 1) d) =
+            some (.C (6 * d + 3 * (a % 2) + 5) 0 (a / 2 + 2 - d)) := by
+          dsimp only [midNext]
+          split_ifs <;> (try simp only [Option.some.injEq, MidState.C.injEq, true_and,
+            and_true]) <;> omega
+        exact CollatzStepsTo.head h_step1 (CollatzStepsTo.of_eq h_step2)
+    · have h_step1 : midNext (.C a 0 (d + 2)) = some (.C 5 ((a / 2 + 2) + 1) d) := by
+        simp [midNext, ha]
+      split_ifs with hk
+      · have h_step2 : midNext (.C 5 ((a / 2 + 2) + 1) d) =
+            some (.C (3 * a + 20) 0 (d - a / 2 - 3)) := by
+          dsimp only [midNext]
+          split_ifs <;> (try simp only [Option.some.injEq, MidState.C.injEq, true_and])
+            <;> omega
+        exact CollatzStepsTo.head h_step1 (CollatzStepsTo.of_eq h_step2)
+      · have h_step2 : midNext (.C 5 ((a / 2 + 2) + 1) d) =
+            some (.C (6 * d + 3 * (a % 2) + 5) 0 (a / 2 + 2 - d)) := by
+          dsimp only [midNext]
+          split_ifs <;> (try simp only [Option.some.injEq, MidState.C.injEq, true_and,
+            and_true]) <;> omega
+        exact CollatzStepsTo.head h_step1 (CollatzStepsTo.of_eq h_step2)
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

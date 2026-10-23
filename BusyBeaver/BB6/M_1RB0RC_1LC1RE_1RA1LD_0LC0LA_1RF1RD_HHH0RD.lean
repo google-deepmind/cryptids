@@ -10,46 +10,50 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD`
 
-We define the configuration for $p \in \lbrace 0, 1 \rbrace$ and $k, j, c \ge 0$:
+We define the configuration for $p \in \lbrace 0, 1 \rbrace$ and $k, c \ge 0$:
 
 $$
-S(p, k, j, c) := 0^\infty \ (1110)^p \ 1^k \ \mathrm{D}{>} \ 11 \ (01)^j \ 1^c \ 0^\infty.
+S(p, k, c) := 0^\infty \ (1110)^p \ 1^k \ \mathrm{D}{>} \ 11 \ 1^c \ 0^\infty.
 $$
 
-Starting from $S(0, 2, 0, 0)$ (reached after 10 steps from the blank tape), the machine follows the
-map $T$:
+Starting from $S(0, 2, 0)$ (reached after 10 steps from the blank tape), the machine follows the
+map $T$, writing $k = 3q + r$ with $r \in \lbrace 0, 1, 2 \rbrace$ and $d = c - q$:
 
-$$
-T(S(p, k, j, c)) = \begin{cases}
-  S(p, k - 3m, j + 2m, c - m) & \text{if } k \ge 3,\ c \ge 1, \\
-  S(p, k' + 1, 0, 2j + 5) & \text{if } k = k' + 3,\ c = 0, \\
-  S(0, \Phi(j + 2, c')) & \text{if } p = 0,\ k = 2,\ c = c' + 1, \\
-  S(0, 0, 0, 2j + 5) & \text{if } p = 0,\ k = 2,\ c = 0, \\
-  S(0, \Phi(j + 1, c')) & \text{if } p = 0,\ k = 1,\ c = c' + 1, \\
-  S(0, 0, 0, 2j + 3) & \text{if } p = 0,\ k = 1,\ c = 0, \\
-  S(1, \Phi(j', c)) & \text{if } p = 0,\ k = 0,\ j = j' + 1, \\
-  S(0, \Phi(0, c + 2)) & \text{if } p = 0,\ k = 0,\ j = 0, \\
-  S(0, 1, j + 3, c') & \text{if } p = 1,\ k = 2,\ c = c' + 1, \\
-  S(1, 0, 0, 2j + 5) & \text{if } p = 1,\ k = 2,\ c = 0, \\
-  S(0, (3, 0, 0) + \Phi(j + 1, c')) & \text{if } p = 1,\ k = 1,\ c = c' + 1, \\
-  S(0, 1, 1, 2j + 5) & \text{if } p = 1,\ k = 1,\ c = 0, \\
-  S(0, 6, j' + 1, c) & \text{if } p = 1,\ k = 0,\ j = j' + 1, \\
-  S(0, 2, 0, c + 2) & \text{if } p = 1,\ k = 0,\ j = 0,
-\end{cases}
-$$
-
-where $m = \min(\lfloor k/3 \rfloor, c)$, and $\Phi(j, c)$ is defined by:
-
-$$
-\Phi(j, c) = \begin{cases}
-  \text{Halt} & \text{if } j = 2m \text{ and } c = 0, \\
-  (4m + 2, 0, 0) & \text{if } j = 2m \text{ and } c = 1, \\
-  (4m + 2, 0, 3) & \text{if } j = 2m \text{ and } c = 2, \\
-  (4m + 4, 0, c - 3) & \text{if } j = 2m \text{ and } c \ge 3, \\
-  (4m + 4, 0, 1) & \text{if } j = 2m + 1 \text{ and } c = 0, \\
-  (4m + 3, 0, c) & \text{if } j = 2m + 1 \text{ and } c \ge 1.
-\end{cases}
-$$
+- If $c < q$: $T(S(p, k, c)) = S(p, k - 3c - 2, 4c + 5)$.
+- If $c \ge q$ and $r = 0$:
+  $$
+  T(S(p, 3q, c)) = \begin{cases}
+    S(0, 2, 3) & \text{if } p = 0,\ q = 0,\text{ and } c = 0, \\
+    S(0, 4, c - 1) & \text{if } p = 0,\ q = 0,\text{ and } c \ge 1, \\
+    S(1, 4q, 1) & \text{if } p = 0,\ q \ge 1,\text{ and } d = 0, \\
+    S(1, 4q - 1, d) & \text{if } p = 0,\ q \ge 1,\text{ and } d \ge 1, \\
+    S(0, 2, c + 2) & \text{if } p = 1 \text{ and } q = 0, \\
+    S(0, 4, 4q + 5) & \text{if } p = 1,\ q \ge 1,\text{ and } d = 0, \\
+    S(0, 1, 4q + 9) & \text{if } p = 1,\ q \ge 1,\text{ and } d = 1, \\
+    S(1, 4q + 8, 1) & \text{if } p = 1,\ q \ge 1,\text{ and } d = 2, \\
+    S(1, 4q + 7, d - 2) & \text{if } p = 1,\ q \ge 1,\text{ and } d \ge 3.
+  \end{cases}
+  $$
+- If $c \ge q$ and $r = 1$:
+  $$
+  T(S(p, 3q + 1, c)) = \begin{cases}
+    S(0, 0, 4q + 3) & \text{if } p = 0 \text{ and } d = 0, \\
+    S(0, 8, 4q + 1) & \text{if } p = 1 \text{ and } d = 0, \\
+    S(0, 4q + 3p + 4, 1) & \text{if } d = 1, \\
+    S(0, 4q + 3p + 3, d - 1) & \text{if } d \ge 2.
+  \end{cases}
+  $$
+- If $c \ge q$ and $r = 2$:
+  $$
+  T(S(p, 3q + 2, c)) = \begin{cases}
+    S(p, 0, 4q + 5) & \text{if } d = 0, \\
+    S(0, 0, 4q + 9) & \text{if } p = 1 \text{ and } d = 1, \\
+    \text{Halt} & \text{if } d = p + 1, \\
+    S(0, 4q + 4p + 6, 0) & \text{if } d = p + 2, \\
+    S(0, 4q + 4p + 6, 3) & \text{if } d = p + 3, \\
+    S(0, 4q + 4p + 8, d - p - 4) & \text{if } d \ge p + 4.
+  \end{cases}
+  $$
 -/
 
 @[expose] public section
@@ -943,29 +947,20 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 
 /-! ## High-Level Collatz-Like Acceleration -/
 
-/-- High-level symbolic configuration state space for `1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD`,
-parameterizing $S(p, k, j, c) := 0^\infty\,(1110)^p\,1^k\,\mathrm{D}{>}\,11\,(01)^j\,1^c\,0^\infty$
-for $p \in \{0, 1\}$. -/
-inductive HighLevelState where
-  /-- $S(0, k, j, c) := 0^\infty\,1^k\,\mathrm{D}{>}\,11\,(01)^j\,1^c\,0^\infty$. -/
+private inductive MidState where
   | S_def (k j c : ℕ)
-  /-- $S(1, k, j, c) := 0^\infty\,1110\,1^k\,\mathrm{D}{>}\,11\,(01)^j\,1^c\,0^\infty$. -/
   | S_hat (k j c : ℕ)
 
-/-- Initial high-level symbolic state $S(0, 2, 0, 0)$. -/
-def highLevelStart : HighLevelState := .S_def 2 0 0
+private def midStart : MidState := .S_def 2 0 0
 
-/-- Embed a `HighLevelState` into `State`. -/
-def toState : HighLevelState → State
+private def midToState : MidState → State
   | .S_def k j c => .S_def k j c
   | .S_hat k j c => .S_hat k j c
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
-  encode (toState s)
+private def midEncode (s : MidState) : Cfg (Fin 2) (Fin 6) :=
+  encode (midToState s)
 
-/-- Helper evaluating a $C_{001}(l, a, b)$ transition into `HighLevelState`. -/
-def evalC (mk : ℕ → ℕ → ℕ → HighLevelState) (a b : ℕ) : Option HighLevelState :=
+private def midEvalC (mk : ℕ → ℕ → ℕ → MidState) (a b : ℕ) : Option MidState :=
   if a % 2 = 0 then
     Nat.casesOn b none fun b =>
     Nat.casesOn b (some (mk (4 * (a / 2) + 2) 0 0)) fun b =>
@@ -975,15 +970,13 @@ def evalC (mk : ℕ → ℕ → ℕ → HighLevelState) (a b : ℕ) : Option Hig
     Nat.casesOn b (some (mk (4 * (a / 2) + 4) 0 1)) fun c =>
     some (mk (4 * (a / 2) + 3) 0 (c + 1))
 
-/-- High-level accelerated transition function on $S(p, k, j, c)$, obtained by composing out
-$C_{001}$. -/
-def highLevelNext : HighLevelState → Option HighLevelState
-  | .S_def 0 0 c => evalC .S_def 0 (c + 2)
-  | .S_def 0 (j + 1) c => evalC .S_hat j c
+private def midNext : MidState → Option MidState
+  | .S_def 0 0 c => midEvalC .S_def 0 (c + 2)
+  | .S_def 0 (j + 1) c => midEvalC .S_hat j c
   | .S_def 1 j 0 => some (.S_def 0 0 (2 * j + 3))
-  | .S_def 1 j (c + 1) => evalC .S_def (j + 1) c
+  | .S_def 1 j (c + 1) => midEvalC .S_def (j + 1) c
   | .S_def 2 j 0 => some (.S_def 0 0 (2 * j + 5))
-  | .S_def 2 j (c + 1) => evalC .S_def (j + 2) c
+  | .S_def 2 j (c + 1) => midEvalC .S_def (j + 2) c
   | .S_def (k + 3) j 0 => some (.S_def (k + 1) 0 (2 * j + 5))
   | .S_def (k + 3) j (c + 1) =>
     let m := min ((k + 3) / 3) (c + 1)
@@ -991,7 +984,7 @@ def highLevelNext : HighLevelState → Option HighLevelState
   | .S_hat 0 0 c => some (.S_def 2 0 (c + 2))
   | .S_hat 0 (j + 1) c => some (.S_def 6 (j + 1) c)
   | .S_hat 1 j 0 => some (.S_def 1 1 (2 * j + 5))
-  | .S_hat 1 j (c + 1) => evalC (fun k j' c' => .S_def (3 + k) j' c') (j + 1) c
+  | .S_hat 1 j (c + 1) => midEvalC (fun k j' c' => .S_def (3 + k) j' c') (j + 1) c
   | .S_hat 2 j 0 => some (.S_hat 0 0 (2 * j + 5))
   | .S_hat 2 j (c + 1) => some (.S_def 1 (j + 3) c)
   | .S_hat (k + 3) j 0 => some (.S_hat (k + 1) 0 (2 * j + 5))
@@ -1082,32 +1075,30 @@ private theorem reaches_S_hat_drain (k j c : ℕ) :
   exact CollatzReachesPlus.head h_head h_star
 
 private theorem stepsTo_C_def (a b : ℕ) :
-    CollatzStepsTo next (.C_def a b) ((evalC .S_def a b).map toState) := by
-  dsimp [evalC]
+    CollatzStepsTo next (.C_def a b) ((midEvalC .S_def a b).map midToState) := by
+  dsimp [midEvalC]
   split_ifs with ha
-  · rcases b with _ | _ | _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, toState, ha])
-  · rcases b with _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, toState, ha])
+  · rcases b with _ | _ | _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, midToState, ha])
+  · rcases b with _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, midToState, ha])
 
 private theorem stepsTo_C_hat (a b : ℕ) :
-    CollatzStepsTo next (.C_hat a b) ((evalC .S_hat a b).map toState) := by
-  dsimp [evalC]
+    CollatzStepsTo next (.C_hat a b) ((midEvalC .S_hat a b).map midToState) := by
+  dsimp [midEvalC]
   split_ifs with ha
-  · rcases b with _ | _ | _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, toState, ha])
-  · rcases b with _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, toState, ha])
+  · rcases b with _ | _ | _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, midToState, ha])
+  · rcases b with _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, midToState, ha])
 
 private theorem stepsTo_C_ones3 (a b : ℕ) :
     CollatzStepsTo next (.C_ones3 a b)
-      ((evalC (fun k j' c' => .S_def (3 + k) j' c') a b).map toState) := by
-  dsimp [evalC]
+      ((midEvalC (fun k j' c' => .S_def (3 + k) j' c') a b).map midToState) := by
+  dsimp [midEvalC]
   split_ifs with ha
-  · rcases b with _ | _ | _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, toState, ha])
-  · rcases b with _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, toState, ha])
+  · rcases b with _ | _ | _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, midToState, ha])
+  · rcases b with _ | c <;> exact CollatzStepsTo.of_eq (by simp [next, midToState, ha])
 
-/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
-of `target`. -/
-theorem is_valid_highLevel_acceleration :
-    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := toState)
+private theorem is_valid_mid_acceleration :
+    IsValidAcceleration target midStart midEncode midNext := by
+  refine is_valid_acceleration.of_collatz (embed := midToState)
     (CollatzReachesStar.refl next start) ?_
   rintro (⟨k, j, c⟩ | ⟨k, j, c⟩)
   · rcases k with _ | _ | _ | k
@@ -1122,8 +1113,8 @@ theorem is_valid_highLevel_acceleration :
       · exact CollatzStepsTo.head rfl (stepsTo_C_def (j + 2) c)
     · rcases c with _ | c
       · exact CollatzStepsTo.of_eq rfl
-      · have h_eq : Option.map toState
-              (highLevelNext (HighLevelState.S_def (k + 3) j (c + 1))) =
+      · have h_eq : Option.map midToState
+              (midNext (MidState.S_def (k + 3) j (c + 1))) =
             some (.S_def (k + 3 - 3 * min ((k + 3) / 3) (c + 1))
               (j + 2 * min ((k + 3) / 3) (c + 1))
               (c + 1 - min ((k + 3) / 3) (c + 1))) := rfl
@@ -1137,13 +1128,415 @@ theorem is_valid_highLevel_acceleration :
     · rcases c with _ | c <;> exact CollatzStepsTo.of_eq rfl
     · rcases c with _ | c
       · exact CollatzStepsTo.of_eq rfl
-      · have h_eq : Option.map toState
-              (highLevelNext (HighLevelState.S_hat (k + 3) j (c + 1))) =
+      · have h_eq : Option.map midToState
+              (midNext (MidState.S_hat (k + 3) j (c + 1))) =
             some (.S_hat (k + 3 - 3 * min ((k + 3) / 3) (c + 1))
               (j + 2 * min ((k + 3) / 3) (c + 1))
               (c + 1 - min ((k + 3) / 3) (c + 1))) := rfl
         rw [h_eq]
         exact reaches_S_hat_drain k j c
+
+/-- High-level symbolic configuration state space for `1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD`,
+parameterizing $S(p, k, c) := 0^\infty\,(1110)^p\,1^k\,\mathrm{D}{>}\,11\,1^c\,0^\infty$
+for $p \in \{0, 1\}$. -/
+inductive HighLevelState where
+  /-- $S(p, k, c) := 0^\infty\,(1110)^p\,1^k\,\mathrm{D}{>}\,11\,1^c\,0^\infty$. -/
+  | S (p : Bool) (k c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $S(0, 2, 0)$. -/
+def highLevelStart : HighLevelState := .S false 2 0
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .S false k c => .S_def k 0 c
+  | .S true k c => .S_hat k 0 c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+private def toMid : HighLevelState → MidState
+  | .S false k c => .S_def k 0 c
+  | .S true k c => .S_hat k 0 c
+
+/-- High-level accelerated transition function on $S(p, k, c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .S p k c =>
+    let q := k / 3
+    let r := k % 3
+    if c < q then some (.S p (k - 3 * c - 2) (4 * c + 5))
+    else
+      let d := c - q
+      if p then
+        if r = 0 then
+          if q = 0 then some (.S false 2 (c + 2))
+          else if d = 0 then some (.S false 4 (4 * q + 5))
+          else if d = 1 then some (.S false 1 (4 * q + 9))
+          else if d = 2 then some (.S true (4 * q + 8) 1)
+          else some (.S true (4 * q + 7) (d - 2))
+        else if r = 1 then
+          if d = 0 then some (.S false 8 (4 * q + 1))
+          else if d = 1 then some (.S false (4 * q + 7) 1)
+          else some (.S false (4 * q + 6) (d - 1))
+        else
+          if d = 0 then some (.S true 0 (4 * q + 5))
+          else if d = 1 then some (.S false 0 (4 * q + 9))
+          else if d = 2 then none
+          else if d = 3 then some (.S false (4 * q + 10) 0)
+          else if d = 4 then some (.S false (4 * q + 10) 3)
+          else some (.S false (4 * q + 12) (d - 5))
+      else
+        if r = 0 then
+          if q = 0 then
+            if c = 0 then some (.S false 2 3) else some (.S false 4 (c - 1))
+          else if d = 0 then some (.S true (4 * q) 1)
+          else some (.S true (4 * q - 1) d)
+        else if r = 1 then
+          if d = 0 then some (.S false 0 (4 * q + 3))
+          else if d = 1 then some (.S false (4 * q + 4) 1)
+          else some (.S false (4 * q + 3) (d - 1))
+        else
+          if d = 0 then some (.S false 0 (4 * q + 5))
+          else if d = 1 then none
+          else if d = 2 then some (.S false (4 * q + 6) 0)
+          else if d = 3 then some (.S false (4 * q + 6) 3)
+          else some (.S false (4 * q + 8) (d - 4))
+
+private theorem mid_drain_def {k j c k' j' c' : ℕ}
+    (hk : k' = k + 3 - 3 * min ((k + 3) / 3) (c + 1))
+    (hj : j' = j + 2 * min ((k + 3) / 3) (c + 1))
+    (hc : c' = c + 1 - min ((k + 3) / 3) (c + 1)) :
+    midNext (.S_def (k + 3) j (c + 1)) = some (.S_def k' j' c') := by
+  subst hk hj hc
+  rfl
+
+private theorem mid_drain_hat {k j c k' j' c' : ℕ}
+    (hk : k' = k + 3 - 3 * min ((k + 3) / 3) (c + 1))
+    (hj : j' = j + 2 * min ((k + 3) / 3) (c + 1))
+    (hc : c' = c + 1 - min ((k + 3) / 3) (c + 1)) :
+    midNext (.S_hat (k + 3) j (c + 1)) = some (.S_hat k' j' c') := by
+  subst hk hj hc
+  rfl
+
+private theorem midEvalC_even_0 (mk : ℕ → ℕ → ℕ → MidState) (m : ℕ) :
+    midEvalC mk (2 * m) 0 = none := by
+  have h1 : (2 * m) % 2 = 0 := by omega
+  simp only [midEvalC, h1, ↓reduceIte]
+  rfl
+
+private theorem midEvalC_even_1 (mk : ℕ → ℕ → ℕ → MidState) (m k : ℕ) (hk : k = 4 * m + 2) :
+    midEvalC mk (2 * m) 1 = some (mk k 0 0) := by
+  subst hk
+  have h1 : (2 * m) % 2 = 0 := by omega
+  have h2 : (2 * m) / 2 = m := by omega
+  simp only [midEvalC, h1, ↓reduceIte, h2]
+  rfl
+
+private theorem midEvalC_even_2 (mk : ℕ → ℕ → ℕ → MidState) (m k : ℕ) (hk : k = 4 * m + 2) :
+    midEvalC mk (2 * m) 2 = some (mk k 0 3) := by
+  subst hk
+  have h1 : (2 * m) % 2 = 0 := by omega
+  have h2 : (2 * m) / 2 = m := by omega
+  simp only [midEvalC, h1, ↓reduceIte, h2]
+  rfl
+
+private theorem midEvalC_even_3 (mk : ℕ → ℕ → ℕ → MidState) (m c k : ℕ) (hk : k = 4 * m + 4) :
+    midEvalC mk (2 * m) (c + 3) = some (mk k 0 c) := by
+  subst hk
+  have h1 : (2 * m) % 2 = 0 := by omega
+  have h2 : (2 * m) / 2 = m := by omega
+  simp only [midEvalC, h1, ↓reduceIte, h2]
+
+private theorem midEvalC_odd_0 (mk : ℕ → ℕ → ℕ → MidState) (m k : ℕ) (hk : k = 4 * m + 4) :
+    midEvalC mk (2 * m + 1) 0 = some (mk k 0 1) := by
+  subst hk
+  have h1 : ¬ (2 * m + 1) % 2 = 0 := by omega
+  have h2 : (2 * m + 1) / 2 = m := by omega
+  simp only [midEvalC, h1, ↓reduceIte, h2]
+  rfl
+
+private theorem midEvalC_odd_1 (mk : ℕ → ℕ → ℕ → MidState) (m c k : ℕ) (hk : k = 4 * m + 3) :
+    midEvalC mk (2 * m + 1) (c + 1) = some (mk k 0 (c + 1)) := by
+  subst hk
+  have h1 : ¬ (2 * m + 1) % 2 = 0 := by omega
+  have h2 : (2 * m + 1) / 2 = m := by omega
+  simp only [midEvalC, h1, ↓reduceIte, h2]
+
+private theorem reaches_drain_def (q r d : ℕ) (hr : r < 3) :
+    CollatzReachesStar midNext (.S_def (3 * q + r) 0 (q + d)) (.S_def r (2 * q) d) := by
+  rcases q with _ | q
+  · simp only [Nat.mul_zero, Nat.zero_add]
+    exact CollatzReachesStar.refl midNext _
+  · have h_eq1 : 3 * (q + 1) + r = (3 * q + r) + 3 := by omega
+    have h_eq2 : q + 1 + d = (q + d) + 1 := by omega
+    rw [h_eq1, h_eq2]
+    exact CollatzReachesStar.head
+      (mid_drain_def (by omega) (by omega) (by omega))
+      (CollatzReachesStar.refl midNext _)
+
+private theorem reaches_drain_hat (q r d : ℕ) (hr : r < 3) :
+    CollatzReachesStar midNext (.S_hat (3 * q + r) 0 (q + d)) (.S_hat r (2 * q) d) := by
+  rcases q with _ | q
+  · simp only [Nat.mul_zero, Nat.zero_add]
+    exact CollatzReachesStar.refl midNext _
+  · have h_eq1 : 3 * (q + 1) + r = (3 * q + r) + 3 := by omega
+    have h_eq2 : q + 1 + d = (q + d) + 1 := by omega
+    rw [h_eq1, h_eq2]
+    exact CollatzReachesStar.head
+      (mid_drain_hat (by omega) (by omega) (by omega))
+      (CollatzReachesStar.refl midNext _)
+
+private theorem stepsTo_lt_def (k c k' c' : ℕ) (hc : c < k / 3)
+    (hk' : k' = k - 3 * c - 2) (hc' : c' = 4 * c + 5) :
+    CollatzStepsTo midNext (.S_def k 0 c) (some (.S_def k' 0 c')) := by
+  obtain ⟨q, r, hr, rfl⟩ : ∃ q r, r < 3 ∧ k = 3 * q + r := ⟨k / 3, k % 3, by omega, by omega⟩
+  rcases c with _ | c
+  · obtain ⟨q, rfl⟩ : ∃ q', q = q' + 1 := ⟨q - 1, by omega⟩
+    have h1 : 3 * (q + 1) + r = (3 * q + r) + 3 := by omega
+    obtain rfl : k' = 3 * q + r + 1 := by omega
+    obtain rfl : c' = 5 := by omega
+    rw [h1]
+    exact CollatzStepsTo.of_eq rfl
+  · obtain ⟨t, rfl⟩ : ∃ t, q = c + 2 + t := ⟨q - c - 2, by omega⟩
+    have h1 : 3 * (c + 2 + t) + r = (3 * (c + 1 + t) + r) + 3 := by omega
+    obtain rfl : k' = 3 * t + r + 1 := by omega
+    obtain rfl : c' = 2 * (2 * (c + 1)) + 5 := by omega
+    rw [h1]
+    exact CollatzStepsTo.head
+      (mid_drain_def (k' := (3 * t + r) + 3) (j' := 2 * (c + 1)) (c' := 0)
+        (by omega) (by omega) (by omega))
+      (CollatzStepsTo.of_eq rfl)
+
+private theorem stepsTo_lt_hat (k c k' c' : ℕ) (hc : c < k / 3)
+    (hk' : k' = k - 3 * c - 2) (hc' : c' = 4 * c + 5) :
+    CollatzStepsTo midNext (.S_hat k 0 c) (some (.S_hat k' 0 c')) := by
+  obtain ⟨q, r, hr, rfl⟩ : ∃ q r, r < 3 ∧ k = 3 * q + r := ⟨k / 3, k % 3, by omega, by omega⟩
+  rcases c with _ | c
+  · obtain ⟨q, rfl⟩ : ∃ q', q = q' + 1 := ⟨q - 1, by omega⟩
+    have h1 : 3 * (q + 1) + r = (3 * q + r) + 3 := by omega
+    obtain rfl : k' = 3 * q + r + 1 := by omega
+    obtain rfl : c' = 5 := by omega
+    rw [h1]
+    exact CollatzStepsTo.of_eq rfl
+  · obtain ⟨t, rfl⟩ : ∃ t, q = c + 2 + t := ⟨q - c - 2, by omega⟩
+    have h1 : 3 * (c + 2 + t) + r = (3 * (c + 1 + t) + r) + 3 := by omega
+    obtain rfl : k' = 3 * t + r + 1 := by omega
+    obtain rfl : c' = 2 * (2 * (c + 1)) + 5 := by omega
+    rw [h1]
+    exact CollatzStepsTo.head
+      (mid_drain_hat (k' := (3 * t + r) + 3) (j' := 2 * (c + 1)) (c' := 0)
+        (by omega) (by omega) (by omega))
+      (CollatzStepsTo.of_eq rfl)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  have he : (fun s => midEncode (toMid s)) = highLevelEncode := by
+    funext ⟨p, k, c⟩
+    cases p <;> rfl
+  rw [← he]
+  refine is_valid_mid_acceleration.of_collatz (embed := toMid)
+    (CollatzReachesStar.refl midNext _) ?_
+  rintro ⟨p, k, c⟩
+  cases p
+  · simp only [highLevelNext, Bool.false_eq_true, ↓reduceIte]
+    split_ifs
+    · exact stepsTo_lt_def k c _ _ (by omega) rfl rfl
+    · obtain rfl : k = 0 := by omega
+      obtain rfl : c = 0 := by omega
+      exact CollatzStepsTo.of_eq (midEvalC_even_2 .S_def 0 2 rfl)
+    · obtain rfl : k = 0 := by omega
+      obtain ⟨d, rfl⟩ : ∃ d, c = d + 1 := ⟨c - 1, by omega⟩
+      exact CollatzStepsTo.of_eq (midEvalC_even_3 .S_def 0 d 4 (by omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * (q + 1) + 0 := ⟨k / 3 - 1, by omega⟩
+      obtain rfl : c = (q + 1) + 0 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def (q + 1) 0 0 (by omega)) ?_
+      have hj : 2 * (q + 1) = (2 * q + 1) + 1 := by omega
+      rw [hj]
+      exact CollatzStepsTo.of_eq (midEvalC_odd_0 .S_hat q _ (by omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * (q + 1) + 0 := ⟨k / 3 - 1, by omega⟩
+      obtain ⟨d, rfl⟩ : ∃ d, c = (q + 1) + (d + 1) := ⟨c - (q + 1) - 1, by omega⟩
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def (q + 1) 0 (d + 1) (by omega)) ?_
+      have hj : 2 * (q + 1) = (2 * q + 1) + 1 := by omega
+      rw [hj]
+      exact CollatzStepsTo.of_eq ((midEvalC_odd_1 .S_hat q d _ rfl).trans (by
+        simp only [Option.map_some, toMid, Option.some.injEq, MidState.S_hat.injEq]
+        exact ⟨by omega, trivial, by omega⟩))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 1 := ⟨k / 3, by omega⟩
+      have hc : c = q + 0 := by omega
+      rw [hc]
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 1 0 (by omega)) ?_
+      exact CollatzStepsTo.of_eq (by
+        simp only [midNext, Option.map_some, toMid, Option.some.injEq, MidState.S_def.injEq,
+          true_and]
+        omega)
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 1 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 1 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 1 1 (by omega)) ?_
+      exact CollatzStepsTo.of_eq (midEvalC_odd_0 .S_def q _ (by omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 1 := ⟨k / 3, by omega⟩
+      obtain ⟨d, rfl⟩ : ∃ d, c = q + (d + 2) := ⟨c - q - 2, by omega⟩
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 1 (d + 2) (by omega)) ?_
+      exact CollatzStepsTo.of_eq ((midEvalC_odd_1 .S_def q d _ rfl).trans (by
+        simp only [Option.map_some, toMid, Option.some.injEq, MidState.S_def.injEq]
+        exact ⟨by omega, trivial, by omega⟩))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      have hc : c = q + 0 := by omega
+      rw [hc]
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 2 0 (by omega)) ?_
+      exact CollatzStepsTo.of_eq (by
+        simp only [midNext, Option.map_some, toMid, Option.some.injEq, MidState.S_def.injEq,
+          true_and]
+        omega)
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 1 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 2 1 (by omega)) ?_
+      have hj : 2 * q + 2 = 2 * (q + 1) := by omega
+      exact CollatzStepsTo.of_eq (by dsimp [midNext]; rw [hj]; exact midEvalC_even_0 .S_def (q + 1))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 2 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 2 2 (by omega)) ?_
+      have hj : 2 * q + 2 = 2 * (q + 1) := by omega
+      exact CollatzStepsTo.of_eq
+        (by dsimp [midNext]; rw [hj]; exact midEvalC_even_1 .S_def (q + 1) _ (by omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 3 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 2 3 (by omega)) ?_
+      have hj : 2 * q + 2 = 2 * (q + 1) := by omega
+      exact CollatzStepsTo.of_eq
+        (by dsimp [midNext]; rw [hj]; exact midEvalC_even_2 .S_def (q + 1) _ (by omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain ⟨d, rfl⟩ : ∃ d, c = q + (d + 4) := ⟨c - q - 4, by omega⟩
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_def q 2 (d + 4) (by omega)) ?_
+      have hj : 2 * q + 2 = 2 * (q + 1) := by omega
+      exact CollatzStepsTo.of_eq (by
+        dsimp [midNext]; rw [hj, midEvalC_even_3 .S_def (q + 1) d _ rfl]
+        simp only [toMid, Option.some.injEq, MidState.S_def.injEq]
+        exact ⟨by omega, trivial, by omega⟩)
+  · simp only [highLevelNext, ↓reduceIte]
+    split_ifs
+    · exact stepsTo_lt_hat k c _ _ (by omega) rfl rfl
+    · obtain rfl : k = 0 := by omega
+      exact CollatzStepsTo.of_eq rfl
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * (q + 1) + 0 := ⟨k / 3 - 1, by omega⟩
+      obtain rfl : c = (q + 1) + 0 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat (q + 1) 0 0 (by omega)) ?_
+      have hj : 2 * (q + 1) = (2 * q + 1) + 1 := by omega
+      have h1 : midNext (.S_hat 0 (2 * (q + 1)) 0) = some (.S_def 6 (2 * (q + 1)) 0) := by
+        rw [hj]; rfl
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq (by
+        simp only [midNext, Option.map_some, toMid, Option.some.injEq, MidState.S_def.injEq,
+          true_and]
+        omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * (q + 1) + 0 := ⟨k / 3 - 1, by omega⟩
+      obtain rfl : c = (q + 1) + 1 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat (q + 1) 0 1 (by omega)) ?_
+      have hj : 2 * (q + 1) = (2 * q + 1) + 1 := by omega
+      have h1 : midNext (.S_hat 0 (2 * (q + 1)) 1) = some (.S_def 6 (2 * (q + 1)) 1) := by
+        rw [hj]; rfl
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.head
+        (mid_drain_def (k' := 3) (j' := 2 * (q + 1) + 2) (c' := 0)
+          (by omega) (by omega) (by omega))
+        (CollatzStepsTo.of_eq (by
+          simp only [midNext, Option.map_some, toMid, Option.some.injEq, MidState.S_def.injEq,
+            true_and]
+          omega)))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * (q + 1) + 0 := ⟨k / 3 - 1, by omega⟩
+      obtain rfl : c = (q + 1) + 2 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat (q + 1) 0 2 (by omega)) ?_
+      have hj : 2 * (q + 1) = (2 * q + 1) + 1 := by omega
+      have h1 : midNext (.S_hat 0 (2 * (q + 1)) 2) = some (.S_def 6 (2 * (q + 1)) 2) := by
+        rw [hj]; rfl
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.head
+        (mid_drain_def (k' := 0) (j' := (2 * (q + 2) + 1) + 1) (c' := 0)
+          (by omega) (by omega) (by omega))
+        (CollatzStepsTo.of_eq (by
+          dsimp [midNext]; exact midEvalC_odd_0 .S_hat (q + 2) _ (by omega))))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * (q + 1) + 0 := ⟨k / 3 - 1, by omega⟩
+      obtain ⟨d, rfl⟩ : ∃ d, c = (q + 1) + (d + 3) := ⟨c - (q + 1) - 3, by omega⟩
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat (q + 1) 0 (d + 3) (by omega)) ?_
+      have hj : 2 * (q + 1) = (2 * q + 1) + 1 := by omega
+      have h1 : midNext (.S_hat 0 (2 * (q + 1)) (d + 3)) =
+          some (.S_def 6 (2 * (q + 1)) (d + 3)) := by rw [hj]; rfl
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.head
+        (mid_drain_def (k' := 0) (j' := (2 * (q + 2) + 1) + 1) (c' := d + 1)
+          (by omega) (by omega) (by omega))
+        (CollatzStepsTo.of_eq (by
+          dsimp [midNext]; rw [midEvalC_odd_1 .S_hat (q + 2) d _ rfl]
+          simp only [toMid, Option.some.injEq, MidState.S_hat.injEq]
+          exact ⟨by omega, trivial, by omega⟩)))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 1 := ⟨k / 3, by omega⟩
+      have hc : c = q + 0 := by omega
+      rw [hc]
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 1 0 (by omega)) ?_
+      have h1 : midNext (.S_hat 1 (2 * q) 0) = some (.S_def 1 1 ((4 * q + 1) + 3 + 1)) := by
+        simp only [midNext, Option.some.injEq, MidState.S_def.injEq, true_and]
+        omega
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq (by
+        dsimp [midNext]; rw [midEvalC_even_3 .S_def 1 (4 * q + 1) 8 rfl]
+        simp only [toMid, Option.some.injEq, MidState.S_def.injEq, true_and]
+        omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 1 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 1 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 1 1 (by omega)) ?_
+      exact CollatzStepsTo.of_eq (by
+        dsimp [midNext]; rw [midEvalC_odd_0 (fun k j' c' => .S_def (3 + k) j' c') q _ rfl]
+        simp only [toMid, Option.some.injEq, MidState.S_def.injEq, and_true]
+        omega)
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 1 := ⟨k / 3, by omega⟩
+      obtain ⟨d, rfl⟩ : ∃ d, c = q + (d + 2) := ⟨c - q - 2, by omega⟩
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 1 (d + 2) (by omega)) ?_
+      exact CollatzStepsTo.of_eq (by
+        dsimp [midNext]; rw [midEvalC_odd_1 (fun k j' c' => .S_def (3 + k) j' c') q d _ rfl]
+        simp only [toMid, Option.some.injEq, MidState.S_def.injEq]
+        exact ⟨by omega, trivial, by omega⟩)
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      have hc : c = q + 0 := by omega
+      rw [hc]
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 2 0 (by omega)) ?_
+      exact CollatzStepsTo.of_eq (by
+        simp only [midNext, Option.map_some, toMid, Option.some.injEq, MidState.S_hat.injEq,
+          true_and]
+        omega)
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 1 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 2 1 (by omega)) ?_
+      exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq (by
+        simp only [midNext, Option.map_some, toMid, Option.some.injEq, MidState.S_def.injEq,
+          true_and]
+        omega))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 2 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 2 2 (by omega)) ?_
+      have h1 : midNext (.S_hat 2 (2 * q) 2) = some (.S_def 1 (2 * q + 3) 1) := rfl
+      have hj : (2 * q + 3) + 1 = 2 * (q + 2) := by omega
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq
+        (by dsimp [midNext]; rw [hj]; exact midEvalC_even_0 .S_def (q + 2)))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 3 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 2 3 (by omega)) ?_
+      have h1 : midNext (.S_hat 2 (2 * q) 3) = some (.S_def 1 (2 * q + 3) 2) := rfl
+      have hj : (2 * q + 3) + 1 = 2 * (q + 2) := by omega
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq
+        (by dsimp [midNext]; rw [hj]; exact midEvalC_even_1 .S_def (q + 2) _ (by omega)))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain rfl : c = q + 4 := by omega
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 2 4 (by omega)) ?_
+      have h1 : midNext (.S_hat 2 (2 * q) 4) = some (.S_def 1 (2 * q + 3) 3) := rfl
+      have hj : (2 * q + 3) + 1 = 2 * (q + 2) := by omega
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq
+        (by dsimp [midNext]; rw [hj]; exact midEvalC_even_2 .S_def (q + 2) _ (by omega)))
+    · obtain ⟨q, rfl⟩ : ∃ q, k = 3 * q + 2 := ⟨k / 3, by omega⟩
+      obtain ⟨d, rfl⟩ : ∃ d, c = q + (d + 5) := ⟨c - q - 5, by omega⟩
+      refine CollatzStepsTo.of_reachesStar (reaches_drain_hat q 2 (d + 5) (by omega)) ?_
+      have h1 : midNext (.S_hat 2 (2 * q) (d + 5)) = some (.S_def 1 (2 * q + 3) (d + 4)) := rfl
+      have hj : (2 * q + 3) + 1 = 2 * (q + 2) := by omega
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq (by
+        dsimp [midNext]; rw [hj, midEvalC_even_3 .S_def (q + 2) d _ rfl]
+        simp only [toMid, Option.some.injEq, MidState.S_def.injEq]
+        exact ⟨by omega, trivial, by omega⟩))
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/

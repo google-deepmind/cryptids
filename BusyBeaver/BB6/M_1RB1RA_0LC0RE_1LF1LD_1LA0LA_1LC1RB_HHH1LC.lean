@@ -16,20 +16,31 @@ $$
 C(a, k, d, c) := 0^\infty \ (10)^a \ (11)^k \ \mathrm{C}{>} \ (11)^d \ (10)^c \ 1111 \ 0^\infty.
 $$
 
-Starting from $C(0, 0, 0, 1)$ (reached after 27 steps from the blank tape), the machine follows the
-map $T$:
+Starting from $C(0, 0, 0, 1)$ (reached after 27 steps from the blank tape), the machine visits only
+configurations in which $k$ and $d$ are not both nonzero. Writing
+$D(a, d, c) := C(a, 0, d, c)$ and $K(a, k, c) := C(a, k + 1, 0, c)$, the intermediate map $T$ is:
 
 $$
-T(C(a, k, d, c)) = \begin{cases}
-  C(a, k - c, 0, d + 2c + 1) & \text{if } k \ge 1,\ k > c, \\
-  C(a, 0, d + 2k, c - k) & \text{if } k \ge 1,\ k \le c, \\
-  C(a', d + 1, 2, c') & \text{if } a = a' + 1,\ k = 0,\ c = c' + 2, \\
-  C(a', d + 2, 0, 1) & \text{if } a = a' + 1,\ k = 0,\ c = 1, \\
-  C(a', d + 2, 0, 0) & \text{if } a = a' + 1,\ k = 0,\ c = 0, \\
-  C(d + 1, 0, 0, c' + 1) & \text{if } a = 0,\ k = 0,\ c = c' + 1, \\
-  \text{Halt} & \text{if } a = 0,\ k = 0,\ c = 0.
+\begin{aligned}
+T(K(a, k, c)) &= \begin{cases}
+  K(a, k - c, 2c + 1) & \text{if } c \le k, \\
+  D(a, 2k + 2, c - k - 1) & \text{if } c > k,
+\end{cases} \\
+T(D(a, d, c)) &= \begin{cases}
+  K(a - 1, d + 1, 0) & \text{if } a \ge 1,\ c = 0, \\
+  K(a - 1, d + 2 - c, 2c - 1) & \text{if } a \ge 1,\ 1 \le c \le d + 2, \\
+  D(a - 1, 2d + 4, c - d - 3) & \text{if } a \ge 1,\ c \ge d + 3, \\
+  D(d + 1, 0, c) & \text{if } a = 0,\ c \ge 1, \\
+  \text{Halt} & \text{if } a = 0,\ c = 0.
 \end{cases}
+\end{aligned}
 $$
+
+Contracting the terminating $K(a, k, c)$ loop via `evalK` (which preserves $a$ and returns the
+resulting $(d', c')$ of $D(a, d', c')$) and iterating the strictly decreasing $a$-drain via
+`drainD` until $a = 0$ restricts the dynamics (`HighLevelState`, `highLevelNext`) to the
+two-counter Poincaré section $D(a, c) := C(a, 0, 0, c)$, starting at `highLevelStart = .D 0 1` with
+`highLevelNext (.D a c) = drainD a 0 c`.
 -/
 
 @[expose] public section
@@ -547,27 +558,28 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
 
 /-! ## High-Level Collatz-Like Acceleration -/
 
-/-- High-level symbolic configuration state space for
-`1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_---1LC`. -/
-abbrev HighLevelState := State
+private inductive PrevState where
+  | D (a d c : ℕ)
+  | K (a k c : ℕ)
 
-/-- Initial high-level symbolic state $A(0, 0, 0, 1)$. -/
-def highLevelStart : HighLevelState := start
+private def prevStart : PrevState := .D 0 0 1
 
-/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
-def highLevelEncode : HighLevelState → Cfg (Fin 2) (Fin 6) := encode
+private def prevToState : PrevState → State
+  | .D a d c => .mk a 0 d c
+  | .K a k c => .mk a (k + 1) 0 c
 
-/-- High-level accelerated transition function on $A(a, k, d, c)$, contracting the inner
-$(k, c)$ drain loop into a single step. -/
-def highLevelNext : HighLevelState → Option HighLevelState
-  | .mk a (k + 1) d c =>
-    if k + 1 > c then some (.mk a (k + 1 - c) 0 (d + 2 * c + 1))
-    else some (.mk a 0 (d + 2 * (k + 1)) (c - (k + 1)))
-  | .mk (a + 1) 0 d (c + 2) => some (.mk a (d + 1) 2 c)
-  | .mk (a + 1) 0 d 1       => some (.mk a (d + 2) 0 1)
-  | .mk (a + 1) 0 d 0       => some (.mk a (d + 2) 0 0)
-  | .mk 0 0 d (c + 1)       => some (.mk (d + 1) 0 0 (c + 1))
-  | .mk 0 0 _ 0             => none
+private def prevEncode (s : PrevState) : Cfg (Fin 2) (Fin 6) :=
+  encode (prevToState s)
+
+private def prevNext : PrevState → Option PrevState
+  | .K a k c =>
+    if c ≤ k then some (.K a (k - c) (2 * c + 1)) else some (.D a (2 * k + 2) (c - k - 1))
+  | .D (a + 1) d 0 => some (.K a (d + 1) 0)
+  | .D (a + 1) d (c + 1) =>
+    if c ≤ d + 1 then some (.K a (d + 1 - c) (2 * c + 1))
+    else some (.D a (2 * d + 4) (c - d - 2))
+  | .D 0 d (c + 1) => some (.D (d + 1) 0 (c + 1))
+  | .D 0 _ 0 => none
 
 private theorem reaches_drain (a : ℕ) : ∀ (k c d : ℕ),
     CollatzReachesPlus next (.mk a (k + 1) d c)
@@ -598,24 +610,174 @@ private theorem reaches_drain (a : ℕ) : ∀ (k c d : ℕ),
       simp only [h', ↓reduceIte, h1, h2]
       exact ih.to_star
 
-/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
-of `target`. -/
-theorem is_valid_highLevel_acceleration :
-    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
-  refine is_valid_acceleration.of_collatz (embed := id)
+private theorem is_valid_prev_acceleration :
+    IsValidAcceleration target prevStart prevEncode prevNext := by
+  refine is_valid_acceleration.of_collatz (embed := prevToState)
     (CollatzReachesStar.refl next start) ?_
-  rintro ⟨a, k, d, c⟩
-  rcases k with _ | k
+  rintro (⟨a, d, c⟩ | ⟨a, k, c⟩)
   · rcases a with _ | a <;> rcases c with _ | _ | c
     · exact CollatzStepsTo.of_eq rfl
     · exact CollatzStepsTo.of_eq rfl
     · exact CollatzStepsTo.of_eq rfl
     · exact CollatzStepsTo.of_eq rfl
-    · exact CollatzStepsTo.of_eq rfl
-    · exact CollatzStepsTo.of_eq rfl
-  · dsimp [highLevelNext]
-    have h := reaches_drain a k c d
-    split_ifs with hgt <;> simp only [hgt, ↓reduceIte] at h <;> exact h
+    · refine CollatzStepsTo.of_eq ?_
+      simp only [prevNext, Nat.zero_le, ↓reduceIte, Nat.sub_zero, Option.map_some]
+      rfl
+    · have h := reaches_drain a d c 2
+      refine CollatzStepsTo.head (s₂ := .mk a (d + 1) 2 c) rfl ?_
+      by_cases hc : c ≤ d
+      · have hg : d + 1 > c := by omega
+        have hc' : c + 1 ≤ d + 1 := by omega
+        simp only [hg, ↓reduceIte] at h
+        simp only [prevNext, hc', ↓reduceIte, Option.map_some, prevToState]
+        rw [show d + 1 - (c + 1) + 1 = d + 1 - c by omega,
+          show 2 * (c + 1) + 1 = 2 + 2 * c + 1 by omega]
+        exact h
+      · have hg : ¬ d + 1 > c := by omega
+        have hc' : ¬ c + 1 ≤ d + 1 := by omega
+        simp only [hg, ↓reduceIte] at h
+        simp only [prevNext, hc', ↓reduceIte, Option.map_some, prevToState]
+        rw [show 2 * d + 4 = 2 + 2 * (d + 1) by omega, show c + 1 - d - 2 = c - (d + 1) by omega]
+        exact h
+  · have h := reaches_drain a k c 0
+    by_cases hc : c ≤ k
+    · have hg : k + 1 > c := by omega
+      simp only [hg, ↓reduceIte] at h
+      simp only [prevNext, hc, ↓reduceIte, Option.map_some, prevToState]
+      rw [show k - c + 1 = k + 1 - c by omega, show 2 * c + 1 = 0 + 2 * c + 1 by omega]
+      exact h
+    · have hg : ¬ k + 1 > c := by omega
+      simp only [hg, ↓reduceIte] at h
+      simp only [prevNext, hc, ↓reduceIte, Option.map_some, prevToState]
+      rw [show 2 * k + 2 = 0 + 2 * (k + 1) by omega, show c - k - 1 = c - (k + 1) by omega]
+      exact h
+
+/-- High-level symbolic configuration state space for
+`1RB1RA_0LC0RE_1LF1LD_1LA0LA_1LC1RB_---1LC`: the two-counter Poincaré section $d = 0$, $k = 0$. -/
+inductive HighLevelState where
+  /-- $D(a, c) := A(a, 0, 0, c) = 0^\infty\,(10)^a\,\mathrm{C}{>}\,(10)^c\,1111\,0^\infty$. -/
+  | D (a c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level symbolic state $D(0, 1) = A(0, 0, 0, 1)$. -/
+def highLevelStart : HighLevelState := .D 0 1
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .D a c => .mk a 0 0 c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Contract the $K(a, k, c)$ loop until it exits to $D(a, d', c')$, returning $(d', c')$. -/
+def evalK (k c : ℕ) : ℕ × ℕ :=
+  let c1 := max c 1
+  if c1 ≤ k then evalK (k - c1) (2 * c1 + 1)
+  else (2 * k + 2, c1 - k - 1)
+termination_by k
+decreasing_by omega
+
+/-- Contract the $D(a, d, c)$ reduction on $a$ until $a = 0$ and the state returns to $d = 0$
+(or halts when $a = 0$ and $c = 0$). -/
+def drainD (a d c : ℕ) : Option HighLevelState :=
+  if a = 0 then
+    if c = 0 then none else some (.D (d + 1) c)
+  else
+    let nextDC :=
+      if c = 0 then evalK (d + 1) 0
+      else if c - 1 ≤ d + 1 then evalK (d + 1 - (c - 1)) (2 * (c - 1) + 1)
+      else (2 * d + 4, c - 1 - d - 2)
+    drainD (a - 1) nextDC.1 nextDC.2
+termination_by a
+decreasing_by omega
+
+/-- High-level accelerated transition function on $D(a, c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .D a c => drainD a 0 c
+
+private def toPrev : HighLevelState → PrevState
+  | .D a c => .D a 0 c
+
+private theorem reaches_evalK_pos (a : ℕ) :
+    ∀ k, ∀ c, c ≠ 0 →
+      CollatzReachesPlus prevNext (.K a k c) (.D a (evalK k c).1 (evalK k c).2) := by
+  intro k
+  induction k using Nat.strongRecOn with
+  | ind k ih =>
+    intro c hc
+    rw [evalK.eq_def]
+    have hmax : max c 1 = c := by omega
+    simp only [hmax]
+    by_cases hck : c ≤ k
+    · simp only [hck, ↓reduceIte]
+      have h_step : prevNext (.K a k c) = some (.K a (k - c) (2 * c + 1)) := by
+        simp [prevNext, hck]
+      have h_lt : k - c < k := by omega
+      have h_rec := ih (k - c) h_lt (2 * c + 1) (by omega)
+      exact CollatzReachesPlus.head h_step h_rec.to_star
+    · simp only [hck, ↓reduceIte]
+      have h_step : prevNext (.K a k c) = some (.D a (2 * k + 2) (c - k - 1)) := by
+        simp [prevNext, hck]
+      exact CollatzReachesPlus.single h_step
+
+private theorem reaches_evalK (a k c : ℕ) :
+    CollatzReachesPlus prevNext (.K a k c) (.D a (evalK k c).1 (evalK k c).2) := by
+  rcases Nat.eq_zero_or_pos c with rfl | hc
+  · have h_step : prevNext (.K a k 0) = some (.K a k 1) := by
+      simp [prevNext]
+    have h_eq : evalK k 0 = evalK k 1 := by
+      rw [evalK.eq_def, evalK.eq_def]
+      simp
+    rw [h_eq]
+    exact CollatzReachesPlus.head h_step (reaches_evalK_pos a k 1 (by omega)).to_star
+  · exact reaches_evalK_pos a k c (Nat.pos_iff_ne_zero.mp hc)
+
+private theorem stepsTo_drainD : ∀ (a d c : ℕ),
+    CollatzStepsTo prevNext (.D a d c) ((drainD a d c).map toPrev)
+  | 0, d, 0 => by
+    rw [drainD.eq_def]
+    simp only [↓reduceIte, Option.map_none]
+    exact CollatzStepsTo.of_eq rfl
+  | 0, d, c + 1 => by
+    rw [drainD.eq_def]
+    simp only [↓reduceIte, Nat.add_one_ne_zero, Option.map_some, toPrev]
+    exact CollatzStepsTo.of_eq rfl
+  | a + 1, d, 0 => by
+    rw [drainD.eq_def]
+    simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
+    have h1 : prevNext (.D (a + 1) d 0) = some (.K a (d + 1) 0) := rfl
+    have h2 := reaches_evalK a (d + 1) 0
+    have h3 := stepsTo_drainD a (evalK (d + 1) 0).1 (evalK (d + 1) 0).2
+    exact CollatzStepsTo.head h1 (CollatzStepsTo.of_reachesStar h2.to_star h3)
+  | a + 1, d, c + 1 => by
+    rw [drainD.eq_def]
+    simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
+    by_cases hc : c ≤ d + 1
+    · simp only [hc, ↓reduceIte]
+      have h1 : prevNext (.D (a + 1) d (c + 1)) = some (.K a (d + 1 - c) (2 * c + 1)) := by
+        simp [prevNext, hc]
+      have h2 := reaches_evalK a (d + 1 - c) (2 * c + 1)
+      have h3 := stepsTo_drainD a (evalK (d + 1 - c) (2 * c + 1)).1
+        (evalK (d + 1 - c) (2 * c + 1)).2
+      exact CollatzStepsTo.head h1 (CollatzStepsTo.of_reachesStar h2.to_star h3)
+    · simp only [hc, ↓reduceIte]
+      have h1 : prevNext (.D (a + 1) d (c + 1)) = some (.D a (2 * d + 4) (c - d - 2)) := by
+        simp [prevNext, hc]
+      have h3 := stepsTo_drainD a (2 * d + 4) (c - d - 2)
+      exact CollatzStepsTo.head h1 h3
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid Collatz-like acceleration
+of `target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  have h_enc : (fun u => prevEncode (toPrev u)) = highLevelEncode :=
+    funext fun ⟨_, _⟩ => rfl
+  rw [← h_enc]
+  refine is_valid_prev_acceleration.of_collatz (embed := toPrev)
+    (CollatzReachesStar.refl prevNext prevStart) ?_
+  rintro ⟨a, c⟩
+  exact stepsTo_drainD a 0 c
 
 /-- `target` halts from the blank tape if and only if the high-level acceleration `highLevelNext`
 halts from `highLevelStart`. -/
