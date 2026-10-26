@@ -6947,6 +6947,57 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | C (a : ℕ) (L : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .C 3 [0]
+
+def toState : HighLevelState → State
+  | .C a L => .C a L [0]
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def transferHL (a : ℕ) (L R : List ℕ) : HighLevelState :=
+  let p := R.foldl (fun p d => (d, p.1 :: p.2)) (a, L)
+  .C p.1 p.2
+
+def stepEpoch (a : ℕ) (L R : List ℕ) : Option HighLevelState :=
+  let k := a / 2
+  let R₁ := bumpHeadBy k R
+  if L = [] then
+    if a ≤ 1 then none
+    else if a % 2 = 0 then some (transferHL (k - 1) [] (bumpHead (bumpHead R₁)))
+    else stepEpoch k [] (0 :: R₁)
+  else
+    let b := L.headD 0
+    let L' := L.tail
+    if a % 2 = 0 then some (transferHL (b + k) L' (bumpHead (bumpHead R₁)))
+    else stepEpoch (b + k + 1) L' (0 :: R₁)
+termination_by (L.length, a)
+decreasing_by
+  all_goals simp_wf
+  · omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C a L => stepEpoch a L [0]
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF
 
 namespace M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF
@@ -7045,6 +7096,63 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | C (a : ℕ) (L R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .C 1 [] [0, 0]
+
+def toState : HighLevelState → State
+  | .C a L R => .C a L R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def d0Iter (k : ℕ) (R : List ℕ) : List ℕ :=
+  if k = 0 then R else d0Iter (k - 1) (d0Out R)
+termination_by k
+decreasing_by omega
+
+def scanEpoch (a : ℕ) (L R : List ℕ) : Option HighLevelState :=
+  if R = [] then
+    none
+  else
+    let r₀ := R.headD 0
+    let R' := R.tail
+    let k := r₀ / 2
+    let Rk := d0Iter k R'
+    let a₁ := a + 2 * k
+    if r₀ % 2 = 0 then
+      let p := bump2 L
+      List.casesOn Rk (some (.C p.1 p.2 [a₁ + 2, 0])) fun r R'' =>
+        some (.C p.1 p.2 ((a₁ + r + 3) :: d0Out R''))
+    else if Rk.length - 1 < R'.length ∨
+        (R'.length = 0 ∧ Rk.length ≤ 1 ∧ Rk.headD 0 < r₀) then
+      scanEpoch 0 (a₁ :: L) Rk
+    else
+      none
+termination_by (R.length - 1, R.headD 0)
+decreasing_by
+  simp_wf
+  cases R with
+  | nil => contradiction
+  | cons head tail =>
+    simp +zetaDelta only [Prod.lex_def, List.headD_eq_head?, List.head?_cons, Option.getD_some,
+      List.tail_cons, List.length_cons] at *
+    omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C a L R => scanEpoch a L R
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB
 
 namespace M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA
@@ -7100,6 +7208,64 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | F (a b : ℕ) (L : List ℕ) (r : ℕ) (R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .F 1 0 [] 0 []
+
+def toState : HighLevelState → State
+  | .F a b L r R => .F a b L r R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def exitC (a b : ℕ) (L : List ℕ) (r : ℕ) (R : List ℕ) : Option HighLevelState :=
+  List.rec
+    (fun a b r R =>
+      if a ≥ 1 then some (.F (a - 1) b [] 0 (r :: R))
+      else if b = 0 then none
+      else
+        let b' := b - 1
+        if b' % 2 = 0 then some (.F (b' + 3) 0 [] r R)
+        else if b' = 1 then none
+        else some (.F (2 * (b' / 2) - 1) 0 [] 0 (0 :: (r + 1) :: R)))
+    (fun c L' ih a b r R =>
+      if a ≥ 1 then some (.F (a - 1) b (c :: L') 0 (r :: R))
+      else if b = 0 then none
+      else
+        let b' := b - 1
+        if b' % 2 = 0 then some (.F (b' + 3) (c + 1) L' r R)
+        else if b' = 1 then ih 0 (c + 1) 0 ((r + 1) :: R)
+        else some (.F (2 * (b' / 2) - 1) (c + 1) L' 0 (0 :: (r + 1) :: R)))
+    L a b r R
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .F a b L r R =>
+    let a' := a + 2 * (r / 2)
+    if r % 2 = 0 then
+      List.casesOn R (exitC (a' + 2) b L 0 []) fun d R' =>
+        if d = 0 then
+          List.casesOn R' (some (.F 0 (b + 1) L a' [])) fun e R'' =>
+            if a' % 2 = 0 then
+              some (.F (a' + 3) (b + 1) L e R'')
+            else
+              exitC (2 * (a' / 2)) (b + 1) L 0 ((e + 1) :: R'')
+        else
+          some (.F 0 (b + 1) L a' ((d - 1) :: R'))
+    else
+      List.casesOn R (exitC a' b L 0 [0]) fun e R' =>
+        some (.F 0 (a' + 1) (b :: L) e R')
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA
 
 namespace M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC
@@ -7199,6 +7365,40 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | E (R : List (ℕ × Bool))
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .E [(0, true)]
+
+def toState : HighLevelState → State
+  | .E R => .E [] R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def exitRet : RetMode × List (ℕ × Bool) → HighLevelState
+  | (.r01, R') => .E ((0, true) :: R')
+  | (.r10, R') => .E ((0, false) :: (0, false) :: R')
+  | (.r11, R') => .E ((0, false) :: (0, true) :: R')
+  | (.r21, R') => .E ((1, false) :: (0, true) :: R')
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E [] => some (.E [(0, false), (0, true)])
+  | .E ((d, b) :: R₁) =>
+    Nat.casesOn d
+      (some (.E ((1, false) :: (if b then (0, false) :: R₁ else incHead R₁))))
+      fun d' => exitRet <$> bounceR ((d', b) :: R₁)
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC
 
 namespace M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF
@@ -7252,6 +7452,65 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | B (R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .B [0, 1]
+
+def toState : HighLevelState → State
+  | .B R => .B [] R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def peelZeroPairs (a : ℕ) : List ℕ → ℕ × List ℕ
+  | d₁ :: d₂ :: R => if d₁ = 0 ∧ d₂ = 0 then peelZeroPairs (a + 2) R else (a, d₁ :: d₂ :: R)
+  | R => (a, R)
+
+def scanEpoch (L R : List ℕ) : Option HighLevelState :=
+  if R = [] then
+    some (.B (L.reverse ++ [0, 0]))
+  else
+    let d := R.headD 0
+    let R₁ := R.tail
+    let L₁ := List.replicate d 0 ++ L
+    let p := peelZeroPairs 0 R₁
+    List.casesOn (motive := fun _ => Option HighLevelState) p.2 none fun c R₃ =>
+      if c = 0 then
+        List.casesOn (motive := fun _ => Option HighLevelState) R₃
+          (some (.B (L₁.reverse ++ [p.1 + 2, 0]))) fun e R₄ =>
+            if ((e - 1) :: R₄).sum + ((e - 1) :: R₄).length <
+                (d :: R₁).sum + (d :: R₁).length then
+              scanEpoch ((p.1 + 2) :: L₁) ((e - 1) :: R₄)
+            else none
+      else
+        if (bounceRight (c - 1) R₃).sum + (bounceRight (c - 1) R₃).length <
+            (d :: R₁).sum + (d :: R₁).length then
+          scanEpoch ((p.1 + 1) :: L₁) (bounceRight (c - 1) R₃)
+        else none
+termination_by R.sum + R.length
+decreasing_by
+  all_goals simp_wf
+  all_goals
+    cases R with
+    | nil => contradiction
+    | cons _ _ =>
+      simp +zetaDelta only [List.headD_cons, List.tail_cons, List.sum_cons, List.length_cons] at *
+      omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .B R => scanEpoch [] R
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA
 
 namespace M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA
@@ -7297,6 +7556,73 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | D (a b : ℕ) (L : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .D 1 0 []
+
+def toState : HighLevelState → State
+  | .D a b L => .D a b L []
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def sweepDHL (a b : ℕ) (L R : List ℕ) : HighLevelState :=
+  let t := R.foldl (fun t d => (d, t.1, t.2.1 :: t.2.2)) (a, b, L)
+  .D t.1 t.2.1 t.2.2
+
+def runE (a : ℕ) (L : List ℕ) (r₀ : ℕ) (R' : List ℕ) : Option HighLevelState :=
+  if L = [] then
+    if a = 0 then none
+    else if a = 1 then some (sweepDHL 0 1 [0] (r₀ :: R'))
+    else
+      let a₂ := a - 2
+      let k₂ := a₂ / 2
+      if a₂ % 2 = 1 then some (sweepDHL (k₂ + 1) (k₂ + 2) [0] (r₀ :: R'))
+      else runE k₂ [] (k₂ + 1) (r₀ :: R')
+  else
+    let b := L.headD 0
+    let L' := L.tail
+    if a = 0 then runE b L' 0 (r₀ :: R')
+    else if a = 1 then some (sweepDHL 0 (b + 2) (bumpHead L') (r₀ :: R'))
+    else
+      let a₂ := a - 2
+      let k₂ := a₂ / 2
+      if a₂ % 2 = 1 then some (sweepDHL (k₂ + 1) (b + 1 + k₂ + 2) (bumpHead L') (r₀ :: R'))
+      else runE (b + 1 + k₂) L' (k₂ + 1) (r₀ :: R')
+termination_by (L.length, a)
+decreasing_by
+  all_goals simp_wf
+  · omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .D a b L =>
+    let k := a / 2
+    if a % 2 = 1 then some (.D k (b + k + 2) (bumpHead L))
+    else runE (b + k) L k []
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA
 
 namespace M_1RB1LA_1LC0RE_HHH0LD_1RE0LF_1RA1RE_1LA0LB
@@ -7465,6 +7791,72 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | E (k d : ℕ) (R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .E 2 0 []
+
+def toState : HighLevelState → State
+  | .E k d R => .E 0 (List.replicate k 0 ++ [1]) d R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def bounceBHL : ℕ → List ℕ → Option HighLevelState
+  | d, [] =>
+    if d % 2 = 1 then none
+    else some (.E (d / 2 + 1) 0 [])
+  | d, e :: R =>
+    if d % 2 = 1 then some (.E (d / 2) e R)
+    else bounceBHL (e + d + 4) R
+
+def drainPre : DrainMode → List ℕ → ℕ → List ℕ → Option HighLevelState
+  | .A, [], d, R => bounceBHL (d + 3) R
+  | .B, [], d, R => some (.E 0 (d + 1) R)
+  | .BR, [], d, R => some (.E 0 0 (d :: R))
+  | .A, x :: Lpre, d, R =>
+    drainPre (if x % 2 = 0 then .A else .B) Lpre (x + d + 2) R
+  | .B, x :: Lpre, d, R =>
+    if x = 0 then drainPre .BR Lpre (d + 1) R
+    else drainPre (if (x - 1) % 2 = 0 then .A else .B) Lpre (x - 1) ((d + 1) :: R)
+  | .BR, x :: Lpre, d, R =>
+    if x = 0 then drainPre .BR Lpre 0 (d :: R)
+    else drainPre (if (x - 1) % 2 = 0 then .A else .B) Lpre (x - 1) (0 :: d :: R)
+
+def scanR (a : ℕ) (Lpre : List ℕ) (d : ℕ) (R : List ℕ) : Option HighLevelState :=
+  List.rec (motive := fun _ => ℕ → List ℕ → ℕ → Option HighLevelState)
+    (fun a Lpre d =>
+      if d = 0 then
+        drainPre (if (a + 3) % 2 = 0 then .A else .B) Lpre (a + 3) [0]
+      else if (d - 1) % 2 = 0 then
+        none
+      else
+        drainPre .A (List.replicate ((d - 1) / 2) 0 ++ (a + 3) :: Lpre) 0 [0])
+    (fun e R' ih a Lpre d =>
+      if d = 0 then
+        drainPre (if a % 2 = 0 then .B else .A) Lpre (a + e + 4) R'
+      else if (d - 1) % 2 = 0 then
+        if (d - 1) / 2 = 0 then
+          ih (a + 3) Lpre e
+        else
+          ih 0 (List.replicate ((d - 1) / 2 - 1) 0 ++ (a + 3) :: Lpre) e
+      else
+        drainPre .A (List.replicate ((d - 1) / 2) 0 ++ (a + 3) :: Lpre) (e + 1) R')
+    R a Lpre d
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E k d R => scanR 0 (List.replicate k 0) d R
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD
 
 namespace M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC
@@ -7526,6 +7918,85 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | B (R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .B [1]
+
+def toState : HighLevelState → State
+  | .B R => .B [] 0 R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def scanHL : Bool → ℕ → List ℕ → ℕ → List ℕ → Option HighLevelState
+  | true, a, Lp, _, [] => some (.B (cSweepTail Lp a [1]))
+  | true, a, Lp, _, r :: R' =>
+    if r = 0 then
+      if R' = [] then scanHL false (a + 1) Lp 1 []
+      else scanHL false (a + 1) Lp (R'.headD 0 + 2) R'.tail
+    else if r = 1 then
+      scanHL true 1 (a :: Lp) 0 R'
+    else if r = 2 then
+      if R' = [] then none
+      else scanHL false 0 (1 :: a :: Lp) (R'.headD 0) R'.tail
+    else
+      scanHL false 2 (a :: Lp) (r - 3) R'
+  | false, a, Lp, d, R =>
+    let a₁ := a + 3 * (d / 3)
+    if d % 3 = 0 then
+      some (.B (cSweepTail Lp a₁ (bump2 R)))
+    else if d % 3 = 1 then
+      scanHL true (a₁ + 2) Lp 0 R
+    else if R = [] then
+      none
+    else
+      scanHL false 0 ((a₁ + 2) :: Lp) (R.headD 0) R.tail
+termination_by inCR1 _ _ _ R => (R.length, if inCR1 then 0 else 1)
+decreasing_by
+  all_goals simp_wf
+  · apply Prod.Lex.left
+    omega
+  · cases R' with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp only [List.length_cons]
+      omega
+  · apply Prod.Lex.left
+    omega
+  · cases R' with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp only [List.length_cons]
+      omega
+  · apply Prod.Lex.left
+    omega
+  · apply Prod.Lex.right
+    omega
+  · cases R with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp only [List.length_cons]
+      omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .B R =>
+    let p := bump2NE R
+    scanHL false 0 [] p.1 p.2
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC
 
 namespace M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH
@@ -7620,6 +8091,68 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 
 theorem has_odometer_reduction : HasOdometerReduction target := by sorry
+
+inductive HighLevelState where
+  | W (w : List (Fin 2))
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .W []
+
+def toState : HighLevelState → State
+  | .W w => ([], w)
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def runOdom : List OdomTok → List (Fin 2) → Option HighLevelState
+  | l, [] =>
+    if cap l = 0 then some (.W (drain l ++ [1]))
+    else if cap (dec l) < cap l then runOdom (.L2 :: dec l) []
+    else none
+  | l, b₀ :: w₁ =>
+    if b₀ = 0 then
+      if cap l = 0 then some (.W (drain l ++ 1 :: w₁))
+      else if cap (dec l) < cap l then runOdom (dec l) (1 :: w₁)
+      else none
+    else
+      match w₁ with
+      | [] => runOdom (.L2 :: l) []
+      | b₁ :: w₂ =>
+        if b₁ = 0 then
+          match w₂ with
+          | [] => runOdom (.L2 :: l) []
+          | b₂ :: w₃ =>
+            if b₂ = 0 then runOdom (.L2 :: l) w₃
+            else
+              match w₃ with
+              | [] => runOdom (.L0 :: l) []
+              | b₃ :: w₄ =>
+                if b₃ = 0 then runOdom (.L0 :: l) w₄
+                else if cap l = 0 then some (.W (drain l ++ 1 :: 0 :: 0 :: 0 :: w₄))
+                else if cap (dec l) < cap l then runOdom (dec l) (1 :: 0 :: 0 :: 0 :: w₄)
+                else none
+        else
+          match w₂ with
+          | [] => runOdom (.L2 :: l) []
+          | b₂ :: w₃ =>
+            if b₂ = 0 then runOdom (.L2 :: l) w₃
+            else none
+termination_by l w => (w.length, cap l)
+decreasing_by
+  all_goals simp_wf
+  all_goals omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .W w => runOdom [] w
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH
 
 namespace M_1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_HHH0LB
@@ -7720,6 +8253,60 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | C (a : ℕ) (L : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .C 3 [0]
+
+def toState : HighLevelState → State
+  | .C a L => .C a L []
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def transferBHL : List ℕ → List ℕ → HighLevelState
+  | [], [] => .C 0 []
+  | a :: L, [] => .C (a + 1) L
+  | L, d :: R => transferBHL (d :: bumpHead L) R
+
+def runEpoch (a : ℕ) (L R : List ℕ) : Option HighLevelState :=
+  let r := R.headD 0
+  if a = 0 then
+    List.casesOn L none fun b L' =>
+      if b = 0 then some (transferBHL ((r + 2) :: 0 :: L') R.tail)
+      else some (transferBHL ((b - 1) :: L') ((r + 2) :: R.tail))
+  else
+    let k := (a - 1) / 2
+    if (a - 1) % 2 = 0 then
+      some (transferBHL (bumpHead^[k] L) ((r + k + 2) :: R.tail))
+    else if L = [] then
+      runEpoch k [] (0 :: (r + k) :: R.tail)
+    else
+      runEpoch (L.headD 0 + k + 1) L.tail (0 :: (r + k) :: R.tail)
+termination_by (L.length, a)
+decreasing_by
+  all_goals simp_wf
+  · omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C a L => runEpoch a L []
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
 
 namespace M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB
@@ -7915,6 +8502,55 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | B (E : List ℕ) (c : ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .B [] 1
+
+def toState : HighLevelState → State
+  | .B E c => .B [0] E c
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def drainEven : List ℕ → List ℕ → ℕ → HighLevelState
+  | [], E, c => .B E c
+  | h :: hs, E, c =>
+    List.casesOn (motive := fun _ => HighLevelState) (List.replicate h 0 ++ E)
+      (drainEven hs [] (c + 2)) fun e Et => drainEven hs ((e + 1) :: Et) c
+
+def drainOdd : ℕ → List ℕ → List ℕ → ℕ → HighLevelState
+  | h₀, [], E, c => .B (List.replicate (h₀ + 1) 0 ++ E) c
+  | h₀, h₁ :: hs, E, c => drainOdd h₁ hs (1 :: (List.replicate (h₀ - 1) 0 ++ E)) c
+
+def peelPairs : ℕ → List ℕ → List ℕ → ℕ → Option HighLevelState
+  | h₀, hs, [], c =>
+    if c % 2 = 0 then some (drainEven ((h₀ + c / 2) :: hs) [] 3)
+    else some (drainOdd (h₀ + c / 2) hs [] 3)
+  | h₀, hs, [e₀], c =>
+    if c = 0 then some (drainEven ((h₀ + e₀) :: hs) [] 2)
+    else if c = 1 then none
+    else if c = 2 then some (drainOdd (h₀ + e₀) hs [1] 1)
+    else if c = 3 then some (drainEven ((h₀ + e₀) :: hs) [1] 0)
+    else some (drainEven ((h₀ + e₀) :: hs) [1, 0] (c - 4))
+  | h₀, hs, e₀ :: e₁ :: E₂, c =>
+    if e₁ = 0 then some (drainEven ((h₀ + e₀) :: hs) (1 :: E₂) c)
+    else if e₁ = 1 then peelPairs 2 ((h₀ + e₀) :: hs) E₂ c
+    else some (drainEven (2 :: (h₀ + e₀) :: hs) ((e₁ - 2) :: E₂) c)
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .B E c => peelPairs 0 [] E c
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD
 
 namespace M_1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_HHH1RA
@@ -8011,6 +8647,51 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | E (R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .E [0]
+
+def toState : HighLevelState → State
+  | .E R => .E (0 :: R)
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def retHL : Bool → List Bool → List ℕ → List ℕ
+  | false, [], R => bumpHead (bumpHead R)
+  | true, [], R => 3 :: bumpHead R
+  | false, false :: bs, R => retHL true bs (bumpHead R)
+  | false, true :: bs, R => retHL true bs (bumpHead (bumpHead R))
+  | true, false :: bs, R => retHL false bs (0 :: bumpHead R)
+  | true, [true], R => 1 :: 0 :: bumpHead R
+  | true, true :: false :: bs, R => retHL true bs (0 :: 0 :: bumpHead R)
+  | true, true :: true :: bs, R => retHL true bs (1 :: 0 :: bumpHead R)
+
+def scanHL : Bool → List Bool → List ℕ → Option HighLevelState
+  | false, bs, [] => some (.E (retHL false bs [0]))
+  | true, bs, [] => some (.E (retHL true bs [0, 0]))
+  | m, bs, r :: R =>
+    let bm := if m then true :: false :: bs else false :: bs
+    if r = 0 then some (.E (retHL false bm R))
+    else if r = 1 then some (.E (retHL true bm R))
+    else if r = 2 then scanHL false (false :: bm) R
+    else if r = 3 then scanHL true bm R
+    else none
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E R => scanHL false [] R
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH
 
 namespace M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
@@ -8094,6 +8775,101 @@ def next : State → Option State
 theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+
+inductive HighLevelState where
+  | EL (a : ℕ) (L : List ℕ) (d : ℕ) (R : List ℕ)
+  deriving DecidableEq, Repr
+
+def highLevelStart : HighLevelState := .EL 1 [] 1 []
+
+def toState : HighLevelState → State
+  | .EL a L d R => .EL a L d R
+
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+def countOnes (L : List ℕ) : ℕ × List ℕ :=
+  List.rec (motive := fun _ => ℕ × List ℕ) (0, [])
+    (fun x xs p => if x = 1 then (p.1 + 1, p.2) else (0, x :: xs)) L
+
+def pushZeroBump (k : ℕ) (L : List ℕ) : List ℕ :=
+  ((fun s => 0 :: bumpHead s)^[k]) L
+
+def stepFHead (R' : List ℕ) (ih : List ℕ → HighLevelState) : ℕ → List ℕ → HighLevelState
+  | 0, L =>
+    let p := bumpNE L
+    List.casesOn (motive := fun _ => HighLevelState) R' (.EL p.1 p.2 2 []) fun e R'' =>
+      .EL p.1 p.2 0 (e :: R'')
+  | 1, L => ih (0 :: bumpHead L)
+  | 2, L =>
+    let pL := bumpNE (bumpHead (bumpHead L))
+    let pR := bumpNE (bumpHead R')
+    .EL pL.1 pL.2 pR.1 pR.2
+  | d + 3, L =>
+    let c := countOnes (bumpHead L)
+    List.casesOn (motive := fun _ => HighLevelState) c.2
+      (stepFHead R' ih d (pushZeroBump c.1 [0, 0])) fun x Lt =>
+        if x = 0 then
+          List.casesOn (motive := fun _ => HighLevelState) Lt
+            (stepFHead R' ih d (pushZeroBump c.1 [0, 1, 0])) fun a Lt' =>
+              .EL a Lt' 0 (1 :: (List.replicate c.1 1 ++ (d :: R')))
+        else
+          .EL (x - 2) Lt 0 (1 :: (List.replicate c.1 1 ++ (d :: R')))
+
+def runFHL (L R : List ℕ) : HighLevelState :=
+  List.rec (motive := fun _ => List ℕ → HighLevelState)
+    (fun L =>
+      let p := bumpNE L
+      .EL p.1 p.2 0 [])
+    (fun r R' ih L => stepFHead R' ih r L)
+    R L
+
+def runE0HL (L R : List ℕ) : HighLevelState :=
+  let c := countOnes L
+  List.casesOn (motive := fun _ => HighLevelState) c.2
+    (runFHL (pushZeroBump c.1 [0, 0]) R) fun x Lt =>
+      if x = 0 then
+        List.casesOn (motive := fun _ => HighLevelState) Lt
+          (runFHL (pushZeroBump c.1 [0, 1, 0]) R) fun a Lt' =>
+            .EL a Lt' 0 (1 :: (List.replicate c.1 1 ++ R))
+      else
+        .EL (x - 2) Lt 0 (1 :: (List.replicate c.1 1 ++ R))
+
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .EL a L d R =>
+    let R₁ := peelEL (a / 4) (d :: R)
+    if a % 4 = 0 then
+      List.casesOn (motive := fun _ => Option HighLevelState) L none fun b Lp =>
+        let p := bumpNE R₁
+        if b = 0 then
+          List.casesOn (motive := fun _ => Option HighLevelState) Lp
+            (some (.EL 1 [] (p.1 + 2) p.2)) fun b' L'' =>
+              some (.EL b' L'' (p.1 + 3) p.2)
+        else if b = 1 then
+          List.casesOn (motive := fun _ => Option HighLevelState) Lp
+            (some (runE0HL [] (p.1 :: p.2))) fun c L'' =>
+              some (runFHL (0 :: (c + 1) :: L'') (p.1 :: p.2))
+        else
+          some (runE0HL ((b - 2) :: Lp) (p.1 :: p.2))
+    else
+      let R₂ := bumpHead (bumpHead R₁)
+      if a % 4 = 1 then
+        some (runFHL L R₂)
+      else if a % 4 = 2 then
+        List.casesOn (motive := fun _ => Option HighLevelState) L
+          (some (runE0HL [] R₂)) fun b L' =>
+            some (.EL b L' 0 R₂)
+      else
+        some (runE0HL L R₂)
+
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by sorry
+
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
 
 namespace M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA

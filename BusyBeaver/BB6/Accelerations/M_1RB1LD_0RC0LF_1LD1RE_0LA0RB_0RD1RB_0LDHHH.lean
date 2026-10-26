@@ -21,6 +21,10 @@ while the right half-tape holds a finite binary word $w \in \{0, 1\}^*$ padded w
 Unlike `1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RC---` (Beaver Math Olympiad Problem 10), reading prefix
 `1011` does not halt: instead it reflects into the odometer with `1000 :: w'`, leaving `111` as the
 sole halting prefix.
+
+Restricting to the empty-odometer Poincaré return section $L = []$ eliminates the mixed-radix
+odometer stack completely, yielding a pure binary-word transition system $W(w) := ([], w)$ starting
+at $W([])$.
 -/
 
 @[expose] public section
@@ -700,5 +704,178 @@ theorem has_odometer_reduction : HasOdometerReduction target := by
   · refine ⟨.L0, .L1, .L2, 2, [1, 0, 1, 0], [1, 0, 0],
       by decide, by decide, by decide, (fun _ => rfl), (fun _ => rfl), (fun _ => rfl),
       step_R_1010, step_R_100⟩
+
+/-! ## High-Level Acceleration -/
+
+/-- Pure binary-word state space $W(w) := ([], w)$ on the empty-odometer Poincaré return section
+$L = []$. -/
+inductive HighLevelState where
+  /-- Right bit-word configuration $([], w)$ with empty odometer stack $L = []$. -/
+  | W (w : List (Fin 2))
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $W([])$, equal to `start`. -/
+def highLevelStart : HighLevelState := .W []
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .W w => ([], w)
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Contract mixed-radix odometer transitions from `(l, w)` until the stack `l` drains back to `[]`
+or the word prefix `111` halts. -/
+def runOdom : List OdomTok → List (Fin 2) → Option HighLevelState
+  | l, [] =>
+    if cap l = 0 then some (.W (drain l ++ [1]))
+    else if cap (dec l) < cap l then runOdom (.L2 :: dec l) []
+    else none
+  | l, b₀ :: w₁ =>
+    if b₀ = 0 then
+      if cap l = 0 then some (.W (drain l ++ 1 :: w₁))
+      else if cap (dec l) < cap l then runOdom (dec l) (1 :: w₁)
+      else none
+    else
+      match w₁ with
+      | [] => runOdom (.L2 :: l) []
+      | b₁ :: w₂ =>
+        if b₁ = 0 then
+          match w₂ with
+          | [] => runOdom (.L2 :: l) []
+          | b₂ :: w₃ =>
+            if b₂ = 0 then runOdom (.L2 :: l) w₃
+            else
+              match w₃ with
+              | [] => runOdom (.L0 :: l) []
+              | b₃ :: w₄ =>
+                if b₃ = 0 then runOdom (.L0 :: l) w₄
+                else if cap l = 0 then some (.W (drain l ++ 1 :: 0 :: 0 :: 0 :: w₄))
+                else if cap (dec l) < cap l then runOdom (dec l) (1 :: 0 :: 0 :: 0 :: w₄)
+                else none
+        else
+          match w₂ with
+          | [] => runOdom (.L2 :: l) []
+          | b₂ :: w₃ =>
+            if b₂ = 0 then runOdom (.L2 :: l) w₃
+            else none
+termination_by l w => (w.length, cap l)
+decreasing_by
+  all_goals simp_wf
+  all_goals omega
+
+/-- High-level odometer-free accelerated transition function on $W(w)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .W w => runOdom [] w
+
+private theorem stepsTo_reflect (l : List OdomTok) (w u : List (Fin 2))
+    (hnext : next (l, w) = some (stepLWord l u))
+    (ih_dec : cap (dec l) < cap l →
+      CollatzStepsTo next (dec l, u) ((runOdom (dec l) u).map toState)) :
+    CollatzStepsTo next (l, w)
+      ((if cap l = 0 then some (.W (drain l ++ u))
+        else if cap (dec l) < cap l then runOdom (dec l) u
+        else none).map toState) := by
+  by_cases h0 : cap l = 0
+  · have hn1 : ¬ cap l ≥ 1 := by omega
+    simp only [h0, ↓reduceIte, Option.map_some, toState]
+    apply CollatzStepsTo.of_eq
+    rw [hnext, stepLWord, ite_eq_right hn1]
+  · have hge1 : cap l ≥ 1 := by omega
+    have hlt : cap (dec l) < cap l := by have := cap_dec l hge1; omega
+    simp only [h0, hlt, ↓reduceIte]
+    have hstep : next (l, w) = some (dec l, u) := by
+      rw [hnext, stepLWord, ite_eq_left hge1]
+    exact CollatzStepsTo.head hstep (ih_dec hlt)
+
+private theorem stepsTo_runOdom_len (n : ℕ) :
+    ∀ (w : List (Fin 2)), w.length = n →
+      ∀ (c : ℕ) (l : List OdomTok), cap l = c →
+        CollatzStepsTo next (l, w) ((runOdom l w).map toState) := by
+  induction n using Nat.strong_induction_on with
+  | h n ihn =>
+    intro w hw c
+    induction c using Nat.strong_induction_on generalizing w with
+    | h c ihc =>
+      intro l hl
+      rw [runOdom.eq_def]
+      rcases w with _ | ⟨b₀, w₁⟩
+      · dsimp only
+        by_cases h0 : cap l = 0
+        · have hn1 : ¬ cap l ≥ 1 := by omega
+          simp only [h0, ↓reduceIte, Option.map_some, toState]
+          apply CollatzStepsTo.of_eq
+          simp only [next, popBit, stepLWord, hn1, ↓reduceIte]
+        · have hge1 : cap l ≥ 1 := by omega
+          have hlt : cap (dec l) < cap l := by have := cap_dec l hge1; omega
+          simp only [h0, hlt, ↓reduceIte]
+          have hstep1 : next (l, []) = some (dec l, [1]) := by
+            simp only [next, popBit, stepLWord, hge1, ↓reduceIte]
+          exact CollatzStepsTo.head hstep1
+            (CollatzStepsTo.head rfl
+              (ihc (cap (.L2 :: dec l)) (by simp only [cap]; omega) [] hw (.L2 :: dec l) rfl))
+      · dsimp only
+        rcases fin2_cases b₀ with rfl | rfl
+        · simp only [↓reduceIte]
+          exact stepsTo_reflect l (0 :: w₁) (1 :: w₁) rfl fun hlt =>
+            ihc (cap (dec l)) (by omega) (1 :: w₁) (by simpa using hw) (dec l) rfl
+        · have h10 : ((1 : Fin 2) = 0) = False := by decide
+          simp only [h10, ↓reduceIte]
+          rcases w₁ with _ | ⟨b₁, w₂⟩
+          · exact CollatzStepsTo.head rfl
+              (ihn 0 (by simp at hw; omega) [] rfl _ (.L2 :: l) rfl)
+          · rcases fin2_cases b₁ with rfl | rfl
+            · simp only [↓reduceIte]
+              rcases w₂ with _ | ⟨b₂, w₃⟩
+              · exact CollatzStepsTo.head rfl
+                  (ihn 0 (by simp at hw; omega) [] rfl _ (.L2 :: l) rfl)
+              · rcases fin2_cases b₂ with rfl | rfl
+                · simp only [↓reduceIte]
+                  exact CollatzStepsTo.head rfl
+                    (ihn w₃.length (by simp at hw; omega) w₃ rfl _ (.L2 :: l) rfl)
+                · simp only [h10, ↓reduceIte]
+                  rcases w₃ with _ | ⟨b₃, w₄⟩
+                  · exact CollatzStepsTo.head rfl
+                      (ihn 0 (by simp at hw; omega) [] rfl _ (.L0 :: l) rfl)
+                  · rcases fin2_cases b₃ with rfl | rfl
+                    · simp only [↓reduceIte]
+                      exact CollatzStepsTo.head rfl
+                        (ihn w₄.length (by simp at hw; omega) w₄ rfl _ (.L0 :: l) rfl)
+                    · simp only [h10, ↓reduceIte]
+                      exact stepsTo_reflect l (1 :: 0 :: 1 :: 1 :: w₄) (1 :: 0 :: 0 :: 0 :: w₄)
+                        rfl fun hlt =>
+                          ihc (cap (dec l)) (by omega) (1 :: 0 :: 0 :: 0 :: w₄)
+                            (by simpa using hw) (dec l) rfl
+            · simp only [h10, ↓reduceIte]
+              rcases w₂ with _ | ⟨b₂, w₃⟩
+              · exact CollatzStepsTo.head rfl
+                  (ihn 0 (by simp at hw; omega) [] rfl _ (.L2 :: l) rfl)
+              · rcases fin2_cases b₂ with rfl | rfl
+                · simp only [↓reduceIte]
+                  exact CollatzStepsTo.head rfl
+                    (ihn w₃.length (by simp at hw; omega) w₃ rfl _ (.L2 :: l) rfl)
+                · simp only [h10, ↓reduceIte, Option.map_none]
+                  exact CollatzStepsTo.of_eq rfl
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨w⟩
+  exact stepsTo_runOdom_len w.length w rfl (cap []) [] rfl
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH

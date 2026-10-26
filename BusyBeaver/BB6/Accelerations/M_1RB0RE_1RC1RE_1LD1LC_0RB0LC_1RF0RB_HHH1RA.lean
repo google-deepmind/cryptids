@@ -36,6 +36,10 @@ B(L, d :: R)  -> scanZeros(0, replicate(d, 0) ++ L, R)
 
 Start: B([], [0, 1]), reached after 16 raw TM steps
 ```
+
+Restricting to the Poincaré return section $L = []$ eliminates the left stack completely, yielding
+a single-stack transition system $B_{\mathrm{HL}}(R) := B([], R)$ starting at
+$B_{\mathrm{HL}}([0, 1])$.
 -/
 
 @[expose] public section
@@ -390,5 +394,171 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next :=
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $B_{\mathrm{HL}}(R) := B([], R)$ on the $L = []$ Poincaré
+return section. -/
+inductive HighLevelState where
+  /-- Configuration $B([], R)$ at the start of an epoch ($L = []$). -/
+  | B (R : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $B_{\mathrm{HL}}([0, 1])$, coinciding with `start`. -/
+def highLevelStart : HighLevelState := .B [0, 1]
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .B R => .B [] R
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Peel leading pairs of `0` digits from `R`, accumulating `2` into `a` per pair. -/
+def peelZeroPairs (a : ℕ) : List ℕ → ℕ × List ℕ
+  | d₁ :: d₂ :: R => if d₁ = 0 ∧ d₂ = 0 then peelZeroPairs (a + 2) R else (a, d₁ :: d₂ :: R)
+  | R => (a, R)
+
+/-- Contract an entire right-scan epoch from $B(L, R)$ until returning to $L = []$ or halting. -/
+def scanEpoch (L R : List ℕ) : Option HighLevelState :=
+  if R = [] then
+    some (.B (L.reverse ++ [0, 0]))
+  else
+    let d := R.headD 0
+    let R₁ := R.tail
+    let L₁ := List.replicate d 0 ++ L
+    let p := peelZeroPairs 0 R₁
+    List.casesOn (motive := fun _ => Option HighLevelState) p.2 none fun c R₃ =>
+      if c = 0 then
+        List.casesOn (motive := fun _ => Option HighLevelState) R₃
+          (some (.B (L₁.reverse ++ [p.1 + 2, 0]))) fun e R₄ =>
+            if ((e - 1) :: R₄).sum + ((e - 1) :: R₄).length <
+                (d :: R₁).sum + (d :: R₁).length then
+              scanEpoch ((p.1 + 2) :: L₁) ((e - 1) :: R₄)
+            else none
+      else
+        if (bounceRight (c - 1) R₃).sum + (bounceRight (c - 1) R₃).length <
+            (d :: R₁).sum + (d :: R₁).length then
+          scanEpoch ((p.1 + 1) :: L₁) (bounceRight (c - 1) R₃)
+        else none
+termination_by R.sum + R.length
+decreasing_by
+  all_goals simp_wf
+  all_goals
+    cases R with
+    | nil => contradiction
+    | cons _ _ =>
+      simp +zetaDelta only [List.headD_cons, List.tail_cons, List.sum_cons, List.length_cons] at *
+      omega
+
+/-- High-level single-stack accelerated transition function on $B_{\mathrm{HL}}(R)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .B R => scanEpoch [] R
+
+private theorem peelZeroPairs_props (a : ℕ) (L : List ℕ) : ∀ R : List ℕ,
+    scanZeros a L R = scanZeros (peelZeroPairs a R).1 L (peelZeroPairs a R).2 ∧
+    (∀ R', (peelZeroPairs a R).2 ≠ 0 :: 0 :: R') ∧
+    (peelZeroPairs a R).2.sum + (peelZeroPairs a R).2.length ≤ R.sum + R.length
+  | [] => ⟨rfl, fun _ h => by simp [peelZeroPairs] at h, le_rfl⟩
+  | [d₁] => ⟨rfl, fun _ h => by simp [peelZeroPairs] at h, le_rfl⟩
+  | d₁ :: d₂ :: R => by
+    simp only [peelZeroPairs]
+    by_cases h00 : d₁ = 0 ∧ d₂ = 0
+    · rcases h00 with ⟨rfl, rfl⟩
+      simp only [and_self, ↓reduceIte, scanZeros]
+      obtain ⟨h1, h2, h3⟩ := peelZeroPairs_props (a + 2) L R
+      refine ⟨h1, h2, ?_⟩
+      simp only [List.sum_cons, List.length_cons]
+      omega
+    · simp only [h00, ↓reduceIte]
+      refine ⟨trivial, fun R' h => ?_, le_rfl⟩
+      injection h with hd₁ htl
+      injection htl with hd₂ _
+      exact h00 ⟨hd₁, hd₂⟩
+
+private theorem bounceRight_measure_le (b : ℕ) (R : List ℕ) :
+    (bounceRight b R).sum + (bounceRight b R).length ≤ b + R.sum + R.length + 2 := by
+  induction b with
+  | zero =>
+    cases R with
+    | nil => simp [bounceRight]
+    | cons x xs =>
+      simp only [bounceRight, List.sum_cons, List.length_cons]
+      omega
+  | succ b ih =>
+    simp only [bounceRight, List.sum_cons, List.length_cons]
+    omega
+
+private theorem scanZeros_succ (a b : ℕ) (L R : List ℕ) :
+    scanZeros a L ((b + 1) :: R) = some (.B ((a + 1) :: L) (bounceRight b R)) := by
+  cases R <;> rfl
+
+private theorem stepsTo_scanEpoch_aux (m : ℕ) : ∀ (L R : List ℕ),
+    R.sum + R.length = m → CollatzStepsTo next (.B L R) ((scanEpoch L R).map toState) := by
+  induction m using Nat.strong_induction_on with
+  | h m ih =>
+    intro L R hm
+    rw [scanEpoch.eq_def]
+    rcases R with _ | ⟨d, R₁⟩
+    · simp only [↓reduceIte]
+      exact CollatzStepsTo.of_eq rfl
+    · simp only [reduceCtorEq, ↓reduceIte, List.headD_cons, List.tail_cons]
+      set L₁ := List.replicate d 0 ++ L
+      obtain ⟨hscan, hno00, hmeas⟩ := peelZeroPairs_props 0 L₁ R₁
+      rcases hp : (peelZeroPairs 0 R₁).2 with _ | ⟨c, R₃⟩
+      · simp only [Option.map_none]
+        apply CollatzStepsTo.of_eq
+        simp only [next, L₁, hscan, hp, scanZeros]
+      · dsimp only
+        rcases c with _ | b
+        · simp only [↓reduceIte]
+          rcases R₃ with _ | ⟨e, R₄⟩
+          · simp only [Option.map_some, toState]
+            apply CollatzStepsTo.of_eq
+            simp only [next, L₁, hscan, hp, scanZeros]
+          · rcases e with _ | b'
+            · exact absurd hp (hno00 R₄)
+            · simp only [Nat.add_sub_cancel]
+              have hlt : (b' :: R₄).sum + (b' :: R₄).length <
+                  (d :: R₁).sum + (d :: R₁).length := by
+                simp only [hp, List.sum_cons, List.length_cons] at hmeas ⊢
+                omega
+              simp only [hlt, ↓reduceIte]
+              have hstep : next (.B L (d :: R₁)) =
+                  some (.B (((peelZeroPairs 0 R₁).1 + 2) :: L₁) (b' :: R₄)) := by
+                simp only [next, L₁, hscan, hp, scanZeros]
+              exact CollatzStepsTo.head hstep (ih _ (hm ▸ hlt) _ _ rfl)
+        · simp only [Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte, Nat.add_sub_cancel]
+          have hb := bounceRight_measure_le b R₃
+          have hlt : (bounceRight b R₃).sum + (bounceRight b R₃).length <
+              (d :: R₁).sum + (d :: R₁).length := by
+            simp only [hp, List.sum_cons, List.length_cons] at hmeas ⊢
+            omega
+          simp only [hlt, ↓reduceIte]
+          have hstep : next (.B L (d :: R₁)) =
+              some (.B (((peelZeroPairs 0 R₁).1 + 1) :: L₁) (bounceRight b R₃)) := by
+            simp only [next, L₁, hscan, hp, scanZeros_succ]
+          exact CollatzStepsTo.head hstep (ih _ (hm ▸ hlt) _ _ rfl)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨R⟩
+  exact stepsTo_scanEpoch_aux (R.sum + R.length) [] R rfl
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA

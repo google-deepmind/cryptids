@@ -35,6 +35,10 @@ singleton odd digit [2k + 1].
 
 Start: E(1, [], 0, []), reached after 6 raw TM steps
 ```
+
+Restricting to the post-bounce return section $E(0, 0^k \mathbin{+\!\!+} [1], d, R)$ eliminates the
+counter $a$ and collapses the left stack $L$ to a single counter $k$, yielding a single-stack
+transition system $E_{\mathrm{HL}}(k, d, R)$ starting at $E_{\mathrm{HL}}(2, 0, [])$.
 -/
 
 @[expose] public section
@@ -853,5 +857,179 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $E_{\mathrm{HL}}(k, d, R) :=
+E(0, 0^k \mathbin{+\!\!+} [1], d, R)$, collapsing the left stack to a single counter $k$. -/
+inductive HighLevelState where
+  /-- Canonical configuration $E(0, 0^k \mathbin{+\!\!+} [1], d, R)$ after a left-boundary
+  bounce. -/
+  | E (k d : ℕ) (R : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $E_{\mathrm{HL}}(2, 0, [])$, reached in 1 `next` step from `start`. -/
+def highLevelStart : HighLevelState := .E 2 0 []
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .E k d R => .E 0 (List.replicate k 0 ++ [1]) d R
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- High-level left-boundary turnaround from $B([], d :: R)$. -/
+def bounceBHL : ℕ → List ℕ → Option HighLevelState
+  | d, [] =>
+    if d % 2 = 1 then none
+    else some (.E (d / 2 + 1) 0 [])
+  | d, e :: R =>
+    if d % 2 = 1 then some (.E (d / 2) e R)
+    else bounceBHL (e + d + 4) R
+
+/-- Drain `Lpre` in mode `m` before hitting the bottom `[1]` sentinel of `Lpre ++ [1]`. -/
+def drainPre : DrainMode → List ℕ → ℕ → List ℕ → Option HighLevelState
+  | .A, [], d, R => bounceBHL (d + 3) R
+  | .B, [], d, R => some (.E 0 (d + 1) R)
+  | .BR, [], d, R => some (.E 0 0 (d :: R))
+  | .A, x :: Lpre, d, R =>
+    drainPre (if x % 2 = 0 then .A else .B) Lpre (x + d + 2) R
+  | .B, x :: Lpre, d, R =>
+    if x = 0 then drainPre .BR Lpre (d + 1) R
+    else drainPre (if (x - 1) % 2 = 0 then .A else .B) Lpre (x - 1) ((d + 1) :: R)
+  | .BR, x :: Lpre, d, R =>
+    if x = 0 then drainPre .BR Lpre 0 (d :: R)
+    else drainPre (if (x - 1) % 2 = 0 then .A else .B) Lpre (x - 1) (0 :: d :: R)
+
+/-- Scan rightward across odd blocks of `d :: R` before draining the left stack. -/
+def scanR (a : ℕ) (Lpre : List ℕ) (d : ℕ) (R : List ℕ) : Option HighLevelState :=
+  List.rec (motive := fun _ => ℕ → List ℕ → ℕ → Option HighLevelState)
+    (fun a Lpre d =>
+      if d = 0 then
+        drainPre (if (a + 3) % 2 = 0 then .A else .B) Lpre (a + 3) [0]
+      else if (d - 1) % 2 = 0 then
+        none
+      else
+        drainPre .A (List.replicate ((d - 1) / 2) 0 ++ (a + 3) :: Lpre) 0 [0])
+    (fun e R' ih a Lpre d =>
+      if d = 0 then
+        drainPre (if a % 2 = 0 then .B else .A) Lpre (a + e + 4) R'
+      else if (d - 1) % 2 = 0 then
+        if (d - 1) / 2 = 0 then
+          ih (a + 3) Lpre e
+        else
+          ih 0 (List.replicate ((d - 1) / 2 - 1) 0 ++ (a + 3) :: Lpre) e
+      else
+        drainPre .A (List.replicate ((d - 1) / 2) 0 ++ (a + 3) :: Lpre) (e + 1) R')
+    R a Lpre d
+
+/-- High-level single-stack accelerated transition function on $E_{\mathrm{HL}}(k, d, R)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E k d R => scanR 0 (List.replicate k 0) d R
+
+private theorem bounceBEmpty_eq_bounceBHL (R : List ℕ) : ∀ d : ℕ,
+    bounceBEmpty d R = (bounceBHL d R).map toState := by
+  induction R with
+  | nil =>
+    intro d
+    simp only [bounceBEmpty, bounceBHL]
+    split_ifs <;> rfl
+  | cons e R' ih =>
+    intro d
+    simp only [bounceBEmpty, bounceBHL]
+    split_ifs with h
+    · rfl
+    · exact ih (e + d + 4)
+
+private theorem drainLeft_eq_drainPre (Lpre : List ℕ) :
+    ∀ (m : DrainMode) (d : ℕ) (R : List ℕ),
+      drainLeft m (Lpre ++ [1]) d R = (drainPre m Lpre d R).map toState := by
+  induction Lpre with
+  | nil =>
+    intro m d R
+    cases m with
+    | A =>
+      simp only [List.nil_append, drainLeft, drainPre]
+      rw [show 1 + d + 2 = d + 3 by omega]
+      exact bounceBEmpty_eq_bounceBHL R (d + 3)
+    | B => rfl
+    | BR => rfl
+  | cons x Lpre' ih =>
+    intro m d R
+    cases m with
+    | A =>
+      simp only [List.cons_append, drainLeft, drainPre]
+      exact ih (if x % 2 = 0 then .A else .B) (x + d + 2) R
+    | B =>
+      rcases x with _ | x'
+      · simp only [List.cons_append, drainLeft, drainPre, ↓reduceIte]
+        exact ih .BR (d + 1) R
+      · simp only [List.cons_append, drainLeft, drainPre, Nat.add_eq_zero_iff, one_ne_zero,
+          and_false, ↓reduceIte, Nat.add_sub_cancel]
+        exact ih (if x' % 2 = 0 then .A else .B) x' ((d + 1) :: R)
+    | BR =>
+      rcases x with _ | x'
+      · simp only [List.cons_append, drainLeft, drainPre, ↓reduceIte]
+        exact ih .BR 0 (d :: R)
+      · simp only [List.cons_append, drainLeft, drainPre, Nat.add_eq_zero_iff, one_ne_zero,
+          and_false, ↓reduceIte, Nat.add_sub_cancel]
+        exact ih (if x' % 2 = 0 then .A else .B) x' (0 :: d :: R)
+
+private theorem stepsTo_scanR (R : List ℕ) : ∀ (a : ℕ) (Lpre : List ℕ) (d : ℕ),
+    CollatzStepsTo next (.E a (Lpre ++ [1]) d R) ((scanR a Lpre d R).map toState) := by
+  induction R with
+  | nil =>
+    intro a Lpre d
+    rcases d with _ | d'
+    · simp only [scanR, ↓reduceIte]
+      exact CollatzStepsTo.of_eq (drainLeft_eq_drainPre Lpre _ (a + 3) [0])
+    · simp only [scanR, Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte,
+        Nat.add_sub_cancel]
+      split_ifs with hev
+      · exact CollatzStepsTo.of_eq (by simp [next, hev])
+      · apply CollatzStepsTo.of_eq
+        simp only [next, hev, ↓reduceIte]
+        rw [← drainLeft_eq_drainPre, List.append_assoc, List.cons_append]
+  | cons e R' ih =>
+    intro a Lpre d
+    rcases d with _ | d'
+    · simp only [scanR, ↓reduceIte]
+      exact CollatzStepsTo.of_eq (drainLeft_eq_drainPre Lpre _ (a + e + 4) R')
+    · simp only [scanR, Nat.add_eq_zero_iff, one_ne_zero, and_false, ↓reduceIte,
+        Nat.add_sub_cancel]
+      split_ifs with hev hdiv0
+      · have hstep : next (.E a (Lpre ++ [1]) (d' + 1) (e :: R')) =
+            some (.E (a + 3) (Lpre ++ [1]) e R') := by
+          simp [next, hev, hdiv0]
+        exact CollatzStepsTo.head hstep (ih (a + 3) Lpre e)
+      · have hstep : next (.E a (Lpre ++ [1]) (d' + 1) (e :: R')) =
+            some (.E 0 ((List.replicate (d' / 2 - 1) 0 ++ (a + 3) :: Lpre) ++ [1]) e R') := by
+          simp [next, hev, hdiv0, List.append_assoc]
+        exact CollatzStepsTo.head hstep
+          (ih 0 (List.replicate (d' / 2 - 1) 0 ++ (a + 3) :: Lpre) e)
+      · apply CollatzStepsTo.of_eq
+        simp only [next, hev, ↓reduceIte]
+        rw [← drainLeft_eq_drainPre, List.append_assoc, List.cons_append]
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.single rfl) ?_
+  rintro ⟨k, d, R⟩
+  exact stepsTo_scanR R 0 (List.replicate k 0) d
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD

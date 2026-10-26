@@ -36,6 +36,10 @@ E(L, (d+1, b) :: R1) -> closeRet L <$> bounceR ((d, b) :: R1)
 
 Start: E([(1, false)], [(0, false)]), reached after 4 raw TM steps
 ```
+
+Restricting to the Poincaré return section $L = []$ eliminates the left stack, `closeRet`, and
+`stepZero`, yielding a single-stack transition system $E_{\mathrm{HL}}(R) := E([], R)$ starting at
+$E_{\mathrm{HL}}([(0, \mathrm{true})])$.
 -/
 
 @[expose] public section
@@ -720,5 +724,76 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next whe
 from `start`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $E_{\mathrm{HL}}(R) := E([], R)$ on the $L = []$ Poincaré
+return section. -/
+inductive HighLevelState where
+  /-- Right-stack configuration $E([], R)$ with empty left stack. -/
+  | E (R : List (ℕ × Bool))
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $E_{\mathrm{HL}}([(0, \mathrm{true})])$, reached in 1 `next` step from
+`start`. -/
+def highLevelStart : HighLevelState := .E [(0, true)]
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .E R => .E [] R
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Unwind a right-excursion return carry `(m, R')` at $L = []$ back to $E_{\mathrm{HL}}$. -/
+def exitRet : RetMode × List (ℕ × Bool) → HighLevelState
+  | (.r01, R') => .E ((0, true) :: R')
+  | (.r10, R') => .E ((0, false) :: (0, false) :: R')
+  | (.r11, R') => .E ((0, false) :: (0, true) :: R')
+  | (.r21, R') => .E ((1, false) :: (0, true) :: R')
+
+/-- High-level single-stack accelerated transition function on $E_{\mathrm{HL}}(R)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E [] => some (.E [(0, false), (0, true)])
+  | .E ((d, b) :: R₁) =>
+    Nat.casesOn d
+      (some (.E ((1, false) :: (if b then (0, false) :: R₁ else incHead R₁))))
+      fun d' => exitRet <$> bounceR ((d', b) :: R₁)
+
+private theorem stepsTo_closeRet_nil {s : State} (p : RetMode × List (ℕ × Bool))
+    (h : next s = some (closeRet [] p)) :
+    CollatzStepsTo next s (some (toState (exitRet p))) := by
+  rcases p with ⟨m, R'⟩
+  cases m with
+  | r01 => exact CollatzStepsTo.of_eq h
+  | r10 => exact CollatzStepsTo.head h (CollatzStepsTo.of_eq rfl)
+  | r11 => exact CollatzStepsTo.head h (CollatzStepsTo.of_eq rfl)
+  | r21 => exact CollatzStepsTo.head h (CollatzStepsTo.of_eq rfl)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.single rfl) ?_
+  rintro ⟨_ | ⟨⟨_ | d', b⟩, R₁⟩⟩
+  · exact stepsTo_closeRet_nil (.r11, []) rfl
+  · cases b <;> exact CollatzStepsTo.of_eq rfl
+  · dsimp only [highLevelNext]
+    rcases hb : bounceR ((d', b) :: R₁) with _ | p
+    · exact CollatzStepsTo.of_eq (by simp [toState, next, hb])
+    · exact stepsTo_closeRet_nil p (by simp [toState, next, hb])
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC

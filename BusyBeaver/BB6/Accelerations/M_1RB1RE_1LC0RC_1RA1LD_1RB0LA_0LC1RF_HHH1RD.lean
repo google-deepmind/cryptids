@@ -40,6 +40,10 @@ B(L, e0 :: (e1 + 2) :: E2, c) -> drainD(4 :: bumpHeadBy (2 * e0) L, e1 :: E2, c)
 
 Start: B([0], [], 1), reached after 4 raw TM steps
 ```
+
+Restricting to the Poincaré return section $L = [0]$ eliminates the left stack completely, yielding
+a single-stack transition system $B_{\mathrm{HL}}(E, c) := B([0], E, c)$ starting at
+$B_{\mathrm{HL}}([], 1)$.
 -/
 
 @[expose] public section
@@ -382,5 +386,220 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $B_{\mathrm{HL}}(E, c) := B([0], E, c)$ on the $L = [0]$
+Poincaré return section. -/
+inductive HighLevelState where
+  /-- Right-moving configuration $B([0], E, c)$ with trivial left stack $L = [0]$. -/
+  | B (E : List ℕ) (c : ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $B_{\mathrm{HL}}([], 1)$, equal to `start`. -/
+def highLevelStart : HighLevelState := .B [] 1
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .B E c => .B [0] E c
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Drain an all-even left stack `hs.map (2 * ·)` across `(E, c)` back to $L = [0]$. -/
+def drainEven : List ℕ → List ℕ → ℕ → HighLevelState
+  | [], E, c => .B E c
+  | h :: hs, E, c =>
+    List.casesOn (motive := fun _ => HighLevelState) (List.replicate h 0 ++ E)
+      (drainEven hs [] (c + 2)) fun e Et => drainEven hs ((e + 1) :: Et) c
+
+/-- Drain an odd-headed left stack `(2 * h₀ + 1) :: hs.map (2 * ·)` across `(E, c)` through its
+cascading `(0, 0)` reflections until returning to $L = [0]$. -/
+def drainOdd : ℕ → List ℕ → List ℕ → ℕ → HighLevelState
+  | h₀, [], E, c => .B (List.replicate (h₀ + 1) 0 ++ E) c
+  | h₀, h₁ :: hs, E, c => drainOdd h₁ hs (1 :: (List.replicate (h₀ - 1) 0 ++ E)) c
+
+/-- Peel `(e₀, 1)` pairs from `E` onto the half-even stack `(h₀ :: hs).map (2 * ·)` and contract
+the subsequent drain back to $L = [0]$ (`none` when halting at `E = [e₀], c = 1`). -/
+def peelPairs : ℕ → List ℕ → List ℕ → ℕ → Option HighLevelState
+  | h₀, hs, [], c =>
+    if c % 2 = 0 then some (drainEven ((h₀ + c / 2) :: hs) [] 3)
+    else some (drainOdd (h₀ + c / 2) hs [] 3)
+  | h₀, hs, [e₀], c =>
+    if c = 0 then some (drainEven ((h₀ + e₀) :: hs) [] 2)
+    else if c = 1 then none
+    else if c = 2 then some (drainOdd (h₀ + e₀) hs [1] 1)
+    else if c = 3 then some (drainEven ((h₀ + e₀) :: hs) [1] 0)
+    else some (drainEven ((h₀ + e₀) :: hs) [1, 0] (c - 4))
+  | h₀, hs, e₀ :: e₁ :: E₂, c =>
+    if e₁ = 0 then some (drainEven ((h₀ + e₀) :: hs) (1 :: E₂) c)
+    else if e₁ = 1 then peelPairs 2 ((h₀ + e₀) :: hs) E₂ c
+    else some (drainEven (2 :: (h₀ + e₀) :: hs) ((e₁ - 2) :: E₂) c)
+
+/-- High-level single-stack accelerated transition function on $B_{\mathrm{HL}}(E, c)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .B E c => peelPairs 0 [] E c
+
+private theorem bumpHeadBy_cons_eq (k a : ℕ) (L : List ℕ) :
+    bumpHeadBy k (a :: L) = (a + k) :: L := by
+  induction k generalizing a with
+  | zero => simp [bumpHeadBy]
+  | succ k ih =>
+    simp only [bumpHeadBy, bumpHead]
+    rw [ih (a + 1)]
+    congr 1
+    omega
+
+private theorem drainD_map_two (hs : List ℕ) :
+    ∀ (E : List ℕ) (c : ℕ), drainD (hs.map (2 * ·)) E c = toState (drainEven hs E c) := by
+  induction hs with
+  | nil => intro E c; rfl
+  | cons h hs ih =>
+    intro E c
+    simp only [List.map_cons, drainD, drainEven, Nat.mul_mod_right, zero_ne_one, ↓reduceIte]
+    have hdiv : 2 * h / 2 = h := by omega
+    rw [hdiv]
+    rcases List.replicate h 0 ++ E with _ | ⟨e, Et⟩
+    · exact ih [] (c + 2)
+    · exact ih ((e + 1) :: Et) c
+
+private def DropLastPos : List ℕ → Prop
+  | [] => True
+  | [_] => True
+  | h :: h' :: hs => h ≥ 1 ∧ DropLastPos (h' :: hs)
+
+private theorem dropLastPos_add (h₀ k : ℕ) (hs : List ℕ) (h : DropLastPos (h₀ :: hs)) :
+    DropLastPos ((h₀ + k) :: hs) := by
+  rcases hs with _ | ⟨h₁, hs'⟩
+  · trivial
+  · exact ⟨by have := h.1; omega, h.2⟩
+
+private theorem reachesStar_drainOdd (hs : List ℕ) :
+    ∀ (h₀ : ℕ) (E : List ℕ) (c : ℕ), DropLastPos (h₀ :: hs) →
+      CollatzReachesStar next
+        (drainD ((2 * h₀ + 1) :: hs.map (2 * ·)) E c)
+        (toState (drainOdd h₀ hs E c)) := by
+  induction hs with
+  | nil =>
+    intro h₀ E c _
+    have hmod : (2 * h₀ + 1) % 2 = 1 := by omega
+    have hdiv : (2 * h₀ + 1) / 2 = h₀ := by omega
+    simp only [List.map_nil, drainD, hmod, ↓reduceIte, hdiv, bumpHead, drainOdd, toState]
+    exact CollatzReachesStar.refl next _
+  | cons h₁ hs' ih =>
+    intro h₀ E c hpos
+    obtain ⟨hh₀, hrest⟩ := hpos
+    have hmod : (2 * h₀ + 1) % 2 = 1 := by omega
+    have hdiv : (2 * h₀ + 1) / 2 = h₀ := by omega
+    have hrep : List.replicate (h₀ + 1) 0 ++ E =
+        0 :: 0 :: (List.replicate (h₀ - 1) 0 ++ E) := by
+      obtain ⟨m, rfl⟩ := Nat.exists_eq_add_of_le hh₀
+      rw [show 1 + m + 1 = m + 2 by omega, Nat.add_sub_cancel_left]
+      simp [List.replicate_succ]
+    have hstep :
+        next (drainD ((2 * h₀ + 1) :: (h₁ :: hs').map (2 * ·)) E c) =
+          some (drainD ((2 * h₁ + 1) :: hs'.map (2 * ·))
+            (1 :: (List.replicate (h₀ - 1) 0 ++ E)) c) := by
+      simp only [List.map_cons, drainD, hmod, ↓reduceIte, hdiv, bumpHead, hrep, next, bumpHeadBy]
+    exact CollatzReachesStar.head hstep (ih h₁ _ c hrest)
+
+private theorem stepsTo_peelPairs :
+    ∀ (E : List ℕ) (h₀ : ℕ) (hs : List ℕ) (c : ℕ), DropLastPos (h₀ :: hs) →
+      CollatzStepsTo next (.B ((2 * h₀) :: hs.map (2 * ·)) E c)
+        ((peelPairs h₀ hs E c).map toState)
+  | [], h₀, hs, c, hpos => by
+    simp only [peelPairs]
+    split_ifs with heven
+    · simp only [Option.map_some]
+      apply CollatzStepsTo.of_eq
+      rw [next, bumpHeadBy_cons_eq, show 2 * h₀ + c = 2 * (h₀ + c / 2) by omega,
+        ← List.map_cons, drainD_map_two]
+    · simp only [Option.map_some, CollatzStepsTo]
+      have hstep :
+          next (.B ((2 * h₀) :: hs.map (2 * ·)) [] c) =
+            some (drainD ((2 * (h₀ + c / 2) + 1) :: hs.map (2 * ·)) [] 3) := by
+        rw [next, bumpHeadBy_cons_eq, show 2 * h₀ + c = 2 * (h₀ + c / 2) + 1 by omega]
+      exact CollatzReachesPlus.head hstep
+        (reachesStar_drainOdd hs (h₀ + c / 2) [] 3 (dropLastPos_add h₀ (c / 2) hs hpos))
+  | [e₀], h₀, hs, c, hpos => by
+    have hmul : 2 * h₀ + 2 * e₀ = 2 * (h₀ + e₀) := by omega
+    rcases c with _ | _ | _ | _ | c
+    · apply CollatzStepsTo.of_eq
+      change some (drainD (bumpHeadBy (2 * e₀) ((2 * h₀) :: hs.map (2 * ·))) [] 2) =
+        some (toState (drainEven ((h₀ + e₀) :: hs) [] 2))
+      rw [bumpHeadBy_cons_eq, hmul, ← List.map_cons, drainD_map_two]
+    · exact CollatzStepsTo.of_eq rfl
+    · change CollatzReachesPlus next (.B ((2 * h₀) :: hs.map (2 * ·)) [e₀] 2)
+        (toState (drainOdd (h₀ + e₀) hs [1] 1))
+      have hstep1 :
+          next (.B ((2 * h₀) :: hs.map (2 * ·)) [e₀] 2) =
+            some (.B ((2 * (h₀ + e₀) + 1) :: hs.map (2 * ·)) [0, 0] 1) := by
+        simp only [next, bumpHeadBy_cons_eq, hmul, bumpHead]
+      have hstep2 :
+          next (.B ((2 * (h₀ + e₀) + 1) :: hs.map (2 * ·)) [0, 0] 1) =
+            some (drainD ((2 * (h₀ + e₀) + 1) :: hs.map (2 * ·)) [1] 1) := by
+        simp only [next, bumpHeadBy]
+      exact CollatzReachesPlus.head hstep1
+        (CollatzReachesStar.head hstep2
+          (reachesStar_drainOdd hs (h₀ + e₀) [1] 1 (dropLastPos_add h₀ e₀ hs hpos)))
+    · apply CollatzStepsTo.of_eq
+      change some (drainD (bumpHeadBy (2 * e₀) ((2 * h₀) :: hs.map (2 * ·))) [1] 0) =
+        some (toState (drainEven ((h₀ + e₀) :: hs) [1] 0))
+      rw [bumpHeadBy_cons_eq, hmul, ← List.map_cons, drainD_map_two]
+    · have hc0 : c + 4 ≠ 0 := by omega
+      have hc1 : c + 4 ≠ 1 := by omega
+      have hc2 : c + 4 ≠ 2 := by omega
+      have hc3 : c + 4 ≠ 3 := by omega
+      change CollatzStepsTo next (.B ((2 * h₀) :: hs.map (2 * ·)) [e₀] (c + 4))
+        ((peelPairs h₀ hs [e₀] (c + 4)).map toState)
+      simp only [peelPairs, hc0, hc1, hc2, hc3, ↓reduceIte, Nat.add_sub_cancel, Option.map_some]
+      apply CollatzStepsTo.of_eq
+      rw [next, bumpHeadBy_cons_eq, hmul, ← List.map_cons, drainD_map_two]
+  | e₀ :: e₁ :: E₂, h₀, hs, c, hpos => by
+    have hmul : 2 * h₀ + 2 * e₀ = 2 * (h₀ + e₀) := by omega
+    rcases e₁ with _ | _ | e₁
+    · apply CollatzStepsTo.of_eq
+      change some (drainD (bumpHeadBy (2 * e₀) ((2 * h₀) :: hs.map (2 * ·))) (1 :: E₂) c) =
+        some (toState (drainEven ((h₀ + e₀) :: hs) (1 :: E₂) c))
+      rw [bumpHeadBy_cons_eq, hmul, ← List.map_cons, drainD_map_two]
+    · change CollatzStepsTo next (.B ((2 * h₀) :: hs.map (2 * ·)) (e₀ :: 1 :: E₂) c)
+        ((peelPairs 2 ((h₀ + e₀) :: hs) E₂ c).map toState)
+      have hstep :
+          next (.B ((2 * h₀) :: hs.map (2 * ·)) (e₀ :: 1 :: E₂) c) =
+            some (.B ((2 * 2) :: ((h₀ + e₀) :: hs).map (2 * ·)) E₂ c) := by
+        simp only [next, bumpHeadBy_cons_eq, hmul, List.map_cons]
+      exact CollatzStepsTo.head hstep
+        (stepsTo_peelPairs E₂ 2 ((h₀ + e₀) :: hs) c ⟨by omega, dropLastPos_add h₀ e₀ hs hpos⟩)
+    · have he0 : e₁ + 2 ≠ 0 := by omega
+      have he1 : e₁ + 2 ≠ 1 := by omega
+      change CollatzStepsTo next (.B ((2 * h₀) :: hs.map (2 * ·)) (e₀ :: (e₁ + 2) :: E₂) c)
+        ((peelPairs h₀ hs (e₀ :: (e₁ + 2) :: E₂) c).map toState)
+      simp only [peelPairs, he0, he1, ↓reduceIte, Nat.add_sub_cancel, Option.map_some]
+      apply CollatzStepsTo.of_eq
+      rw [next, bumpHeadBy_cons_eq, hmul]
+      have h4 : (4 : ℕ) :: (2 * (h₀ + e₀)) :: hs.map (2 * ·) =
+          (2 :: (h₀ + e₀) :: hs).map (2 * ·) := rfl
+      rw [h4, drainD_map_two]
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨E, c⟩
+  exact stepsTo_peelPairs E 0 [] c trivial
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD

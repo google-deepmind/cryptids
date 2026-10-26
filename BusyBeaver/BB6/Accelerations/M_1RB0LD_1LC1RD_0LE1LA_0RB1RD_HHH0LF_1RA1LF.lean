@@ -33,6 +33,10 @@ C(a + 2, L, R)   -> C(a, bumpHead L, bumpHead R)
 
 Start: C(0, [0], [1]), reached after 19 raw TM steps
 ```
+
+Restricting to the Poincaré return section $R = [0]$ eliminates the right stack completely, yielding
+a single-stack transition system $C_{\mathrm{HL}}(a, L) := C(a, L, [0])$ starting at
+$C_{\mathrm{HL}}(3, [0])$.
 -/
 
 @[expose] public section
@@ -238,5 +242,159 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $C_{\mathrm{HL}}(a, L) := C(a, L, [0])$ on the $R = [0]$
+Poincaré return section. -/
+inductive HighLevelState where
+  /-- Separator configuration $C(a, L, [0])$ at the start of an epoch ($R = [0]$). -/
+  | C (a : ℕ) (L : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $C_{\mathrm{HL}}(3, [0])$, reached in 1 `next` step from `start`. -/
+def highLevelStart : HighLevelState := .C 3 [0]
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C a L => .C a L [0]
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Sweep all digits of `R` onto `a :: L` and return to the $R = [0]$ section. -/
+def transferHL (a : ℕ) (L R : List ℕ) : HighLevelState :=
+  let p := R.foldl (fun p d => (d, p.1 :: p.2)) (a, L)
+  .C p.1 p.2
+
+/-- Contract an entire epoch of `next` steps until returning to $R = [0]$ or halting. -/
+def stepEpoch (a : ℕ) (L R : List ℕ) : Option HighLevelState :=
+  let k := a / 2
+  let R₁ := bumpHeadBy k R
+  if L = [] then
+    if a ≤ 1 then none
+    else if a % 2 = 0 then some (transferHL (k - 1) [] (bumpHead (bumpHead R₁)))
+    else stepEpoch k [] (0 :: R₁)
+  else
+    let b := L.headD 0
+    let L' := L.tail
+    if a % 2 = 0 then some (transferHL (b + k) L' (bumpHead (bumpHead R₁)))
+    else stepEpoch (b + k + 1) L' (0 :: R₁)
+termination_by (L.length, a)
+decreasing_by
+  all_goals simp_wf
+  · omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+
+/-- High-level single-stack accelerated transition function on $C_{\mathrm{HL}}(a, L)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C a L => stepEpoch a L [0]
+
+private theorem bumpHeadBy_cons_eq (k b : ℕ) (L : List ℕ) :
+    bumpHeadBy k (b :: L) = (b + k) :: L := by
+  induction k generalizing b with
+  | zero => simp [bumpHeadBy]
+  | succ k ih =>
+    simp only [bumpHeadBy, bumpHead]
+    rw [ih (b + 1)]
+    congr 1
+    omega
+
+private theorem bumpHeadBy_pos_nil {k : ℕ} (hk : k ≥ 1) :
+    bumpHeadBy k [] = [k - 1] := by
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_add_of_le hk
+  rw [Nat.add_comm 1 m]
+  simp only [bumpHeadBy, bumpHead, bumpHeadBy_cons_eq, Nat.zero_add, Nat.add_sub_cancel]
+
+private theorem reaches_mod2 (k r : ℕ) (L R : List ℕ) :
+    CollatzReachesStar next (.C (2 * k + r) L R) (.C r (bumpHeadBy k L) (bumpHeadBy k R)) := by
+  induction k generalizing L R with
+  | zero =>
+    simp only [Nat.mul_zero, Nat.zero_add, bumpHeadBy]
+    exact CollatzReachesStar.refl next _
+  | succ k ih =>
+    have h1 : next (.C (2 * (k + 1) + r) L R) =
+        some (.C (2 * k + r) (bumpHead L) (bumpHead R)) := by
+      rw [show 2 * (k + 1) + r = (2 * k + r) + 2 by omega]
+      rfl
+    exact CollatzReachesStar.head h1 (ih (bumpHead L) (bumpHead R))
+
+private theorem stepsTo_stepEpoch_nil (a : ℕ) : ∀ R : List ℕ,
+    CollatzStepsTo next (.C a [] R) ((stepEpoch a [] R).map toState) := by
+  induction a using Nat.strong_induction_on with
+  | h a ih =>
+    intro R
+    rw [stepEpoch]
+    simp only [↓reduceIte]
+    have ha : 2 * (a / 2) + a % 2 = a := by omega
+    have hstar := ha ▸ reaches_mod2 (a / 2) (a % 2) [] R
+    refine CollatzStepsTo.of_reachesStar hstar ?_
+    split_ifs with hle heven
+    · have hk0 : a / 2 = 0 := by omega
+      rw [hk0]
+      simp only [bumpHeadBy, Option.map_none]
+      rcases (show a % 2 = 0 ∨ a % 2 = 1 by omega) with hm0 | hm1
+      · rw [hm0]
+        exact CollatzStepsTo.of_eq rfl
+      · rw [hm1]
+        exact CollatzStepsTo.head rfl (CollatzStepsTo.of_eq rfl)
+    · have hk1 : a / 2 ≥ 1 := by omega
+      rw [heven, bumpHeadBy_pos_nil hk1]
+      exact CollatzStepsTo.of_eq rfl
+    · have hk1 : a / 2 ≥ 1 := by omega
+      have hmod1 : a % 2 = 1 := by omega
+      rw [hmod1, bumpHeadBy_pos_nil hk1]
+      have hstep :
+          next (.C 1 [a / 2 - 1] (bumpHeadBy (a / 2) R)) =
+            some (.C (a / 2) [] (0 :: bumpHeadBy (a / 2) R)) := by
+        dsimp only [next]
+        congr 2
+        omega
+      exact CollatzStepsTo.head hstep (ih (a / 2) (by omega) (0 :: bumpHeadBy (a / 2) R))
+
+private theorem stepsTo_stepEpoch (L : List ℕ) : ∀ (a : ℕ) (R : List ℕ),
+    CollatzStepsTo next (.C a L R) ((stepEpoch a L R).map toState) := by
+  induction L with
+  | nil => exact fun a R => stepsTo_stepEpoch_nil a R
+  | cons b L' ihL =>
+    intro a R
+    rw [stepEpoch]
+    simp only [reduceCtorEq, ↓reduceIte, List.headD_cons, List.tail_cons]
+    have ha : 2 * (a / 2) + a % 2 = a := by omega
+    have hstar := ha ▸ reaches_mod2 (a / 2) (a % 2) (b :: L') R
+    refine CollatzStepsTo.of_reachesStar hstar ?_
+    rw [bumpHeadBy_cons_eq]
+    split_ifs with heven
+    · rw [heven]
+      exact CollatzStepsTo.of_eq rfl
+    · have hmod1 : a % 2 = 1 := by omega
+      rw [hmod1]
+      exact CollatzStepsTo.head rfl (ihL (b + a / 2 + 1) (0 :: bumpHeadBy (a / 2) R))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.single rfl) ?_
+  rintro ⟨a, L⟩
+  exact stepsTo_stepEpoch L a [0]
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF

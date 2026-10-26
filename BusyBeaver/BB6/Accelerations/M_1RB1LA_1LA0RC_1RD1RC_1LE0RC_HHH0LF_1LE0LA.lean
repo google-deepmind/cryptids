@@ -39,6 +39,10 @@ E(a + 2, b :: L, R)     -> D(a, b + 1, L, 0 :: R)
 
 Start: D(1, 0, [], []), reached after 7 raw TM steps
 ```
+
+Restricting to the $R = []$ return section and contracting intermediate $E$ and $D(\dots, 0 :: R)$
+chains (`runE`) eliminates both state $E$ and the right stack $R$, yielding a single-stack system
+$D_{\mathrm{HL}}(a, b, L) := D(a, b, L, [])$ starting at $D_{\mathrm{HL}}(1, 0, [])$.
 -/
 
 @[expose] public section
@@ -392,5 +396,163 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $D_{\mathrm{HL}}(a, b, L) := D(a, b, L, [])$ eliminating both
+state `E` and the right stack `R`. -/
+inductive HighLevelState where
+  /-- Separator configuration $D(a, b, L, [])$ at the right blank ($R = []$). -/
+  | D (a b : ℕ) (L : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $D_{\mathrm{HL}}(1, 0, [])$. -/
+def highLevelStart : HighLevelState := .D 1 0 []
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .D a b L => .D a b L []
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Sweep all digits of `R` onto `a :: b :: L`, returning to the $R = []$ section. -/
+def sweepDHL (a b : ℕ) (L R : List ℕ) : HighLevelState :=
+  let t := R.foldl (fun t d => (d, t.1, t.2.1 :: t.2.2)) (a, b, L)
+  .D t.1 t.2.1 t.2.2
+
+/-- Contract a chain of `E` and `D(..., 0 :: R)` steps until returning to $R = []$ or halting. -/
+def runE (a : ℕ) (L : List ℕ) (r₀ : ℕ) (R' : List ℕ) : Option HighLevelState :=
+  if L = [] then
+    if a = 0 then none
+    else if a = 1 then some (sweepDHL 0 1 [0] (r₀ :: R'))
+    else
+      let a₂ := a - 2
+      let k₂ := a₂ / 2
+      if a₂ % 2 = 1 then some (sweepDHL (k₂ + 1) (k₂ + 2) [0] (r₀ :: R'))
+      else runE k₂ [] (k₂ + 1) (r₀ :: R')
+  else
+    let b := L.headD 0
+    let L' := L.tail
+    if a = 0 then runE b L' 0 (r₀ :: R')
+    else if a = 1 then some (sweepDHL 0 (b + 2) (bumpHead L') (r₀ :: R'))
+    else
+      let a₂ := a - 2
+      let k₂ := a₂ / 2
+      if a₂ % 2 = 1 then some (sweepDHL (k₂ + 1) (b + 1 + k₂ + 2) (bumpHead L') (r₀ :: R'))
+      else runE (b + 1 + k₂) L' (k₂ + 1) (r₀ :: R')
+termination_by (L.length, a)
+decreasing_by
+  all_goals simp_wf
+  · omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+  · cases L with
+    | nil => contradiction
+    | cons _ _ =>
+      apply Prod.Lex.left
+      simp +zetaDelta only [List.length_cons]
+      omega
+
+/-- High-level single-stack accelerated transition function on $D_{\mathrm{HL}}(a, b, L)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .D a b L =>
+    let k := a / 2
+    if a % 2 = 1 then some (.D k (b + k + 2) (bumpHead L))
+    else runE (b + k) L k []
+
+private theorem stepsTo_runE_nil (a : ℕ) :
+    ∀ (r₀ : ℕ) (R' : List ℕ),
+      CollatzStepsTo next (.E a [] (r₀ :: R')) ((runE a [] r₀ R').map toState) := by
+  induction a using Nat.strong_induction_on with
+  | h a iha =>
+    intro r₀ R'
+    rw [runE]
+    simp only [↓reduceIte]
+    rcases a with _ | _ | a₂
+    · exact CollatzStepsTo.of_eq rfl
+    · exact CollatzStepsTo.of_eq rfl
+    · simp only [Nat.add_eq_zero_iff, and_false, ↓reduceIte, Nat.reduceEqDiff]
+      rw [show a₂ + 2 - 2 = a₂ by omega]
+      have h1 : next (.E (a₂ + 2) [] (r₀ :: R')) = some (.D a₂ 0 [] (0 :: r₀ :: R')) := rfl
+      by_cases hodd : a₂ % 2 = 1
+      · have hnev : ¬ a₂ % 2 = 0 := by omega
+        simp only [hodd, ↓reduceIte, Option.map_some]
+        have h2 : next (.D a₂ 0 [] (0 :: r₀ :: R')) =
+            some (toState (sweepDHL (a₂ / 2 + 1) (a₂ / 2 + 2) [0] (r₀ :: R'))) := by
+          simp [next, hnev, bumpHead, sweepDHL, sweepD, toState]
+        exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq h2)
+      · have hev : a₂ % 2 = 0 := by omega
+        simp only [hodd, ↓reduceIte]
+        have h2 : next (.D a₂ 0 [] (0 :: r₀ :: R')) =
+            some (.E (a₂ / 2) [] ((a₂ / 2 + 1) :: r₀ :: R')) := by
+          simp [next, hev]
+        exact CollatzStepsTo.head h1
+          (CollatzStepsTo.head h2 (iha (a₂ / 2) (by omega) (a₂ / 2 + 1) (r₀ :: R')))
+
+private theorem stepsTo_runE (L : List ℕ) :
+    ∀ (a r₀ : ℕ) (R' : List ℕ),
+      CollatzStepsTo next (.E a L (r₀ :: R')) ((runE a L r₀ R').map toState) := by
+  induction L with
+  | nil => exact fun a r₀ R' => stepsTo_runE_nil a r₀ R'
+  | cons b L' ihL =>
+    intro a r₀ R'
+    rw [runE]
+    simp only [reduceCtorEq, ↓reduceIte, List.headD_cons, List.tail_cons]
+    rcases a with _ | _ | a₂
+    · simp only [↓reduceIte]
+      exact CollatzStepsTo.head rfl (ihL b 0 (r₀ :: R'))
+    · exact CollatzStepsTo.of_eq rfl
+    · simp only [Nat.add_eq_zero_iff, and_false, ↓reduceIte, Nat.reduceEqDiff]
+      rw [show a₂ + 2 - 2 = a₂ by omega]
+      have h1 : next (.E (a₂ + 2) (b :: L') (r₀ :: R')) =
+          some (.D a₂ (b + 1) L' (0 :: r₀ :: R')) := rfl
+      by_cases hodd : a₂ % 2 = 1
+      · have hnev : ¬ a₂ % 2 = 0 := by omega
+        simp only [hodd, ↓reduceIte, Option.map_some]
+        have h2 : next (.D a₂ (b + 1) L' (0 :: r₀ :: R')) =
+            some (toState (sweepDHL (a₂ / 2 + 1) (b + 1 + a₂ / 2 + 2)
+              (bumpHead L') (r₀ :: R'))) := by
+          simp [next, hnev, sweepDHL, sweepD, toState]
+        exact CollatzStepsTo.head h1 (CollatzStepsTo.of_eq h2)
+      · have hev : a₂ % 2 = 0 := by omega
+        simp only [hodd, ↓reduceIte]
+        have h2 : next (.D a₂ (b + 1) L' (0 :: r₀ :: R')) =
+            some (.E (b + 1 + a₂ / 2) L' ((a₂ / 2 + 1) :: r₀ :: R')) := by
+          simp [next, hev]
+        exact CollatzStepsTo.head h1
+          (CollatzStepsTo.head h2 (ihL (b + 1 + a₂ / 2) (a₂ / 2 + 1) (r₀ :: R')))
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨a, b, L⟩
+  simp only [toState, highLevelNext]
+  by_cases hodd : a % 2 = 1
+  · have hnev : ¬ a % 2 = 0 := by omega
+    simp only [hodd, ↓reduceIte, Option.map_some, toState]
+    exact CollatzStepsTo.of_eq (by simp [next, hnev])
+  · have hev : a % 2 = 0 := by omega
+    simp only [hodd, ↓reduceIte]
+    exact CollatzStepsTo.head (by simp [next, hev]) (stepsTo_runE L (b + a / 2) (a / 2) [])
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA

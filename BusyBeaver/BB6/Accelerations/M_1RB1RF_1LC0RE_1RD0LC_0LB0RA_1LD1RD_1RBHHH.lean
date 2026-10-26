@@ -32,6 +32,10 @@ via retPass + finishRet to produce the next right stack.
 
 Start: E([]), reached after 6 raw TM steps
 ```
+
+From step 1 onward (`E([0, 0])`), the leading stack digit is invariantly `0`, yielding a reduced
+single-stack transition system $E_{\mathrm{HL}}(R) := E(0 :: R)$ starting at $E_{\mathrm{HL}}([0])$
+that eliminates `finishRet` and the unreachable outer branches.
 -/
 
 @[expose] public section
@@ -428,5 +432,100 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-stack state space $E_{\mathrm{HL}}(R) := E(0 :: R)$ with the invariant leading
+zero peeled off. -/
+inductive HighLevelState where
+  /-- Left-boundary configuration $E(0 :: R)$ after peeling the invariant leading zero. -/
+  | E (R : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $E_{\mathrm{HL}}([0])$, reached in 1 `next` step from `start`. -/
+def highLevelStart : HighLevelState := .E [0]
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .E R => .E (0 :: R)
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Leftward return sweep on `bs` with the trailing `[false, false]` suffix absorbed and the
+leading zero of the resulting stack peeled off. -/
+def retHL : Bool → List Bool → List ℕ → List ℕ
+  | false, [], R => bumpHead (bumpHead R)
+  | true, [], R => 3 :: bumpHead R
+  | false, false :: bs, R => retHL true bs (bumpHead R)
+  | false, true :: bs, R => retHL true bs (bumpHead (bumpHead R))
+  | true, false :: bs, R => retHL false bs (0 :: bumpHead R)
+  | true, [true], R => 1 :: 0 :: bumpHead R
+  | true, true :: false :: bs, R => retHL true bs (0 :: 0 :: bumpHead R)
+  | true, true :: true :: bs, R => retHL true bs (1 :: 0 :: bumpHead R)
+
+/-- Rightward scan across `R` in mode `A` (`false`) or `F` (`true`), returning the reduced next
+state directly via `retHL` (`none` on digits `≥ 4`). -/
+def scanHL : Bool → List Bool → List ℕ → Option HighLevelState
+  | false, bs, [] => some (.E (retHL false bs [0]))
+  | true, bs, [] => some (.E (retHL true bs [0, 0]))
+  | m, bs, r :: R =>
+    let bm := if m then true :: false :: bs else false :: bs
+    if r = 0 then some (.E (retHL false bm R))
+    else if r = 1 then some (.E (retHL true bm R))
+    else if r = 2 then scanHL false (false :: bm) R
+    else if r = 3 then scanHL true bm R
+    else none
+
+/-- High-level single-stack accelerated transition function on $E_{\mathrm{HL}}(R)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .E R => scanHL false [] R
+
+private theorem retPass_append_ff :
+    ∀ (m : Bool) (bs : List Bool) (R : List ℕ),
+      retPass m (bs ++ [false, false]) R = 0 :: retHL m bs R
+  | false, [], _ => rfl
+  | true, [], _ => rfl
+  | false, false :: bs, R => retPass_append_ff true bs (bumpHead R)
+  | false, true :: bs, R => retPass_append_ff true bs (bumpHead (bumpHead R))
+  | true, false :: bs, R => retPass_append_ff false bs (0 :: bumpHead R)
+  | true, [true], _ => rfl
+  | true, true :: false :: bs, R => retPass_append_ff true bs (0 :: 0 :: bumpHead R)
+  | true, true :: true :: bs, R => retPass_append_ff true bs (1 :: 0 :: bumpHead R)
+
+private theorem scanPass_append_ff (R : List ℕ) :
+    ∀ (m : Bool) (bs : List Bool),
+      (scanPass m (bs ++ [false, false]) R).map State.E = (scanHL m bs R).map toState := by
+  induction R with
+  | nil =>
+    intro m bs
+    cases m <;> simp [scanPass, scanHL, toState, retPass_append_ff]
+  | cons r R' ih =>
+    intro m bs
+    cases m <;> rcases r with _ | _ | _ | _ | r' <;>
+      simp only [scanPass, scanHL, toState, ← List.cons_append, ↓reduceIte, retPass_append_ff, ih,
+        Option.map_some, Option.map_none] <;>
+      rfl
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.single rfl) ?_
+  rintro ⟨R⟩
+  exact CollatzStepsTo.of_eq (scanPass_append_ff R false [])
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH

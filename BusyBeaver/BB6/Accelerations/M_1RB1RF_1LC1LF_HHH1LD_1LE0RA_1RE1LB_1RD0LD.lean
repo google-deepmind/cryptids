@@ -56,6 +56,10 @@ EL(4k + 3, L, d, R)    -> E0(L, bumpHead (bumpHead R1))
 
 Start: EL(1, [], 1, []), reached after 5 raw TM steps
 ```
+
+Eliminating the auxiliary mode $E_0$ and contracting the `runF`/$E_0$ bounce loop yields a
+single-mode transition system $EL_{\mathrm{HL}}(a, L, d, R) := EL(a, L, d, R)$ starting at
+$EL_{\mathrm{HL}}(1, [], 1, [])$.
 -/
 
 @[expose] public section
@@ -475,5 +479,238 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- Reduced single-mode state space $EL_{\mathrm{HL}}(a, L, d, R) := EL(a, L, d, R)$ obtained by
+eliminating $E_0$. -/
+inductive HighLevelState where
+  /-- Left-moving `<E` configuration between `encStack (a :: L)` and `encStack (d :: R)`. -/
+  | EL (a : ℕ) (L : List ℕ) (d : ℕ) (R : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $EL_{\mathrm{HL}}(1, [], 1, [])$, equal to `start`. -/
+def highLevelStart : HighLevelState := .EL 1 [] 1 []
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .EL a L d R => .EL a L d R
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Strip all leading `1` digits from `L`, returning `(count, remainder)`. -/
+def countOnes (L : List ℕ) : ℕ × List ℕ :=
+  List.rec (motive := fun _ => ℕ × List ℕ) (0, [])
+    (fun x xs p => if x = 1 then (p.1 + 1, p.2) else (0, x :: xs)) L
+
+/-- Apply `L ↦ 0 :: bumpHead L` `k` times. -/
+def pushZeroBump (k : ℕ) (L : List ℕ) : List ℕ :=
+  ((fun s => 0 :: bumpHead s)^[k]) L
+
+/-- Contract one non-empty head `r` of `runF L (r :: R')` given `ih = fun L' => runFHL L' R'`. -/
+def stepFHead (R' : List ℕ) (ih : List ℕ → HighLevelState) : ℕ → List ℕ → HighLevelState
+  | 0, L =>
+    let p := bumpNE L
+    List.casesOn (motive := fun _ => HighLevelState) R' (.EL p.1 p.2 2 []) fun e R'' =>
+      .EL p.1 p.2 0 (e :: R'')
+  | 1, L => ih (0 :: bumpHead L)
+  | 2, L =>
+    let pL := bumpNE (bumpHead (bumpHead L))
+    let pR := bumpNE (bumpHead R')
+    .EL pL.1 pL.2 pR.1 pR.2
+  | d + 3, L =>
+    let c := countOnes (bumpHead L)
+    List.casesOn (motive := fun _ => HighLevelState) c.2
+      (stepFHead R' ih d (pushZeroBump c.1 [0, 0])) fun x Lt =>
+        if x = 0 then
+          List.casesOn (motive := fun _ => HighLevelState) Lt
+            (stepFHead R' ih d (pushZeroBump c.1 [0, 1, 0])) fun a Lt' =>
+              .EL a Lt' 0 (1 :: (List.replicate c.1 1 ++ (d :: R')))
+        else
+          .EL (x - 2) Lt 0 (1 :: (List.replicate c.1 1 ++ (d :: R')))
+
+/-- Contract `runF` together with any subsequent $E_0$/`runF` bounces until reaching `EL`. -/
+def runFHL (L R : List ℕ) : HighLevelState :=
+  List.rec (motive := fun _ => List ℕ → HighLevelState)
+    (fun L =>
+      let p := bumpNE L
+      .EL p.1 p.2 0 [])
+    (fun r R' ih L => stepFHead R' ih r L)
+    R L
+
+/-- Contract `runE0` together with any subsequent `runF`/$E_0$ bounces until reaching `EL`. -/
+def runE0HL (L R : List ℕ) : HighLevelState :=
+  let c := countOnes L
+  List.casesOn (motive := fun _ => HighLevelState) c.2
+    (runFHL (pushZeroBump c.1 [0, 0]) R) fun x Lt =>
+      if x = 0 then
+        List.casesOn (motive := fun _ => HighLevelState) Lt
+          (runFHL (pushZeroBump c.1 [0, 1, 0]) R) fun a Lt' =>
+            .EL a Lt' 0 (1 :: (List.replicate c.1 1 ++ R))
+      else
+        .EL (x - 2) Lt 0 (1 :: (List.replicate c.1 1 ++ R))
+
+/-- High-level single-mode accelerated transition function on $EL_{\mathrm{HL}}(a, L, d, R)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .EL a L d R =>
+    let R₁ := peelEL (a / 4) (d :: R)
+    if a % 4 = 0 then
+      List.casesOn (motive := fun _ => Option HighLevelState) L none fun b Lp =>
+        let p := bumpNE R₁
+        if b = 0 then
+          List.casesOn (motive := fun _ => Option HighLevelState) Lp
+            (some (.EL 1 [] (p.1 + 2) p.2)) fun b' L'' =>
+              some (.EL b' L'' (p.1 + 3) p.2)
+        else if b = 1 then
+          List.casesOn (motive := fun _ => Option HighLevelState) Lp
+            (some (runE0HL [] (p.1 :: p.2))) fun c L'' =>
+              some (runFHL (0 :: (c + 1) :: L'') (p.1 :: p.2))
+        else
+          some (runE0HL ((b - 2) :: Lp) (p.1 :: p.2))
+    else
+      let R₂ := bumpHead (bumpHead R₁)
+      if a % 4 = 1 then
+        some (runFHL L R₂)
+      else if a % 4 = 2 then
+        List.casesOn (motive := fun _ => Option HighLevelState) L
+          (some (runE0HL [] R₂)) fun b L' =>
+            some (.EL b L' 0 R₂)
+      else
+        some (runE0HL L R₂)
+
+private theorem countOnes_eq (L : List ℕ) :
+    List.replicate (countOnes L).1 1 ++ (countOnes L).2 = L := by
+  induction L with
+  | nil => rfl
+  | cons x xs ih =>
+    simp only [countOnes]
+    split_ifs with hx
+    · subst hx
+      exact congrArg (1 :: ·) ih
+    · rfl
+
+private theorem countOnes_head_ne_one (L : List ℕ) {x : ℕ} {Lt : List ℕ}
+    (h : (countOnes L).2 = x :: Lt) : x ≠ 1 := by
+  induction L with
+  | nil => simp [countOnes] at h
+  | cons y ys ih =>
+    simp only [countOnes] at h
+    split_ifs at h with hy
+    · exact ih h
+    · injection h with hxy _
+      rintro rfl
+      exact hy hxy
+
+private theorem runE0_replicate_ones (k : ℕ) (Lrem R : List ℕ) :
+    runE0 (List.replicate k 1 ++ Lrem) R = runE0 Lrem (List.replicate k 1 ++ R) := by
+  induction k generalizing R with
+  | zero => rfl
+  | succ k ih =>
+    conv_lhs => rw [List.replicate_succ, List.cons_append, runE0, ih]
+    rw [List.replicate_succ', List.append_assoc, List.singleton_append]
+
+private theorem runF_replicate_ones (k : ℕ) (L R : List ℕ) :
+    runF L (List.replicate k 1 ++ R) = runF (pushZeroBump k L) R := by
+  induction k generalizing L with
+  | zero => rfl
+  | succ k ih =>
+    rw [List.replicate_succ, List.cons_append, runF, ih]
+    rfl
+
+private theorem reachesPlus_E0_of_runF (L₀ R₀ : List ℕ)
+    (hF : ∀ L', CollatzReachesStar next (runF L' R₀) (toState (runFHL L' R₀))) :
+    CollatzReachesPlus next (.E0 L₀ R₀) (toState (runE0HL L₀ R₀)) := by
+  have hstep : next (.E0 L₀ R₀) = some (runE0 L₀ R₀) := rfl
+  have hpeel : runE0 L₀ R₀ =
+      runE0 (countOnes L₀).2 (List.replicate (countOnes L₀).1 1 ++ R₀) := by
+    conv_lhs => rw [← countOnes_eq L₀]
+    exact runE0_replicate_ones (countOnes L₀).1 (countOnes L₀).2 R₀
+  rw [hpeel] at hstep
+  dsimp only [runE0HL]
+  rcases hc : (countOnes L₀).2 with _ | ⟨x, Lt⟩
+  · rw [hc, runE0, runF_replicate_ones] at hstep
+    exact CollatzReachesPlus.head hstep (hF _)
+  · have hx1 : x ≠ 1 := countOnes_head_ne_one L₀ hc
+    dsimp only
+    rw [hc] at hstep
+    split_ifs with hx0
+    · subst hx0
+      rcases Lt with _ | ⟨a, Lt'⟩
+      · rw [runE0, runF_replicate_ones] at hstep
+        exact CollatzReachesPlus.head hstep (hF _)
+      · rw [runE0] at hstep
+        exact CollatzReachesPlus.single hstep
+    · have hx2 : x = (x - 2) + 2 := by omega
+      rw [hx2, runE0] at hstep
+      exact CollatzReachesPlus.single hstep
+
+private theorem reachesStar_runFHL (L R : List ℕ) :
+    CollatzReachesStar next (runF L R) (toState (runFHL L R)) := by
+  induction R generalizing L with
+  | nil => exact CollatzReachesStar.refl next _
+  | cons r R' ih_R =>
+    induction r using Nat.strong_induction_on generalizing L with
+    | h r ih_r =>
+      rcases r with _ | _ | _ | d
+      · rcases R' with _ | ⟨e, R''⟩ <;> exact CollatzReachesStar.refl next _
+      · exact ih_R (0 :: bumpHead L)
+      · exact CollatzReachesStar.refl next _
+      · conv_lhs => rw [runF]
+        exact (reachesPlus_E0_of_runF (bumpHead L) (d :: R') fun L' =>
+          ih_r d (by omega) L').to_star
+
+private theorem reachesPlus_E0 (L R : List ℕ) :
+    CollatzReachesPlus next (.E0 L R) (toState (runE0HL L R)) :=
+  reachesPlus_E0_of_runF L R fun L' => reachesStar_runFHL L' R
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨a, L, d, R⟩
+  dsimp only [toState, highLevelNext]
+  split_ifs with h0 h1 h2
+  · rcases L with _ | ⟨b, Lp⟩
+    · exact CollatzStepsTo.of_eq (by simp [next, h0])
+    · dsimp only
+      split_ifs with hb0 hb1
+      · subst hb0
+        rcases Lp with _ | ⟨b', L''⟩
+        · exact CollatzStepsTo.of_eq (by simp [next, h0, toState])
+        · exact CollatzStepsTo.of_eq (by simp [next, h0, toState])
+      · subst hb1
+        rcases Lp with _ | ⟨c, L''⟩
+        · exact CollatzReachesPlus.head (by simp [next, h0])
+            (reachesPlus_E0 [] _).to_star
+        · exact CollatzReachesPlus.head (by simp [next, h0])
+            (reachesStar_runFHL (0 :: (c + 1) :: L'') _)
+      · have hb2 : b = (b - 2) + 2 := by omega
+        refine CollatzReachesPlus.head ?_
+          (reachesPlus_E0 ((b - 2) :: Lp) _).to_star
+        rw [hb2]
+        simp [next, h0]
+  · exact CollatzReachesPlus.head (by simp [next, h1])
+      (reachesStar_runFHL L _)
+  · rcases L with _ | ⟨b, L'⟩
+    · exact CollatzReachesPlus.head (by simp [next, h2])
+        (reachesPlus_E0 [] _).to_star
+    · exact CollatzStepsTo.of_eq (by simp [next, h2, toState])
+  · exact CollatzReachesPlus.head (by simp [next, h0, h1, h2])
+      (reachesPlus_E0 L _).to_star
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD

@@ -40,6 +40,10 @@ C(a, L, R) -> scanOnes(a, L, R)
 
 Start: C(1, [], [0, 0]), reached after 12 raw TM steps
 ```
+
+Contracting full parity peels $r_0 = 2k + (r_0 \bmod 2)$ via `d0Iter` and leading `1`-peels via
+`scanEpoch` yields a single-epoch high-level transition system $C_{\mathrm{HL}}(a, L, R)$ starting
+at $C_{\mathrm{HL}}(1, [], [0, 0])$.
 -/
 
 @[expose] public section
@@ -461,5 +465,267 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next :=
 /-- `target` halts from the blank tape iff iterating `next` from `start` reaches `none`. -/
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start :=
   is_valid_acceleration.isHalt_iff
+
+/-! ## High-Level Acceleration -/
+
+/-- High-level symbolic state space contracting full parity peels and leading `1`-scans. -/
+inductive HighLevelState where
+  /-- Separator configuration $C(a, L, R)$ at the start of an epoch. -/
+  | C (a : ℕ) (L R : List ℕ)
+  deriving DecidableEq, Repr
+
+/-- Initial high-level state $C_{\mathrm{HL}}(1, [], [0, 0])$. -/
+def highLevelStart : HighLevelState := .C 1 [] [0, 0]
+
+/-- Embed a `HighLevelState` into `State`. -/
+def toState : HighLevelState → State
+  | .C a L R => .C a L R
+
+/-- Decode a `HighLevelState` into a concrete Turing machine configuration. -/
+def highLevelEncode (s : HighLevelState) : Cfg (Fin 2) (Fin 6) :=
+  encode (toState s)
+
+/-- Iterate `d0Out` `k` times on right stack `R`. -/
+def d0Iter (k : ℕ) (R : List ℕ) : List ℕ :=
+  if k = 0 then R else d0Iter (k - 1) (d0Out R)
+termination_by k
+decreasing_by omega
+
+/-- Contract consecutive `(r + 2)` right-block shifts and leading `1`-peels from `C(a, L, R)`. -/
+def scanEpoch (a : ℕ) (L R : List ℕ) : Option HighLevelState :=
+  if R = [] then
+    none
+  else
+    let r₀ := R.headD 0
+    let R' := R.tail
+    let k := r₀ / 2
+    let Rk := d0Iter k R'
+    let a₁ := a + 2 * k
+    if r₀ % 2 = 0 then
+      let p := bump2 L
+      List.casesOn Rk (some (.C p.1 p.2 [a₁ + 2, 0])) fun r R'' =>
+        some (.C p.1 p.2 ((a₁ + r + 3) :: d0Out R''))
+    else if Rk.length - 1 < R'.length ∨
+        (R'.length = 0 ∧ Rk.length ≤ 1 ∧ Rk.headD 0 < r₀) then
+      scanEpoch 0 (a₁ :: L) Rk
+    else
+      none
+termination_by (R.length - 1, R.headD 0)
+decreasing_by
+  simp_wf
+  cases R with
+  | nil => contradiction
+  | cons head tail =>
+    simp +zetaDelta only [Prod.lex_def, List.headD_eq_head?, List.head?_cons, Option.getD_some,
+      List.tail_cons, List.length_cons] at *
+    omega
+
+/-- High-level accelerated transition function on $C_{\mathrm{HL}}(a, L, R)$. -/
+def highLevelNext : HighLevelState → Option HighLevelState
+  | .C a L R => scanEpoch a L R
+
+private theorem d0Iter_zero (R : List ℕ) : d0Iter 0 R = R := by
+  rw [d0Iter]
+  rfl
+
+private theorem d0Iter_succ (k : ℕ) (R : List ℕ) :
+    d0Iter (k + 1) R = d0Iter k (d0Out R) := by
+  rw [d0Iter]
+  simp
+
+private theorem d0Iter_singleton (k d : ℕ) : d0Iter k [d] = [d + k] := by
+  induction k generalizing d with
+  | zero => rw [d0Iter_zero, Nat.add_zero]
+  | succ k ih =>
+    rw [d0Iter_succ, d0Out, ih (d + 1)]
+    congr 1
+    omega
+
+private theorem d0Iter_nil_succ (k : ℕ) : d0Iter (k + 1) [] = [k] := by
+  rw [d0Iter_succ, d0Out, d0Iter_singleton, Nat.zero_add]
+
+private theorem d0Out_length_le {R : List ℕ} (h : R ≠ []) :
+    1 ≤ (d0Out R).length ∧ (d0Out R).length ≤ R.length := by
+  rcases R with _ | ⟨d, _ | ⟨r, s⟩⟩
+  · contradiction
+  · simp [d0Out]
+  · simp [d0Out]
+
+private theorem d0Iter_length_le (k : ℕ) {R : List ℕ} (h : R ≠ []) :
+    1 ≤ (d0Iter k R).length ∧ (d0Iter k R).length ≤ R.length := by
+  induction k generalizing R with
+  | zero =>
+    rw [d0Iter_zero]
+    cases R with
+    | nil => contradiction
+    | cons _ _ => simp
+  | succ k ih =>
+    rw [d0Iter_succ]
+    obtain ⟨h1, h2⟩ := d0Out_length_le h
+    obtain ⟨ih1, ih2⟩ := ih (List.ne_nil_of_length_pos h1)
+    exact ⟨ih1, Nat.le_trans ih2 h2⟩
+
+private theorem scanEpoch_guard {r₀ : ℕ} (hodd : r₀ % 2 = 1) (R' : List ℕ) :
+    (d0Iter (r₀ / 2) R').length - 1 < R'.length ∨
+      (R'.length = 0 ∧ (d0Iter (r₀ / 2) R').length ≤ 1 ∧
+        (d0Iter (r₀ / 2) R').headD 0 < r₀) := by
+  rcases R' with _ | ⟨d, R''⟩
+  · right
+    rcases hk : r₀ / 2 with _ | m
+    · rw [d0Iter_zero]
+      simp only [List.length_nil, Nat.zero_le, List.headD_nil, true_and]
+      omega
+    · rw [d0Iter_nil_succ]
+      simp only [List.length_nil, List.length_singleton, le_refl, List.headD_cons, true_and]
+      omega
+  · left
+    obtain ⟨_, hle⟩ := d0Iter_length_le (r₀ / 2) (List.cons_ne_nil d R'')
+    simp only [List.length_cons] at hle ⊢
+    omega
+
+private theorem reaches_d0Iter (k a m : ℕ) (L R : List ℕ) :
+    CollatzReachesStar next (.C a L ((2 * k + m) :: R))
+      (.C (a + 2 * k) L (m :: d0Iter k R)) := by
+  induction k generalizing a R with
+  | zero =>
+    simp only [Nat.mul_zero, Nat.zero_add, Nat.add_zero, d0Iter_zero]
+    exact CollatzReachesStar.refl next _
+  | succ k ih =>
+    have h1 : next (.C a L ((2 * (k + 1) + m) :: R)) =
+        some (.C (a + 2) L ((2 * k + m) :: d0Out R)) := by
+      rw [show 2 * (k + 1) + m = (2 * k + m) + 2 by omega]
+      rfl
+    have h2 := ih (a + 2) (d0Out R)
+    rw [show a + 2 + 2 * k = a + 2 * (k + 1) by omega, ← d0Iter_succ] at h2
+    exact CollatzReachesStar.head h1 h2
+
+private theorem stepsTo_of_next_eq {s₁ s₂ : State} {res : Option State}
+    (h : next s₁ = next s₂) (hs : CollatzStepsTo next s₂ res) :
+    CollatzStepsTo next s₁ res := by
+  rcases res with _ | s'
+  · obtain ⟨n, hn⟩ := hs
+    rcases n with _ | m
+    · simp at hn
+    · refine ⟨m + 1, ?_⟩
+      rw [Function.iterate_succ_apply] at hn ⊢
+      change ((Option.bind · next)^[m] (next s₁)).isNone
+      rw [h]
+      exact hn
+  · obtain ⟨n, hpos, hn⟩ := hs
+    rcases n with _ | m
+    · omega
+    · refine ⟨m + 1, Nat.succ_pos m, ?_⟩
+      unfold CollatzReachesIn at hn ⊢
+      rw [Function.iterate_succ_apply] at hn ⊢
+      change (Option.bind · next)^[m] (next s₁) = some s'
+      rw [h]
+      exact hn
+
+private theorem stepsTo_peel_one (a : ℕ) (L R : List ℕ) {res : Option State}
+    (hs : CollatzStepsTo next (.C 0 (a :: L) R) res) :
+    CollatzStepsTo next (.C a L (1 :: R)) res :=
+  stepsTo_of_next_eq (s₁ := .C a L (1 :: R)) (s₂ := .C 0 (a :: L) R) rfl hs
+
+private theorem stepsTo_even_exit (a : ℕ) (L Rk : List ℕ) :
+    CollatzStepsTo next (.C a L (0 :: Rk))
+      ((List.casesOn (motive := fun _ => Option HighLevelState) Rk
+          (some (HighLevelState.C (bump2 L).1 (bump2 L).2 [a + 2, 0]))
+          fun r R'' =>
+            some (HighLevelState.C (bump2 L).1 (bump2 L).2 ((a + r + 3) :: d0Out R''))).map
+        toState) := by
+  rcases Rk with _ | ⟨r, R''⟩
+  · exact CollatzStepsTo.of_eq rfl
+  · exact CollatzStepsTo.of_eq rfl
+
+private theorem stepsTo_scanEpoch_short (r₀ : ℕ) :
+    ∀ (a : ℕ) (L R : List ℕ), R.length ≤ 1 → R.headD 0 = r₀ →
+      CollatzStepsTo next (.C a L R) ((scanEpoch a L R).map toState) := by
+  induction r₀ using Nat.strong_induction_on with
+  | h r₀ ihr =>
+    intro a L R hlen hhead
+    rcases R with _ | ⟨r, _ | ⟨_, _⟩⟩
+    · rw [scanEpoch]
+      simp only [↓reduceIte]
+      exact CollatzStepsTo.of_eq rfl
+    · dsimp only [List.headD] at hhead
+      subst r
+      rw [scanEpoch]
+      simp only [reduceCtorEq, ↓reduceIte, List.headD_cons, List.tail_cons]
+      have hr : 2 * (r₀ / 2) + r₀ % 2 = r₀ := by omega
+      have hstar := hr ▸ reaches_d0Iter (r₀ / 2) a (r₀ % 2) L []
+      refine CollatzStepsTo.of_reachesStar hstar ?_
+      by_cases hev : r₀ % 2 = 0
+      · simp only [hev, ↓reduceIte]
+        exact stepsTo_even_exit (a + 2 * (r₀ / 2)) L (d0Iter (r₀ / 2) [])
+      · have hodd : r₀ % 2 = 1 := by omega
+        have hg := scanEpoch_guard hodd []
+        simp only [hev, ↓reduceIte, hg]
+        rw [hodd]
+        have hlen' : (d0Iter (r₀ / 2) []).length ≤ 1 := by
+          rcases hg with hlt | ⟨_, hle, _⟩
+          · simp at hlt
+          · exact hle
+        have hlt' : (d0Iter (r₀ / 2) []).headD 0 < r₀ := by
+          rcases hg with hlt | ⟨_, _, hhd⟩
+          · simp at hlt
+          · exact hhd
+        exact stepsTo_peel_one _ _ _
+          (ihr _ hlt' 0 ((a + 2 * (r₀ / 2)) :: L) (d0Iter (r₀ / 2) []) hlen' rfl)
+    · simp at hlen
+
+private theorem stepsTo_scanEpoch_len (n : ℕ) :
+    ∀ (a : ℕ) (L R : List ℕ), R.length = n →
+      CollatzStepsTo next (.C a L R) ((scanEpoch a L R).map toState) := by
+  induction n using Nat.strong_induction_on with
+  | h n ihn =>
+    intro a L R hlen
+    by_cases hle1 : n ≤ 1
+    · exact stepsTo_scanEpoch_short (R.headD 0) a L R (hlen ▸ hle1) rfl
+    · rcases R with _ | ⟨r₀, R'⟩
+      · simp at hlen
+        omega
+      · rw [scanEpoch]
+        simp only [reduceCtorEq, ↓reduceIte, List.headD_cons, List.tail_cons]
+        have hr : 2 * (r₀ / 2) + r₀ % 2 = r₀ := by omega
+        have hstar := hr ▸ reaches_d0Iter (r₀ / 2) a (r₀ % 2) L R'
+        refine CollatzStepsTo.of_reachesStar hstar ?_
+        by_cases hev : r₀ % 2 = 0
+        · simp only [hev, ↓reduceIte]
+          exact stepsTo_even_exit (a + 2 * (r₀ / 2)) L (d0Iter (r₀ / 2) R')
+        · have hodd : r₀ % 2 = 1 := by omega
+          have hg := scanEpoch_guard hodd R'
+          simp only [hev, ↓reduceIte, hg]
+          rw [hodd]
+          have hne : R' ≠ [] := by
+            intro hnil
+            subst hnil
+            simp at hlen
+            omega
+          obtain ⟨_, hkle⟩ := d0Iter_length_le (r₀ / 2) hne
+          have hklt : (d0Iter (r₀ / 2) R').length < n := by
+            simp only [List.length_cons] at hlen
+            omega
+          exact stepsTo_peel_one _ _ _
+            (ihn _ hklt 0 ((a + 2 * (r₀ / 2)) :: L) (d0Iter (r₀ / 2) R') rfl)
+
+/-- `highLevelStart`, `highLevelEncode`, and `highLevelNext` form a valid acceleration of
+`target`. -/
+theorem is_valid_highLevel_acceleration :
+    IsValidAcceleration target highLevelStart highLevelEncode highLevelNext := by
+  refine is_valid_acceleration.of_collatz (embed := toState)
+    (CollatzReachesStar.refl next start) ?_
+  rintro ⟨a, L, R⟩
+  exact stepsTo_scanEpoch_len R.length a L R rfl
+
+/-- `target` halts from the blank tape iff `highLevelNext` halts from `highLevelStart`. -/
+theorem isHalt_iff_highLevel_acceleration :
+    IsHalt target ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_highLevel_acceleration.isHalt_iff
+
+/-- The initial acceleration `next` halts from `start` iff `highLevelNext` halts from
+`highLevelStart`. -/
+theorem acceleration_iff_highLevel_acceleration :
+    CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
+  is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
 
 end BusyBeaver.M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB
