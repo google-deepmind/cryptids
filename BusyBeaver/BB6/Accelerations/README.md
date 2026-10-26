@@ -31,13 +31,13 @@ This directory contains formal Lean 4 specifications and kernel-verified reducti
 
 Throughout the table and problem statements below, $\mathbb{N} = \lbrace 0, 1, 2, \dots \rbrace$ denotes the non-negative integers, and we use standard sequence (free-monoid) notation for stacks and words:
 
-- **Finite sequences ($\Sigma^*$):** For any alphabet or entry set $\Sigma$ (such as $\mathbb{N}$, $\lbrace 0, 1 \rbrace$, or $\mathbb{N} \times \lbrace 0, 1 \rbrace$), $\Sigma^*$ denotes the set of finite sequences $[x_1, x_2, \dots, x_m]$ of length $m \ge 0$ with $x_i \in \Sigma$, ordered from the active top/front entry ($x_1$) to the bottom/back entry ($x_m$).
-- **Empty sequence ($\varepsilon$):** We write $\varepsilon \in \Sigma^*$ for the empty sequence of length $0$ (written `[]` in Lean). Note that $[0]$ has length $1$ (sole entry $0$), whereas $\varepsilon$ has length $0$.
-- **Concatenation, push, and pop ($X \cdot Y$):** For $X, Y \in \Sigma^*$, $X \cdot Y$ denotes sequence concatenation (written `X ++ Y` in Lean), with $\varepsilon \cdot X = X \cdot \varepsilon = X$. In particular:
+- **Finite sequences ($\Sigma^{\ast}$):** For any alphabet or entry set $\Sigma$ (such as $\mathbb{N}$, $\lbrace 0, 1 \rbrace$, or $\mathbb{N} \times \lbrace 0, 1 \rbrace$), $\Sigma^{\ast}$ denotes the set of finite sequences $[x_1, x_2, \dots, x_m]$ of length $m \ge 0$ with $x_i \in \Sigma$, ordered from the active top/front entry ($x_1$) to the bottom/back entry ($x_m$).
+- **Empty sequence ($\varepsilon$):** We write $\varepsilon \in \Sigma^{\ast}$ for the empty sequence of length $0$ (written `[]` in Lean). Note that $[0]$ has length $1$ (sole entry $0$), whereas $\varepsilon$ has length $0$.
+- **Concatenation, push, and pop ($X \cdot Y$):** For $X, Y \in \Sigma^{\ast}$, $X \cdot Y$ denotes sequence concatenation (written `X ++ Y` in Lean), with $\varepsilon \cdot X = X \cdot \varepsilon = X$. In particular:
   - $[x] \cdot X$ pushes/prepends a single entry $x \in \Sigma$ onto the front of $X$ (written `x :: X` in Lean), and $[x, y] \cdot X$ pushes $x$ followed by $y$ (`x :: y :: X` in Lean).
   - Writing $X = [x] \cdot X'$ in a branch condition matches a non-empty sequence $X$ with top entry $x$ and remaining tail $X'$.
 - **Repetition and reversal ($[x]^k$, $X^{\mathrm{rev}}$):** For $k \in \mathbb{N}$, $[x]^k$ denotes the sequence $[x, \dots, x]$ of $k$ copies of $x$ (with $[x]^0 = \varepsilon$), and $[x_1, \dots, x_m]^{\mathrm{rev}} = [x_m, \dots, x_1]$.
-- **Head-increment operators ($\beta_k$, $\iota$):** On integer stacks $X \in \mathbb{N}^*$, we define:
+- **Head-increment operators ($\beta_k$, $\iota$):** On integer stacks $X \in \mathbb{N}^{\ast}$, we define:
 
 $$
 \beta_k(\varepsilon) = [k - 1] \quad (k \ge 1), \qquad \beta_k([x] \cdot X) = [x + k] \cdot X, \qquad \iota(\varepsilon) = \varepsilon, \qquad \iota([x] \cdot X) = [x + 1] \cdot X,
@@ -49,36 +49,36 @@ and write $\beta_1^m$ for the $m$-fold iterate of $\beta_1$ (`bumpHead` in Lean)
 
 | Machine (`bbchallenge` RLE) | Family | State Space (Base $\to$ High-Level) | Initial State $s_0$ | Proved Properties | Lean 4 Proof |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF` | Stacked | $C(a, L, R) \to C_{\mathrm{HL}}(a, L) \in \mathbb{N} \times \mathbb{N}^*$ | $C(0, [0], [1])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean`](./M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean) |
-| `1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_---0RB` | Stacked | $C(a, L, R) \to C_{\mathrm{HL}}(a, L, R) \in \mathbb{N} \times \mathbb{N}^* \times \mathbb{N}^*$ | $C(1, \varepsilon, [0, 0])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB.lean`](./M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB.lean) |
+| `1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF` | Stacked | $C(a, L, R) \to C_{\mathrm{HL}}(a, L) \in \mathbb{N} \times \mathbb{N}^{\ast}$ | $C(0, [0], [1])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean`](./M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean) |
+| `1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_---0RB` | Stacked | $C(a, L, R) \to C_{\mathrm{HL}}(a, L, R) \in \mathbb{N} \times \mathbb{N}^{\ast} \times \mathbb{N}^{\ast}$ | $C(1, \varepsilon, [0, 0])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB.lean`](./M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB.lean) |
 | `1RB0RB_1RC0LE_1LD1LA_---0LC_1RF1LE_1RA0RA` | Stacked | $C, F \to F_{\mathrm{HL}}(a, b, L, r, R)$ | $F(1, 0, \varepsilon, 0, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA.lean`](./M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA.lean) |
-| `1RB1LA_1LA0RC_1RD1RC_1LE0RC_---0LF_1LE0LA` | Stacked | $D, E \to D_{\mathrm{HL}}(a, b, L) \in \mathbb{N}^2 \times \mathbb{N}^*$ | $D(1, 0, \varepsilon, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean`](./M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean) |
-| `1RB1LA_1LC0RE_---0LD_1RE0LF_1RA1RE_1LA0LB` | Stacked | $B(P, u, R) \in \mathbb{N}^* \times \mathbb{N} \times \mathbb{N}^*$ | $B(\varepsilon, 0, \varepsilon)$ | `IsValidAcceleration` | [`M_1RB1LA_1LC0RE_HHH0LD_1RE0LF_1RA1RE_1LA0LB.lean`](./M_1RB1LA_1LC0RE_HHH0LD_1RE0LF_1RA1RE_1LA0LB.lean) |
-| `1RB1RA_1RC1LB_1LD0RA_---0LE_1LC0LF_1RE0LB` | Stacked | $C(a, L, R) \to C_{\mathrm{HL}}(a, L) \in \mathbb{N} \times \mathbb{N}^*$ | $C(3, [0], \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean`](./M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean) |
+| `1RB1LA_1LA0RC_1RD1RC_1LE0RC_---0LF_1LE0LA` | Stacked | $D, E \to D_{\mathrm{HL}}(a, b, L) \in \mathbb{N}^2 \times \mathbb{N}^{\ast}$ | $D(1, 0, \varepsilon, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean`](./M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean) |
+| `1RB1LA_1LC0RE_---0LD_1RE0LF_1RA1RE_1LA0LB` | Stacked | $B(P, u, R) \in \mathbb{N}^{\ast} \times \mathbb{N} \times \mathbb{N}^{\ast}$ | $B(\varepsilon, 0, \varepsilon)$ | `IsValidAcceleration` | [`M_1RB1LA_1LC0RE_HHH0LD_1RE0LF_1RA1RE_1LA0LB.lean`](./M_1RB1LA_1LC0RE_HHH0LD_1RE0LF_1RA1RE_1LA0LB.lean) |
+| `1RB1RA_1RC1LB_1LD0RA_---0LE_1LC0LF_1RE0LB` | Stacked | $C(a, L, R) \to C_{\mathrm{HL}}(a, L) \in \mathbb{N} \times \mathbb{N}^{\ast}$ | $C(3, [0], \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean`](./M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean) |
 | `1RB---_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA` | Stacked | $C_R(a, b, L, d, R)$ | $C_R(0, 0, \varepsilon, 0, \varepsilon)$ | `IsValidAcceleration` | [`M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA.lean`](./M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA.lean) |
-| `1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_---1RA` | Odometer | $B(L, R) \to B_{\mathrm{HL}}(R) \in \mathbb{N}^*$ | $B(\varepsilon, [0, 1])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA.lean`](./M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA.lean) |
-| `1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_---1RD` | Odometer | $E(a, L, d, R) \to E_{\mathrm{HL}}(k, d, R) \in \mathbb{N}^2 \times \mathbb{N}^*$ | $E(1, \varepsilon, 0, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD.lean`](./M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD.lean) |
-| `1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---` | Odometer | $(L, w) \to W(w) \in \lbrace 0, 1 \rbrace^*$ | $(\varepsilon, \varepsilon)$ | `HasOdometerReduction`, `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean`](./M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean) |
-| `1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_---1RD` | Odometer | $B(L, E, c) \to B_{\mathrm{HL}}(E, c) \in \mathbb{N}^* \times \mathbb{N}$ | $B([0], \varepsilon, 1)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD.lean`](./M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD.lean) |
-| `1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_---1RA` | Odometer | $E(d, R) \in \mathbb{N} \times \mathbb{N}^*$ | $E(0, [0])$ | `IsValidAcceleration` | [`M_1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_HHH1RA.lean`](./M_1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_HHH1RA.lean) |
-| `1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RB---` | Odometer | $E(R) \to E_{\mathrm{HL}}(R) \in \mathbb{N}^*$ | $E(\varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH.lean`](./M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH.lean) |
+| `1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_---1RA` | Odometer | $B(L, R) \to B_{\mathrm{HL}}(R) \in \mathbb{N}^{\ast}$ | $B(\varepsilon, [0, 1])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA.lean`](./M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA.lean) |
+| `1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_---1RD` | Odometer | $E(a, L, d, R) \to E_{\mathrm{HL}}(k, d, R) \in \mathbb{N}^2 \times \mathbb{N}^{\ast}$ | $E(1, \varepsilon, 0, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD.lean`](./M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD.lean) |
+| `1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---` | Odometer | $(L, w) \to W(w) \in \lbrace 0, 1 \rbrace^{\ast}$ | $(\varepsilon, \varepsilon)$ | `HasOdometerReduction`, `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean`](./M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean) |
+| `1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_---1RD` | Odometer | $B(L, E, c) \to B_{\mathrm{HL}}(E, c) \in \mathbb{N}^{\ast} \times \mathbb{N}$ | $B([0], \varepsilon, 1)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD.lean`](./M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD.lean) |
+| `1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_---1RA` | Odometer | $E(d, R) \in \mathbb{N} \times \mathbb{N}^{\ast}$ | $E(0, [0])$ | `IsValidAcceleration` | [`M_1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_HHH1RA.lean`](./M_1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_HHH1RA.lean) |
+| `1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RB---` | Odometer | $E(R) \to E_{\mathrm{HL}}(R) \in \mathbb{N}^{\ast}$ | $E(\varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH.lean`](./M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH.lean) |
 | `1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD` | Odometer | $E_L, E_0 \to E_{L,\mathrm{HL}}(a, L, d, R)$ | $E_L(1, \varepsilon, 1, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD.lean`](./M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD.lean) |
-| `1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LF---_1LD1LF` | Transducer | $E(L, R) \in \mathbb{N}^* \times \mathbb{N}^*$ | $E([1], \varepsilon)$ | `IsValidAcceleration` | [`M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean`](./M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean) |
-| `1RB0RE_0RC1RE_1RD1LE_0LE---_1RA1LF_1RF0LC` | Transducer | $E(L, R) \to E_{\mathrm{HL}}(R) \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^*$ | $E([(1, 0)], [(0, 0)])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC.lean`](./M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC.lean) |
-| `1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_---1LC` | Transducer | $B(L, d, R) \to B_{\mathrm{HL}}(R) \in \mathbb{N}^*$ | $B([0], 0, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean`](./M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean) |
-| `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---` | Transducer | $D(L, R) \in \mathbb{N}^* \times \mathbb{N}^*$ | $D([1], \varepsilon)$ | `IsValidAcceleration` | [`M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean`](./M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean) |
-| `1RB1RE_1LC0RA_---1LD_1LA0LF_0LB0LC_1RB0LB` | Transducer | $D(L, R) \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^* \times (\mathbb{N} \times \lbrace 0, 1, 2 \rbrace)^*$ | $D(\varepsilon, [(1, 0)])$ | `IsValidAcceleration` | [`M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean) |
-| `1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA` | Transducer | $M_0(L, R) \in (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^* \times (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^*$ | $M_0([(0, 1), (0, 1)], [(1, 1)])$ | `IsValidAcceleration` | [`M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean) |
+| `1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LF---_1LD1LF` | Transducer | $E(L, R) \in \mathbb{N}^{\ast} \times \mathbb{N}^{\ast}$ | $E([1], \varepsilon)$ | `IsValidAcceleration` | [`M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean`](./M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean) |
+| `1RB0RE_0RC1RE_1RD1LE_0LE---_1RA1LF_1RF0LC` | Transducer | $E(L, R) \to E_{\mathrm{HL}}(R) \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast}$ | $E([(1, 0)], [(0, 0)])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC.lean`](./M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC.lean) |
+| `1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_---1LC` | Transducer | $B(L, d, R) \to B_{\mathrm{HL}}(R) \in \mathbb{N}^{\ast}$ | $B([0], 0, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean`](./M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean) |
+| `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---` | Transducer | $D(L, R) \in \mathbb{N}^{\ast} \times \mathbb{N}^{\ast}$ | $D([1], \varepsilon)$ | `IsValidAcceleration` | [`M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean`](./M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean) |
+| `1RB1RE_1LC0RA_---1LD_1LA0LF_0LB0LC_1RB0LB` | Transducer | $D(L, R) \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast} \times (\mathbb{N} \times \lbrace 0, 1, 2 \rbrace)^{\ast}$ | $D(\varepsilon, [(1, 0)])$ | `IsValidAcceleration` | [`M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean) |
+| `1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA` | Transducer | $M_0(L, R) \in (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^{\ast} \times (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^{\ast}$ | $M_0([(0, 1), (0, 1)], [(1, 1)])$ | `IsValidAcceleration` | [`M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean) |
 
 ---
 
 ## 1. Stacked Reductions
 
-In a stacked reduction, both half-tapes organize into unbounded sequences $L, R \in \mathbb{N}^*$ of variable-length run blocks (such as $1^{a+1} 0^s$), so the machine's state space is an unbounded pair of integer stacks rather than a fixed-dimension tuple in $\mathbb{N}^d$. At each macro-step, the head performs modular arithmetic ($\bmod\ 2$, $\bmod\ 3$, or $\bmod\ 4$) on the active top counters adjacent to the head—incrementing stack tops or pushing fresh zero entries that increase stack depth—and periodically triggers a full-stack transfer sweep ($\tau$, $\sigma_D$, $\Delta$, $\tau_B$) that pours one stack onto the other in reverse order. This couples local Collatz-like residue branching at the head with arbitrarily deep historical memory stored across $L$ and $R$, while halting requires draining an entire stack down to $\varepsilon$ at a specific head residue. Six `bbchallenge` Wiki holdouts in the table above satisfy `HasStackReduction`; the seven open problems below give explicit accelerated maps $(s_0, T)$ in this family.
+In a stacked reduction, both half-tapes organize into unbounded sequences $L, R \in \mathbb{N}^{\ast}$ of variable-length run blocks (such as $1^{a+1} 0^s$), so the machine's state space is an unbounded pair of integer stacks rather than a fixed-dimension tuple in $\mathbb{N}^d$. At each macro-step, the head performs modular arithmetic ($\bmod\ 2$, $\bmod\ 3$, or $\bmod\ 4$) on the active top counters adjacent to the head—incrementing stack tops or pushing fresh zero entries that increase stack depth—and periodically triggers a full-stack transfer sweep ($\tau$, $\sigma_D$, $\Delta$, $\tau_B$) that pours one stack onto the other in reverse order. This couples local Collatz-like residue branching at the head with arbitrarily deep historical memory stored across $L$ and $R$, while halting requires draining an entire stack down to $\varepsilon$ at a specific head residue. Six `bbchallenge` Wiki holdouts in the table above satisfy `HasStackReduction`; the seven open problems below give explicit accelerated maps $(s_0, T)$ in this family.
 
 ### 1.1 [`1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF`](./M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean)
 
-Over states $C(a, L, R)$ with $a \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, define the right-to-left stack transfer $\tau$ by
+Over states $C(a, L, R)$ with $a \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, define the right-to-left stack transfer $\tau$ by
 
 $$
 \tau(a, L, \varepsilon) = C(a, L, [0]), \qquad \tau(a, L, [d] \cdot R) = \tau(d, [a] \cdot L, R).
@@ -96,7 +96,7 @@ T(C(a, L, R)) = \begin{cases}
 \end{cases}
 $$
 
-**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to the Poincaré return section $R = [0]$ eliminates the right stack completely over $C_{\mathrm{HL}}(a, L) := C(a, L, [0])$. With $\tau_{\mathrm{HL}}(a, L, \varepsilon) = C_{\mathrm{HL}}(a, L)$ and $\tau_{\mathrm{HL}}(a, L, [d] \cdot R) = \tau_{\mathrm{HL}}(d, [a] \cdot L, R)$, define $\mathcal{E}(a, L, R)$ (writing $k = \lfloor a/2 \rfloor$ and $R_1 = \beta_1^k(R)$) by
+**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to the Poincaré return section $R = [0]$ eliminates the right stack completely over $C_{\mathrm{HL}}(a, L) := C(a, L, [0])$. With $\tau_{\mathrm{HL}}(a, L, \varepsilon) = C_{\mathrm{HL}}(a, L)$ and $\tau_{\mathrm{HL}}(a, L, [d] \cdot R) = \tau_{\mathrm{HL}}(d, [a] \cdot L, R)$, define $\mathcal{E}(a, L, R)$ for $k = \lfloor a/2 \rfloor$ and $R_1 = \beta_1^k(R)$ by
 
 $$
 \mathcal{E}(a, L, R) = \begin{cases}
@@ -112,7 +112,7 @@ Starting from $s_{0,\mathrm{HL}} = C_{\mathrm{HL}}(3, [0])$ (1 `next` step from 
 
 ### 1.2 [`1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_---0RB`](./M_1RB0LE_1LB1RC_0RF0RD_1RE0LA_1LA1RE_HHH0RB.lean)
 
-Over states $C(a, L, R)$ with $a \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, define $\delta : \mathbb{N}^* \to \mathbb{N}^*$ by
+Over states $C(a, L, R)$ with $a \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, define $\delta : \mathbb{N}^{\ast} \to \mathbb{N}^{\ast}$ by
 
 $$
 \delta(\varepsilon) = [0], \qquad \delta([d]) = [d + 1], \qquad \delta([d, r] \cdot S) = [r + d + 2] \cdot S,
@@ -142,7 +142,7 @@ $$
 
 ### 1.3 [`1RB0RB_1RC0LE_1LD1LA_---0LC_1RF1LE_1RA0RA`](./M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA.lean)
 
-Over states $C(a, b, L, r, R)$ and $F(a, b, L, r, R)$ with $a, b, r \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, write $(c^+, L') = (0, \varepsilon)$ if $L = \varepsilon$ and $(c^+, L') = (c + 1, L_1)$ if $L = [c] \cdot L_1$. Starting from $s_0 = F(1, 0, \varepsilon, 0, \varepsilon)$ (after 9 TM steps),
+Over states $C(a, b, L, r, R)$ and $F(a, b, L, r, R)$ with $a, b, r \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, write $(c^+, L') = (0, \varepsilon)$ if $L = \varepsilon$ and $(c^+, L') = (c + 1, L_1)$ if $L = [c] \cdot L_1$. Starting from $s_0 = F(1, 0, \varepsilon, 0, \varepsilon)$ (after 9 TM steps),
 
 $$
 \begin{aligned}
@@ -180,7 +180,7 @@ $$
 
 ### 1.4 [`1RB1LA_1LA0RC_1RD1RC_1LE0RC_---0LF_1LE0LA`](./M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean)
 
-Over states $D(a, b, L, R)$ and $E(a, L, R)$ with $a, b \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, define
+Over states $D(a, b, L, R)$ and $E(a, L, R)$ with $a, b \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, define
 
 $$
 \sigma_D(a, b, L, \varepsilon) = D(a, b, L, \varepsilon), \qquad \sigma_D(a, b, L, [d] \cdot R) = \sigma_D(d, a, [b] \cdot L, R).
@@ -230,7 +230,7 @@ Starting from $s_{0,\mathrm{HL}} = D_{\mathrm{HL}}(1, 0, \varepsilon)$, with $k 
 
 ### 1.5 [`1RB1LA_1LC0RE_---0LD_1RE0LF_1RA1RE_1LA0LB`](./M_1RB1LA_1LC0RE_HHH0LD_1RE0LF_1RA1RE_1LA0LB.lean)
 
-Over states $B(P, u, R)$ with $P, R \in \mathbb{N}^*$ and $u \in \mathbb{N}$ (where $P$ holds strictly positive upper stack entries shifted by $1$ above a bottom register $u$), define the stack-increment and transfer helpers:
+Over states $B(P, u, R)$ with $P, R \in \mathbb{N}^{\ast}$ and $u \in \mathbb{N}$ (where $P$ holds strictly positive upper stack entries shifted by $1$ above a bottom register $u$), define the stack-increment and transfer helpers:
 
 $$
 \begin{aligned}
@@ -273,7 +273,7 @@ with $R_2 = \beta_1^m(R)$, $(P_2, u_2) = \pi_m(P, u)$, $(P_3, u_3) = \pi_1(P_2, 
 
 ### 1.6 [`1RB1RA_1RC1LB_1LD0RA_---0LE_1LC0LF_1RE0LB`](./M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean)
 
-Over states $C(a, L, R)$ with $a \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, define
+Over states $C(a, L, R)$ with $a \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, define
 
 $$
 \tau_B(\varepsilon, \varepsilon) = C(0, \varepsilon, \varepsilon), \qquad \tau_B([a] \cdot L, \varepsilon) = C(a + 1, L, \varepsilon), \qquad \tau_B(L, [d] \cdot R) = \tau_B([d] \cdot \beta_1(L), R).
@@ -296,7 +296,7 @@ $$
 
 ### 1.7 [`1RB---_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA`](./M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA.lean)
 
-Over states $C_R(a, b, L, d, R)$ with $a, b, d \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, define $\hat{\beta}_1(\varepsilon) = (0, \varepsilon)$, $\hat{\beta}_1([r] \cdot S) = (r + 1, S)$, $\hat{\beta}_2(\varepsilon) = (1, \varepsilon)$, and $\hat{\beta}_2([c] \cdot S) = (c + 2, S)$. Let
+Over states $C_R(a, b, L, d, R)$ with $a, b, d \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, define $\hat{\beta}_1(\varepsilon) = (0, \varepsilon)$, $\hat{\beta}_1([r] \cdot S) = (r + 1, S)$, $\hat{\beta}_2(\varepsilon) = (1, \varepsilon)$, and $\hat{\beta}_2([c] \cdot S) = (c + 2, S)$. Let
 
 $$
 \begin{aligned}
@@ -334,7 +334,7 @@ In an odometer reduction, one side of the tape acts as a positional or mixed-rad
 
 ### 2.1 [`1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_---1RA`](./M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA.lean)
 
-Over states $B(L, R)$ with $L, R \in \mathbb{N}^*$, define $\rho : \mathbb{N} \times \mathbb{N}^* \to \mathbb{N}^*$ by
+Over states $B(L, R)$ with $L, R \in \mathbb{N}^{\ast}$, define $\rho : \mathbb{N} \times \mathbb{N}^{\ast} \to \mathbb{N}^{\ast}$ by
 
 $$
 \rho(0, \varepsilon) = [0, 0], \qquad \rho(0, [d] \cdot R) = [d + 1] \cdot R, \qquad \rho(b + 1, R) = [0] \cdot \rho(b, R),
@@ -358,7 +358,7 @@ $$
 T(B(L, \varepsilon)) = B(\varepsilon, L^{\mathrm{rev}} \cdot [0, 0]), \qquad T(B(L, [d] \cdot R)) = \zeta(0, [0]^d \cdot L, R).
 $$
 
-**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to the Poincaré return section $L = \varepsilon$ eliminates the left stack completely over $B_{\mathrm{HL}}(R) := B(\varepsilon, R)$. Define $\pi_0(a, [0, 0] \cdot R) = \pi_0(a + 2, R)$ and $\pi_0(a, R) = (a, R)$ when $R$ does not begin with $[0, 0]$, and define $\mathcal{S}(L, \varepsilon) = B_{\mathrm{HL}}(L^{\mathrm{rev}} \cdot [0, 0])$ together with (for $L_1 = [0]^d \cdot L$ and $(p_1, p_2) = \pi_0(0, R_1)$):
+**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to the Poincaré return section $L = \varepsilon$ eliminates the left stack completely over $B_{\mathrm{HL}}(R) := B(\varepsilon, R)$. Define $\pi_0(a, [0, 0] \cdot R) = \pi_0(a + 2, R)$ and $\pi_0(a, R) = (a, R)$ when $R$ does not begin with $[0, 0]$, and define $\mathcal{S}(L, \varepsilon) = B_{\mathrm{HL}}(L^{\mathrm{rev}} \cdot [0, 0])$ and, for $L_1 = [0]^d \cdot L$ and $(p_1, p_2) = \pi_0(0, R_1)$,
 
 $$
 \mathcal{S}(L, [d] \cdot R_1) = \begin{cases}
@@ -373,7 +373,7 @@ Starting from $s_{0,\mathrm{HL}} = B_{\mathrm{HL}}([0, 1])$, $T_{\mathrm{HL}}(B_
 
 ### 2.2 [`1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_---1RD`](./M_1RB1LB_1LC1LA_1RD0LB_1RA1RE_1RF0RD_HHH1RD.lean)
 
-Over states $E(a, L, d, R)$ with $a, d \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, define the boundary bounce $\eta$ by
+Over states $E(a, L, d, R)$ with $a, d \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, define the boundary bounce $\eta$ by
 
 $$
 \eta(d, \varepsilon) = \begin{cases}
@@ -412,11 +412,11 @@ T(E(a, L, d, R)) = \begin{cases}
 \end{cases}
 $$
 
-**High-level acceleration ($T_{\mathrm{HL}}$):** Every left-boundary bounce produces $a = 0$ and $L = [0]^k \cdot [1]$, collapsing the left stack $L$ to a single counter $k \in \mathbb{N}$ over $E_{\mathrm{HL}}(k, d, R) := E(0, [0]^k \cdot [1], d, R)$. Defining $\eta_{\mathrm{HL}}$ identically to $\eta$ (sending $E(0, [0]^m \cdot [1], d', R')$ to $E_{\mathrm{HL}}(m, d', R')$), $\Lambda_{\mathrm{HL}}$ on prefixes $P$ above the bottom $[1]$ sentinel ($\Lambda_{\mathrm{HL}}(\mathsf{A}, \varepsilon, d, R) = \eta_{\mathrm{HL}}(d + 3, R)$, $\Lambda_{\mathrm{HL}}(\mathsf{B}, \varepsilon, d, R) = E_{\mathrm{HL}}(0, d + 1, R)$, $\Lambda_{\mathrm{HL}}(\mathsf{BR}, \varepsilon, d, R) = E_{\mathrm{HL}}(0, 0, [d] \cdot R)$, and the $\Lambda$ step rules on $[x] \cdot P$), and $\Sigma_R(a, P, d, R)$ by contracting the two odd-$d$ right-step branches ($d = 1$ and $d \ge 3$ odd with $R = [e] \cdot R'$) recursively before calling $\Lambda_{\mathrm{HL}}$, we have $T_{\mathrm{HL}}(E_{\mathrm{HL}}(k, d, R)) = \Sigma_R(0, [0]^k, d, R)$ starting from $s_{0,\mathrm{HL}} = E_{\mathrm{HL}}(2, 0, \varepsilon)$ (1 `next` step from $s_0$).
+**High-level acceleration ($T_{\mathrm{HL}}$):** Every left-boundary bounce produces $a = 0$ and $L = [0]^k \cdot [1]$, collapsing the left stack $L$ to a single counter $k \in \mathbb{N}$ over $E_{\mathrm{HL}}(k, d, R) := E(0, [0]^k \cdot [1], d, R)$. Defining $\eta_{\mathrm{HL}}$ identically to $\eta$ with $E(0, [0]^m \cdot [1], d', R')$ replaced by $E_{\mathrm{HL}}(m, d', R')$, $\Lambda_{\mathrm{HL}}$ on prefixes $P$ above the bottom $[1]$ sentinel ($\Lambda_{\mathrm{HL}}(\mathsf{A}, \varepsilon, d, R) = \eta_{\mathrm{HL}}(d + 3, R)$, $\Lambda_{\mathrm{HL}}(\mathsf{B}, \varepsilon, d, R) = E_{\mathrm{HL}}(0, d + 1, R)$, $\Lambda_{\mathrm{HL}}(\mathsf{BR}, \varepsilon, d, R) = E_{\mathrm{HL}}(0, 0, [d] \cdot R)$, and the $\Lambda$ step rules on $[x] \cdot P$), and $\Sigma_R(a, P, d, R)$ by contracting the two odd $d$ right-step branches ($d = 1$ and $d \ge 3$ odd with $R = [e] \cdot R'$) recursively before calling $\Lambda_{\mathrm{HL}}$, we have $T_{\mathrm{HL}}(E_{\mathrm{HL}}(k, d, R)) = \Sigma_R(0, [0]^k, d, R)$ starting from $s_{0,\mathrm{HL}} = E_{\mathrm{HL}}(2, 0, \varepsilon)$ (1 `next` step from $s_0$).
 
 ### 2.3 [`1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---`](./M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean)
 
-Over $(L, w) \in \lbrace L_0, L_1, L_2 \rbrace^* \times \lbrace 0, 1 \rbrace^*$, define the mixed-radix capacity $\mathrm{cap}$, odometer decrement $\mathrm{dec}$ (satisfying $\mathrm{cap}(\mathrm{dec}(L)) = \mathrm{cap}(L) - 1$ whenever $\mathrm{cap}(L) \ge 1$), and zero-capacity drain word $\mathrm{drain}$ by
+Over $(L, w) \in \lbrace L_0, L_1, L_2 \rbrace^{\ast} \times \lbrace 0, 1 \rbrace^{\ast}$, define the mixed-radix capacity $\mathrm{cap}$, odometer decrement $\mathrm{dec}$ (satisfying $\mathrm{cap}(\mathrm{dec}(L)) = \mathrm{cap}(L) - 1$ whenever $\mathrm{cap}(L) \ge 1$), and zero-capacity drain word $\mathrm{drain}$ by
 
 $$
 \begin{aligned}
@@ -432,7 +432,7 @@ $$
 \end{aligned}
 $$
 
-Write $\mathcal{L}(L, u) = (\mathrm{dec}(L), u)$ if $\mathrm{cap}(L) \ge 1$ and $\mathcal{L}(L, u) = (\varepsilon, \mathrm{drain}(L) \cdot u)$ if $\mathrm{cap}(L) = 0$. Identifying any finite bit sequence $w \in \lbrace 0, 1 \rbrace^*$ with its zero-padded stream (so missing trailing bits read as $0$, i.e. $\varepsilon$ has leading bit $0$ and remaining tail $\varepsilon$), starting from $s_0 = (\varepsilon, \varepsilon)$ (after 2 TM steps):
+Write $\mathcal{L}(L, u) = (\mathrm{dec}(L), u)$ if $\mathrm{cap}(L) \ge 1$ and $\mathcal{L}(L, u) = (\varepsilon, \mathrm{drain}(L) \cdot u)$ if $\mathrm{cap}(L) = 0$. Identifying any finite bit sequence $w \in \lbrace 0, 1 \rbrace^{\ast}$ with its zero-padded stream (so missing trailing bits read as $0$, i.e. $\varepsilon$ has leading bit $0$ and remaining tail $\varepsilon$), starting from $s_0 = (\varepsilon, \varepsilon)$ (after 2 TM steps):
 
 $$
 T(L, w) = \begin{cases}
@@ -444,7 +444,7 @@ T(L, w) = \begin{cases}
 \end{cases}
 $$
 
-**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to the empty-odometer Poincaré section $L = \varepsilon$ eliminates the mixed-radix odometer stack $L$ completely, yielding a pure binary-word dynamical system on $W(w) := (\varepsilon, w) \in \lbrace 0, 1 \rbrace^*$ starting from $s_{0,\mathrm{HL}} = W(\varepsilon)$. Define $\mathcal{O}(L, w)$ (again reading missing trailing bits after a leading $1$ as $0$ with tail $\varepsilon$) by
+**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to the empty-odometer Poincaré section $L = \varepsilon$ eliminates the mixed-radix odometer stack $L$ completely, yielding a pure binary-word dynamical system on $W(w) := (\varepsilon, w) \in \lbrace 0, 1 \rbrace^{\ast}$ starting from $s_{0,\mathrm{HL}} = W(\varepsilon)$. Define $\mathcal{O}(L, w)$ (again reading missing trailing bits after a leading $1$ as $0$ with tail $\varepsilon$) by
 
 $$
 \mathcal{O}(L, w) = \begin{cases}
@@ -464,7 +464,7 @@ with $T_{\mathrm{HL}}(W(w)) = \mathcal{O}(\varepsilon, w)$.
 
 ### 2.4 [`1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_---1RD`](./M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD.lean)
 
-Over states $B(L, E, c)$ with $L, E \in \mathbb{N}^*$ and $c \in \mathbb{N}$, define the left drain $\Delta$ by $\Delta(\varepsilon, E, c) = B([0], E, c)$ and, for $[a] \cdot L'$:
+Over states $B(L, E, c)$ with $L, E \in \mathbb{N}^{\ast}$ and $c \in \mathbb{N}$, define the left drain $\Delta$ by $\Delta(\varepsilon, E, c) = B([0], E, c)$ and, for $[a] \cdot L'$:
 
 $$
 \Delta([a] \cdot L', E, c) = \begin{cases}
@@ -511,7 +511,7 @@ we obtain $T_{\mathrm{HL}}(B_{\mathrm{HL}}(E, c)) = \mathcal{P}(0, \varepsilon, 
 
 ### 2.5 [`1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_---1RA`](./M_1RB1RE_1LC1LB_1LE0LD_1LE1LC_0RF1RA_HHH1RA.lean)
 
-Over states $E(d, R)$ with $d \in \mathbb{N}$ and $R \in \mathbb{N}^*$, define the return drain $\Omega$ by
+Over states $E(d, R)$ with $d \in \mathbb{N}$ and $R \in \mathbb{N}^{\ast}$, define the return drain $\Omega$ by
 
 $$
 \begin{aligned}
@@ -536,7 +536,7 @@ $$
 
 ### 2.6 [`1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RB---`](./M_1RB1RF_1LC0RE_1RD0LC_0LB0RA_1LD1RD_1RBHHH.lean)
 
-Over states $E(R)$ with $R \in \mathbb{N}^*$, define $\phi(\varepsilon) = \phi([0]) = \varepsilon$, $\phi([0, r_2] \cdot R) = [0, r_2 + 1] \cdot R$, and $\phi([r + 1] \cdot R) = [r] \cdot R$. Define the return pass $\rho : \lbrace 0, 1 \rbrace \times \lbrace 0, 1 \rbrace^* \times \mathbb{N}^* \to \mathbb{N}^*$ by
+Over states $E(R)$ with $R \in \mathbb{N}^{\ast}$, define $\phi(\varepsilon) = \phi([0]) = \varepsilon$, $\phi([0, r_2] \cdot R) = [0, r_2 + 1] \cdot R$, and $\phi([r + 1] \cdot R) = [r] \cdot R$. Define the return pass $\rho : \lbrace 0, 1 \rbrace \times \lbrace 0, 1 \rbrace^{\ast} \times \mathbb{N}^{\ast} \to \mathbb{N}^{\ast}$ by
 
 $$
 \begin{aligned}
@@ -571,7 +571,7 @@ $$
 
 ### 2.7 [`1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD`](./M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD.lean)
 
-Over states $E_L(a, L, d, R)$ and $E_0(L, R)$ with $a, d \in \mathbb{N}$ and $L, R \in \mathbb{N}^*$, let $\hat{\beta}_1(\varepsilon) = (0, \varepsilon)$, $\hat{\beta}_1([x] \cdot X) = (x + 1, X)$, $\pi_E(0, R) = R$, and $\pi_E(k + 1, R) = \pi_E(k, [0] \cdot \beta_1(\beta_1(R)))$. Define $\Phi(L, R)$ and $\Psi(L, R)$ by
+Over states $E_L(a, L, d, R)$ and $E_0(L, R)$ with $a, d \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, let $\hat{\beta}_1(\varepsilon) = (0, \varepsilon)$, $\hat{\beta}_1([x] \cdot X) = (x + 1, X)$, $\pi_E(0, R) = R$, and $\pi_E(k + 1, R) = \pi_E(k, [0] \cdot \beta_1(\beta_1(R)))$. Define $\Phi(L, R)$ and $\Psi(L, R)$ by
 
 $$
 \begin{aligned}
@@ -620,7 +620,7 @@ In a transducer reduction, neither half-tape acts as a dominant scalar counter: 
 
 ### 3.1 [`1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LF---_1LD1LF`](./M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean)
 
-Over zero-run stacks $E(L, R)$ with $L, R \in \mathbb{N}^*$, define the 3-mode right transducer $\Sigma_R$ over modes $m \in \lbrace \mathsf{a}, \mathsf{b}, \mathsf{c} \rbrace$ by $\Sigma_R(\mathsf{a}, L, \varepsilon) = E([1] \cdot L, \varepsilon)$, $\Sigma_R(\mathsf{b}, L, \varepsilon) = E(\iota(L), \varepsilon)$, $\Sigma_R(\mathsf{c}, L, \varepsilon) = E(L, \varepsilon)$, and $\Sigma_R(m, L, [d] \cdot R_t) = \psi_d(m, L, R_t)$, where
+Over zero-run stacks $E(L, R)$ with $L, R \in \mathbb{N}^{\ast}$, define the 3-mode right transducer $\Sigma_R$ over modes $m \in \lbrace \mathsf{a}, \mathsf{b}, \mathsf{c} \rbrace$ by $\Sigma_R(\mathsf{a}, L, \varepsilon) = E([1] \cdot L, \varepsilon)$, $\Sigma_R(\mathsf{b}, L, \varepsilon) = E(\iota(L), \varepsilon)$, $\Sigma_R(\mathsf{c}, L, \varepsilon) = E(L, \varepsilon)$, and $\Sigma_R(m, L, [d] \cdot R_t) = \psi_d(m, L, R_t)$, where
 
 $$
 \begin{aligned}
@@ -667,7 +667,7 @@ $$
 \end{aligned}
 $$
 
-and define the right bounce $\mathcal{B}$ on $R \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^*$ by
+and define the right bounce $\mathcal{B}$ on $R \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast}$ by
 
 $$
 \mathcal{B}(R) = \begin{cases}
@@ -698,7 +698,7 @@ $$
 
 ### 3.3 [`1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_---1LC`](./M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean)
 
-Over states $B(L, d, R)$ with $L, R \in \mathbb{N}^*$ and $d \in \mathbb{N}$, define the parity-halving sweep $\chi$ by
+Over states $B(L, d, R)$ with $L, R \in \mathbb{N}^{\ast}$ and $d \in \mathbb{N}$, define the parity-halving sweep $\chi$ by
 
 $$
 \begin{aligned}
@@ -761,7 +761,7 @@ Starting from $s_{0,\mathrm{HL}} = B_{\mathrm{HL}}([1])$ (1 `next` step from $s_
 
 ### 3.4 [`1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---`](./M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean)
 
-Over zero-run stacks $D(L, R)$ with $L, R \in \mathbb{N}^*$, define the right sweep $\sigma_B$ by
+Over zero-run stacks $D(L, R)$ with $L, R \in \mathbb{N}^{\ast}$, define the right sweep $\sigma_B$ by
 
 $$
 \begin{aligned}
@@ -793,14 +793,14 @@ $$
 
 ### 3.5 [`1RB1RE_1LC0RA_---1LD_1LA0LF_0LB0LC_1RB0LB`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean)
 
-Over asymmetric pair stacks $D(L, R)$ with $L \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^*$ and $R \in (\mathbb{N} \times \lbrace 0, 1, 2 \rbrace)^*$, starting from $s_0 = D(\varepsilon, [(1, 0)])$ (after 3 TM steps):
+Over asymmetric pair stacks $D(L, R)$ with $L \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast}$ and $R \in (\mathbb{N} \times \lbrace 0, 1, 2 \rbrace)^{\ast}$, starting from $s_0 = D(\varepsilon, [(1, 0)])$ (after 3 TM steps):
 
 - When $L = \varepsilon$, $T(D(\varepsilon, \varepsilon)) = D([(0, 0)], [(1, 0)])$ and $T(D(\varepsilon, [(d_1, c_1)] \cdot R')) = \mathrm{runBR}(0, \varepsilon, d_1 + 1, c_1, R')$.
 - When $L = [(a, b)] \cdot L'$, $T$ peels $q = \lfloor a/4 \rfloor$ blocks $[(2, 0)]^q$ onto $R$ to form $R_1 = [(2, 0)]^q \cdot R$ and branches on $(a \bmod 4, b)$, halting immediately when $a \equiv 2 \pmod{4}$ and either $L' = \varepsilon$ or $b = 1$, and otherwise invoking the left cascade `runB` or right cascade `runBR` defined in [`M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean) (where `runB` also halts whenever it reaches top residue $a' = 2$ with $L'' = \varepsilon$, or $a' = 2$ and $b' = 1$ with non-empty $L''$).
 
 ### 3.6 [`1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean)
 
-Over $(1, 4)$-separator stacks $M_0(L, R)$ with $L, R \in (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^*$, define $\tilde{\tau}(\varepsilon) = [(0, 1)]$ and $\tilde{\tau}(X) = X$ for $X \ne \varepsilon$, and for $s \in \lbrace 1, 2, 3, 4 \rbrace$ define $\pi_s$ by
+Over $(1, 4)$-separator stacks $M_0(L, R)$ with $L, R \in (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^{\ast}$, define $\tilde{\tau}(\varepsilon) = [(0, 1)]$ and $\tilde{\tau}(X) = X$ for $X \ne \varepsilon$, and for $s \in \lbrace 1, 2, 3, 4 \rbrace$ define $\pi_s$ by
 
 $$
 \pi_s(\varepsilon) = \varepsilon, \qquad \pi_1([(a, b')] \cdot X) = [(a + 1, b')] \cdot X, \qquad \pi_{k+1}([(a, b')] \cdot X) = [(0, k), (a, b')] \cdot X \quad (k \in \lbrace 1, 2, 3 \rbrace).
