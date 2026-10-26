@@ -2,7 +2,7 @@
 
 This library contains formal Lean 4 specifications and kernel-verified behavioral proofs for Busy Beaver 6 (`BB(6)`) and Busy Beaver (3, 3) (`BB(3, 3)`) holdouts, connected to `ConjectureMachines.Machine` via [`BusyBeaver/Bridge.lean`](./Bridge.lean):
 
-- **[`BusyBeaver/BB6/`](./BB6/README.md)** — 53 `BB(6)` (6-state, 2-symbol) holdout Turing machines with certified closed `TapePatternSet` invariants (`IsClosedPatternSet`, `HasCollatzReduction`) and Collatz-like accelerations (`IsValidAcceleration`).
+- **[`BusyBeaver/BB6/`](./BB6/README.md)** — 82 `BB(6)` (6-state, 2-symbol) holdout Turing machines: 53 holdouts with certified closed `TapePatternSet` invariants (`IsClosedPatternSet`, `HasCollatzReduction`) and Collatz-like accelerations (`IsValidAcceleration`), plus 29 stacked, odometer, and transducer holdouts (9 `bbchallenge` Wiki machines formalized under `HasStackReduction`, `HasOdometerReduction`, and `HasTransducerReduction`, and 20 open acceleration problems under `IsValidAcceleration`) in **[`BusyBeaver/BB6/Accelerations/`](./BB6/Accelerations/README.md)**.
 - **[`BusyBeaver/BB33/`](./BB33/README.md)** — All 6 remaining unsolved `BB(3, 3)` (3-state, 3-symbol) holdout Turing machines (4 equivalence classes: *Bigfoot*, the See-Saw pair, the *Wily Coyote* pair, and `1RB1LB2LC_1LA2RB1RB_---0LA2LA`), with certified Collatz-like (`HasCollatzReduction`) or stacked Collatz-like (`HasStackedCollatzReduction`) reductions and exact halting equivalences (`IsValidAcceleration`).
 
 ## Cryptids, Collatz-like, and Stacked Collatz Reductions
@@ -25,6 +25,9 @@ All proofs in `BusyBeaver/` target machine-checked behavioral predicates over th
 | `HasCollatzReduction M` | `∃ ps, IsClosedPatternSet M ps`. |
 | `IsClosedStackPatternSet M ps` | **Level A (Stacked)**: `ps` is well-formed (`IsWellFormedStackPatternSet ps`: non-empty, blank-free block vocabularies, and single-sided stack configuration with at most one `.word` segment), `M`'s blank-tape trajectory enters `ps`, and every member configuration advances (`ReachesPlus`) either to another member of `ps` or to a halting configuration. |
 | `HasStackedCollatzReduction M` | `∃ ps, IsClosedStackPatternSet M ps` (an existential summary that is always paired in `BusyBeaverChallenge.lean` with a concrete `ps` and an explicit Level B finite-state transducer acceleration). |
+| `HasStackReduction M` | **Level A (Two-Sided Stack)**: `M`'s blank-tape trajectory enters a closed two-sided variable-length digit-stack system (`StackTuple`, `IsValidStackModes`) with non-trivial multi-digit stack reachability. |
+| `HasOdometerReduction M` | **Level A (Odometer)**: `M`'s blank-tape trajectory enters a closed mixed-radix odometer stack + bit-stream system (`evalOdomR` / `evalOdomL`) with certified decrement, zero-capacity drain, and reflection. |
+| `HasTransducerReduction M` | **Level A (Transducer)**: `M`'s blank-tape trajectory enters a closed bidirectional macro-word transducer (`IsValidTransducerModes`, `iterTransducerMacro`) over prefix-free block alphabets with unbounded sweeps in both directions. |
 | `IsValidAcceleration M start encode next` | **Level B**: `encode : S → Cfg Γ Λ` and `next : S → Option S` form a certified acceleration of `M` from `start : S` (`init []` reaches `encode start`, `next s = some s'` implies `ReachesPlus M (encode s) (encode s')`, and `next s = none` implies halting from `encode s`), yielding `IsHalt M ↔ CollatzHalts next start`. |
 
 ## Foundational Lemmas ([`Basic.lean`](./Basic.lean))
@@ -59,7 +62,7 @@ theorem isNotHalt_toBB_iff_not_halts (M : ConjectureMachines.Machine states symb
 
 ## Formalized Machine Catalogs
 
-- **[`BB(6)` Holdouts (`BusyBeaver/BB6/`)](./BB6/README.md)** — 53 6-state 2-symbol holdouts (311 theorems).
+- **[`BB(6)` Holdouts (`BusyBeaver/BB6/`)](./BB6/README.md)** — 53 closed-pattern 6-state 2-symbol holdouts (311 theorems) and **[`BB(6)` Accelerations (`BusyBeaver/BB6/Accelerations/`)](./BB6/Accelerations/README.md)** — 29 stacked, odometer, and transducer holdouts (50 theorems: 9 `bbchallenge` Wiki reductions and 20 open acceleration problems).
 - **[`BB(3, 3)` Holdouts (`BusyBeaver/BB33/`)](./BB33/README.md)** — 6 3-state 3-symbol holdouts (24 theorems).
 
 ## Building and Verifying
