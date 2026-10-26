@@ -1005,14 +1005,25 @@ private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSy
   | EB_n_00 => exact mode_EB_n_00_closed L R
   | EL_n_00 => exact mode_EL_n_00_closed L R
 
-private theorem init_reaches_stack_system :
-    ∃ cfg₀, ((init []) [target]⊢⁺ cfg₀) ∧ IsInStackSystem cfg₀ := by
-  refine ⟨cfg_EB_n_00 [] [(0, 0)], ?_, ⟨.EB_n_00, [], [(0, 0)], rfl⟩⟩
-  have hL : encLeft [] = default := rfl
-  have hR : encRight [(0, 0)] = (1 : Fin 2) >> (0 : Fin 2) >> default := rfl
-  unfold cfg_EB_n_00
+private theorem init_reaches_nontrivial :
+    (init []) [target]⊢⁺ evalStackCfg .EB_n_00 [(2, 0)] [(4, 1), (0, 0)] := by
+  have hL : encLeft [(2, 0)] =
+      (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> default := rfl
+  have hR : encRight [(4, 1), (0, 0)] =
+      (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
+        (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> default := rfl
+  dsimp only [evalStackCfg, cfg_EB_n_00]
   rw [hL, hR]
-  execute 4
+  simp only [ListBlank.append]
+  bb_steps
+
+private theorem step_EL_transfer (z : ℕ × ℕ) (L R : List (ℕ × ℕ)) :
+    (evalStackCfg .EL_n_00 ((0, 0) :: z :: L) R) [target]⊢⁺
+      evalStackCfg .EB_n_00 (z :: L) (bumpPairHead R) := by
+  dsimp only [evalStackCfg, cfg_EL_n_00, cfg_EB_n_00]
+  rw [encLeft_d0_s0 (z :: L), ← encRight_cons_one R]
+  iterate 5 step
+  finish
 
 
 private theorem encLeft_head (a b : ℕ) (L : List (ℕ × ℕ)) :
@@ -1093,8 +1104,9 @@ private theorem encRight_not_surjective :
 private theorem valid_stack_modes : IsValidStackModes encLeft encRight evalStackCfg := by
   intro m
   cases m with
-  | EB_n_00 => exact ⟨E, .id [], .id [0, 0], Or.inl (fun _ _ => rfl)⟩
-  | EL_n_00 => exact ⟨E, .id [], .id [0, 0], Or.inr (Or.inl (fun _ _ => rfl))⟩
+  | EB_n_00 => exact ⟨E, .id [], .id [0, 0], by decide, by decide, Or.inl (fun _ _ => rfl)⟩
+  | EL_n_00 =>
+    exact ⟨E, .id [], .id [0, 0], by decide, by decide, Or.inr (Or.inl (fun _ _ => rfl))⟩
 
 /-! ## Stack Reduction Witness -/
 
@@ -1110,7 +1122,10 @@ theorem has_stack_reduction : HasStackReduction target := by
     valid_stack_modes,
     fun _ => Iff.rfl,
     fun m L R => ⟨m, L, R, rfl⟩,
-    init_reaches_stack_system,
+    ⟨.EB_n_00, [(2, 0)], [(4, 1), (0, 0)], init_reaches_nontrivial,
+      by decide, ⟨(2, 0), by decide, by decide⟩⟩,
+    Or.inl ⟨.EL_n_00, .EB_n_00, (0, 0), id, bumpPairHead,
+      fun s => by rcases s with _ | ⟨⟨_, _⟩, _⟩ <;> simp [bumpPairHead], step_EL_transfer⟩,
     stack_system_closed⟩
 
 end BusyBeaver.M_1RB1RA_1LC0RC_HHH0LD_0LE0RF_1RE0RA_0LF1LB

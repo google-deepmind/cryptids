@@ -1652,10 +1652,10 @@ private theorem encStack_not_surjective_witness :
 private theorem valid_stack_modes : IsValidStackModes encStack encStack evalStackCfg := by
   intro m
   cases m with
-  | BR => exact ⟨B, .id [], .id [], Or.inr (Or.inr fun _ _ => rfl)⟩
-  | FL => exact ⟨F, .id [], .id [], Or.inr (Or.inl fun _ _ => rfl)⟩
-  | AL => exact ⟨A, .id [], .id [], Or.inr (Or.inl fun _ _ => rfl)⟩
-  | CR => exact ⟨C, .id [], .id [], Or.inr (Or.inr fun _ _ => rfl)⟩
+  | BR => exact ⟨B, .id [], .id [], by decide, by decide, Or.inr (Or.inr fun _ _ => rfl)⟩
+  | FL => exact ⟨F, .id [], .id [], by decide, by decide, Or.inr (Or.inl fun _ _ => rfl)⟩
+  | AL => exact ⟨A, .id [], .id [], by decide, by decide, Or.inr (Or.inl fun _ _ => rfl)⟩
+  | CR => exact ⟨C, .id [], .id [], by decide, by decide, Or.inr (Or.inr fun _ _ => rfl)⟩
 
 private theorem block_encoding :
     ∃ strideL offsetL sepL strideR offsetR sepR : ℕ,
@@ -1674,9 +1674,11 @@ private theorem modes_bounded :
     ∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes :=
   ⟨[.BR, .FL, .AL, .CR], by decide, fun m => by cases m <;> decide⟩
 
-private theorem init_reaches_stack_system :
-    ∃ cfg₀, ((init []) [target]⊢⁺ cfg₀) ∧ IsInStackSystem cfg₀ :=
-  ⟨cfg_AL1 [0] [1], init_to_AL1, in_AL1 [0] [1]⟩
+private theorem init_reaches_nontrivial :
+    (init []) [target]⊢⁺ evalStackCfg .BR [0] [1, 1] :=
+  init_to_AL1
+    |>.trans (step_AL1_0 [] [1])
+    |>.trans (step_FL1_nil [0, 1])
 
 private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSystem cfg) :
     ∃ cfg', (cfg [target]⊢⁺ cfg') ∧
@@ -1695,6 +1697,9 @@ theorem has_stack_reduction : HasStackReduction target :=
       encStack_not_surjective_witness, encStack_not_surjective_witness,
       block_encoding, modes_bounded, valid_stack_modes,
       fun _ => Iff.rfl, fun m L R => ⟨m, L, R, rfl⟩,
-      init_reaches_stack_system, stack_system_closed⟩
+      ⟨.BR, [0], [1, 1], init_reaches_nontrivial, by decide, ⟨1, by decide, by decide⟩⟩,
+      Or.inr ⟨.CR, .BR, 0, id, (0 :: ·),
+        fun _ => Nat.le_succ _, fun z L R => step_CR1_0 L (z :: R)⟩,
+      stack_system_closed⟩
 
 end BusyBeaver.M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF

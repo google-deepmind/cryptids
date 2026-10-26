@@ -11,7 +11,7 @@ public import BusyBeaver.Bridge
 # Busy Beaver Machine `1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA`
 
 Formal `HasTransducerReduction` proof for the 6-state, 2-symbol Busy Beaver machine
-`1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA` (state-relabeled equivalent of
+`1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA` (macro-equivalent holdout corresponding to
 `1RB0LE_0RC---_1LC0RD_0RB1RA_1LF1LE_0LA1LF` on `Bell_eats_counter`):
 - <https://wiki.bbchallenge.org/wiki/Bell_eats_counter>
 
@@ -182,7 +182,10 @@ private def stepMacro :
   | .hR1, .T000 :: L, R => some (.hL, .T000 :: .T1 :: L, R)
   | .hR1, .T100 :: L, R => some (.hR, L, .U1001 :: R)
   | .hR11, [], R => some (.hL, [.T1, .T100, .T1], R)
-  | .hR11, .T1 :: _, _ => none
+  | .hR11, [.T1], R => some (.hR, [], .U10011 :: R)
+  | .hR11, .T1 :: .T000 :: L, R => some (.hR1, L, .U10001 :: R)
+  | .hR11, .T1 :: .T1 :: _, _ => none
+  | .hR11, .T1 :: .T100 :: _, _ => none
   | .hR11, .T000 :: L, R => some (.hL, .T1 :: .T100 :: .T1 :: L, R)
   | .hR11, .T100 :: L, R => some (.hR, L, .U10011 :: R)
   | .hL, L, [] => some (.hR1, L, [])
@@ -192,18 +195,17 @@ private def stepMacro :
   | .hL, L, .U10001 :: R => some (.hR1, L, .U1001 :: R)
 
 private theorem stepMacro_none_iff (m : TransducerMode) (L : List TokL) (R : List TokR) :
-    stepMacro m L R = none ↔ (m = .hR11 ∧ ∃ L', L = .T1 :: L') := by
-  cases m <;> cases L <;> cases R <;>
-    (try cases ‹TokL›) <;> (try cases ‹TokR›) <;> simp [stepMacro]
-
-private theorem stepMacro_exit_sound (m : TransducerMode) (L : List TokL) (R : List TokR)
-    (L' : List TokL) (R' : List TokR)
-    (h : stepMacro m L R = some (.hR11, .T1 :: L', R')) :
-    (∃ L'', L' = [.T100, .T000, .T000] ++ L'') ∨ (L = .T1 :: .T1 :: L' ∧ R' = R) := by
-  cases m <;> cases L with
-  | nil => cases R <;> (try cases ‹TokR›) <;> cases h
-  | cons t₁ L₁ =>
-    cases t₁ <;> cases R <;> (try cases ‹TokR›) <;> cases h <;> exact Or.inr ⟨rfl, rfl⟩
+    stepMacro m L R = none ↔
+      (m = .hR11 ∧ ∃ t₂ L'', t₂ ∈ ([.T1, .T100] : List TokL) ∧ L = .T1 :: t₂ :: L'') := by
+  cases m with
+  | hL => cases R with | nil => simp [stepMacro] | cons rt _ => cases rt <;> simp [stepMacro]
+  | _ =>
+    cases L with
+    | nil => simp [stepMacro]
+    | cons t₁ L₁ =>
+      cases t₁ <;> cases L₁ with
+      | nil => simp [stepMacro]
+      | cons t₂ L₂ => cases t₂ <;> simp [stepMacro]
 
 /-! ## Local Macro-Step Soundness and Bidirectional Sweeps -/
 
@@ -278,6 +280,12 @@ private theorem step_hR11_T1_singleton (R : List TokR) :
     ListBlank.append]
   bb_steps
 
+private theorem step_hR11_T1_T000 (L : List TokL) (R : List TokR) :
+    (evalTransducerCfg .hR11 (.T1 :: .T000 :: L) R) [target]⊢⁺
+      evalTransducerCfg .hR1 L (.U10001 :: R) := by
+  simp only [evalTransducerCfg, applyView, encLeft, encRight, wordL, wordR, ListBlank.append]
+  bb_steps
+
 private theorem step_hL_nil (L : List TokL) :
     (evalTransducerCfg .hL L []) [target]⊢⁺ evalTransducerCfg .hR1 L [] := by
   simp only [evalTransducerCfg, applyView, encRight, baseR, ListBlank.append]
@@ -306,12 +314,46 @@ private theorem step_hL_U10001 (L : List TokL) (R : List TokR) :
   simp only [evalTransducerCfg, applyView, encRight, wordR, ListBlank.append]
   bb_steps
 
-private theorem step_hR11_T1_halts (L' : List TokL) (R : List TokR) :
+private theorem step_hR11_T1_T1_nil_halts (R : List TokR) :
     ∃ cfg_h,
-      ((evalTransducerCfg .hR11 ((.T1 :: [.T100, .T000, .T000]) ++ L') R) [target]⊢⁺ cfg_h) ∧
+      ((evalTransducerCfg .hR11 [.T1, .T1] R) [target]⊢⁺ cfg_h) ∧
       (step target cfg_h).isNone := by
   refine ⟨(((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
-      (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encLeft L') {{1}}>
+      (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default) {{1}}>
+    ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encRight R)), ?_, ?_⟩
+  · simp only [evalTransducerCfg, applyView, encLeft, baseL, wordL, ListBlank.append]
+    bb_steps
+  · bb_halt
+
+private theorem step_hR11_T1_T100_nil_halts (R : List TokR) :
+    ∃ cfg_h,
+      ((evalTransducerCfg .hR11 [.T1, .T100] R) [target]⊢⁺ cfg_h) ∧
+      (step target cfg_h).isNone := by
+  refine ⟨(((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+      (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default) {{1}}>
+    ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encRight R)), ?_, ?_⟩
+  · simp only [evalTransducerCfg, applyView, encLeft, baseL, wordL, ListBlank.append]
+    bb_steps
+  · bb_halt
+
+private theorem step_hR11_T1_T1_sfx_halts (L'' : List TokL) (R : List TokR) :
+    ∃ cfg_h,
+      ((evalTransducerCfg .hR11 (.T1 :: .T1 :: ([.T000, .T000] ++ L'')) R) [target]⊢⁺ cfg_h) ∧
+      (step target cfg_h).isNone := by
+  refine ⟨(((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+      (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encLeft L'') {{1}}>
+    ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encRight R)), ?_, ?_⟩
+  · simp only [List.cons_append, List.nil_append, evalTransducerCfg, applyView, encLeft, wordL,
+      ListBlank.append]
+    bb_steps
+  · bb_halt
+
+private theorem step_hR11_T1_T100_sfx_halts (L'' : List TokL) (R : List TokR) :
+    ∃ cfg_h,
+      ((evalTransducerCfg .hR11 (.T1 :: .T100 :: ([.T000, .T000] ++ L'')) R) [target]⊢⁺ cfg_h) ∧
+      (step target cfg_h).isNone := by
+  refine ⟨(((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+      (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encLeft L'') {{1}}>
     ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encRight R)), ?_, ?_⟩
   · simp only [List.cons_append, List.nil_append, evalTransducerCfg, applyView, encLeft, wordL,
       ListBlank.append]
@@ -344,7 +386,14 @@ private theorem transducer_step_sound (m : TransducerMode) (L : List TokL) (R : 
     | nil => cases h; exact step_hR11_nil R
     | cons lt ls =>
       cases lt with
-      | T1 => cases h
+      | T1 =>
+        cases ls with
+        | nil => cases h; exact step_hR11_T1_singleton R
+        | cons lt₂ ls₂ =>
+          cases lt₂ with
+          | T1 => cases h
+          | T000 => cases h; exact step_hR11_T1_T000 L' R
+          | T100 => cases h
       | T000 => cases h; exact step_hR11_T000 ls R
       | T100 => cases h; exact step_hR11_T100 L' R
   | hL =>
@@ -475,11 +524,19 @@ theorem has_transducer_reduction : HasTransducerReduction target := by
       | .U10011 => ⟨7, _, _, _, by decide, rfl, by decide⟩
       | .U100 => ⟨8, _, _, _, by decide, rfl, by decide⟩
       | .U10001 => ⟨11, _, _, _, by decide, rfl, by decide⟩),
-    Or.inl ⟨.hR11, .T1, [.T100, .T000, .T000], by decide,
+    Or.inl ⟨.hR11, .T1, [.T1, .T100], by decide, by decide,
+      fun _ => rfl,
       stepMacro_none_iff,
-      stepMacro_exit_sound,
-      fun R => ⟨_, step_hR11_T1_singleton R, Or.inl ⟨.hR, [], .U10011 :: R, rfl⟩⟩,
-      step_hR11_T1_halts⟩,
+      (fun t₂ ht₂ R => by
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at ht₂
+        rcases ht₂ with rfl | rfl
+        · exact step_hR11_T1_T1_nil_halts R
+        · exact step_hR11_T1_T100_nil_halts R),
+      (fun t₂ ht₂ => by
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at ht₂
+        rcases ht₂ with rfl | rfl
+        · exact ⟨[.T000, .T000], by decide, step_hR11_T1_T1_sfx_halts⟩
+        · exact ⟨[.T000, .T000], by decide, step_hR11_T1_T100_sfx_halts⟩)⟩,
     ⟨.hR, .hL, .T100, .T000, .U100, .U100, 1, 1, 1, 1,
      by decide, by decide, by decide, by decide,
      by decide, by decide, by decide, by decide,

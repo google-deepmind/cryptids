@@ -369,9 +369,15 @@ private theorem init_to_CarryD :
     List.cons_append, List.nil_append]
   execute 14
 
-private theorem init_reaches_stack_system :
-    ∃ cfg₀, ((init []) [target]⊢⁺ cfg₀) ∧ IsInStackSystem1 cfg₀ :=
-  ⟨cfg_CarryD [0] [0], init_to_CarryD, .CarryD, [0], [0], rfl⟩
+private theorem init_reaches_nontrivial :
+    (init []) [target]⊢⁺ evalStackCfg1 .CarryD [0] [0, 2] :=
+  init_to_CarryD
+    |>.trans (rule_left_shift_overflow [0])
+    |>.trans (rule_carryD_absorb_even [] [0] 0)
+    |>.trans (rule_sweepR_step [1] [] 0)
+    |>.trans (rule_even_bump [1] 0)
+    |>.trans (rule_odd_carry_init [1] 0)
+    |>.trans (rule_carryD_split_step [] [2] 0)
 
 private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSystem1 cfg) :
     ∃ cfg', (cfg [target]⊢⁺ cfg') ∧
@@ -414,10 +420,10 @@ private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSy
           · exact ⟨cfg_CarryD L'' ((2 * m + 2) :: R), rule_carryD_prop_odd L'' R m,
               Or.inl ⟨.CarryD, L'', (2 * m + 2) :: R, rfl⟩⟩
 
-private theorem audit_encStack1_head (a : ℕ) (s : List ℕ) : (encStack1 (a :: s)).head = 1 := by
+private theorem encStack1_head (a : ℕ) (s : List ℕ) : (encStack1 (a :: s)).head = 1 := by
   simp [encStack1, list_pow_succ]
 
-private theorem audit_encStack1_head1_not_surj :
+private theorem encStack1_not_surjective :
     ∃ t : ListBlank (Fin 2), t.head = (1 : Fin 2) ∧ ∀ s : List ℕ, encStack1 s ≠ t := by
   refine ⟨(1 : Fin 2) >> default, rfl, ?_⟩
   intro s h
@@ -429,7 +435,7 @@ private theorem audit_encStack1_head1_not_surj :
     have h1 := congrArg (fun u => u.tail.head) h
     simp [encStack1, list_pow_succ] at h1
 
-private theorem audit_block_encoding :
+private theorem block_encoding :
     ∃ strideL offsetL sepL strideR offsetR sepR : ℕ,
       strideL > 0 ∧ offsetL > 0 ∧ sepL > 0 ∧
       strideR > 0 ∧ offsetR > 0 ∧ sepR > 0 ∧
@@ -442,25 +448,28 @@ private theorem audit_block_encoding :
   ⟨3, 2, 1, 3, 2, 1, by decide, by decide, by decide, by decide, by decide, by decide,
     fun _ _ => rfl, fun _ _ => rfl⟩
 
-private theorem audit_modes_bounded :
+private theorem modes_bounded :
     ∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes := by
   refine ⟨[.SweepR, .CarryD], by decide, ?_⟩
   intro m
   cases m <;> simp
 
-private theorem audit_valid_stack_modes : IsValidStackModes encStack1 encStack1 evalStackCfg1 := by
+private theorem valid_stack_modes : IsValidStackModes encStack1 encStack1 evalStackCfg1 := by
   intro m
   cases m with
-  | SweepR => exact ⟨E, .id [], .id [], Or.inl (fun _ _ => rfl)⟩
-  | CarryD => exact ⟨D, .id [], .id [], Or.inl (fun _ _ => rfl)⟩
+  | SweepR => exact ⟨E, .id [], .id [], by decide, by decide, Or.inl (fun _ _ => rfl)⟩
+  | CarryD => exact ⟨D, .id [], .id [], by decide, by decide, Or.inl (fun _ _ => rfl)⟩
 
 /-- `target` reduces to a closed 2nd-order digit-stack system (`HasStackReduction`). -/
 theorem has_stack_reduction : HasStackReduction target :=
   HasStackReduction.of_oneDigit target StackMode encStack1 encStack1 evalStackCfg1 IsInStackSystem1
-    ⟨rfl, rfl, audit_encStack1_head, audit_encStack1_head,
-      audit_encStack1_head1_not_surj, audit_encStack1_head1_not_surj,
-      audit_block_encoding, audit_modes_bounded, audit_valid_stack_modes,
+    ⟨rfl, rfl, encStack1_head, encStack1_head,
+      encStack1_not_surjective, encStack1_not_surjective,
+      block_encoding, modes_bounded, valid_stack_modes,
       fun _ => Iff.rfl, fun m L R => ⟨m, L, R, rfl⟩,
-      init_reaches_stack_system, stack_system_closed⟩
+      ⟨.CarryD, [0], [0, 2], init_reaches_nontrivial, by decide, ⟨2, by decide, by decide⟩⟩,
+      Or.inr ⟨.SweepR, .SweepR, 0, id, (0 :: ·),
+        fun _ => Nat.le_succ _, fun z L R => rule_sweepR_step L (z :: R) 0⟩,
+      stack_system_closed⟩
 
 end BusyBeaver.M_1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_HHH0LB

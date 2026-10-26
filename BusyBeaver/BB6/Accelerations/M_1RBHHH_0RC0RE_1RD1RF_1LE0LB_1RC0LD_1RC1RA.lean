@@ -1047,15 +1047,22 @@ private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSy
   | DL_0_n => exact mode_DL_0_n_closed L R
   | DR_n_n => exact mode_DR_n_n_closed L R
 
-private theorem init_reaches_stack_system :
-    ∃ cfg₀, ((init []) [target]⊢⁺ cfg₀) ∧ IsInStackSystem cfg₀ := by
-  refine ⟨cfg_DR_n_n [] [(0, 0), (0, 0)], ?_, ⟨.DR_n_n, [(0, 0), (0, 0)], [], rfl⟩⟩
-  have hL : encLeft [(0, 0), (0, 0)] = (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >>
-    default := rfl
-  have hR : encRight [] = default := rfl
-  unfold cfg_DR_n_n
+private theorem init_reaches_nontrivial :
+    (init []) [target]⊢⁺ evalStackCfg .CR_n_n [(2, 0)] [(0, 0), (0, 0)] := by
+  have hL : encLeft [(2, 0)] =
+      (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> default := rfl
+  have hR : encRight [(0, 0), (0, 0)] =
+      (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> default := rfl
+  dsimp only [evalStackCfg, cfg_CR_n_n]
   rw [hL, hR]
-  execute 3
+  execute 11
+
+private theorem step_EL_transfer (z : ℕ × ℕ) (L R : List (ℕ × ℕ)) :
+    (evalStackCfg .EL_n_n ((0, 0) :: z :: L) R) [target]⊢⁺
+      evalStackCfg .EL_n_n (z :: L) ((0, 0) :: R) := by
+  dsimp only [evalStackCfg, cfg_EL_n_n]
+  rw [encLeft_d0_s0 (z :: L), encRight_d0_s0 R]
+  execute 2
 
 private theorem encRight_head (a b : ℕ) (L : List (ℕ × ℕ)) :
     (encRight ((a, b) :: L)).head = 1 := by
@@ -1112,10 +1119,10 @@ private theorem encLeft_not_surjective :
 private theorem valid_stack_modes : IsValidStackModes encLeft encRight evalStackCfg := by
   intro m
   cases m with
-  | CR_n_n => exact ⟨C, .id [], .id [], Or.inr (Or.inr (fun _ _ => rfl))⟩
-  | EL_n_n => exact ⟨E, .id [], .id [], Or.inr (Or.inl (fun _ _ => rfl))⟩
-  | DL_0_n => exact ⟨D, .id [], .id [0], Or.inr (Or.inl (fun _ _ => rfl))⟩
-  | DR_n_n => exact ⟨D, .id [], .id [], Or.inr (Or.inr (fun _ _ => rfl))⟩
+  | CR_n_n => exact ⟨C, .id [], .id [], by decide, by decide, Or.inr (Or.inr (fun _ _ => rfl))⟩
+  | EL_n_n => exact ⟨E, .id [], .id [], by decide, by decide, Or.inr (Or.inl (fun _ _ => rfl))⟩
+  | DL_0_n => exact ⟨D, .id [], .id [0], by decide, by decide, Or.inr (Or.inl (fun _ _ => rfl))⟩
+  | DR_n_n => exact ⟨D, .id [], .id [], by decide, by decide, Or.inr (Or.inr (fun _ _ => rfl))⟩
 
 
 /-! ## Stack Reduction Witness -/
@@ -1132,7 +1139,10 @@ theorem has_stack_reduction : HasStackReduction target := by
     valid_stack_modes,
     fun _ => Iff.rfl,
     fun m L R => ⟨m, L, R, rfl⟩,
-    init_reaches_stack_system,
+    ⟨.CR_n_n, [(2, 0)], [(0, 0), (0, 0)], init_reaches_nontrivial,
+      by decide, ⟨(2, 0), by decide, by decide⟩⟩,
+    Or.inl ⟨.EL_n_n, .EL_n_n, (0, 0), id, ((0, 0) :: ·),
+      fun _ => Nat.le_succ _, step_EL_transfer⟩,
     stack_system_closed⟩
 
 end BusyBeaver.M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA

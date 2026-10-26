@@ -9,9 +9,9 @@ This directory contains formal Lean 4 specifications and kernel-verified reducti
 
 | Predicate | Dynamical Family |
 | :--- | :--- |
-| `HasStackReduction M` | Closed two-sided variable-length digit-stack system (`StackTuple`, `IsValidStackModes`) with non-blank/blank block encodings (`stackDigit`, `stackSepLen`), non-trivial stack reachability, and certified `ReachesPlus` closure from `init []`. |
-| `HasOdometerReduction M` | Closed mixed-radix odometer stack and bit-stream system (`evalOdomR` / `evalOdomL`) with certified decrement (`cap (dec stk) = cap stk - 1`), zero-capacity drain (`drain`), reflection, and `ReachesPlus` closure from `init []`. |
-| `HasTransducerReduction M` | Closed bidirectional macro-word transducer (`IsValidTransducerModes`, `iterTransducerMacro`) over prefix-free block alphabets (`kraftSum`) with certified left-to-right and right-to-left unbounded sweeps and `ReachesPlus` closure from `init []`. |
+| `HasStackReduction M` | Closed two-sided variable-length digit-stack system (`StackTuple`, `IsValidStackModes`) with bounded-prefix views, non-blank/blank block encodings (`stackDigit`, `stackSepLen`), multi-digit blank-tape stack reachability, an arbitrary-depth stack-frame transfer transition, and certified `ReachesPlus` closure from `init []`. |
+| `HasOdometerReduction M` | Closed mixed-radix odometer stack and bit-stream system (`evalOdomR` / `evalOdomL`) with non-trivial odometer stack reachability (`stk.length ≥ 2`, `cap stk ≥ 1`), certified decrement (`cap (dec stk) = cap stk - 1`), zero-capacity drain (`drain`), reflection, and unconditional `ReachesPlus` closure from `init []`. |
+| `HasTransducerReduction M` | Closed bidirectional macro-word transducer (`IsValidTransducerModes`, `iterTransducerMacro`) over strict-sub-Kraft block alphabets (`kraftSum`) with a halting-verified multi-token exit gate, certified left-to-right and right-to-left unbounded sweeps, and `ReachesPlus` closure from `init []`. |
 
 ## Formalized `bbchallenge` Wiki Machines (9 Machines)
 
@@ -24,8 +24,8 @@ This directory contains formal Lean 4 specifications and kernel-verified reducti
 | `1RB0RE_0RC---_1LD1LE_1LE1LD_1RF0LC_1RA1RF` | Stacked | `HasStackReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RE_0RC---_1LD1LE_1LE1LD_1RF0LC_1RA1RF) | [`M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF.lean`](./M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF.lean) |
 | `1RB---_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD` | Stacked | `HasStackReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB---_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD) | [`M_1RBHHH_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD.lean`](./M_1RBHHH_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD.lean) |
 | `1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RC---` | Odometer | `HasOdometerReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RC---) ([BMO Problem 10](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad)) | [`M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH.lean`](./M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH.lean) |
-| `1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` | Odometer | `HasOdometerReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_0LC0RE_1LA0RD_0RB0LC_1RC1RF_0LD---) ([BMO Problem 11](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad), state-relabeled) | [`M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean`](./M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean) |
-| `1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA` | Transducer | `HasTransducerReduction` | [Wiki (`Bell_eats_counter`)](https://wiki.bbchallenge.org/wiki/Bell_eats_counter) (state-relabeled) | [`M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA.lean`](./M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA.lean) |
+| `1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` | Odometer | `HasOdometerReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_0LC0RE_1LA0RD_0RB0LC_1RC1RF_0LD---) ([BMO Problem 11](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad), macro-equivalent reflected holdout) | [`M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean`](./M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean) |
+| `1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA` | Transducer | `HasTransducerReduction` | [Wiki (`Bell_eats_counter`)](https://wiki.bbchallenge.org/wiki/Bell_eats_counter) (macro-equivalent holdout) | [`M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA.lean`](./M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA.lean) |
 
 ## Sequence and Stack Notation
 
@@ -84,7 +84,7 @@ $$
 \tau(a, L, \varepsilon) = C(a, L, [0]), \qquad \tau(a, L, [d] \cdot R) = \tau(d, [a] \cdot L, R).
 $$
 
-Starting from $s_0 = C(0, [0], [1])$ (after 11 TM steps),
+Starting from $s_0 = C(0, [0], [1])$ (after 19 TM steps),
 
 $$
 T(C(a, L, R)) = \begin{cases}
@@ -118,7 +118,7 @@ $$
 \delta(\varepsilon) = [0], \qquad \delta([d]) = [d + 1], \qquad \delta([d, r] \cdot S) = [r + d + 2] \cdot S,
 $$
 
-and write $(b, L') = (1, \varepsilon)$ if $L = \varepsilon$ and $(b, L') = (c + 2, L_1)$ if $L = [c] \cdot L_1$. Starting from $s_0 = C(1, \varepsilon, [0, 0])$ (after 19 TM steps), $T(C(a, L, R)) = \sigma(a, L, R)$, where
+and write $(b, L') = (1, \varepsilon)$ if $L = \varepsilon$ and $(b, L') = (c + 2, L_1)$ if $L = [c] \cdot L_1$. Starting from $s_0 = C(1, \varepsilon, [0, 0])$ (after 12 TM steps), $T(C(a, L, R)) = \sigma(a, L, R)$, where
 
 $$
 \sigma(a, L, R) = \begin{cases}
@@ -142,7 +142,7 @@ $$
 
 ### 1.3 [`1RB0RB_1RC0LE_1LD1LA_---0LC_1RF1LE_1RA0RA`](./M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA.lean)
 
-Over states $C(a, b, L, r, R)$ and $F(a, b, L, r, R)$ with $a, b, r \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, write $(c^+, L') = (0, \varepsilon)$ if $L = \varepsilon$ and $(c^+, L') = (c + 1, L_1)$ if $L = [c] \cdot L_1$. Starting from $s_0 = F(1, 0, \varepsilon, 0, \varepsilon)$ (after 9 TM steps),
+Over states $C(a, b, L, r, R)$ and $F(a, b, L, r, R)$ with $a, b, r \in \mathbb{N}$ and $L, R \in \mathbb{N}^{\ast}$, write $(c^+, L') = (0, \varepsilon)$ if $L = \varepsilon$ and $(c^+, L') = (c + 1, L_1)$ if $L = [c] \cdot L_1$. Starting from $s_0 = F(1, 0, \varepsilon, 0, \varepsilon)$ (after 16 TM steps),
 
 $$
 \begin{aligned}
@@ -172,7 +172,7 @@ $$
 \Xi(u, v, L, r, R) = \begin{cases}
   F_{\mathrm{HL}}(u - 1, v, L, 0, [r] \cdot R) & \text{if } u \ge 1, \\
   \mathrm{Halt} & \text{if } u = 0 \text{ and } (v = 0 \text{ or } (v = 2 \text{ and } L = \varepsilon)), \\
-  F_{\mathrm{HL}}(v + 1, c^+, L', r, R) & \text{if } u = 0 \text{ and } v \ge 1 \text{ is odd}, \\
+  F_{\mathrm{HL}}(v + 2, c^+, L', r, R) & \text{if } u = 0 \text{ and } v \ge 1 \text{ is odd}, \\
   \Xi(0, c + 1, L_1, 0, [r + 1] \cdot R) & \text{if } u = 0,\ v = 2,\ L = [c] \cdot L_1, \\
   F_{\mathrm{HL}}(v - 3, c^+, L', 0, [0, r + 1] \cdot R) & \text{if } u = 0 \text{ and } v \ge 4 \text{ is even}.
 \end{cases}
@@ -186,7 +186,7 @@ $$
 \sigma_D(a, b, L, \varepsilon) = D(a, b, L, \varepsilon), \qquad \sigma_D(a, b, L, [d] \cdot R) = \sigma_D(d, a, [b] \cdot L, R).
 $$
 
-Starting from $s_0 = D(1, 0, \varepsilon, \varepsilon)$ (after 9 TM steps), with $k = \lfloor a/2 \rfloor$:
+Starting from $s_0 = D(1, 0, \varepsilon, \varepsilon)$ (after 7 TM steps), with $k = \lfloor a/2 \rfloor$:
 
 $$
 \begin{aligned}
@@ -240,7 +240,7 @@ $$
 \end{aligned}
 $$
 
-Starting from $s_0 = B(\varepsilon, 0, \varepsilon)$ (after 3 TM steps), $T(B(P, u, \varepsilon)) = \Pi(P, u, 0, \varepsilon)$ and $T(B(P, u, [r] \cdot R)) = \Pi(P, u, r + 1, R)$, where
+Starting from $s_0 = B(\varepsilon, 0, \varepsilon)$ (after 1 TM step), $T(B(P, u, \varepsilon)) = \Pi(P, u, 0, \varepsilon)$ and $T(B(P, u, [r] \cdot R)) = \Pi(P, u, r + 1, R)$, where
 
 $$
 \begin{aligned}
@@ -279,7 +279,7 @@ $$
 \tau_B(\varepsilon, \varepsilon) = C(0, \varepsilon, \varepsilon), \qquad \tau_B([a] \cdot L, \varepsilon) = C(a + 1, L, \varepsilon), \qquad \tau_B(L, [d] \cdot R) = \tau_B([d] \cdot \beta_1(L), R).
 $$
 
-Write $(r, R') = (0, \varepsilon)$ when $R = \varepsilon$ and $(r, R') = (d, R_1)$ when $R = [d] \cdot R_1$. Starting from $s_0 = C(3, [0], \varepsilon)$ (after 11 TM steps),
+Write $(r, R') = (0, \varepsilon)$ when $R = \varepsilon$ and $(r, R') = (d, R_1)$ when $R = [d] \cdot R_1$. Starting from $s_0 = C(3, [0], \varepsilon)$ (after 19 TM steps),
 
 $$
 T(C(a, L, R)) = \begin{cases}
@@ -352,7 +352,7 @@ $$
 \end{cases}
 $$
 
-Starting from $s_0 = B(\varepsilon, [0, 1])$ (after 11 TM steps),
+Starting from $s_0 = B(\varepsilon, [0, 1])$ (after 16 TM steps),
 
 $$
 T(B(L, \varepsilon)) = B(\varepsilon, L^{\mathrm{rev}} \cdot [0, 0]), \qquad T(B(L, [d] \cdot R)) = \zeta(0, [0]^d \cdot L, R).
@@ -398,7 +398,7 @@ $$
 \end{aligned}
 $$
 
-Starting from $s_0 = E(1, \varepsilon, 0, \varepsilon)$ (after 3 TM steps),
+Starting from $s_0 = E(1, \varepsilon, 0, \varepsilon)$ (after 6 TM steps),
 
 $$
 T(E(a, L, d, R)) = \begin{cases}
@@ -407,8 +407,8 @@ T(E(a, L, d, R)) = \begin{cases}
   \mathrm{Halt} & \text{if } d \ge 1 \text{ is odd and } R = \varepsilon, \\
   E(a + 3, L, e, R') & \text{if } d = 1 \text{ and } R = [e] \cdot R', \\
   E(0, [0]^{(d-3)/2} \cdot [a + 3] \cdot L, e, R') & \text{if } d \ge 3 \text{ is odd and } R = [e] \cdot R', \\
-  \Lambda(\mathsf{A}, [0]^{(d-1)/2} \cdot [a + 3] \cdot L, 0, [0]) & \text{if } d \ge 2 \text{ is even and } R = \varepsilon, \\
-  \Lambda(\mathsf{A}, [0]^{(d-1)/2} \cdot [a + 3] \cdot L, e + 1, R') & \text{if } d \ge 2 \text{ is even and } R = [e] \cdot R'.
+  \Lambda(\mathsf{A}, [0]^{(d-2)/2} \cdot [a + 3] \cdot L, 0, [0]) & \text{if } d \ge 2 \text{ is even and } R = \varepsilon, \\
+  \Lambda(\mathsf{A}, [0]^{(d-2)/2} \cdot [a + 3] \cdot L, e + 1, R') & \text{if } d \ge 2 \text{ is even and } R = [e] \cdot R'.
 \end{cases}
 $$
 
@@ -474,7 +474,7 @@ $$
 \end{cases}
 $$
 
-Starting from $s_0 = B([0], \varepsilon, 1)$ (after 3 TM steps),
+Starting from $s_0 = B([0], \varepsilon, 1)$ (after 4 TM steps),
 
 $$
 T(B(L, E, c)) = \begin{cases}
@@ -522,7 +522,7 @@ $$
 \end{aligned}
 $$
 
-Starting from $s_0 = E(0, [0])$ (after 11 TM steps), $T(E(d, R)) = \Sigma(\varepsilon, d, R)$, where
+Starting from $s_0 = E(0, [0])$ (after 4 TM steps), $T(E(d, R)) = \Sigma(\varepsilon, d, R)$, where
 
 $$
 \Sigma(K, d, R) = \begin{cases}
@@ -561,7 +561,7 @@ $$
 \end{cases}
 $$
 
-Starting from $s_0 = E(\varepsilon)$ (after 3 TM steps),
+Starting from $s_0 = E(\varepsilon)$ (after 6 TM steps),
 
 $$
 T(E(\varepsilon)) = E([0, 0]), \quad T(E([0] \cdot R)) = \sigma(0, [0, 0], R), \quad T(E([1] \cdot R)) = \sigma(1, [0], R), \quad T(E([r] \cdot R)) = \mathrm{Halt}\ (r \ge 2).
@@ -593,7 +593,7 @@ $$
 \end{aligned}
 $$
 
-Starting from $s_0 = E_L(1, \varepsilon, 1, \varepsilon)$ (after 9 TM steps), $T(E_0(L, R)) = \Psi(L, R)$, while for $E_L(a, L, d, R)$ with $R_1 = \pi_E(\lfloor a/4 \rfloor, [d] \cdot R)$ and $(p_1, p_2) = \hat{\beta}_1(R_1)$:
+Starting from $s_0 = E_L(1, \varepsilon, 1, \varepsilon)$ (after 5 TM steps), $T(E_0(L, R)) = \Psi(L, R)$, while for $E_L(a, L, d, R)$ with $R_1 = \pi_E(\lfloor a/4 \rfloor, [d] \cdot R)$ and $(p_1, p_2) = \hat{\beta}_1(R_1)$:
 
 $$
 T(E_L(a, L, d, R)) = \begin{cases}
@@ -723,7 +723,7 @@ $$
 \end{cases}
 $$
 
-Starting from $s_0 = B([0], 0, \varepsilon)$ (after 4 TM steps), let $L_1 = \beta_1^{3\lfloor d/3 \rfloor}(L)$; then
+Starting from $s_0 = B([0], 0, \varepsilon)$ (after 8 TM steps), let $L_1 = \beta_1^{3\lfloor d/3 \rfloor}(L)$; then
 
 $$
 T(B(L, d, R)) = \begin{cases}

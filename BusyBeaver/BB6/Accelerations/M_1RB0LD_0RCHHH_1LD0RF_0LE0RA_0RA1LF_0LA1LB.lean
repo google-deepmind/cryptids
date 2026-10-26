@@ -11,7 +11,7 @@ public import BusyBeaver.Bridge
 # Busy Beaver Machine `1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB`
 
 Formal `HasOdometerReduction` proof for the 6-state, 2-symbol Busy Beaver machine
-`1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` (state-relabeled equivalent of
+`1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` (macro-equivalent reflected holdout for
 `1RB0LD_0LC0RE_1LA0RD_0RB0LC_1RC1RF_0LD---`, Beaver Math Olympiad Problem 11):
 - <https://wiki.bbchallenge.org/wiki/1RB0LD_0LC0RE_1LA0RD_0RB0LC_1RC1RF_0LD--->
 - <https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad>
@@ -103,8 +103,9 @@ private def IsInOdomSystem (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
 
 /-! ## Local Step Rules -/
 
-private theorem step_init : (init []) [target]⊢⁺ cfg_R [] default := by
-  simp only [cfg_R, evalOdomR, encOdom, ListBlank.append]
+private theorem init_reaches_nontrivial :
+    (init []) [target]⊢⁺ cfg_R [.L0, .L2, .L0] default := by
+  simp only [cfg_R, evalOdomR, encOdom, odomWord, ListBlank.append]
   bb_steps
 
 private theorem step_R_0 (l : List OdomTok) (r : ListBlank (Fin 2)) :
@@ -550,8 +551,9 @@ theorem has_odometer_reduction : HasOdometerReduction target := by
   refine ⟨OdomTok, .rightOdom, (fun _ => 0), 2, [0, 1, 0], [0, 1, 0], [1], odomWord, encOdom, cap,
     dec, (fun _ => []), drain, IsInOdomSystem, ?_, ?_, ?_, rfl, ?_, encOdom_non_surjective, rfl, ?_,
     length_dec, cap_dec, runHL_dec, (fun stk _ => drain_ne_nil stk), run_drain,
-    step_R_0, (fun stk w _ => step_R_partition stk w), (fun _ => Iff.rfl),
-    ⟨cfg_R [] default, step_init, ⟨[], default, rfl⟩⟩, (fun stk w _ => step_R_closed stk w)⟩
+    step_R_0, step_R_partition, (fun _ => Iff.rfl),
+    ⟨[.L0, .L2, .L0], default, init_reaches_nontrivial, by decide, by decide⟩,
+    step_R_closed⟩
   · refine ⟨[.L0, .L1, .L2], by decide, by decide, ?_⟩
     intro t; cases t <;> decide
   · decide

@@ -74,6 +74,14 @@ private theorem map_fst_liftPairList : ∀ s : List ℕ, (liftPairList s).map Pr
   | [] => rfl
   | _ :: xs => congrArg (_ :: ·) (map_fst_liftPairList xs)
 
+private theorem length_liftPairList : ∀ s : List ℕ, (liftPairList s).length = s.length
+  | [] => rfl
+  | _ :: xs => congrArg Nat.succ (length_liftPairList xs)
+
+private theorem mem_liftPairList : ∀ {a : ℕ} {s : List ℕ}, a ∈ s → (a, 0) ∈ liftPairList s
+  | _, _ :: _, .head _ => .head _
+  | _, _ :: _, .tail _ h => .tail _ (mem_liftPairList h)
+
 /-- One-digit (`List ℕ`) sufficient conditions for `HasStackReduction` (`maxSepL = maxSepR = 1`). -/
 def OneDigitStackReduction {Λ : Type*} [Inhabited Λ]
     (M : Machine (Fin 2) Λ)
@@ -100,7 +108,18 @@ def OneDigitStackReduction {Λ : Type*} [Inhabited Λ]
   IsValidStackModes encLeft1 encRight1 evalStackCfg1 ∧
   (∀ cfg, IsInStackSystem1 cfg ↔ ∃ m L R, cfg = evalStackCfg1 m L R) ∧
   (∀ m L R, IsInStackSystem1 (evalStackCfg1 m L R)) ∧
-  (∃ cfg₀, ReachesPlus M (init []) cfg₀ ∧ IsInStackSystem1 cfg₀) ∧
+  (∃ (m_g : StackMode) (L_g R_g : List ℕ),
+    ReachesPlus M (init []) (evalStackCfg1 m_g L_g R_g) ∧
+    3 ≤ L_g.length + R_g.length ∧
+    (∃ a ∈ L_g ++ R_g, 1 ≤ a)) ∧
+  ((∃ (m m' : StackMode) (x : ℕ) (g : ℕ → ℕ) (f : List ℕ → List ℕ),
+      (∀ s, s.length ≤ (f s).length) ∧
+      ∀ z L R,
+        ReachesPlus M (evalStackCfg1 m (x :: z :: L) R) (evalStackCfg1 m' (g z :: L) (f R))) ∨
+    (∃ (m m' : StackMode) (x : ℕ) (g : ℕ → ℕ) (f : List ℕ → List ℕ),
+      (∀ s, s.length ≤ (f s).length) ∧
+      ∀ z L R,
+        ReachesPlus M (evalStackCfg1 m L (x :: z :: R)) (evalStackCfg1 m' (f L) (g z :: R)))) ∧
   (∀ cfg, IsInStackSystem1 cfg →
     ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem1 cfg' ∨ (step M cfg').isNone))
 
@@ -123,7 +142,9 @@ theorem HasStackReduction.of_oneDigit {Λ : Type*} [Inhabited Λ]
     ?_⟩
   rcases h with ⟨hnilL, hnilR, hheadL, hheadR, ⟨tL, htL, hnsL⟩, ⟨tR, htR, hnsR⟩,
     ⟨sL, oL, sepL, sR, oR, sepR, hsL, hoL, hsepL, hsR, hoR, hsepR, hblkL, hblkR⟩,
-    hmodes, hvalid1, hiff1, _, ⟨cfg₀, hinit0, hsys0⟩, hclosed1⟩
+    hmodes, hvalid1, hiff1, _,
+    ⟨m_g, L_g, R_g, hreach_g, hlen_g, ⟨a_g, hmem_g, ha_g⟩⟩,
+    htransfer, hclosed1⟩
   refine ⟨Or.inl ⟨rfl, rfl⟩, hnilL, hnilR,
     fun a _ L => hheadL a (L.map Prod.fst),
     fun d _ R => hheadR d (R.map Prod.fst),
@@ -139,15 +160,41 @@ theorem HasStackReduction.of_oneDigit {Λ : Type*} [Inhabited Λ]
     fun _ => Iff.rfl,
     fun m L R => ⟨m, L, R, rfl⟩,
     ?_,
+    ?_,
     ?_⟩
-  · rcases hvalid1 m with ⟨q, vL, vR, h1 | h2 | h3⟩
-    · exact ⟨q, vL, vR, Or.inl (fun L R => h1 (L.map Prod.fst) (R.map Prod.fst))⟩
-    · exact ⟨q, vL, vR, Or.inr (Or.inl (fun L R => h2 (L.map Prod.fst) (R.map Prod.fst)))⟩
-    · exact ⟨q, vL, vR, Or.inr (Or.inr (fun L R => h3 (L.map Prod.fst) (R.map Prod.fst)))⟩
-  · rcases (hiff1 cfg₀).mp hsys0 with ⟨m, L1, R1, hcfg0⟩
-    refine ⟨cfg₀, hinit0, m, liftPairList L1, liftPairList R1, ?_⟩
-    rw [map_fst_liftPairList, map_fst_liftPairList]
-    exact hcfg0
+  · rcases hvalid1 m with ⟨q, vL, vR, hvL, hvR, h1 | h2 | h3⟩
+    · exact ⟨q, vL, vR, hvL, hvR, Or.inl (fun L R => h1 (L.map Prod.fst) (R.map Prod.fst))⟩
+    · exact ⟨q, vL, vR, hvL, hvR,
+        Or.inr (Or.inl (fun L R => h2 (L.map Prod.fst) (R.map Prod.fst)))⟩
+    · exact ⟨q, vL, vR, hvL, hvR,
+        Or.inr (Or.inr (fun L R => h3 (L.map Prod.fst) (R.map Prod.fst)))⟩
+  · refine ⟨m_g, liftPairList L_g, liftPairList R_g, ?_, ?_, ?_⟩
+    · simpa only [map_fst_liftPairList] using hreach_g
+    · rw [length_liftPairList, length_liftPairList]
+      exact hlen_g
+    · refine ⟨(a_g, 0), ?_, ha_g⟩
+      rcases List.mem_append.mp hmem_g with hL | hR
+      · exact List.mem_append_left _ (mem_liftPairList hL)
+      · exact List.mem_append_right _ (mem_liftPairList hR)
+  · rcases htransfer with ⟨m, m', x, g, f, hflen, hstep⟩ | ⟨m, m', x, g, f, hflen, hstep⟩
+    · refine Or.inl ⟨m, m', (x, 0), fun p => (g p.1, 0),
+        fun s => liftPairList (f (s.map Prod.fst)), ?_, ?_⟩
+      · intro s
+        rw [length_liftPairList]
+        simpa using hflen (s.map Prod.fst)
+      · intro z L R
+        dsimp only [List.map_cons]
+        rw [map_fst_liftPairList]
+        exact hstep z.1 (L.map Prod.fst) (R.map Prod.fst)
+    · refine Or.inr ⟨m, m', (x, 0), fun p => (g p.1, 0),
+        fun s => liftPairList (f (s.map Prod.fst)), ?_, ?_⟩
+      · intro s
+        rw [length_liftPairList]
+        simpa using hflen (s.map Prod.fst)
+      · intro z L R
+        dsimp only [List.map_cons]
+        rw [map_fst_liftPairList]
+        exact hstep z.1 (L.map Prod.fst) (R.map Prod.fst)
   · intro cfg ⟨m, L, R, hcfg⟩
     have hsys1 : IsInStackSystem1 cfg := (hiff1 cfg).mpr ⟨m, L.map Prod.fst, R.map Prod.fst, hcfg⟩
     rcases hclosed1 cfg hsys1 with ⟨cfg', hstep, hnext | hhalt⟩

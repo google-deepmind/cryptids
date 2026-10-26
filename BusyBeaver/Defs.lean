@@ -360,23 +360,27 @@ distinct `dSym ≠ sSym`. -/
     (dSym = (1 : Fin 2) ∧ sSym = (0 : Fin 2)) ∨ (dSym = (0 : Fin 2) ∧ sSym = (1 : Fin 2))
   | _ + 1, dSym, sSym => dSym ≠ sSym
 
-/-- Every `StackMode` evaluates `(L, R)` as a fixed control state `q` and fixed `HalfTapeView`s
-`vL, vR` of `encLeft L` and `encRight R` (either scanning `0` between them or stepping onto the
-left or right view). -/
+/-- Every `StackMode` evaluates `(L, R)` as a fixed control state `q` and fixed bounded
+`HalfTapeView`s `vL, vR` (`≤ 8`-symbol prefixes) of `encLeft L` and `encRight R` (either scanning
+`0` between them or stepping onto the left or right view). -/
 def IsValidStackModes {Γ Λ StackMode α : Type*} [Inhabited Γ] [OfNat Γ 0]
     (encLeft encRight : List α → ListBlank Γ)
     (eval : StackMode → List α → List α → Cfg Γ Λ) : Prop :=
   ∀ m : StackMode, ∃ (q : Λ) (vL vR : HalfTapeView Γ),
-    (∀ L R, eval m L R =
+    (HalfTapeView.casesOn vL List.length List.length) ≤ 8 ∧
+    (HalfTapeView.casesOn vR List.length List.length) ≤ 8 ∧
+    ((∀ L R, eval m L R =
       ⟨some q, ⟨(0 : Γ), applyView vL (encLeft L), applyView vR (encRight R)⟩⟩) ∨
     (∀ L R, eval m L R = Cfg.headLeft q (applyView vL (encLeft L)) (applyView vR (encRight R))) ∨
-    (∀ L R, eval m L R = Cfg.headRight q (applyView vL (encLeft L)) (applyView vR (encRight R)))
+    (∀ L R, eval m L R = Cfg.headRight q (applyView vL (encLeft L)) (applyView vR (encRight R))))
 
 /-- The blank-tape trajectory of `M` enters a closed 2nd-order digit-stack configuration family
 over `(k + 2)`-symbol tuple stacks `List (StackTuple (k + 2))` with valid symbol polarity,
 parametric unary-block stack recurrences (`strideL, offsetL, sepL, strideR, offsetR, sepR > 0`,
-`1 ≤ maxSepL, maxSepR ≤ 4`), head-`dSym` non-surjectivity, at most 6 modes (`IsValidStackModes`),
-and closure under `ReachesPlus` up to halting. -/
+`1 ≤ maxSepL, maxSepR ≤ 4`), head-`dSym` non-surjectivity, at most 6 bounded-prefix modes
+(`IsValidStackModes`), blank-tape multi-digit stack reachability (`3 ≤ L_g.length + R_g.length`
+with a positive digit), an arbitrary-depth stack-frame transfer transition, and closure under
+`ReachesPlus` up to halting. -/
 def HasStackReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (M : Machine (Fin (k + 2)) Λ) : Prop :=
   ∃ (StackMode : Type)
@@ -411,7 +415,22 @@ def HasStackReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     IsValidStackModes encLeft encRight evalStackCfg ∧
     (∀ cfg, IsInStackSystem cfg ↔ ∃ m L R, cfg = evalStackCfg m L R) ∧
     (∀ m L R, IsInStackSystem (evalStackCfg m L R)) ∧
-    (∃ cfg₀, ReachesPlus M (init []) cfg₀ ∧ IsInStackSystem cfg₀) ∧
+    (∃ (m_g : StackMode) (L_g R_g : List (StackTuple (k + 2))),
+      ReachesPlus M (init []) (evalStackCfg m_g L_g R_g) ∧
+      3 ≤ L_g.length + R_g.length ∧
+      (∃ x ∈ L_g ++ R_g, 1 ≤ x.1)) ∧
+    ((∃ (m m' : StackMode) (x : StackTuple (k + 2))
+        (g : StackTuple (k + 2) → StackTuple (k + 2))
+        (f : List (StackTuple (k + 2)) → List (StackTuple (k + 2))),
+        (∀ s, s.length ≤ (f s).length) ∧
+        ∀ z L R,
+          ReachesPlus M (evalStackCfg m (x :: z :: L) R) (evalStackCfg m' (g z :: L) (f R))) ∨
+      (∃ (m m' : StackMode) (x : StackTuple (k + 2))
+        (g : StackTuple (k + 2) → StackTuple (k + 2))
+        (f : List (StackTuple (k + 2)) → List (StackTuple (k + 2))),
+        (∀ s, s.length ≤ (f s).length) ∧
+        ∀ z L R,
+          ReachesPlus M (evalStackCfg m L (x :: z :: R)) (evalStackCfg m' (f L) (g z :: R)))) ∧
     (∀ cfg, IsInStackSystem cfg →
       ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
 
@@ -498,7 +517,6 @@ def HasOdometerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
         (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.cons (0 : Fin (k + 2)) w))
         (evalOdomL side q_L pfx_L (encOdom stk) (ListBlank.cons (1 : Fin (k + 2)) w))) ∧
     (∀ stk w,
-      w.head = 0 ∨ (w.tail.head = 0 ∧ (w.tail.tail.head = 0 ∨ w.tail.tail.tail.head = 0)) →
       (∃ t w',
         ReachesPlus M
           (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
@@ -512,9 +530,10 @@ def HasOdometerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
           (step M cfg').isNone)) ∧
     (∀ cfg, IsInOdomSystem cfg ↔
       ∃ stk w, cfg = evalOdomR side (q_R stk) pfx_R (encOdom stk) w) ∧
-    (∃ cfg₀, ReachesPlus M (init []) cfg₀ ∧ IsInOdomSystem cfg₀) ∧
+    (∃ (stk₀ : List OdomTok) (w₀ : ListBlank (Fin (k + 2))),
+      ReachesPlus M (init []) (evalOdomR side (q_R stk₀) pfx_R (encOdom stk₀) w₀) ∧
+      2 ≤ stk₀.length ∧ 1 ≤ cap stk₀) ∧
     (∀ stk w,
-      w.head = 0 ∨ (w.tail.head = 0 ∧ (w.tail.tail.head = 0 ∨ w.tail.tail.tail.head = 0)) →
       ∃ cfg', ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
         (IsInOdomSystem cfg' ∨ (step M cfg').isNone))
 
@@ -612,30 +631,32 @@ def HasTransducerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
         n_t ≤ 256 ∧
         iterTransducerMacro stepMacro n_t (m₀, L₀, R₀) = some (m_t, L_t, R_t) ∧
         t ∈ R_t) ∧
-      ((∃ (m_exit : TransducerMode) (tL_exit : TokL) (pfxL_halt : List TokL),
-          pfxL_halt.length ≤ 3 ∧
-          (∀ m L R, stepMacro m L R = none ↔ (m = m_exit ∧ ∃ L', L = tL_exit :: L')) ∧
-          (∀ m L R L' R',
-            stepMacro m L R = some (m_exit, tL_exit :: L', R') →
-              (∃ L'', L' = pfxL_halt ++ L'') ∨ (L = tL_exit :: tL_exit :: L' ∧ R' = R)) ∧
-          (∀ R : List TokR, ∃ cfg',
-            ReachesPlus M (evalTransducerCfg m_exit [tL_exit] R) cfg' ∧
-              (IsInTransducerSystem cfg' ∨ (step M cfg').isNone)) ∧
-          (∀ (L' : List TokL) (R : List TokR), ∃ cfg_h,
-            ReachesPlus M (evalTransducerCfg m_exit ((tL_exit :: pfxL_halt) ++ L') R) cfg_h ∧
-              (step M cfg_h).isNone)) ∨
-        (∃ (m_exit : TransducerMode) (tR_exit : TokR) (pfxR_halt : List TokR),
-          pfxR_halt.length ≤ 3 ∧
-          (∀ m L R, stepMacro m L R = none ↔ (m = m_exit ∧ ∃ R', R = tR_exit :: R')) ∧
-          (∀ m L R L' R',
-            stepMacro m L R = some (m_exit, L', tR_exit :: R') →
-              (∃ R'', R' = pfxR_halt ++ R'') ∨ (R = tR_exit :: tR_exit :: R' ∧ L' = L)) ∧
-          (∀ L : List TokL, ∃ cfg',
-            ReachesPlus M (evalTransducerCfg m_exit L [tR_exit]) cfg' ∧
-              (IsInTransducerSystem cfg' ∨ (step M cfg').isNone)) ∧
-          (∀ (L : List TokL) (R' : List TokR), ∃ cfg_h,
-            ReachesPlus M (evalTransducerCfg m_exit L ((tR_exit :: pfxR_halt) ++ R')) cfg_h ∧
-              (step M cfg_h).isNone))) ∧
+      ((∃ (m_exit : TransducerMode) (tL_exit : TokL) (exitNext : List TokL),
+          exitNext.Nodup ∧ exitNext ≠ [] ∧
+          (∀ R : List TokR, (stepMacro m_exit [tL_exit] R).isSome) ∧
+          (∀ m L R,
+            stepMacro m L R = none ↔
+              (m = m_exit ∧ ∃ t₂ L'', t₂ ∈ exitNext ∧ L = tL_exit :: t₂ :: L'')) ∧
+          (∀ t₂ ∈ exitNext, ∀ R : List TokR, ∃ cfg_h,
+            ReachesPlus M (evalTransducerCfg m_exit [tL_exit, t₂] R) cfg_h ∧
+              (step M cfg_h).isNone) ∧
+          (∀ t₂ ∈ exitNext, ∃ sfx : List TokL, sfx.length ≤ 2 ∧
+            ∀ (L'' : List TokL) (R : List TokR), ∃ cfg_h,
+              ReachesPlus M (evalTransducerCfg m_exit (tL_exit :: t₂ :: (sfx ++ L'')) R) cfg_h ∧
+                (step M cfg_h).isNone)) ∨
+        (∃ (m_exit : TransducerMode) (tR_exit : TokR) (exitNext : List TokR),
+          exitNext.Nodup ∧ exitNext ≠ [] ∧
+          (∀ L : List TokL, (stepMacro m_exit L [tR_exit]).isSome) ∧
+          (∀ m L R,
+            stepMacro m L R = none ↔
+              (m = m_exit ∧ ∃ t₂ R'', t₂ ∈ exitNext ∧ R = tR_exit :: t₂ :: R'')) ∧
+          (∀ t₂ ∈ exitNext, ∀ L : List TokL, ∃ cfg_h,
+            ReachesPlus M (evalTransducerCfg m_exit L [tR_exit, t₂]) cfg_h ∧
+              (step M cfg_h).isNone) ∧
+          (∀ t₂ ∈ exitNext, ∃ sfx : List TokR, sfx.length ≤ 2 ∧
+            ∀ (L : List TokL) (R'' : List TokR), ∃ cfg_h,
+              ReachesPlus M (evalTransducerCfg m_exit L (tR_exit :: t₂ :: (sfx ++ R''))) cfg_h ∧
+                (step M cfg_h).isNone))) ∧
       (∃ (m_lr m_rl : TransducerMode) (tL tL' : TokL) (tR tR' : TokR) (s₁ s₂ s₃ s₄ : ℕ),
         1 ≤ s₁ ∧ s₁ ≤ 4 ∧ 1 ≤ s₂ ∧ s₂ ≤ 4 ∧
         1 ≤ s₃ ∧ s₃ ≤ 4 ∧ 1 ≤ s₄ ∧ s₄ ≤ 4 ∧
