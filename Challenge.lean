@@ -10,6 +10,7 @@ public import Mathlib.Algebra.GCDMonoid.Finset
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
 public import Mathlib.SetTheory.ZFC.Basic
+public import Mathlib.Data.Nat.Digits.Defs
 meta import Lean.Elab.Term
 
 /-!
@@ -31,10 +32,11 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   remains stronger than `PA`/`ZF`; see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 22 theorems, including `Riemann95.candidate_equivalent` (which uses
+  Audits all 24 theorems, including `Riemann95.candidate_equivalent` (which uses
   `Classical.choice` via `Nat.Prime`), classical `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰`
-  Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), and analytic
-  `RiemannHypothesis` equivalences.
+  Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
+  `RiemannHypothesis` equivalences, and the `erdos_15` equivalences (`Nat.digits` uses
+  `Classical.choice`; `¬ ErdosPowersOfTwoConjecture` also uses Markov's Principle).
 -/
 
 meta section
@@ -237,6 +239,9 @@ namespace Machines
 /-- Rows of `riemann95`. -/ def riemann95Rows : List (List (Option (Fin 2 × Dir × Fin 95))) :=
   load_machine_rows% "artifacts/riemann_95/machine.txt"
 /-- 95-state RH candidate. -/ def riemann95 : Machine 95 2 := Machine.ofRows riemann95Rows
+/-- Rows of `erdos15`. -/ def erdos15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
+  load_machine_rows% "baselines/tables/erdos_15.txt"
+/-- 15-state Erdős machine. -/ def erdos15 : Machine 15 2 := Machine.ofRows erdos15Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -347,6 +352,11 @@ inductive WadeZFProvable : ℕ → Prop where
 /-- Inconsistency of `WadeZFProvable` ($v_0 \in v_0$). -/
 def WadeZFInconsistent : Prop := WadeZFProvable (zfMem 0 0)
 
+/-- **Erdős's conjecture on powers of two** (Erdős 1979): for every `n > 8`, the base-3
+expansion of `2 ^ n` contains the digit `2`. -/
+def ErdosPowersOfTwoConjecture : Prop :=
+  ∀ n : ℕ, 8 < n → 2 ∈ Nat.digits 3 (2 ^ n)
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -429,5 +439,14 @@ theorem halts_candidate_iff_not_riemannHypothesis :
     Halts candidate ↔ ¬ RiemannHypothesis := by sorry
 end Semantics
 end Riemann95
+
+namespace Erdos15
+/-- 15-state Erdős powers-of-two machine (`erdos_15`, Stérin & Woods 2021). -/
+abbrev erdos15 : Machine 15 2 := Machines.erdos15
+theorem halts_erdos15_iff_exists_counterexample :
+    ConjectureMachines.Halts erdos15 ↔ ∃ n : ℕ, 8 < n ∧ 2 ∉ Nat.digits 3 (2 ^ n) := by sorry
+theorem halts_erdos15_iff_not_erdosPowersOfTwo :
+    ConjectureMachines.Halts erdos15 ↔ ¬ ErdosPowersOfTwoConjecture := by sorry
+end Erdos15
 
 end ConjectureMachines

@@ -40,6 +40,8 @@ It independently:
    - Riemann (120 vs 104 states): 9,037-step self-bootstrap to `rhRootCfg`
      (`state 19`) and >1,000 post-boot root register-machine dispatches.
    - Riemann (95 states): exact 3,634-step bootstrap, including the entire tape.
+   - Erdos (15 states): at every stage the tape holds the base-3 digits of
+     `2^k` and the count of powers without a digit 2 (`Cryptids/Erdos15.lean`).
 """
 
 from __future__ import annotations
@@ -144,6 +146,24 @@ PINNED_BASELINES = {
         "lean_def": "riemann120",
         "format": "tursi",
         "states": 120,
+        "symbols": 2,
+    },
+    "erdos_15": {
+        "source_file": "baselines/sources/erdos_15_sterin_woods.txt",
+        "source_sha256": (
+            "f9de29f3b3b06e55afbe61baddf317347b224a1a2203b4cf35f4027da1ecd9ac"
+        ),
+        "table_file": "baselines/tables/erdos_15.txt",
+        "table_file_sha256": (
+            "f70b7e4ada6b48644f02377bf1d045b3518e5a640a959a10442bace4311a98dd"
+        ),
+        "canonical_machine_sha256": (
+            "2c38f44a6b344291c1169c35f348ed29d9ee51c1e922e1c43ebba5aeb3326c37"
+        ),
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "erdos15",
+        "format": "bbsim",
+        "states": 15,
         "symbols": 2,
     },
 }
@@ -299,7 +319,10 @@ def parse_canonical_machine(text: str) -> Machine:
 
 
 def derive_machine_from_source(source_text: str, fmt: str) -> Machine:
-  """Re-derives canonical Machine from published source format (standard, tursi, nql)."""
+  """Re-derives canonical Machine from published source format.
+
+  Formats: standard, tursi, nql, bbsim.
+  """
   if fmt == "standard":
     blocks = source_text.strip().split("_")
     lines = []
@@ -352,6 +375,48 @@ def derive_machine_from_source(source_text: str, fmt: str) -> Machine:
     table = {
         (st, r_sym): (w_sym, d, nxt if nxt in defined else None)
         for st, r_sym, w_sym, d, nxt in rows
+    }
+  elif fmt == "bbsim":
+    # Stérin & Woods's `tcosmo/bbsim` machine files: `initial_state:` and
+    # `blank_symbol:` headers, then a state name followed by
+    # `read write move next` or `read HALT` lines, with letter symbols.
+    start = ""
+    blank = ""
+    order = []
+    named_rows: list[tuple[str, str, str | None, str, str]] = []
+    current = ""
+    for raw_line in source_text.splitlines():
+      line = raw_line.split(";", 1)[0].strip()
+      if not line:
+        continue
+      key, sep, value = line.partition(":")
+      if sep:
+        if key.strip() == "initial_state":
+          start = value.strip()
+        elif key.strip() == "blank_symbol":
+          blank = value.strip()
+        continue
+      fields = line.split()
+      if len(fields) == 1:
+        current = fields[0]
+        order.append(current)
+      elif fields[1:] == ["HALT"]:
+        named_rows.append((current, fields[0], None, "", ""))
+      else:
+        r_sym, w_sym, move, nxt = fields
+        named_rows.append((current, r_sym, w_sym, move, nxt))
+    letters = {r_sym for _, r_sym, _, _, _ in named_rows}
+    if len(letters) != 2 or blank not in letters:
+      raise ValueError(f"Expected 2 symbols including blank {blank!r}")
+    symbol = {blank: 0, (letters - {blank}).pop(): 1}
+    table = {
+        (st, symbol[r_sym]): (
+            symbol[w_sym],
+            "L" if move.upper().startswith("L") else "R",
+            nxt,
+        )
+        for st, r_sym, w_sym, move, nxt in named_rows
+        if w_sym is not None
     }
   else:
     raise ValueError(f"Unknown format: {fmt}")
@@ -653,6 +718,69 @@ def verify_riemann_95_bootstrap(machine: Machine) -> dict[str, object]:
   }
 
 
+def verify_erdos_15_stages(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the stage layout of `Cryptids/Erdos15.lean` on the blank tape.
+
+  Whenever `erdos_15` is in state 1 (`mul2_F_sim`) on cell 0, cells 0, 1, ...
+  hold the base-3 digits of `2^k` (least significant first, `0 -> 01`,
+  `1 -> 10`, `2 -> 11`), cells -2, -1 hold `#` (`00`), and cells -4, -3 hold
+  the number of `j <= k` such that `2^j` has no digit 2 (`00`, `01`, `10`,
+  `11`).
+  """
+  proof_text = (ROOT / "Cryptids/Erdos15.lean").read_text(encoding="utf-8")
+  assert "theorem halts_erdos15_iff_exists_free" in proof_text
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  assert halting == [(14, 1)], f"erdos_15 halting entries: {halting}"
+
+  pair = {(0, 1): 0, (1, 0): 1, (1, 1): 2}
+  tape: dict[int, int] = {}
+  head = 0
+  state = 0
+  stage = 0
+  free = 0
+  for _ in range(steps):
+    if state == 1 and head == 0:
+      power = 2**stage
+      digits = []
+      while power:
+        digits.append(power % 3)
+        power //= 3
+      if 2 not in digits:
+        free += 1
+      read = []
+      pos = 0
+      while (tape.get(pos, 0), tape.get(pos + 1, 0)) in pair:
+        read.append(pair[(tape.get(pos, 0), tape.get(pos + 1, 0))])
+        pos += 2
+      counter = 2 * tape.get(-4, 0) + tape.get(-3, 0)
+      assert read == digits, f"erdos_15 stage {stage}: {read} != {digits}"
+      assert counter == free, f"erdos_15 stage {stage}: counter {counter}"
+      assert tape.get(-2, 0) == tape.get(-1, 0) == 0
+      assert all(-4 <= cell < pos for cell in tape)
+      stage += 1
+    tr = machine.table[state][tape.get(head, 0)]
+    assert tr is not None and tr.next_state is not None, "erdos_15 halted"
+    if tr.write:
+      tape[head] = 1
+    else:
+      tape.pop(head, None)
+    head += tr.direction
+    state = tr.next_state
+
+  expected_free = len([k for k in (0, 2, 8) if k < stage])
+  assert free == expected_free, f"Expected {expected_free} powers, got {free}"
+  return {
+      "steps_simulated": steps,
+      "stages_verified": stage,
+      "powers_without_digit_2": free,
+  }
+
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -926,6 +1054,15 @@ def run_verification(
     print(
         "[PASS] Riemann 95 bootstrap: all 190 cells + complete tape at"
         " t=3,634 (state 15, head -4) verified"
+    )
+
+  erdos_sim = verify_erdos_15_stages(baseline_machines["erdos_15"], steps)
+  report["simulations"]["erdos_15"] = erdos_sim
+  if verbose:
+    print(
+        f"[PASS] Erdos 15 stage simulation ({steps:,} steps):"
+        f" digits of 2^k and counter verified for k <"
+        f" {erdos_sim['stages_verified']}"
     )
 
   # 5. Concrete blank-tape lockstep simulations

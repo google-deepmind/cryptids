@@ -505,3 +505,28 @@ theorem not_halts_zf393 :
    (`69..392`), the 125-step outer `main()` spine (`99..223`), and soundness & completeness against
    O'Rear's `ZFProvable` (`Layer2.Zf393RegHalts ↔ ZFInconsistent`), yielding unconditional
    non-halting (`not_halts_zf393`) via `Cryptids.Semantics.Zf.not_zfInconsistent`.
+
+---
+
+## 6. Stérin and Woods's 15-State Erdős Machine ([`Erdos15.lean`](./Erdos15.lean))
+
+In [`Cryptids/Erdos15.lean`](../Erdos15.lean) and [`Cryptids/Semantics/Erdos15.lean`](./Erdos15.lean),
+we formalize Tristan Stérin and Damien Woods's 15-state binary Turing machine (`erdos_15`,
+[`arXiv:2107.12475`](https://arxiv.org/abs/2107.12475), 2021) for Erdős's conjecture that `2 ^ n`
+has a digit `2` in base `3` for every `n > 8`:
+
+```lean
+theorem halts_erdos15_iff_exists_counterexample :
+    Halts erdos15 ↔ ∃ n : ℕ, 8 < n ∧ 2 ∉ Nat.digits 3 (2 ^ n)
+
+theorem halts_erdos15_iff_not_erdosPowersOfTwo :
+    Halts erdos15 ↔ ¬ ErdosPowersOfTwoConjecture
+```
+
+1. **Machine (`Erdos15.lean`)**: Proves the tape layout of every stage (counter cell pair, `#`,
+   base-3 digits of `2 ^ n` as cell pairs), one lemma per routine (doubling pass, scan for a `2`,
+   rewind, counter increment, halt), and `Halts erdos15 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` with `propext`
+   and `Quot.sound` only, where `pw n` is the digit list of `2 ^ n` computed by repeated doubling.
+2. **Digits (`Semantics/Erdos15.lean`)**: Proves `pw n = Nat.digits 3 (2 ^ n)` and derives both
+   theorems above (`Classical.choice` enters through `Nat.digits`, and the negated form also uses
+   Markov's Principle via `not_forall`, as for `¬ GoldbachConjecture`).
