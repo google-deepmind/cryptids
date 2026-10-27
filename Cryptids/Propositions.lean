@@ -10,6 +10,7 @@ public import Mathlib.Algebra.GCDMonoid.Finset
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
 public import Mathlib.SetTheory.ZFC.Basic
+public import Cryptids.Machines
 
 /-!
 # Target Mathematical Propositions (`Cryptids.Propositions`)
@@ -63,7 +64,7 @@ In `Cryptids.Semantics.Riemann`, `(∃ x : ℕ, MatiyasevichRiemannCounterexampl
 equivalent to `¬ RiemannHypothesis`. -/
 def MatiyasevichRiemannCounterexample (x : ℕ) : Prop :=
   253 < x ∧
-  let lcm := (Finset.Icc 1 x).lcm id
+  let lcm := (@Finset.Icc ℕ Nat.instPreorder Nat.instLocallyFiniteOrder 1 x).lcm id
   let a := (harmNum lcm - lcm.factorial * x) ^ 2
   let b := lcm.factorial ^ 2
   let c := harmNum x ^ 4 * x
@@ -306,5 +307,390 @@ inductive WadeZFProvable : ℕ → Prop where
 the contradiction formula $v_0 \in v_0$ (`zfMem 0 0 = 1`) is provable. -/
 def WadeZFInconsistent : Prop :=
   WadeZFProvable (zfMem 0 0)
+
+/-!
+## 4. First-Order Peano Arithmetic (`PATerm`, `PAFormula`, `PAProvable`)
+
+To formalize metamathematical provability in first-order Peano Arithmetic ($\mathrm{PA}$) inside
+Lean without relying on Lean's ambient type-theoretic strength, we deeply embed the syntax,
+standard `ℕ` Tarski semantics, Hilbert proof system (`PAProvable`), and $\Sigma_1^0$
+arithmetizations of binary Turing machine halting (`paHalts`) and `ZF` inconsistency
+(`paZFInconsistent`).
+-/
+
+/-- First-order terms in the language of Peano Arithmetic
+$\mathcal{L}_{\mathrm{PA}} = \{0, S, +, \times\}$. -/
+inductive PATerm : Type where
+  | var (x : ℕ) : PATerm
+  | zero : PATerm
+  | succ (t : PATerm) : PATerm
+  | add (t₁ t₂ : PATerm) : PATerm
+  | mul (t₁ t₂ : PATerm) : PATerm
+  deriving DecidableEq, Repr
+
+/-- Standard numeral $\overline{n}$ in $\mathcal{L}_{\mathrm{PA}}$. -/
+def PATerm.ofNat : ℕ → PATerm
+  | 0 => .zero
+  | n + 1 => .succ (ofNat n)
+
+/-- Whether variable `x` occurs in a `PATerm`. -/
+def PATerm.hasVar (x : ℕ) : PATerm → Bool
+  | .var y => y == x
+  | .zero => false
+  | .succ t => t.hasVar x
+  | .add t₁ t₂ | .mul t₁ t₂ => t₁.hasVar x || t₂.hasVar x
+
+/-- Smallest variable index strictly greater than every variable occurring in a `PATerm`. -/
+def PATerm.freshVar : PATerm → ℕ
+  | .var x => x + 1
+  | .zero => 0
+  | .succ t => t.freshVar
+  | .add t₁ t₂ | .mul t₁ t₂ => max t₁.freshVar t₂.freshVar
+
+/-- Substitute term `s` for variable `x` in a `PATerm`. -/
+def PATerm.subst : PATerm → ℕ → PATerm → PATerm
+  | .var y, x, s => if y == x then s else .var y
+  | .zero, _, _ => .zero
+  | .succ t, x, s => .succ (t.subst x s)
+  | .add t₁ t₂, x, s => .add (t₁.subst x s) (t₂.subst x s)
+  | .mul t₁ t₂, x, s => .mul (t₁.subst x s) (t₂.subst x s)
+
+/-- Evaluate a `PATerm` in the standard model `ℕ` under assignment `v`. -/
+def PATerm.eval (v : ℕ → ℕ) : PATerm → ℕ
+  | .var x => v x
+  | .zero => 0
+  | .succ t => t.eval v + 1
+  | .add t₁ t₂ => t₁.eval v + t₂.eval v
+  | .mul t₁ t₂ => t₁.eval v * t₂.eval v
+
+/-- First-order formulas of Peano Arithmetic with variables indexed by `ℕ`. -/
+inductive PAFormula : Type where
+  | bot : PAFormula
+  | eq (t₁ t₂ : PATerm) : PAFormula
+  | and (φ ψ : PAFormula) : PAFormula
+  | or (φ ψ : PAFormula) : PAFormula
+  | imp (φ ψ : PAFormula) : PAFormula
+  | all (x : ℕ) (φ : PAFormula) : PAFormula
+  | ex (x : ℕ) (φ : PAFormula) : PAFormula
+  deriving DecidableEq, Repr
+
+/-- Negation $\neg \varphi := \varphi \to \bot$. -/
+abbrev PAFormula.not (φ : PAFormula) : PAFormula := .imp φ .bot
+
+/-- Bi-implication $\varphi \leftrightarrow \psi := (\varphi \to \psi) \land (\psi \to \varphi)$. -/
+abbrev PAFormula.iff (φ ψ : PAFormula) : PAFormula := .and (.imp φ ψ) (.imp ψ φ)
+
+/-- Inequality $s \neq t := \neg (s = t)$. -/
+abbrev paNe (s t : PATerm) : PAFormula := .not (.eq s t)
+
+/-- Non-strict inequality $a \le b := \exists k,\, a + k = b$ with a fresh witness variable `k`. -/
+def paLe (a b : PATerm) : PAFormula :=
+  let k := max a.freshVar b.freshVar
+  .ex k (.eq (.add a (.var k)) b)
+
+/-- Strict inequality $a < b := S(a) \le b$. -/
+def paLt (a b : PATerm) : PAFormula :=
+  paLe (.succ a) b
+
+/-- Finite disjunction of a list of `PAFormula`s. -/
+def paDisjList : List PAFormula → PAFormula
+  | [] => .bot
+  | [φ] => φ
+  | φ :: rest => .or φ (paDisjList rest)
+
+/-- Whether variable `x` occurs free in a `PAFormula`. -/
+def PAFormula.hasFree (x : ℕ) : PAFormula → Bool
+  | .bot => false
+  | .eq t₁ t₂ => t₁.hasVar x || t₂.hasVar x
+  | .and φ ψ | .or φ ψ | .imp φ ψ => φ.hasFree x || ψ.hasFree x
+  | .all y φ | .ex y φ => !(y == x) && φ.hasFree x
+
+/-- Whether term `s` is free for `x` in `φ` (no free occurrence of `x` lies under a binder
+for any variable occurring in `s`). -/
+def PAFormula.freeFor (x : ℕ) (s : PATerm) : PAFormula → Bool
+  | .bot | .eq _ _ => true
+  | .and φ ψ | .or φ ψ | .imp φ ψ => φ.freeFor x s && ψ.freeFor x s
+  | .all y φ | .ex y φ => (y == x) || ((!φ.hasFree x || !s.hasVar y) && φ.freeFor x s)
+
+/-- Substitute term `s` for free occurrences of variable `x` in `φ`. -/
+def PAFormula.subst (x : ℕ) (s : PATerm) : PAFormula → PAFormula
+  | .bot => .bot
+  | .eq t₁ t₂ => .eq (t₁.subst x s) (t₂.subst x s)
+  | .and φ ψ => .and (φ.subst x s) (ψ.subst x s)
+  | .or φ ψ => .or (φ.subst x s) (ψ.subst x s)
+  | .imp φ ψ => .imp (φ.subst x s) (ψ.subst x s)
+  | .all y φ => if y == x then .all y φ else .all y (φ.subst x s)
+  | .ex y φ => if y == x then .ex y φ else .ex y (φ.subst x s)
+
+/-- Standard Tarski satisfaction of a `PAFormula` in `ℕ` under variable assignment `v`. -/
+def PAFormula.Holds (v : ℕ → ℕ) : PAFormula → Prop
+  | .bot => False
+  | .eq t₁ t₂ => t₁.eval v = t₂.eval v
+  | .and φ ψ => φ.Holds v ∧ ψ.Holds v
+  | .or φ ψ => φ.Holds v ∨ ψ.Holds v
+  | .imp φ ψ => φ.Holds v → ψ.Holds v
+  | .all x φ => ∀ a : ℕ, φ.Holds (Function.update v x a)
+  | .ex x φ => ∃ a : ℕ, φ.Holds (Function.update v x a)
+
+/-- Standard Hilbert proof system for first-order Peano Arithmetic ($\mathrm{PA}$), combining
+classical first-order logic with equality, the six defining equations of $0, S, +, \times$, and the
+full first-order induction schema. -/
+inductive PAProvable : PAFormula → Prop where
+  | mp {φ ψ : PAFormula} : PAProvable φ → PAProvable (.imp φ ψ) → PAProvable ψ
+  | gen (x : ℕ) {φ : PAFormula} : PAProvable φ → PAProvable (.all x φ)
+  | imp_k (φ ψ : PAFormula) : PAProvable (.imp φ (.imp ψ φ))
+  | imp_s (φ ψ χ : PAFormula) :
+      PAProvable (.imp (.imp φ (.imp ψ χ)) (.imp (.imp φ ψ) (.imp φ χ)))
+  | dne (φ : PAFormula) : PAProvable (.imp (.not (.not φ)) φ)
+  | and_intro (φ ψ : PAFormula) : PAProvable (.imp φ (.imp ψ (.and φ ψ)))
+  | and_left (φ ψ : PAFormula) : PAProvable (.imp (.and φ ψ) φ)
+  | and_right (φ ψ : PAFormula) : PAProvable (.imp (.and φ ψ) ψ)
+  | or_left (φ ψ : PAFormula) : PAProvable (.imp φ (.or φ ψ))
+  | or_right (φ ψ : PAFormula) : PAProvable (.imp ψ (.or φ ψ))
+  | or_elim (φ ψ χ : PAFormula) :
+      PAProvable (.imp (.imp φ χ) (.imp (.imp ψ χ) (.imp (.or φ ψ) χ)))
+  | all_imp (x : ℕ) (φ ψ : PAFormula) :
+      PAProvable (.imp (.all x (.imp φ ψ)) (.imp (.all x φ) (.all x ψ)))
+  | all_vacuous (x : ℕ) (φ : PAFormula) (h : φ.hasFree x = false) :
+      PAProvable (.imp φ (.all x φ))
+  | all_elim (x : ℕ) (t : PATerm) (φ : PAFormula) (h : φ.freeFor x t = true) :
+      PAProvable (.imp (.all x φ) (φ.subst x t))
+  | ex_intro (x : ℕ) (t : PATerm) (φ : PAFormula) (h : φ.freeFor x t = true) :
+      PAProvable (.imp (φ.subst x t) (.ex x φ))
+  | ex_elim (x : ℕ) (φ ψ : PAFormula) (h : ψ.hasFree x = false) :
+      PAProvable (.imp (.all x (.imp φ ψ)) (.imp (.ex x φ) ψ))
+  | eq_refl (t : PATerm) : PAProvable (.eq t t)
+  | eq_subst (x : ℕ) (s t : PATerm) (φ : PAFormula)
+      (hs : φ.freeFor x s = true) (ht : φ.freeFor x t = true) :
+      PAProvable (.imp (.eq s t) (.imp (φ.subst x s) (φ.subst x t)))
+  | pa_zero_ne_succ : PAProvable (.not (.eq (.succ (.var 0)) .zero))
+  | pa_succ_inj :
+      PAProvable (.imp (.eq (.succ (.var 0)) (.succ (.var 1))) (.eq (.var 0) (.var 1)))
+  | pa_add_zero : PAProvable (.eq (.add (.var 0) .zero) (.var 0))
+  | pa_add_succ :
+      PAProvable (.eq (.add (.var 0) (.succ (.var 1))) (.succ (.add (.var 0) (.var 1))))
+  | pa_mul_zero : PAProvable (.eq (.mul (.var 0) .zero) .zero)
+  | pa_mul_succ :
+      PAProvable (.eq (.mul (.var 0) (.succ (.var 1))) (.add (.mul (.var 0) (.var 1)) (.var 0)))
+  | pa_ind (x : ℕ) (φ : PAFormula) :
+      PAProvable (.imp (φ.subst x .zero)
+        (.imp (.all x (.imp φ (φ.subst x (.succ (.var x))))) (.all x φ)))
+
+/-! ### 4a. Arithmetization of Pairing, Gödel's $\beta$-Function, `Halts`, and `ZFInconsistent` -/
+
+/-- Polynomial characterization $2 z = 2 x + (x + y)(x + y + 1)$ of `z = cantorPair x y`. -/
+def paCantorPairEq (x y z : PATerm) : PAFormula :=
+  let s := PATerm.add x y
+  .eq (.mul (.ofNat 2) z) (.add (.mul (.ofNat 2) x) (.mul s (.succ s)))
+
+/-- Gödel's $\beta$-function graph $\beta(c, d, i) = r$, defined by
+$\exists q,\; c = q \cdot (1 + (i + 1) d) + r \land r < 1 + (i + 1) d$. -/
+def paBetaEq (c d i r : PATerm) : PAFormula :=
+  let m := PATerm.succ (.mul (.succ i) d)
+  let q := max (max c.freshVar m.freshVar) r.freshVar
+  .ex q (.and (.eq c (.add (.mul (.var q) m) r)) (paLt r m))
+
+/-- Symbolic Cantor-pairing expression over variable indices and small natural constants,
+used to arithmetize nested Cantor codes without expanding large numerals. -/
+inductive PAZFTerm : Type where
+  | var (x : ℕ) : PAZFTerm
+  | const (n : ℕ) : PAZFTerm
+  | pair (a b : PAZFTerm) : PAZFTerm
+  deriving DecidableEq, Repr
+
+/-- Number of fresh existential variables allocated when translating a `PAZFTerm`. -/
+def PAZFTerm.numVars : PAZFTerm → ℕ
+  | .var _ | .const _ => 0
+  | .pair a b => 2 + a.numVars + b.numVars
+
+/-- Translate `out = e` into a `PAFormula`, allocating fresh intermediate variables starting at
+`base`. -/
+def PAZFTerm.eqFormula : PAZFTerm → PATerm → ℕ → PAFormula
+  | .var x, out, _ => .eq out (.var x)
+  | .const n, out, _ => .eq out (.ofNat n)
+  | .pair a b, out, base =>
+    .ex base (.ex (base + 1)
+      (.and (paCantorPairEq (.var base) (.var (base + 1)) out)
+        (.and (a.eqFormula (.var base) (base + 2))
+          (b.eqFormula (.var (base + 1)) (base + 2 + a.numVars)))))
+
+/-- Symbolic Cantor code `(q, (h, (L, R)))` of a binary Turing machine configuration. -/
+def pzPackCfg (q h : ℕ) (L R : PAZFTerm) : PAZFTerm :=
+  .pair (.const q) (.pair (.const h) (.pair L R))
+
+/-- Single-step relation of a 2-symbol Turing machine `M` between configuration codes `.var 4`
+and `.var 5`. -/
+def paStep {states : ℕ} (M : Machine states 2) : PAFormula :=
+  paDisjList <| (List.finRange states).flatMap fun q =>
+    (List.finRange 2).flatMap fun h =>
+      match M.transition q h with
+      | none => []
+      | some (w, .right, q') =>
+        [0, 1].map fun h' =>
+          .ex 6 (.ex 7 (.ex 8 (.ex 9
+            (.and ((pzPackCfg q.val h.val (.var 6) (.var 7)).eqFormula (.var 4) 10)
+              (.and ((pzPackCfg q'.val h' (.var 8) (.var 9)).eqFormula (.var 5) 10)
+                (.and (.eq (.var 8) (.add (.mul (.ofNat 2) (.var 6)) (.ofNat w.val)))
+                  (.eq (.var 7) (.add (.mul (.ofNat 2) (.var 9)) (.ofNat h')))))))))
+      | some (w, .left, q') =>
+        [0, 1].map fun h' =>
+          .ex 6 (.ex 7 (.ex 8 (.ex 9
+            (.and ((pzPackCfg q.val h.val (.var 6) (.var 7)).eqFormula (.var 4) 10)
+              (.and ((pzPackCfg q'.val h' (.var 8) (.var 9)).eqFormula (.var 5) 10)
+                (.and (.eq (.var 6) (.add (.mul (.ofNat 2) (.var 8)) (.ofNat h')))
+                  (.eq (.var 9) (.add (.mul (.ofNat 2) (.var 7)) (.ofNat w.val)))))))))
+
+/-- Undefined-transition (halted) predicate for a 2-symbol Turing machine `M` at configuration
+code `.var 4`. -/
+def paHalted {states : ℕ} (M : Machine states 2) : PAFormula :=
+  paDisjList <| (List.finRange states).flatMap fun q =>
+    (List.finRange 2).flatMap fun h =>
+      match M.transition q h with
+      | some _ => []
+      | none => [.ex 6 (.ex 7 ((pzPackCfg q.val h.val (.var 6) (.var 7)).eqFormula (.var 4) 10))]
+
+/-- Closed $\Sigma_1^0$ $\mathcal{L}_{\mathrm{PA}}$-sentence asserting that the 2-symbol Turing
+machine `M` halts when started in state `0` on the all-blank tape (encoded by `0`). -/
+def paHalts {states : ℕ} (M : Machine states 2) : PAFormula :=
+  .ex 0 (.ex 1 (.ex 2
+    (.and (paBetaEq (.var 1) (.var 2) .zero .zero)
+      (.and
+        (.all 3 (.imp (paLt (.var 3) (.var 0))
+          (.ex 4 (.ex 5
+            (.and (paBetaEq (.var 1) (.var 2) (.var 3) (.var 4))
+              (.and (paBetaEq (.var 1) (.var 2) (.succ (.var 3)) (.var 5))
+                (paStep M)))))))
+        (.ex 4
+          (.and (paBetaEq (.var 1) (.var 2) (.var 0) (.var 4))
+            (paHalted M)))))))
+
+/-- Symbolic `PAZFTerm` constructors mirroring `zfEq..axInf`. -/
+def pzEq (x y : PAZFTerm) : PAZFTerm := .pair (.pair x y) (.const 0)
+/-- Symbolic `PAZFTerm` for `zfMem`. -/
+def pzMem (x y : PAZFTerm) : PAZFTerm := .pair (.pair x y) (.const 1)
+/-- Symbolic `PAZFTerm` for `zfImp`. -/
+def pzImp (φ ψ : PAZFTerm) : PAZFTerm := .pair (.pair φ ψ) (.const 2)
+/-- Symbolic `PAZFTerm` for `zfNot`. -/
+def pzNot (φ : PAZFTerm) : PAZFTerm := .pair φ (.const 3)
+/-- Symbolic `PAZFTerm` for `zfAll`. -/
+def pzAll (x φ : PAZFTerm) : PAZFTerm := .pair (.pair x φ) (.const 4)
+/-- Symbolic `PAZFTerm` for `zfEx`. -/
+def pzEx (x φ : PAZFTerm) : PAZFTerm := pzNot (pzAll x (pzNot φ))
+/-- Symbolic `PAZFTerm` for `zfAnd`. -/
+def pzAnd (φ ψ : PAZFTerm) : PAZFTerm := pzNot (pzImp φ (pzNot ψ))
+/-- Symbolic `PAZFTerm` for `axB1`. -/
+def pzB1 (φ ψ χ : PAZFTerm) : PAZFTerm := pzImp (pzImp φ ψ) (pzImp (pzImp ψ χ) (pzImp φ χ))
+/-- Symbolic `PAZFTerm` for `axB2`. -/
+def pzB2 (φ : PAZFTerm) : PAZFTerm := pzImp (pzImp (pzNot φ) φ) φ
+/-- Symbolic `PAZFTerm` for `axB3`. -/
+def pzB3 (φ ψ : PAZFTerm) : PAZFTerm := pzImp φ (pzImp (pzNot φ) ψ)
+/-- Symbolic `PAZFTerm` for `axB4`. -/
+def pzB4 (x φ ψ : PAZFTerm) : PAZFTerm :=
+  pzImp (pzAll x (pzImp φ ψ)) (pzImp (pzAll x φ) (pzAll x ψ))
+/-- Symbolic `PAZFTerm` for `axB6a`. -/
+def pzB6a (x y z : PAZFTerm) : PAZFTerm :=
+  pzAnd (pzImp (pzEq x y) (pzAll z (pzEq x y))) (pzImp (pzMem x y) (pzAll z (pzMem x y)))
+/-- Symbolic `PAZFTerm` for `axB6b`. -/
+def pzB6b (x y φ : PAZFTerm) : PAZFTerm := pzImp (pzAll x (pzAll y φ)) (pzAll y (pzAll x φ))
+/-- Symbolic `PAZFTerm` for `axB6c`. -/
+def pzB6c (x φ : PAZFTerm) : PAZFTerm := pzImp (pzEx x (pzAll x φ)) φ
+/-- Symbolic `PAZFTerm` for `axB7`. -/
+def pzB7 (x y : PAZFTerm) : PAZFTerm := pzEx x (pzEq x y)
+/-- Symbolic `PAZFTerm` for `axB8a`. -/
+def pzB8a (x y z : PAZFTerm) : PAZFTerm := pzImp (pzEq x y) (pzImp (pzEq x z) (pzEq y z))
+/-- Symbolic `PAZFTerm` for `axB8b`. -/
+def pzB8b (x y z : PAZFTerm) : PAZFTerm := pzImp (pzEq x y) (pzImp (pzMem x z) (pzMem y z))
+/-- Symbolic `PAZFTerm` for `axB8c`. -/
+def pzB8c (x y z : PAZFTerm) : PAZFTerm := pzImp (pzEq x y) (pzImp (pzMem z x) (pzMem z y))
+/-- Symbolic `PAZFTerm` for `axExt`. -/
+def pzExt : PAZFTerm :=
+  pzImp
+    (pzAll (.const 2)
+      (pzAnd (pzImp (pzMem (.const 2) (.const 0)) (pzMem (.const 2) (.const 1)))
+        (pzImp (pzMem (.const 2) (.const 1)) (pzMem (.const 2) (.const 0)))))
+    (pzEq (.const 0) (.const 1))
+/-- Symbolic `PAZFTerm` for `axRepRhs`. -/
+def pzRepRhs (φ : PAZFTerm) : PAZFTerm :=
+  pzEx (.const 3) (pzAnd (pzMem (.const 3) (.const 0)) (pzAll (.const 1) φ))
+/-- Symbolic `PAZFTerm` for `axRep`. -/
+def pzRep (φ : PAZFTerm) : PAZFTerm :=
+  pzImp
+    (pzAll (.const 3)
+      (pzEx (.const 1)
+        (pzAll (.const 2) (pzImp (pzAll (.const 1) φ) (pzEq (.const 2) (.const 1))))))
+    (pzEx (.const 1)
+      (pzAll (.const 2)
+        (pzAnd (pzImp (pzMem (.const 2) (.const 1)) (pzRepRhs φ))
+          (pzImp (pzRepRhs φ) (pzMem (.const 2) (.const 1))))))
+/-- Symbolic `PAZFTerm` for `axPow`. -/
+def pzPow : PAZFTerm :=
+  pzEx (.const 1)
+    (pzAll (.const 2)
+      (pzImp (pzAll (.const 3) (pzImp (pzMem (.const 3) (.const 2)) (pzMem (.const 3) (.const 0))))
+        (pzMem (.const 2) (.const 1))))
+/-- Symbolic `PAZFTerm` for `axUni`. -/
+def pzUni : PAZFTerm :=
+  pzEx (.const 1)
+    (pzAll (.const 2)
+      (pzImp (pzEx (.const 3) (pzAnd (pzMem (.const 2) (.const 3)) (pzMem (.const 3) (.const 0))))
+        (pzMem (.const 2) (.const 1))))
+/-- Symbolic `PAZFTerm` for `axInfSingleton`. -/
+def pzInfSingleton : PAZFTerm :=
+  pzAll (.const 1)
+    (pzAnd (pzImp (pzMem (.const 1) (.const 2)) (pzEq (.const 1) (.const 0)))
+      (pzImp (pzEq (.const 1) (.const 0)) (pzMem (.const 1) (.const 2))))
+/-- Symbolic `PAZFTerm` for `axInf`. -/
+def pzInf : PAZFTerm :=
+  pzEx (.const 1)
+    (pzAnd (pzMem (.const 0) (.const 1))
+      (pzAll (.const 0)
+        (pzImp (pzMem (.const 0) (.const 1))
+          (pzEx (.const 2) (pzAnd (pzMem (.const 2) (.const 1)) pzInfSingleton)))))
+
+/-- Validity of step `i = .var 3` (with formula code `w = .var 4`) in a $\beta$-coded `ZFProvable`
+derivation `(c = .var 1, d = .var 2)`. -/
+def paIsZFStep : PAFormula :=
+  paDisjList
+    [ (pzEq (.const 0) (.const 0)).eqFormula (.var 4) 10
+    , .ex 5 (.ex 6 (.ex 8 (.ex 9
+        (.and (paLt (.var 8) (.var 3))
+          (.and (paLt (.var 9) (.var 3))
+            (.and (paBetaEq (.var 1) (.var 2) (.var 8) (.var 5))
+              (.and (paBetaEq (.var 1) (.var 2) (.var 9) (.var 6))
+                ((pzImp (.var 5) (.var 4)).eqFormula (.var 6) 10))))))))
+    , .ex 5 (.ex 6 (.ex 8
+        (.and (paLt (.var 8) (.var 3))
+          (.and (paBetaEq (.var 1) (.var 2) (.var 8) (.var 6))
+            ((pzAll (.var 5) (.var 6)).eqFormula (.var 4) 10)))))
+    , .ex 5 (.ex 6 (.ex 7 ((pzB1 (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))
+    , .ex 5 ((pzB2 (.var 5)).eqFormula (.var 4) 10)
+    , .ex 5 (.ex 6 ((pzB3 (.var 5) (.var 6)).eqFormula (.var 4) 10))
+    , .ex 5 (.ex 6 (.ex 7 ((pzB4 (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))
+    , .ex 5 (.ex 6 (.ex 7
+        (.and (paNe (.var 5) (.var 7))
+          (.and (paNe (.var 7) (.var 6))
+            ((pzB6a (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))))
+    , .ex 5 (.ex 6 (.ex 7 ((pzB6b (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))
+    , .ex 5 (.ex 6 ((pzB6c (.var 5) (.var 6)).eqFormula (.var 4) 10))
+    , .ex 5 (.ex 6 ((pzB7 (.var 5) (.var 6)).eqFormula (.var 4) 10))
+    , .ex 5 (.ex 6 (.ex 7 ((pzB8a (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))
+    , .ex 5 (.ex 6 (.ex 7 ((pzB8b (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))
+    , .ex 5 (.ex 6 (.ex 7 ((pzB8c (.var 5) (.var 6) (.var 7)).eqFormula (.var 4) 10)))
+    , pzExt.eqFormula (.var 4) 10
+    , .ex 5 ((pzRep (.var 5)).eqFormula (.var 4) 10)
+    , pzPow.eqFormula (.var 4) 10
+    , pzUni.eqFormula (.var 4) 10
+    , pzInf.eqFormula (.var 4) 10 ]
+
+/-- Closed $\Sigma_1^0$ $\mathcal{L}_{\mathrm{PA}}$-sentence asserting `ZFInconsistent`
+($\mathrm{ZF} \vdash v_0 \in v_0$). -/
+def paZFInconsistent : PAFormula :=
+  .ex 0 (.ex 1 (.ex 2
+    (.and
+      (.all 3 (.imp (paLe (.var 3) (.var 0))
+        (.ex 4 (.and (paBetaEq (.var 1) (.var 2) (.var 3) (.var 4)) paIsZFStep))))
+      (.ex 4
+        (.and (paBetaEq (.var 1) (.var 2) (.var 0) (.var 4))
+          ((pzMem (.const 0) (.const 0)).eqFormula (.var 4) 10))))))
 
 end ConjectureMachines

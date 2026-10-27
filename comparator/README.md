@@ -10,8 +10,9 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
 - [`Challenge.lean`](../Challenge.lean) imports **only** Mathlib and Lean core (`Lean.Elab.Term`),
   defines all conjecture-checking baseline and candidate machines (`reference` and `candidate`),
   states the target mathematical propositions (`GoldbachConjecture`,
-  `MatiyasevichRiemannCounterexample`, `ZFProvable`, `WadeZFProvable`, etc.), and states all 22
-  target state-reduction, equivalence, and semantics theorems with `sorry`.
+  `MatiyasevichRiemannCounterexample`, `ZFProvable`, `WadeZFProvable`, `PAProvable`, `paHalts`,
+  `paZFInconsistent`, etc.), and states all 29 target state-reduction, equivalence, `PA`
+  metatheory & internalized `ZF` provability, and semantics theorems with `sorry`.
 - [`BusyBeaverChallenge.lean`](../BusyBeaverChallenge.lean) imports **only** Mathlib and Lean core
   (`Lean.Elab.Term`), defines the shared `BusyBeaver` Post-Turing execution model, accelerated
   `TapePatternSet`, `StackPatternSet`, and Collatz-like acceleration semantics (`IsClosedPatternSet`,
@@ -34,25 +35,27 @@ that:
      [`zf_380.json`](./zf_380.json), and [`riemann_104.json`](./riemann_104.json), covering all
      three ZF machine-to-proof-search equivalences (`halts_zf393_iff_zfInconsistent`,
      `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
-     `halts_zf432_iff_wadeZFInconsistent`), the direct simulation reductions (`Goldbach21`, `Zf380`,
-     `Riemann104`), and all four `candidate_fewer_states` theorems (10 theorems total). Disallowing
-     `Classical.choice` blocks classical `Con(ZF)` shortcuts (`not_zfInconsistent` in `ZFSet.{0}` or
-     `Classical.em` + `digama0/ConZF`) for `Halts M ↔ ZFInconsistent`, though Lean's constructive
-     type theory remains stronger than `PA`/`ZF` and does not by itself internalize the reduction
-     inside `PA`/`ZF` (see
+     `halts_zf432_iff_wadeZFInconsistent`), first-order `PA` consistency and $\Sigma_1^0$
+     adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`,
+     `paZFInconsistent_holds_iff_zfInconsistent`), the direct simulation reductions (`Goldbach21`,
+     `Zf380`, `Riemann104`), and all four `candidate_fewer_states` theorems (13 theorems total).
+     Disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts (`not_zfInconsistent` in
+     `ZFSet.{0}` or `Classical.em` + `digama0/ConZF`) for `Halts M ↔ ZFInconsistent`, while deeply
+     embedded `PAProvable` provides a weak first-order metatheory strictly below `ZF` (see
      [`Cryptids/Semantics/README.md`](../Cryptids/Semantics/README.md#foundational-note-conzf-in-lean-and-constructive-equivalence)).
    - **`["propext", "Quot.sound", "Classical.choice"]`:** allowed in [`all.json`](./all.json),
      [`busy_beaver.json`](./busy_beaver.json), and the classical model-theoretic / arithmetic-stage /
-     analytic configs (`zf_393.json`, `zf_semantics.json`, `goldbach_semantics.json`,
-     `riemann_95.json`, `riemann_120.json`, `riemann_semantics.json`).
+     analytic configs (`pa_semantics.json`, `zf_393.json`, `zf_semantics.json`,
+     `goldbach_semantics.json`, `riemann_95.json`, `riemann_120.json`, `riemann_semantics.json`).
 3. The exported proof terms are accepted by the Lean default kernel.
 
 ## Configurations
 
 | Config File | Challenge Module | Solution Module | Permitted Axioms | Verified Theorems |
 | :--- | :--- | :--- | :--- | :--- |
-| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 10 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), and `Riemann95.candidate_fewer_states` |
-| [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 22 conjecture-checking state-reduction, equivalence, and semantics theorems |
+| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 13 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), and `Riemann95.candidate_fewer_states` |
+| [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 29 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
+| [`pa_semantics.json`](./pa_semantics.json) | `Challenge` | `Cryptids.Semantics.PA` | `propext`, `Quot.sound`, `Classical.choice` | `not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`, `paProvable_sound_nat`, `paProvable_halts_zf380_iff_zf393`, `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent` |
 | [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 335 `BB(6)` and `BB(3, 3)` holdout Level A and Level B theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) |
 | [`goldbach_21.json`](./goldbach_21.json) | `Challenge` | `Cryptids.Goldbach21` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`goldbach_semantics.json`](./goldbach_semantics.json) | `Challenge` | `Cryptids.Semantics.Goldbach` | `propext`, `Quot.sound`, `Classical.choice` | `halts_reference_iff_not_goldbach`, `halts_candidate_iff_not_goldbach` |

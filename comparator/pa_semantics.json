@@ -1,0 +1,18 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.PA",
+  "theorem_names": [
+    "ConjectureMachines.Semantics.PA.not_paProvable_false",
+    "ConjectureMachines.Semantics.PA.paHalts_holds_iff_halts",
+    "ConjectureMachines.Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent",
+    "ConjectureMachines.Semantics.PA.paProvable_sound_nat",
+    "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zf393",
+    "ConjectureMachines.Semantics.PA.paProvable_halts_zf393_iff_zfInconsistent",
+    "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zfInconsistent"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}
