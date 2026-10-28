@@ -20,6 +20,7 @@ Community records for conjecture-checking and ZFC-independent Turing machines ar
 
 - **Goldbach (`goldbach_21`):** Reduces `goldbach_25` (`25 -> 21` states).
 - **ZF Consistency (`zf_380`, `zf_393`, `zf_432`) and Riemann Hypothesis (`riemann_104`, `riemann_120`, `riemann_744`):** Compiler and algorithmic reworks by Andrew Wade (`zf_393`, `393` states for ZF, Aug 2026) and Joseph M. Shunia (`riemann_120`, `120` states for RH, Sept 2026) improved over `zf_432` (`432` states, 2025) and `riemann_744` (`744` states, 2016); `zf_380` (`393 -> 380` states) and `riemann_104` (`120 -> 104` states) further reduce both record baselines. This repository provides Lean 4 end-to-end semantics proofs across all of `goldbach_21`, `goldbach_25`, `zf_380`, `zf_393`, `zf_432`, `riemann_104`, `riemann_120`, and `riemann_744`.
+- **Erdős's conjecture on powers of two (`erdos_15`, `erdos_14`):** Tristan Stérin and Damien Woods's 15-state machine (2021) and Tristan Stérin's 14-state machine (Oct 2026), with Lean 4 semantics proofs in this repository.
 
 ### 1. Goldbach's Conjecture (`goldbach`)
 
@@ -57,3 +58,11 @@ Enumerates positive integers $n$ and tests an elementary arithmetic inequality e
 | 2026 | Faldor & Firsching, using Gemini Argon (`riemann_104`) | `104` | State reduction of `riemann_120` (`120 -> 104`): 5-cell window de-merging (`+1`), dynamic-padding self-bootstrap (`-9`), and return-scanner & call-stack consolidation (`-8`) | Lean 4 proofs ([`Cryptids/Riemann104.lean`](Cryptids/Riemann104.lean), [`Cryptids/Semantics/Riemann120.lean`](Cryptids/Semantics/Riemann120.lean)) |
 | 2026 | Vladislav Isenbaev, using GPT-6.1 Sol and Aleph Prover (`riemann_95`) | `95` | Retains the stage counter after `FOLD`, permutes the operand banks, and initializes in 3,634 steps | Lean 4 proofs ([`Cryptids/Riemann95.lean`](Cryptids/Riemann95.lean), [`Cryptids/Semantics/Riemann95.lean`](Cryptids/Semantics/Riemann95.lean)); [construction and proof guide](artifacts/riemann_95/README.md) |
 
+### 4. Erdős's Conjecture on Powers of Two (`erdos`)
+
+`erdos_15` doubles a base-3 number on the tape and halts at the fourth power `2 ^ n` without a digit `2` in base `3` (counting `2 ^ 0`); `erdos_14` keeps `2 ^ n` in unary, reads its base-3 digits by repeated division by `3`, and halts at the third such power (counting from `2 ^ 1`). The conjecture (Erdős, 1979) is that `2 ^ 0`, `2 ^ 2`, and `2 ^ 8` are the only such powers.
+
+| Year | Authors / Source | States (`(Q, 2)`) | Construction / Reduction Method | Formal Proof |
+| :--- | :--- | :--- | :--- | :--- |
+| 2021 | Tristan Stérin & Damien Woods ([`arXiv:2107.12475`](https://arxiv.org/abs/2107.12475), [`tcosmo/bbsim`](https://github.com/tcosmo/bbsim) `machines/powers_of_two_15_2.txt`) | `15` | 5-state, 4-symbol machine (reverse-ternary doubling, scan for a `2`, counter of exceptions) compiled to 2 symbols (`0 → ba`, `1 → ab`, `2 → aa`, `# → bb`) | Pen-and-paper proof in the paper; Lean 4 proofs in this repo by Daniel Veljanoski, with Claude (Anthropic) as assistant ([`Cryptids/Erdos15.lean`](Cryptids/Erdos15.lean), [`Cryptids/Semantics/Erdos15.lean`](Cryptids/Semantics/Erdos15.lean)) |
+| 2026 | Tristan Stérin ([bbchallenge Discord](https://discord.com/channels/960643023006490684/1561295445312151622/1562203343114473472), Oct 2026; [Cryptids wiki](https://wiki.bbchallenge.org/w/index.php?title=Cryptids&oldid=9722)) | `14` | Keeps `2 ^ n` in unary and reads its base-3 digits by repeated division by `3`, with one `0` marking the quotient; doubles the block in place and counts exceptions | Lean 4 proofs in this repo by Daniel Veljanoski, with Claude (Anthropic) as assistant ([`Cryptids/Erdos14.lean`](Cryptids/Erdos14.lean), [`Cryptids/Semantics/Erdos14.lean`](Cryptids/Semantics/Erdos14.lean)) |
