@@ -228,6 +228,9 @@ namespace Machines
 /-- Rows of `erdos15`. -/ def erdos15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
   load_machine_rows% "baselines/tables/erdos_15.txt"
 /-- 15-state Erdős machine. -/ def erdos15 : Machine 15 2 := Machine.ofRows erdos15Rows
+/-- Rows of `erdos14`. -/ def erdos14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
+  load_machine_rows% "artifacts/erdos_14/machine.txt"
+/-- 14-state Erdős candidate. -/ def erdos14 : Machine 14 2 := Machine.ofRows erdos14Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff

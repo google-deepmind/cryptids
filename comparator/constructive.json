@@ -11,7 +11,9 @@
     "ConjectureMachines.Semantics.Zf.halts_zf432_iff_wadeZFInconsistent",
     "ConjectureMachines.Riemann104.candidate_fewer_states",
     "ConjectureMachines.Riemann104.candidate_equivalent",
-    "ConjectureMachines.Riemann95.candidate_fewer_states"
+    "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.Erdos14.candidate_fewer_states",
+    "ConjectureMachines.Erdos14.candidate_equivalent"
   ],
   "permitted_axioms": [
     "propext",

@@ -20,8 +20,9 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
 
 - **Constructive gate (`comparator/constructive.json`, `goldbach_21.json`, `zf_380.json`,
   `riemann_104.json`; `permitted_axioms = ["propext", "Quot.sound"]`):**
-  The direct simulation state reductions (`Goldbach21`, `Zf380`, `Riemann104`), all four
-  `candidate_fewer_states` theorems (including `Riemann95.candidate_fewer_states`), and all ZF
+  The direct simulation state reductions (`Goldbach21`, `Zf380`, `Riemann104`), the `Erdos14`
+  reduction, all five `candidate_fewer_states` theorems (including
+  `Riemann95.candidate_fewer_states`), and all ZF
   machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`,
   `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`) are verified **without `Classical.choice`**
@@ -32,11 +33,12 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   remains stronger than `PA`/`ZF`; see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 24 theorems, including `Riemann95.candidate_equivalent` (which uses
+  Audits all 27 theorems, including `Riemann95.candidate_equivalent` (which uses
   `Classical.choice` via `Nat.Prime`), classical `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰`
   Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
-  `RiemannHypothesis` equivalences, and the `erdos_15` equivalences (`Nat.digits` uses
-  `Classical.choice`; `¬ ErdosPowersOfTwoConjecture` also uses Markov's Principle).
+  `RiemannHypothesis` equivalences, and the `erdos_15` and `erdos_14` equivalences with
+  `ErdosPowersOfTwoConjecture` (`Nat.digits` uses `Classical.choice`;
+  `¬ ErdosPowersOfTwoConjecture` also uses Markov's Principle).
 -/
 
 meta section
@@ -242,6 +244,9 @@ namespace Machines
 /-- Rows of `erdos15`. -/ def erdos15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
   load_machine_rows% "baselines/tables/erdos_15.txt"
 /-- 15-state Erdős machine. -/ def erdos15 : Machine 15 2 := Machine.ofRows erdos15Rows
+/-- Rows of `erdos14`. -/ def erdos14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
+  load_machine_rows% "artifacts/erdos_14/machine.txt"
+/-- 14-state Erdős candidate. -/ def erdos14 : Machine 14 2 := Machine.ofRows erdos14Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -448,5 +453,18 @@ theorem halts_erdos15_iff_exists_counterexample :
 theorem halts_erdos15_iff_not_erdosPowersOfTwo :
     ConjectureMachines.Halts erdos15 ↔ ¬ ErdosPowersOfTwoConjecture := by sorry
 end Erdos15
+
+namespace Erdos14
+/-- 15-state Erdős powers-of-two reference machine (`erdos_15`, Stérin & Woods 2021). -/
+abbrev reference : BundledMachine 2 := Machines.erdos15.bundle
+/-- 14-state Erdős powers-of-two candidate machine (`erdos_14`, Stérin 2026). -/
+abbrev candidate : BundledMachine 2 := Machines.erdos14.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_not_erdosPowersOfTwo :
+    Halts candidate ↔ ¬ ErdosPowersOfTwoConjecture := by sorry
+end Semantics
+end Erdos14
 
 end ConjectureMachines

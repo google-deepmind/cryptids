@@ -21,8 +21,9 @@ It independently:
    (`baselines/sources/`) and re-compiles them from first principles into
    canonical transition tables, verifying byte-for-byte identity with
    `baselines/tables/`.
-2. Verifies `Cryptids/Machines.lean` and checks that all 4 record candidate
-   machines (`goldbach_21`, `zf_380`, `riemann_104`, `riemann_95`) are well-formed
+2. Verifies `Cryptids/Machines.lean` and checks that all 5 record candidate
+   machines (`goldbach_21`, `zf_380`, `riemann_104`, `riemann_95`,
+   `erdos_14`) are well-formed
    2-symbol Turing machines matching their recorded state counts and SHA-256 digests,
    and that their `load_machine_rows%` tables in `Cryptids/Machines.lean` and
    `Challenge.lean` match `baselines/tables/` and `artifacts/*/machine.txt`.
@@ -42,6 +43,8 @@ It independently:
    - Riemann (95 states): exact 3,634-step bootstrap, including the entire tape.
    - Erdos (15 states): at every stage the tape holds the base-3 digits of
      `2^k` and the count of powers without a digit 2 (`Cryptids/Erdos15.lean`).
+   - Erdos (14 states): at every entry to the division state `D` the tape is
+     the configuration predicted by `Cryptids/Erdos14.lean`.
 """
 
 from __future__ import annotations
@@ -227,6 +230,20 @@ CANDIDATES = [
         ),
         "table_file_sha256": (
             "7e9731ed1b7c63d4e67c0f8d646f8498d9645f26e237a8604d4b7f91a6ab398d"
+        ),
+    },
+    {
+        "id": "erdos_14",
+        "instance": "erdos_15",
+        "path": "artifacts/erdos_14",
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "erdos14",
+        "proof_path": "Cryptids/Erdos14.lean",
+        "challenge_path": "Challenge.lean",
+        "states": 14,
+        "baseline_states": 15,
+        "machine_sha256": (
+            "ce72a09211f6118caadd4ed3cbdfb309a56574f2c49a36f0d82aa75eb2376f70"
         ),
     },
 ]
@@ -781,6 +798,87 @@ def verify_erdos_15_stages(machine: Machine, steps: int) -> dict[str, object]:
   }
 
 
+def verify_erdos_14_stages(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the division layout of `Cryptids/Erdos14.lean` on the blank tape.
+
+  Every time `erdos_14` enters state 3 (`D`), the head is on cell -1 and the
+  tape is `divCfg c q r`: cells -1, 0, ... hold `q` ones, a `0` and `r` ones,
+  cell -2 holds the separator `0`, and cells -3, -4, -5 hold the counter
+  (`000`, `100`, `111`, nearest first). The stage for `2^n` starts with
+  `q = 2^n, r = 0`; while `q % 3 != 2` and `q > 0` the next entry has
+  `q // 3` ones before the `0`. The counter `c` is the number of `1 <= j < n`
+  such that `2^j` has no digit 2, and the machine halts at the third.
+  """
+  proof_text = (ROOT / "Cryptids/Erdos14.lean").read_text(encoding="utf-8")
+  assert "theorem halts_erdos14_iff_exists_free" in proof_text
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  assert halting == [(12, 1)], f"erdos_14 halting entries: {halting}"
+
+  counters = {0: (0, 0, 0), 1: (1, 0, 0), 2: (1, 1, 1)}
+
+  def has_digit_2(m: int) -> bool:
+    while m:
+      if m % 3 == 2:
+        return True
+      m //= 3
+    return False
+
+  def expected_entries():
+    c, n = 0, 1
+    while True:
+      size = 2**n
+      q = size
+      while True:
+        yield c, n, q, size - q
+        if q == 0:
+          # Self-check of this model: the division finds a 2 iff 2^n has one.
+          assert not has_digit_2(size), f"erdos_14 model: stage {n}"
+          c += 1
+          break
+        if q % 3 == 2:
+          assert has_digit_2(size), f"erdos_14 model: stage {n}"
+          break
+        q //= 3
+      n += 1
+
+  entries = expected_entries()
+  ones: set[int] = set()
+  head = 0
+  state = 0
+  entries_verified = 0
+  stage = 0
+  for _ in range(steps):
+    tr = machine.table[state][int(head in ones)]
+    assert tr is not None and tr.next_state is not None, "erdos_14 halted"
+    if tr.write:
+      ones.add(head)
+    else:
+      ones.discard(head)
+    head += tr.direction
+    state = tr.next_state
+    if state == 3:
+      c, stage, q, r = next(entries)
+      expected = {-1 + i for i in range(q)} | {q + i for i in range(r)}
+      expected |= {-3 - i for i, bit in enumerate(counters[c]) if bit}
+      assert head == -1, f"erdos_14 stage {stage}: D entered at {head}"
+      assert ones == expected, f"erdos_14 stage {stage}: tape mismatch at q={q}"
+      entries_verified += 1
+
+  # Stage 9 (after both counter steps) starts at step 208,865.
+  if steps >= 210_000:
+    assert stage >= 9, f"erdos_14 reached only stage {stage}"
+  return {
+      "steps_simulated": steps,
+      "d_entries_verified": entries_verified,
+      "last_stage": stage,
+  }
+
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -1063,6 +1161,15 @@ def run_verification(
         f"[PASS] Erdos 15 stage simulation ({steps:,} steps):"
         f" digits of 2^k and counter verified for k <"
         f" {erdos_sim['stages_verified']}"
+    )
+
+  erdos14_sim = verify_erdos_14_stages(cand_machines["erdos_14"], steps)
+  report["simulations"]["erdos_14"] = erdos14_sim
+  if verbose:
+    print(
+        f"[PASS] Erdos 14 stage simulation ({steps:,} steps):"
+        f" {erdos14_sim['d_entries_verified']} division entries verified"
+        f" up to the start of stage n = {erdos14_sim['last_stage']}"
     )
 
   # 5. Concrete blank-tape lockstep simulations

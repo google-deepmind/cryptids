@@ -10,7 +10,9 @@ project:
     432-state machine zf_432), and the Riemann Hypothesis (120 -> 104 -> 95
     states reducing Joseph M. Shunia's September 2026 machine riemann_120, plus
     the 2016 744-state machine riemann_744), and Erdős's conjecture on powers
-    of two (Tristan Stérin and Damien Woods's 2021 15-state machine erdos_15),
+    of two (15 -> 14 states: Tristan Stérin and Damien Woods's 2021 15-state
+    machine erdos_15 and Tristan Stérin's October 2026 14-state machine
+    erdos_14),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -138,6 +140,31 @@ sources:
     note: >-
       First Lean 4 proof that erdos_15 halts iff Erdős's conjecture on powers
       of two is false (Cryptids/Erdos15.lean, Cryptids/Semantics/Erdos15.lean).
+  - title: "Cryptids (bbchallenge wiki): 14-state Erdős powers-of-two machine"
+    authors:
+      - "Tristan Stérin"
+    id: "https://wiki.bbchallenge.org/w/index.php?title=Cryptids&oldid=9722"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      The 14-state, 2-symbol machine erdos_14
+      (1LB1RA_1LC1LB_0RD0RA_1LM0RE_1LF1RE_0LJ1LG_1RK0LH_1RI1LH_0LJ0RE_0RD1LJ_0LL1RK_1RN0LC_0LN---_0RK0LM),
+      announced by Tristan Stérin on the bbchallenge Discord in October 2026
+      (https://discord.com/channels/960643023006490684/1561295445312151622/1562203343114473472)
+      and listed on the wiki (revision 9722, 28 Oct 2026) as not independently
+      verified as of October 2026; stored as
+      artifacts/erdos_14/machine.txt and formalized here in
+      Cryptids/Erdos14.lean and Cryptids/Semantics/Erdos14.lean.
+  - title: "Lean 4 formalization of the 14-state Erdős powers-of-two machine (erdos_14)"
+    authors:
+      - "Daniel Veljanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      First Lean 4 proof that erdos_14 halts iff erdos_15 halts, and hence iff
+      Erdős's conjecture on powers of two is false (Cryptids/Erdos14.lean,
+      Cryptids/Semantics/Erdos14.lean).
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -151,9 +178,9 @@ related_formalizations:
 status:
   scope: >-
     All three ZF machine-to-proof-search equivalences (zf_393, zf_380, zf_432)
-    and the state-reduction halting equivalences for goldbach_21, zf_380, and
-    riemann_104 (along with all four candidate_fewer_states theorems, 10
-    theorems total) are proved constructively using only propext and Quot.sound
+    and the state-reduction halting equivalences for goldbach_21, zf_380,
+    riemann_104, and erdos_14 (along with all five candidate_fewer_states
+    theorems, 12 theorems total) are proved constructively using only propext and Quot.sound
     (zero Classical.choice, audited via comparator/constructive.json so
     classical Con(ZF) shortcuts such as Soundness.lean's not_zfInconsistent are
     excluded; this establishes a constructive meta-level correspondence in Lean
@@ -170,7 +197,11 @@ status:
     15-state machine erdos_15 satisfies Halts erdos15 <-> ∃ n, 8 < n ∧ 2 ∉ pw n
     constructively (Cryptids/Erdos15.lean, pw = base-3 digits of 2^n by
     repeated doubling) and Halts erdos15 <-> ¬ ErdosPowersOfTwoConjecture via
-    Mathlib's Nat.digits (Cryptids/Semantics/Erdos15.lean).
+    Mathlib's Nat.digits (Cryptids/Semantics/Erdos15.lean). The 14-state
+    machine erdos_14 satisfies Halts erdos14 <-> ∃ n, 8 < n ∧ 2 ∉ pw n and
+    hence Halts candidate <-> Halts reference against erdos_15 constructively
+    (Cryptids/Erdos14.lean), and Halts candidate <-> ¬
+    ErdosPowersOfTwoConjecture (Cryptids/Semantics/Erdos14.lean).
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -298,6 +329,21 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/erdos_15.json"
+    - declaration: "ConjectureMachines.Erdos14.candidate_fewer_states"
+      file: "Cryptids/Erdos14.lean"
+      sorry_count: 0
+      axioms: ["propext"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Erdos14.candidate_equivalent"
+      file: "Cryptids/Erdos14.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Erdos14.Semantics.halts_candidate_iff_not_erdosPowersOfTwo"
+      file: "Cryptids/Semantics/Erdos14.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/erdos_14.json"
 
 automation:
   methods:
@@ -317,15 +363,17 @@ automation:
       framework: "Claude Code"
       tool_setup: "Lean 4 (v4.35.0-rc4), Mathlib"
       prompting_notes: >-
-        Used as assistant for the erdos_15 proofs (Cryptids/Erdos15.lean,
-        Cryptids/Semantics/Erdos15.lean).
+        Used as assistant for the erdos_15 and erdos_14 proofs
+        (Cryptids/Erdos15.lean, Cryptids/Semantics/Erdos15.lean,
+        Cryptids/Erdos14.lean, Cryptids/Semantics/Erdos14.lean).
   spend_usd: ""
   notes: >-
     Candidate state reductions and halting-equivalence proofs were discovered
     using Gemini Argon with an experimental harness; end-to-end
     semantics proofs were developed interactively using Gemini Argon. The
-    erdos_15 proofs were written by Daniel Veljanoski with Claude (Anthropic)
-    as assistant.
+    erdos_15 machine is by Tristan Stérin and Damien Woods and the erdos_14
+    machine by Tristan Stérin; the erdos_15 and erdos_14 proofs were written
+    by Daniel Veljanoski with Claude (Anthropic) as assistant.
 
 fidelity:
   divergences: >-
@@ -444,6 +492,18 @@ alignment:
     - source: "erdos_15 <-> ¬ ErdosPowersOfTwoConjecture"
       lean: "ConjectureMachines.Erdos15.halts_erdos15_iff_not_erdosPowersOfTwo"
       module: "Cryptids.Semantics.Erdos15"
+      status: "proved"
+    - source: "erdos_14 < erdos_15 state reduction"
+      lean: "ConjectureMachines.Erdos14.candidate_fewer_states"
+      module: "Cryptids.Erdos14"
+      status: "proved"
+    - source: "erdos_14 <-> erdos_15 halting equivalence"
+      lean: "ConjectureMachines.Erdos14.candidate_equivalent"
+      module: "Cryptids.Erdos14"
+      status: "proved"
+    - source: "erdos_14 <-> ¬ ErdosPowersOfTwoConjecture"
+      lean: "ConjectureMachines.Erdos14.Semantics.halts_candidate_iff_not_erdosPowersOfTwo"
+      module: "Cryptids.Semantics.Erdos14"
       status: "proved"
 
 acknowledgements: >-

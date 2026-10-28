@@ -25,7 +25,10 @@
     "ConjectureMachines.Riemann95.candidate_equivalent",
     "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis",
     "ConjectureMachines.Erdos15.halts_erdos15_iff_exists_counterexample",
-    "ConjectureMachines.Erdos15.halts_erdos15_iff_not_erdosPowersOfTwo"
+    "ConjectureMachines.Erdos15.halts_erdos15_iff_not_erdosPowersOfTwo",
+    "ConjectureMachines.Erdos14.candidate_fewer_states",
+    "ConjectureMachines.Erdos14.candidate_equivalent",
+    "ConjectureMachines.Erdos14.Semantics.halts_candidate_iff_not_erdosPowersOfTwo"
   ],
   "permitted_axioms": [
     "propext",
