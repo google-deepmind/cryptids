@@ -8,6 +8,7 @@ public import BusyBeaver.Defs
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Cert
+public import BusyBeaver.BB6.Hardness
 public import BusyBeaver.BB6.M_1RB0LB_1LC0RE_1LA1LD_0LCHHH_0RB0RF_1RE1RB
 public import BusyBeaver.BB6.M_1RB0LC_0LC0RF_1RD1LC_0RA1LE_HHH0LD_1LF1LA
 public import BusyBeaver.BB6.M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA

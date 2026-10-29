@@ -14,6 +14,23 @@ public import BusyBeaver.Bridge
 Formal `HasStackReduction` proof for the 6-state, 2-symbol Busy Beaver holdout
 `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA`
 (https://wiki.bbchallenge.org/wiki/1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA).
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Wiki stack — trigger **—**, growth —, shield —.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* wiki cryptid family
+(E1 group #85/#285/#490/#500).
+
+*Hazard:* not re-measured
+
+*Simulated horizon:* —
+
+*Why it is hard:* `IsStackCryptid` closure proved
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

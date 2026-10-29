@@ -40,6 +40,26 @@ G(k, c) = \begin{cases}
   G(k - \lfloor c/2 \rfloor - 1, 2c+3) & \text{if } c < 2k.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 2 — trigger **EQ (shrinking target) with leaky parity shield**, growth
+linear (mass $2k+c$, drift $+2$/cycle), shield leaky (odd-$c$ regime blocks the coincidence).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 6\times10^{-5}$, hazard $\propto 1/T$ squared by the shield to
+$\sum t^{-2} < \infty$
+
+*Simulated horizon:* $7\times10^{16}$ TM steps (exact accelerated rules)
+
+*Why it is hard:* intermittent piecewise-Möbius ratio map $\rho\mapsto(\rho-1)/2$ or
+$2\rho/(1-\rho)$; coincidence $c_0-2k_0=6$ only in the rare even-source regime
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

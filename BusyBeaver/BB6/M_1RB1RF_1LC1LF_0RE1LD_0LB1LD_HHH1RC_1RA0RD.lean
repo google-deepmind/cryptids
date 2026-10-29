@@ -43,6 +43,23 @@ E(a, b + 1, c + 2) --> E(a + 2, b, c)
 E(a, b + 2, 0)     --> E(0, b, 2a + 7)
 E(a, b + 2, 1)     --> E(0, b, 2a + 5)
 ```
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth exponential, shield see family.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* wiki rediscovery
+(RobinCodes *Next Steps* list).
+
+*Hazard:* not re-measured in our dossiers
+
+*Simulated horizon:* —
+
+*Why it is hard:* E1 pair of #116
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

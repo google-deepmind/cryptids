@@ -30,6 +30,25 @@ T(C(a, c)) = \begin{cases}
   C(6d + 3(a \bmod 2) + 5, k + 2 - d) & \text{if } c = d + 2 \text{ and } d \le k + 2.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth exponential ($\times1.2402$ per step), shield
+none.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) < 10^{-600}$ (2,001 bits in 6,444 steps)
+
+*Simulated horizon:* 6,444 macro-steps (exact)
+
+*Why it is hard:* alternating parity hubs with diagonal drain $\min(v_1,v_2)$; halts iff
+$|v_1-v_2|\in\lbrace 0,1 \rbrace$ with $v_1\ge v_2$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

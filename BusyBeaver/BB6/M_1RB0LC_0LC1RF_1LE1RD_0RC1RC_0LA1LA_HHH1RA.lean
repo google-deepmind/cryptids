@@ -43,6 +43,26 @@ T(E(p, k, c)) = \begin{cases}
     & \text{if } c \equiv 0 \pmod 2,\ c \ge 2k + 2,\ k \ge 1.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 5 — trigger **EQ (rebound trap)**, growth exponential
+($\gamma\approx1.9538$ per era), shield none.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 10^{-380.6}$
+
+*Simulated horizon:* $> 3.22\times10^{762}$ TM steps
+
+*Why it is hard:* odd-$c$ Antihydra rounds $k\mapsto\tfrac32 k+2$ ((3/2)^{\nu_2(k+4)} 2-adic bursts,
+the expanding dual of Tao's Syracuse step) alternating with even-$c$ subtraction drains; halts iff
+$c_j - 2k_j \in \lbrace -4,+2 \rbrace$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

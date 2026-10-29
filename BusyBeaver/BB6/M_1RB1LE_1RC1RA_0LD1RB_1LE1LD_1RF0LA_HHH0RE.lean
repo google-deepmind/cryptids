@@ -30,6 +30,24 @@ T(E(b, d)) = \begin{cases}
   E(2b+4, c-2b-7) & \text{if } b \le m \text{ and } c - 2b \ge 7.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ (second-order coincidence)**, growth exponential ($2^n$
+cascade), shield partial (even-$c$ parity shield blocks 99.8% of visits).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \lesssim 10^{-6}$ (convergent $\sum m^{-2}$ tail)
+
+*Simulated horizon:* exact rule simulation (see dossier)
+
+*Why it is hard:* halting requires both $c = 2b-4$ and $c_{\text{odd}} = 2^{k+3}-2k-5$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

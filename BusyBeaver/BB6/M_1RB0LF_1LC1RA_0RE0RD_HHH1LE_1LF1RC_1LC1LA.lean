@@ -30,6 +30,25 @@ T(C(a, b)) = \begin{cases}
     & \text{if } a \ge 1,\ b = 2k+1,\ 1 \le k \le a.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth exponential ($2^n$ cascade + base-$3/2$ underflow
+drain), shield partial (exact even-$c$ invariant).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 10^{-294}$ after 1,253 cascades
+
+*Simulated horizon:* 1,253 cascades (exact)
+
+*Why it is hard:* halting iff the $(3/2)^m$ underflow map lands in the target set
+$\lbrace 4\cdot2^n - n - 6 \rbrace$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section
