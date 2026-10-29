@@ -22,7 +22,7 @@ the states `D`, `E`, `C`, `F`, `B`, `A` of that machine and mirroring the tape l
 transition tables coincide, so both machines run the same closed pair-stack system. The proof below
 is the mechanical relabelling and mirroring of the proof in
 [`1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA`](./M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA.lean);
-only the blank-tape entry lemma `init_reaches_nontrivial` is specific to this start state.
+only the blank-tape entry theorem `init_reaches_nontrivial` is specific to this start state.
 
 <!-- hardness:begin -->
 ## Hardness

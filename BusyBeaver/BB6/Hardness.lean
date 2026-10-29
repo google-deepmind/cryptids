@@ -12,10 +12,13 @@ public import BusyBeaver.Basic
 This page records *why* the hardest BB(6) holdouts are hard, in the vocabulary the `bbchallenge`
 community uses for [Cryptids](https://wiki.bbchallenge.org/wiki/Cryptids) (Antihydra, Space Needle,
 Lucy's Moonlight), applied uniformly to the machines formalized in this repository. Every reduction
-cited here is kernel-verified (`HasCollatzReduction`, `HasStackReduction`, `IsValidAcceleration`);
-every hazard statement is a *heuristic* computed from the certified rules by exact accelerated
-simulation and is marked as such. The full dossiers, with reproduction commands, accompany the arXiv
-report; this page is the summary.
+cited here is kernel-verified (`HasCollatzReduction`, `HasStackReduction`, `IsValidAcceleration`),
+machine-level halting equivalences are proved in `BusyBeaver.BB6.Equivalences`, and kernel-checked
+live-hazard witnesses (`highLevelNext s = none` / `next s = none`) and parametric halting residue
+classes across all 26 core machines with explicit Collatz-like accelerations are proved in
+`BusyBeaver.BB6.HardnessEvidence`; every hazard statement below is a *heuristic* computed from the
+certified rules by exact accelerated simulation and is marked as such. The full dossiers, with
+reproduction commands, accompany the arXiv report; this page is the summary.
 
 ## 1. The hardness vocabulary
 
@@ -173,23 +176,25 @@ has not been re-measured with the method of this page, so they carry no verdict 
   ($\Delta M = 0$), log-depth tower; shield partial (`ValidStack660` kills $C([],R)$). probviously
   non-halting. Status: `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RA---_1RB1LF`
-  ([bbchallenge](https://bbchallenge.org/1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RA---_1RB1LF)) (ours): Problem
-  S4; Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial.
-  probviously non-halting. Status: `is_stack_cryptid`; open (on the 2026-10-24 holdout list).
+  ([#659](./Accelerations/M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF.lean)) (ours): Problem S4;
+  Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial.
+  probviously non-halting. Status: `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24
+  holdout list).
 * `1RB1RC_1LC0LE_1RD1RC_1LB0RA_---0LF_1RD1LF`
-  ([bbchallenge](https://bbchallenge.org/1RB1RC_1LC0LE_1RD1RC_1LB0RA_---0LF_1RD1LF)) (ours): Problem
-  S4; Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial.
-  probviously non-halting. Status: `is_stack_cryptid`; open (on the 2026-10-24 holdout list).
+  ([#209](./Accelerations/M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF.lean)) (ours): Problem S4;
+  Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial.
+  probviously non-halting. Status: `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24
+  holdout list).
 * `1RB1RA_1RC1LB_1LD0RA_---0LE_1LC0LF_1RE0LB`
   ([#680](./Accelerations/M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean)) (ours): Problem S4;
   Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial
   (`ValidStack680` kills $C([],R)$; strict digit positivity at `mode_C`). probviously non-halting.
   Status: `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0LC_1LC0RE_1LD1LC_1LA1RD_---0RF_0LB0RD`
-  ([bbchallenge](https://bbchallenge.org/1RB0LC_1LC0RE_1LD1LC_1LA1RD_---0RF_0LB0RD)) (ours): S4
-  sibling; Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield
-  partial (strict digit positivity blocks the sole $d=0$ halt). probviously non-halting. Status:
-  `is_stack_cryptid`; open (on the 2026-10-24 holdout list).
+  ([#480](./Accelerations/M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD.lean)) (ours): S4 sibling;
+  Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial (strict
+  digit positivity blocks the sole $d=0$ halt). probviously non-halting. Status: `is_stack_cryptid`;
+  `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB1LA_1RC0RF_1RD---_0LE1RB_---0LA_1LD1RF`
   ([#549](./Accelerations/M_1RB1LA_1RC0RF_1RDHHH_0LE1RB_HHH0LA_1LD1RF.lean)) (wiki): Problem S5;
   Halving Tower (2-Adic Stack). Trigger POW (Mersenne bottom rung $2^k-1$); growth —; shield partial

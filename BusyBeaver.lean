@@ -10,6 +10,7 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Cert
 public import BusyBeaver.BB6.Equivalences
 public import BusyBeaver.BB6.Hardness
+public import BusyBeaver.BB6.HardnessEvidence
 public import BusyBeaver.BB6.M_1RB0LB_1LC0RE_1LA1LD_0LCHHH_0RB0RF_1RE1RB
 public import BusyBeaver.BB6.M_1RB0LC_0LC0RF_1RD1LC_0RA1LE_HHH0LD_1LF1LA
 public import BusyBeaver.BB6.M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA
@@ -65,6 +66,7 @@ public import BusyBeaver.BB6.M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
 public import BusyBeaver.BB6.M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD
 public import BusyBeaver.BB6.Accelerations.Stack
 public import BusyBeaver.BB6.Accelerations.M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH
+public import BusyBeaver.BB6.Accelerations.M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD
 public import BusyBeaver.BB6.Accelerations.M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH
 public import BusyBeaver.BB6.Accelerations.M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA
 public import BusyBeaver.BB6.Accelerations.M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB
@@ -84,8 +86,10 @@ public import BusyBeaver.BB6.Accelerations.M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_
 public import BusyBeaver.BB6.Accelerations.M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH
 public import BusyBeaver.BB6.Accelerations.M_1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_HHH0LB
 public import BusyBeaver.BB6.Accelerations.M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH
+public import BusyBeaver.BB6.Accelerations.M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF
 public import BusyBeaver.BB6.Accelerations.M_1RB1RA_1LC0RC_HHH0LD_0LE0RF_1RE0RA_0LF1LB
 public import BusyBeaver.BB6.Accelerations.M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
+public import BusyBeaver.BB6.Accelerations.M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF
 public import BusyBeaver.BB6.Accelerations.M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH
 public import BusyBeaver.BB6.Accelerations.M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB
 public import BusyBeaver.BB6.Accelerations.M_1RB1RE_1LC0RC_1RA1LD_1RB0LA_0LC1RF_HHH1RD

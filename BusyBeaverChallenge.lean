@@ -6924,6 +6924,16 @@ abbrev target : Machine (Fin 2) (Fin 6) :=
 theorem has_odometer_reduction : HasOdometerReduction target := by sorry
 end M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH
 
+namespace M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RE_1LD1LC_1LA1RD_---0RF_0LB0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem has_stack_reduction : HasStackReduction target := by sorry
+end M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD
+
 namespace M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD---"
@@ -8251,6 +8261,16 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH
 
+namespace M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RA---_1RB1LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem has_stack_reduction : HasStackReduction target := by sorry
+end M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF
+
 namespace M_1RB1RA_1LC0RC_HHH0LD_0LE0RF_1RE0RA_0LF1LB
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RA_1LC0RC_---0LD_0LE0RF_1RE0RA_0LF1LB"
@@ -8353,6 +8373,16 @@ theorem isHalt_iff_highLevel_acceleration :
 theorem acceleration_iff_highLevel_acceleration :
     CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
+
+namespace M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0LE_1RD1RC_1LB0RA_---0LF_1RD1LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem has_stack_reduction : HasStackReduction target := by sorry
+end M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF
 
 namespace M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -9219,5 +9249,282 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA
+
+namespace HardnessEvidence
+namespace M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
+open BusyBeaver.M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
+
+theorem halting_state_witness : next (.S6 2) = none := by sorry
+
+theorem halting_state_witness_17 : next (.S6 17) = none := by sorry
+
+theorem halting_state_witness_25 : next (.S6 25) = none := by sorry
+
+theorem halting_residue_class (a k : ℕ) : next_HubTail_r_3 a (5 * k + 3) = none := by sorry
+end M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
+
+namespace M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+open BusyBeaver.M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+
+theorem halting_state_witness : highLevelNext (.P_1 1 2) = none := by sorry
+
+theorem halting_residue_class (k : ℕ) : highLevelNext (.P_1 (2 * k + 1) 2) = none := by sorry
+
+theorem halting_residue_class_iff (a : ℕ) : highLevelNext (.P_1 a 2) = none ↔ a % 2 = 1 := by sorry
+end M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE
+
+namespace M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE
+open BusyBeaver.M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE
+
+theorem halting_state_witness : highLevelNext (.D false 0 2) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) : highLevelNext (.D false a (2 * a + 2)) = none := by sorry
+
+theorem halting_residue_class_true (a : ℕ) : highLevelNext (.D true a (2 * a + 2)) = none :=
+  by sorry
+
+theorem halting_residue_class_two_step (a : ℕ) :
+    highLevelNext (.D true a (6 * a + 16)) = none := by sorry
+end M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE
+
+namespace M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE
+open BusyBeaver.M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE
+
+theorem halting_state_witness : highLevelNext (.D 0 2) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) : highLevelNext (.D a (2 * a + 2)) = none := by sorry
+
+theorem halting_residue_class_two_step (a : ℕ) : highLevelNext (.D a (6 * a + 12)) = none :=
+  by sorry
+end M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE
+
+namespace M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA
+open BusyBeaver.M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA
+
+theorem halting_state_witness : highLevelNext (.J 1 1) = none := by sorry
+
+theorem halting_residue_class (k : ℕ) : highLevelNext (.J (k + 1) (2 * k + 1)) = none := by sorry
+end M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA
+
+namespace M_1RB1LF_0RC1RD_1LA1LD_1LE0RA_HHH1LC_0LA1LA
+open BusyBeaver.M_1RB1LF_0RC1RD_1LA1LD_1LE0RA_HHH1LC_0LA1LA
+
+theorem halting_state_witness : highLevelNext (.C 1 8) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) : highLevelNext (.C (a + 1) (2 * a + 8)) = none := by sorry
+
+theorem halting_residue_class' (a : ℕ) : highLevelNext (.C (a + 1) (2 * a + 10)) = none := by sorry
+
+theorem halting_residue_class_odd (j : ℕ) : highLevelNext (.C (j + 3) (2 * j + 1)) = none :=
+  by sorry
+
+theorem halting_residue_class_odd' (j : ℕ) : highLevelNext (.C (j + 4) (2 * j + 1)) = none :=
+  by sorry
+end M_1RB1LF_0RC1RD_1LA1LD_1LE0RA_HHH1LC_0LA1LA
+
+namespace M_1RB1RB_1LC0RE_HHH1LD_0RA1LB_1RA1LF_0LE1LE
+open BusyBeaver.M_1RB1RB_1LC0RE_HHH1LD_0RA1LB_1RA1LF_0LE1LE
+
+theorem halting_state_witness : highLevelNext (.C 0 0 false) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) (p : Bool) : highLevelNext (.C a a p) = none := by sorry
+
+theorem halting_residue_class' (a : ℕ) (p : Bool) : highLevelNext (.C a (a + 1) p) = none :=
+  by sorry
+end M_1RB1RB_1LC0RE_HHH1LD_0RA1LB_1RA1LF_0LE1LE
+
+namespace M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA
+open BusyBeaver.M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA
+
+theorem halting_state_witness : highLevelNext (.E false 1 1) = none := by sorry
+
+theorem halting_residue_class (p : Bool) (j : ℕ) : highLevelNext (.E p (2 * j + 1) 1) = none :=
+  by sorry
+end M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA
+
+namespace M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
+open BusyBeaver.M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
+
+theorem halting_state_witness : highLevelNext (.A 4 0) = none := by sorry
+
+theorem halting_residue_class (c : ℕ) : highLevelNext (.A (2 * (c / 2) + 4) c) = none := by sorry
+
+theorem halting_residue_class_iff (b c : ℕ) :
+    highLevelNext (.A b c) = none ↔ b = 2 * (c / 2) + 4 := by sorry
+end M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
+
+namespace M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
+open BusyBeaver.M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
+
+theorem halting_state_witness : highLevelNext (.A 4 0) = none := by sorry
+
+theorem halting_residue_class (c : ℕ) : highLevelNext (.A (2 * (c / 2) + 4) c) = none := by sorry
+
+theorem halting_residue_class_iff (b c : ℕ) :
+    highLevelNext (.A b c) = none ↔ b = 2 * (c / 2) + 4 := by sorry
+end M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
+
+namespace M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE
+open BusyBeaver.M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE
+
+theorem halting_state_witness : highLevelNext (.C0 0 1) = none := by sorry
+
+theorem halting_state_witness_C1 : highLevelNext (.C1 0 0 0) = none := by sorry
+
+theorem halting_residue_class (k : ℕ) : highLevelNext (.C0 (k + 1) (2 * k + 3)) = none := by sorry
+end M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE
+
+namespace M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD
+open BusyBeaver.M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD
+
+theorem halting_state_witness : highLevelNext (.C 0 2) = none := by sorry
+
+theorem halting_residue_class (b : ℕ) : highLevelNext (.C b (b + 2)) = none := by sorry
+end M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD
+
+namespace M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+open BusyBeaver.M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+
+theorem halting_state_witness : highLevelNext (.S false 2 1) = none := by sorry
+
+theorem halting_residue_class (q : ℕ) : highLevelNext (.S false (3 * q + 2) (q + 1)) = none :=
+  by sorry
+
+theorem halting_residue_class_hat (q : ℕ) :
+    highLevelNext (.S true (3 * q + 2) (q + 2)) = none := by sorry
+end M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
+
+namespace M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+open BusyBeaver.M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+
+theorem halting_state_witness : highLevelNext (.P 0 2) = none := by sorry
+
+theorem halting_residue_class (b : ℕ) : highLevelNext (.P b (b + 2)) = none := by sorry
+
+theorem halting_residue_class_iff (b c : ℕ) : highLevelNext (.P b c) = none ↔ c = b + 2 := by sorry
+end M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
+
+namespace M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+open BusyBeaver.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+
+theorem halting_state_witness : highLevelNext (.D 1 0) = none := by sorry
+
+theorem halting_residue_class (a d : ℕ) (ha : a % 2 = 1) (had : a < d + 3) :
+    highLevelNext (.D a d) = none := by sorry
+
+theorem halting_residue_class_diag (k : ℕ) : highLevelNext (.D (2 * k + 1) (2 * k + 1)) = none :=
+  by sorry
+end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
+
+namespace M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+open BusyBeaver.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+
+theorem halting_state_witness : highLevelNext (.D 1 0) = none := by sorry
+
+theorem halting_residue_class (a d : ℕ) (ha : a % 2 = 1) (had : a < d + 3) :
+    highLevelNext (.D a d) = none := by sorry
+
+theorem halting_residue_class_diag (k : ℕ) : highLevelNext (.D (2 * k + 1) (2 * k + 1)) = none :=
+  by sorry
+end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
+
+namespace M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE
+open BusyBeaver.M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE
+
+theorem halting_state_witness : highLevelNext (.E 0 2) = none := by sorry
+
+theorem halting_residue_class (b : ℕ) : highLevelNext (.E b (2 * b + 2)) = none := by sorry
+
+theorem halting_residue_class_iff (b d : ℕ) : highLevelNext (.E b d) = none ↔ d = 2 * b + 2 :=
+  by sorry
+end M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE
+
+namespace M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD
+open BusyBeaver.M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD
+
+theorem halting_state_witness : next (.E 0 0 6) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) : next (.E a 0 6) = none := by sorry
+
+theorem halting_residue_class_multi_step (a b : ℕ) : CollatzHalts next (.E a b (2 * b + 6)) :=
+  by sorry
+end M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD
+
+namespace M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD
+open BusyBeaver.M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD
+
+theorem halting_state_witness : highLevelNext (.C 0 0) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) : highLevelNext (.C a 0) = none := by sorry
+
+theorem halting_residue_class_two_step (a : ℕ) :
+    highLevelNext (.C a (a / 2 + 4)) = some (.C (6 * (a / 2 + 2) + 3 * (a % 2) + 5) 0) := by sorry
+end M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD
+
+namespace M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
+open BusyBeaver.M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
+
+theorem halting_state_witness : highLevelNext (.C 0 1) = none := by sorry
+
+theorem halting_residue_class (a : ℕ) : highLevelNext (.C a 1) = none := by sorry
+
+theorem halting_residue_class_two_step (a : ℕ) :
+    highLevelNext (.C a (2 * a + 3)) = some (.C (2 * a + 2) 1) := by sorry
+end M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
+
+namespace M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA
+open BusyBeaver.M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA
+
+theorem halting_state_witness : highLevelNext (.D 0 0 []) = none := by sorry
+
+theorem halting_residue_class (m : ℕ) :
+    highLevelNext (.D 0 (2 ^ (m + 1) - 2) []) = none := by sorry
+end M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA
+
+namespace M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA
+open BusyBeaver.M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA
+
+theorem halting_state_witness : highLevelNext (.F 0 0 [] 1 []) = none := by sorry
+
+theorem halting_residue_class (L : List ℕ) : highLevelNext (.F 0 0 L 1 []) = none := by sorry
+end M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA
+
+namespace M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF
+open BusyBeaver.M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF
+
+theorem halting_state_witness : highLevelNext (.C 0 []) = none := by sorry
+
+theorem halting_residue_class (m : ℕ) : highLevelNext (.C (2 ^ m - 1) []) = none := by sorry
+end M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF
+
+namespace M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
+open BusyBeaver.M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
+
+theorem halting_state_witness : highLevelNext (.C 0 []) = none := by sorry
+
+theorem halting_residue_class (m : ℕ) : highLevelNext (.C (2 ^ (m + 1) - 2) []) = none := by sorry
+end M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
+
+namespace M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA
+open BusyBeaver.M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA
+
+theorem halting_state_witness : next (.CR 1 0 [] 1 []) = none := by sorry
+
+theorem halting_residue_class (b : ℕ) (L : List ℕ) (d : ℕ) (R : List ℕ) :
+    next (.CR 1 b L (d + 1) R) = none := by sorry
+
+theorem halting_residue_class_two_step (a b : ℕ) (L R : List ℕ) :
+    next (.CR (a + 2) b L 1 R) = some (.CR 1 (a + 1) (b :: L) (bump1 R).1 (bump1 R).2) := by sorry
+end M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA
+
+namespace M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
+open BusyBeaver.M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
+
+theorem halting_state_witness : highLevelNext (.EL 0 [] 0 []) = none := by sorry
+
+theorem halting_residue_class (k d : ℕ) (R : List ℕ) :
+    highLevelNext (.EL (4 * k) [] d R) = none := by sorry
+end M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
+end HardnessEvidence
 
 end BusyBeaver
