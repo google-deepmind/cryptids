@@ -2263,6 +2263,12 @@ theorem acceleration_iff_highLevel_acceleration :
     CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
 
+namespace BB6
+theorem isHalt_HHH1LC_iff_HHH0LA :
+    IsHalt M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.target ↔
+      IsHalt M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.target := by sorry
+end BB6
+
 namespace M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RC---"

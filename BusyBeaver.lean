@@ -11,6 +11,7 @@ public import BusyBeaver.Cert
 public import BusyBeaver.WordRLE
 public import BusyBeaver.AffRLE
 public import BusyBeaver.ElabRLE
+public import BusyBeaver.BB6.Equivalences
 public import BusyBeaver.BB6.Hardness
 public import BusyBeaver.BB6.M_1RB0LB_1LC0RE_1LA1LD_0LCHHH_0RB0RF_1RE1RB
 public import BusyBeaver.BB6.M_1RB0LC_0LC0RF_1RD1LC_0RA1LE_HHH0LD_1LF1LA

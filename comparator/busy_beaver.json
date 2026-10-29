@@ -67,6 +67,7 @@
     "BusyBeaver.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.is_valid_highLevel_acceleration",
     "BusyBeaver.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.isHalt_iff_highLevel_acceleration",
     "BusyBeaver.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.acceleration_iff_highLevel_acceleration",
+    "BusyBeaver.BB6.isHalt_HHH1LC_iff_HHH0LA",
     "BusyBeaver.M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.is_closed_pattern_set",
     "BusyBeaver.M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.has_collatz_reduction",
     "BusyBeaver.M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.is_valid_acceleration",
