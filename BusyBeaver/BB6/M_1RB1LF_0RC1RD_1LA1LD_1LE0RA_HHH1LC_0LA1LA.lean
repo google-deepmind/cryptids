@@ -30,6 +30,25 @@ T(C(a, b)) = \begin{cases}
   C(a-k-1, 6k+9) & \text{if } b = 2k+1,\ a \ge k+2.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 4 — trigger **EQ (2-wide window at turnaround)**, growth exponential
+($\gamma\approx1.4246$ per era, base 3), shield none.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 1.6\times10^{-31}$ after 200 eras, geometric tail
+
+*Simulated horizon:* 200 eras (exact)
+
+*Why it is hard:* base-3 `exp3_step_C_odd/even` cascade coupled to the Euclidean-like reflection
+$(a,b)\mapsto(b-a,3a)$; sits between Baker–Wüstholz and $\times2,\times3$ rigidity
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

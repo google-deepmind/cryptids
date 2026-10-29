@@ -30,6 +30,24 @@ T(P(b, c)) = \begin{cases}
   P(0, 4c+6) & \text{if } b < 3c+1 \le 3b+1 \text{ and } b - c \text{ is even}.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ ($2^n$ remainder coincidence)**, growth exponential
+($\times1.4069$ per cascade), shield partial ($a\ge1$ kills `rule_1_halt`).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 1.7\times10^{-3422}$ after 23,083 cascades
+
+*Simulated horizon:* 23,083 cascades (exact)
+
+*Why it is hard:* `rule_8_halt` requires $P_2(a,0,2)$ at a cascade turnaround
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

@@ -54,6 +54,25 @@ map $T$, writing $k = 3q + r$ with $r \in \lbrace 0, 1, 2 \rbrace$ and $d = c - 
     S(0, 4q + 4p + 8, d - p - 4) & \text{if } d \ge p + 4.
   \end{cases}
   $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth exponential ($4^n$ inner cascades, $(4/3)^k$
+sweeps), shield partial (odd-$a$ invariant kills 2 of 4 halting rules and 12 of 34 rules).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \lesssim 10^{-5}$ per era
+
+*Simulated horizon:* exact rule simulation (see dossier)
+
+*Why it is hard:* remaining halts `rule_4/12_halt` need $c_{\text{rem}}=1$: a $(4/3)^k$ Mahler-type
+residue problem
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

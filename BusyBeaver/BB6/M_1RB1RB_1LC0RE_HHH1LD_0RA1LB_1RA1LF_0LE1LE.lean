@@ -37,6 +37,25 @@ T(D_p(a, b)) = \begin{cases}
   D_{1-p}(b-a-3, 3a+2p+5) & \text{if } b \ge a+3.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 4 — trigger **EQ (2-wide window)**, growth exponential
+($\gamma\approx1.4589$ per era), shield none.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 8.6\times10^{-34}$ after 200 eras
+
+*Simulated horizon:* 200 eras (exact)
+
+*Why it is hard:* the 669-pattern CTL proof collapses to the 4-rule 2-counter hub `D(a, c)`:
+structural twin of #184 (different orbit)
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

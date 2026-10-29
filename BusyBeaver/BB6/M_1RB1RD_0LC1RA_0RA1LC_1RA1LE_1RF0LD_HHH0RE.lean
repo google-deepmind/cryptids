@@ -44,6 +44,23 @@ E(a, w) = \begin{cases}
   E(2a + 4, w - 2a - 6) & \text{if } w \ge 2a + 6.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 2 — trigger **EQ with leaky parity shield**, growth linear, shield leaky.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \approx 1.2\times10^{-4}$ ($\propto 1/T$)
+
+*Simulated horizon:* $10^{16}$ TM steps
+
+*Why it is hard:* third sibling of #183/#352 with reset offset $+2$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

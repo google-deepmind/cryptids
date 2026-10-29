@@ -63,6 +63,25 @@ T_{\mathrm{HL}}(D(a, d)) = \begin{cases}
   \text{Halt} & \text{otherwise } (A(d+1-a, a, 2a+5) = \text{Halt}).
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth exponential (4-counter $3^n$ cascade), shield
+full (odd-$a_H$ parity shield blocks every `closes_H_mid` halt).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting; strong `IsDoesNotHalt` candidate.
+
+*Hazard:* $P(\text{halt}) < 10^{-73}$; $756/756$ entries into $H_{\text{mid}}$ have odd $a_H$
+
+*Simulated horizon:* $1.5\times10^{72}$ raw $D$-visits (exact)
+
+*Why it is hard:* shares the exact orbit of #568 from $D(11,0,1,0)$; busycoq `Eqv_RegularPairs.v`
+proves #568 ≡ #623
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section
