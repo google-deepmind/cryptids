@@ -45,6 +45,15 @@ first-order problems of the report, the shielded single-base exponential cascade
 Collatz-like stacked cryptids. Eight were known to the community before our campaign; the rest are
 new. Problem S1 (`#72`) is listed last because the community has since **proved that it halts**.
 
+Not listed below, but counted as hard by our solvability census, is the base-3 odometer family of
+[BMO Problem 11](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad): the holdout
+`1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` (#15, macro-equivalent to the wiki's Problem 11 machine,
+[`HasOdometerReduction`](./Accelerations/M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean)) together
+with eleven holdout classes that run the same odometer up to a proof isomorphism (`#14`, `#49`,
+`#118`, `#223`, `#278`, `#301`, `#304`, `#313`, `#325`, `#566`, `#652`; `#118` is
+[formalized here](./Accelerations/M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean)). Their hazard
+has not been re-measured with the method of this page, so they carry no verdict here.
+
 ### Problems 1-5 (first-order, this campaign)
 
 * `1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LF---_0RA1LA`
@@ -201,21 +210,32 @@ new. Problem S1 (`#72`) is listed last because the community has since **proved 
   `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA`
   ([#85](./Accelerations/M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA.lean)) (wiki): Wiki stack;
-  Unary-Binary Bounded Stack Counter. Trigger —; growth —; shield —. wiki cryptid family (E1 group
-  #85/#285/#490/#500). Status: `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24 holdout
-  list).
+  Unary-Binary Bounded Stack Counter. Trigger RES (a particular sequence of $\approx 107$–$110$
+  residues mod 3 must occur while the left side is empty; wiki); growth exponential (the main number
+  is multiplied by $8/3$ per era; wiki); shield none (every return to an empty left side is a fresh
+  trial). probviously **halting** (wiki, Racheline 2024-11-23: expected halt at
+  $\approx 10^{10^{38.1}}$ steps, far beyond any simulation); the wiki treats the four start states
+  #85/#285/#490/#500 as one cryptid. Status: `is_stack_cryptid`; `Accelerations`; open (on the
+  2026-10-24 holdout list).
 * `1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1RE---`
-  ([bbchallenge](https://bbchallenge.org/1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1RE---)) (wiki): Wiki
-  stack; Unary-Binary Bounded Stack Counter. Trigger —; growth —; shield —. E1 sibling of #85.
-  Status: `is_stack_cryptid`; open (on the 2026-10-24 holdout list).
+  ([#285](./Accelerations/M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH.lean)) (wiki): Wiki stack;
+  Unary-Binary Bounded Stack Counter. Trigger as #85 (same table, started from its state `C`);
+  growth as #85; shield as #85. same dynamics as `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85)
+  (wiki: "when the TM starts on any starting state, it exhibits the same probviously halting
+  behaviour"). Status: `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LE---`
-  ([bbchallenge](https://bbchallenge.org/1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LE---)) (wiki): Wiki
-  stack; Unary-Binary Bounded Stack Counter. Trigger —; growth —; shield —. E1 sibling of #85.
-  Status: `is_stack_cryptid`; open (on the 2026-10-24 holdout list).
+  ([#490](./Accelerations/M_1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LEHHH.lean)) (wiki): Wiki stack;
+  Unary-Binary Bounded Stack Counter. Trigger as #85 (same table, started from its state `D`,
+  mirrored); growth as #85; shield as #85. same dynamics as
+  `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85); this is the start state analysed by @-d on the
+  wiki (halting path of length 108, $\approx 235{,}000$ right-side words explored). Status:
+  `is_stack_cryptid`; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD---`
-  ([bbchallenge](https://bbchallenge.org/1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD---)) (wiki): Wiki
-  stack; Unary-Binary Bounded Stack Counter. Trigger —; growth —; shield —. E1 sibling of #85.
-  Status: `is_stack_cryptid`; open (on the 2026-10-24 holdout list).
+  ([#500](./Accelerations/M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH.lean)) (wiki): Wiki stack;
+  Unary-Binary Bounded Stack Counter. Trigger as #85 (same table, started from its state `E`);
+  growth as #85; shield as #85. same dynamics as `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85)
+  (wiki: the start states `E` and `F` share one trajectory). Status: `is_stack_cryptid`;
+  `Accelerations`; open (on the 2026-10-24 holdout list).
 
 ### Resolved by the community
 
@@ -443,30 +463,40 @@ new. Problem S1 (`#72`) is listed last because the community has since **proved 
 
 ### `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85, Wiki stack)
 
-* **Hazard:** not re-measured
-* **Simulated horizon:** —
-* **Why it is hard / what a proof needs:** `IsStackCryptid` closure proved
+* **Hazard:** community estimate, not re-measured here: per empty-left-side reset, probability
+  $\approx 3^{-80}$–$3^{-87}$ of entering one of the $2^{13}\cdot 3^{15}$ shortest halting residue
+  sequences (length 107–110, Racheline); @-d's breadth-first search over $\approx 235{,}000$
+  right-side words found a halting path of length 108 and the halting residue class
+  $A(3^{108}k + 1975700577069254261393123959451562008800234946348086, \varepsilon)$
+* **Simulated horizon:** community: exhaustive search of the right-side word graph (wiki); here the
+  two-sided pair-stack system is certified closed (`HasStackReduction`)
+* **Why it is hard / what a proof needs:** the halting mechanism is explicit and the halting set is
+  a residue class of positive density, but reaching it needs $\approx 3^{80}$ independent resets:
+  the archetype of RES hardness without a shield
 * **Wiki:** <https://wiki.bbchallenge.org/wiki/1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA>
 
 ### `1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1RE---` (#285, Wiki stack)
 
-* **Hazard:** not re-measured
-* **Simulated horizon:** —
-* **Why it is hard / what a proof needs:** `IsStackCryptid` closure proved
+* **Hazard:** as #85 (community estimate)
+* **Simulated horizon:** as #85
+* **Why it is hard / what a proof needs:** the proof is the state relabelling of the #85 proof with
+  its own blank-tape entry (12 raw steps)
 * **Wiki:** <https://wiki.bbchallenge.org/wiki/1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1RE--->
 
 ### `1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LE---` (#490, Wiki stack)
 
-* **Hazard:** not re-measured
-* **Simulated horizon:** —
-* **Why it is hard / what a proof needs:** `IsStackCryptid` closure proved
+* **Hazard:** as #85 (community estimate)
+* **Simulated horizon:** as #85
+* **Why it is hard / what a proof needs:** the proof is the relabelling and left/right mirror of the
+  #85 proof with its own blank-tape entry (7 raw steps)
 * **Wiki:** <https://wiki.bbchallenge.org/wiki/1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LE--->
 
 ### `1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD---` (#500, Wiki stack)
 
-* **Hazard:** not re-measured
-* **Simulated horizon:** —
-* **Why it is hard / what a proof needs:** `IsStackCryptid` closure proved
+* **Hazard:** as #85 (community estimate)
+* **Simulated horizon:** as #85
+* **Why it is hard / what a proof needs:** the proof is the state relabelling of the #85 proof with
+  its own blank-tape entry (11 raw steps)
 * **Wiki:** <https://wiki.bbchallenge.org/wiki/1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD--->
 
 ### `1RB1LA_0RC1RD_1LC0LA_1LE1RE_0RB0LF_---0LD` (#72, Problem S1 (resolved: halts))

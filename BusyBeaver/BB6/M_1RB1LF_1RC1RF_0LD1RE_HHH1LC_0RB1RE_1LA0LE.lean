@@ -165,8 +165,8 @@ $$
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential, shield see family.
 
-*Verdict (heuristic, from exact accelerated simulation of the certified rules):* wiki rediscovery
-(RobinCodes *Next Steps* list).
+*Verdict (heuristic; community analysis, see the wiki page):* wiki rediscovery (RobinCodes *Next
+Steps* list).
 
 *Hazard:* not re-measured in our dossiers
 

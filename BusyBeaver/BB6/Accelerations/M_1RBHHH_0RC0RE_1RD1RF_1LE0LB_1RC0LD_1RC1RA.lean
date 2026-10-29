@@ -18,16 +18,27 @@ Formal `HasStackReduction` proof for the 6-state, 2-symbol Busy Beaver holdout
 <!-- hardness:begin -->
 ## Hardness
 
-*Hardness class:* Wiki stack — trigger **—**, growth —, shield —.
+*Hardness class:* Wiki stack — trigger **RES (a particular sequence of $\approx 107$–$110$ residues
+mod 3 must occur while the left side is empty; wiki)**, growth exponential (the main number is
+multiplied by $8/3$ per era; wiki), shield none (every return to an empty left side is a fresh
+trial).
 
-*Verdict (heuristic, from exact accelerated simulation of the certified rules):* wiki cryptid family
-(E1 group #85/#285/#490/#500).
+*Verdict (heuristic; community analysis, see the wiki page):* probviously **halting** (wiki,
+Racheline 2024-11-23: expected halt at $\approx 10^{10^{38.1}}$ steps, far beyond any simulation);
+the wiki treats the four start states #85/#285/#490/#500 as one cryptid.
 
-*Hazard:* not re-measured
+*Hazard:* community estimate, not re-measured here: per empty-left-side reset, probability
+$\approx 3^{-80}$–$3^{-87}$ of entering one of the $2^{13}\cdot 3^{15}$ shortest halting residue
+sequences (length 107–110, Racheline); @-d's breadth-first search over $\approx 235{,}000$
+right-side words found a halting path of length 108 and the halting residue class
+$A(3^{108}k + 1975700577069254261393123959451562008800234946348086, \varepsilon)$
 
-*Simulated horizon:* —
+*Simulated horizon:* community: exhaustive search of the right-side word graph (wiki); here the
+two-sided pair-stack system is certified closed (`HasStackReduction`)
 
-*Why it is hard:* `IsStackCryptid` closure proved
+*Why it is hard:* the halting mechanism is explicit and the halting set is a residue class of
+positive density, but reaching it needs $\approx 3^{80}$ independent resets: the archetype of RES
+hardness without a shield
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
 <!-- hardness:end -->

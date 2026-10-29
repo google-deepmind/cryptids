@@ -6918,6 +6918,16 @@ abbrev target : Machine (Fin 2) (Fin 6) :=
 theorem has_odometer_reduction : HasOdometerReduction target := by sorry
 end M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH
 
+namespace M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD---"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem has_stack_reduction : HasStackReduction target := by sorry
+end M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH
+
 namespace M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA"
@@ -7431,6 +7441,16 @@ abbrev target : Machine (Fin 2) (Fin 6) :=
 
 theorem has_stack_reduction : HasStackReduction target := by sorry
 end M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF
+
+namespace M_1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LEHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LE---"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem has_stack_reduction : HasStackReduction target := by sorry
+end M_1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LEHHH
 
 namespace M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -8327,6 +8347,16 @@ theorem isHalt_iff_highLevel_acceleration :
 theorem acceleration_iff_highLevel_acceleration :
     CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
 end M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB
+
+namespace M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1RE---"
+
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem has_stack_reduction : HasStackReduction target := by sorry
+end M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH
 
 namespace M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB
 def machine : ConjectureMachines.Machine 6 2 :=
