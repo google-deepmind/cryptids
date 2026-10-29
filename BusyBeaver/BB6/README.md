@@ -4,6 +4,8 @@ This directory contains formal Lean 4 specifications and kernel-verified Collatz
 
 > **Hardness.** Why the hardest of these holdouts are hard (halting trigger, growth regime, shields, heuristic hazards, and the calibration case `#72` that the community proved halting) is recorded in [`Hardness.lean`](./Hardness.lean) (rendered on the docs site as `BusyBeaver.BB6.Hardness`); each machine in that core also carries a `## Hardness` section in its module docstring.
 
+> **Equivalences.** Machine-level halting equivalences between holdouts whose certified high-level accelerations coincide are collected in [`Equivalences.lean`](./Equivalences.lean) (`BusyBeaver.BB6.Equivalences`): `isHalt_HHH1LC_iff_HHH0LA` proves that `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC` halts if and only if `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` does (the pair merged by busycoq `Eqv_RegularPairs.v`).
+
 ## Formalized `BB(6)` Machines
 
 | Machine (`bbchallenge` RLE) | States | Symbols | Proved Properties | Wiki / Notes | Lean 4 Proof |
@@ -18,7 +20,7 @@ This directory contains formal Lean 4 specifications and kernel-verified Collatz
 | `1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_---1RE` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_---1RE) | [`M_1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_HHH1RE.lean`](./M_1RB0LD_1RC1RA_1LD0RB_1LE1LA_1RF0RC_HHH1RE.lean) |
 | `1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RB---` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RB---) | [`M_1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RBHHH.lean`](./M_1RB0LD_1RC1RF_1LA0RA_0LA0LE_1LD1LA_0RBHHH.lean) |
 | `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean) |
-| `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | equivalent to `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` (same orbit after two macro-steps; busycoq [`Eqv_RegularPairs.v`](https://github.com/ccz181078/busycoq/blob/BB6/verify/Eqv_RegularPairs.v)) | [`M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean) |
+| `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | equivalent to `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` (same orbit after two macro-steps; busycoq [`Eqv_RegularPairs.v`](https://github.com/ccz181078/busycoq/blob/BB6/verify/Eqv_RegularPairs.v)); the machine-level halting equivalence is proved in [`Equivalences.lean`](./Equivalences.lean) (`BusyBeaver.BB6.isHalt_HHH1LC_iff_HHH0LA`) | [`M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean) |
 | `1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RC---` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki (`User:RobinCodes/Next_Steps`)](https://wiki.bbchallenge.org/wiki/User:RobinCodes/Next_Steps) | [`M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.lean`](./M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.lean) |
 | `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean`](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean) |
 | `1RB0LF_1LC1RA_0RE0RD_---1LE_1LF1RC_1LC1LA` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean`](./M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean) |
@@ -202,7 +204,7 @@ B(a, b, d) = \begin{cases}
 \end{cases}
 $$
 
-This 2-counter system is identical to that of [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean), proving that the two machines have identical halting behavior.
+This 2-counter system is identical to that of [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean), proving that the two machines have identical halting behavior. The machine-level statement `IsHalt` (`---1LC`) `↔` `IsHalt` (`---0LA`) is formalized as `BusyBeaver.BB6.isHalt_HHH1LC_iff_HHH0LA` in [`Equivalences.lean`](./Equivalences.lean), by transporting `CollatzHalts` along the identity of the two `HighLevelState` counter spaces.
 
 ### [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean)
 
