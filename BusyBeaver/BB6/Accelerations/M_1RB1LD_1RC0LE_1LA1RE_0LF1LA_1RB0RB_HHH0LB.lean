@@ -26,8 +26,8 @@ tape head outward. Starting from `init []`, the machine enters a closed 2-mode (
 growth doubly-exponential era lengths ($T_0..T_3 = 1, 2, 8, 256$), shield none closed (all-even
 $R$ + $L.\mathrm{last}=0$ refuted across eras).
 
-*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
-non-halting (wiki cryptid).
+*Verdict (heuristic; community analysis, see the wiki page):* probviously non-halting (wiki
+cryptid).
 
 *Hazard:* not quantified; perturbed all-even seeds halt in Era 2/3 (`rec_59_bottom_extension`)
 
