@@ -9185,3 +9185,14 @@ theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := b
 end M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA
 
 end BusyBeaver
+
+namespace BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LB---"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH

@@ -1,0 +1,7 @@
+import BusyBeaver.BB6.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH
+
+#check BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.is_not_halt
+#print axioms BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.is_not_halt
+#print axioms BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.not_halts
+#print axioms BusyBeaver.BB6.A6.stepEntry_sound
+#print axioms BusyBeaver.AffRLE.verifyReturnCert_sound
