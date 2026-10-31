@@ -63,11 +63,11 @@ structure Cfg (Γ Λ : Type*) [Inhabited Γ] where
 instance Cfg.inhabited : Inhabited (Cfg Γ Λ) := ⟨⟨default, default⟩⟩
 
 /-- Configuration in state `q` with the tape head reading the first symbol of `r`. -/
-def Cfg.headRight {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
+@[reducible] def Cfg.headRight {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
   ⟨some q, ⟨r.head, l, r.tail⟩⟩
 
 /-- Configuration in state `q` with the tape head reading the first symbol of `l`. -/
-def Cfg.headLeft {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
+@[reducible] def Cfg.headLeft {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
   ⟨some q, ⟨l.head, l.tail, r⟩⟩
 
 /-- Single-step execution semantics of a `BusyBeaver.Machine`. -/
@@ -106,8 +106,10 @@ scoped notation:67 s:67 " << " a:68 => ListBlank.cons a s
 scoped infixr:67 " >> " => ListBlank.cons
 scoped notation:67 s:67 " <+ " l:68 => ListBlank.append l s
 scoped infixr:67 " +> " => ListBlank.append
-scoped notation3 l " {{" q "}}> " r => (⟨some q, ⟨ListBlank.head r, l, ListBlank.tail r⟩⟩ : Cfg _ _)
-scoped notation3 l " <{{" q "}} " r => (⟨some q, ⟨ListBlank.head l, ListBlank.tail l, r⟩⟩ : Cfg _ _)
+@[inherit_doc Cfg.headRight]
+scoped notation3 l " {{" q "}}> " r => Cfg.headRight q l r
+@[inherit_doc Cfg.headLeft]
+scoped notation3 l " <{{" q "}} " r => Cfg.headLeft q l r
 
 def list_nat_repeat {Γ : Type*} : List Γ → Nat → List Γ
   | _, 0 => []
