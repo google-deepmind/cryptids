@@ -5,6 +5,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import BusyBeaver.Defs
+public import BusyBeaver.Counter
+import BusyBeaver.CarryCounter
+import BusyBeaver.CtlCertificate
+import BusyBeaver.Excursion
+import BusyBeaver.Longitudinal
+import BusyBeaver.WordCalculusD
+import BusyBeaver.WordCalculusE
+import BusyBeaver.WordCalculusG
+import BusyBeaver.WordCalculusI
+
 
 /-!
 # Basic Lemmas for `BusyBeaver` Turing Machines (`BusyBeaver.Basic`)
@@ -766,37 +776,8 @@ macro "bb_halt" : tactic =>
     rfl))
 
 
-/-! ## Directed-Head and Reachability Notations -/
-
-@[inherit_doc ListBlank.cons]
-scoped notation:67 s:67 " << " a:68 => ListBlank.cons a s
-
-@[inherit_doc ListBlank.cons]
-scoped infixr:67 " >> " => ListBlank.cons
-
-@[inherit_doc ListBlank.append]
-scoped notation:67 s:67 " <+ " l:68 => ListBlank.append l s
-
-@[inherit_doc ListBlank.append]
-scoped infixr:67 " +> " => ListBlank.append
-
-@[inherit_doc Cfg.headRight]
-scoped notation3 l " {{" q "}}> " r => Cfg.headRight q l r
-
-@[inherit_doc Cfg.headLeft]
-scoped notation3 l " <{{" q "}} " r => Cfg.headLeft q l r
-
-@[inherit_doc step]
-scoped notation3 c₁ " [" M "]⊢ " c₂ => step M c₁ = some c₂
-
-@[inherit_doc multiStep]
-scoped notation3 c₁ " [" M "]⊢^{" n "} " c₂ => multiStep M c₁ n = some c₂
-
-@[inherit_doc ReachesStar]
-scoped notation3 c₁ " [" M "]⊢* " c₂ => ReachesStar M c₁ c₂
-
-@[inherit_doc ReachesPlus]
-scoped notation3 c₁ " [" M "]⊢⁺ " c₂ => ReachesPlus M c₁ c₂
+/-! ## Directed-Head and Reachability Notations
+(Defined in `BusyBeaver.Defs`) -/
 
 /-! ## Additional Half-Tape Power Lemmas -/
 
