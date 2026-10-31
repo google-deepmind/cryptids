@@ -50,11 +50,13 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
 - `Cryptids.Riemann95`, `Cryptids.Semantics.Riemann95` — A 95-state machine with an exact
   3,634-step blank initializer, unconditional equivalence to the 104-state machine, and
   `Halts candidate ↔ ¬ RiemannHypothesis`.
-- `Cryptids.Semantics.PA` — First-order Peano Arithmetic metatheory: arbitrary `[PAModel M]`
-  soundness (`paProvable_sound`, `paProvable_sound_nat`), constructive consistency
-  (`not_paProvable_false`), constructive $\Sigma_1^0$ standard-model adequacy
-  (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), and Gödel–Henkin
-  completeness (`paProvable_iff_holdsIn_all_models`).
+- `Cryptids.Semantics.PA` — First-order Peano Arithmetic metatheory and internalized `ZF`
+  reductions: arbitrary `[PAModel M]` soundness (`paProvable_sound`, `paProvable_sound_nat`),
+  constructive consistency (`not_paProvable_false`), constructive $\Sigma_1^0$ standard-model
+  adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), Gödel–Henkin
+  completeness (`paProvable_iff_holdsIn_all_models`), and object-level `PAProvable` proofs that
+  `zf_380` and `zf_393` halt iff `ZF` is inconsistent (`paProvable_halts_zf380_iff_zf393`,
+  `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent`).
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

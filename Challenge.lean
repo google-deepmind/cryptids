@@ -775,6 +775,12 @@ theorem paZFInconsistent_holds_iff_zfInconsistent (v : ℕ → ℕ) :
     paZFInconsistent.Holds v ↔ ZFInconsistent := by sorry
 theorem paProvable_sound_nat (φ : PAFormula) (h : PAProvable φ) (v : ℕ → ℕ) :
     φ.Holds v := by sorry
+theorem paProvable_halts_zf380_iff_zf393 :
+    PAProvable ((paHalts Machines.zf380).iff (paHalts Machines.zf393)) := by sorry
+theorem paProvable_halts_zf393_iff_zfInconsistent :
+    PAProvable ((paHalts Machines.zf393).iff paZFInconsistent) := by sorry
+theorem paProvable_halts_zf380_iff_zfInconsistent :
+    PAProvable ((paHalts Machines.zf380).iff paZFInconsistent) := by sorry
 end Semantics.PA
 
 namespace Semantics.Riemann
