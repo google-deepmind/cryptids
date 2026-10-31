@@ -105,11 +105,11 @@ lemma z03 {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
     (h₁ : c_1 [tm]⊢ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 :=
   z02 (z01 tm c_1 c_2 h₁) h₂
 macro "finish" : tactic =>
-  `(tactic| exact ⟨0,rfl⟩)
+  `(tactic| (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft]) <;> exact ⟨0,rfl⟩)
 macro "step" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z03 (by (try simp only [Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
-    simp only [Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z00,zDh,zDt,append_cons,append_nil])
+    refine z03 (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt, append_cons, append_nil])
 macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | finish | step)))
 
