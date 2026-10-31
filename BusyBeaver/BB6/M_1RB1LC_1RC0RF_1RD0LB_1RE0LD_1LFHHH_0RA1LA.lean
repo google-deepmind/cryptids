@@ -95,6 +95,27 @@ $$
     R_1(31q+45)\bigr)_r.
 \end{aligned}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 1 — trigger **RES + competing sinks**, growth tetrational
+($10 \uparrow\uparrow k$, $N_7 \approx 2.86\times10^{771}$), shield none.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* undecided type
+(second known after Racheline's #424).
+
+*Hazard:* from $S_6(N_7)$: $P(\mathrm{HALT}) = 6.80\%$ vs.
+$P(\text{translated cycler } R_1(n)\mapsto R_1(n+5)) = 93.20\%$, decided at step $\sim 10^{771}$
+
+*Simulated horizon:* exact trajectory to $N_7$; the deciding residue is a digit of a
+$10^{771}$-digit number
+
+*Why it is hard:* base-$31/10$ Erdős–Graham floor recurrence inside a tetration tower; not
+computable, not provable with current tools
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

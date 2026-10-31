@@ -43,6 +43,26 @@ Start: D(1, 0, [], []), reached after 7 raw TM steps
 Restricting to the $R = []$ return section and contracting intermediate $E$ and $D(\dots, 0 :: R)$
 chains (`runE`) eliminates both state $E$ and the right stack $R$, yielding a single-stack system
 $D_{\mathrm{HL}}(a, b, L) := D(a, b, L, [])$ starting at $D_{\mathrm{HL}}(1, 0, [])$.
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem S2 — trigger **POW (bottom funnel $x+2 = 2^k$)**, growth power-law regime,
+shield partial (`ValidStack391`: mode $D$ never halts).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting (clean race).
+
+*Hazard:* 318 bottom reaches in $10^7$ steps ($29\to73\to204$ per decade), $x$ spread over
+$10^3$–$10^4$; residual hazard $\approx0.2$; near-misses $251, 513, 514, 61, 132$
+
+*Simulated horizon:* $10^7$ macro-steps (exact); pumping test: 72 perturbed configurations, 0 halts
+in $10^5$ steps
+
+*Why it is hard:* rung-by-rung halving with carry on $\mathrm{List}(\mathbb N)$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

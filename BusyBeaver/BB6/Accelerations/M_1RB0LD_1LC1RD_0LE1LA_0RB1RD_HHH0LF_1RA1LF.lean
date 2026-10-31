@@ -37,6 +37,26 @@ Start: C(0, [0], [1]), reached after 19 raw TM steps
 Restricting to the Poincaré return section $R = [0]$ eliminates the right stack completely, yielding
 a single-stack transition system $C_{\mathrm{HL}}(a, L) := C(a, L, [0])$ starting at
 $C_{\mathrm{HL}}(3, [0])$.
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem S4 — trigger **POW (power-of-two bottom exposure)**, growth
+mass-conserving ($\Delta M = 0$), log-depth tower, shield partial (`ValidStack660` kills $C([],R)$).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* 21 exposures in $3\times10^6$ steps ($1292\to646\to323$, $94000\to\dots\to5875$), odd
+parts $\ge323$; negligible residual hazard, no invariant known
+
+*Simulated horizon:* $3\times10^6$ macro-steps (exact); pumping test: 13 perturbed configurations, 0
+halts
+
+*Why it is hard:* Single-Pass Drainage Law $b_{i+1} = a_{i+1}+q_i+1$, $q_{k-1} = 2^m-1$, $u = 2^m$
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

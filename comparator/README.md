@@ -19,12 +19,14 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   acceleration semantics (`IsClosedPatternSet`, `HasCollatzReduction`, `IsClosedStackPatternSet`,
   `HasStackedCollatzReduction`, `HasStackReduction`, `HasOdometerReduction`,
   `HasTransducerReduction`, `IsValidAcceleration`, `CollatzHalts`, `IsHalt`, `IsNotHalt`), and
-  `load_rle_machine%` once, and states all 424 `BB(6)` and `BB(3, 3)` holdout theorems
+  `load_rle_machine%` once, and states all 505 `BB(6)` and `BB(3, 3)` holdout theorems
   (`is_closed_pattern_set` / `is_closed_stack_pattern_set`, `has_collatz_reduction` /
   `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`,
   `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`,
-  `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, and
-  `acceleration_iff_highLevel_acceleration` across the 88 machines) with `sorry`.
+  `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`,
+  `acceleration_iff_highLevel_acceleration`, `isHalt_HHH1LC_iff_HHH0LA`, and the 74
+  `HardnessEvidence` live-hazard witness and halting residue-class theorems across the 94 machines)
+  with `sorry`.
 
 Comparator exports both the challenge module (`Challenge` or `BusyBeaverChallenge`) and the
 solution module (`Cryptids` or `BusyBeaver`) via `leanexport`, verifying in a Bubblewrap sandbox
@@ -58,7 +60,7 @@ that:
 | [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 13 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), and `Riemann95.candidate_fewer_states` |
 | [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 26 conjecture-checking state-reduction, equivalence, `PA` metatheory, and semantics theorems |
 | [`pa_semantics.json`](./pa_semantics.json) | `Challenge` | `Cryptids.Semantics.PA` | `propext`, `Quot.sound`, `Classical.choice` | `not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`, `paProvable_sound_nat` |
-| [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 424 `BB(6)` and `BB(3, 3)` holdout Level A and Level B theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) |
+| [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 505 `BB(6)` and `BB(3, 3)` holdout Level A, Level B, equivalence, and hardness-evidence theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`, `isHalt_HHH1LC_iff_HHH0LA`, `HardnessEvidence.*`) |
 | [`goldbach_21.json`](./goldbach_21.json) | `Challenge` | `Cryptids.Goldbach21` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`goldbach_semantics.json`](./goldbach_semantics.json) | `Challenge` | `Cryptids.Semantics.Goldbach` | `propext`, `Quot.sound`, `Classical.choice` | `halts_reference_iff_not_goldbach`, `halts_candidate_iff_not_goldbach` |
 | [`zf_380.json`](./zf_380.json) | `Challenge` | `Cryptids.Zf380` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |

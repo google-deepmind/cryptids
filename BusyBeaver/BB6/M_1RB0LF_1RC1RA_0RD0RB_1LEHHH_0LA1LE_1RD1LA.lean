@@ -35,6 +35,25 @@ T(J(u, w)) = \begin{cases}
   J(d+3, 2w) & \text{if } w = 2m+1 < 2u \text{ and } d \ge 3 \text{ is odd}.
 \end{cases}
 $$
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem 3 — trigger **EQ, critical**, growth linear ($2v+w \approx 43.66\,T$),
+shield none (parity flips every step).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+halting, but only at $\sim 10^{110}$ steps.
+
+*Hazard:* per-turnaround hazard $q\approx 2.5\times10^{-7}$, $\sum_t 0.00885/t = \infty$ (divergent
+Borel–Cantelli boundary); $\approx 2\%$ per decade
+
+*Simulated horizon:* $2.16\times10^{17}$ TM steps, no halt
+
+*Why it is hard:* 1-D harmonic-series shrinking target; halting iff $w_t = 2v_t + 8$ at a turnaround
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section

@@ -18,6 +18,25 @@ Formal `HasStackReduction` proof for the 6-state, 2-symbol Busy Beaver machine
 Each half-tape stack encodes unary blocks $1^{a + 1}$ separated by single zeros (`encStack`),
 ordered from the tape head outward. Starting from `init []`, the machine enters a closed 2-mode
 (`D`, `FR`) 2nd-order digit-stack system in 3 raw steps.
+
+<!-- hardness:begin -->
+## Hardness
+
+*Hardness class:* Problem S5 — trigger **POW (Mersenne bottom rung $2^k-1$)**, growth —, shield
+partial (`ValidStack549` kills the empty-stack halt).
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting, slowly critical.
+
+*Hazard:* 846 exposures in $10^7$ steps ($14\to35\to90\to275$ fresh starts per decade),
+$\approx0.05$ expected halts per decade; near-misses $4,13,61,65,252,513,1020,1027$
+
+*Simulated horizon:* $10^7$ macro-steps (exact)
+
+*Why it is hard:* the community's *Sweeper* re-measured; two-mode halving sweeper
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
+<!-- hardness:end -->
 -/
 
 @[expose] public section
