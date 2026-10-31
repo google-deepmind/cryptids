@@ -8,10 +8,10 @@ public import Cryptids.Semantics.PA.Syntax
 public import Cryptids.Semantics.PA.Adequacy
 public import Cryptids.Semantics.PA.Completeness
 public import Cryptids.Semantics.PA.Arithmetic
-public import Cryptids.Semantics.PA.Zf380Internal
-public import Cryptids.Semantics.PA.Zf393BackendInternal
-public import Cryptids.Semantics.PA.Zf393ProgramInternal
-public import Cryptids.Semantics.PA.Zf393SoundnessInternal
+public import Cryptids.Semantics.PA.Zf380
+public import Cryptids.Semantics.PA.Zf393.Backend
+public import Cryptids.Semantics.PA.Zf393.Program
+public import Cryptids.Semantics.PA.Zf393.Soundness
 
 /-!
 # First-Order Peano Arithmetic Semantics & Internalized `ZF` Reductions (`Cryptids.Semantics.PA`)
@@ -35,12 +35,12 @@ Re-exports the foundational metatheory of the deeply embedded Peano Arithmetic s
    Internal arithmetic in arbitrary `PAModel`s (`PAM M`), Euclidean division, `2^k`, Gödel's
    $\beta$-function sequence coding via `PAM.ind1`, Cantor pairing (`mPair`/`mUnpair`), and model
    bridges for `paHalts` and `paZFInconsistent`.
-5. [`Cryptids.Semantics.PA.Zf380Internal`](./PA/Zf380Internal.lean):
+5. [`Cryptids.Semantics.PA.Zf380`](./PA/Zf380.lean):
    First-order `PA` proof of `PAProvable ((paHalts Machines.zf380).iff (paHalts Machines.zf393))`
    (`paProvable_halts_zf380_iff_zf393`).
-6. [`Cryptids.Semantics.PA.Zf393BackendInternal`](./PA/Zf393BackendInternal.lean),
-   [`Cryptids.Semantics.PA.Zf393ProgramInternal`](./PA/Zf393ProgramInternal.lean), &
-   [`Cryptids.Semantics.PA.Zf393SoundnessInternal`](./PA/Zf393SoundnessInternal.lean):
+6. [`Cryptids.Semantics.PA.Zf393.Backend`](./PA/Zf393/Backend.lean),
+   [`Cryptids.Semantics.PA.Zf393.Program`](./PA/Zf393/Program.lean), &
+   [`Cryptids.Semantics.PA.Zf393.Soundness`](./PA/Zf393/Soundness.lean):
    Full Layer 1–3 internalization of `zf_393` and `zf_380` inside `PAProvable`:
    `paProvable_halts_zf393_iff_zfInconsistent` and `paProvable_halts_zf380_iff_zfInconsistent`.
 -/

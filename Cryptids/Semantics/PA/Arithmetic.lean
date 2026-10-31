@@ -76,7 +76,7 @@ instance : PAStructure (PAM M) where
 @[simp] theorem raw_mul (a b : PAM M) : (a * b).raw = PAStructure.mul a.raw b.raw := rfl
 @[simp] theorem raw_succ (a : PAM M) : (succ a).raw = PAStructure.succ a.raw := rfl
 
-theorem evalIn_raw (v : ℕ → PAM M) (t : PATerm) :
+private theorem evalIn_raw (v : ℕ → PAM M) (t : PATerm) :
     (PATerm.evalIn v t).raw = PATerm.evalIn (fun x ↦ (v x).raw) t := by
   induction t with
   | var _ | zero => rfl
@@ -168,12 +168,12 @@ theorem succ_eq_add_one (a : PAM M) : succ a = a + 1 := by
   rw [PAModel.add_succ, PAModel.add_zero]
 
 theorem pam_add_zero (a : PAM M) : a + 0 = a := PAModel.add_zero a
-theorem pam_add_succ (a b : PAM M) : a + succ b = succ (a + b) := PAModel.add_succ a b
+private theorem pam_add_succ (a b : PAM M) : a + succ b = succ (a + b) := PAModel.add_succ a b
 theorem pam_mul_zero (a : PAM M) : a * 0 = 0 := PAModel.mul_zero a
-theorem pam_mul_succ (a b : PAM M) : a * succ b = a * b + a := PAModel.mul_succ a b
+private theorem pam_mul_succ (a b : PAM M) : a * succ b = a * b + a := PAModel.mul_succ a b
 
 /-- First-order induction on `PAM M` for any predicate equivalent to a `PAFormula`. -/
-theorem ind_pred {P : PAM M → Prop}
+private theorem ind_pred {P : PAM M → Prop}
     (hdef : ∃ (x : ℕ) (φ : PAFormula) (v : ℕ → PAM M),
       ∀ a : PAM M, PAFormula.HoldsIn (Function.update v x a) φ ↔ P a)
     (h0 : P 0) (hs : ∀ a : PAM M, P a → P (a + 1)) :
@@ -191,7 +191,7 @@ theorem pam_zero_add (a : PAM M) : 0 + a = a := by
   · simp [PAFormula.HoldsIn, PATerm.evalIn]; rfl
   · rw [← succ_eq_add_one, pam_add_succ, ih]
 
-theorem pam_succ_add (a b : PAM M) : succ a + b = succ (a + b) := by
+private theorem pam_succ_add (a b : PAM M) : succ a + b = succ (a + b) := by
   refine ind_pred (P := fun c : PAM M ↦ succ a + c = succ (a + c))
     ⟨0, .eq (.add (.succ (.var 1)) (.var 0)) (.succ (.add (.var 1) (.var 0))),
       fun | 1 => a | _ => 0, fun c ↦ ?_⟩ ?_ (fun c ih ↦ ?_) b
@@ -222,7 +222,7 @@ theorem pam_zero_mul (a : PAM M) : 0 * a = 0 := by
   · simp [PAFormula.HoldsIn, PATerm.evalIn]; rfl
   · rw [← succ_eq_add_one, pam_mul_succ, ih, pam_add_zero]
 
-theorem pam_succ_mul (a b : PAM M) : succ a * b = a * b + b := by
+private theorem pam_succ_mul (a b : PAM M) : succ a * b = a * b + b := by
   refine ind_pred (P := fun c : PAM M ↦ succ a * c = a * c + c)
     ⟨0, .eq (.mul (.succ (.var 1)) (.var 0)) (.add (.mul (.var 1) (.var 0)) (.var 0)),
       fun | 1 => a | _ => 0, fun c ↦ ?_⟩ ?_ (fun c ih ↦ ?_) b
@@ -387,12 +387,12 @@ omit [PAModel M] in
 theorem lt_def {a b : PAM M} : a < b ↔ a + 1 ≤ b := Iff.rfl
 
 omit [PAModel M] in
-theorem evalIn_update_of_freshVar_le (v : ℕ → PAM M) {t : PATerm} {x : ℕ} (a : PAM M)
+private theorem evalIn_update_of_freshVar_le (v : ℕ → PAM M) {t : PATerm} {x : ℕ} (a : PAM M)
     (h : t.freshVar ≤ x) : PATerm.evalIn (Function.update v x a) t = PATerm.evalIn v t :=
   evalIn_update_of_hasVar_false v a (hasVar_false_of_freshVar_le h)
 
 omit [PAModel M] in
-theorem paLe_holdsIn_iff (v : ℕ → PAM M) (a b : PATerm) :
+private theorem paLe_holdsIn_iff (v : ℕ → PAM M) (a b : PATerm) :
     PAFormula.HoldsIn v (paLe a b) ↔ PATerm.evalIn v a ≤ PATerm.evalIn v b := by
   unfold paLe
   set k := max a.freshVar b.freshVar
@@ -403,7 +403,7 @@ theorem paLe_holdsIn_iff (v : ℕ → PAM M) (a b : PATerm) :
     Function.update_self]
   rfl
 
-theorem paLt_holdsIn_iff (v : ℕ → PAM M) (a b : PATerm) :
+private theorem paLt_holdsIn_iff (v : ℕ → PAM M) (a b : PATerm) :
     PAFormula.HoldsIn v (paLt a b) ↔ PATerm.evalIn v a < PATerm.evalIn v b := by
   unfold paLt
   rw [paLe_holdsIn_iff, evalIn_succ]
@@ -472,7 +472,7 @@ theorem not_lt_zero_pam (a : PAM M) : ¬ a < 0 :=
 theorem le_zero_iff_pam {a : PAM M} : a ≤ 0 ↔ a = 0 :=
   ⟨fun h ↦ le_antisymm h (zero_le_pam a), fun h ↦ h ▸ le_rfl⟩
 
-theorem pos_iff_ne_zero_pam {a : PAM M} : 0 < a ↔ a ≠ 0 := by
+private theorem pos_iff_ne_zero_pam {a : PAM M} : 0 < a ↔ a ≠ 0 := by
   constructor
   · rintro h rfl
     exact lt_irrefl 0 h
@@ -492,7 +492,7 @@ theorem lt_add_one_iff_le {a b : PAM M} : a < b + 1 ↔ a ≤ b := by
   · rintro ⟨k, rfl⟩
     exact ⟨k, by ring⟩
 
-theorem le_add_one_iff {a b : PAM M} : a ≤ b + 1 ↔ a ≤ b ∨ a = b + 1 := by
+private theorem le_add_one_iff {a b : PAM M} : a ≤ b + 1 ↔ a ≤ b ∨ a = b + 1 := by
   constructor
   · rintro ⟨k, hk⟩
     rcases eq_zero_or_exists_succ k with rfl | ⟨k', rfl⟩
@@ -518,14 +518,14 @@ theorem add_lt_add_right_pam {a b : PAM M} (h : a < b) (c : PAM M) : a + c < b +
 
 omit [PAModel M] in
 theorem le_add_right_pam (a b : PAM M) : a ≤ a + b := ⟨b, rfl⟩
-theorem le_add_left_pam (a b : PAM M) : a ≤ b + a := ⟨b, add_comm a b⟩
+private theorem le_add_left_pam (a b : PAM M) : a ≤ b + a := ⟨b, add_comm a b⟩
 
-theorem mul_le_mul_pam {a b c d : PAM M} (h₁ : a ≤ b) (h₂ : c ≤ d) : a * c ≤ b * d := by
+private theorem mul_le_mul_pam {a b c d : PAM M} (h₁ : a ≤ b) (h₂ : c ≤ d) : a * c ≤ b * d := by
   rcases h₁ with ⟨k₁, rfl⟩
   rcases h₂ with ⟨k₂, rfl⟩
   exact ⟨a * k₂ + k₁ * c + k₁ * k₂, by ring⟩
 
-theorem mul_lt_mul_of_pos_left_pam {a b c : PAM M} (h : a < b) (hc : 0 < c) :
+private theorem mul_lt_mul_of_pos_left_pam {a b c : PAM M} (h : a < b) (hc : 0 < c) :
     c * a < c * b := by
   rcases h with ⟨k, rfl⟩
   rcases eq_zero_or_exists_succ c with rfl | ⟨c', rfl⟩
@@ -549,7 +549,7 @@ theorem add_sub_of_le_pam {a b : PAM M} (h : b ≤ a) : b + (a - b) = a := by
   rw [dite_eq_left_of_eq_true (eq_true h)]
   exact Classical.choose_spec h
 
-theorem sub_add_cancel_pam {a b : PAM M} (h : b ≤ a) : a - b + b = a := by
+private theorem sub_add_cancel_pam {a b : PAM M} (h : b ≤ a) : a - b + b = a := by
   rw [add_comm]
   exact add_sub_of_le_pam h
 
@@ -633,7 +633,7 @@ theorem natCast_inj_pam {m n : ℕ} : (m : PAM M) = (n : PAM M) ↔ m = n := by
 theorem zero_lt_one_pam : (0 : PAM M) < 1 := by
   simpa using (natCast_lt_iff (M := M) (m := 0) (n := 1)).mpr (by decide)
 
-theorem zero_lt_two_pam : (0 : PAM M) < 2 := by
+private theorem zero_lt_two_pam : (0 : PAM M) < 2 := by
   simpa using (natCast_lt_iff (M := M) (m := 0) (n := 2)).mpr (by decide)
 
 theorem one_ne_zero_pam : (1 : PAM M) ≠ 0 :=
@@ -643,7 +643,7 @@ theorem two_ne_zero_pam : (2 : PAM M) ≠ 0 :=
   ne_of_gt zero_lt_two_pam
 
 omit [PAStructure M] [PAModel M] in
-theorem hasFree_false_of_maxVar_le_pam {φ : PAFormula} {w : ℕ} (h : φ.maxVar ≤ w) :
+private theorem hasFree_false_of_maxVar_le_pam {φ : PAFormula} {w : ℕ} (h : φ.maxVar ≤ w) :
     φ.hasFree w = false := by
   induction φ with
   | bot => rfl
@@ -658,7 +658,7 @@ theorem hasFree_false_of_maxVar_le_pam {φ : PAFormula} {w : ℕ} (h : φ.maxVar
     simp [PAFormula.hasFree, ih h.2]
 
 omit [PAStructure M] [PAModel M] in
-theorem freeFor_var_of_maxVar_le_pam {φ : PAFormula} {x w : ℕ} (h : φ.maxVar ≤ w) :
+private theorem freeFor_var_of_maxVar_le_pam {φ : PAFormula} {x w : ℕ} (h : φ.maxVar ≤ w) :
     φ.freeFor x (.var w) = true := by
   induction φ with
   | bot | eq _ _ => rfl
@@ -671,7 +671,7 @@ theorem freeFor_var_of_maxVar_le_pam {φ : PAFormula} {x w : ℕ} (h : φ.maxVar
     simp [PAFormula.freeFor, PATerm.hasVar, hwz, ih h.2]
 
 /-- Strong first-order induction on `PAM M` for any predicate equivalent to a `PAFormula`. -/
-theorem strong_ind_pred {P : PAM M → Prop}
+private theorem strong_ind_pred {P : PAM M → Prop}
     (hdef : ∃ (x : ℕ) (φ : PAFormula) (v : ℕ → PAM M),
       ∀ a : PAM M, PAFormula.HoldsIn (Function.update v x a) φ ↔ P a)
     (hstep : ∀ a : PAM M, (∀ b < a, P b) → P a) :
@@ -731,7 +731,7 @@ theorem div_mod_exists {b : PAM M} (hb : 0 < b) (a : PAM M) :
     · refine ⟨q, r + 1, by ring, ?_⟩
       exact lt_of_le_of_ne hr hrb
 
-theorem div_mod_unique {b q₁ r₁ q₂ r₂ : PAM M} (hr₁ : r₁ < b) (hr₂ : r₂ < b)
+private theorem div_mod_unique {b q₁ r₁ q₂ r₂ : PAM M} (hr₁ : r₁ < b) (hr₂ : r₂ < b)
     (h : b * q₁ + r₁ = b * q₂ + r₂) : q₁ = q₂ ∧ r₁ = r₂ := by
   have hq : q₁ = q₂ := by
     rcases lt_trichotomy q₁ q₂ with hlt | rfl | hgt
@@ -802,7 +802,7 @@ theorem div_mod_eq_iff {a b q r : PAM M} (hr : r < b) :
   · intro ha
     exact div_mod_unique (mod_lt_pam a hb) hr (by rw [div_add_mod_pam, ha])
 
-theorem mod_eq_of_lt_pam {a b : PAM M} (h : a < b) : a % b = a :=
+private theorem mod_eq_of_lt_pam {a b : PAM M} (h : a < b) : a % b = a :=
   ((div_mod_eq_iff (q := 0) h).mpr (by ring)).2
 
 theorem add_mul_mod_self_left_pam (r m q : PAM M) : (r + m * q) % m = r % m := by
@@ -835,7 +835,7 @@ noncomputable def mHalf (a : PAM M) : PAM M :=
 def mCons (b : Fin 2) (x : PAM M) : PAM M :=
   2 * x + (b.val : PAM M)
 
-theorem mod_two_eq_zero_or_one (a : PAM M) : a % 2 = 0 ∨ a % 2 = 1 := by
+private theorem mod_two_eq_zero_or_one (a : PAM M) : a % 2 = 0 ∨ a % 2 = 1 := by
   have hlt : a % 2 < ((2 : ℕ) : PAM M) := by simpa using mod_lt_pam a zero_lt_two_pam
   obtain ⟨k, hk, heq⟩ := lt_natCast_iff.mp hlt
   rcases k with _ | _ | k
@@ -887,7 +887,7 @@ theorem mHalf_zero : mHalf (0 : PAM M) = 0 := by
 
 /-! ## Section 4: Bijective Cantor Pairing `mPair` / `mUnpair` -/
 
-theorem two_dvd_mul_succ_pam (s : PAM M) : ∃ k : PAM M, s * (s + 1) = 2 * k := by
+private theorem two_dvd_mul_succ_pam (s : PAM M) : ∃ k : PAM M, s * (s + 1) = 2 * k := by
   have hs := div_add_mod_pam s 2
   rcases mod_two_eq_zero_or_one s with h0 | h1
   · refine ⟨(s / 2) * (2 * (s / 2) + 1), ?_⟩
@@ -940,7 +940,7 @@ theorem mPair_natCast (x y : ℕ) : mPair (x : PAM M) (y : PAM M) = (cantorPair 
   have hcast := congrArg (Nat.cast (R := PAM M)) hnat.symm
   simpa [Nat.cast_add, Nat.cast_mul] using hcast
 
-theorem paCantorPairEq_holdsIn_iff (v : ℕ → PAM M) (x y z : PATerm) :
+private theorem paCantorPairEq_holdsIn_iff (v : ℕ → PAM M) (x y z : PATerm) :
     PAFormula.HoldsIn v (paCantorPairEq x y z) ↔
       PATerm.evalIn v z = mPair (PATerm.evalIn v x) (PATerm.evalIn v y) := by
   unfold paCantorPairEq
@@ -1010,7 +1010,7 @@ theorem mUnpair_mPair (x y : PAM M) : mUnpair (mPair x y) = (x, y) := by
 theorem le_mPair_left (x y : PAM M) : x ≤ mPair x y :=
   ⟨((x + y) * (x + y + 1)) / 2, rfl⟩
 
-theorem mul_le_mul_iff_of_pos_left_pam {a b c : PAM M} (hc : 0 < c) :
+private theorem mul_le_mul_iff_of_pos_left_pam {a b c : PAM M} (hc : 0 < c) :
     c * a ≤ c * b ↔ a ≤ b := by
   refine ⟨fun h ↦ ?_, fun h ↦ mul_le_mul_pam le_rfl h⟩
   by_contra hnot
@@ -1024,7 +1024,7 @@ theorem le_mPair_right (x y : PAM M) : y ≤ mPair x y := by
     exact ⟨5 * x + (x + y') * (x + y') + y', by ring⟩
 
 omit [PAModel M] in
-theorem paDisjList_holdsIn_iff (v : ℕ → PAM M) (L : List PAFormula) :
+private theorem paDisjList_holdsIn_iff (v : ℕ → PAM M) (L : List PAFormula) :
     PAFormula.HoldsIn v (paDisjList L) ↔ ∃ φ ∈ L, PAFormula.HoldsIn v φ := by
   match L with
   | [] => simp [paDisjList, PAFormula.HoldsIn]
@@ -1034,12 +1034,12 @@ theorem paDisjList_holdsIn_iff (v : ℕ → PAM M) (L : List PAFormula) :
       List.mem_cons, exists_eq_or_imp]
 
 /-- Evaluate a symbolic `PAZFTerm` in `PAM M`. -/
-noncomputable def evalPAZFTerm (v : ℕ → PAM M) : PAZFTerm → PAM M
+private noncomputable def evalPAZFTerm (v : ℕ → PAM M) : PAZFTerm → PAM M
   | .var x => v x
   | .const n => (n : PAM M)
   | .pair a b => mPair (evalPAZFTerm v a) (evalPAZFTerm v b)
 
-theorem evalPAZFTerm_congr {v₁ v₂ : ℕ → PAM M} {e : PAZFTerm}
+private theorem evalPAZFTerm_congr {v₁ v₂ : ℕ → PAM M} {e : PAZFTerm}
     (h : ∀ x < e.freshVar, v₁ x = v₂ x) :
     evalPAZFTerm v₁ e = evalPAZFTerm v₂ e := by
   induction e with
@@ -1050,11 +1050,11 @@ theorem evalPAZFTerm_congr {v₁ v₂ : ℕ → PAM M} {e : PAZFTerm}
     · exact lt_of_lt_of_le hx (Nat.le_max_left _ _)
     · exact lt_of_lt_of_le hx (Nat.le_max_right _ _)
 
-theorem evalPAZFTerm_update_fresh (v : ℕ → PAM M) {e : PAZFTerm} {x : ℕ} (a : PAM M)
+private theorem evalPAZFTerm_update_fresh (v : ℕ → PAM M) {e : PAZFTerm} {x : ℕ} (a : PAM M)
     (h : e.freshVar ≤ x) : evalPAZFTerm (Function.update v x a) e = evalPAZFTerm v e :=
   evalPAZFTerm_congr fun (y : ℕ) _ ↦ Function.update_of_ne (by omega : y ≠ x) a v
 
-theorem eqFormula_holdsIn_iff (e : PAZFTerm) (out : PATerm) (base : ℕ) (v : ℕ → PAM M)
+private theorem eqFormula_holdsIn_iff (e : PAZFTerm) (out : PATerm) (base : ℕ) (v : ℕ → PAM M)
     (he : e.freshVar ≤ base) (hout : out.freshVar ≤ base) :
     PAFormula.HoldsIn v (e.eqFormula out base) ↔ PATerm.evalIn v out = evalPAZFTerm v e := by
   induction e generalizing out base v with
@@ -1118,14 +1118,14 @@ theorem eqFormula_holdsIn_iff (e : PAZFTerm) (out : PATerm) (base : ℕ) (v : �
 
 /-! ## Section 4b: Compositional First-Order Definability (`PADefN`, `PAFunN`) -/
 
-def renameAllTerm (σ : ℕ → ℕ) : PATerm → PATerm
+private def renameAllTerm (σ : ℕ → ℕ) : PATerm → PATerm
   | .var x => .var (σ x)
   | .zero => .zero
   | .succ t => .succ (renameAllTerm σ t)
   | .add t₁ t₂ => .add (renameAllTerm σ t₁) (renameAllTerm σ t₂)
   | .mul t₁ t₂ => .mul (renameAllTerm σ t₁) (renameAllTerm σ t₂)
 
-def renameAllFormula (σ : ℕ → ℕ) : PAFormula → PAFormula
+private def renameAllFormula (σ : ℕ → ℕ) : PAFormula → PAFormula
   | .bot => .bot
   | .eq t₁ t₂ => .eq (renameAllTerm σ t₁) (renameAllTerm σ t₂)
   | .and φ ψ => .and (renameAllFormula σ φ) (renameAllFormula σ ψ)
@@ -1135,7 +1135,7 @@ def renameAllFormula (σ : ℕ → ℕ) : PAFormula → PAFormula
   | .ex x φ => .ex (σ x) (renameAllFormula σ φ)
 
 omit [PAModel M] in
-theorem evalIn_renameAllTerm (σ : ℕ → ℕ) (u : ℕ → PAM M) (t : PATerm) :
+private theorem evalIn_renameAllTerm (σ : ℕ → ℕ) (u : ℕ → PAM M) (t : PATerm) :
     PATerm.evalIn u (renameAllTerm σ t) = PATerm.evalIn (u ∘ σ) t := by
   induction t with
   | var _ | zero => rfl
@@ -1144,7 +1144,7 @@ theorem evalIn_renameAllTerm (σ : ℕ → ℕ) (u : ℕ → PAM M) (t : PATerm)
   | mul _ _ ih₁ ih₂ => exact congrArg₂ PAStructure.mul ih₁ ih₂
 
 omit [PAModel M] in
-theorem holdsIn_renameAllFormula {σ : ℕ → ℕ} (hσ : Function.Injective σ)
+private theorem holdsIn_renameAllFormula {σ : ℕ → ℕ} (hσ : Function.Injective σ)
     (u : ℕ → PAM M) (φ : PAFormula) :
     PAFormula.HoldsIn u (renameAllFormula σ φ) ↔ PAFormula.HoldsIn (u ∘ σ) φ := by
   induction φ generalizing u with
@@ -1178,12 +1178,12 @@ def paEnv {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) (x : ℕ) : PAM
   if h : x < k then args ⟨x, h⟩ else v x
 
 omit [PAStructure M] [PAModel M] in
-theorem paEnv_lt {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) {x : ℕ} (h : x < k) :
+private theorem paEnv_lt {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) {x : ℕ} (h : x < k) :
     paEnv v args x = args ⟨x, h⟩ :=
   dite_eq_left_of_eq_true (eq_true h)
 
 omit [PAStructure M] [PAModel M] in
-theorem paEnv_ge {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) {x : ℕ} (h : ¬ x < k) :
+private theorem paEnv_ge {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) {x : ℕ} (h : ¬ x < k) :
     paEnv v args x = v x :=
   dite_eq_right_of_eq_false (eq_false h)
 
@@ -1262,7 +1262,7 @@ theorem paDef_not {k : ℕ} {P : (Fin k → PAM M) → Prop} (hP : PADefN k P) :
   exact ⟨φ.not, v, fun args ↦ not_congr (hφ args)⟩
 
 omit [PAModel M] in
-theorem paDef_merge {k : ℕ} {P Q : (Fin k → PAM M) → Prop}
+private theorem paDef_merge {k : ℕ} {P Q : (Fin k → PAM M) → Prop}
     (hP : PADefN k P) (hQ : PADefN k Q) :
     ∃ (φ₁ φ₂ : PAFormula) (v : ℕ → PAM M), ∀ args : Fin k → PAM M,
       (PAFormula.HoldsIn (paEnv v args) φ₁ ↔ P args) ∧
@@ -1326,7 +1326,7 @@ theorem paDef_iff {k : ℕ} {P Q : (Fin k → PAM M) → Prop}
     (paDef_and (paDef_imp hP hQ) (paDef_imp hQ hP))
 
 omit [PAStructure M] [PAModel M] in
-theorem update_paEnv_eq_snoc {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) (a : PAM M) :
+private theorem update_paEnv_eq_snoc {k : ℕ} (v : ℕ → PAM M) (args : Fin k → PAM M) (a : PAM M) :
     Function.update (paEnv v args) k a = paEnv v (Fin.snoc args a) := by
   funext x
   by_cases hxk : x = k
@@ -1381,7 +1381,7 @@ theorem paDef_weaken {k : ℕ} {P : (Fin k → PAM M) → Prop} (hP : PADefN k P
     rfl
 
 omit [PAModel M] in
-theorem paDef_subst_last {k : ℕ} {f : (Fin k → PAM M) → PAM M}
+private theorem paDef_subst_last {k : ℕ} {f : (Fin k → PAM M) → PAM M}
     {R : (Fin (k + 1) → PAM M) → Prop} (hf : PAFunN k f) (hR : PADefN (k + 1) R) :
     PADefN k (fun args ↦ R (Fin.snoc args (f args))) := by
   refine paDefN_congr (fun args ↦ ?_) (paDef_ex (paDef_and hf hR))
@@ -1674,7 +1674,7 @@ theorem paFun_mBeta {k : ℕ} {fc fd fi : (Fin k → PAM M) → PAM M}
     PAFunN k (fun args ↦ mBeta (fc args) (fd args) (fi args)) :=
   paFun_mod hc (paFun_add (paFun_const 1) (paFun_mul (paFun_add hi (paFun_const 1)) hd))
 
-theorem paBetaEq_holdsIn_iff (v : ℕ → PAM M) (c d i r : PATerm) :
+private theorem paBetaEq_holdsIn_iff (v : ℕ → PAM M) (c d i r : PATerm) :
     PAFormula.HoldsIn v (paBetaEq c d i r) ↔
       mBeta (PATerm.evalIn v c) (PATerm.evalIn v d) (PATerm.evalIn v i) =
         PATerm.evalIn v r := by
@@ -1713,12 +1713,12 @@ theorem mBeta_singleton (val : PAM M) : mBeta val (val + 1) 0 = val := by
   unfold mBeta
   exact mod_eq_of_lt_pam ⟨1, by ring⟩
 
-def DvdPAM (a b : PAM M) : Prop := ∃ q : PAM M, b = a * q
+private def DvdPAM (a b : PAM M) : Prop := ∃ q : PAM M, b = a * q
 
-def BezoutPAM (a b : PAM M) : Prop := ∃ u v : PAM M, u * a = v * b + 1
+private def BezoutPAM (a b : PAM M) : Prop := ∃ u v : PAM M, u * a = v * b + 1
 
 omit [PAModel M] in
-theorem paDef_dvd {k : ℕ} {f g : (Fin k → PAM M) → PAM M}
+private theorem paDef_dvd {k : ℕ} {f g : (Fin k → PAM M) → PAM M}
     (hf : PAFunN k f) (hg : PAFunN k g) : PADefN k (fun args ↦ DvdPAM (f args) (g args)) := by
   refine paDefN_congr (fun args ↦ ?_)
     (paDef_ex (paDef_eq (paFun_weaken hg)
@@ -1726,7 +1726,7 @@ theorem paDef_dvd {k : ℕ} {f g : (Fin k → PAM M) → PAM M}
   simp only [DvdPAM, Fin.snoc_last, Fin.init_snoc]
 
 omit [PAModel M] in
-theorem paDef_bezout {k : ℕ} {f g : (Fin k → PAM M) → PAM M}
+private theorem paDef_bezout {k : ℕ} {f g : (Fin k → PAM M) → PAM M}
     (hf : PAFunN k f) (hg : PAFunN k g) : PADefN k (fun args ↦ BezoutPAM (f args) (g args)) := by
   have hu : PAFunN (k + 2) (fun b : Fin (k + 2) → PAM M ↦ b ⟨k, by omega⟩) :=
     paFun_proj ⟨k, by omega⟩
@@ -2035,7 +2035,7 @@ theorem mBeta_concat (n₁ c₁ d₁ n₂ c₂ d₂ : PAM M) :
 def IsPow2Seq (c d r y : PAM M) : Prop :=
   mBeta c d 0 = 1 ∧ (∀ j < r, mBeta c d (j + 1) = 2 * mBeta c d j) ∧ mBeta c d r = y
 
-theorem paDef_isPow2Seq {k : ℕ} {fc fd fr fy : (Fin k → PAM M) → PAM M}
+private theorem paDef_isPow2Seq {k : ℕ} {fc fd fr fy : (Fin k → PAM M) → PAM M}
     (hc : PAFunN k fc) (hd : PAFunN k fd) (hr : PAFunN k fr) (hy : PAFunN k fy) :
     PADefN k (fun a ↦ IsPow2Seq (fc a) (fd a) (fr a) (fy a)) := by
   have h0 : PADefN k (fun a ↦ mBeta (fc a) (fd a) 0 = 1) :=
@@ -2076,7 +2076,7 @@ theorem exists_pow2Seq (r : PAM M) : ∃ y c d : PAM M, IsPow2Seq c d r y := by
           hprev j (lt_trans hjlt (lt_succ_self_pam r₀)), hstep j hjlt]
       · rw [hlast, hprev j (lt_succ_self_pam j), hr]
 
-theorem isPow2Seq_unique {c₁ d₁ r y₁ c₂ d₂ y₂ : PAM M}
+private theorem isPow2Seq_unique {c₁ d₁ r y₁ c₂ d₂ y₂ : PAM M}
     (h₁ : IsPow2Seq c₁ d₁ r y₁) (h₂ : IsPow2Seq c₂ d₂ r y₂) : y₁ = y₂ := by
   have hdef : PADef1 (fun j : PAM M ↦ j ≤ r → mBeta c₁ d₁ j = mBeta c₂ d₂ j) :=
     paDef_imp (paDef_le (paFun_proj 0) (paFun_const r))
@@ -2092,7 +2092,7 @@ theorem isPow2Seq_unique {c₁ d₁ r y₁ c₂ d₂ y₂ : PAM M}
 noncomputable def mPow2 (r : PAM M) : PAM M :=
   Classical.choose (exists_pow2Seq r)
 
-theorem exists_isPow2Seq_mPow2 (r : PAM M) : ∃ c d : PAM M, IsPow2Seq c d r (mPow2 r) :=
+private theorem exists_isPow2Seq_mPow2 (r : PAM M) : ∃ c d : PAM M, IsPow2Seq c d r (mPow2 r) :=
   Classical.choose_spec (exists_pow2Seq r)
 
 theorem paFun_mPow2 {k : ℕ} {fr : (Fin k → PAM M) → PAM M} (hr : PAFunN k fr) :
@@ -2210,7 +2210,7 @@ theorem mRep0_add (a b R : PAM M) : mRep0 (a + b) R = mRep0 a (mRep0 b R) := by
 theorem mRep1_zero (R : PAM M) : mRep1 0 R = R := by
   simp [mRep1]
 
-theorem mRep1_add_one (r R : PAM M) : mRep1 r R + 1 = mPow2 r * (R + 1) := by
+private theorem mRep1_add_one (r R : PAM M) : mRep1 r R + 1 = mPow2 r * (R + 1) := by
   unfold mRep1
   have h1 := sub_add_cancel_pam (one_le_mPow2 r)
   calc mPow2 r * R + (mPow2 r - 1) + 1
@@ -2324,7 +2324,7 @@ private theorem pzPackCfg_fresh_le (q h x y : ℕ) (hx : x < 10) (hy : y < 10) :
   simp only [pzPackCfg, PAZFTerm.freshVar]
   omega
 
-theorem paStep_holdsIn_iff {states : ℕ} (tm : Machine states 2) (v : ℕ → PAM M) :
+private theorem paStep_holdsIn_iff {states : ℕ} (tm : Machine states 2) (v : ℕ → PAM M) :
     PAFormula.HoldsIn v (paStep tm) ↔
       ∃ c c' : MCfg states M,
         v 4 = mEncodeCfg c ∧ v 5 = mEncodeCfg c' ∧ mStep tm c = some c' := by
@@ -2470,7 +2470,7 @@ theorem paStep_holdsIn_iff {states : ℕ} (tm : Machine states 2) (v : ℕ → P
               hv7', hv9', h']
             exact (mCons_mBit_mHalf R).symm
 
-theorem paHalted_holdsIn_iff {states : ℕ} (tm : Machine states 2) (v : ℕ → PAM M) :
+private theorem paHalted_holdsIn_iff {states : ℕ} (tm : Machine states 2) (v : ℕ → PAM M) :
     PAFormula.HoldsIn v (paHalted tm) ↔
       ∃ c : MCfg states M, v 4 = mEncodeCfg c ∧ mStep tm c = none := by
   unfold paHalted
@@ -2536,7 +2536,7 @@ def mHalts (M : Type*) [PAStructure M] [PAModel M] {states : ℕ} [NeZero states
     (tm : Machine states 2) : Prop :=
   mHaltsFrom tm (mInit : MCfg states M)
 
-theorem paDef_mStepCode {states : ℕ} (tm : Machine states 2) {k : ℕ}
+private theorem paDef_mStepCode {states : ℕ} (tm : Machine states 2) {k : ℕ}
     {fx fy : (Fin k → PAM M) → PAM M} (hx : PAFunN k fx) (hy : PAFunN k fy) :
     PADefN k (fun a ↦ ∃ x y : MCfg states M,
       fx a = mEncodeCfg x ∧ fy a = mEncodeCfg y ∧ mStep tm x = some y) := by
@@ -2943,7 +2943,7 @@ theorem mHalf_embedHalf (L : ListBlank (Fin 2)) :
     rfl
   rw [h, mHalf_mCons]
 
-theorem mStep_embedCfg_some {states : ℕ} {tm : Machine states 2} {c c' : Cfg states 2}
+private theorem mStep_embedCfg_some {states : ℕ} {tm : Machine states 2} {c c' : Cfg states 2}
     (h : step tm c = some c') :
     mStep tm (embedCfg (M := M) c) = some (embedCfg (M := M) c') := by
   rcases c with ⟨q, hd, L, R⟩
@@ -3165,7 +3165,7 @@ def MZFInconsistent (M : Type*) [PAStructure M] [PAModel M] : Prop :=
     (∀ i ≤ n, MIsZFStep c d i (mBeta c d i)) ∧
     mBeta c d n = mZfMem 0 0
 
-theorem paIsZFStep_holdsIn_iff (v : ℕ → PAM M) :
+private theorem paIsZFStep_holdsIn_iff (v : ℕ → PAM M) :
     PAFormula.HoldsIn v paIsZFStep ↔ MIsZFStep (v 1) (v 2) (v 3) (v 4) := by
   unfold paIsZFStep MIsZFStep MIsZFAxiom
   rw [paDisjList_holdsIn_iff]

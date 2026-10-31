@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.Semantics.PA.Zf393BackendInternal
+public import Cryptids.Semantics.PA.Zf393.Backend
 
 /-!
 # Internal `PA` Layer 2 Program & Spine Verification for `zf_393`
@@ -25,8 +25,6 @@ open StateTransition ConjectureMachines
 open ConjectureMachines.Zf393
 open ConjectureMachines.Zf393.Layer2
 open PAM
-
-set_option maxRecDepth 200000
 
 section ProgramInternal
 
@@ -2857,6 +2855,7 @@ noncomputable def mRpnZf393AllClausesOp (s : MWffState M) : MWffState M :=
 noncomputable def mRpnZf393AllClauses (top stk ac p1 p2 p3 : PAM M) : MWffState M :=
   mRpnZf393AllClausesOp ⟨top, stk, ac, p1, p2, p3⟩
 
+set_option maxRecDepth 50000 in
 theorem mWffSpineEval_13_123 : MWffSpineEval (M := M) 13 123 mRpnZf393AllClausesOp :=
   mWffSpineEval_trans mWffSpineEval_13_21 <|
   mWffSpineEval_trans mWffSpineEval_21_29 <|
@@ -3065,7 +3064,11 @@ private theorem add_natCast_eq_pamSuccChain (d : PAM M) :
 private theorem natCast_eq_pamSuccChain (k : ℕ) : (k : PAM M) = pamSuccChain k 0 := by
   simpa using add_natCast_eq_pamSuccChain (0 : PAM M) k
 
-set_option linter.flexible false in
+@[simp]
+private theorem prod_mk_ite {α β : Type*} (c : Prop) [Decidable c] (a b : α) (y : β) :
+    (if c then a else b, y) = if c then (a, y) else (b, y) := by
+  split_ifs <;> rfl
+
 theorem mRpnZf393AllClauses_eq_mZf393ClauseDispatch (topwff wffstack ac p1 p2 p3 : PAM M) :
     let out := mRpnZf393AllClauses topwff wffstack ac p1 p2 p3
     (out.topwff, out.wffstack) = mZf393ClauseDispatch topwff wffstack ac p1 p2 p3 := by
@@ -3086,8 +3089,6 @@ theorem mRpnZf393AllClauses_eq_mZf393ClauseDispatch (topwff wffstack ac p1 p2 p3
       unfold mRpnZf393AllClauses mRpnZf393AllClausesOp
       simp [mRpnVk, mRpnClauseDET, mRpnDetCheck, mRpnClauseGEN, mRpnCparam2, mRpnCparam3,
         mRpnPar1, mRpnPar3]
-    all_goals
-      try (split_ifs <;> rfl)
   · have hne : ∀ (n : ℕ), n < 20 → ac ≠ (n : PAM M) :=
       fun n hn heq ↦ not_lt_of_ge hge20 (heq ▸ natCast_lt_iff.mpr hn)
     unfold mZf393ClauseDispatch

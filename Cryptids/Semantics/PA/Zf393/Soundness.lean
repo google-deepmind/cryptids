@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.Semantics.PA.Zf393ProgramInternal
-public import Cryptids.Semantics.PA.Zf380Internal
+public import Cryptids.Semantics.PA.Zf393.Program
+public import Cryptids.Semantics.PA.Zf380
 
 /-!
 # Internalized `ZF` Soundness & Completeness of `zf_393` and `zf_380` in `PA`
