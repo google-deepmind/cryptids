@@ -20,6 +20,9 @@ holdouts:
   set.
 - `HasStackedCollatzReduction` — `M` is governed by a closed accelerated stack-word tape pattern
   set.
+- `HasStackReduction` — `M` is governed by a closed 2nd-order digit-stack system.
+- `HasOdometerReduction` — `M` is governed by a closed mixed-radix odometer-word hub.
+- `HasTransducerReduction` — `M` is governed by a closed bidirectional word-stack transducer.
 -/
 
 @[expose] public section
@@ -314,5 +317,369 @@ This existential summary is always paired in `BusyBeaverChallenge.lean` with a c
 (`IsValidAcceleration M start encode next`). -/
 def HasStackedCollatzReduction [DecidableEq Γ] (M : Machine Γ Λ) : Prop :=
   ∃ ps : StackPatternSet Γ Λ, IsClosedStackPatternSet M ps
+
+/-- Allowed half-tape views in a separator mode: either a fixed prefix in front of the encoded
+stack, or a fixed prefix in front of its `.tail`. -/
+inductive HalfTapeView (Γ : Type*) where
+  /-- Fixed prefix `pfx` directly in front of the encoded stack. -/
+  | id (pfx : List Γ)
+  /-- Fixed prefix `pfx` in front of the `.tail` of the encoded stack. -/
+  | tail (pfx : List Γ)
+
+/-- Apply a `HalfTapeView Γ` to an encoded half-tape `ListBlank Γ`. -/
+def applyView {Γ : Type*} [Inhabited Γ] : HalfTapeView Γ → ListBlank Γ → ListBlank Γ
+  | .id pfx, s => ListBlank.append pfx s
+  | .tail pfx, s => ListBlank.append pfx s.tail
+
+/-- Right-nested `n`-tuple of natural numbers indexed by the machine's symbol count `n`
+(`ℕ × ℕ` for 2-symbol machines, `ℕ × ℕ × ℕ` for 3-symbol machines, etc.). -/
+@[reducible] def StackTuple (n : ℕ) : Type :=
+  Nat.casesOn n Unit (fun m => Nat.rec ℕ (fun _ ih => ℕ × ih) m)
+
+/-- Primary coordinate of a `StackTuple n`. -/
+@[reducible, simp] def stackDigit {n : ℕ} : StackTuple n → ℕ :=
+  Nat.casesOn (motive := fun n => StackTuple n → ℕ) n
+    (fun _ => 0)
+    (fun m => Nat.casesOn (motive := fun m => StackTuple (m + 1) → ℕ) m
+      (fun a => a)
+      (fun _ p => p.1))
+
+/-- Separator run length for the `(n + 1)`-symbol tail of a `StackTuple (n + 2)`. -/
+@[reducible, simp] def stackSepLen {n : ℕ} (sep maxSep : ℕ) : StackTuple n → ℕ :=
+  Nat.casesOn (motive := fun n => StackTuple n → ℕ) n
+    (fun _ => 0)
+    (fun m => Nat.casesOn (motive := fun m => StackTuple (m + 1) → ℕ) m
+      (fun b => sep + b % maxSep)
+      (fun k p => (sep + p.1 % maxSep) * stackDigit (n := k + 1) p.2))
+
+/-- Valid `(dSym, sSym)` symbol polarity for a `(k + 2)`-symbol machine: for 2-symbol machines
+(`k = 0`), `(dSym, sSym) ∈ {(1, 0), (0, 1)}`; for `(k + 3)`-symbol machines (`k ≥ 1`), any
+distinct `dSym ≠ sSym`. -/
+@[reducible] def IsValidStackPolarity : {k : ℕ} → Fin (k + 2) → Fin (k + 2) → Prop
+  | 0, dSym, sSym =>
+    (dSym = (1 : Fin 2) ∧ sSym = (0 : Fin 2)) ∨ (dSym = (0 : Fin 2) ∧ sSym = (1 : Fin 2))
+  | _ + 1, dSym, sSym => dSym ≠ sSym
+
+/-- Every `StackMode` evaluates `(L, R)` as a fixed control state `q` and fixed bounded
+`HalfTapeView`s `vL, vR` (`≤ 8`-symbol prefixes) of `encLeft L` and `encRight R` (either scanning
+`0` between them or stepping onto the left or right view). -/
+def IsValidStackModes {Γ Λ StackMode α : Type*} [Inhabited Γ] [OfNat Γ 0]
+    (encLeft encRight : List α → ListBlank Γ)
+    (eval : StackMode → List α → List α → Cfg Γ Λ) : Prop :=
+  ∀ m : StackMode, ∃ (q : Λ) (vL vR : HalfTapeView Γ),
+    (HalfTapeView.casesOn vL List.length List.length) ≤ 8 ∧
+    (HalfTapeView.casesOn vR List.length List.length) ≤ 8 ∧
+    ((∀ L R, eval m L R =
+      ⟨some q, ⟨(0 : Γ), applyView vL (encLeft L), applyView vR (encRight R)⟩⟩) ∨
+    (∀ L R, eval m L R = Cfg.headLeft q (applyView vL (encLeft L)) (applyView vR (encRight R))) ∨
+    (∀ L R, eval m L R = Cfg.headRight q (applyView vL (encLeft L)) (applyView vR (encRight R))))
+
+/-- The blank-tape trajectory of `M` enters a closed 2nd-order digit-stack configuration family
+over `(k + 2)`-symbol tuple stacks `List (StackTuple (k + 2))` with valid symbol polarity,
+parametric unary-block stack recurrences (`strideL, offsetL, sepL, strideR, offsetR, sepR > 0`,
+`1 ≤ maxSepL, maxSepR ≤ 4`), head-`dSym` non-surjectivity, at most 6 bounded-prefix modes
+(`IsValidStackModes`), blank-tape multi-digit stack reachability (`3 ≤ L_g.length + R_g.length`
+with a positive digit), an arbitrary-depth stack-frame transfer transition, and closure under
+`ReachesPlus` up to halting. -/
+def HasStackReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (StackMode : Type)
+    (dSym sSym : Fin (k + 2))
+    (encLeft encRight : List (StackTuple (k + 2)) → ListBlank (Fin (k + 2)))
+    (evalStackCfg :
+      StackMode → List (StackTuple (k + 2)) → List (StackTuple (k + 2)) → Cfg (Fin (k + 2)) Λ)
+    (IsInStackSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    IsValidStackPolarity dSym sSym ∧
+    encLeft [] = default ∧
+    encRight [] = default ∧
+    (∀ a b L, (encLeft ((a, b) :: L)).head = dSym) ∧
+    (∀ d b R, (encRight ((d, b) :: R)).head = dSym) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ L : List (StackTuple (k + 2)), encLeft L ≠ t) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ R : List (StackTuple (k + 2)), encRight R ≠ t) ∧
+    (∃ strideL offsetL sepL maxSepL strideR offsetR sepR maxSepR : ℕ,
+      strideL > 0 ∧ offsetL > 0 ∧ sepL > 0 ∧ 1 ≤ maxSepL ∧ maxSepL ≤ 4 ∧
+      strideR > 0 ∧ offsetR > 0 ∧ sepR > 0 ∧ 1 ≤ maxSepR ∧ maxSepR ≤ 4 ∧
+      (∀ a b L, encLeft ((a, b) :: L) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideL * a + offsetL))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepL maxSepL b))
+            (encLeft L))) ∧
+      (∀ d b R, encRight ((d, b) :: R) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideR * d + offsetR))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepR maxSepR b))
+            (encRight R)))) ∧
+    (∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes) ∧
+    IsValidStackModes encLeft encRight evalStackCfg ∧
+    (∀ cfg, IsInStackSystem cfg ↔ ∃ m L R, cfg = evalStackCfg m L R) ∧
+    (∀ m L R, IsInStackSystem (evalStackCfg m L R)) ∧
+    (∃ (m_g : StackMode) (L_g R_g : List (StackTuple (k + 2))),
+      ReachesPlus M (init []) (evalStackCfg m_g L_g R_g) ∧
+      3 ≤ L_g.length + R_g.length ∧
+      (∃ x ∈ L_g ++ R_g, 1 ≤ x.1)) ∧
+    ((∃ (m m' : StackMode) (x : StackTuple (k + 2))
+        (g : StackTuple (k + 2) → StackTuple (k + 2))
+        (f : List (StackTuple (k + 2)) → List (StackTuple (k + 2))),
+        (∀ s, s.length ≤ (f s).length) ∧
+        ∀ z L R,
+          ReachesPlus M (evalStackCfg m (x :: z :: L) R) (evalStackCfg m' (g z :: L) (f R))) ∨
+      (∃ (m m' : StackMode) (x : StackTuple (k + 2))
+        (g : StackTuple (k + 2) → StackTuple (k + 2))
+        (f : List (StackTuple (k + 2)) → List (StackTuple (k + 2))),
+        (∀ s, s.length ≤ (f s).length) ∧
+        ∀ z L R,
+          ReachesPlus M (evalStackCfg m L (x :: z :: R)) (evalStackCfg m' (f L) (g z :: R)))) ∧
+    (∀ cfg, IsInStackSystem cfg →
+      ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
+
+/-- Tape orientation for a mixed-radix odometer-word system (`HasOdometerReduction`). -/
+inductive OdomSide where
+  /-- Odometer stack on the left half-tape and active word on the right half-tape. -/
+  | leftOdom
+  /-- Odometer stack on the right half-tape and active word on the left half-tape. -/
+  | rightOdom
+
+/-- Evaluate the outward-facing hub configuration (head at `q_R` facing the active word `w` across
+fixed boundary prefix `pfx_R`). -/
+@[reducible, simp]
+def evalOdomR {Γ Λ : Type*} [Inhabited Γ]
+    (side : OdomSide) (q_R : Λ) (pfx_R : List Γ)
+    (encOdom : ListBlank Γ) (w : ListBlank Γ) : Cfg Γ Λ :=
+  match side with
+  | .leftOdom => Cfg.headRight q_R (ListBlank.append pfx_R encOdom) w
+  | .rightOdom => Cfg.headLeft q_R w (ListBlank.append pfx_R encOdom)
+
+/-- Evaluate the inward-facing odometer entry configuration (head at `q_L` facing the odometer
+stack `encOdom` across fixed boundary prefix `pfx_L`). -/
+@[reducible, simp]
+def evalOdomL {Γ Λ : Type*} [Inhabited Γ]
+    (side : OdomSide) (q_L : Λ) (pfx_L : List Γ)
+    (encOdom : ListBlank Γ) (w : ListBlank Γ) : Cfg Γ Λ :=
+  match side with
+  | .leftOdom => Cfg.headLeft q_L encOdom (ListBlank.append pfx_L w)
+  | .rightOdom => Cfg.headRight q_L (ListBlank.append pfx_L w) encOdom
+
+/-- The blank-tape trajectory of `M` enters a closed outward-facing odometer-word hub coupled with
+a non-surjective multi-bit mixed-radix odometer stack (`OdomTok`, `cap`, `dec`, `drain`) supporting
+odd-doubling (`2c + 1`), even-doubling (`2c`), and base-`b` division (`c / b`, `b ≥ 2`) frames,
+universal capacity decrement (`cap stk ≥ 1`) and full-stack drain (`cap stk = 0`), active `0`-bit
+reflection, and push/reflect/halt closure under `ReachesPlus`. -/
+def HasOdometerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (OdomTok : Type)
+    (side : OdomSide)
+    (q_R : List OdomTok → Λ)
+    (q_L : Λ)
+    (pfx_R pfx_L odomBase : List (Fin (k + 2)))
+    (odomWord : OdomTok → List (Fin (k + 2)))
+    (encOdom : List OdomTok → ListBlank (Fin (k + 2)))
+    (cap : List OdomTok → ℕ)
+    (dec : List OdomTok → List OdomTok)
+    (decPfx : List OdomTok → List (Fin (k + 2)))
+    (drain : List OdomTok → List (Fin (k + 2)))
+    (IsInOdomSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    (∃ toks : List OdomTok, 2 ≤ toks.length ∧ toks.length ≤ 6 ∧ ∀ t : OdomTok, t ∈ toks) ∧
+    odomBase ≠ [] ∧
+    (∀ t : OdomTok, 2 ≤ (odomWord t).length) ∧
+    encOdom [] = ListBlank.append odomBase default ∧
+    (∀ t stk, encOdom (t :: stk) = ListBlank.append (odomWord t) (encOdom stk)) ∧
+    (∃ t : ListBlank (Fin (k + 2)), ∀ stk : List OdomTok, encOdom stk ≠ t) ∧
+    cap [] = 0 ∧
+    (∃ (t_inc t_even t_div : OdomTok) (b : ℕ) (blk_inc blk_div : List (Fin (k + 2))),
+      2 ≤ b ∧ 2 ≤ blk_inc.length ∧ 2 ≤ blk_div.length ∧
+      (∀ stk, cap (t_inc :: stk) = 2 * cap stk + 1) ∧
+      (∀ stk, cap (t_even :: stk) = 2 * cap stk) ∧
+      (∀ stk, cap (t_div :: stk) = cap stk / b) ∧
+      (∀ stk w,
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.append blk_inc w))
+          (evalOdomR side (q_R (t_inc :: stk)) pfx_R (encOdom (t_inc :: stk)) w)) ∧
+      (∀ stk w,
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.append blk_div w))
+          (evalOdomR side (q_R (t_div :: stk)) pfx_R (encOdom (t_div :: stk)) w))) ∧
+    (∀ stk, (dec stk).length = stk.length) ∧
+    (∀ stk, cap stk ≥ 1 → cap (dec stk) = cap stk - 1) ∧
+    (∀ stk w, cap stk ≥ 1 →
+      ReachesPlus M
+        (evalOdomL side q_L pfx_L (encOdom stk) w)
+        (evalOdomR side (q_R (dec stk)) pfx_R (encOdom (dec stk))
+          (ListBlank.append (decPfx stk) w))) ∧
+    (∀ stk, cap stk = 0 → drain stk ≠ []) ∧
+    (∀ stk w, cap stk = 0 →
+      ReachesPlus M
+        (evalOdomL side q_L pfx_L (encOdom stk) w)
+        (evalOdomR side (q_R []) pfx_R (encOdom []) (ListBlank.append (drain stk) w))) ∧
+    (∀ stk w,
+      ReachesPlus M
+        (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.cons (0 : Fin (k + 2)) w))
+        (evalOdomL side q_L pfx_L (encOdom stk) (ListBlank.cons (1 : Fin (k + 2)) w))) ∧
+    (∀ stk w,
+      (∃ t w',
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
+          (evalOdomR side (q_R (t :: stk)) pfx_R (encOdom (t :: stk)) w')) ∨
+      (∃ w',
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
+          (evalOdomL side q_L pfx_L (encOdom stk) w')) ∨
+      (∃ cfg',
+        ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
+          (step M cfg').isNone)) ∧
+    (∀ cfg, IsInOdomSystem cfg ↔
+      ∃ stk w, cfg = evalOdomR side (q_R stk) pfx_R (encOdom stk) w) ∧
+    (∃ (stk₀ : List OdomTok) (w₀ : ListBlank (Fin (k + 2))),
+      ReachesPlus M (init []) (evalOdomR side (q_R stk₀) pfx_R (encOdom stk₀) w₀) ∧
+      2 ≤ stk₀.length ∧ 1 ≤ cap stk₀) ∧
+    (∀ stk w,
+      ∃ cfg', ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
+        (IsInOdomSystem cfg' ∨ (step M cfg').isNone))
+
+/-- Every `TransducerMode` evaluates `(L, R)` as a fixed control state `q` and fixed bounded
+`HalfTapeView`s `vL, vR` (`≤ 8`-symbol prefixes) of `encLeft L` and `encRight R` (either scanning
+`0` between them or stepping onto the left or right view). -/
+def IsValidTransducerModes {Γ Λ TransducerMode TokL TokR : Type*} [Inhabited Γ] [OfNat Γ 0]
+    (encLeft : List TokL → ListBlank Γ)
+    (encRight : List TokR → ListBlank Γ)
+    (eval : TransducerMode → List TokL → List TokR → Cfg Γ Λ) : Prop :=
+  ∀ m : TransducerMode, ∃ (q : Λ) (vL vR : HalfTapeView Γ),
+    (match vL with | .id p => p.length ≤ 8 | .tail p => p.length ≤ 8) ∧
+    (match vR with | .id p => p.length ≤ 8 | .tail p => p.length ≤ 8) ∧
+    ((∀ L R, eval m L R =
+      ⟨some q, ⟨(0 : Γ), applyView vL (encLeft L), applyView vR (encRight R)⟩⟩) ∨
+    (∀ L R, eval m L R = Cfg.headLeft q (applyView vL (encLeft L)) (applyView vR (encRight R))) ∨
+    (∀ L R, eval m L R = Cfg.headRight q (applyView vL (encLeft L)) (applyView vR (encRight R))))
+
+/-- Scaled integer Kraft-McMillan weight `∑_{t ∈ toks} base ^ (maxLen - (word t).length)`. -/
+@[reducible, simp]
+def kraftSum {Tok Γ : Type*} (base maxLen : ℕ) (word : Tok → List Γ) : List Tok → ℕ
+  | [] => 0
+  | t :: ts => base ^ (maxLen - (word t).length) + kraftSum base maxLen word ts
+
+/-- Iterate a partial macro-transducer step `stepMacro` for `n` macro-steps. -/
+@[reducible, simp]
+def iterTransducerMacro {Mode TokL TokR : Type*}
+    (stepMacro : Mode → List TokL → List TokR → Option (Mode × List TokL × List TokR)) :
+    ℕ → (Mode × List TokL × List TokR) → Option (Mode × List TokL × List TokR)
+  | 0, s => some s
+  | n + 1, (m, L, R) =>
+      match stepMacro m L R with
+      | none => none
+      | some s' => iterTransducerMacro stepMacro n s'
+
+/-- The blank-tape trajectory of `M` is governed by a closed, full-tape, strict-sub-Kraft
+finite-alphabet word-stack transducer (`TransducerMode`, `TokL`, `TokR`, `stepMacro`) with bounded
+blank-tape entry, `512..2048`-step stack expansion, full constructor orbit reachability, a single
+boundary-closed halting exit gate, and orbit-exercised bidirectional multi-bit block-transduction
+sweeps. -/
+def HasTransducerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (TransducerMode TokL TokR : Type)
+    (baseL baseR : List (Fin (k + 2)))
+    (wordL : TokL → List (Fin (k + 2)))
+    (wordR : TokR → List (Fin (k + 2)))
+    (encLeft : List TokL → ListBlank (Fin (k + 2)))
+    (encRight : List TokR → ListBlank (Fin (k + 2)))
+    (evalTransducerCfg : TransducerMode → List TokL → List TokR → Cfg (Fin (k + 2)) Λ)
+    (stepMacro : TransducerMode → List TokL → List TokR →
+      Option (TransducerMode × List TokL × List TokR))
+    (IsInTransducerSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    (∃ modes : List TransducerMode,
+      2 ≤ modes.length ∧ modes.length ≤ 8 ∧ ∀ m : TransducerMode, m ∈ modes) ∧
+    (∃ (toksL : List TokL) (maxLenL : ℕ),
+      toksL.Nodup ∧ (toksL.map wordL).Nodup ∧ maxLenL ≤ 8 ∧
+      2 ≤ toksL.length ∧ toksL.length ≤ 8 ∧ (∀ t : TokL, t ∈ toksL) ∧
+      (∀ t : TokL, 1 ≤ (wordL t).length ∧ (wordL t).length ≤ maxLenL) ∧
+      kraftSum (k + 2) maxLenL wordL toksL < (k + 2) ^ maxLenL) ∧
+    (∃ (toksR : List TokR) (maxLenR : ℕ),
+      toksR.Nodup ∧ (toksR.map wordR).Nodup ∧ maxLenR ≤ 8 ∧
+      2 ≤ toksR.length ∧ toksR.length ≤ 8 ∧ (∀ t : TokR, t ∈ toksR) ∧
+      (∀ t : TokR, 1 ≤ (wordR t).length ∧ (wordR t).length ≤ maxLenR) ∧
+      kraftSum (k + 2) maxLenR wordR toksR < (k + 2) ^ maxLenR) ∧
+    baseL.length ≤ 8 ∧ baseR.length ≤ 8 ∧
+    ((∀ t : TokL, 2 ≤ (wordL t).length) ∨ (∀ t : TokR, 2 ≤ (wordR t).length)) ∧
+    (∃ t : TokL, (0 : Fin (k + 2)) ∈ wordL t ∧ ∃ a, a ∈ wordL t ∧ a ≠ 0) ∧
+    (∃ t : TokR, (0 : Fin (k + 2)) ∈ wordR t ∧ ∃ a, a ∈ wordR t ∧ a ≠ 0) ∧
+    encLeft [] = ListBlank.append baseL default ∧
+    (∀ t L, encLeft (t :: L) = ListBlank.append (wordL t) (encLeft L)) ∧
+    encRight [] = ListBlank.append baseR default ∧
+    (∀ t R, encRight (t :: R) = ListBlank.append (wordR t) (encRight R)) ∧
+    (∃ t : ListBlank (Fin (k + 2)), ∀ L : List TokL, encLeft L ≠ t) ∧
+    (∃ t : ListBlank (Fin (k + 2)), ∀ R : List TokR, encRight R ≠ t) ∧
+    IsValidTransducerModes encLeft encRight evalTransducerCfg ∧
+    (∀ cfg, IsInTransducerSystem cfg ↔ ∃ m L R, cfg = evalTransducerCfg m L R) ∧
+    (∀ m L R m' L' R',
+      stepMacro m L R = some (m', L', R') →
+        ReachesPlus M (evalTransducerCfg m L R) (evalTransducerCfg m' L' R')) ∧
+    ∃ (m₀ : TransducerMode) (L₀ : List TokL) (R₀ : List TokR),
+      L₀.length + R₀.length ≤ 4 ∧
+      ReachesPlus M (init []) (evalTransducerCfg m₀ L₀ R₀) ∧
+      (∃ (n_grow : ℕ) (m_g : TransducerMode) (L_g : List TokL) (R_g : List TokR),
+        512 ≤ n_grow ∧ n_grow ≤ 2048 ∧
+        iterTransducerMacro stepMacro n_grow (m₀, L₀, R₀) = some (m_g, L_g, R_g) ∧
+        20 ≤ L_g.length + R_g.length) ∧
+      (∀ m : TransducerMode, ∃ (n_m : ℕ) (L_m : List TokL) (R_m : List TokR),
+        n_m ≤ 256 ∧
+        iterTransducerMacro stepMacro n_m (m₀, L₀, R₀) = some (m, L_m, R_m)) ∧
+      (∀ t : TokL, ∃ (n_t : ℕ) (m_t : TransducerMode) (L_t : List TokL) (R_t : List TokR),
+        n_t ≤ 256 ∧
+        iterTransducerMacro stepMacro n_t (m₀, L₀, R₀) = some (m_t, L_t, R_t) ∧
+        t ∈ L_t) ∧
+      (∀ t : TokR, ∃ (n_t : ℕ) (m_t : TransducerMode) (L_t : List TokL) (R_t : List TokR),
+        n_t ≤ 256 ∧
+        iterTransducerMacro stepMacro n_t (m₀, L₀, R₀) = some (m_t, L_t, R_t) ∧
+        t ∈ R_t) ∧
+      ((∃ (m_exit : TransducerMode) (tL_exit : TokL) (exitNext : List TokL),
+          exitNext.Nodup ∧ exitNext ≠ [] ∧
+          (∀ R : List TokR, (stepMacro m_exit [tL_exit] R).isSome) ∧
+          (∀ m L R,
+            stepMacro m L R = none ↔
+              (m = m_exit ∧ ∃ t₂ L'', t₂ ∈ exitNext ∧ L = tL_exit :: t₂ :: L'')) ∧
+          (∀ t₂ ∈ exitNext, ∀ R : List TokR, ∃ cfg_h,
+            ReachesPlus M (evalTransducerCfg m_exit [tL_exit, t₂] R) cfg_h ∧
+              (step M cfg_h).isNone) ∧
+          (∀ t₂ ∈ exitNext, ∃ sfx : List TokL, sfx.length ≤ 2 ∧
+            ∀ (L'' : List TokL) (R : List TokR), ∃ cfg_h,
+              ReachesPlus M (evalTransducerCfg m_exit (tL_exit :: t₂ :: (sfx ++ L'')) R) cfg_h ∧
+                (step M cfg_h).isNone)) ∨
+        (∃ (m_exit : TransducerMode) (tR_exit : TokR) (exitNext : List TokR),
+          exitNext.Nodup ∧ exitNext ≠ [] ∧
+          (∀ L : List TokL, (stepMacro m_exit L [tR_exit]).isSome) ∧
+          (∀ m L R,
+            stepMacro m L R = none ↔
+              (m = m_exit ∧ ∃ t₂ R'', t₂ ∈ exitNext ∧ R = tR_exit :: t₂ :: R'')) ∧
+          (∀ t₂ ∈ exitNext, ∀ L : List TokL, ∃ cfg_h,
+            ReachesPlus M (evalTransducerCfg m_exit L [tR_exit, t₂]) cfg_h ∧
+              (step M cfg_h).isNone) ∧
+          (∀ t₂ ∈ exitNext, ∃ sfx : List TokR, sfx.length ≤ 2 ∧
+            ∀ (L : List TokL) (R'' : List TokR), ∃ cfg_h,
+              ReachesPlus M (evalTransducerCfg m_exit L (tR_exit :: t₂ :: (sfx ++ R''))) cfg_h ∧
+                (step M cfg_h).isNone))) ∧
+      (∃ (m_lr m_rl : TransducerMode) (tL tL' : TokL) (tR tR' : TokR) (s₁ s₂ s₃ s₄ : ℕ),
+        1 ≤ s₁ ∧ s₁ ≤ 4 ∧ 1 ≤ s₂ ∧ s₂ ≤ 4 ∧
+        1 ≤ s₃ ∧ s₃ ≤ 4 ∧ 1 ≤ s₄ ∧ s₄ ≤ 4 ∧
+        2 ≤ (wordL tL).length ∧ 2 ≤ (wordR tR).length ∧
+        2 ≤ (wordL tL').length ∧ 2 ≤ (wordR tR').length ∧
+        (((wordL tL) ^ s₁).reverse ≠ (wordR tR) ^ s₂ ∨
+          ((wordR tR') ^ s₃).reverse ≠ (wordL tL') ^ s₄) ∧
+        (wordL tL ≠ wordL tL' ∨ wordR tR ≠ wordR tR' ∨ s₁ ≠ s₂ ∨ s₃ ≠ s₄) ∧
+        (∃ (n_lr : ℕ) (L_lr : List TokL) (R_lr : List TokR),
+          n_lr ≤ 256 ∧
+          iterTransducerMacro stepMacro n_lr (m₀, L₀, R₀) = some (m_lr, L_lr, R_lr) ∧
+          L_lr.take (2 * s₁) = List.replicate (2 * s₁) tL) ∧
+        (∃ (n_rl : ℕ) (L_rl : List TokL) (R_rl : List TokR),
+          n_rl ≤ 256 ∧
+          iterTransducerMacro stepMacro n_rl (m₀, L₀, R₀) = some (m_rl, L_rl, R_rl) ∧
+          R_rl.take (2 * s₃) = List.replicate (2 * s₃) tR') ∧
+        (∀ (n : ℕ) (L : List TokL) (R : List TokR),
+          ReachesPlus M
+            (evalTransducerCfg m_lr (List.replicate (s₁ * (n + 1)) tL ++ L) R)
+            (evalTransducerCfg m_lr L (List.replicate (s₂ * (n + 1)) tR ++ R))) ∧
+        (∀ (n : ℕ) (L : List TokL) (R : List TokR),
+          ReachesPlus M
+            (evalTransducerCfg m_rl L (List.replicate (s₃ * (n + 1)) tR' ++ R))
+            (evalTransducerCfg m_rl (List.replicate (s₄ * (n + 1)) tL' ++ L) R)))
 
 end BusyBeaver
