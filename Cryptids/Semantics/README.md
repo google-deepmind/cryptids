@@ -360,7 +360,7 @@ Care is required when interpreting a Lean theorem of type `Halts M ↔ ZFInconsi
 1. **Why classical Lean vacuously satisfies `Halts M ↔ ZFInconsistent` for any non-halting machine:**
    Lean's type theory is proof-theoretically stronger than first-order $\mathrm{ZF}$. Using `Classical.choice` and Mathlib's cumulative hierarchy `ZFSet.{0} : Type 1`, [`Zf/Soundness.lean`](./Zf/Soundness.lean) proves `not_zfInconsistent : ¬ ZFInconsistent` inside Lean itself (and deduces `not_halts_zf393` and `not_halts_candidate`). Moreover, as noted by Elliot Glazer and formalized in Lean 4 by Mario Carneiro ([`digama0/ConZF`](https://github.com/digama0/ConZF), *"CIC + EM $\vdash$ Con(ZF): the consistency of ZF in type theory with excluded middle and no choice"*), Lean's Calculus of Inductive Constructions (`CIC`) plus Excluded Middle alone (or `¬¬ ∀ p : Prop, p ∨ ¬p`, via large elimination of `Acc`) proves $\operatorname{Con}(\mathrm{ZF})$ without `Classical.choice`, `propext`, or `Quot.sound`. Consequently, if `Classical.choice` (which yields Excluded Middle together with `propext` and `Quot.sound` by Diaconescu's theorem) or `not_zfInconsistent` is allowed, **any** provably non-halting machine—such as the 1-state machine `0R0 0R0` that moves right forever—vacuously satisfies the bare material biconditional `Halts M ↔ ZFInconsistent` (`False ↔ False`).
 2. **Constructive proof-search equivalence (`["propext", "Quot.sound"]` only, enforced by `comparator`):**
-   To rule out classical shortcuts through `Classical.choice`, `Classical.em`, or `not_zfInconsistent`, `ConjectureMachines.ListBlank` quotients half-tapes directly via Lean's primitive `Quot (@Turing.BlankRel Γ _)` (`Challenge.lean`, `Cryptids/Machines.lean`), and **the direct state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`), all four `candidate_fewer_states` theorems (including `Riemann95.candidate_fewer_states`; `Riemann95.candidate_equivalent` uses `Classical.choice`), and all three ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`)** are proved **constructively in Lean** using only `["propext", "Quot.sound"]`—with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
+   To rule out classical shortcuts through `Classical.choice`, `Classical.em`, or `not_zfInconsistent`, `ConjectureMachines.ListBlank` quotients half-tapes directly via Lean's primitive `Quot (@Turing.BlankRel Γ _)` (`Challenge.lean`, `Cryptids/Machines.lean`), and **the direct state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`), the `Erdos14.candidate_equivalent` reduction, all five `candidate_fewer_states` theorems (including `Riemann95.candidate_fewer_states`; `Riemann95.candidate_equivalent` uses `Classical.choice`), and all three ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`)** are proved **constructively in Lean** using only `["propext", "Quot.sound"]`—with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
    - **Forward completeness (`ZFInconsistent → Halts M`):** Given a finite derivation tree `d : ZFProvable (zfMem 0 0)`, structural induction extracts an explicit step count `s` and halting configuration `c` with `nSteps M s init = some c ∧ step M c = none` (no `by_contra` / unbounded search).
    - **Backward soundness (`Halts M → ZFInconsistent`):** Given `h : Halts M`, constructive induction along `StateTransition.evalInduction'` extracts the finite execution trace from `init` and decodes a valid `ZFProvable (zfMem 0 0)` derivation.
    - **Comparator gate:** [`comparator/constructive.json`](../../comparator/constructive.json), [`comparator/zf_380.json`](../../comparator/zf_380.json), [`comparator/goldbach_21.json`](../../comparator/goldbach_21.json), and [`comparator/riemann_104.json`](../../comparator/riemann_104.json) enforce `"permitted_axioms": ["propext", "Quot.sound"]` in CI, automatically rejecting any proof that invokes `Classical.choice` (including `not_zfInconsistent` in [`Zf/Soundness.lean`](./Zf/Soundness.lean) or `Classical.em` + [`digama0/ConZF`](https://github.com/digama0/ConZF)).
@@ -587,3 +587,59 @@ theorem paProvable_halts_zf380_iff_zfInconsistent :
    and 20 reordered `ZF` axiom/rule clauses along the 125-step `main()` spine, and bidirectional
    soundness and completeness against `MZFInconsistent M`, yielding
    `paProvable_halts_zf393_iff_zfInconsistent` and `paProvable_halts_zf380_iff_zfInconsistent`.
+
+---
+
+## 7. Stérin and Woods's 15-State Erdős Machine ([`Erdos15.lean`](./Erdos15.lean))
+
+In [`Cryptids/Erdos15.lean`](../Erdos15.lean) and [`Cryptids/Semantics/Erdos15.lean`](./Erdos15.lean),
+we formalize Tristan Stérin and Damien Woods's 15-state binary Turing machine (`erdos_15`,
+[`arXiv:2107.12475`](https://arxiv.org/abs/2107.12475), 2021) for Erdős's conjecture that `2 ^ n`
+has a digit `2` in base `3` for every `n > 8`:
+
+```lean
+theorem halts_erdos15_iff_exists_counterexample :
+    Halts erdos15 ↔ ∃ n : ℕ, 8 < n ∧ 2 ∉ Nat.digits 3 (2 ^ n)
+
+theorem halts_erdos15_iff_not_erdosPowersOfTwo :
+    Halts erdos15 ↔ ¬ ErdosPowersOfTwoConjecture
+```
+
+1. **Machine (`Erdos15.lean`)**: Proves the tape layout of every stage (counter cell pair, `#`,
+   base-3 digits of `2 ^ n` as cell pairs), one lemma per routine (doubling pass, scan for a `2`,
+   rewind, counter increment, halt), and `Halts erdos15 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` with `propext`
+   and `Quot.sound` only, where `pw n` is the digit list of `2 ^ n` computed by repeated doubling.
+2. **Digits (`Semantics/Erdos15.lean`)**: Proves `pw n = Nat.digits 3 (2 ^ n)` and derives both
+   theorems above (`Classical.choice` enters through `Nat.digits`, and the negated form also uses
+   Markov's Principle via `not_forall`, as for `¬ GoldbachConjecture`).
+
+---
+
+## 8. Stérin's 14-State Erdős Machine ([`Erdos14.lean`](./Erdos14.lean))
+
+In [`Cryptids/Erdos14.lean`](../Erdos14.lean) and [`Cryptids/Semantics/Erdos14.lean`](./Erdos14.lean),
+we formalize Tristan Stérin's 14-state binary Turing machine for the same conjecture (`erdos_14`,
+[announced](https://discord.com/channels/960643023006490684/1561295445312151622/1562203343114473472) on the bbchallenge Discord in October 2026 and listed on the
+[Cryptids](https://wiki.bbchallenge.org/w/index.php?title=Cryptids&oldid=9722) page of the bbchallenge wiki):
+
+```lean
+theorem candidate_fewer_states : candidate.states < reference.states
+
+theorem candidate_equivalent : Halts candidate ↔ Halts reference
+
+theorem halts_candidate_iff_not_erdosPowersOfTwo :
+    Halts candidate ↔ ¬ ErdosPowersOfTwoConjecture
+```
+
+with `candidate = erdos14` and `reference = erdos15`.
+
+1. **Machine (`Erdos14.lean`)**: The machine keeps `2 ^ n` in unary and reads its base-3 digits
+   by repeated division by `3`, with a single `0` in the block marking where the quotient ends.
+   One lemma per routine (division round and its three outcomes, return to the start, counter
+   increment, halt, doubling) gives `Halts erdos14 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` with `propext` and
+   `Quot.sound` only, using `Has2 (2 ^ n) ↔ 2 ∈ pw n` to connect the divisions with `pw`.
+   `candidate_equivalent` follows from the same statement for `erdos15`, so it is also
+   constructive.
+2. **Semantics (`Semantics/Erdos14.lean`)**: Composes `candidate_equivalent` with
+   `halts_erdos15_iff_not_erdosPowersOfTwo` (`Classical.choice` through `Nat.digits`, and
+   Markov's Principle via `not_forall`, as in Section 7).

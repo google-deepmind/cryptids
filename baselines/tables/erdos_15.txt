@@ -1,0 +1,33 @@
+# Derived from sources/erdos_15_sterin_woods.txt (bbsim, SHA-256 f9de29f3b3b06e55afbe61baddf317347b224a1a2203b4cf35f4027da1ecd9ac).
+# 15 states, 2 symbols; the start state is 0 and the others follow the published order.
+# Symbols: the blank `b` is 0 and `a` is 1.
+# state 0: mul2_G_sim
+# state 1: mul2_F_sim
+# state 2: mul2_F_a
+# state 3: mul2_F_b
+# state 4: find_2_sim
+# state 5: find_2_a
+# state 6: find_2_b
+# state 7: mul2_G_a
+# state 8: mul2_G_b
+# state 9: mul2_G_extra
+# state 10: rewind_sim
+# state 11: rewind_a
+# state 12: rewind_b
+# state 13: check_halt_sim
+# state 14: check_halt_a
+1R8 1R7
+0R3 1R2
+1R1 0R0
+0L5 1R1
+0L6 1L5
+0L4 1L10
+0L13 1L4
+1L9 1R0
+0R1 0R1
+0R12 0R7
+0L12 1L11
+0L10 1L10
+0R8 1L10
+1R12 0L14
+1R9 ---

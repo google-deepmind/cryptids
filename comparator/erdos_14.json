@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.Erdos14",
+  "theorem_names": [
+    "ConjectureMachines.Erdos14.candidate_fewer_states",
+    "ConjectureMachines.Erdos14.candidate_equivalent",
+    "ConjectureMachines.Erdos14.Semantics.halts_candidate_iff_not_erdosPowersOfTwo"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

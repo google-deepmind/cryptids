@@ -14,7 +14,9 @@
     "ConjectureMachines.Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent",
     "ConjectureMachines.Riemann104.candidate_fewer_states",
     "ConjectureMachines.Riemann104.candidate_equivalent",
-    "ConjectureMachines.Riemann95.candidate_fewer_states"
+    "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.Erdos14.candidate_fewer_states",
+    "ConjectureMachines.Erdos14.candidate_equivalent"
   ],
   "permitted_axioms": [
     "propext",
