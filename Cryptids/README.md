@@ -1,6 +1,6 @@
 # Certified State Reductions and Semantics of Conjecture-Checking Turing Machines (`Cryptids/`)
 
-This library contains formally verified 2-symbol Turing machines and Lean 4 semantics proofs for **Goldbach's Conjecture**, **ZF Set Theory Consistency**, and the **Riemann Hypothesis**, developed by Maxence Faldor and Moritz Firsching using Gemini Argon. The `erdos_15` and `erdos_14` formalizations (Erdős's conjecture on powers of two) are by Daniel Veljanoski, with Claude (Anthropic) as assistant.
+This library contains formally verified 2-symbol Turing machines and Lean 4 semantics proofs for **Goldbach's Conjecture**, **ZF Set Theory Consistency**, and the **Riemann Hypothesis**, developed by Maxence Faldor and Moritz Firsching using Gemini Argon. The `erdos_15` and `erdos_14` formalizations (Erdős's conjecture on powers of two) are by Daniel Veljjanoski, with Claude (Anthropic) as assistant.
 
 ## Formalized Machines
 

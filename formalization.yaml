@@ -134,7 +134,7 @@ sources:
     author_endorsement: "n/a"
   - title: "Lean 4 formalization of the 15-state Erdős powers-of-two machine (erdos_15)"
     authors:
-      - "Daniel Veljanoski"
+      - "Daniel Veljjanoski"
     type: "original-proof"
     relationship: "other"
     note: >-
@@ -158,7 +158,7 @@ sources:
       Cryptids/Erdos14.lean and Cryptids/Semantics/Erdos14.lean.
   - title: "Lean 4 formalization of the 14-state Erdős powers-of-two machine (erdos_14)"
     authors:
-      - "Daniel Veljanoski"
+      - "Daniel Veljjanoski"
     type: "original-proof"
     relationship: "other"
     note: >-
@@ -373,7 +373,7 @@ automation:
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_15 machine is by Tristan Stérin and Damien Woods and the erdos_14
     machine by Tristan Stérin; the erdos_15 and erdos_14 proofs were written
-    by Daniel Veljanoski with Claude (Anthropic) as assistant.
+    by Daniel Veljjanoski with Claude (Anthropic) as assistant.
 
 fidelity:
   divergences: >-
