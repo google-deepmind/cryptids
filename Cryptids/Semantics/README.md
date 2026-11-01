@@ -367,7 +367,7 @@ Care is required when interpreting a Lean theorem of type `Halts M ↔ ZFInconsi
 3. **Metamathematical scope — Lean's type theory, `PA`/`ZF` internalization, and `ZF`-independence:**
    Care must also be taken not to conflate a constructive Lean theorem `Halts M ↔ ZFInconsistent` with a formal proof of $\mathrm{ZF}$-independence:
    - **Strength of constructive Lean (`CIC` vs. `PA`/`ZF`):** Even without `Classical.choice` or Excluded Middle, Lean's Calculus of Inductive Constructions provides constructions absent from first-order $\mathrm{PA}$ and $\mathrm{ZF}$—an impredicative `Prop`, inductive families (`ZFProvable`, `Acc`, `PSet`), and a predicative universe hierarchy `Type u` (already strong enough to validate Zermelo set theory, and whether axiom-free `CIC` itself proves $\operatorname{Con}(\mathrm{ZF})$ remains an open question; see [`digama0/ConZF`](https://github.com/digama0/ConZF)). An axiom check in Lean therefore blocks classical `Con(ZF)` shortcuts, rather than restricting reasoning to $\mathrm{PA}$ or $\mathrm{ZF}$.
-   - **Internalizing the reduction inside `PA`/`ZF` is separate:** Although our concrete proofs of `ZFInconsistent → Halts M` and `Halts M → ZFInconsistent` proceed by explicit finitary structural and step-indexed induction rather than ambient set-theoretic models, they establish a **meta-level correspondence in Lean**. Internalizing that compiler and trace decoder as an object-level formal theorem inside $\mathrm{PA}$ or $\mathrm{ZF}$ (i.e., proving $\mathrm{ZF} \vdash \ulcorner \operatorname{Halts}(M) \leftrightarrow \neg\operatorname{Con}(\mathrm{ZF}) \urcorner$) is a separate step not formalized in this repository.
+   - **Internalizing the reduction inside first-order `PA` (`PAProvable`):** Our constructive Lean proofs of `ZFInconsistent → Halts M` and `Halts M → ZFInconsistent` establish a meta-level correspondence in Lean. To formulate and verify object-level provability inside weak first-order arithmetic—whose consistency strength is strictly below $\mathrm{ZF}$, so it cannot trivialize $\operatorname{Con}(\mathrm{ZF})$—Section 6 ([`Cryptids/Semantics/PA/`](./PA/)) deeply embeds first-order Peano Arithmetic (`PATerm`, `PAFormula`, `PAProvable`), proves constructive consistency (`not_paProvable_false : ¬ PAProvable .bot`), proves constructive standard-model adequacy of the $\Sigma_1^0$ encodings `paHalts M` and `paZFInconsistent` (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), and internalizes the entire Layer 1–3 verification of `zf_393` and `zf_380` inside `PAProvable` (`paProvable_halts_zf380_iff_zf393`, `paProvable_halts_zf393_iff_zfInconsistent`, and `paProvable_halts_zf380_iff_zfInconsistent`; `zf_432` is not yet internalized in `PA`). Note why these three `PAProvable` theorems live in the classical `comparator` gates (`pa_semantics.json`, `all.json`) rather than `constructive.json`: instead of constructing raw Hilbert proof trees directly, we carry out the argument in an arbitrary first-order model `[PAModel M]` via `PAM.ind1` and reflect to syntactic `PAProvable` via Gödel–Henkin completeness (`paProvable_iff_holdsIn_all_models`), whose Henkin–Lindenbaum maximal consistent extension uses `Classical.choice`. Using `Classical.choice` in the meta-proof does not create a `Con(ZF)` shortcut here because the conclusion `PAProvable ((paHalts M).iff paZFInconsistent)` asserts syntactic derivability inside weak first-order `PA` (which cannot prove `¬ paZFInconsistent` if `ZF` is consistent).
    - **Assumptions required for both directions of `ZF`-independence:** Even once $\mathrm{ZF} \vdash \ulcorner \operatorname{Halts}(M) \leftrightarrow \neg\operatorname{Con}(\mathrm{ZF}) \urcorner$ is established, $\operatorname{Con}(\mathrm{ZF})$ alone yields only **one** direction of independence: $\mathrm{ZF} \nvdash \neg\ulcorner\operatorname{Halts}(M)\urcorner$ (by Gödel's Second Incompleteness Theorem). Ruling out the **other** direction, $\mathrm{ZF} \vdash \ulcorner\operatorname{Halts}(M)\urcorner$ (since $\mathrm{ZF} + \neg\operatorname{Con}(\mathrm{ZF})$ can still be consistent when $\mathrm{ZF}$ is consistent), requires $\operatorname{Con}(\mathrm{ZF} + \operatorname{Con}(\mathrm{ZF}))$—for example $\Sigma_1$-soundness ($1$-consistency) of $\mathrm{ZF}$, as assumed in Yedidia & Aaronson (2016).
 
 ### Formal Discovery of the `B6a` Register-Restoration Bug in `zf_432_wade.tm`
@@ -508,7 +508,89 @@ theorem not_halts_zf393 :
 
 ---
 
-## 6. Stérin and Woods's 15-State Erdős Machine ([`Erdos15.lean`](./Erdos15.lean))
+## 6. First-Order Peano Arithmetic Metatheory & Internalized `ZF` Reductions ([`PA.lean`](./PA.lean) & [`PA/`](./PA/), `0 sorry`s)
+
+To state and verify object-level first-order Peano Arithmetic ($\mathrm{PA}$) provability statements
+inside Lean without relying on Lean's ambient type-theoretic strength, [`Cryptids/Propositions.lean`](../Propositions.lean)
+and [`Challenge.lean`](../../Challenge.lean) deeply embed first-order $\mathcal{L}_{\mathrm{PA}} = \{0, S, +, \times\}$
+terms (`PATerm`), positive formulas (`PAFormula`), the 25-clause Hilbert system `PAProvable`, and
+closed $\Sigma_1^0$ sentences `paHalts M` and `paZFInconsistent`.
+
+In [`Cryptids/Semantics/PA.lean`](./PA.lean) and its eight submodules ([`PA/Syntax.lean`](./PA/Syntax.lean),
+[`PA/Adequacy.lean`](./PA/Adequacy.lean), [`PA/Completeness.lean`](./PA/Completeness.lean),
+[`PA/Arithmetic.lean`](./PA/Arithmetic.lean), [`PA/Zf380.lean`](./PA/Zf380.lean),
+[`PA/Zf393/Backend.lean`](./PA/Zf393/Backend.lean),
+[`PA/Zf393/Program.lean`](./PA/Zf393/Program.lean), and
+[`PA/Zf393/Soundness.lean`](./PA/Zf393/Soundness.lean)), we prove the seven [`Challenge.lean`](../../Challenge.lean)
+target theorems audited via [`comparator/pa_semantics.json`](../../comparator/pa_semantics.json)
+(the first three also constructive in [`comparator/constructive.json`](../../comparator/constructive.json)),
+together with the internal Gödel–Henkin completeness theorem `paProvable_iff_holdsIn_all_models`
+(`PAModel` is kept outside `Challenge.lean` so the trusted specification stays purely syntactic, while
+`comparator` transitively kernel-checks `paProvable_iff_holdsIn_all_models` via the three
+`paProvable_halts_*` targets):
+
+```lean
+theorem not_paProvable_false :
+    ¬ PAProvable .bot
+
+theorem paHalts_holds_iff_halts {states : ℕ} [NeZero states] (M : Machine states 2)
+    (v : ℕ → ℕ) : (paHalts M).Holds v ↔ ConjectureMachines.Halts M
+
+theorem paZFInconsistent_holds_iff_zfInconsistent (v : ℕ → ℕ) :
+    paZFInconsistent.Holds v ↔ ZFInconsistent
+
+theorem paProvable_sound_nat (φ : PAFormula) (h : PAProvable φ) (v : ℕ → ℕ) :
+    φ.Holds v
+
+theorem paProvable_iff_holdsIn_all_models (φ : PAFormula) :
+    PAProvable φ ↔ ∀ (M : Type) [PAModel M] (v : ℕ → M), PAFormula.HoldsIn v φ
+
+theorem paProvable_halts_zf380_iff_zf393 :
+    PAProvable ((paHalts Machines.zf380).iff (paHalts Machines.zf393))
+
+theorem paProvable_halts_zf393_iff_zfInconsistent :
+    PAProvable ((paHalts Machines.zf393).iff paZFInconsistent)
+
+theorem paProvable_halts_zf380_iff_zfInconsistent :
+    PAProvable ((paHalts Machines.zf380).iff paZFInconsistent)
+```
+
+1. **Models, Classical Soundness, & Constructive Consistency ([`PA/Syntax.lean`](./PA/Syntax.lean))**:
+   Defines first-order $\mathcal{L}_{\mathrm{PA}}$-structures (`PAStructure M`) and Peano models
+   (`PAModel M`), proves soundness of `PAProvable` in any `[PAModel M]` (`paProvable_sound`,
+   specializing to `paProvable_sound_nat` on `ℕ`), and proves `not_paProvable_false` constructively
+   (zero `Classical.choice`, audited in [`comparator/constructive.json`](../../comparator/constructive.json))
+   via the Gödel–Gentzen negative translation (`PAFormula.NHolds`, translating `.or` and `.ex` via
+   double negation so `PAProvable.dne` is constructively valid on `ℕ`).
+2. **Constructive $\Sigma_1^0$ Standard-Model Adequacy ([`PA/Adequacy.lean`](./PA/Adequacy.lean))**:
+   Uses Gödel's $\beta$-function (`paBetaEq`), symbolic Cantor-pairing DAGs (`PAZFTerm`, avoiding
+   giant numeral expansions for `axInf`), and binary half-tape codes to prove
+   `paHalts_holds_iff_halts` and `paZFInconsistent_holds_iff_zfInconsistent` constructively without
+   `Classical.choice` or Markov's Principle (constructing $\beta$-witnesses via
+   `Nat.chineseRemainderOfList`).
+3. **Gödel–Henkin Completeness ([`PA/Completeness.lean`](./PA/Completeness.lean))**:
+   Proves `paProvable_iff_holdsIn_all_models` via a single-pass enumerable Henkin–Lindenbaum chain
+   (`henkinChain`), quotient term model `Quotient (HenkinSetoid h₀)`, and simultaneous variable
+   renaming (`vsubst`), enabling `PAProvable` theorems to be proved semantically in an arbitrary
+   `[PAModel M]`.
+4. **Internal Arithmetic & Sequence Coding in `PAM M` ([`PA/Arithmetic.lean`](./PA/Arithmetic.lean))**:
+   Develops discrete ordered-semiring arithmetic, Euclidean division, `mPow2`, Gödel's
+   $\beta$-function sequence append/concatenation (`mBeta_snoc`, `mBeta_concat`), Cantor pairing
+   (`mPair`/`mUnpair`), and semantic model bridges (`paHalts_holdsIn_iff`,
+   `paZFInconsistent_holdsIn_iff`) inside arbitrary first-order `PAModel`s via first-order induction
+   (`PAM.ind1`, `PAM.strong_ind1`).
+5. **Internalized `zf_380 ↔ zf_393` State Reduction ([`PA/Zf380.lean`](./PA/Zf380.lean))**:
+   Lifts the 39,753-step bootstrap equality (`Σ₁`-absoluteness) and 5-cell sliding-window
+   lockstep simulation to arbitrary `PAM M`, proving `paProvable_halts_zf380_iff_zf393`.
+6. **Internalized Layer 1–3 `zf_393` & `zf_380` Verification ([`PA/Zf393/Backend.lean`](./PA/Zf393/Backend.lean), [`PA/Zf393/Program.lean`](./PA/Zf393/Program.lean), & [`PA/Zf393/Soundness.lean`](./PA/Zf393/Soundness.lean))**:
+   Internalizes the moving-`00` unary register backend (`mZfRootCfg`), all 324 control-DAG states
+   and 20 reordered `ZF` axiom/rule clauses along the 125-step `main()` spine, and bidirectional
+   soundness and completeness against `MZFInconsistent M`, yielding
+   `paProvable_halts_zf393_iff_zfInconsistent` and `paProvable_halts_zf380_iff_zfInconsistent`.
+
+---
+
+## 7. Stérin and Woods's 15-State Erdős Machine ([`Erdos15.lean`](./Erdos15.lean))
 
 In [`Cryptids/Erdos15.lean`](../Erdos15.lean) and [`Cryptids/Semantics/Erdos15.lean`](./Erdos15.lean),
 we formalize Tristan Stérin and Damien Woods's 15-state binary Turing machine (`erdos_15`,
@@ -533,7 +615,7 @@ theorem halts_erdos15_iff_not_erdosPowersOfTwo :
 
 ---
 
-## 7. Stérin's 14-State Erdős Machine ([`Erdos14.lean`](./Erdos14.lean))
+## 8. Stérin's 14-State Erdős Machine ([`Erdos14.lean`](./Erdos14.lean))
 
 In [`Cryptids/Erdos14.lean`](../Erdos14.lean) and [`Cryptids/Semantics/Erdos14.lean`](./Erdos14.lean),
 we formalize Tristan Stérin's 14-state binary Turing machine for the same conjecture (`erdos_14`,
@@ -560,4 +642,4 @@ with `candidate = erdos14` and `reference = erdos15`.
    constructive.
 2. **Semantics (`Semantics/Erdos14.lean`)**: Composes `candidate_equivalent` with
    `halts_erdos15_iff_not_erdosPowersOfTwo` (`Classical.choice` through `Nat.digits`, and
-   Markov's Principle via `not_forall`, as in Section 6).
+   Markov's Principle via `not_forall`, as in Section 7).

@@ -425,7 +425,8 @@
     "BusyBeaver.M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA.has_stack_reduction",
     "BusyBeaver.M_1RBHHH_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD.has_stack_reduction",
     "BusyBeaver.M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.is_valid_acceleration",
-    "BusyBeaver.M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.isHalt_iff_acceleration"
+    "BusyBeaver.M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.isHalt_iff_acceleration",
+    "BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.is_not_halt"
   ],
   "permitted_axioms": [
     "propext",
