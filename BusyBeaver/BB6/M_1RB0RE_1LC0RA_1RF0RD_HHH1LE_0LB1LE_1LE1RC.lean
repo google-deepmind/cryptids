@@ -44,6 +44,22 @@ F(m, p, n, c) = \begin{cases}
   F(m-1, p-n-2, 2n+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
 \end{cases}
 $$
+
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth super-exponential, shield none.
+
+*Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
+non-halting.
+
+*Hazard:* $P(\text{halt}) \ll 10^{-600}$
+
+*Simulated horizon:* 10 cascades (exact; reaches $A(65490, 3)$)
+
+*Why it is hard:* shares the exact `highLevelNext` transition map with #79, but starts from
+$A(4, 3)$ rather than $A(5, 2)$; the two orbits remain disjoint
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
 -/
 
 @[expose] public section

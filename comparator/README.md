@@ -20,13 +20,14 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   acceleration semantics (`IsClosedPatternSet`, `HasCollatzReduction`, `IsClosedStackPatternSet`,
   `HasStackedCollatzReduction`, `HasStackReduction`, `HasOdometerReduction`,
   `HasTransducerReduction`, `IsValidAcceleration`, `CollatzHalts`, `IsHalt`, `IsNotHalt`), and
-  `load_rle_machine%` once, and states all 425 `BB(6)` and `BB(3, 3)` holdout theorems
+  `load_rle_machine%` once, and states all 506 `BB(6)` and `BB(3, 3)` holdout theorems
   (`is_closed_pattern_set` / `is_closed_stack_pattern_set`, `has_collatz_reduction` /
   `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`,
   `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`,
   `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`,
-  `acceleration_iff_highLevel_acceleration`, and A6 `is_not_halt` across
-  the 89 machines) with `sorry`.
+  `acceleration_iff_highLevel_acceleration`, A6 `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, and the 74
+  `HardnessEvidence` live-hazard witness and halting residue-class theorems across the 95 machines)
+  with `sorry`.
 
 Comparator exports both the challenge module (`Challenge` or `BusyBeaverChallenge`) and the
 solution module (`Cryptids` or `BusyBeaver`) via `leanexport`, verifying in a Bubblewrap sandbox
@@ -62,7 +63,7 @@ that:
 | [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 15 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), `Riemann95.candidate_fewer_states`, and the `Erdos14` reduction |
 | [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 34 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
 | [`pa_semantics.json`](./pa_semantics.json) | `Challenge` | `Cryptids.Semantics.PA` | `propext`, `Quot.sound`, `Classical.choice` | `not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`, `paProvable_sound_nat`, `paProvable_halts_zf380_iff_zf393`, `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent` |
-| [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 425 `BB(6)` and `BB(3, 3)` holdout theorems: Level A and Level B reductions (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) and A6 `is_not_halt` |
+| [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 506 `BB(6)` and `BB(3, 3)` holdout Level A, Level B, equivalence, A6 `is_not_halt`, and hardness-evidence theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`, `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, `HardnessEvidence.*`) |
 | [`a6.json`](./a6.json) | `BusyBeaverChallenge` | `BusyBeaver.BB6.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH` | `propext`, `Quot.sound`, `Classical.choice` | A6 `is_not_halt` |
 | [`goldbach_21.json`](./goldbach_21.json) | `Challenge` | `Cryptids.Goldbach21` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`goldbach_semantics.json`](./goldbach_semantics.json) | `Challenge` | `Cryptids.Semantics.Goldbach` | `propext`, `Quot.sound`, `Classical.choice` | `halts_reference_iff_not_goldbach`, `halts_candidate_iff_not_goldbach` |
