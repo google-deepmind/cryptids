@@ -55,7 +55,7 @@ not decide whether the forward orbit from `start` / `highLevelStart` enters that
 
 @[expose] public section
 
-namespace BusyBeaver.HardnessEvidence
+namespace BusyBeaver.BB6.HardnessEvidence
 
 /-! ## Problems 1–5 (Named Community Cryptids) -/
 
@@ -494,13 +494,16 @@ theorem halting_state_witness : highLevelNext (.C 0 0) = none := by
 theorem halting_residue_class (a : ℕ) : highLevelNext (.C a 0) = none := by
   simp [highLevelNext]
 
-/-- Pre-halting family (`b = a / 2 + 4`): `C a (a / 2 + 4)` steps directly into the `C _ 0` halting
-family. -/
+/-- Two-step halting family (`b = a / 2 + 4`): `C a (a / 2 + 4)` steps into `C _ 0` and halts in
+two high-level steps. -/
 theorem halting_residue_class_two_step (a : ℕ) :
-    highLevelNext (.C a (a / 2 + 4)) = some (.C (6 * (a / 2 + 2) + 3 * (a % 2) + 5) 0) := by
+    (highLevelNext (.C a (a / 2 + 4))).bind highLevelNext = none := by
   rw [show a / 2 + 4 = (a / 2 + 2) + 2 by omega]
   simp only [highLevelNext]
-  split_ifs <;> first | omega | (congr 2; omega)
+  split_ifs <;> try omega
+  have hsub : a / 2 + 2 - (a / 2 + 2) = 0 := by omega
+  rw [hsub]
+  rfl
 
 end M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD
 
@@ -517,13 +520,16 @@ theorem halting_state_witness : highLevelNext (.C 0 1) = none := by
 theorem halting_residue_class (a : ℕ) : highLevelNext (.C a 1) = none := by
   simp [highLevelNext]
 
-/-- Pre-halting family (`b = 2a + 3`): `C a (2a + 3)` steps directly to `C (2a + 2) 1`, which halts
-on the next high-level step. -/
+/-- Two-step halting family (`b = 2a + 3`): `C a (2a + 3)` steps to `C (2a + 2) 1` and halts in
+two high-level steps. -/
 theorem halting_residue_class_two_step (a : ℕ) :
-    highLevelNext (.C a (2 * a + 3)) = some (.C (2 * a + 2) 1) := by
+    (highLevelNext (.C a (2 * a + 3))).bind highLevelNext = none := by
   rw [show 2 * a + 3 = (2 * a + 1) + 2 by omega]
   simp only [highLevelNext]
-  split_ifs <;> first | omega | (congr 2; omega)
+  split_ifs <;> try omega
+  have hsub : 2 * a + 1 - 2 * a = 1 := by omega
+  rw [hsub]
+  rfl
 
 end M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
 
@@ -683,11 +689,11 @@ theorem halting_residue_class (b : ℕ) (L : List ℕ) (d : ℕ) (R : List ℕ) 
     next (.CR 1 b L (d + 1) R) = none := by
   simp [next]
 
-/-- Pre-halting family (`r = 1`): `CR (a + 2) b L 1 R` steps directly into the `CR 1 ...` halting
-family whenever `bump1 R` has positive head. -/
-theorem halting_residue_class_two_step (a b : ℕ) (L R : List ℕ) :
-    next (.CR (a + 2) b L 1 R) = some (.CR 1 (a + 1) (b :: L) (bump1 R).1 (bump1 R).2) := by
-  simp [next]
+/-- Two-step halting family (`r = 1`, non-empty tail `r :: R`): `CR (a + 2) b L 1 (r :: R)` halts
+in two accelerated steps via `bump1 (r :: R) = (r + 1, R)`. -/
+theorem halting_residue_class_two_step (a b : ℕ) (L : List ℕ) (r : ℕ) (R : List ℕ) :
+    (next (.CR (a + 2) b L 1 (r :: R))).bind next = none := by
+  simp [next, bump1]
 
 end M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA
 
@@ -708,4 +714,4 @@ theorem halting_residue_class (k d : ℕ) (R : List ℕ) :
 
 end M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
 
-end BusyBeaver.HardnessEvidence
+end BusyBeaver.BB6.HardnessEvidence

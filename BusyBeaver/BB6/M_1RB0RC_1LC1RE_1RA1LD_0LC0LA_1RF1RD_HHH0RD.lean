@@ -55,7 +55,6 @@ map $T$, writing $k = 3q + r$ with $r \in \lbrace 0, 1, 2 \rbrace$ and $d = c - 
   \end{cases}
   $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential ($4^n$ inner cascades, $(4/3)^k$
@@ -66,13 +65,12 @@ non-halting.
 
 *Hazard:* $P(\text{halt}) \lesssim 10^{-5}$ per era
 
-*Simulated horizon:* exact rule simulation (see dossier)
+*Simulated horizon:* exact rule simulation
 
 *Why it is hard:* remaining halts `rule_4/12_halt` need $c_{\text{rem}}=1$: a $(4/3)^k$ Mahler-type
 residue problem
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

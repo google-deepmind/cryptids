@@ -43,7 +43,6 @@ CR(a + 2, b, L, d + 1, R)     -> CR(d + 1, a + 1, b :: L, r, R')  where (r, R') 
 Start: CR(0, 0, [], 0, []), reached after 5 raw TM steps
 ```
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* S5 sibling — trigger **POW**, growth —, shield partial.
@@ -58,7 +57,6 @@ non-halting.
 *Why it is hard:* see #549
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

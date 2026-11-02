@@ -41,7 +41,6 @@ G(k, c) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 2 — trigger **EQ (shrinking target) with leaky parity shield**, growth
@@ -59,7 +58,6 @@ $\sum t^{-2} < \infty$
 $2\rho/(1-\rho)$; coincidence $c_0-2k_0=6$ only in the rare even-source regime
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

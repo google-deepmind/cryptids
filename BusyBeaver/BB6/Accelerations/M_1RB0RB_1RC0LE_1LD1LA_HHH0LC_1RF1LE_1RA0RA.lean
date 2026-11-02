@@ -46,11 +46,10 @@ Contracting every intermediate $C$-chain via structural recursion on $L$ (`exitC
 state $C$ completely, yielding a single-constructor high-level transition system
 $F_{\mathrm{HL}}(a, b, L, r, R)$ starting at $F_{\mathrm{HL}}(1, 0, [], 0, [])$.
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem S3 — trigger **EQ (depth-two gate)**, growth —, shield partial
-(`ValidStack129` kills $\mathrm{CR}\,[]\,R$ and all $0::0::L$ states).
+(unreachable states include $\mathrm{CR}\,[]\,R$ and all $0::0::L$ configurations).
 
 *Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
 non-halting (weak race).
@@ -63,7 +62,6 @@ non-halting (weak race).
 *Why it is hard:* two-mode halving sweeper; halts iff $L$ drains to $[1,0]$ in $\mathrm{CR}$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

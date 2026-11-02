@@ -45,7 +45,6 @@ F(m, p, n, c) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth super-exponential (two-stage $2^n$ doubling
@@ -61,7 +60,6 @@ non-halting.
 *Why it is hard:* coupled outer `D1` and inner `Modd` $2^n$ cascades; halts iff $D_1(2,u,0)$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

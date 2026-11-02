@@ -96,7 +96,6 @@ $$
 \end{aligned}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 1 — trigger **RES + competing sinks**, growth tetrational
@@ -115,7 +114,6 @@ $10^{771}$-digit number
 computable, not provable with current tools
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

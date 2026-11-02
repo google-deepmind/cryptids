@@ -9250,7 +9250,7 @@ theorem is_valid_acceleration : IsValidAcceleration target start encode next := 
 theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
 end M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA
 
-namespace HardnessEvidence
+namespace BB6.HardnessEvidence
 namespace M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
 open BusyBeaver.M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
 
@@ -9458,7 +9458,7 @@ theorem halting_state_witness : highLevelNext (.C 0 0) = none := by sorry
 theorem halting_residue_class (a : ℕ) : highLevelNext (.C a 0) = none := by sorry
 
 theorem halting_residue_class_two_step (a : ℕ) :
-    highLevelNext (.C a (a / 2 + 4)) = some (.C (6 * (a / 2 + 2) + 3 * (a % 2) + 5) 0) := by sorry
+    (highLevelNext (.C a (a / 2 + 4))).bind highLevelNext = none := by sorry
 end M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD
 
 namespace M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
@@ -9469,7 +9469,7 @@ theorem halting_state_witness : highLevelNext (.C 0 1) = none := by sorry
 theorem halting_residue_class (a : ℕ) : highLevelNext (.C a 1) = none := by sorry
 
 theorem halting_residue_class_two_step (a : ℕ) :
-    highLevelNext (.C a (2 * a + 3)) = some (.C (2 * a + 2) 1) := by sorry
+    (highLevelNext (.C a (2 * a + 3))).bind highLevelNext = none := by sorry
 end M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
 
 namespace M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA
@@ -9513,8 +9513,8 @@ theorem halting_state_witness : next (.CR 1 0 [] 1 []) = none := by sorry
 theorem halting_residue_class (b : ℕ) (L : List ℕ) (d : ℕ) (R : List ℕ) :
     next (.CR 1 b L (d + 1) R) = none := by sorry
 
-theorem halting_residue_class_two_step (a b : ℕ) (L R : List ℕ) :
-    next (.CR (a + 2) b L 1 R) = some (.CR 1 (a + 1) (b :: L) (bump1 R).1 (bump1 R).2) := by sorry
+theorem halting_residue_class_two_step (a b : ℕ) (L : List ℕ) (r : ℕ) (R : List ℕ) :
+    (next (.CR (a + 2) b L 1 (r :: R))).bind next = none := by sorry
 end M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA
 
 namespace M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
@@ -9525,7 +9525,7 @@ theorem halting_state_witness : highLevelNext (.EL 0 [] 0 []) = none := by sorry
 theorem halting_residue_class (k d : ℕ) (R : List ℕ) :
     highLevelNext (.EL (4 * k) [] d R) = none := by sorry
 end M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD
-end HardnessEvidence
+end BB6.HardnessEvidence
 
 end BusyBeaver
 

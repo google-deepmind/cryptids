@@ -44,7 +44,6 @@ E(a, b + 2, 0)     --> E(0, b, 2a + 7)
 E(a, b + 2, 1)     --> E(0, b, 2a + 5)
 ```
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential, shield see family.
@@ -59,7 +58,6 @@ Steps* list).
 *Why it is hard:* E1 pair of #116
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

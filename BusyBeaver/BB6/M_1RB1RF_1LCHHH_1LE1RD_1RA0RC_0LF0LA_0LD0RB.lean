@@ -31,7 +31,6 @@ T(P(b, c)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ ($2^n$ remainder coincidence)**, growth exponential
@@ -47,7 +46,6 @@ non-halting.
 *Why it is hard:* `rule_8_halt` requires $P_2(a,0,2)$ at a cascade turnaround
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

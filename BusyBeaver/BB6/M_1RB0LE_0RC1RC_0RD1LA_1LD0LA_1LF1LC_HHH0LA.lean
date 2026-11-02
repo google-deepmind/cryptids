@@ -64,7 +64,6 @@ T_{\mathrm{HL}}(D(a, d)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential (4-counter $3^n$ cascade), shield
@@ -81,7 +80,6 @@ non-halting; strong `IsDoesNotHalt` candidate.
 proves #568 ≡ #623
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

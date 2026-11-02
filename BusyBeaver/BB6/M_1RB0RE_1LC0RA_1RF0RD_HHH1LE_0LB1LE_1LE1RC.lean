@@ -45,7 +45,6 @@ F(m, p, n, c) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth super-exponential, shield none.
@@ -55,13 +54,12 @@ non-halting.
 
 *Hazard:* $P(\text{halt}) \ll 10^{-600}$
 
-*Simulated horizon:* $> 3.46\times10^{1204}$ TM steps in 12 cascades
+*Simulated horizon:* 10 cascades (exact; reaches $A(65490, 3)$)
 
-*Why it is hard:* E1 sibling of #79 with identical rules from $D_1(1,0,0)$ (candidate exact
-equivalence)
+*Why it is hard:* shares the exact `highLevelNext` transition map with #79, but starts from
+$A(4, 3)$ rather than $A(5, 2)$; the two orbits remain disjoint
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

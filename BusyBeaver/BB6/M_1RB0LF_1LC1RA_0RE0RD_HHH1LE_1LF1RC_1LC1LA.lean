@@ -31,7 +31,6 @@ T(C(a, b)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential ($2^n$ cascade + base-$3/2$ underflow
@@ -48,7 +47,6 @@ non-halting.
 $\lbrace 4\cdot2^n - n - 6 \rbrace$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

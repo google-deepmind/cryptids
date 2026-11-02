@@ -44,7 +44,6 @@ T(E(p, k, c)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 5 — trigger **EQ (rebound trap)**, growth exponential
@@ -62,7 +61,6 @@ the expanding dual of Tao's Syracuse step) alternating with even-$c$ subtraction
 $c_j - 2k_j \in \lbrace -4,+2 \rbrace$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

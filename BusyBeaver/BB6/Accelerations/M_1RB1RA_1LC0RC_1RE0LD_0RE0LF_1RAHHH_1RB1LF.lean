@@ -38,7 +38,6 @@ BR((a + 3) :: L, R) -> BR((a + 1) :: bumpHead L, (tailWeight R + 1) :: R.tail)
 Start: A([2, 0], []), reached after 16 raw TM steps
 ```
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem S4 — trigger **POW**, growth mass-conserving sandpile, shield partial.
@@ -54,7 +53,6 @@ class
 *Why it is hard:* see #660
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

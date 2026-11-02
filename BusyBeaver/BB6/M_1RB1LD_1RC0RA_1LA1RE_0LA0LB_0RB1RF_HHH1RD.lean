@@ -57,7 +57,6 @@ T_{\mathrm{HL}}(C(b, d + 2)) &= \begin{cases}
 \end{aligned}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential (two-base: $2^n$ doubling then $4^n$
@@ -73,7 +72,6 @@ non-halting.
 *Why it is hard:* halts iff $d_j = b_j + 2$ at $A(0,b_j,0,d_j)$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

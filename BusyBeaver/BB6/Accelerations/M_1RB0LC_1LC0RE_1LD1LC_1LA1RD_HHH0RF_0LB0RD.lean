@@ -37,7 +37,6 @@ AL(L, (d + 3) :: R) -> AL((tailWeight L + 1) :: L.tail, (d + 1) :: bumpHead R)
 Start: D([3], [0]), reached after 23 raw TM steps
 ```
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* S4 sibling — trigger **POW**, growth mass-conserving sandpile, shield partial
@@ -53,7 +52,6 @@ non-halting.
 *Why it is hard:* E1 pair of #680 (different seed)
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

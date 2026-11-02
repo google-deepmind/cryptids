@@ -42,11 +42,10 @@ Restricting to the Poincaré return section $R = []$ eliminates the right stack 
 a single-stack transition system $C_{\mathrm{HL}}(a, L) := C(a, L, [])$ starting at
 $C_{\mathrm{HL}}(3, [0])$.
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem S4 — trigger **POW**, growth mass-conserving sandpile, shield partial
-(`ValidStack680` kills $C([],R)$; strict digit positivity at `mode_C`).
+(the empty-left configuration $C([],R)$ is unreachable; strict digit positivity at mode $C$).
 
 *Verdict (heuristic, from exact accelerated simulation of the certified rules):* probviously
 non-halting.
@@ -58,7 +57,6 @@ non-halting.
 *Why it is hard:* E1 pair of #480
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

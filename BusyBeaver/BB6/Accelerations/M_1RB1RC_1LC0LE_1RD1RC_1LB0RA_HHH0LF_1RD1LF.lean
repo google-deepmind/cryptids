@@ -57,7 +57,6 @@ whose right half-tape is `encRight0 R S`: the digit stack `S` encoded as usual b
 strong induction on the head digit shows that every inner configuration with all entries of `S`
 positive either halts or returns to the main system (`rule_C_zero_zero_cons`).
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem S4 — trigger **POW**, growth mass-conserving sandpile, shield partial.
@@ -72,7 +71,6 @@ non-halting.
 *Why it is hard:* see #660
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

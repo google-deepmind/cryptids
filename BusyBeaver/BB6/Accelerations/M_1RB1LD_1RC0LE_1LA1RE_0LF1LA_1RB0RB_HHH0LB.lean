@@ -19,7 +19,6 @@ Each half-tape stack encodes unary blocks $1^{3a + 2}$ separated by single zeros
 tape head outward. Starting from `init []`, the machine enters a closed 2-mode (`SweepR`, `CarryD`)
 2nd-order digit-stack system in 14 raw steps.
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Wiki stack — trigger **era-recursive (3-case bottom-extension recurrence)**,
@@ -29,14 +28,13 @@ $R$ + $L.\mathrm{last}=0$ refuted across eras).
 *Verdict (heuristic; community analysis, see the wiki page):* probviously non-halting (wiki
 cryptid).
 
-*Hazard:* not quantified; perturbed all-even seeds halt in Era 2/3 (`rec_59_bottom_extension`)
+*Hazard:* not quantified; perturbed all-even seeds halt in Era 2/3 (bottom extension recurrence)
 
 *Simulated horizon:* pumping test: 46 perturbed configurations, 0 halts in $10^5$ steps
 
 *Why it is hard:* exact 3-case composition theorem verified on all 1,024 stacks of weight $\le10$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

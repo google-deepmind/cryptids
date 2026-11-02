@@ -31,7 +31,6 @@ T(E(b, d)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ (second-order coincidence)**, growth exponential ($2^n$
@@ -42,12 +41,11 @@ non-halting.
 
 *Hazard:* $P(\text{halt}) \lesssim 10^{-6}$ (convergent $\sum m^{-2}$ tail)
 
-*Simulated horizon:* exact rule simulation (see dossier)
+*Simulated horizon:* exact rule simulation
 
 *Why it is hard:* halting requires both $c = 2b-4$ and $c_{\text{odd}} = 2^{k+3}-2k-5$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

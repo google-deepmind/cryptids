@@ -38,7 +38,6 @@ T(D_p(a, b)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 4 — trigger **EQ (2-wide window)**, growth exponential
@@ -55,7 +54,6 @@ non-halting.
 structural twin of #184 (different orbit)
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

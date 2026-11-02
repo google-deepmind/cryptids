@@ -160,7 +160,6 @@ $$
 \end{aligned}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential, shield see family.
@@ -172,10 +171,9 @@ Steps* list).
 
 *Simulated horizon:* —
 
-*Why it is hard:* 1st-order collapse of a false stack (`Valid3Counter116`)
+*Why it is hard:* 1st-order collapse of a false stack (unreachable non-zero second stack)
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

@@ -31,7 +31,6 @@ T(C(a, b)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 4 — trigger **EQ (2-wide window at turnaround)**, growth exponential
@@ -48,7 +47,6 @@ non-halting.
 $(a,b)\mapsto(b-a,3a)$; sits between Baker–Wüstholz and $\times2,\times3$ rigidity
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

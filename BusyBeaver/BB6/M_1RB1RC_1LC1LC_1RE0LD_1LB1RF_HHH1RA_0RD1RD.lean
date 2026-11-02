@@ -31,7 +31,6 @@ T(C(a, c)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Cascade — trigger **EQ**, growth exponential ($\times1.2402$ per step), shield
@@ -48,7 +47,6 @@ non-halting.
 $|v_1-v_2|\in\lbrace 0,1 \rbrace$ with $v_1\ge v_2$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

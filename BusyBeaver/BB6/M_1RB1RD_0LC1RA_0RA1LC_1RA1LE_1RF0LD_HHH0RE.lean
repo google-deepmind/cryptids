@@ -45,7 +45,6 @@ E(a, w) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 2 — trigger **EQ with leaky parity shield**, growth linear, shield leaky.
@@ -60,7 +59,6 @@ non-halting.
 *Why it is hard:* third sibling of #183/#352 with reset offset $+2$
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section

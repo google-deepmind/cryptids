@@ -36,7 +36,6 @@ T(J(u, w)) = \begin{cases}
 \end{cases}
 $$
 
-<!-- hardness:begin -->
 ## Hardness
 
 *Hardness class:* Problem 3 — trigger **EQ, critical**, growth linear ($2v+w \approx 43.66\,T$),
@@ -53,7 +52,6 @@ Borel–Cantelli boundary); $\approx 2\%$ per decade
 *Why it is hard:* 1-D harmonic-series shrinking target; halting iff $w_t = 2v_t + 8$ at a turnaround
 
 See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
-<!-- hardness:end -->
 -/
 
 @[expose] public section
