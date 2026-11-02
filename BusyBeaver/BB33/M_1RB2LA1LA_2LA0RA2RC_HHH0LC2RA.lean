@@ -7,11 +7,11 @@ module
 public import BusyBeaver.BB33.WilyCoyote
 
 /-!
-# Busy Beaver Holdout `1RB2LA1LA_2LA0RA2RC_---0LC2RA` (Wily Coyote)
+# Busy Beaver Holdout `1RB2LA1LA_2LA0RA2RC_---0LC2RA` (Wily Coyote, Holdout #531)
 
 Formal `IsClosedStackPatternSet`, `HasStackedCollatzReduction`, and `IsValidAcceleration` proofs
-for the 3-state, 3-symbol Busy Beaver holdout `1RB2LA1LA_2LA0RA2RC_---0LC2RA` (**Wily Coyote**;
-see <https://wiki.bbchallenge.org/wiki/Wily_Coyote>).
+for the 3-state, 3-symbol Busy Beaver holdout `1RB2LA1LA_2LA0RA2RC_---0LC2RA` (**Wily Coyote**,
+Holdout #531; see <https://wiki.bbchallenge.org/wiki/Wily_Coyote>).
 
 Starting from the blank tape (`init []`), the trajectory reaches the left-bounce family
 $$W(w) = 0^\infty\,\mathrm{A}{>}\,0\,\overline{w}\,0^\infty

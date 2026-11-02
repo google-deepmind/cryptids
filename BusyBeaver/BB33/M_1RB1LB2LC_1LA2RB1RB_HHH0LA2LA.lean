@@ -8,10 +8,10 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 /-!
-# Busy Beaver Holdout `1RB1LB2LC_1LA2RB1RB_---0LA2LA`
+# Busy Beaver Holdout `1RB1LB2LC_1LA2RB1RB_---0LA2LA` (Holdout #397)
 
 Formal `IsClosedStackPatternSet`, `HasStackedCollatzReduction`, and `IsValidAcceleration` proofs
-for the 3-state, 3-symbol Busy Beaver holdout `1RB1LB2LC_1LA2RB1RB_---0LA2LA` (see
+for the 3-state, 3-symbol Busy Beaver holdout `1RB1LB2LC_1LA2RB1RB_---0LA2LA` (Holdout #397; see
 <https://wiki.bbchallenge.org/wiki/1RB1LB2LC_1LA2RB1RB_---0LA2LA>).
 
 Starting from the blank tape (`init []`), the trajectory reaches the right-bounce family
