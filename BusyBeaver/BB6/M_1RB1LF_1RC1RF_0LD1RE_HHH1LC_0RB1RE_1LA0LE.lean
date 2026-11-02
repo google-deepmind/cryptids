@@ -159,6 +159,21 @@ $$
   \end{cases}
 \end{aligned}
 $$
+
+## Hardness
+
+*Hardness class:* Cascade — trigger **EQ**, growth exponential, shield see family.
+
+*Verdict (heuristic; community analysis, see the wiki page):* wiki rediscovery (RobinCodes *Next
+Steps* list).
+
+*Hazard:* not re-measured in our dossiers
+
+*Simulated horizon:* —
+
+*Why it is hard:* 1st-order collapse of a false stack (unreachable non-zero second stack)
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
 -/
 
 @[expose] public section
