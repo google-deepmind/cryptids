@@ -1,4 +1,4 @@
-# Derived from sources/erdos_15_sterin_woods.txt (bbsim, SHA-256 f9de29f3b3b06e55afbe61baddf317347b224a1a2203b4cf35f4027da1ecd9ac).
+# Derived from sources/erdos_ternary_15_sterin_woods.txt (bbsim, SHA-256 f9de29f3b3b06e55afbe61baddf317347b224a1a2203b4cf35f4027da1ecd9ac).
 # 15 states, 2 symbols; the start state is 0 and the others follow the published order.
 # Symbols: the blank `b` is 0 and `a` is 1.
 # state 0: mul2_G_sim

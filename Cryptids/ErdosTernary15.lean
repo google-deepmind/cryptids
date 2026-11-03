@@ -7,24 +7,24 @@ module
 public import Cryptids.Machines
 
 /-!
-# Erdos15
+# ErdosTernary15
 
-The 15-state Turing machine `erdos_15` halts on the blank tape if and only if some power `2 ^ n`
-with `n > 8` has no digit `2` in base `3`, i.e. if and only if Erdős's conjecture on the ternary
-digits of powers of two is false.
+The 15-state Turing machine `erdos_ternary_15` halts on the blank tape if and only if some power
+`2 ^ n` with `n > 8` has no digit `2` in base `3`, i.e. if and only if Erdős's conjecture on the
+ternary digits of powers of two is false.
 
 ## Provenance and Attribution
 
 * Tristan Stérin and Damien Woods, *Hardness of busy beaver value BB(15)*
-  (<https://arxiv.org/abs/2107.12475>, 2021): the 5-state, 4-symbol machine `powers_of_two_5_4`
-  and its 15-state, 2-symbol compilation `powers_of_two_15_2`, published in
+  (<https://arxiv.org/abs/2107.12475>, 2021): the 5-state, 4-symbol machine `powers_of_two_5_4` and
+  its 15-state, 2-symbol compilation `powers_of_two_15_2`, published in
   <https://github.com/tcosmo/bbsim> (`machines/powers_of_two_15_2.txt`, commit `3f655ba2c73b`) and
-  mirrored at <https://docs.bbchallenge.org/other/powers_of_two_15_2.txt>. The file is kept
-  verbatim in `baselines/sources/erdos_15_sterin_woods.txt`; `verify.py` re-derives
-  `baselines/tables/erdos_15.txt` from it and checks that they match: the start state `mul2_G_sim`
-  becomes `0`, the other states are numbered in order of appearance, and the blank symbol `b`
-  becomes `0` and `a` becomes `1`. Their correctness proof is on paper; this file gives a Lean
-  proof.
+  mirrored at <https://docs.bbchallenge.org/other/powers_of_two_15_2.txt>. The file is kept verbatim
+  in `baselines/sources/erdos_ternary_15_sterin_woods.txt`; `verify.py` re-derives
+  `baselines/tables/erdos_ternary_15.txt` from it and checks that they match: the start state
+  `mul2_G_sim` becomes `0`, the other states are numbered in order of appearance, and the blank
+  symbol `b` becomes `0` and `a` becomes `1`. Their correctness proof is on paper; this file gives a
+  Lean proof.
 
 ## Machine Layout
 
@@ -42,13 +42,13 @@ states are shared: rewinding also uses `8`, and incrementing the counter also us
 
 @[expose] public section
 
-namespace ConjectureMachines.Erdos15
+namespace ConjectureMachines.ErdosTernary15
 
 open Turing (Dir)
 open StateTransition
 
-/-- 15-state Erdős powers-of-two machine (`erdos_15`, Stérin & Woods 2021). -/
-abbrev erdos15 : Machine 15 2 := Machines.erdos15
+/-- 15-state Erdős ternary machine (`erdos_ternary_15`, Stérin & Woods 2021). -/
+abbrev erdosTernary15 : Machine 15 2 := Machines.erdosTernary15
 
 /-! ## Base-3 Doubling -/
 
@@ -142,7 +142,7 @@ def clo : ℕ → Fin 2
 def B0 : ListBlank (Fin 2) := ListBlank.mk []
 
 theorem B0_cons_zero : B0.cons 0 = B0 :=
-  Quot.sound (Or.inr ⟨1, rfl⟩)
+  ListBlank.cons_head_tail B0
 
 /-- Head on the first cell of `L`. -/
 def Tape.mkL (L R : ListBlank (Fin 2)) : Tape (Fin 2) :=
@@ -172,23 +172,28 @@ def stageCfg (c n : ℕ) : Cfg 15 2 :=
 
 /-! ## Step Infrastructure -/
 
-def nSteps (M : Machine 15 2) (n : ℕ) : Cfg 15 2 → Option (Cfg 15 2) :=
-  Nat.rec (motive := fun _ => Cfg 15 2 → Option (Cfg 15 2))
+section
+
+variable {Q : ℕ}
+
+/-- `n` steps of `M` from `c`, or `none` if `M` halts first. -/
+def nSteps (M : Machine Q 2) (n : ℕ) : Cfg Q 2 → Option (Cfg Q 2) :=
+  Nat.rec (motive := fun _ => Cfg Q 2 → Option (Cfg Q 2))
     (fun c => some c)
     (fun _ ih c => (step M c).bind ih)
     n
 
 @[simp]
-theorem nSteps_zero (M : Machine 15 2) (c : Cfg 15 2) :
+theorem nSteps_zero (M : Machine Q 2) (c : Cfg Q 2) :
     nSteps M 0 c = some c := rfl
 
 @[simp]
-theorem nSteps_succ (M : Machine 15 2) (n : ℕ) (c : Cfg 15 2) :
+theorem nSteps_succ (M : Machine Q 2) (n : ℕ) (c : Cfg Q 2) :
     nSteps M (n + 1) c = (step M c).bind (nSteps M n) := rfl
 
 attribute [eqns nSteps_zero nSteps_succ] nSteps
 
-theorem nSteps_reaches {M : Machine 15 2} {n : ℕ} {c c' : Cfg 15 2}
+theorem nSteps_reaches {M : Machine Q 2} {n : ℕ} {c c' : Cfg Q 2}
     (h : nSteps M n c = some c') : Reaches (step M) c c' := by
   induction n generalizing c with
   | zero =>
@@ -200,7 +205,7 @@ theorem nSteps_reaches {M : Machine 15 2} {n : ℕ} {c c' : Cfg 15 2}
     obtain ⟨c₁, hstep, hrest⟩ := h
     exact Relation.ReflTransGen.head hstep (ih hrest)
 
-theorem nSteps_add {M : Machine 15 2} (m n : ℕ) (c : Cfg 15 2) :
+theorem nSteps_add {M : Machine Q 2} (m n : ℕ) (c : Cfg Q 2) :
     nSteps M (m + n) c = (nSteps M m c).bind (nSteps M n) := by
   induction m generalizing c with
   | zero => simp [nSteps]
@@ -208,16 +213,16 @@ theorem nSteps_add {M : Machine 15 2} (m n : ℕ) (c : Cfg 15 2) :
     rw [Nat.succ_add, nSteps, nSteps]
     cases step M c <;> simp [ih]
 
-theorem nSteps_bind_eq {M : Machine 15 2} {m n : ℕ} {c c₁ c₂ : Cfg 15 2}
+theorem nSteps_bind_eq {M : Machine Q 2} {m n : ℕ} {c c₁ c₂ : Cfg Q 2}
     (h₁ : nSteps M m c = some c₁) (h₂ : nSteps M n c₁ = some c₂) :
     nSteps M (m + n) c = some c₂ := by
   rw [nSteps_add, h₁, Option.bind_some, h₂]
 
-theorem step_one {M : Machine 15 2} {c c₁ : Cfg 15 2} (h : step M c = some c₁) :
+theorem step_one {M : Machine Q 2} {c c₁ : Cfg Q 2} (h : step M c = some c₁) :
     nSteps M 1 c = some c₁ := by
   rw [nSteps, h]; rfl
 
-theorem reaches_imp_nSteps {M : Machine 15 2} {a b : Cfg 15 2}
+theorem reaches_imp_nSteps {M : Machine Q 2} {a b : Cfg Q 2}
     (h : Reaches (step M) a b) : ∃ k, nSteps M k a = some b := by
   induction h with
   | refl => exact ⟨0, rfl⟩
@@ -225,67 +230,88 @@ theorem reaches_imp_nSteps {M : Machine 15 2} {a b : Cfg 15 2}
     obtain ⟨k, hk⟩ := ih
     exact ⟨k + 1, nSteps_bind_eq hk (step_one hstep)⟩
 
-theorem nSteps_eq_none_of_step_none {M : Machine 15 2} {k : ℕ} (s : ℕ) {a b : Cfg 15 2}
+theorem nSteps_eq_none_of_step_none {M : Machine Q 2} {k : ℕ} (s : ℕ) {a b : Cfg Q 2}
     (hk : nSteps M k a = some b) (hnone : step M b = none) (hks : k < s) :
     nSteps M s a = none := by
   have hs : s = k + ((s - k - 1) + 1) := by omega
   rw [hs, nSteps_add, hk, Option.bind_some, nSteps_succ, hnone, Option.bind_none]
 
+end
+
 /-! ## Transition Table -/
 
-theorem stepR {q q' : Fin 15} {a b : Fin 2} (h : erdos15.transition q a = some (b, .right, q'))
+theorem stepR {q q' : Fin 15} {a b : Fin 2}
+    (h : erdosTernary15.transition q a = some (b, .right, q'))
     (L R : ListBlank (Fin 2)) :
-    step erdos15 ⟨q, ⟨a, L, R⟩⟩ = some ⟨q', Tape.mk' (L.cons b) R⟩ := by
+    step erdosTernary15 ⟨q, ⟨a, L, R⟩⟩ = some ⟨q', Tape.mk' (L.cons b) R⟩ := by
   simp only [step, h, Option.map_some]; rfl
 
-theorem stepL {q q' : Fin 15} {a b : Fin 2} (h : erdos15.transition q a = some (b, .left, q'))
+theorem stepL {q q' : Fin 15} {a b : Fin 2}
+    (h : erdosTernary15.transition q a = some (b, .left, q'))
     (L R : ListBlank (Fin 2)) :
-    step erdos15 ⟨q, ⟨a, L, R⟩⟩ = some ⟨q', Tape.mkL L (R.cons b)⟩ := by
+    step erdosTernary15 ⟨q, ⟨a, L, R⟩⟩ = some ⟨q', Tape.mkL L (R.cons b)⟩ := by
   simp only [step, h, Option.map_some]; rfl
 
-theorem s0_0 (L R) : step erdos15 ⟨0, ⟨0, L, R⟩⟩ = some ⟨8, Tape.mk' (L.cons 1) R⟩ := stepR rfl L R
-theorem s0_1 (L R) : step erdos15 ⟨0, ⟨1, L, R⟩⟩ = some ⟨7, Tape.mk' (L.cons 1) R⟩ := stepR rfl L R
-theorem s1_0 (L R) : step erdos15 ⟨1, ⟨0, L, R⟩⟩ = some ⟨3, Tape.mk' (L.cons 0) R⟩ := stepR rfl L R
-theorem s1_1 (L R) : step erdos15 ⟨1, ⟨1, L, R⟩⟩ = some ⟨2, Tape.mk' (L.cons 1) R⟩ := stepR rfl L R
-theorem s2_0 (L R) : step erdos15 ⟨2, ⟨0, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 1) R⟩ := stepR rfl L R
-theorem s2_1 (L R) : step erdos15 ⟨2, ⟨1, L, R⟩⟩ = some ⟨0, Tape.mk' (L.cons 0) R⟩ := stepR rfl L R
-theorem s3_0 (L R) : step erdos15 ⟨3, ⟨0, L, R⟩⟩ = some ⟨5, Tape.mkL L (R.cons 0)⟩ := stepL rfl L R
-theorem s3_1 (L R) : step erdos15 ⟨3, ⟨1, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 1) R⟩ := stepR rfl L R
-theorem s4_0 (L R) : step erdos15 ⟨4, ⟨0, L, R⟩⟩ = some ⟨6, Tape.mkL L (R.cons 0)⟩ := stepL rfl L R
-theorem s4_1 (L R) : step erdos15 ⟨4, ⟨1, L, R⟩⟩ = some ⟨5, Tape.mkL L (R.cons 1)⟩ := stepL rfl L R
-theorem s5_0 (L R) : step erdos15 ⟨5, ⟨0, L, R⟩⟩ = some ⟨4, Tape.mkL L (R.cons 0)⟩ := stepL rfl L R
-theorem s5_1 (L R) : step erdos15 ⟨5, ⟨1, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 1)⟩ :=
-  stepL rfl L R
-theorem s6_0 (L R) : step erdos15 ⟨6, ⟨0, L, R⟩⟩ = some ⟨13, Tape.mkL L (R.cons 0)⟩ :=
-  stepL rfl L R
-theorem s6_1 (L R) : step erdos15 ⟨6, ⟨1, L, R⟩⟩ = some ⟨4, Tape.mkL L (R.cons 1)⟩ := stepL rfl L R
-theorem s7_0 (L R) : step erdos15 ⟨7, ⟨0, L, R⟩⟩ = some ⟨9, Tape.mkL L (R.cons 1)⟩ := stepL rfl L R
-theorem s7_1 (L R) : step erdos15 ⟨7, ⟨1, L, R⟩⟩ = some ⟨0, Tape.mk' (L.cons 1) R⟩ := stepR rfl L R
-theorem s8_0 (L R) : step erdos15 ⟨8, ⟨0, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 0) R⟩ := stepR rfl L R
-theorem s8_1 (L R) : step erdos15 ⟨8, ⟨1, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 0) R⟩ := stepR rfl L R
-theorem s9_0 (L R) : step erdos15 ⟨9, ⟨0, L, R⟩⟩ = some ⟨12, Tape.mk' (L.cons 0) R⟩ :=
+theorem s0_0 (L R) : step erdosTernary15 ⟨0, ⟨0, L, R⟩⟩ = some ⟨8, Tape.mk' (L.cons 1) R⟩ :=
   stepR rfl L R
-theorem s9_1 (L R) : step erdos15 ⟨9, ⟨1, L, R⟩⟩ = some ⟨7, Tape.mk' (L.cons 0) R⟩ := stepR rfl L R
-theorem s10_0 (L R) : step erdos15 ⟨10, ⟨0, L, R⟩⟩ = some ⟨12, Tape.mkL L (R.cons 0)⟩ :=
-  stepL rfl L R
-theorem s10_1 (L R) : step erdos15 ⟨10, ⟨1, L, R⟩⟩ = some ⟨11, Tape.mkL L (R.cons 1)⟩ :=
-  stepL rfl L R
-theorem s11_0 (L R) : step erdos15 ⟨11, ⟨0, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 0)⟩ :=
-  stepL rfl L R
-theorem s11_1 (L R) : step erdos15 ⟨11, ⟨1, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 1)⟩ :=
-  stepL rfl L R
-theorem s12_0 (L R) : step erdos15 ⟨12, ⟨0, L, R⟩⟩ = some ⟨8, Tape.mk' (L.cons 0) R⟩ :=
+theorem s0_1 (L R) : step erdosTernary15 ⟨0, ⟨1, L, R⟩⟩ = some ⟨7, Tape.mk' (L.cons 1) R⟩ :=
   stepR rfl L R
-theorem s12_1 (L R) : step erdos15 ⟨12, ⟨1, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 1)⟩ :=
-  stepL rfl L R
-theorem s13_0 (L R) : step erdos15 ⟨13, ⟨0, L, R⟩⟩ = some ⟨12, Tape.mk' (L.cons 1) R⟩ :=
+theorem s1_0 (L R) : step erdosTernary15 ⟨1, ⟨0, L, R⟩⟩ = some ⟨3, Tape.mk' (L.cons 0) R⟩ :=
   stepR rfl L R
-theorem s13_1 (L R) : step erdos15 ⟨13, ⟨1, L, R⟩⟩ = some ⟨14, Tape.mkL L (R.cons 0)⟩ :=
+theorem s1_1 (L R) : step erdosTernary15 ⟨1, ⟨1, L, R⟩⟩ = some ⟨2, Tape.mk' (L.cons 1) R⟩ :=
+  stepR rfl L R
+theorem s2_0 (L R) : step erdosTernary15 ⟨2, ⟨0, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 1) R⟩ :=
+  stepR rfl L R
+theorem s2_1 (L R) : step erdosTernary15 ⟨2, ⟨1, L, R⟩⟩ = some ⟨0, Tape.mk' (L.cons 0) R⟩ :=
+  stepR rfl L R
+theorem s3_0 (L R) : step erdosTernary15 ⟨3, ⟨0, L, R⟩⟩ = some ⟨5, Tape.mkL L (R.cons 0)⟩ :=
   stepL rfl L R
-theorem s14_0 (L R) : step erdos15 ⟨14, ⟨0, L, R⟩⟩ = some ⟨9, Tape.mk' (L.cons 1) R⟩ :=
+theorem s3_1 (L R) : step erdosTernary15 ⟨3, ⟨1, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 1) R⟩ :=
+  stepR rfl L R
+theorem s4_0 (L R) : step erdosTernary15 ⟨4, ⟨0, L, R⟩⟩ = some ⟨6, Tape.mkL L (R.cons 0)⟩ :=
+  stepL rfl L R
+theorem s4_1 (L R) : step erdosTernary15 ⟨4, ⟨1, L, R⟩⟩ = some ⟨5, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s5_0 (L R) : step erdosTernary15 ⟨5, ⟨0, L, R⟩⟩ = some ⟨4, Tape.mkL L (R.cons 0)⟩ :=
+  stepL rfl L R
+theorem s5_1 (L R) : step erdosTernary15 ⟨5, ⟨1, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s6_0 (L R) : step erdosTernary15 ⟨6, ⟨0, L, R⟩⟩ = some ⟨13, Tape.mkL L (R.cons 0)⟩ :=
+  stepL rfl L R
+theorem s6_1 (L R) : step erdosTernary15 ⟨6, ⟨1, L, R⟩⟩ = some ⟨4, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s7_0 (L R) : step erdosTernary15 ⟨7, ⟨0, L, R⟩⟩ = some ⟨9, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s7_1 (L R) : step erdosTernary15 ⟨7, ⟨1, L, R⟩⟩ = some ⟨0, Tape.mk' (L.cons 1) R⟩ :=
+  stepR rfl L R
+theorem s8_0 (L R) : step erdosTernary15 ⟨8, ⟨0, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 0) R⟩ :=
+  stepR rfl L R
+theorem s8_1 (L R) : step erdosTernary15 ⟨8, ⟨1, L, R⟩⟩ = some ⟨1, Tape.mk' (L.cons 0) R⟩ :=
+  stepR rfl L R
+theorem s9_0 (L R) : step erdosTernary15 ⟨9, ⟨0, L, R⟩⟩ = some ⟨12, Tape.mk' (L.cons 0) R⟩ :=
+  stepR rfl L R
+theorem s9_1 (L R) : step erdosTernary15 ⟨9, ⟨1, L, R⟩⟩ = some ⟨7, Tape.mk' (L.cons 0) R⟩ :=
+  stepR rfl L R
+theorem s10_0 (L R) : step erdosTernary15 ⟨10, ⟨0, L, R⟩⟩ = some ⟨12, Tape.mkL L (R.cons 0)⟩ :=
+  stepL rfl L R
+theorem s10_1 (L R) : step erdosTernary15 ⟨10, ⟨1, L, R⟩⟩ = some ⟨11, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s11_0 (L R) : step erdosTernary15 ⟨11, ⟨0, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 0)⟩ :=
+  stepL rfl L R
+theorem s11_1 (L R) : step erdosTernary15 ⟨11, ⟨1, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s12_0 (L R) : step erdosTernary15 ⟨12, ⟨0, L, R⟩⟩ = some ⟨8, Tape.mk' (L.cons 0) R⟩ :=
+  stepR rfl L R
+theorem s12_1 (L R) : step erdosTernary15 ⟨12, ⟨1, L, R⟩⟩ = some ⟨10, Tape.mkL L (R.cons 1)⟩ :=
+  stepL rfl L R
+theorem s13_0 (L R) : step erdosTernary15 ⟨13, ⟨0, L, R⟩⟩ = some ⟨12, Tape.mk' (L.cons 1) R⟩ :=
+  stepR rfl L R
+theorem s13_1 (L R) : step erdosTernary15 ⟨13, ⟨1, L, R⟩⟩ = some ⟨14, Tape.mkL L (R.cons 0)⟩ :=
+  stepL rfl L R
+theorem s14_0 (L R) : step erdosTernary15 ⟨14, ⟨0, L, R⟩⟩ = some ⟨9, Tape.mk' (L.cons 1) R⟩ :=
   stepR rfl L R
 
-theorem s14_1 (L R : ListBlank (Fin 2)) : step erdos15 ⟨14, ⟨1, L, R⟩⟩ = none := rfl
+theorem s14_1 (L R : ListBlank (Fin 2)) : step erdosTernary15 ⟨14, ⟨1, L, R⟩⟩ = none := rfl
 
 /-- Runs the machine through a fixed sequence of steps on a concrete tape. -/
 local macro "tm_run" : tactic => `(tactic| simp only [nSteps_succ, nSteps_zero, Option.bind_some,
@@ -302,7 +328,7 @@ def st : ℕ → Fin 15
   | _ => 0
 
 theorem digit_step (d c : ℕ) (hd : d < 3) (hc : c ≤ 1) (L R : ListBlank (Fin 2)) :
-    ∃ s, nSteps erdos15 s ⟨st c, ⟨hi d, L, R.cons (lo d)⟩⟩ =
+    ∃ s, nSteps erdosTernary15 s ⟨st c, ⟨hi d, L, R.cons (lo d)⟩⟩ =
       some ⟨st ((2 * d + c) / 3),
         Tape.mk' (ListBlank.append [lo ((2 * d + c) % 3), hi ((2 * d + c) % 3)] L) R⟩ := by
   rcases (by omega : d = 0 ∨ d = 1 ∨ d = 2) with rfl | rfl | rfl <;>
@@ -316,7 +342,7 @@ theorem digit_step (d c : ℕ) (hd : d < 3) (hc : c ≤ 1) (L R : ListBlank (Fin
   · exact ⟨2, by tm_run⟩
 
 theorem blank_step (L : ListBlank (Fin 2)) :
-    nSteps erdos15 3 ⟨1, Tape.mk' L B0⟩ = some ⟨4, Tape.mkL L B0⟩ := by
+    nSteps erdosTernary15 3 ⟨1, Tape.mk' L B0⟩ = some ⟨4, Tape.mkL L B0⟩ := by
   tm_run
   rw [B0_cons_zero, B0_cons_zero]
 
@@ -324,7 +350,7 @@ theorem blank_step (L : ListBlank (Fin 2)) :
 of the most significant digit. -/
 theorem mul2_pass (ds : List ℕ) (hds : ∀ d ∈ ds, d < 3) (c : ℕ) (hc : c ≤ 1)
     (L : ListBlank (Fin 2)) :
-    ∃ s, nSteps erdos15 s ⟨st c, Tape.mk' L (ListBlank.append (encR ds) B0)⟩ =
+    ∃ s, nSteps erdosTernary15 s ⟨st c, Tape.mk' L (ListBlank.append (encR ds) B0)⟩ =
       some ⟨4, Tape.mkL (ListBlank.append (encL (dbl ds c)) L) B0⟩ := by
   induction ds generalizing c L with
   | nil =>
@@ -350,7 +376,7 @@ theorem mul2_pass (ds : List ℕ) (hds : ∀ d ∈ ds, d < 3) (c : ℕ) (hc : c 
 
 theorem pair_scan (q : Fin 15) (hq : q = 4 ∨ q = 10) (d : ℕ) (hd : d < 3)
     (L R : ListBlank (Fin 2)) :
-    nSteps erdos15 2 ⟨q, ⟨lo d, L.cons (hi d), R⟩⟩ =
+    nSteps erdosTernary15 2 ⟨q, ⟨lo d, L.cons (hi d), R⟩⟩ =
       some ⟨if q = 10 ∨ d = 2 then 10 else 4, Tape.mkL L ((R.cons (lo d)).cons (hi d))⟩ := by
   rcases hq with rfl | rfl <;> rcases (by omega : d = 0 ∨ d = 1 ∨ d = 2) with rfl | rfl | rfl <;>
     tm_run <;> simp
@@ -358,7 +384,7 @@ theorem pair_scan (q : Fin 15) (hq : q = 4 ∨ q = 10) (d : ℕ) (hd : d < 3)
 /-- Scanning left over `ds` from its most significant digit finds a `2` iff `2 ∈ ds`; after a
 `2` the machine keeps moving left in the rewind states. -/
 theorem find2_scan (ds : List ℕ) (hds : ∀ d ∈ ds, d < 3) (L R : ListBlank (Fin 2)) :
-    nSteps erdos15 (2 * ds.length) ⟨4, Tape.mkL (ListBlank.append (encL ds) L) R⟩ =
+    nSteps erdosTernary15 (2 * ds.length) ⟨4, Tape.mkL (ListBlank.append (encL ds) L) R⟩ =
       some ⟨if 2 ∈ ds then 10 else 4, Tape.mkL L (ListBlank.append (encR ds) R)⟩ := by
   induction ds generalizing L with
   | nil => simp [encL, encR]
@@ -379,18 +405,18 @@ theorem find2_scan (ds : List ℕ) (hds : ∀ d ∈ ds, d < 3) (L R : ListBlank 
 /-! ## The `#` Cell and the Counter -/
 
 theorem hash_rewind (c : ℕ) (R : ListBlank (Fin 2)) :
-    nSteps erdos15 3 ⟨10, Tape.mkL (LH c) R⟩ = some ⟨1, Tape.mk' (LH c) R⟩ := by
+    nSteps erdosTernary15 3 ⟨10, Tape.mkL (LH c) R⟩ = some ⟨1, Tape.mk' (LH c) R⟩ := by
   simp only [LH, ListBlank.append, Tape.mkL_cons]
   tm_run
 
 theorem hash_find (c : ℕ) (R : ListBlank (Fin 2)) :
-    nSteps erdos15 2 ⟨4, Tape.mkL (LH c) R⟩ =
+    nSteps erdosTernary15 2 ⟨4, Tape.mkL (LH c) R⟩ =
       some ⟨13, Tape.mkL (ListBlank.append [clo c, chi c] B0) ((R.cons 0).cons 0)⟩ := by
   simp only [LH, ListBlank.append, Tape.mkL_cons]
   tm_run
 
 theorem counter_inc (c : ℕ) (hc : c < 3) (R : ListBlank (Fin 2)) :
-    ∃ s, nSteps erdos15 s
+    ∃ s, nSteps erdosTernary15 s
         ⟨13, Tape.mkL (ListBlank.append [clo c, chi c] B0) ((R.cons 0).cons 0)⟩ =
       some ⟨1, Tape.mk' (LH (c + 1)) R⟩ := by
   rcases (by omega : c = 0 ∨ c = 1 ∨ c = 2) with rfl | rfl | rfl
@@ -399,9 +425,9 @@ theorem counter_inc (c : ℕ) (hc : c < 3) (R : ListBlank (Fin 2)) :
   · exact ⟨3, by simp only [LH, clo, chi, ListBlank.append, Tape.mkL_cons]; tm_run⟩
 
 theorem counter_halt (R : ListBlank (Fin 2)) :
-    ∃ cfg, nSteps erdos15 1
+    ∃ cfg, nSteps erdosTernary15 1
         ⟨13, Tape.mkL (ListBlank.append [clo 3, chi 3] B0) ((R.cons 0).cons 0)⟩ = some cfg ∧
-      step erdos15 cfg = none := by
+      step erdosTernary15 cfg = none := by
   refine ⟨⟨14, ⟨1, B0, (((R.cons 0).cons 0).cons 0)⟩⟩, ?_, s14_1 _ _⟩
   simp only [clo, chi, ListBlank.append, Tape.mkL_cons]
   tm_run
@@ -409,7 +435,7 @@ theorem counter_halt (R : ListBlank (Fin 2)) :
 /-! ## Stages -/
 
 theorem stage_scan (c n : ℕ) :
-    ∃ s, nSteps erdos15 s (stageCfg c n) = some
+    ∃ s, nSteps erdosTernary15 s (stageCfg c n) = some
       ⟨if 2 ∈ pw (n + 1) then 10 else 4,
         Tape.mkL (LH c) (ListBlank.append (encR (pw (n + 1))) B0)⟩ := by
   obtain ⟨s₁, hs₁⟩ := mul2_pass (pw n) (pw_lt n) 0 (by omega) (LH c)
@@ -417,13 +443,13 @@ theorem stage_scan (c n : ℕ) :
   exact ⟨s₁ + 2 * (pw (n + 1)).length, nSteps_bind_eq hs₁ h₂⟩
 
 theorem stage_keep (c n : ℕ) (h : 2 ∈ pw (n + 1)) :
-    ∃ s, 1 ≤ s ∧ nSteps erdos15 s (stageCfg c n) = some (stageCfg c (n + 1)) := by
+    ∃ s, 1 ≤ s ∧ nSteps erdosTernary15 s (stageCfg c n) = some (stageCfg c (n + 1)) := by
   obtain ⟨s₁, hs₁⟩ := stage_scan c n
   simp only [h, ↓reduceIte] at hs₁
   exact ⟨s₁ + 3, by omega, nSteps_bind_eq hs₁ (hash_rewind c _)⟩
 
 theorem stage_inc (c n : ℕ) (hc : c < 3) (h : 2 ∉ pw (n + 1)) :
-    ∃ s, 1 ≤ s ∧ nSteps erdos15 s (stageCfg c n) = some (stageCfg (c + 1) (n + 1)) := by
+    ∃ s, 1 ≤ s ∧ nSteps erdosTernary15 s (stageCfg c n) = some (stageCfg (c + 1) (n + 1)) := by
   obtain ⟨s₁, hs₁⟩ := stage_scan c n
   simp only [h, ↓reduceIte] at hs₁
   obtain ⟨s₃, hs₃⟩ := counter_inc c hc (ListBlank.append (encR (pw (n + 1))) B0)
@@ -431,18 +457,19 @@ theorem stage_inc (c n : ℕ) (hc : c < 3) (h : 2 ∉ pw (n + 1)) :
     nSteps_bind_eq (nSteps_bind_eq hs₁ (hash_find c _)) hs₃⟩
 
 theorem stage_halt (n : ℕ) (h : 2 ∉ pw (n + 1)) :
-    ∃ s cfg, nSteps erdos15 s (stageCfg 3 n) = some cfg ∧ step erdos15 cfg = none := by
+    ∃ s cfg, nSteps erdosTernary15 s (stageCfg 3 n) = some cfg ∧
+      step erdosTernary15 cfg = none := by
   obtain ⟨s₁, hs₁⟩ := stage_scan 3 n
   simp only [h, ↓reduceIte] at hs₁
   obtain ⟨cfg, hcfg, hnone⟩ := counter_halt (ListBlank.append (encR (pw (n + 1))) B0)
   exact ⟨s₁ + 2 + 1, cfg, nSteps_bind_eq (nSteps_bind_eq hs₁ (hash_find 3 _)) hcfg, hnone⟩
 
 theorem init_eq : (init : Cfg 15 2) = ⟨st 1, Tape.mk' (LH 0) (ListBlank.append (encR []) B0)⟩ := by
-  have : LH 0 = ListBlank.mk [] := Quot.sound (Or.inr ⟨4, rfl⟩)
+  have : LH 0 = B0 := by simp [LH, chi, clo, ListBlank.append, B0_cons_zero]
   rw [this]
   rfl
 
-theorem boot : ∃ s, nSteps erdos15 s init = some (stageCfg 1 0) := by
+theorem boot : ∃ s, nSteps erdosTernary15 s init = some (stageCfg 1 0) := by
   obtain ⟨s₁, hs₁⟩ := mul2_pass [] (by simp) 1 (by omega) (LH 0)
   have h₂ := find2_scan (dbl [] 1) (by simp [dbl]) (LH 0) B0
   simp only [show 2 ∉ dbl [] 1 by simp [dbl], ↓reduceIte] at h₂
@@ -454,7 +481,7 @@ theorem boot : ∃ s, nSteps erdos15 s init = some (stageCfg 1 0) := by
 /-! ## Counting Powers Without a Digit `2` -/
 
 theorem reach (n : ℕ) (hn : cnt n ≤ 3) :
-    ∃ s, n ≤ s ∧ nSteps erdos15 s init = some (stageCfg (cnt n) n) := by
+    ∃ s, n ≤ s ∧ nSteps erdosTernary15 s init = some (stageCfg (cnt n) n) := by
   induction n with
   | zero =>
     obtain ⟨s, hs⟩ := boot
@@ -471,7 +498,7 @@ theorem reach (n : ℕ) (hn : cnt n ≤ 3) :
       exact ⟨s₁ + s₂, by omega, nSteps_bind_eq hs₁ hs₂⟩
 
 theorem halt_of (n : ℕ) (h3 : cnt n = 3) (h : 2 ∉ pw (n + 1)) :
-    ∃ s cfg, nSteps erdos15 s init = some cfg ∧ step erdos15 cfg = none := by
+    ∃ s cfg, nSteps erdosTernary15 s init = some cfg ∧ step erdosTernary15 cfg = none := by
   obtain ⟨s₁, -, hs₁⟩ := reach n (by omega)
   rw [h3] at hs₁
   obtain ⟨s₂, cfg, hs₂, hnone⟩ := stage_halt n h
@@ -518,10 +545,11 @@ theorem free_or_none (K : ℕ) :
 
 /-! ## Halting Equivalence -/
 
-/-- The 15-state machine `erdos15` (`erdos_15`) halts on the blank tape if and only if some
-power `2 ^ n` with `n > 8` has no digit `2` in base `3`, with the digits computed by `pw`. -/
-theorem halts_erdos15_iff_exists_free :
-    ConjectureMachines.Halts erdos15 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n := by
+/-- The 15-state machine `erdosTernary15` (`erdos_ternary_15`) halts on the blank tape if and only
+if some power `2 ^ n` with `n > 8` has no digit `2` in base `3`, with the digits computed by `pw`.
+-/
+theorem halts_erdosTernary15_iff_exists_free :
+    ConjectureMachines.Halts erdosTernary15 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n := by
   unfold ConjectureMachines.Halts
   constructor
   · intro hdom
@@ -542,4 +570,4 @@ theorem halts_erdos15_iff_exists_free :
     rw [Part.dom_iff_mem]
     exact ⟨cfg, mem_eval'.mpr ⟨nSteps_reaches hs, hnone⟩⟩
 
-end ConjectureMachines.Erdos15
+end ConjectureMachines.ErdosTernary15
