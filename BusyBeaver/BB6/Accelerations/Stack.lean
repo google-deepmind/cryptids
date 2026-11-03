@@ -204,4 +204,357 @@ theorem HasStackReduction.of_oneDigit {Λ : Type*} [Inhabited Λ]
       exact hcfg'
     · exact ⟨cfg', hstep, Or.inr hhalt⟩
 
+/-! ## Direction and Tape Reflection -/
+
+/-- Flip tape direction. -/
+def reflectDir : Dir → Dir
+  | .left => .right
+  | .right => .left
+
+@[simp] theorem reflectDir_reflectDir (d : Dir) : reflectDir (reflectDir d) = d := by
+  cases d <;> rfl
+
+/-- Reflect a doubly-infinite tape by swapping its left and right half-tapes. -/
+def reflectTape {Γ : Type*} [Inhabited Γ] (T : Tape Γ) : Tape Γ :=
+  ⟨T.head, T.right, T.left⟩
+
+@[simp] theorem reflectTape_reflectTape {Γ : Type*} [Inhabited Γ] (T : Tape Γ) :
+    reflectTape (reflectTape T) = T := by
+  cases T; rfl
+
+@[simp] theorem reflectTape_head {Γ : Type*} [Inhabited Γ] (T : Tape Γ) :
+    (reflectTape T).head = T.head := rfl
+
+@[simp] theorem reflectTape_write {Γ : Type*} [Inhabited Γ] (b : Γ) (T : Tape Γ) :
+    reflectTape (Tape.write b T) = Tape.write b (reflectTape T) := by
+  cases T; rfl
+
+@[simp] theorem reflectTape_move {Γ : Type*} [Inhabited Γ] (d : Dir) (T : Tape Γ) :
+    reflectTape (Tape.move d T) = Tape.move (reflectDir d) (reflectTape T) := by
+  cases d <;> cases T <;> rfl
+
+@[simp] theorem reflectTape_step_tape {Γ : Type*} [Inhabited Γ] (b : Γ) (d : Dir) (T : Tape Γ) :
+    reflectTape ((T.write b).move d) = ((reflectTape T).write b).move (reflectDir d) := by
+  cases d <;> cases T <;> rfl
+
+/-! ## Configuration Functors -/
+
+/-- Map state and tape across Turing machine configuration types. -/
+def mapCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ]
+    (σ : Option Λ₁ → Option Λ₂) (Tmap : Tape Γ → Tape Γ) (c : Cfg Γ Λ₁) : Cfg Γ Λ₂ :=
+  ⟨σ c.q, Tmap c.tape⟩
+
+/-- Relabel control states of a configuration. -/
+def mapState {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] (f : Λ₁ → Λ₂) (c : Cfg Γ Λ₁) : Cfg Γ Λ₂ :=
+  ⟨c.q.map f, c.tape⟩
+
+/-- Relabel control states and reflect tape of a configuration. -/
+def mirrorCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] (f : Λ₁ → Λ₂) (c : Cfg Γ Λ₁) : Cfg Γ Λ₂ :=
+  ⟨c.q.map f, reflectTape c.tape⟩
+
+@[simp] theorem mapState_headRight {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ]
+    (f : Λ₁ → Λ₂) (q : Λ₁) (l r : ListBlank Γ) :
+    mapState f (Cfg.headRight q l r) = Cfg.headRight (f q) l r := rfl
+
+@[simp] theorem mapState_headLeft {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ]
+    (f : Λ₁ → Λ₂) (q : Λ₁) (l r : ListBlank Γ) :
+    mapState f (Cfg.headLeft q l r) = Cfg.headLeft (f q) l r := rfl
+
+@[simp] theorem mapState_zero {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [OfNat Γ 0]
+    (f : Λ₁ → Λ₂) (q : Λ₁) (l r : ListBlank Γ) :
+    mapState f ⟨some q, ⟨(0 : Γ), l, r⟩⟩ = ⟨some (f q), ⟨(0 : Γ), l, r⟩⟩ := rfl
+
+@[simp] theorem mirrorCfg_headRight {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ]
+    (f : Λ₁ → Λ₂) (q : Λ₁) (l r : ListBlank Γ) :
+    mirrorCfg f (Cfg.headRight q l r) = Cfg.headLeft (f q) r l := rfl
+
+@[simp] theorem mirrorCfg_headLeft {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ]
+    (f : Λ₁ → Λ₂) (q : Λ₁) (l r : ListBlank Γ) :
+    mirrorCfg f (Cfg.headLeft q l r) = Cfg.headRight (f q) r l := rfl
+
+@[simp] theorem mirrorCfg_zero {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [OfNat Γ 0]
+    (f : Λ₁ → Λ₂) (q : Λ₁) (l r : ListBlank Γ) :
+    mirrorCfg f ⟨some q, ⟨(0 : Γ), l, r⟩⟩ = ⟨some (f q), ⟨(0 : Γ), r, l⟩⟩ := rfl
+
+/-! ## Commutation with Machine Steps -/
+
+theorem step_mapCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂)
+    (f : Λ₁ → Λ₂) (dmap : Dir → Dir) (Tmap : Tape Γ → Tape Γ)
+    (hT_head : ∀ (T : Tape Γ), (Tmap T).head = T.head)
+    (hT : ∀ (b : Γ) (d : Dir) (T : Tape Γ),
+      Tmap ((T.write b).move d) = ((Tmap T).write b).move (dmap d))
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (dmap d)⟩)
+    (c : Cfg Γ Λ₁) :
+    step M₂ (mapCfg (Option.map f) Tmap c) = (step M₁ c).map (mapCfg (Option.map f) Tmap) := by
+  rcases c with ⟨_ | q, T⟩
+  · rfl
+  · dsimp only [mapCfg, step, Option.map]
+    rw [hT_head, hM]
+    cases h : M₁ q T.head with
+    | none => rfl
+    | some res =>
+      rcases res with ⟨q', ⟨b, d⟩⟩
+      dsimp only [Option.map, Function.comp_apply]
+      rw [hT]
+
+theorem multiStep_mapCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂)
+    (f : Λ₁ → Λ₂) (dmap : Dir → Dir) (Tmap : Tape Γ → Tape Γ)
+    (hT_head : ∀ (T : Tape Γ), (Tmap T).head = T.head)
+    (hT : ∀ (b : Γ) (d : Dir) (T : Tape Γ),
+      Tmap ((T.write b).move d) = ((Tmap T).write b).move (dmap d))
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (dmap d)⟩)
+    (n : ℕ) (c : Cfg Γ Λ₁) :
+    multiStep M₂ (mapCfg (Option.map f) Tmap c) n =
+      (multiStep M₁ c n).map (mapCfg (Option.map f) Tmap) := by
+  induction n generalizing c with
+  | zero => rfl
+  | succ n ih =>
+    simp only [multiStep_succ]
+    rw [step_mapCfg M₁ M₂ f dmap Tmap hT_head hT hM]
+    cases hs : step M₁ c with
+    | none => rfl
+    | some c' =>
+      dsimp only [Option.map, Option.bind]
+      exact ih c'
+
+theorem reachesPlus_mapCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂)
+    (f : Λ₁ → Λ₂) (dmap : Dir → Dir) (Tmap : Tape Γ → Tape Γ)
+    (hT_head : ∀ (T : Tape Γ), (Tmap T).head = T.head)
+    (hT : ∀ (b : Γ) (d : Dir) (T : Tape Γ),
+      Tmap ((T.write b).move d) = ((Tmap T).write b).move (dmap d))
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (dmap d)⟩)
+    {c₁ c₂ : Cfg Γ Λ₁} (h : ReachesPlus M₁ c₁ c₂) :
+    ReachesPlus M₂ (mapCfg (Option.map f) Tmap c₁) (mapCfg (Option.map f) Tmap c₂) := by
+  rcases h with ⟨n, hn, hstep⟩
+  refine ⟨n, hn, ?_⟩
+  rw [multiStep_mapCfg M₁ M₂ f dmap Tmap hT_head hT hM, hstep]
+  rfl
+
+theorem step_isNone_mapCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂)
+    (f : Λ₁ → Λ₂) (dmap : Dir → Dir) (Tmap : Tape Γ → Tape Γ)
+    (hT_head : ∀ (T : Tape Γ), (Tmap T).head = T.head)
+    (hT : ∀ (b : Γ) (d : Dir) (T : Tape Γ),
+      Tmap ((T.write b).move d) = ((Tmap T).write b).move (dmap d))
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (dmap d)⟩)
+    (c : Cfg Γ Λ₁) :
+    (step M₂ (mapCfg (Option.map f) Tmap c)).isNone = (step M₁ c).isNone := by
+  rw [step_mapCfg M₁ M₂ f dmap Tmap hT_head hT hM]
+  cases step M₁ c <;> rfl
+
+theorem reachesPlus_mapState {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂) (f : Λ₁ → Λ₂)
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ => ⟨q'.map f, Stmt.write b d⟩)
+    {c₁ c₂ : Cfg Γ Λ₁} (h : ReachesPlus M₁ c₁ c₂) :
+    ReachesPlus M₂ (mapState f c₁) (mapState f c₂) :=
+  reachesPlus_mapCfg M₁ M₂ f id id (fun _ => rfl) (fun _ _ _ => rfl) hM h
+
+theorem reachesPlus_mirrorCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂) (f : Λ₁ → Λ₂)
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (reflectDir d)⟩)
+    {c₁ c₂ : Cfg Γ Λ₁} (h : ReachesPlus M₁ c₁ c₂) :
+    ReachesPlus M₂ (mirrorCfg f c₁) (mirrorCfg f c₂) :=
+  reachesPlus_mapCfg M₁ M₂ f reflectDir reflectTape (fun _ => rfl) reflectTape_step_tape hM h
+
+theorem step_isNone_mapState {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂) (f : Λ₁ → Λ₂)
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ => ⟨q'.map f, Stmt.write b d⟩)
+    (c : Cfg Γ Λ₁) :
+    (step M₂ (mapState f c)).isNone = (step M₁ c).isNone :=
+  step_isNone_mapCfg M₁ M₂ f id id (fun _ => rfl) (fun _ _ _ => rfl) hM c
+
+theorem step_isNone_mirrorCfg {Γ Λ₁ Λ₂ : Type*} [Inhabited Γ] [Inhabited Λ₁] [Inhabited Λ₂]
+    (M₁ : Machine Γ Λ₁) (M₂ : Machine Γ Λ₂) (f : Λ₁ → Λ₂)
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (reflectDir d)⟩)
+    (c : Cfg Γ Λ₁) :
+    (step M₂ (mirrorCfg f c)).isNone = (step M₁ c).isNone :=
+  step_isNone_mapCfg M₁ M₂ f reflectDir reflectTape (fun _ => rfl) reflectTape_step_tape hM c
+
+/-! ## Closed Stack Transition Systems -/
+
+/-- A closed 2nd-order digit-stack transition system for a Turing machine `M`.
+Bundles the stack modes, polarity, unary-block recurrences, transfer rule, and closure
+under `ReachesPlus`, independent of blank-tape reachability. -/
+structure ClosedStackSystem {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) where
+  StackMode : Type
+  dSym : Fin (k + 2)
+  sSym : Fin (k + 2)
+  encLeft : List (StackTuple (k + 2)) → ListBlank (Fin (k + 2))
+  encRight : List (StackTuple (k + 2)) → ListBlank (Fin (k + 2))
+  evalStackCfg :
+    StackMode → List (StackTuple (k + 2)) → List (StackTuple (k + 2)) → Cfg (Fin (k + 2)) Λ
+  IsInStackSystem : Cfg (Fin (k + 2)) Λ → Prop
+  hpolarity : IsValidStackPolarity dSym sSym
+  hnilL : encLeft [] = default
+  hnilR : encRight [] = default
+  hheadL : ∀ a b L, (encLeft ((a, b) :: L)).head = dSym
+  hheadR : ∀ d b R, (encRight ((d, b) :: R)).head = dSym
+  hnsL : ∃ t : ListBlank (Fin (k + 2)), t.head = dSym ∧ ∀ L, encLeft L ≠ t
+  hnsR : ∃ t : ListBlank (Fin (k + 2)), t.head = dSym ∧ ∀ R, encRight R ≠ t
+  hparams : ∃ strideL offsetL sepL maxSepL strideR offsetR sepR maxSepR : ℕ,
+    strideL > 0 ∧ offsetL > 0 ∧ sepL > 0 ∧ 1 ≤ maxSepL ∧ maxSepL ≤ 4 ∧
+    strideR > 0 ∧ offsetR > 0 ∧ sepR > 0 ∧ 1 ≤ maxSepR ∧ maxSepR ≤ 4 ∧
+    (∀ a b L, encLeft ((a, b) :: L) =
+      ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideL * a + offsetL))
+        (ListBlank.append
+          (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepL maxSepL b))
+          (encLeft L))) ∧
+    (∀ d b R, encRight ((d, b) :: R) =
+      ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideR * d + offsetR))
+        (ListBlank.append
+          (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepR maxSepR b))
+          (encRight R)))
+  hmodes : ∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes
+  hvalid : IsValidStackModes encLeft encRight evalStackCfg
+  hiff : ∀ cfg, IsInStackSystem cfg ↔ ∃ m L R, cfg = evalStackCfg m L R
+  hin : ∀ m L R, IsInStackSystem (evalStackCfg m L R)
+  htransfer :
+    (∃ (m m' : StackMode) (x : StackTuple (k + 2))
+        (g : StackTuple (k + 2) → StackTuple (k + 2))
+        (f : List (StackTuple (k + 2)) → List (StackTuple (k + 2))),
+        (∀ s, s.length ≤ (f s).length) ∧
+        ∀ z L R,
+          ReachesPlus M (evalStackCfg m (x :: z :: L) R) (evalStackCfg m' (g z :: L) (f R))) ∨
+    (∃ (m m' : StackMode) (x : StackTuple (k + 2))
+        (g : StackTuple (k + 2) → StackTuple (k + 2))
+        (f : List (StackTuple (k + 2)) → List (StackTuple (k + 2))),
+        (∀ s, s.length ≤ (f s).length) ∧
+        ∀ z L R,
+          ReachesPlus M (evalStackCfg m L (x :: z :: R)) (evalStackCfg m' (f L) (g z :: R)))
+  hclosed : ∀ cfg, IsInStackSystem cfg →
+    ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone)
+
+/-- Derive `HasStackReduction` from a `ClosedStackSystem` together with an initial reachability
+path from the blank tape to a non-trivial stack configuration. -/
+theorem HasStackReduction.of_closedSystem {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    {M : Machine (Fin (k + 2)) Λ} (W : ClosedStackSystem M)
+    (m_g : W.StackMode) (L_g R_g : List (StackTuple (k + 2)))
+    (hreach : ReachesPlus M (init []) (W.evalStackCfg m_g L_g R_g))
+    (hlen : 3 ≤ L_g.length + R_g.length)
+    (hpos : ∃ x ∈ L_g ++ R_g, 1 ≤ x.1) :
+    HasStackReduction M := by
+  refine ⟨W.StackMode, W.dSym, W.sSym, W.encLeft, W.encRight, W.evalStackCfg, W.IsInStackSystem,
+    W.hpolarity, W.hnilL, W.hnilR, W.hheadL, W.hheadR, W.hnsL, W.hnsR, W.hparams, W.hmodes,
+    W.hvalid, W.hiff, W.hin, ⟨m_g, L_g, R_g, hreach, hlen, hpos⟩, W.htransfer, W.hclosed⟩
+
+/-- Transport a `ClosedStackSystem` along a state relabeling bijection `f`. -/
+def ClosedStackSystem.relabel {k : ℕ} {Λ₁ Λ₂ : Type*} [Inhabited Λ₁] [Inhabited Λ₂]
+    {M₁ : Machine (Fin (k + 2)) Λ₁} {M₂ : Machine (Fin (k + 2)) Λ₂}
+    (W : ClosedStackSystem M₁) (f : Λ₁ → Λ₂)
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ => ⟨q'.map f, Stmt.write b d⟩) :
+    ClosedStackSystem M₂ where
+  StackMode := W.StackMode
+  dSym := W.dSym
+  sSym := W.sSym
+  encLeft := W.encLeft
+  encRight := W.encRight
+  evalStackCfg m L R := mapState f (W.evalStackCfg m L R)
+  IsInStackSystem cfg := ∃ m L R, cfg = mapState f (W.evalStackCfg m L R)
+  hpolarity := W.hpolarity
+  hnilL := W.hnilL
+  hnilR := W.hnilR
+  hheadL := W.hheadL
+  hheadR := W.hheadR
+  hnsL := W.hnsL
+  hnsR := W.hnsR
+  hparams := W.hparams
+  hmodes := W.hmodes
+  hvalid := by
+    intro m
+    rcases W.hvalid m with ⟨q, vL, vR, hvL, hvR, h1 | h2 | h3⟩
+    · refine ⟨f q, vL, vR, hvL, hvR, Or.inl (fun L R => ?_)⟩
+      dsimp only
+      rw [h1, mapState_zero]
+    · refine ⟨f q, vL, vR, hvL, hvR, Or.inr (Or.inl (fun L R => ?_))⟩
+      dsimp only
+      rw [h2, mapState_headLeft]
+    · refine ⟨f q, vL, vR, hvL, hvR, Or.inr (Or.inr (fun L R => ?_))⟩
+      dsimp only
+      rw [h3, mapState_headRight]
+  hiff := by intro cfg; rfl
+  hin := by intro m L R; exact ⟨m, L, R, rfl⟩
+  htransfer := by
+    rcases W.htransfer with ⟨m, m', x, g, fl, hflen, hstep⟩ | ⟨m, m', x, g, fl, hflen, hstep⟩
+    · refine Or.inl ⟨m, m', x, g, fl, hflen, fun z L R => ?_⟩
+      exact reachesPlus_mapState M₁ M₂ f hM (hstep z L R)
+    · refine Or.inr ⟨m, m', x, g, fl, hflen, fun z L R => ?_⟩
+      exact reachesPlus_mapState M₁ M₂ f hM (hstep z L R)
+  hclosed := by
+    intro cfg ⟨m, L, R, hcfg⟩
+    rw [hcfg]
+    have hsys₁ : W.IsInStackSystem (W.evalStackCfg m L R) := W.hin m L R
+    rcases W.hclosed (W.evalStackCfg m L R) hsys₁ with ⟨cfg', hreach, hsys' | hhalt⟩
+    · rcases (W.hiff cfg').mp hsys' with ⟨m', L', R', hcfg'⟩
+      refine ⟨mapState f cfg', reachesPlus_mapState M₁ M₂ f hM hreach, Or.inl ⟨m', L', R', ?_⟩⟩
+      rw [hcfg']
+    · refine ⟨mapState f cfg', reachesPlus_mapState M₁ M₂ f hM hreach, Or.inr ?_⟩
+      rw [step_isNone_mapState M₁ M₂ f hM]
+      exact hhalt
+
+/-- Transport a `ClosedStackSystem` along a state bijection `f` and tape reflection (mirror). -/
+def ClosedStackSystem.mirror {k : ℕ} {Λ₁ Λ₂ : Type*} [Inhabited Λ₁] [Inhabited Λ₂]
+    {M₁ : Machine (Fin (k + 2)) Λ₁} {M₂ : Machine (Fin (k + 2)) Λ₂}
+    (W : ClosedStackSystem M₁) (f : Λ₁ → Λ₂)
+    (h_symm : W.encLeft = W.encRight)
+    (hM : ∀ q a, M₂ (f q) a = (M₁ q a).map fun ⟨q', Stmt.write b d⟩ =>
+      ⟨q'.map f, Stmt.write b (reflectDir d)⟩) :
+    ClosedStackSystem M₂ where
+  StackMode := W.StackMode
+  dSym := W.dSym
+  sSym := W.sSym
+  encLeft := W.encLeft
+  encRight := W.encRight
+  evalStackCfg m L R := mirrorCfg f (W.evalStackCfg m R L)
+  IsInStackSystem cfg := ∃ m L R, cfg = mirrorCfg f (W.evalStackCfg m R L)
+  hpolarity := W.hpolarity
+  hnilL := W.hnilL
+  hnilR := W.hnilR
+  hheadL := W.hheadL
+  hheadR := W.hheadR
+  hnsL := W.hnsL
+  hnsR := W.hnsR
+  hparams := W.hparams
+  hmodes := W.hmodes
+  hvalid := by
+    intro m
+    rcases W.hvalid m with ⟨q, vL, vR, hvL, hvR, h1 | h2 | h3⟩
+    · refine ⟨f q, vR, vL, hvR, hvL, Or.inl (fun L R => ?_)⟩
+      dsimp only
+      rw [h1, mirrorCfg_zero, h_symm]
+    · refine ⟨f q, vR, vL, hvR, hvL, Or.inr (Or.inr (fun L R => ?_))⟩
+      dsimp only
+      rw [h2, mirrorCfg_headLeft, h_symm]
+    · refine ⟨f q, vR, vL, hvR, hvL, Or.inr (Or.inl (fun L R => ?_))⟩
+      dsimp only
+      rw [h3, mirrorCfg_headRight, h_symm]
+  hiff := by intro cfg; rfl
+  hin := by intro m L R; exact ⟨m, L, R, rfl⟩
+  htransfer := by
+    rcases W.htransfer with ⟨m, m', x, g, fl, hflen, hstep⟩ | ⟨m, m', x, g, fl, hflen, hstep⟩
+    · refine Or.inr ⟨m, m', x, g, fl, hflen, fun z L R => ?_⟩
+      exact reachesPlus_mirrorCfg M₁ M₂ f hM (hstep z R L)
+    · refine Or.inl ⟨m, m', x, g, fl, hflen, fun z L R => ?_⟩
+      exact reachesPlus_mirrorCfg M₁ M₂ f hM (hstep z R L)
+  hclosed := by
+    intro cfg ⟨m, L, R, hcfg⟩
+    rw [hcfg]
+    have hsys₁ : W.IsInStackSystem (W.evalStackCfg m R L) := W.hin m R L
+    rcases W.hclosed (W.evalStackCfg m R L) hsys₁ with ⟨cfg', hreach, hsys' | hhalt⟩
+    · rcases (W.hiff cfg').mp hsys' with ⟨m', R', L', hcfg'⟩
+      refine ⟨mirrorCfg f cfg', reachesPlus_mirrorCfg M₁ M₂ f hM hreach, Or.inl ⟨m', L', R', ?_⟩⟩
+      rw [hcfg']
+    · refine ⟨mirrorCfg f cfg', reachesPlus_mirrorCfg M₁ M₂ f hM hreach, Or.inr ?_⟩
+      rw [step_isNone_mirrorCfg M₁ M₂ f hM]
+      exact hhalt
+
 end BusyBeaver.Stack

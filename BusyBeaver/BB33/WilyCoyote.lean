@@ -12,9 +12,9 @@ public import BusyBeaver.Bridge
 
 Shared stacked Collatz-like acceleration (`State`, `WilyMode`, `wilyPass`, `start`, `encode`,
 `next`, `pat_W`, `ps`) and generic closure proof (`StepSpec`) for the two 3-state, 3-symbol
-**Wily Coyote** holdout machines:
-- `1RB2LA1LA_2LA0RA2RC_---0LC2RA`
-- `1RB2LA1LA_2LA0RA2RC_---1RB2RA`
+**Wily Coyote** holdout machines (Holdouts #531 and #532):
+- `1RB2LA1LA_2LA0RA2RC_---0LC2RA` (Holdout #531)
+- `1RB2LA1LA_2LA0RA2RC_---1RB2RA` (Holdout #532)
 
 The two machines agree on 7 of the 8 defined transitions and differ only on `(C, 1)` (`0LC` vs.
 `1RB`). Along every pass from $W(w) = 0^\infty\,\mathrm{A}{>}\,0\,\overline{w}\,0^\infty$, state

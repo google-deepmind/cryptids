@@ -14,6 +14,32 @@ public import BusyBeaver.Bridge
 Formal `HasStackReduction` proof for the 6-state, 2-symbol Busy Beaver holdout
 `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA`
 (https://wiki.bbchallenge.org/wiki/1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA).
+
+## Hardness
+
+*Hardness class:* Wiki stack — trigger **RES (a particular sequence of $\approx 107$–$110$ residues
+mod 3 must occur while the left side is empty; wiki)**, growth exponential (the main number is
+multiplied by $8/3$ per era; wiki), shield none (every return to an empty left side is a fresh
+trial).
+
+*Verdict (heuristic; community analysis, see the wiki page):* probviously **halting** (wiki,
+Racheline 2024-11-23: expected halt at $\approx 10^{10^{38.1}}$ steps, far beyond any simulation);
+the wiki treats the four start states #85/#285/#490/#500 as one cryptid.
+
+*Hazard:* community estimate, not re-measured here: per empty-left-side reset, probability
+$\approx 3^{-80}$–$3^{-87}$ of entering one of the $2^{13}\cdot 3^{15}$ shortest halting residue
+sequences (length 107–110, Racheline); @-d's breadth-first search over $\approx 235{,}000$
+right-side words found a halting path of length 108 and the halting residue class
+$A(3^{108}k + 1975700577069254261393123959451562008800234946348086, \varepsilon)$
+
+*Simulated horizon:* community: exhaustive search of the right-side word graph (wiki); here the
+two-sided pair-stack system is certified closed (`HasStackReduction`)
+
+*Why it is hard:* the halting mechanism is explicit and the halting set is a residue class of
+positive density, but reaching it needs $\approx 3^{80}$ independent resets: the archetype of RES
+hardness without a shield
+
+See `BusyBeaver.BB6.Hardness` for the vocabulary and the full table.
 -/
 
 @[expose] public section
@@ -60,12 +86,12 @@ local macro "step" : tactic => `(tactic| (
     list_pow_zero, list_pow_succ, List.nil_append, List.cons_append,
     zeros_append_default, Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
 
-private def encRight : List (ℕ × ℕ) → ListBlank (Fin 2)
+def encRight : List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
   | (a, b) :: L => (encRight L <+ (([0] : List (Fin 2)) ^ (1 + b % 1))) <+
       (([1] : List (Fin 2)) ^ (1 * a + 1))
 
-private def encLeft : List (ℕ × ℕ) → ListBlank (Fin 2)
+def encLeft : List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
   | (d, b) :: R => (([1] : List (Fin 2)) ^ (1 * d + 1)) +> ((([0] : List (Fin 2)) ^ (1 + b % 1)) +>
       encLeft R)
@@ -155,32 +181,32 @@ local macro "execute" n:num : tactic => `(tactic| (
   iterate $n step
   finish))
 
-private def cfg_CR_n_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+def cfg_CR_n_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
   (encLeft R) {{C}}> (encRight L)
 
-private def cfg_EL_n_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+def cfg_EL_n_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
   (encLeft R) <{{E}} (encRight L)
 
-private def cfg_DL_0_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+def cfg_DL_0_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
   (encLeft R) <{{D}} ([0] +> encRight L)
 
-private def cfg_DR_n_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+def cfg_DR_n_n (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
   (encLeft R) {{D}}> (encRight L)
 
-private inductive StackMode
+inductive StackMode
   | CR_n_n
   | EL_n_n
   | DL_0_n
   | DR_n_n
   deriving DecidableEq
 
-private def evalStackCfg : StackMode → List (ℕ × ℕ) → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+def evalStackCfg : StackMode → List (ℕ × ℕ) → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
   | .CR_n_n, L, R => cfg_CR_n_n R L
   | .EL_n_n, L, R => cfg_EL_n_n R L
   | .DL_0_n, L, R => cfg_DL_0_n R L
   | .DR_n_n, L, R => cfg_DR_n_n R L
 
-private def IsInStackSystem (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
+def IsInStackSystem (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ m L R, cfg = evalStackCfg m L R
 
 /-! ## Inner Token System -/
@@ -1037,7 +1063,7 @@ private theorem mode_DR_n_n_closed (L R : List (ℕ × ℕ)) :
             encLeft_run_s0 r5 R3]
           execute 3
 
-private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSystem cfg) :
+theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSystem cfg) :
     ∃ cfg_, (cfg [target]⊢⁺ cfg_) ∧
             (IsInStackSystem cfg_ ∨ (step target cfg_).isNone) := by
   rcases h with ⟨m, R, L, rfl⟩
@@ -1047,7 +1073,7 @@ private theorem stack_system_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : IsInStackSy
   | DL_0_n => exact mode_DL_0_n_closed L R
   | DR_n_n => exact mode_DR_n_n_closed L R
 
-private theorem init_reaches_nontrivial :
+theorem init_reaches_nontrivial :
     (init []) [target]⊢⁺ evalStackCfg .CR_n_n [(2, 0)] [(0, 0), (0, 0)] := by
   have hL : encLeft [(2, 0)] =
       (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> default := rfl
@@ -1057,19 +1083,19 @@ private theorem init_reaches_nontrivial :
   rw [hL, hR]
   execute 11
 
-private theorem step_EL_transfer (z : ℕ × ℕ) (L R : List (ℕ × ℕ)) :
+theorem step_EL_transfer (z : ℕ × ℕ) (L R : List (ℕ × ℕ)) :
     (evalStackCfg .EL_n_n ((0, 0) :: z :: L) R) [target]⊢⁺
       evalStackCfg .EL_n_n (z :: L) ((0, 0) :: R) := by
   dsimp only [evalStackCfg, cfg_EL_n_n]
   rw [encLeft_d0_s0 (z :: L), encRight_d0_s0 R]
   execute 2
 
-private theorem encRight_head (a b : ℕ) (L : List (ℕ × ℕ)) :
+theorem encRight_head (a b : ℕ) (L : List (ℕ × ℕ)) :
     (encRight ((a, b) :: L)).head = 1 := by
   rw [encRight_cons, show 1 * a + 1 = (1 * a + 0) + 1 by omega, list_pow_succ, List.cons_append]
   simp only [ListBlank.append_cons, ListBlank.head_cons]
 
-private theorem encRight_not_surjective :
+theorem encRight_not_surjective :
     ∃ t : ListBlank (Fin 2), t.head = 1 ∧ ∀ L : List (ℕ × ℕ), encRight L ≠ t := by
   refine ⟨(1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default, rfl, ?_⟩
   intro L h
@@ -1090,12 +1116,12 @@ private theorem encRight_not_surjective :
       normalize_at h1
       contradiction
 
-private theorem encLeft_head (a b : ℕ) (R : List (ℕ × ℕ)) :
+theorem encLeft_head (a b : ℕ) (R : List (ℕ × ℕ)) :
     (encLeft ((a, b) :: R)).head = 1 := by
   rw [encLeft_cons, show 1 * a + 1 = (1 * a + 0) + 1 by omega, list_pow_succ, List.cons_append]
   simp only [ListBlank.append_cons, ListBlank.head_cons]
 
-private theorem encLeft_not_surjective :
+theorem encLeft_not_surjective :
     ∃ t : ListBlank (Fin 2), t.head = 1 ∧ ∀ R : List (ℕ × ℕ), encLeft R ≠ t := by
   refine ⟨(1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default, rfl, ?_⟩
   intro R h
@@ -1116,7 +1142,7 @@ private theorem encLeft_not_surjective :
       normalize_at h1
       contradiction
 
-private theorem valid_stack_modes : IsValidStackModes encLeft encRight evalStackCfg := by
+theorem valid_stack_modes : IsValidStackModes encLeft encRight evalStackCfg := by
   intro m
   cases m with
   | CR_n_n => exact ⟨C, .id [], .id [], by decide, by decide, Or.inr (Or.inr (fun _ _ => rfl))⟩
@@ -1124,25 +1150,48 @@ private theorem valid_stack_modes : IsValidStackModes encLeft encRight evalStack
   | DL_0_n => exact ⟨D, .id [], .id [0], by decide, by decide, Or.inr (Or.inl (fun _ _ => rfl))⟩
   | DR_n_n => exact ⟨D, .id [], .id [], by decide, by decide, Or.inr (Or.inr (fun _ _ => rfl))⟩
 
+/-- The left and right pair-stack encodings are definitionally equal on all inputs. -/
+theorem encLeft_eq_encRight : encLeft = encRight := by
+  funext L
+  induction L with
+  | nil => rfl
+  | cons head tail ih =>
+    rcases head with ⟨a, b⟩
+    dsimp only [encLeft, encRight]
+    rw [ih]
 
 /-! ## Stack Reduction Witness -/
 
+/-- Closed pair-stack transition system for `target`. -/
+def closedStackSystem : ClosedStackSystem target where
+  StackMode := StackMode
+  dSym := 1
+  sSym := 0
+  encLeft := encLeft
+  encRight := encRight
+  evalStackCfg := evalStackCfg
+  IsInStackSystem := IsInStackSystem
+  hpolarity := Or.inl ⟨rfl, rfl⟩
+  hnilL := rfl
+  hnilR := rfl
+  hheadL := encLeft_head
+  hheadR := encRight_head
+  hnsL := encLeft_not_surjective
+  hnsR := encRight_not_surjective
+  hparams := ⟨1, 1, 1, 1, 1, 1, 1, 1, by decide, by decide, by decide, by decide, by decide,
+    by decide, by decide, by decide, by decide, by decide,
+    fun _ _ _ => rfl, fun _ _ _ => rfl⟩
+  hmodes := ⟨[.CR_n_n, .EL_n_n, .DL_0_n, .DR_n_n], by decide, by intro m; cases m <;> decide⟩
+  hvalid := valid_stack_modes
+  hiff := fun _ => Iff.rfl
+  hin := fun m L R => ⟨m, L, R, rfl⟩
+  htransfer := Or.inl ⟨.EL_n_n, .EL_n_n, (0, 0), id, ((0, 0) :: ·),
+    fun _ => Nat.le_succ _, step_EL_transfer⟩
+  hclosed := stack_system_closed
+
 /-- `target` reduces to a closed 2nd-order digit-stack transition system. -/
-theorem has_stack_reduction : HasStackReduction target := by
-  refine ⟨StackMode, 1, 0, encLeft, encRight, evalStackCfg, IsInStackSystem,
-    Or.inl ⟨rfl, rfl⟩, rfl, rfl,
-    encLeft_head, encRight_head, encLeft_not_surjective, encRight_not_surjective,
-    ⟨1, 1, 1, 1, 1, 1, 1, 1, by decide, by decide, by decide, by decide, by decide,
-      by decide, by decide, by decide, by decide, by decide,
-      fun _ _ _ => rfl, fun _ _ _ => rfl⟩,
-    ⟨[.CR_n_n, .EL_n_n, .DL_0_n, .DR_n_n], by decide, by intro m; cases m <;> decide⟩,
-    valid_stack_modes,
-    fun _ => Iff.rfl,
-    fun m L R => ⟨m, L, R, rfl⟩,
-    ⟨.CR_n_n, [(2, 0)], [(0, 0), (0, 0)], init_reaches_nontrivial,
-      by decide, ⟨(2, 0), by decide, by decide⟩⟩,
-    Or.inl ⟨.EL_n_n, .EL_n_n, (0, 0), id, ((0, 0) :: ·),
-      fun _ => Nat.le_succ _, step_EL_transfer⟩,
-    stack_system_closed⟩
+theorem has_stack_reduction : HasStackReduction target :=
+  HasStackReduction.of_closedSystem closedStackSystem StackMode.CR_n_n [(2, 0)] [(0, 0), (0, 0)]
+    init_reaches_nontrivial (by decide) ⟨(2, 0), by decide, by decide⟩
 
 end BusyBeaver.M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA

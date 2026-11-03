@@ -8,11 +8,11 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 /-!
-# Busy Beaver Holdout `1RB2RA1LC_2LC1RB2RB_---2LA1LA` (Bigfoot)
+# Busy Beaver Holdout `1RB2RA1LC_2LC1RB2RB_---2LA1LA` (Bigfoot, Holdout #829)
 
 Formal `IsClosedPatternSet`, `HasCollatzReduction`, and `IsValidAcceleration` proofs for the
-3-state, 3-symbol Busy Beaver holdout `1RB2RA1LC_2LC1RB2RB_---2LA1LA` (**Bigfoot**; discovered and
-analyzed by Shawn Ligocki and savask in October 2023, see
+3-state, 3-symbol Busy Beaver holdout `1RB2RA1LC_2LC1RB2RB_---2LA1LA` (**Bigfoot**, Holdout #829;
+discovered and analyzed by Shawn Ligocki and savask in October 2023, see
 <https://wiki.bbchallenge.org/wiki/Bigfoot> and
 <https://www.sligocki.com/2023/10/16/bb-3-3-is-hard.html>).
 

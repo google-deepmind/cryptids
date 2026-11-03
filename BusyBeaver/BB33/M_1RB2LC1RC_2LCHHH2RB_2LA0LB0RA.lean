@@ -12,11 +12,11 @@ public import BusyBeaver.Bridge
 @[expose] public section
 
 /-!
-# Cryptid `1RB2LC1RC_2LC---2RB_2LA0LB0RA` (BB(3, 3) See-Saw Counter Machine)
+# Busy Beaver Holdout `1RB2LC1RC_2LC---2RB_2LA0LB0RA` (Holdout #758)
 
 This file formalizes the Collatz-like reduction for the 3-state, 3-symbol Busy Beaver holdout
-Turing machine `1RB2LC1RC_2LC---2RB_2LA0LB0RA` (one of the two See-Saw holdout machines analyzed
-by `@dyuan01` and `@LegionMammal978`).
+Turing machine `1RB2LC1RC_2LC---2RB_2LA0LB0RA` (Holdout #758, the probvious champion / halter
+analyzed by `@dyuan01` and `@LegionMammal978`).
 
 ## Canonical Configuration (`State`)
 
