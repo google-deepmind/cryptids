@@ -2,43 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB---_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB---_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB---_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => none
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 2, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 3, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 5, 1 => some (some 5, Stmt.write 0 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -157,8 +138,8 @@ macro "finish" : tactic =>
   `(tactic| exact ⟨0,rfl⟩)
 macro "step" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z09 (by (try simp only [Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
-    simp only [Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z00,zDh,zDt,append_cons,append_nil])
+    refine z09 (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z00,zDh,zDt,append_cons,append_nil])
 macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | finish | step)))
 abbrev z4 : zF := [0,0,0,0]
@@ -937,7 +918,6 @@ lemma step_loc_34 : (cfg_of_loc s_loc_3.q s_loc_3.d (s_loc_3.l +> default) (s_lo
 lemma z1W :
     (init []) [target_tm]⊢* (ck [.a,.a,.b,.b,.a,.a] [.a,.b] [0,1]) :=
   zPs (zPt step_loc_01 (zPt step_loc_12 (zPt step_loc_23 step_loc_34)))
-set_option maxRecDepth 4000000 in attribute [-simp] list_nat_repeat
 set_option maxRecDepth 4000000 in attribute [-simp] z01
 def z1X (j : Nat) (ts : List Token) (z : Nat) (rest : zF) : Cfg (Fin 2) (Fin 6) :=
   ck ([.a,.a] ++ tb ^ (j + 5) ++ [.a,.a]) [.a,.b]
@@ -1006,7 +986,6 @@ lemma z24 :
   refine zSt (z0a hg ?_ rfl) (zPs (zPt (z0b hc rfl rfl) (z0b hto rfl ?_)))
   · exact z1r _ _ (o1 ^ 58)
   · dsimp only [o1]; rw [List.append_nil]
-set_option maxRecDepth 4000000 in attribute [irreducible] list_nat_repeat
 lemma z25 (j : Nat) (r : zB) :
     ((default <+ (p101 ^ j) <+ [1,1,0,1,0,1] <+ [1,1,0,1,0,1] <+ [1,0,1,0,1]) <{{D}} z4 +> r) [target_tm]⊢*
     (default {{D}}> [0] +> z4 +> (p100 ^ j) +> [1,0,1,0,0,0,1,0,1,0,0,0,1,0,1,0,1,0] +> r) := by
@@ -1317,9 +1296,7 @@ set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
@@ -1331,5 +1308,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   have h_some := zIm h_N
   rw [zMs,hn] at h_some
   exact h_some
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF

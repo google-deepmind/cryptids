@@ -1,10 +1,14 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
-public import BusyBeaver.Defs
+public import BusyBeaver.Basic
 import Mathlib.Tactic.Ring
 
 /-!
-# Shared Counter Infrastructure (`BusyBeaver.Counter`)
+# Shared Counter Infrastructure (`BusyBeaver.Calculi.Counter`)
 
 Reusable symbolic execution, finite-window stepping, digit-stack carry cascade,
 run-compressed counter increment, and machine-conjugation infrastructure for
@@ -12,7 +16,7 @@ Busy Beaver counter / odometer machines (`#166`, `#128`, `#737`, etc.).
 
 All declarations live in `namespace BusyBeaver.Counter` with `@[scoped simp]`
 attributes so that importing `BusyBeaver.Basic` (which re-exports
-`BusyBeaver.Counter`) does not alter the default `simp` set of non-counter
+`BusyBeaver.Calculi.Counter`) does not alter the default `simp` set of non-counter
 proofs; counter proofs activate these definitions and simp rules via
 `open Counter`.
 -/
@@ -578,7 +582,7 @@ theorem IterRel_lift_rc {α Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     ∀ (m : ℕ), (evalCfg x m) [tm]⊢* (evalCfg x' (m + n)) := by
   induction h with
   | zero x =>
-    intro m; rw [Nat.add_zero]; exact stepStar_refl _ _
+    intro m; rw [Nat.add_zero]; try exact stepStar_refl _ _
   | @succ n x y z h1 _ ih =>
     intro m
     rw [← Nat.add_assoc, Nat.add_right_comm m n 1]

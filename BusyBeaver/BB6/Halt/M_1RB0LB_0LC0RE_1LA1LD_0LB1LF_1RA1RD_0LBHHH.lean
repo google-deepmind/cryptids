@@ -2,44 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LB---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LB---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 1, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 3, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 1, Stmt.write 0 Dir.left)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
 
 namespace Solution
@@ -1188,7 +1168,7 @@ theorem stepR1StarWord_sound : ∀ (w : List Tok) (phase : Bool) (l : ListBlank 
           (R (k1 + 2 * (stepR1StarWord w phase).2.1)))
   | [], phase, l, R, _, _, k1 => by
     simp [stepR1StarWord]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | .Z :: ts, false, l, R, hw, hR, k1 => by
     simp only [isZpWord] at hw
     have hR' : HasRoundtrip (fun k => wordR ts +> R k) := hasRoundtrip_word ts hw hR
@@ -1243,7 +1223,7 @@ theorem stepR1Star_same_pow : ∀ (c : Nat) (w : List Tok) (phase : Bool) (l : L
           (R (k1 + 2 * (c * (stepR1StarWord w phase).2.1))))
   | 0, w, phase, l, R, _, _, _, k1 => by
     simp
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | c + 1, w, phase, l, R, hw, hsame, hR, k1 => by
     have hR' : HasRoundtrip (fun k => ((wordR w) ^ c) +> R k) := hasRoundtrip_pow c w hw hR
     rw [pow_succ_list, listblank_append_assoc]
@@ -1274,7 +1254,7 @@ theorem stepR1Star_alt_pow : ∀ (q : Nat) (w : List Tok) (phase : Bool) (l : Li
           (R (k1 + 2 * (q * (s1.2.1 + s2.2.1)))))
   | 0, w, phase, l, R, _, _, _, k1 => by
     simp
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | q + 1, w, phase, l, R, hw, halt, hR, k1 => by
     dsimp -failIfUnchanged only
     have h2q : 2 * (q + 1) = 1 + (1 + 2 * q) := by omega
@@ -1515,7 +1495,7 @@ theorem stepOneWord_sound : ∀ (w : List Tok) (rle rle' : Rle) (mode mode' : Mo
   | [], rle, rle', mode, mode', r, h => by
     simp only [stepOneWord, Option.some.injEq, Prod.mk.injEq] at h
     rcases h with ⟨rfl, rfl⟩
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | t :: ts, rle, rle', mode, mode', r, h => by
     unfold stepOneWord at h
     cases ht : stepOneTok rle mode t with
@@ -1586,7 +1566,7 @@ theorem stepOneBounceFuel_sound : ∀ (fuel : Nat) (item : List Tok) (count : Na
   | _, _, 0, rle, rle', mode, mode', r, h => by
     simp only [stepOneBounceFuel, Option.some.injEq, Prod.mk.injEq] at h
     rcases h with ⟨rfl, rfl⟩
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | 0, _, _ + 1, _, _, _, _, _, h => by nomatch h
   | fuel + 1, item, count + 1, rle, rle', mode, mode', r, h => by
     unfold stepOneBounceFuel at h
@@ -2021,7 +2001,7 @@ theorem special_ZTM_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Li
     refine stepStar_trans ⟨_, r0_P (((tokL .P) ^ (n + 1)) +> (tokL .M +> (tokL .T +> l))) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .P) (n + 1)]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
 
 theorem special_PT_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → ListBlank (Fin 2)},
     HasRoundtrip R → ∀ (k1 : Nat),
@@ -2040,7 +2020,7 @@ theorem special_PT_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Lis
     refine stepStar_trans ⟨_, r0_P (((tokL .P) ^ (n + 1)) +> (tokL .T +> l)) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .P) (n + 1)]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
 
 theorem special_ZTW_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → ListBlank (Fin 2)},
     HasRoundtrip R → ∀ (k1 : Nat),
@@ -2059,7 +2039,7 @@ theorem special_ZTW_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Li
     refine stepStar_trans ⟨_, r0_Z (((tokL .Z) ^ (n + 1)) +> (tokL .W +> (tokL .T +> l))) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .Z) (n + 1)]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
 
 def stepSpecialLoops (r2 rStack : Rle) (k1 : Nat) : Option StepCarryRes :=
   match popPrefixCount [.M, .T] [.Z] r2 with
@@ -2295,9 +2275,7 @@ set_option maxRecDepth 4000000 in
 set_option maxHeartbeats 8000000 in
 theorem runCarry_2605 : runCarry 2605 initRle 1 = true := rfl
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -2309,7 +2287,7 @@ set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
 open Solution in
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   rcases runCarry_sound 2605 initRle 1 runCarry_2605 with ⟨cfg', hstep, hnone⟩
   exact ⟨cfg', stepStar_trans init_to_initRle hstep, hnone⟩
 

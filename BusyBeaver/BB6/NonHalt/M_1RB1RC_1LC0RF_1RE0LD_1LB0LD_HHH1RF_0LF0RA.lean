@@ -2,25 +2,22 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RC_1LC0RF_1RE0LD_1LB0LD_---1RF_0LF0RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RC_1LC0RF_1RE0LD_1LB0LD_---1RF_0LF0RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RC_1LC0RF_1RE0LD_1LB0LD_HHH1RF_0LF0RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0RF_1RE0LD_1LB0LD_HHH1RF_0LF0RA"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1RC_1LC0RF_1RE0LD_1LB0LD_---1RF_0LF0RA`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
   | 0, 1 => some (some 2, Stmt.write 1 Dir.right)
@@ -35,10 +32,9 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 5, Stmt.write 0 Dir.left)
   | 5, 1 => some (some 0, Stmt.write 0 Dir.right)
 
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+theorem target_eq : target = target_tm := by
+  funext q s
+  fin_cases q <;> fin_cases s <;> rfl
 set_option Elab.async false
 set_option linter.unusedSimpArgs false
 set_option linter.unusedTactic false
@@ -415,7 +411,7 @@ theorem seekFast_sound (f : Nat) : ∀ {c : Cfg} {j : Nat} {V : List Bool},
       simp only [Option.some.injEq, Prod.mk.injEq] at h
       obtain ⟨rfl, rfl⟩ := h
       rw [isRetFast_sound hj]
-      exact ⟨0, rfl⟩
+      try exact ⟨0, rfl⟩
     · split at h
       · rename_i c' hc'
         obtain ⟨k, hk⟩ := stepFast_sound _ hc'
@@ -479,7 +475,7 @@ theorem seekToC_sound (f : Nat) : ∀ {c : Cfg} {L_P : List Bool},
     obtain ⟨s, L, x, R⟩ := c
     simp only [seekToC] at h
     split at h
-    · simp only [Option.some.injEq] at h; subst h; exact ⟨0, rfl⟩
+    · simp only [Option.some.injEq] at h; subst h; try exact ⟨0, rfl⟩
     · split at h
       · rename_i c' hc'
         obtain ⟨k, hk⟩ := stepFast_sound _ hc'
@@ -506,7 +502,7 @@ theorem seekToB0_sound (f : Nat) : ∀ {c : Cfg} {V : List Bool},
     obtain ⟨s, L, x, R⟩ := c
     simp only [seekToB0] at h
     split at h
-    · simp only [Option.some.injEq] at h; subst h; exact ⟨0, rfl⟩
+    · simp only [Option.some.injEq] at h; subst h; try exact ⟨0, rfl⟩
     · split at h
       · rename_i c' hc'
         obtain ⟨k, hk⟩ := stepFast_sound _ hc'
@@ -2904,7 +2900,7 @@ abbrev C : Fin 6 := 2
 abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
-@[reducible] private def holdout_0084_tm : Machine (Fin 2) (Fin 6) := target_tm
+abbrev holdout_0084_tm : Machine (Fin 2) (Fin 6) := target_tm
 set_option maxRecDepth 200000
 set_option maxHeartbeats 4000000
 def b2f : Bool → Fin 2
@@ -2949,7 +2945,7 @@ lemma multiStep_bridge (n : Nat) :
     obtain ⟨hq', hst⟩ := step_bridge (Cert.run Cert.M n (Cert.blank 0)) hq (Cert.nonhalt_A n)
     rw [show Cert.run Cert.M (n + 1) (Cert.blank 0) = Cert.step Cert.M (Cert.run Cert.M n (Cert.blank 0)) from by rw [Cert.run_add]; rfl]
     refine ⟨hq', ?_⟩
-    rw [multiStep_succ, hn, Option.bind_some, hst]
+    rw [multiStep_succ', hn, Option.bind_some, hst]
 lemma holdout_0084_nonhalt :
     IsDoesNotHalt holdout_0084_tm := by
   intro cfg ⟨n, hn⟩
@@ -2960,10 +2956,10 @@ lemma holdout_0084_nonhalt :
   rw [hst]
   rfl
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := holdout_0084_nonhalt
+
+theorem is_not_halt : IsNotHalt target := by rw [target_eq]; exact is_does_not_halt
 
 end BusyBeaver.M_1RB1RC_1LC0RF_1RE0LD_1LB0LD_HHH1RF_0LF0RA

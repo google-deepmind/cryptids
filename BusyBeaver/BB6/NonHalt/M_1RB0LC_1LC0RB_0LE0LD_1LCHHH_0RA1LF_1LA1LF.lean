@@ -2,43 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LC_1LC0RB_0LE0LD_1LC---_0RA1LF_1LA1LF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LC_1LC0RB_0LE0LD_1LC---_0RA1LF_1LA1LF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LC_1LC0RB_0LE0LD_1LC---_0RA1LF_1LA1LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => none
-  | 4, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 5, Stmt.write 1 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 
@@ -3880,9 +3860,7 @@ lemma P5_s0_odd : P5 s0_odd := by
 lemma c319_eq_s0_odd :
     c319_sq = (.h10B, [.A 1], enc_odd s0_odd.a s0_odd.b s0_odd.c s0_odd.d) := rfl
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   obtain ⟨n₀, hinit⟩ := init_reaches_c319
@@ -3894,5 +3872,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   obtain ⟨s', hr, hP5'⟩ := P5_step s hP5
   obtain ⟨n', hplus⟩ := sqReachesPlus_to_tm (R_odd_sound s s' hP5.1.1 hr) n
   exact ⟨_, hplus, n', s', hP5', rfl⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF

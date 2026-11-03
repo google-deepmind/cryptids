@@ -716,18 +716,18 @@ private theorem drain_A_any_to_LA7 (k : Nat) (r : ListBlank (Fin 2)) :
 -- Section 7: Pattern Families & Remainder Lemmas
 -- ============================================================================
 
-private def P_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n) {{A}}> default
-def R1_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n <+ [0, 0, 1]) {{A}}> default
-def R2_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n <+ [0, 0, 1, 0, 0, 1]) {{A}}> default
+private def P_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n) default
+def R1_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n <+ [0, 0, 1]) default
+def R2_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n <+ [0, 0, 1, 0, 0, 1]) default
 private def R3_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) :=
-  (LA n <+ [0, 0, 1, 0, 0, 1, 0, 0, 1]) {{A}}> default
-private def T1_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n <+ [0, 0, 1, 0, 0, 1, 1, 0, 0,
-  1]) {{A}}> default
-def Q_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n <+ [0, 0, 1, 1, 1, 1]) {{A}}> default
-def S4_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n <+ [0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1,
-  1]) {{A}}> default
-def S6_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := (LA n <+ [0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1,
-  1]) {{A}}> default
+  Cfg.headRight A (LA n <+ [0, 0, 1, 0, 0, 1, 0, 0, 1]) default
+private def T1_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n <+ [0, 0, 1, 0, 0, 1, 1, 0, 0,
+  1]) default
+def Q_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n <+ [0, 0, 1, 1, 1, 1]) default
+def S4_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n <+ [0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1,
+  1]) default
+def S6_cfg (n : Nat) : Cfg (Fin 2) (Fin 6) := Cfg.headRight A (LA n <+ [0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1,
+  1]) default
 
 private abbrev r_R2 : List (Fin 2) := [1, 0, 0, 1]
 private abbrev r_3 : List (Fin 2) := [1, 0, 1, 1, 0, 1, 0, 0, 1]

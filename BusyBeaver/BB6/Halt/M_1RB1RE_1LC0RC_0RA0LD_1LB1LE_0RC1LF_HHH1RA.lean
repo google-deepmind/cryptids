@@ -2,43 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_---1RA` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_---1RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_HHH1RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_HHH1RA"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_---1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 2, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 1, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 5, 0 => none
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
 
 set_option linter.unusedTactic false
@@ -1259,7 +1240,7 @@ theorem popCarrySpecial_sound (rle rs rle' rs' : Rle) (r_end : ListBlank (Fin 2)
                 refine stepStar_trans ⟨_, pmuCfg_M_to_carry (evalRle r4) _⟩ ?_
                 simp only [evalRle_pushRlePos, evalRStack_pushRlePos, pow_succ_list, pow_zero_list,
                   List.append_nil, wordL_cons, wordL_nil, revWord_cons, revWord_nil]
-                exact stepStar_refl _ _
+                try exact stepStar_refl _ _
               | T =>
                 simp only [pushRlePosK_eq, Option.some.injEq, Prod.mk.injEq] at h
                 rcases h with ⟨rfl, rfl⟩
@@ -1268,7 +1249,7 @@ theorem popCarrySpecial_sound (rle rs rle' rs' : Rle) (r_end : ListBlank (Fin 2)
                 refine stepStar_trans ⟨_, pmuCfg_T_to_carry (evalRle r4) _⟩ ?_
                 simp only [evalRle_pushRlePos, evalRStack_pushRlePos, pow_succ_list, pow_zero_list,
                   List.append_nil, wordL_cons, wordL_nil, revWord_cons, revWord_nil]
-                exact stepStar_refl _ _
+                try exact stepStar_refl _ _
           · rw [hm] at h; nomatch h
         | T =>
           dsimp -failIfUnchanged only at h
@@ -1582,7 +1563,7 @@ theorem stepR1StarWordL_sound : ∀ (w : List Tok) (phase : Bool) (l : ListBlank
         refine stepStar_trans ⟨_, turn_ZM (wordL out +> l) (R (k1 + 2 * res + 2))⟩ ?_
         have hadd : k1 + 2 * res + 2 = k1 + 2 * (res + 1) := by omega
         rw [hadd, listblank_append_assoc]
-        exact stepStar_refl _ _
+        try exact stepStar_refl _ _
       · simp only [tokEq, Bool.false_eq_true, ↓reduceIte, r1PhaseCfg, wordL_cons, listblank_append_assoc]
         exact ⟨_, r1Odd_Z (wordL out +> l) (R (k1 + 2 * res))⟩
     · cases p1
@@ -1612,7 +1593,7 @@ theorem stepR1Star_same_pow : ∀ (c : Nat) (w : List Tok) (phase : Bool) (l : L
           (R (k1 + 2 * (c * (stepR1StarWordL w phase).2.1))))
   | 0, w, phase, l, R, _, _, _, k1 => by
     simp
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | c + 1, w, phase, l, R, hw, hsame, hR, k1 => by
     have hrev : isZpWord (revWord w) = true := by rw [isZpWord_revWord]; exact hw
     have hR' : HasRoundtrip (fun k => ((wordR (revWord w)) ^ c) +> R k) := hasRoundtrip_pow c (revWord w) hrev hR
@@ -1644,7 +1625,7 @@ theorem stepR1Star_alt_pow : ∀ (q : Nat) (w : List Tok) (phase : Bool) (l : Li
           (R (k1 + 2 * (q * (s1.2.1 + s2.2.1)))))
   | 0, w, phase, l, R, _, _, _, k1 => by
     simp
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | q + 1, w, phase, l, R, hw, halt, hR, k1 => by
     dsimp -failIfUnchanged only
     have hrev : isZpWord (revWord w) = true := by rw [isZpWord_revWord]; exact hw
@@ -1910,7 +1891,7 @@ theorem stepOneWordPureL_sound : ∀ (w : List Tok) (mode mode' : Mode) (out : L
   | [], mode, mode', out, l, r, h => by
     change some ([], mode) = some (out, mode') at h
     injection h with hp; injection hp with h1 h2; subst h1; subst h2
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | t :: ts, mode, mode', out, l, r, h => by
     rw [stepOneWordPureL_cons] at h
     rcases h1 : stepOneWordPureL mode ts with _ | ⟨outRest, mode1⟩
@@ -1924,7 +1905,7 @@ theorem stepOneWordPureL_sound : ∀ (w : List Tok) (mode mode' : Mode) (out : L
         refine stepStar_trans (stepOneWordPureL_sound ts mode mode1 outRest l (tokR t +> r) h1) ?_
         refine stepStar_trans (stepOneTokPure_sound mode1 _ t toks (wordL outRest +> l) r h2) ?_
         rw [appendWord_eq, wordL_append, listblank_append_assoc]
-        exact stepStar_refl _ _
+        try exact stepStar_refl _ _
 
 theorem stepOneWordPureL_same_pow : ∀ (c : Nat) (w out : List Tok) (mode : Mode) (l r : ListBlank (Fin 2)),
     stepOneWordPureL mode w = some (out, mode) →
@@ -2011,7 +1992,7 @@ theorem stepOneWordL_sound : ∀ (w : List Tok) (rle rle' : Rle) (mode mode' : M
   | [], rle, rle', mode, mode', r, h => by
     change some (rle, mode) = some (rle', mode') at h
     injection h with hp; injection hp with h1 h2; subst h1; subst h2
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | t :: ts, rle, rle', mode, mode', r, h => by
     rw [stepOneWordL_cons] at h
     rcases h1 : stepOneWordL rle mode ts with _ | ⟨rle1, mode1⟩
@@ -2092,12 +2073,12 @@ theorem stepOneBounceFuel_sound : ∀ (fuel : Nat) (item : List Tok) (count : Na
   | 0, item, 0, rle, rle', mode, mode', r, h => by
     change some (rle, mode) = some (rle', mode') at h
     injection h with hp; injection hp with h1 h2; subst h1; subst h2
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | 0, _, _ + 1, _, _, _, _, _, h => by contradiction
   | fuel + 1, item, 0, rle, rle', mode, mode', r, h => by
     change some (rle, mode) = some (rle', mode') at h
     injection h with hp; injection hp with h1 h2; subst h1; subst h2
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | fuel + 1, item, count + 1, rle, rle', mode, mode', r, h => by
     rw [stepOneBounceFuel_succ] at h
     cases hm0 : modeEq mode .R0
@@ -2687,7 +2668,7 @@ theorem special_ZTM_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Li
     refine stepStar_trans ⟨_, r0_P (((tokL .P) ^ (n + 1)) +> (tokL .M +> (tokL .T +> l))) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .P) (n + 1)]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
 
 theorem special_PT_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → ListBlank (Fin 2)},
     HasRoundtrip R → ∀ (k1 : Nat),
@@ -2706,7 +2687,7 @@ theorem special_PT_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Lis
     refine stepStar_trans ⟨_, r0_P (((tokL .P) ^ (n + 1)) +> (tokL .T +> l)) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .P) (n + 1)]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
 
 theorem special_ZTW_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → ListBlank (Fin 2)},
     HasRoundtrip R → ∀ (k1 : Nat),
@@ -2725,7 +2706,7 @@ theorem special_ZTW_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Li
     refine stepStar_trans ⟨_, r0_Z (((tokL .Z) ^ (n + 1)) +> (tokL .W +> (tokL .T +> l))) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .Z) (n + 1)]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
 
 def stepSpecialLoops (r2 rStack : Rle) (k1 : Nat) : Option StepCarryRes :=
   Option.casesOn (popLastTok r2) none (fun p1 =>
@@ -3090,11 +3071,9 @@ Halting theorem for Suspect 144 (Holdout #158):
 The machine halts when started on the blank tape.
 -/
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   rcases runCarryChunks_sound 28 500 initRle 1 runCarryChunks_28_500 with ⟨cfg', ⟨k, hk⟩, hnone⟩
   have hk144 : (conjCfg σ_BCADFE true (carryCfg (evalRle initRle) (evalWK 1))) [target_tm]⊢*
       (conjCfg σ_BCADFE true cfg') := by

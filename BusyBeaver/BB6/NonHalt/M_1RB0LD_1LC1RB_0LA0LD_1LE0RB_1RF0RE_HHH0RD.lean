@@ -2,43 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_---0RD` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_---0RD`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_---0RD`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => none
-  | 5, 1 => some (some 3, Stmt.write 0 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 200000
 set_option maxHeartbeats 20000000
 set_option linter.unusedSimpArgs false
@@ -1283,12 +1264,12 @@ lemma nh_Z1 : NH Z1 :=
   driveSteps_spec 13 C24 [2596] seg9 <|
   driveEnd_spec 9 [2596] seg10
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [isNotHalt_iff_neverHaltsFrom_init]
   exact neverHaltsFrom_of_reachesStar (opening open_ok_true) (nh_Z1 2)
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD

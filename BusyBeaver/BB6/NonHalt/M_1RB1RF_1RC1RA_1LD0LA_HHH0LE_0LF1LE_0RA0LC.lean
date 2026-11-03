@@ -2,42 +2,29 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RF_1RC1RA_1LD0LA_---0LE_0LF1LE_0RA0LC` — `is_does_not_halt` (`IsNotHalt target_tm`)
-
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RF_1RC1RA_1LD0LA_---0LE_0LF1LE_0RA0LC`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Excursion
+public import BusyBeaver.Calculi.Longitudinal
 
 open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB1RF_1RC1RA_1LD0LA_HHH0LE_0LF1LE_0RA0LC
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+@[expose] public section
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC1RA_1LD0LA_HHH0LE_0LF1LE_0RA0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
+
+end
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-
-/-- Transition function for `1RB1RF_1RC1RA_1LD0LA_---0LE_0LF1LE_0RA0LC`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 3, 0 => none
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 1 => some (some 2, Stmt.write 0 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
 set_option autoImplicit true
 set_option linter.unusedSimpArgs false
 
@@ -459,7 +446,7 @@ lemma x5 (l:ai) (c:aL) (h : gw l c) : dA l c := by
   cases h with
   | weak_D r => exact .phase_D r
   | weak_F r => exact .phase_F r
-lemma GL (l r:ai) : (DL (bf l ([1,0]++wL)) r) [tm]⊢⁺ (DL l ([1,1,0,1,0]+>r)) :=
+theorem «GL» (l r:ai) : (DL (bf l ([1,0]++wL)) r) [tm]⊢⁺ (DL l ([1,1,0,1,0]+>r)) :=
   U 8 ⟨(([1,0] : List gQ)++wL).reverse,[],sD,true⟩ ⟨[],[1,1,0,1,0],sD,true⟩ (by decide) l r
 lemma GH (l r:ai) : (FL (bf l ([1,0]++wL)) ([0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,1,1,0,1]+>r)) :=
   U 8 ⟨(([1,0] : List gQ)++wL).reverse,[0,0],sF,true⟩ ⟨[],[0,0,1,1,1,0,1],sB,true⟩ (by decide) l r
@@ -469,7 +456,7 @@ lemma CI (l r:ai) : cE (FR (bf l ([1,0]++wL)) r) (dA l) := by
   refine bh (fv (bf l ([1,0]++wL)) r) ?_
   intro c h
   cases h with
-  | contact_D r0 => exact bn (V (GL l r0)) (.phase_D ([1,1,0,1,0]+>r0))
+  | contact_D r0 => exact bn (V («GL» l r0)) (.phase_D ([1,1,0,1,0]+>r0))
   | contact_F r0 => exact bn (V (GH l r0)) (.phase_B11101 r0)
   | contact_B r0 =>
     have hp : dA l (BL l ([0,0,1,0,1,0,0]+>r0)) := by
@@ -593,8 +580,9 @@ lemma Ff (us : List W) (l r:ai) :
     exact V (ee (DW u l (HF us+>r)) (ih (bf l (G1 u)) r))
 lemma Fg (r:ai) : (CE r) [tm]⊢⁺ (FR (bf default [0]) ([0]+>r)) := by
   refine ⟨1,by decide,?_⟩
+  have hstep : target 5 0 = some (some 0, Stmt.write 0 Dir.right) := rfl
   simp only [CE,FR,bf,List.reverse_singleton,n9,step,append_cons,append_nil,
-    Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5,tm,target_tm,sE,sF,F,A,Option.map,Tape.write,Tape.move]
+    Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5,tm,target_tm,sE,sF,F,A,Option.map,Tape.write,Tape.move,hstep]
 lemma tj (d:cm) (us : List W) (r:ai) :
     (hF d us r) [tm]⊢⁺ (FR (cn d us) ([0]+>r)) := by
   unfold hF
@@ -645,8 +633,9 @@ lemma Ia (l r:ai) :
     U 39 ⟨wY.reverse,[0,0,0]++wa,sF,true⟩ ⟨[],[0,0,0]++wa++wb,sF,true⟩ (by decide) l r
 lemma B3 (r:ai) : (DL (bf default [0]) r) [tm]⊢⁺ (CE r) := by
   refine ⟨1,by decide,?_⟩
+  have hstep : target 4 0 = some (some 5, Stmt.write 0 Dir.left) := rfl
   simp only [DL,CE,bf,List.reverse_singleton,n9,step,append_cons,append_nil,
-    Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5,tm,target_tm,sD,sE,E,F,Option.map,Tape.write,Tape.move]
+    Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5,tm,target_tm,sD,sE,E,F,Option.map,Tape.write,Tape.move,hstep]
 structure f3 where
   past : List gQ
   front : List gQ
@@ -3411,12 +3400,16 @@ lemma xW : r9 := by
   · exact ⟨am d1.p1 ([false]++bW cF++bG fB) aA (by decide +kernel) r,am d1.p0 ([false]++bW cF++bG fB) [false,false,true,true,true,false,true] (by decide +kernel) r⟩
 end
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
+
+@[expose] public section
 
 theorem is_does_not_halt : IsNotHalt target_tm :=
   BusyBeaver.Excursion.does_not_halt_of_advances CZ
     ⟨.CD, [.UA, .UT, .UT], _, by decide, rfl⟩ (zb xW)
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB1RF_1RC1RA_1LD0LA_HHH0LE_0LF1LE_0RA0LC

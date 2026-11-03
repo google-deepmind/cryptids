@@ -322,7 +322,7 @@ private theorem step_B_single_ge4 (L : List ℕ) (e₀ c : ℕ) :
       ListBlank.append_pow_succ ([1] : List (Fin 2)) c]
     simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append_cons, ListBlank.append_nil]
-    rw [Cfg.headLeft_cons]
+    try rw [Cfg.headLeft_cons]
     bb_steps
   exact ((shift_B_cons L e₀ [] (c + 4)).trans hturn).trans
     (reaches_drainD (4 :: bumpHeadBy (2 * e₀) L) [] c)
@@ -362,7 +362,7 @@ private theorem step_B_cons_ge2 (L : List ℕ) (e₀ e₁ : ℕ) (E₂ : List �
       ListBlank.append_pow_succ ([1] : List (Fin 2)) (2 * e₁)]
     simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append_cons, ListBlank.append_nil]
-    rw [Cfg.headLeft_cons]
+    try rw [Cfg.headLeft_cons]
     bb_steps
   exact ((shift_B_cons L e₀ ((e₁ + 2) :: E₂) c).trans hturn).trans
     (reaches_drainD (4 :: bumpHeadBy (2 * e₀) L) (e₁ :: E₂) c)

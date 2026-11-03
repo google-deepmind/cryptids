@@ -2,44 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_---1RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_---1RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_---1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 5, 0 => none
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -1812,9 +1791,7 @@ lemma multiStep_toCfg (n : Nat) :
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -1835,5 +1812,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     rw [<- hrun]; exact M8.R3.nonhalt (n + 1)
   rw [step_toCfg (M8.run n M8.init) hne]
   rfl
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA

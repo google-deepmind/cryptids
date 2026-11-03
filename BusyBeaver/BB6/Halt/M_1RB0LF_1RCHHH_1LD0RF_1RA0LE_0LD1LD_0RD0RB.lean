@@ -2,42 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LF_1RC---_1LD0RF_1RA0LE_0LD1LD_0RD0RB` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LF_1RC---_1LD0RF_1RA0LE_0LD1LD_0RD0RB`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LF_1RC---_1LD0RF_1RA0LE_0LD1LD_0RD0RB`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => none
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 3, Stmt.write 0 Dir.right)
-  | 5, 1 => some (some 1, Stmt.write 0 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option autoImplicit true
 set_option linter.unusedSimpArgs false
 
@@ -114,7 +96,7 @@ def cfgC (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 -- ============================================================================
 
 macro "step1" : tactic => `(tactic| (
-  try simp only [cfgL, cfgR, cfgC, RC, Lmp_W0, Lmp_W1, Lmp_nil,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, cfgL, cfgR, cfgC, RC, Lmp_W0, Lmp_W1, Lmp_nil,
     Lmp_head, Lmp_cons_tail,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
@@ -122,7 +104,7 @@ macro "step1" : tactic => `(tactic| (
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     zero_cons_default, default_head, default_tail]
   refine multiStep_step (by rfl) ?_
-  simp only [Turing.Tape.move, Tape.write,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Tape.write,
     Lmp_head, Lmp_cons_tail,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
@@ -130,7 +112,7 @@ macro "step1" : tactic => `(tactic| (
 
 macro "run_steps" n:num : tactic => `(tactic| (
   iterate $n step1
-  simp only [cfgL, cfgR, cfgC, RC, Lmp_W0, Lmp_W1, Lmp_nil,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, cfgL, cfgR, cfgC, RC, Lmp_W0, Lmp_W1, Lmp_nil,
     Lmp_head, Lmp_cons_tail,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
@@ -237,7 +219,7 @@ theorem LIncs_RC {n : ℕ} {x x' : List LD} (h : LIncs n x x') :
     ∀ (m : ℕ), (cfgL (Lmp x) (RC m)) [target_tm]⊢* (cfgL (Lmp x') (RC (m + 2 * n))) := by
   induction h with
   | zero x =>
-    intro m; rw [Nat.mul_zero, Nat.add_zero]; exact stepStar_refl _ _
+    intro m; rw [Nat.mul_zero, Nat.add_zero]; try exact stepStar_refl _ _
   | @succ n x y z h1 _ ih =>
     intro m
     have heq : m + 2 * (n + 1) = (m + 2) + 2 * n := by omega
@@ -362,6 +344,7 @@ theorem cmultiStepChunk_sound : ∀ (k m : ℕ) (c c' : CCfg (Fin 2) (Fin 6)) (r
 
 theorem init_to_x2 : (init []) [target_tm]⊢* (cfgL (Lmp x2) (RC 2)) := by
   have h_eq1 : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = evalCCfg default c_init_104 := by
+    rw [init_nil]
     simp [evalCCfg, evalWindow, c_init_104, zeros_append_default]
   have h_eq2 : evalCCfg default c_x2 = cfgL (Lmp x2) (RC 2) := rfl
   have h_steps : cmultiStepChunk 6 901 c_init_104 = some c_x2 := by decide
@@ -511,7 +494,7 @@ theorem msb_13_halt (r : ListBlank (Fin 2)) :
   refine ⟨evalCCfg r c_msb_halt, ?_, ?_⟩
   · rw [h_start]
     exact ⟨896, cmultiStep_sound 896 c_msb_start c_msb_halt r h_896⟩
-  · simp [step, evalCCfg, evalWindow, h_q, h_cur, B, target_tm]
+  · simp [step, evalCCfg, evalWindow, h_q, h_cur, B, target_tm]; rfl
 
 -- ============================================================================
 -- Section 6.9: Top-Level Halting Theorem (`proved_is_halt`)
@@ -560,10 +543,8 @@ Halting theorem for Suspect 158 (Holdout #707):
 The machine halts when started on the blank tape.
 -/
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := (Solution.sol_is_halt True.intro)
+theorem is_halt : IsHalt target := (Solution.sol_is_halt True.intro)
 
 end BusyBeaver.M_1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB

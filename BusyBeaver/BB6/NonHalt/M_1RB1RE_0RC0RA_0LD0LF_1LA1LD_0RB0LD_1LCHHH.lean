@@ -2,25 +2,22 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LC---` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LC---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LCHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LCHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LC---`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
   | 0, 1 => some (some 4, Stmt.write 1 Dir.right)
@@ -35,11 +32,9 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 2, Stmt.write 1 Dir.left)
   | 5, 1 => none
 
--- END TRUSTED DEFINITIONS
-
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+theorem target_eq : target = target_tm := by
+  funext q s
+  fin_cases q <;> fin_cases s <;> rfl
 set_option linter.unusedSimpArgs false
 set_option linter.unnecessarySeqFocus false
 
@@ -310,14 +305,13 @@ private lemma _closed_not_halt
     rw [hst] at hMc; cases hMc
   | some _ => rfl
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   exact _closed_not_halt GoodSym step_sym_closed (evalSym .modeA [] [0])
     init_reaches_sym (.mkA .nil .zero)
 
--- END GOAL STATEMENT
+
+theorem is_not_halt : IsNotHalt target := by rw [target_eq]; exact is_does_not_halt
 
 end BusyBeaver.M_1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LCHHH

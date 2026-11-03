@@ -5,15 +5,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import BusyBeaver.Defs
-public import BusyBeaver.Counter
-import BusyBeaver.CarryCounter
-import BusyBeaver.CtlCertificate
-import BusyBeaver.Excursion
-import BusyBeaver.Longitudinal
-import BusyBeaver.WordCalculusD
-import BusyBeaver.WordCalculusE
-import BusyBeaver.WordCalculusG
-import BusyBeaver.WordCalculusI
 
 
 /-!
@@ -86,7 +77,6 @@ theorem multiStep_of_step_eq_none {M : Machine Γ Λ} {c : Cfg Γ Λ}
     (h : step M c = none) (n : ℕ) :
     multiStep M c (n + 1) = none := by
   rw [multiStep_succ, h, Option.bind_none]
-
 /-- Addition law for `multiStep`: `m + n` steps is `m` steps followed by `n` steps. -/
 theorem multiStep_add (M : Machine Γ Λ) (c : Cfg Γ Λ) (m n : ℕ) :
     multiStep M c (m + n) = (multiStep M c m).bind (fun c' => multiStep M c' n) := by
@@ -233,6 +223,86 @@ instance (M : Machine Γ Λ) : Trans (ReachesPlus M) (ReachesStar M) (ReachesPlu
 
 instance (M : Machine Γ Λ) : Trans (ReachesStar M) (ReachesPlus M) (ReachesPlus M) :=
   ⟨ReachesStar.trans_plus⟩
+
+/-! ## Reachability Aliases for Proof Modules -/
+
+abbrev stepStar_trans := @ReachesStar.trans
+abbrev stepPlus_stepStar := @ReachesPlus.to_star
+abbrev stepPlus_trans := @ReachesPlus.trans
+abbrev stepPlus_stepStar_stepPlus := @ReachesPlus.trans_star
+abbrev stepStar_stepPlus_stepPlus := @ReachesStar.trans_plus
+abbrev stepPlus_stepStar_trans := @ReachesPlus.trans_star
+abbrev stepStar_stepPlus_trans := @ReachesStar.trans_plus
+abbrev stepPlus_to_stepStar := @ReachesPlus.to_star
+abbrev stepStar_of_multiStep := @ReachesIn.to_star
+abbrev stepStar_refl := @ReachesStar.refl
+
+theorem step_multiStep (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : step M c₁ = some c₂) :
+    c₁ [M]⊢^{1} c₂ :=
+  h
+
+theorem step_stepStar (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : step M c₁ = some c₂) :
+    c₁ [M]⊢* c₂ :=
+  ⟨1, h⟩
+
+theorem step_stepPlus (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : step M c₁ = some c₂) :
+    c₁ [M]⊢⁺ c₂ :=
+  ⟨1, by decide, h⟩
+
+theorem step_stepStar_stepPlus {M : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+    (h₁ : c₁ [M]⊢ c₂) (h₂ : c₂ [M]⊢* c₃) :
+    c₁ [M]⊢⁺ c₃ := by
+  obtain ⟨m, hm⟩ := h₂
+  exact ⟨1 + m, by omega, multiStep_trans h₁ hm⟩
+
+/-! ## Legacy / Shorthand Reachability Aliases -/
+
+theorem zSm (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+    c₁ [tm]⊢* c₂ :=
+  ⟨1, h⟩
+
+theorem z01 (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+    c₁ [tm]⊢⁺ c₂ :=
+  ⟨1, by decide, h⟩
+
+theorem z02 {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+    (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
+  stepPlus_stepStar_stepPlus h₁ h₂
+
+theorem z03 {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+    (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
+  step_stepStar_stepPlus h₁ h₂
+
+theorem z04 {tm : Machine Γ Λ} (c : Cfg Γ Λ) : c [tm]⊢* c :=
+  ⟨0, rfl⟩
+
+theorem z05 (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+    c₁ [tm]⊢* c₂ :=
+  ⟨1, h⟩
+
+theorem z06 {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+    (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ :=
+  stepStar_trans h₁ h₂
+
+theorem zMa {tm : Machine Γ Λ} (c₁ : Cfg Γ Λ) (n m : ℕ) :
+    multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) :=
+  multiStep_add tm c₁ n m
+
+theorem zMt (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
+    (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) : c₁ [tm]⊢^{n + m} c₃ :=
+  multiStep_trans h₁ h₂
+
+theorem zPs {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
+    c₁ [tm]⊢* c₂ :=
+  stepPlus_stepStar h
+
+theorem zPt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+    (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
+  stepPlus_trans h₁ h₂
+
+theorem zSt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+    (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ :=
+  stepStar_trans h₁ h₂
 
 /-! ## Halting and Non-Halting Invariants -/
 
@@ -500,6 +570,71 @@ theorem append_zero_10_pow_one_succ (k : ℕ) (s : ListBlank (Fin 2)) :
       ListBlank.append (([0, 1] : List (Fin 2)) ^ (k + 1)) s := by
   rw [append_10_pow_one, ListBlank.append_pow_succ]
   rfl
+
+/-! ## Standard List, ListBlank, and Power Lemmas
+
+Common List and ListBlank lemmas used across official proofs. -/
+
+theorem pow_zero_list {α : Type*} (u : List α) : u ^ (0 : ℕ) = [] := rfl
+theorem pow_succ_list {α : Type*} (u : List α) (n : ℕ) : u ^ (n + 1) = u ++ u ^ n := rfl
+theorem nil_append_list {α : Type*} (l : List α) : ([] : List α) ++ l = l := rfl
+theorem cons_append_list {α : Type*} (x : α) (xs ys : List α) :
+    (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+theorem append_nil_list {α : Type*} (l : List α) : l ++ [] = l := List.append_nil l
+theorem listblank_append_nil {α : Type*} [Inhabited α] (b : ListBlank α) :
+    ([] : List α) +> b = b := rfl
+theorem listblank_append_cons {α : Type*} [Inhabited α] (x : α) (xs : List α) (b : ListBlank α) :
+    (x :: xs) +> b = x >> (xs +> b) := rfl
+theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+theorem zero_cons_default : (0 : Fin 2) >> default = default := ListBlank.cons_zero_default
+theorem init_nil : (init ([] : List (Fin 2))) = ⟨some (0 : Fin 6), ⟨0, default, default⟩⟩ := rfl
+
+theorem listblank_append_right_assoc {α : Type*} [Inhabited α] (l₁ l₂ : List α) (s : ListBlank α) :
+    (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
+  induction l₁ with
+  | nil => rfl
+  | cons x xs ih => simp only [List.cons_append, ListBlank.append, ih]
+
+theorem listblank_append_append {α : Type*} [Inhabited α] (s : ListBlank α) (l₁ l₂ : List α) :
+    (s <+ l₁) <+ l₂ = s <+ (l₂ ++ l₁) :=
+  ListBlank.append_append s l₁ l₂
+
+theorem list_pow_append_one {α : Type*} (u : List α) (k : ℕ) :
+    u ^ k ++ u = u ^ (k + 1) :=
+  (list_pow_succ' u k).symm
+
+theorem pow_append_pow {α : Type*} [Inhabited α] (u : List α) (n m : ℕ) (T : ListBlank α) :
+    (u ^ n) +> ((u ^ m) +> T) = (u ^ (n + m)) +> T := by
+  rw [list_pow_add, listblank_append_right_assoc]
+
+theorem ones_append_cons_one (n : ℕ) (T : ListBlank (Fin 2)) :
+    (([1] : List (Fin 2)) ^ n) +> ((1 : Fin 2) >> T) =
+      (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ n) +> T) := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    simp only [pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons, ih]
+
+theorem zeros_append_cons_zero (n : ℕ) (T : ListBlank (Fin 2)) :
+    (([0] : List (Fin 2)) ^ n) +> ((0 : Fin 2) >> T) =
+      (0 : Fin 2) >> ((([0] : List (Fin 2)) ^ n) +> T) := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    simp only [pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons, ih]
+
+theorem zeros_append_default (n : ℕ) :
+    (([0] : List (Fin 2)) ^ n) +> (default : ListBlank (Fin 2)) = default := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    simp only [pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons, ih,
+      zero_cons_default]
+
+theorem listblank_eq_one_cons_tail {Z : ListBlank (Fin 2)} (hZ : Z.head = 1) :
+    Z = (1 : Fin 2) >> Z.tail := by
+  rw [← hZ, Turing.ListBlank.cons_head_tail]
 
 theorem init_nil_eq_headRight :
     (init ([] : List Γ) : Cfg Γ Λ) = Cfg.headRight default default default :=

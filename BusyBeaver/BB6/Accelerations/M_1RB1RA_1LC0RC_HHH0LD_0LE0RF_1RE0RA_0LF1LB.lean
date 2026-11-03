@@ -974,7 +974,7 @@ private theorem mode_EB_n_00_closed (L R : List (ℕ × ℕ)) :
 
 private theorem cfg_EL_n_00_nil_eq (R : List (ℕ × ℕ)) :
     cfg_EL_n_00 [] R = cfg_EB_n_00 [] R := by
-  unfold cfg_EL_n_00 cfg_EB_n_00 Cfg.headLeft
+  unfold cfg_EL_n_00 cfg_EB_n_00; try unfold Cfg.headLeft
   simp [encLeft_nil]
 
 private theorem mode_EL_n_00_closed (L R : List (ℕ × ℕ)) :

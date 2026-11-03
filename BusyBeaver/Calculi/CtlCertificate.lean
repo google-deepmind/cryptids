@@ -1,9 +1,13 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
 public import BusyBeaver.Defs
 
 /-!
-# Two-DFA Closed Tape Language Certificates (`BusyBeaver.CtlCertificate`)
+# Two-DFA Closed Tape Language Certificates (`BusyBeaver.Calculi.CtlCertificate`)
 
 A *two-DFA CTL certificate* (FAR / CTL style) for a binary Turing machine
 `M : Machine (Fin 2) Λ` consists of

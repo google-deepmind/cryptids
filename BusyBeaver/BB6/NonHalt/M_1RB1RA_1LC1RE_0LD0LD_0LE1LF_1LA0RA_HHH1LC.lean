@@ -2,44 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_---1LC` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_---1LC`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_HHH1LC
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_---1LC`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 0 => none
-  | 5, 1 => some (some 2, Stmt.write 1 Dir.left)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_HHH1LC"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 -- ============================================================================
 -- Section 1: Execution Helpers, Closed-Invariant Criterion & Stack Rules
 -- ============================================================================
@@ -138,19 +119,7 @@ theorem closed_inv_does_not_halt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
 omit [Inhabited Γ] in
 @[simp]
-theorem list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m := match m with
-  | 0 => by simp_rw [HPow.hPow, add_zero, list_nat_repeat, List.append_nil]
-  | m + 1 => by
-    rw [add_comm m 1, ← add_assoc, add_comm 1 m, list_pow_add]
-    simp only [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
-    rw [← List.append_assoc, ← List.append_assoc, List.append_cancel_right_eq]
-    induction n with
-    | zero => simp
-    | succ n ih => simpa
 
-omit [Inhabited Γ] in
-theorem list_pow_add_comm (l : List Γ) (n m : Nat) : l^n ++ l^m = l^m ++ l^n := by
-  rw [← list_pow_add, add_comm, list_pow_add]
 
 lemma listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
@@ -219,24 +188,28 @@ def headWeight : List ℕ → ℕ
     (encLeft1 (bumpHead L)).tail = encLeft1 L := by
   cases L with
   | nil => simp [bumpHead, encLeft1]
-  | cons a L' => rw [bumpHead, encLeft_cons, Nat.add_comm (a + 1) 1]; simp [encLeft1]
+  | cons a L' =>
+    dsimp [bumpHead, encLeft1, tailWeight, List.tail]
+    rw [Turing.ListBlank.tail_cons]
 
 lemma encLeft_tail_decomp (L : List ℕ) :
     (encLeft1 L).tail = ((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (tailWeight L)) := by
   cases L with
   | nil => simp [tailWeight, encLeft1]
-  | cons a L' => rw [encLeft_cons, Nat.add_comm a 1]; simp [tailWeight]
+  | cons a L' =>
+    dsimp [tailWeight, List.tail, encLeft1]
+    rw [Turing.ListBlank.tail_cons]
 
 lemma encRight_decomp (R : List ℕ) :
     encRight1 R = (([1] : List (Fin 2)) ^ (headWeight R)) +> ((encRight1 R.tail).cons 0) := by
   cases R <;> simp [headWeight, encRight1]
 
-macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, encLeft_tail_cons_one, encLeft_bumpHead_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
+macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, encLeft_tail_cons_one, encLeft_bumpHead_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
 macro "step" : tactic => `(tactic| (
   try refine stepPlus_stepStar ?_
-  try simp only [listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]
   apply step_stepStar_stepPlus (by rfl)
-  simp only [Turing.Tape.move, listblank_append_cons, listblank_append_nil,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
     zero_cons_default, default_head, default_tail]))
 macro "execute" n:num : tactic => `(tactic| (
@@ -292,20 +265,20 @@ lemma a_walk_right (k : ℕ) (l r : ListBlank (Fin 2)) :
     ((l <+ (([1] : List (Fin 2)) ^ k)) {{A}}> r) := by
   induction k generalizing l r with
   | zero =>
-    dsimp [HPow.hPow, list_nat_repeat]
-    exact ⟨0, rfl⟩
+    dsimp [HPow.hPow]
+    try exact ⟨0, rfl⟩
   | succ k ih =>
     have h_split : k + 1 = 1 + k := by omega
     rw [h_split, list_pow_add, listblank_append_right_assoc]
     have h1 : (l {{A}}> (([1] : List (Fin 2)) ^ 1 +> (([1] : List (Fin 2)) ^ k +> r)))
         [target_tm]⊢⁺
         ((l <+ (([1] : List (Fin 2)) ^ 1)) {{A}}> (([1] : List (Fin 2)) ^ k +> r)) := by
-      dsimp [HPow.hPow, list_nat_repeat]
+      dsimp [HPow.hPow]
       execute 1
     refine stepStar_trans (stepPlus_stepStar h1) ?_
     refine stepStar_trans (ih (l <+ (([1] : List (Fin 2)) ^ 1)) r) ?_
     rw [← listblank_append_right_assoc, list_pow_add_comm]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 -- ============================================================================
 -- Section 6B: Complete Local Separator Rules (Compressed to 2 Modes / 11 Rules)
@@ -319,7 +292,7 @@ theorem rule_AL_nil (L : List ℕ) :
     (cfg_AL L []) [target_tm]⊢⁺ (cfg_DL L [0]) := by
   unfold cfg_AL cfg_DL
   rw [encRight_cons, encRight_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 /-- From `cfg_AL L (0 :: R)`, the TM absorbs `0` and the next block of `R` into `L`
@@ -333,7 +306,7 @@ theorem rule_AL_zero (L R : List ℕ) :
   have h_pre : (⟨some A, ⟨0, ((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (tailWeight L)), (([1] : List (Fin 2)) ^ (0 + 1)) +> (((([1] : List (Fin 2)) ^ (headWeight R)) +> ((encRight1 R.tail).cons 0)).cons 0)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
       (((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (tailWeight L))) <+ (([1] : List (Fin 2)) ^ 3)) {{A}}> ((([1] : List (Fin 2)) ^ (headWeight R)) +> ((encRight1 R.tail).cons 0))) := by
-    dsimp [HPow.hPow, list_nat_repeat]
+    dsimp [HPow.hPow]
     execute 5
   refine stepPlus_stepStar_stepPlus h_pre ?_
   refine stepStar_trans (a_walk_right (headWeight R) ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (tailWeight L))) <+ (([1] : List (Fin 2)) ^ 3)) ((encRight1 R.tail).cons 0)) ?_
@@ -349,7 +322,7 @@ theorem rule_AL_one (L R : List ℕ) :
     (cfg_AL L (1 :: R)) [target_tm]⊢⁺ (cfg_AL (0 :: (tailWeight L + 1) :: L.tail) R) := by
   unfold cfg_AL
   rw [encRight_cons 1 R]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 /-- From `cfg_AL L ((d + 2) :: R)`, the TM splits `d + 2` onto `L` as `(d + 1) :: (tailWeight L + 1) :: L.tail`
@@ -364,7 +337,7 @@ theorem rule_AL_ge2 (d : ℕ) (L R : List ℕ) :
   have h_pre : (⟨some A, ⟨0, (encLeft1 L).tail, (([1] : List (Fin 2)) ^ 2) +> ((([1] : List (Fin 2)) ^ (d + 1)) +> ((encRight1 R).cons 0))⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
       (((encLeft1 ((tailWeight L + 1) :: L.tail)).cons 0) {{A}}> ((([1] : List (Fin 2)) ^ (d + 1)) +> ((encRight1 R).cons 0))) := by
-    dsimp [HPow.hPow, list_nat_repeat]
+    dsimp [HPow.hPow]
     execute 3
   refine stepPlus_stepStar_stepPlus h_pre ?_
   refine stepStar_trans (a_walk_right (d + 1) ((encLeft1 ((tailWeight L + 1) :: L.tail)).cons 0) ((encRight1 R).cons 0)) ?_
@@ -383,7 +356,7 @@ theorem rule_DL_nil (R : List ℕ) :
     (cfg_DL [] R) [target_tm]⊢⁺ (cfg_AL [3] R) := by
   unfold cfg_DL cfg_AL
   rw [encLeft_cons, encLeft_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 7
 
 /-- From `cfg_DL [0, 0] R`, the TM enters `cfg_AL [3] (bumpHead R)` in 12 steps. -/
@@ -391,7 +364,7 @@ theorem rule_DL_zero_zero_nil (R : List ℕ) :
     (cfg_DL [0, 0] R) [target_tm]⊢⁺ (cfg_AL [3] (bumpHead R)) := by
   unfold cfg_DL cfg_AL
   rw [encLeft_cons 0 [0], encLeft_cons 0 [], encLeft_cons 3 [], encLeft_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 12
 
 /-- From `cfg_DL (0 :: 0 :: c :: L') R`, the TM enters `cfg_DL ((c + 2) :: L') (bumpHead (bumpHead R))` in 12 steps. -/
@@ -400,7 +373,7 @@ theorem rule_DL_zero_zero_cons (c : ℕ) (L' R : List ℕ) :
     (cfg_DL ((c + 2) :: L') (bumpHead (bumpHead R))) := by
   unfold cfg_DL
   rw [encLeft_cons 0 (0 :: c :: L'), encLeft_cons 0 (c :: L'), encLeft_cons c L', encLeft_cons (c + 2) L']
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 12
 
 /-- From `cfg_DL (0 :: (a + 1) :: L') R`, the TM transfers 1 unit to `R` in 5 steps. -/
@@ -408,7 +381,7 @@ theorem rule_DL_zero_succ (a : ℕ) (L' R : List ℕ) :
     (cfg_DL (0 :: (a + 1) :: L') R) [target_tm]⊢⁺ (cfg_DL (0 :: a :: L') (bumpHead R)) := by
   unfold cfg_DL
   rw [encLeft_cons 0 ((a + 1) :: L'), encLeft_cons (a + 1) L', encLeft_cons 0 (a :: L'), encLeft_cons a L']
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 5
 
 /-- From `cfg_DL (1 :: L') R`, the TM halts in 1 step at state `F` scanning `0`. -/
@@ -418,7 +391,7 @@ theorem rule_DL_one (L' R : List ℕ) :
   refine ⟨?_, rfl⟩
   unfold cfg_DL cfg_Halt_DL
   rw [encLeft_cons 1 L']
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 1
 
 /-- From `cfg_DL (2 :: L') R`, the TM pushes `1` onto `R` and exposes `bumpHead L'` in 3 steps. -/
@@ -426,7 +399,7 @@ theorem rule_DL_two (L' R : List ℕ) :
     (cfg_DL (2 :: L') R) [target_tm]⊢⁺ (cfg_DL (bumpHead L') (1 :: R)) := by
   unfold cfg_DL
   rw [encLeft_cons 2 L', encRight_cons 1 R]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 /-- From `cfg_DL ((a + 3) :: L') R`, the TM peels 3 from the head of `L` and pushes `1` onto `R` in 3 steps
@@ -435,7 +408,7 @@ theorem rule_DL_ge3 (a : ℕ) (L' R : List ℕ) :
     (cfg_DL ((a + 3) :: L') R) [target_tm]⊢⁺ (cfg_DL (a :: L') (1 :: R)) := by
   unfold cfg_DL
   rw [encLeft_tail_decomp ((a + 3) :: L'), encLeft_tail_decomp (a :: L'), encRight_cons 1 R]
-  dsimp [tailWeight, List.tail, HPow.hPow, list_nat_repeat]
+  dsimp [tailWeight, List.tail, HPow.hPow]
   execute 3
 
 -- ============================================================================
@@ -449,7 +422,7 @@ theorem rule_DL_peel_all (L R : List ℕ) (a k : ℕ) :
   induction k generalizing R with
   | zero =>
     simp only [Nat.mul_zero, Nat.add_zero, List.replicate, List.nil_append]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ k ih =>
     have h_arith : a + 3 * (k + 1) = (a + 3 * k) + 3 := by omega
     rw [h_arith]
@@ -458,7 +431,7 @@ theorem rule_DL_peel_all (L R : List ℕ) (a k : ℕ) :
     have h_rep : List.replicate k 1 ++ (1 :: R) = List.replicate (k + 1) 1 ++ R := by
       rw [List.replicate_succ', List.append_assoc, List.singleton_append]
     rw [h_rep]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 /-- Multi-step carry transfer in mode `D00`: `k` steps transfer `k` from head of `L` to head of `R`. -/
 theorem rule_D00_peel_all (a d k : ℕ) (L R : List ℕ) :
@@ -468,7 +441,7 @@ theorem rule_D00_peel_all (a d k : ℕ) (L R : List ℕ) :
   induction k generalizing d with
   | zero =>
     simp only [Nat.add_zero]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ k ih =>
     have h_arith : a + (k + 1) = (a + k) + 1 := by omega
     rw [h_arith]
@@ -478,14 +451,14 @@ theorem rule_D00_peel_all (a d k : ℕ) (L R : List ℕ) :
     refine stepStar_trans (ih (d + 1)) ?_
     have h_eq : (d + 1) + k = d + (k + 1) := by omega
     rw [h_eq]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 
 theorem init_to_cfg_DL :
     (init []) [target_tm]⊢⁺ (cfg_DL [] [0]) := by
   unfold cfg_DL
   rw [encLeft_nil, encRight_cons, encRight_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 
@@ -622,7 +595,7 @@ lemma br_sweep_midR (A B : List ℕ) (hB : B ≠ []) :
   induction A generalizing B with
   | nil =>
     simp only [incList_nil, List.nil_append, List.reverse_nil]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | cons a A' ih =>
     simp only [incList_cons, List.cons_append, List.reverse_cons, List.append_assoc]
     refine stepStar_trans (stepPlus_stepStar (rule_BR_midR a (incList A' ++ [0]) B hB)) ?_
@@ -723,7 +696,7 @@ lemma er_even_prefix : ∀ (P : List ℕ), P.length % 2 = 0 → ∀ (A rest : Li
     (cfg_ER (incList (A ++ fromQ (stepBlock P)).reverse ++ [0]) (toR_B rest))
   | [], _, A, rest, _ => by
     simp [fromQ, stepBlock]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | [q], hP, _, _, _ => by
     simp at hP
   | q :: y :: P', hP, A, rest, hrest => by
@@ -835,7 +808,7 @@ lemma er_peel_two_chain (C : List ℕ) (L : List ℕ) :
       rw [List.replicate_add, List.replicate_add, List.replicate_one]
       simp [List.append_assoc]
     rw [h_rep]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 lemma er_two_end_base (k : ℕ) (C A : List ℕ) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B ((3 * k + 2) :: fromQ (C ++ [1])))) [target_tm]⊢⁺
@@ -2414,11 +2387,11 @@ lemma era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
   obtain ⟨k, rfl⟩ := hinv
   exact ⟨_, tail_era_step k, ⟨k + 1, rfl⟩⟩
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm :=
   closed_inv_does_not_halt target_tm EraInv era_inv_init era_inv_step
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_HHH1LC

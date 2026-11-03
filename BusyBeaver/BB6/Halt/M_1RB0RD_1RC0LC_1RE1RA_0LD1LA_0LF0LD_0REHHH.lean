@@ -2,43 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0RE---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0RE---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0REHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0REHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0RE---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 3, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 /-!
 Halting trace certificate.
 
@@ -69,11 +49,9 @@ theorem is_halt_of_haltsAt (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
 
 def solution_steps : ℕ := 4
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   -- Terminal halting configuration reached after 4 steps (kernel replay).
   exact is_halt_of_haltsAt target_tm 4 (by decide +kernel)
 

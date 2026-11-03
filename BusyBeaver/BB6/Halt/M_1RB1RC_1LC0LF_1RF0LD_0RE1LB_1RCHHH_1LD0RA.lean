@@ -2,43 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RC---_1LD0RA` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RC---_1LD0RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RCHHH_1LD0RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RC---_1LD0RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 1, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 4, 1 => none
-  | 5, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 0, Stmt.write 0 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RCHHH_1LD0RA"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -81,15 +63,7 @@ lemma multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : �
 @[simp] lemma init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 omit [Inhabited Γ] in
-theorem list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m := match m with
-  | 0 => by simp_rw [HPow.hPow, add_zero, list_nat_repeat, List.append_nil]
-  | m + 1 => by
-    rw [add_comm m 1, ← add_assoc, add_comm 1 m, list_pow_add]
-    simp only [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
-    rw [← List.append_assoc, ← List.append_assoc, List.append_cancel_right_eq]
-    induction n with
-    | zero => simp
-    | succ n ih => simpa
+
 
 def encLeft : List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
@@ -179,7 +153,7 @@ lemma encM_bumpM (M : List MItem) : (1 : Fin 2) >> encM M = encM (bumpM M) := by
 
 macro "finish" : tactic => `(tactic| (
   refine ⟨0, ?_⟩
-  simp only [pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
     listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons,
     Turing.ListBlank.tail_cons, zero_cons_default, default_head, default_tail,
     encLeft_nil, encRight_nil, enc1_nil, encM_nil, encM_cons_zero, encM_cons_run,
@@ -190,14 +164,14 @@ macro "finish" : tactic => `(tactic| (
 
 macro "step" : tactic => `(tactic| (
   try refine stepPlus_stepStar ?_
-  try simp only [pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
     listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons,
     Turing.ListBlank.tail_cons, default_head, default_tail,
     encM_nil, encM_cons_zero, encM_cons_run,
     encLeft_cons_head, cons_one_encLeft_tail, encRight_cons_head, cons_one_encRight_tail,
     encM_cons_run_head, cons_one_encM_cons_run_tail]
   apply step_stepStar_stepPlus (by rfl)
-  simp only [Turing.Tape.move, pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
     zero_cons_default, default_head, default_tail,
@@ -1469,7 +1443,7 @@ lemma sweepCB_sound (L R : List SymTok) :
         | repB1 _ => rfl
         | rep2 _ => rfl
         | rep12 _ => rfl
-    rw [heq]; exact stepStar_refl
+    rw [heq]; try exact stepStar_refl
   | case5 L R1 ih =>
     simp only [sweepCB, strictList_eq]
     have h1 : (evalSym (.CB, L, .item (.run 1) :: R1)) [target_tm]⊢*
@@ -1488,7 +1462,7 @@ lemma sweepCB_sound (L R : List SymTok) :
       exact sweep_CB_B1 k (encSymL L1) (encSymR R1)
     exact stepStar_trans h1 (ih (eatB1 k L1))
   | case8 L k R1 hstrip =>
-    simp only [sweepCB, hstrip]; exact stepStar_refl
+    simp only [sweepCB, hstrip]; try exact stepStar_refl
   | case9 L p R1 L1 hstrip ih =>
     have hL := stripPrefixSym_some _ L L1 hstrip
     simp only [sweepCB, hstrip, strictList_eq]
@@ -1499,7 +1473,7 @@ lemma sweepCB_sound (L R : List SymTok) :
       exact sweep_CB_B2 p (encSymL L1) (encSymR R1)
     exact stepStar_trans h1 (ih (eatC2 p L1))
   | case10 L p R1 hstrip =>
-    simp only [sweepCB, hstrip]; exact stepStar_refl
+    simp only [sweepCB, hstrip]; try exact stepStar_refl
   | case11 L m R1 L1 hstrip ih =>
     have hL := stripPrefixSym_some _ L L1 hstrip
     simp only [sweepCB, hstrip, strictList_eq]
@@ -1510,7 +1484,7 @@ lemma sweepCB_sound (L R : List SymTok) :
       exact sweep_CB_B12R m (encSymL L1) (encSymR R1)
     exact stepStar_trans h1 (ih (eatC12 m L1))
   | case12 L m R1 hstrip =>
-    simp only [sweepCB, hstrip]; exact stepStar_refl
+    simp only [sweepCB, hstrip]; try exact stepStar_refl
 
 lemma finishThenBB_sound (s : SymMode × List SymTok × List SymTok) :
     (evalSym s) [target_tm]⊢* (evalSym (finishThenBB s)) := by
@@ -1807,7 +1781,7 @@ lemma ruleA_iter (n m k d : ℕ) (R_tail : List SymTok) :
     (evalSym (stateA m (k + n) (d + 6 * n) R_tail)) [target_tm]⊢*
     (evalSym (stateA (m + n) k d R_tail)) := by
   induction n generalizing m k d with
-  | zero => simp; exact stepStar_refl
+  | zero => simp; try exact stepStar_refl
   | succ n ih =>
     have h1 : k + (n + 1) = (k + n) + 1 := by omega
     have h2 : d + 6 * (n + 1) = (d + 6 * n) + 6 := by omega
@@ -1877,7 +1851,7 @@ lemma ruleC_iter (n p k d2 : ℕ) (R_tail : List SymTok) (hk : 1 ≤ k) :
     (evalSym (stateC (p + n + 2) k d2 R_tail)) [target_tm]⊢*
     (evalSym (stateC (p + 2) (k + 2 * n) (d2 + 2 * n) R_tail)) := by
   induction n generalizing p k d2 with
-  | zero => simp; exact stepStar_refl
+  | zero => simp; try exact stepStar_refl
   | succ n ih =>
     obtain ⟨k0, rfl⟩ : ∃ k0, k = k0 + 1 := ⟨k - 1, by omega⟩
     have h1 : p + (n + 1) + 2 = (p + n) + 3 := by omega
@@ -1986,7 +1960,7 @@ lemma ruleB_iter (s_sep m_sep : List SymTok) (hs : s_sep = sep3A ∨ s_sep = sep
     (evalSym (stateB s_sep m_sep (p + 1) (m + n + 1) (k + n) d2 R_tail)) [target_tm]⊢*
     (evalSym (stateB s_sep m_sep (p + 1 + 2 * n) (m + 1) k (d2 + 4 * n) R_tail)) := by
   induction n generalizing p m k d2 with
-  | zero => simp; exact stepStar_refl
+  | zero => simp; try exact stepStar_refl
   | succ n ih =>
     have h1 : m + (n + 1) + 1 = (m + n) + 2 := by omega
     have h2 : k + (n + 1) = (k + n) + 1 := by omega
@@ -2217,11 +2191,9 @@ lemma sym_chk4 : stepSym4096 symChk12288 = symChk16384 := by decide +kernel
 lemma sym_chk5 : stepSym4096 symChk16384 = symChk20480 := by decide +kernel
 lemma sym_chk6 : iterStep stepSym 7 (iterStep stepSym16 8 (iterStep stepSym256 3 symChk20480)) = symChk21383 := by decide +kernel
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   have h0 : (init []) [target_tm]⊢* (evalM (.BB, [.run 0], [])) :=
     stepPlus_stepStar init_to_BB
   have h1 : (evalM (.BB, [.run 0], [])) [target_tm]⊢* (evalSym initSymCyc3) := by

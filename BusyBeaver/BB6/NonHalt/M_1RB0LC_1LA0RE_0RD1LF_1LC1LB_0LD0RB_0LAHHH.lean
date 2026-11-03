@@ -2,44 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
-import BusyBeaver.Longitudinal
+module
 
-/-!
-# Busy Beaver Machine `1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LA---` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`, `BusyBeaver.Longitudinal`
-and defines `target_tm` for `1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LA---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LAHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LAHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 1, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
@@ -5809,7 +5790,7 @@ lemma multiStep_rename87 (c : Cfg Sym Q) (n : Nat) :
   induction n generalizing c with
   | zero => rfl
   | succ n ih =>
-    rw [BusyBeaver.multiStep_succ, BusyBeaver.multiStep_succ, ih]
+    rw [BusyBeaver.multiStep_succ', BusyBeaver.multiStep_succ', ih]
     rcases multiStep tm1 c n with _ | c'
     · rfl
     · exact step_rename87 c'
@@ -5866,9 +5847,7 @@ lemma toCfg_87_eq :
   rw [h1, h2, decodeHalf_zero]
   simp only [cfg, mapCfg, rename87, Option.map_some, Cfg.headRight, append_assoc]
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [target_tm_eq_flipTM]
@@ -5878,5 +5857,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     rw [← toCfg_87_eq]
     exact init_87_flip_raw
   exact nonHaltFrom_of_stepStar h_reach (nonHaltFrom_rename87 (normal_nonhalt (Or.inl initial2_root)))
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LAHHH

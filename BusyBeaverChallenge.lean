@@ -44,7 +44,7 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
     let wChar := chars[3 * i]!
     let dChar := chars[3 * i + 1]!
     let sChar := chars[3 * i + 2]!
-    if wChar == '-' && dChar == '-' && sChar == '-' then
+    if (wChar == '-' && dChar == '-' && sChar == '-') || (wChar == 'H' && dChar == 'H' && sChar == 'H') then
       cellStxs := cellStxs.push (← `(none))
     else
       if !wChar.isDigit then
@@ -3706,6 +3706,8 @@ theorem isHalt_iff_highLevel_acceleration :
 
 theorem acceleration_iff_highLevel_acceleration :
     CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart := by sorry
+
+theorem is_not_halt : IsNotHalt target := by sorry
 
 end M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH
 
@@ -9196,3 +9198,1983 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 
 end BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH
+
+namespace BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LD_1RA0RF_1RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LB_0LC0RE_1LA1LD_0LB1LD_1RA0RF_1RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LD_1RA0RF_1RAHHH
+
+namespace BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH
+
+namespace BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1RF_1RA1RD_HHH1LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LB_0LC0RE_1LA1LD_0LB1RF_1RA1RD_HHH1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1RF_1RA1RD_HHH1LC
+
+namespace BusyBeaver.M_1RB0LC_1LC0RE_1RF1LD_1LA0LB_1RD1RA_1LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RE_1RF1LD_1LA0LB_1RD1RA_1LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_1LC0RE_1RF1LD_1LA0LB_1RD1RA_1LBHHH
+
+namespace BusyBeaver.M_1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH
+
+namespace BusyBeaver.M_1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE
+
+namespace BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC
+
+namespace BusyBeaver.M_1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB
+
+namespace BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH
+
+namespace BusyBeaver.M_1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_HHH0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_HHH0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_HHH0RA
+
+namespace BusyBeaver.M_1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0REHHH
+
+namespace BusyBeaver.M_1RB0RC_1RC0LD_1LD1RA_1LF0LE_HHH0RD_1LB0LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1RC0LD_1LD1RA_1LF0LE_HHH0RD_1LB0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RC_1RC0LD_1LD1RA_1LF0LE_HHH0RD_1LB0LA
+
+namespace BusyBeaver.M_1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB
+
+namespace BusyBeaver.M_1RB0RD_1LC1RE_1LA0LD_0RE0RF_1LC1RA_0LEHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1LC1RE_1LA0LD_0RE0RF_1LC1RA_0LEHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_1LC1RE_1LA0LD_0RE0RF_1LC1RA_0LEHHH
+
+namespace BusyBeaver.M_1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_1RC0LC_1RE1RA_0LD1LA_0LF0LD_0REHHH
+
+namespace BusyBeaver.M_1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LAHHH
+
+namespace BusyBeaver.M_1RB0RF_0RC1RD_0LDHHH_1LE1RA_1LA0LF_0RD0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_0RC1RD_0LDHHH_1LE1RA_1LA0LF_0RD0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_0RC1RD_0LDHHH_1LE1RA_1LA0LF_0RD0RC
+
+namespace BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH
+
+namespace BusyBeaver.M_1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH
+
+namespace BusyBeaver.M_1RB1LA_0LB1LC_1RD0LD_0LA0RE_1RC1RF_0LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LA_0LB1LC_1RD0LD_0LA0RE_1RC1RF_0LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1LA_0LB1LC_1RD0LD_0LA0RE_1RC1RF_0LDHHH
+
+namespace BusyBeaver.M_1RB1LC_1RC1RE_0LF1RD_0RA0LD_HHH1RC_1LA0LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LC_1RC1RE_0LF1RD_0RA0LD_HHH1RC_1LA0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1LC_1RC1RE_0LF1RD_0RA0LD_HHH1RC_1LA0LA
+
+namespace BusyBeaver.M_1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RCHHH
+
+namespace BusyBeaver.M_1RB1RA_1LC0RE_1LD1LB_1RA0LE_1RA0LF_0LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC0RE_1LD1LB_1RA0LE_1RA0LF_0LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1LC0RE_1LD1LB_1RA0LE_1RA0LF_0LBHHH
+
+namespace BusyBeaver.M_1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RCHHH_1LD0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RCHHH_1LD0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1LC0LF_1RF0LD_0RE1LB_1RCHHH_1LD0RA
+
+namespace BusyBeaver.M_1RB1RC_1LC1RD_1LD0LE_1LA0LD_0LB1RF_HHH0LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC1RD_1LD0LE_1LA0LD_0LB1RF_HHH0LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1LC1RD_1LD0LE_1LA0LD_0LB1RF_HHH0LF
+
+namespace BusyBeaver.M_1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_HHH1LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_HHH1LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_HHH1LB
+
+namespace BusyBeaver.M_1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_HHH1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RE_1LC0RC_0RA0LD_1LB1LE_0RC1LF_HHH1RA
+
+namespace BusyBeaver.M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA
+
+namespace BusyBeaver.M_1RB1RF_0RC0RE_0RD1RA_1LE0LA_1LB0LD_0RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_0RC0RE_0RD1RA_1LE0LA_1LB0LD_0RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_0RC0RE_0RD1RA_1LE0LA_1LB0LD_0RDHHH
+
+namespace BusyBeaver.M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE
+
+namespace BusyBeaver.M_1RBHHH_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_halt : IsHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD
+
+namespace BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC
+
+namespace BusyBeaver.M_1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RCHHH
+
+namespace BusyBeaver.M_1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RCHHH
+
+namespace BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
+
+namespace BusyBeaver.M_1RB0LC_0LC1RE_1LD1LC_1LA1RD_HHH1RF_0RA0RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_0LC1RE_1LD1LC_1LA1RD_HHH1RF_0RA0RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_0LC1RE_1LD1LC_1LA1RD_HHH1RF_0RA0RF
+
+namespace BusyBeaver.M_1RB0LC_1LA0RE_0RD0LA_1RE1RA_0LD1RF_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LA0RE_0RD0LA_1RE1RA_0LD1RF_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_1LA0RE_0RD0LA_1RE1RA_0LD1RF_0RBHHH
+
+namespace BusyBeaver.M_1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_1LA0RE_0RD1LF_1LC1LB_0LD0RB_0LAHHH
+
+namespace BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF
+
+namespace BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LB_0RF1RA_HHH0RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RE_1LA1LD_1LA1LB_0RF1RA_HHH0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LB_0RF1RA_HHH0RE
+
+namespace BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH
+
+namespace BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD
+
+namespace BusyBeaver.M_1RB0LD_1RC0RA_1RD1RF_1LA0LE_1RE1LD_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1RC0RA_1RD1RF_1LA0LE_1RE1LD_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LD_1RC0RA_1RD1RF_1LA0LE_1RE1LD_0RBHHH
+
+namespace BusyBeaver.M_1RB0LD_1RC0RE_1LD0RE_1LA0LA_1RB1RF_1RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1RC0RE_1LD0RE_1LA0LA_1RB1RF_1RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LD_1RC0RE_1LD0RE_1LA0LA_1RB1RF_1RBHHH
+
+namespace BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC1RA_HHH1LD_0RB1LF_1RD1LA_0LA0RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC1RA_HHH1LD_0RB1LF_1RD1LA_0LA0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LE_1LC1RA_HHH1LD_0RB1LF_1RD1LA_0LA0RD
+
+namespace BusyBeaver.M_1RB0LE_1LC1RD_1LA0LC_1RA1RE_0RF0RB_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC1RD_1LA0LC_1RA1RE_0RF0RB_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LE_1LC1RD_1LA0LC_1RA1RE_0RF0RB_1LCHHH
+
+namespace BusyBeaver.M_1RB0LE_1RC0LF_0LD0RC_1RA1LD_1LB0LE_HHH0RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1RC0LF_0LD0RC_1RA1LD_1LB0LE_HHH0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LE_1RC0LF_0LD0RC_1RA1LD_1LB0LE_HHH0RE
+
+namespace BusyBeaver.M_1RB0LE_1RC0RC_1LD0RB_1LA0LE_1LD1LF_1LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1RC0RC_1LD0RB_1LA0LE_1LD1LF_1LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LE_1RC0RC_1LD0RB_1LA0LE_1LD1LF_1LDHHH
+
+namespace BusyBeaver.M_1RB0LE_1RC1LA_1LD1RE_1LB0LD_1RF0RC_1RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1RC1LA_1LD1RE_1LB0LD_1RF0RC_1RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LE_1RC1LA_1LD1RE_1LB0LD_1RF0RC_1RBHHH
+
+namespace BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB
+
+namespace BusyBeaver.M_1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA
+
+namespace BusyBeaver.M_1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_HHH1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_HHH1RA
+
+namespace BusyBeaver.M_1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_HHH1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_HHH1RA
+
+namespace BusyBeaver.M_1RB0RA_0RC0RE_0LDHHH_1LE1LD_1LF0LD_1RA0RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0RC0RE_0LDHHH_1LE1LD_1LF0LD_1RA0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_0RC0RE_0LDHHH_1LE1LD_1LF0LD_1RA0RD
+
+namespace BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA
+
+namespace BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF1LB_HHH0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF1LB_HHH0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF1LB_HHH0RA
+
+namespace BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RF_1RA1LB_1RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0LD_1LE1LD_0LB0RF_1RA1LB_1RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RF_1RA1LB_1RAHHH
+
+namespace BusyBeaver.M_1RB0RA_1LC0LF_1LE0LD_1LBHHH_1RA1LB_0LB0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0LF_1LE0LD_1LBHHH_1RA1LB_0LB0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0LF_1LE0LD_1LBHHH_1RA1LB_0LB0RC
+
+namespace BusyBeaver.M_1RB0RA_1LC0LF_1LE0LD_1LBHHH_1RA1LB_0LD0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0LF_1LE0LD_1LBHHH_1RA1LB_0LD0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0LF_1LE0LD_1LBHHH_1RA1LB_0LD0RC
+
+namespace BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_0LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_0LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_0LCHHH
+
+namespace BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LBHHH
+
+namespace BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LCHHH
+
+namespace BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LDHHH
+
+namespace BusyBeaver.M_1RB0RA_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH
+
+namespace BusyBeaver.M_1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH
+
+namespace BusyBeaver.M_1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC
+
+namespace BusyBeaver.M_1RB0RA_1RC0RC_1LD0LE_1RA1LC_1LC1LF_0LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1RC0RC_1LD0LE_1RA1LC_1LC1LF_0LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1RC0RC_1LD0LE_1RA1LC_1LC1LF_0LCHHH
+
+namespace BusyBeaver.M_1RB0RA_1RC0RD_1LD1LE_1LF0LC_0LDHHH_1RA1LD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1RC0RD_1LD1LE_1LF0LC_0LDHHH_1RA1LD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1RC0RD_1LD1LE_1LF0LC_0LDHHH_1RA1LD
+
+namespace BusyBeaver.M_1RB0RA_1RC0RE_1RDHHH_1LE1LD_1LF0LD_1RA1LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1RC0RE_1RDHHH_1LE1LD_1LF0LD_1RA1LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RA_1RC0RE_1RDHHH_1LE1LD_1LF0LD_1RA1LE
+
+namespace BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_0LAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_0LAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_0LAHHH
+
+namespace BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_0LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_0LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_0LBHHH
+
+namespace BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_1LEHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_1LEHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_1LEHHH
+
+namespace BusyBeaver.M_1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH
+
+namespace BusyBeaver.M_1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH
+
+namespace BusyBeaver.M_1RB0RC_1LC0LD_1RA1RC_1RA1LE_0LB1RE_HHH1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC0LD_1RA1RC_1RA1LE_0LB1RE_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RC_1LC0LD_1RA1RC_1RA1LE_0LB1RE_HHH1RA
+
+namespace BusyBeaver.M_1RB0RC_1LC1LF_1LD0LB_1RE1LC_1RA0RE_0LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1LF_1LD0LB_1RE1LC_1RA0RE_0LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RC_1LC1LF_1LD0LB_1RE1LC_1RA0RE_0LCHHH
+
+namespace BusyBeaver.M_1RB0RC_1LC1RA_0RF0LD_1LE0RB_1LB0LD_HHH1RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RA_0RF0LD_1LE0RB_1LB0LD_HHH1RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RC_1LC1RA_0RF0LD_1LE0RB_1LB0LD_HHH1RD
+
+namespace BusyBeaver.M_1RB0RC_1LC1RD_1RA1LE_1LA0RD_0LE1RF_1LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RD_1RA1LE_1LA0RD_0LE1RF_1LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RC_1LC1RD_1RA1LE_1LA0RD_0LE1RF_1LBHHH
+
+namespace BusyBeaver.M_1RB0RD_0LC0RA_1LA1LC_1RE0LF_0RA1RF_1LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_0LC0RA_1LA1LC_1RE0LF_0RA1RF_1LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_0LC0RA_1LA1LC_1RE0LF_0RA1RF_1LBHHH
+
+namespace BusyBeaver.M_1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE
+
+namespace BusyBeaver.M_1RB0RD_0RC0LB_0RD1RD_1LE1RA_1RC1LF_HHH1LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_0RC0LB_0RD1RD_1LE1RA_1RC1LF_HHH1LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_0RC0LB_0RD1RD_1LE1RA_1RC1LF_HHH1LA
+
+namespace BusyBeaver.M_1RB0RD_1RC1RF_1LD0LE_1RA0LC_1RE1LC_0RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1RC1RF_1LD0LE_1RA0LC_1RE1LC_0RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_1RC1RF_1LD0LE_1RA0LC_1RE1LC_0RAHHH
+
+namespace BusyBeaver.M_1RB0RD_1RCHHH_1LD1LC_1LE0LC_1RF0RC_1RA0RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1RCHHH_1LD1LC_1LE0LC_1RF0RC_1RA0RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_1RCHHH_1LD1LC_1LE0LC_1RF0RC_1RA0RF
+
+namespace BusyBeaver.M_1RB0RD_1RCHHH_1LD1LE_1LE0LC_1RF1LD_1RA0RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1RCHHH_1LD1LE_1LE0LC_1RF1LD_1RA0RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RD_1RCHHH_1LD1LE_1LE0LC_1RF1LD_1RA0RF
+
+namespace BusyBeaver.M_1RB0RE_1LC0LE_1LD0LC_1RA0LA_1RA1RF_1RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0LE_1LD0LC_1RA0LA_1RA1RF_1RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC0LE_1LD0LC_1RA0LA_1RA1RF_1RAHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA
+
+namespace BusyBeaver.M_1RB0RE_1LC0RA_1LD0LB_1LA1LF_1LE1RA_0LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RA_1LD0LB_1LA1LF_1LE1RA_0LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC0RA_1LD0LB_1LA1LF_1LE1RA_0LCHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC0RE_1LD0LD_1RA0LC_1RA1RF_1RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RE_1LD0LD_1RA0LC_1RA1RF_1RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC0RE_1LD0LD_1RA0LC_1RA1RF_1RAHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1LA0LA_1RA1RF_0RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_1LA0LA_1RA1RF_0RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1LA0LA_1RA1RF_0RAHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1LA0LA_1RA1RF_0RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_1LA0LA_1RA1RF_0RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1LA0LA_1RA1RF_0RDHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0LBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0LBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0LBHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0RAHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1RDHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1REHHH
+
+namespace BusyBeaver.M_1RB0RE_1LC1RD_1LD0LC_1RA0RF_1RDHHH_0RD0LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RD_1LD0LC_1RA0RF_1RDHHH_0RD0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RD_1LD0LC_1RA0RF_1RDHHH_0RD0LA
+
+namespace BusyBeaver.M_1RB0RE_1LC1RF_HHH0LD_0LE1LB_1LF1LD_1RD0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RF_HHH0LD_0LE1LB_1LF1LD_1RD0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1LC1RF_HHH0LD_0LE1LB_1LF1LD_1RD0RA
+
+namespace BusyBeaver.M_1RB0RE_1RC0RB_0RD0RF_0LEHHH_1LF1LE_1LA0LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC0RB_0RD0RF_0LEHHH_1LF1LE_1LA0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1RC0RB_0RD0RF_0LEHHH_1LF1LE_1LA0LE
+
+namespace BusyBeaver.M_1RB0RE_1RC1LF_0LD0RE_HHH1LE_1RA0LB_1LB0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC1LF_0LD0RE_HHH1LE_1RA0LB_1LB0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1RC1LF_0LD0RE_HHH1LE_1RA0LB_1LB0LC
+
+namespace BusyBeaver.M_1RB0RE_1RC1RE_1LD1RA_1LA0LD_0RA0LF_1LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC1RE_1LD1RA_1LA0LD_0RA0LF_1LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1RC1RE_1LD1RA_1LA0LD_0RA0LF_1LDHHH
+
+namespace BusyBeaver.M_1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE
+
+namespace BusyBeaver.M_1RB0RF_1LC0LF_1LD0LC_0LE0LA_1LFHHH_1RA1RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC0LF_1LD0LC_0LE0LA_1LFHHH_1RA1RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC0LF_1LD0LC_0LE0LA_1LFHHH_1RA1RF
+
+namespace BusyBeaver.M_1RB0RF_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH
+
+namespace BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_0LE0LA_0RFHHH_1RA1RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC1RA_1LD0LC_0LE0LA_0RFHHH_1RA1RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_0LE0LA_0RFHHH_1RA1RF
+
+namespace BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_0LE0LA_1RFHHH_1RA1RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC1RA_1LD0LC_0LE0LA_1RFHHH_1RA1RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_0LE0LA_1RFHHH_1RA1RE
+
+namespace BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RB
+
+namespace BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RF
+
+namespace BusyBeaver.M_1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RA0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RA0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RA0LB
+
+namespace BusyBeaver.M_1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RE0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RE0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RE0LB
+
+namespace BusyBeaver.M_1RB0RF_1RC1RF_1LD0RE_HHH0LE_1LA0LE_0RA0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1RC1RF_1LD0RE_HHH0LE_1LA0LE_0RA0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1RC1RF_1LD0RE_HHH0LE_1LA0LE_0RA0LC
+
+namespace BusyBeaver.M_1RB0RF_1RC1RF_1LD1RA_HHH0LE_1LA0LE_0RA0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1RC1RF_1LD1RA_HHH0LE_1LA0LE_0RA0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB0RF_1RC1RF_1LD1RA_HHH0LE_1LA0LE_0RA0LC
+
+namespace BusyBeaver.M_1RB1LA_0RC0RD_1LC1LA_1RE1RD_1LF0LA_HHH0LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LA_0RC0RD_1LC1LA_1RE1RD_1LF0LA_HHH0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LA_0RC0RD_1LC1LA_1RE1RD_1LF0LA_HHH0LE
+
+namespace BusyBeaver.M_1RB1LA_1LA1RC_1RD0RB_1LE0LF_HHH1LD_0LE1LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LA_1LA1RC_1RD0RB_1LE0LF_HHH1LD_0LE1LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LA_1LA1RC_1RD0RB_1LE0LF_HHH1LD_0LE1LA
+
+namespace BusyBeaver.M_1RB1LA_1LC0RA_0LD1RC_HHH0LE_0LF1LE_1RF1LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LA_1LC0RA_0LD1RC_HHH0LE_0LF1LE_1RF1LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LA_1LC0RA_0LD1RC_HHH0LE_0LF1LE_1RF1LB
+
+namespace BusyBeaver.M_1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE
+
+namespace BusyBeaver.M_1RB1LB_1LC0LF_1LD0RC_1RE0LA_1RE1RC_HHH0LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LB_1LC0LF_1LD0RC_1RE0LA_1RE1RC_HHH0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LB_1LC0LF_1LD0RC_1RE0LA_1RE1RC_HHH0LE
+
+namespace BusyBeaver.M_1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RCHHH_1LA0RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RCHHH_1LA0RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RCHHH_1LA0RF
+
+namespace BusyBeaver.M_1RB1LB_1RC0LA_1LD1RF_1RB0LE_HHH1LA_1RD0RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LB_1RC0LA_1LD1RF_1RB0LE_HHH1LA_1RD0RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LB_1RC0LA_1LD1RF_1RB0LE_HHH1LA_1RD0RD
+
+namespace BusyBeaver.M_1RB1LC_1LA1RB_1LD0LA_1RE0RF_HHH1RD_0RE1RB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LC_1LA1RB_1LD0LA_1RE0RF_HHH1RD_0RE1RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LC_1LA1RB_1LD0LA_1RE0RF_HHH1RD_0RE1RB
+
+namespace BusyBeaver.M_1RB1LC_1RC1LB_1LD0RB_0LE1RD_HHH0LF_0LA1LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LC_1RC1LB_1LD0RB_0LE1RD_HHH0LF_0LA1LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LC_1RC1LB_1LD0RB_0LE1RD_HHH0LF_0LA1LF
+
+namespace BusyBeaver.M_1RB1LD_0RC0RB_0LD1RE_0LA1LC_0RB0RF_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_0RC0RB_0LD1RE_0LA1LC_0RB0RF_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_0RC0RB_0LD1RE_0LA1LC_0RB0RF_1LCHHH
+
+namespace BusyBeaver.M_1RB1LD_0RC1RC_1LA1RE_HHH1LE_1RF0RC_0RB0LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_0RC1RC_1LA1RE_HHH1LE_1RF0RC_0RB0LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_0RC1RC_1LA1RE_HHH1LE_1RF0RC_0RB0LF
+
+namespace BusyBeaver.M_1RB1LD_1LC1RA_0LD0LC_0RE1RB_1RD0RF_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1LC1RA_0LD0LC_0RE1RB_1RD0RF_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_1LC1RA_0LD0LC_0RE1RB_1RD0RF_0RBHHH
+
+namespace BusyBeaver.M_1RB1LD_1RC0RB_1LA0RE_1LC1LE_1LF0LA_0REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1RC0RB_1LA0RE_1LC1LE_1LF0LA_0REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_1RC0RB_1LA0RE_1LC1LE_1LF0LA_0REHHH
+
+namespace BusyBeaver.M_1RB1LD_1RC0RB_1LA1RE_1LF0LA_1LA0RD_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1RC0RB_1LA1RE_1LF0LA_1LA0RD_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_1RC0RB_1LA1RE_1LF0LA_1LA0RD_1LCHHH
+
+namespace BusyBeaver.M_1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD0LF_1RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD0LF_1RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD0LF_1RDHHH
+
+namespace BusyBeaver.M_1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD1LF_0LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD1LF_0LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD1LF_0LDHHH
+
+namespace BusyBeaver.M_1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD1LF_1LAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD1LF_1LAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LD_1RC0RB_1LD0RD_1LA0LE_1LD1LF_1LAHHH
+
+namespace BusyBeaver.M_1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD
+
+namespace BusyBeaver.M_1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF
+
+namespace BusyBeaver.M_1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF
+
+namespace BusyBeaver.M_1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH
+
+namespace BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LA_1LA0LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LA_1LA0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LA_1LA0LE
+
+namespace BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LE_1LA0LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LE_1LA0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LE_1LA0LE
+
+namespace BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH
+
+namespace BusyBeaver.M_1RB1RA_1LC1LE_1RF1LD_1RE0LD_0LB0RA_HHH0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC1LE_1RF1LD_1RE0LD_0LB0RA_HHH0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1LC1LE_1RF1LD_1RE0LD_0LB0RA_HHH0RC
+
+namespace BusyBeaver.M_1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_HHH1LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_HHH1LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1LC1RE_0LD0LD_0LE1LF_1LA0RA_HHH1LC
+
+namespace BusyBeaver.M_1RB1RA_1RC0RA_1LD0LA_1LE0LD_1LF0LB_1REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1RC0RA_1LD0LA_1LE0LD_1LF0LB_1REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1RC0RA_1LD0LA_1LE0LD_1LF0LB_1REHHH
+
+namespace BusyBeaver.M_1RB1RA_1RC0RA_1LD1RB_1LE0LD_1LF0LB_1LAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1RC0RA_1LD1RB_1LE0LD_1LF0LB_1LAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1RC0RA_1LD1RB_1LE0LD_1LF0LB_1LAHHH
+
+namespace BusyBeaver.M_1RB1RA_1RC1LB_0LD0RA_1RF1LE_HHH1LF_1LC0LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1RC1LB_0LD0RA_1RF1LE_HHH1LF_1LC0LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1RC1LB_0LD0RA_1RF1LE_HHH1LF_1LC0LF
+
+namespace BusyBeaver.M_1RB1RA_1RC1LB_1LD0RA_1LA0LE_HHH0LF_0RC0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1RC1LB_1LD0RA_1LA0LE_HHH0LF_0RC0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RA_1RC1LB_1LD0RA_1LA0LE_HHH0LF_0RC0LB
+
+namespace BusyBeaver.M_1RB1RC_0LA1RF_1RD0LE_1LC0RB_0RA0LC_0RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_0LA1RF_1RD0LE_1LC0RB_0RA0LC_0RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_0LA1RF_1RD0LE_1LC0RB_0RA0LC_0RDHHH
+
+namespace BusyBeaver.M_1RB1RC_1LC0LE_0RA1RD_1RF1LB_1LD0LA_HHH0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0LE_0RA1RD_1RF1LB_1LD0LA_HHH0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1LC0LE_0RA1RD_1RF1LB_1LD0LA_HHH0RC
+
+namespace BusyBeaver.M_1RB1RC_1LC0RA_1RA0LD_0RE0LF_0LBHHH_0RF0RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0RA_1RA0LD_0RE0LF_0LBHHH_0RF0RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1LC0RA_1RA0LD_0RE0LF_0LBHHH_0RF0RE
+
+namespace BusyBeaver.M_1RB1RC_1LC0RF_1RE0LD_1LB0LD_HHH1RF_0LF0RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC0RF_1RE0LD_1LB0LD_HHH1RF_0LF0RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1LC0RF_1RE0LD_1LB0LD_HHH1RF_0LF0RA
+
+namespace BusyBeaver.M_1RB1RC_1LC1RE_HHH1LD_0LE0LD_1RA0RF_1LD1RB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1LC1RE_HHH1LD_0LE0LD_1RA0RF_1LD1RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1LC1RE_HHH1LD_0LE0LD_1RA0RF_1LD1RB
+
+namespace BusyBeaver.M_1RB1RC_1RC0RA_1LD1RB_1LE0LD_1LF0LB_1LAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RC_1RC0RA_1LD1RB_1LE0LD_1LF0LB_1LAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RC_1RC0RA_1LD1RB_1LE0LD_1LF0LB_1LAHHH
+
+namespace BusyBeaver.M_1RB1RD_1LC0RB_0RD0LC_1LB0LE_1RF0RE_1RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RD_1LC0RB_0RD0LC_1LB0LE_1RF0RE_1RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RD_1LC0RB_0RD0LC_1LB0LE_1RF0RE_1RAHHH
+
+namespace BusyBeaver.M_1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LCHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RE_0RC0RA_0LD0LF_1LA1LD_0RB0LD_1LCHHH
+
+namespace BusyBeaver.M_1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA
+
+namespace BusyBeaver.M_1RB1RE_1LC1RD_1LD0LC_1RA0RF_0RDHHH_0RD0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC1RD_1LD0LC_1RA0RF_0RDHHH_0RD0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RE_1LC1RD_1LD0LC_1RA0RF_0RDHHH_0RD0LB
+
+namespace BusyBeaver.M_1RB1RF_0RC1RE_1LD1RB_0LE0LC_1RA0LC_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_0RC1RE_1LD1RB_0LE0LC_1RA0LC_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_0RC1RE_1LD1RB_0LE0LC_1RA0LC_0RBHHH
+
+namespace BusyBeaver.M_1RB1RF_1LC0LE_1RD0LB_1RA0RC_1RE1LB_0RDHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC0LE_1RD0LB_1RA0RC_1RE1LB_0RDHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1LC0LE_1RD0LB_1RA0RC_1RE1LB_0RDHHH
+
+namespace BusyBeaver.M_1RB1RF_1LC0LF_HHH0LD_0LE1LD_0RF0LB_1RA1RE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC0LF_HHH0LD_0LE1LD_0RF0LB_1RA1RE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1LC0LF_HHH0LD_0LE1LD_0RF0LB_1RA1RE
+
+namespace BusyBeaver.M_1RB1RF_1LC0RD_HHH0LD_1LE0LD_1RA0RF_0RE0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC0RD_HHH0LD_1LE0LD_1RA0RF_0RE0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1LC0RD_HHH0LD_1LE0LD_1RA0RF_0RE0LB
+
+namespace BusyBeaver.M_1RB1RF_1LC1RE_HHH0LD_1LE0LD_1RA0RF_0RE0LB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC1RE_HHH0LD_1LE0LD_1RA0RF_0RE0LB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1LC1RE_HHH0LD_1LE0LD_1RA0RF_0RE0LB
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LA0LB_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LA0LB_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LA0LB_0RBHHH
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LB0LB_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LB0LB_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LB0LB_0RBHHH
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_0RBHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_0RBHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_0RBHHH
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1RAHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1RAHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1RAHHH
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1REHHH
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1REHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1REHHH
+
+namespace BusyBeaver.M_1RB1RF_1RC1RA_1LD0LA_HHH0LE_0LF1LE_0RA0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC1RA_1LD0LA_HHH0LE_0LF1LE_0RA0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RB1RF_1RC1RA_1LD0LA_HHH0LE_0LF1LE_0RA0LC
+
+namespace BusyBeaver.M_1RBHHH_0LC1RF_1LE0RD_0RB1RC_1RD0LE_0RC1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_0LC1RF_1LE0RD_0RB1RC_1RD0LE_0RC1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_0LC1RF_1LE0RD_0RB1RC_1RD0LE_0RC1RA
+
+namespace BusyBeaver.M_1RBHHH_0RC0LD_1RD1RC_1LB0LE_1LF0RA_0LD1LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_0RC0LD_1RD1RC_1LB0LE_1LF0RA_0LD1LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_0RC0LD_1RD1RC_1LB0LE_1LF0RA_0LD1LA
+
+namespace BusyBeaver.M_1RBHHH_0RC0RA_1RD1RC_1LE1LF_0LB0LD_0LE0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_0RC0RA_1RD1RC_1LE1LF_0LB0LD_0LE0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_0RC0RA_1RD1RC_1LE1LF_0LB0LD_0LE0RC
+
+namespace BusyBeaver.M_1RBHHH_0RC1LF_0RD1RB_1LE1RC_0LB0LE_0LE0LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_0RC1LF_0RD1RB_1LE1RC_0LB0LE_0LE0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_0RC1LF_0RD1RB_1LE1RC_0LB0LE_0LE0LA
+
+namespace BusyBeaver.M_1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF
+
+namespace BusyBeaver.M_1RBHHH_1LC0LF_1RD1LB_1RE0RD_1LB0RB_1LB0LA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC0LF_1RD1LB_1RE0RD_1LB0RB_1LB0LA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC0LF_1RD1LB_1RE0RD_1LB0RB_1LB0LA
+
+namespace BusyBeaver.M_1RBHHH_1LC0RC_0LD0LC_1RE1RA_0RD1LF_0LE0LF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC0RC_0LD0LC_1RE1RA_0RD1LF_0LE0LF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC0RC_0LD0LC_1RE1RA_0RD1LF_0LE0LF
+
+namespace BusyBeaver.M_1RBHHH_1LC1LB_1LD0LB_1RE1LC_1RF0RE_0RA0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC1LB_1LD0LB_1RE1LC_1RF0RE_0RA0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC1LB_1LD0LB_1RE1LC_1RF0RE_0RA0RC
+
+namespace BusyBeaver.M_1RBHHH_1LC1LB_1LD0LB_1RE1LC_1RF0RE_1RA0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC1LB_1LD0LB_1RE1LC_1RF0RE_1RA0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC1LB_1LD0LB_1RE1LC_1RF0RE_1RA0RC
+
+namespace BusyBeaver.M_1RBHHH_1LC1LD_1LD0LB_1RE1LC_1RF0RE_1RA0RC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC1LD_1LD0LB_1RE1LC_1RF0RE_1RA0RC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC1LD_1LD0LB_1RE1LC_1RF0RE_1RA0RC
+
+namespace BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB
+
+namespace BusyBeaver.M_1RBHHH_1RC0LC_1RD0RF_1LE1RC_1LB0LE_1RC1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC0LC_1RD0RF_1LE1RC_1LB0LE_1RC1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC0LC_1RD0RF_1LE1RC_1LB0LE_1RC1RA
+
+namespace BusyBeaver.M_1RBHHH_1RC0RF_1LD1RB_1LE0LD_1RB0LB_1RB1RA
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC0RF_1LD1RB_1LE0LD_1RB0LB_1RB1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC0RF_1LD1RB_1LE0LD_1RB0LB_1RB1RA
+
+namespace BusyBeaver.M_1RBHHH_1RC0RF_1RD0RA_1LE1RB_1LB0LE_0RA0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC0RF_1RD0RA_1LE1RB_1LB0LE_0RA0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC0RF_1RD0RA_1LE1RB_1LB0LE_0RA0LC
+
+namespace BusyBeaver.M_1RBHHH_1RC0RF_1RD0RA_1LE1RB_1LB0LE_0RB0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC0RF_1RD0RA_1LE1RB_1LB0LE_0RB0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC0RF_1RD0RA_1LE1RB_1LB0LE_0RB0LC
+
+namespace BusyBeaver.M_1RBHHH_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE
+
+namespace BusyBeaver.M_1RBHHH_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC
+
+namespace BusyBeaver.M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+theorem is_not_halt : IsNotHalt target := by sorry
+
+end BusyBeaver.M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF

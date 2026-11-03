@@ -2,43 +2,26 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1LF_1RC0RB_1RD0RF_1RE---_1LF1LA_1LA0LE` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.WordCalculusH
+public import BusyBeaver.Calculi.WordCalculusI
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1LF_1RC0RB_1RD0RF_1RE---_1LF1LA_1LA0LE`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LA_1LA0LE
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LA_1LA0LE"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1LF_1RC0RB_1RD0RF_1RE---_1LF1LA_1LA0LE`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 3, 1 => none
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 4, Stmt.write 0 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
 
 set_option linter.unusedVariables false
@@ -194,9 +177,7 @@ lemma zMultiStepMap_0813 (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     | none => rfl
     | some c' => exact zStepMap_0813 c'
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg h_reach
@@ -210,5 +191,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   have h_some := zIm h_map
   rw [zMs,hn] at h_some
   exact h_some
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LA_1LA0LE

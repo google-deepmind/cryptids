@@ -2,43 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LB---` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LB---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 3, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 1, Stmt.write 1 Dir.left)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 -- Holdout #117: 1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LB---
 
 def A : Fin 6 := 0
@@ -72,16 +53,16 @@ def encRight : List Bool → ListBlank (Fin 2)
 
 macro "finish" : tactic => `(tactic| (
   refine ⟨0, ?_⟩
-  simp only [zero_cons_default, encRight_nil, encRight_false, encRight_true,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, zero_cons_default, encRight_nil, encRight_false, encRight_true,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]
   try rfl))
 
 macro "step" : tactic => `(tactic| (
   try refine stepPlus_stepStar ?_
-  try simp only [encRight_nil, encRight_false, encRight_true,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, encRight_nil, encRight_false, encRight_true,
     Turing.ListBlank.head_cons, default_head]
   apply step_stepStar_stepPlus (by rfl)
-  simp only [Turing.Tape.move, encRight_nil, encRight_false, encRight_true,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, encRight_nil, encRight_false, encRight_true,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
     zero_cons_default, default_head, default_tail]))
 
@@ -658,7 +639,7 @@ lemma not_halt_of_inv (Inv : Cfg (Fin 2) (Fin 6) → Prop)
   intro c ⟨m, hm⟩
   obtain ⟨n, c', hmn, _, hn⟩ := inv_arb_long Inv h_init h_step (m + 1)
   have h_add := multiStep_add target_tm (init []) (m + 1) (n - (m + 1))
-  rw [Nat.add_sub_of_le hmn, multiStep_succ, hm] at h_add
+  rw [Nat.add_sub_of_le hmn, multiStep_succ', hm] at h_add
   change multiStep target_tm (init []) n =
     (step target_tm c).bind (fun c₂ => multiStep target_tm c₂ (n - (m + 1))) at h_add
   cases h_step_c : step target_tm c with
@@ -670,9 +651,7 @@ lemma not_halt_of_inv (Inv : Cfg (Fin 2) (Fin 6) → Prop)
 
 def Valid (c : Cfg (Fin 2) (Fin 6)) : Prop := ∃ k : Nat, c = State k
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   apply not_halt_of_inv Valid
@@ -680,5 +659,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   · intro c ⟨k, hk⟩
     subst hk
     exact ⟨State (k + 1), ⟨k + 1, rfl⟩, state_step k⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH

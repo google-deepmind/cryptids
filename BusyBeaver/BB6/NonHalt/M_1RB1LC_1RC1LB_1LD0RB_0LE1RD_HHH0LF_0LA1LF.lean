@@ -2,43 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1LC_1RC1LB_1LD0RB_0LE1RD_---0LF_0LA1LF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1LC_1RC1LB_1LD0RB_0LE1RD_---0LF_0LA1LF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LC_1RC1LB_1LD0RB_0LE1RD_HHH0LF_0LA1LF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LC_1RC1LB_1LD0RB_0LE1RD_HHH0LF_0LA1LF"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1LC_1RC1LB_1LD0RB_0LE1RD_---0LF_0LA1LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 1 Dir.left)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 3, Stmt.write 1 Dir.right)
-  | 4, 0 => none
-  | 4, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 1 => some (some 5, Stmt.write 1 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 variable {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev stC : Fin 6 := 2
 abbrev stD : Fin 6 := 3
@@ -126,10 +106,10 @@ local macro "finish" : tactic =>
 local macro "gstep" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
     refine z03 (by
-      (try simp only [pow_zero_eq, pow_succ_eq, List.singleton_append, List.cons_append,
+      (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, pow_zero_eq, pow_succ_eq, List.singleton_append, List.cons_append,
         List.nil_append, append_nil, append_cons, Turing.ListBlank.head_cons, zDh]);
       rfl) ?_ <;>
-    simp only [pow_zero_eq, pow_succ_eq, List.singleton_append, List.cons_append, List.nil_append,
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, pow_zero_eq, pow_succ_eq, List.singleton_append, List.cons_append, List.nil_append,
       append_nil, append_cons, Turing.Tape.move, Turing.ListBlank.head_cons,
       Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt])
 local macro "execute" : tactic =>
@@ -167,7 +147,7 @@ lemma scanL_F' (a : ℕ) (l r : zB) :
     (⟨some stF, ⟨s1, ([s1] ^ a) +> (s0 ∷ l), r⟩⟩ : Cfg (Fin 2) (Fin 6)) [tm]⊢⁺
     (⟨some stF, ⟨s0, l, ([s1] ^ (a + 1)) +> r⟩⟩ : Cfg (Fin 2) (Fin 6)) := by
   induction a generalizing r with
-  | zero => simp only [ones_zero_eq, list_nat_repeat, List.singleton_append, List.nil_append,
+  | zero => simp only [ones_zero_eq, List.singleton_append, List.nil_append,
       append_cons, append_nil]; execute
   | succ a ih =>
     rw [ones_succ_eq]
@@ -200,7 +180,7 @@ lemma scanR_D (d : ℕ) (l r : zB) :
     (⟨some stD, ⟨s1, l, ([s1] ^ d) +> (s0 ∷ r)⟩⟩ : Cfg (Fin 2) (Fin 6)) [tm]⊢⁺
     (⟨some stD, ⟨s0, ([s1] ^ (d + 1)) +> l, r⟩⟩ : Cfg (Fin 2) (Fin 6)) := by
   induction d generalizing l with
-  | zero => simp only [ones_zero_eq, list_nat_repeat, List.singleton_append, List.nil_append,
+  | zero => simp only [ones_zero_eq, List.singleton_append, List.nil_append,
       append_cons, append_nil]; execute
   | succ d ih =>
     rw [ones_succ_eq]
@@ -1669,9 +1649,7 @@ lemma multiStep_none_of_step_none (cfg : Cfg (Fin 2) (Fin 6)) (h0 : step tm cfg 
   | zero => simp [zMs, h0]
   | succ r ih => rw [zMs, ih]; rfl
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg ⟨n, hn⟩
@@ -1685,5 +1663,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     rw [multiStep_none_of_step_none cfg hstep r] at hm
     cases hm
   | some _ => rfl
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LC_1RC1LB_1LD0RB_0LE1RD_HHH0LF_0LA1LF

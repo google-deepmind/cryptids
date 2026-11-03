@@ -2,25 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_---1LE` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_---1LE`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_---1LE`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
   | 0, 1 => some (some 3, Stmt.write 0 Dir.right)
@@ -35,18 +34,17 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => none
   | 5, 1 => some (some 4, Stmt.write 1 Dir.left)
 
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+theorem target_eq_target_tm : target = target_tm := by
+  funext q a
+  fin_cases q <;> fin_cases a <;> simp [target, machine, ConjectureMachines.Machine.toBB, ConjectureMachines.Machine.ofRows, target_tm]
 set_option linter.unusedSimpArgs false
 
-def A : Fin 6 := 0
-def B : Fin 6 := 1
-def C : Fin 6 := 2
-def D : Fin 6 := 3
-def E : Fin 6 := 4
-def F : Fin 6 := 5
+abbrev A : Fin 6 := 0
+abbrev B : Fin 6 := 1
+abbrev C : Fin 6 := 2
+abbrev D : Fin 6 := 3
+abbrev E : Fin 6 := 4
+abbrev F : Fin 6 := 5
 
 local infixr:67 (priority := high) " >> " =>
   (ListBlank.cons : Fin 2 → ListBlank (Fin 2) → ListBlank (Fin 2))
@@ -289,7 +287,6 @@ lemma peelState_many (n k a r : Nat) :
     have ha : 0 + a = a := Nat.zero_add a
     have hr : 0 + r = r := Nat.zero_add r
     rw [ha, hr, Nat.add_zero]
-    exact ⟨0, rfl⟩
   | succ n ih =>
     have ha : (n + 1) + a = n + a + 1 := by omega
     have hr : (n + 1) + r = n + r + 1 := by omega
@@ -496,9 +493,7 @@ lemma loop_step (n : Nat) :
     rwa [heq4] at hge
   exact q7 h1 (zPs h2)
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine isNotHalt_of_invariant target_tm Inv ?_ ?_
@@ -506,5 +501,9 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   · intro c hc
     rcases hc with ⟨n, rfl⟩
     exact ⟨cfgB (n + 2) (2 * (n + 2)), loop_step n, ⟨n + 1, rfl⟩⟩
+
+theorem is_not_halt : IsNotHalt target := by
+  rw [target_eq_target_tm]
+  exact is_does_not_halt
 
 end BusyBeaver.M_1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE

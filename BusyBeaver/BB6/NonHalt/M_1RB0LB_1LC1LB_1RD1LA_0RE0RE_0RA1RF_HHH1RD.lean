@@ -2,43 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_---1RD` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_---1RD`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_---1RD`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 1 Dir.left)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 5, 0 => none
-  | 5, 1 => some (some 3, Stmt.write 1 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 -- ============================================================================
 -- Section 1: Execution Helpers, Closed-Invariant Criterion & Stack Rules
 -- ============================================================================
@@ -137,19 +119,7 @@ theorem closed_inv_does_not_halt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
 omit [Inhabited Γ] in
 @[simp]
-theorem list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m := match m with
-  | 0 => by simp_rw [HPow.hPow, add_zero, list_nat_repeat, List.append_nil]
-  | m + 1 => by
-    rw [add_comm m 1, ← add_assoc, add_comm 1 m, list_pow_add]
-    simp only [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
-    rw [← List.append_assoc, ← List.append_assoc, List.append_cancel_right_eq]
-    induction n with
-    | zero => simp
-    | succ n ih => simpa
 
-omit [Inhabited Γ] in
-theorem list_pow_add_comm (l : List Γ) (n m : Nat) : l^n ++ l^m = l^m ++ l^n := by
-  rw [← list_pow_add, add_comm, list_pow_add]
 
 lemma listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
@@ -222,12 +192,12 @@ lemma encLeft_decomp (L : List ℕ) :
     encLeft1 L = ((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L)) := by
   cases L <;> simp [headWeight, encLeft1]
 
-macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, encRight_tail_cons_one, encRight_bumpHead_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
+macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, encRight_tail_cons_one, encRight_bumpHead_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
 macro "step" : tactic => `(tactic| (
   try refine stepPlus_stepStar ?_
-  try simp only [listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]
   apply step_stepStar_stepPlus (by rfl)
-  simp only [Turing.Tape.move, listblank_append_cons, listblank_append_nil,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
     zero_cons_default, default_head, default_tail]))
 macro "execute" n:num : tactic => `(tactic| (
@@ -248,26 +218,26 @@ lemma b_walk_left (k : ℕ) (l r : ListBlank (Fin 2)) :
     (l <{{B}} ((([1] : List (Fin 2)) ^ k) +> r)) := by
   induction k generalizing l r with
   | zero =>
-    dsimp [HPow.hPow, list_nat_repeat]
-    exact ⟨0, rfl⟩
+    dsimp [HPow.hPow]
+    try exact ⟨0, rfl⟩
   | succ k ih =>
     have h_split : k + 1 = 1 + k := by omega
     rw [h_split, list_pow_add, listblank_append_right_assoc]
     have h1 : (((l <+ (([1] : List (Fin 2)) ^ k)) <+ (([1] : List (Fin 2)) ^ 1)) <{{B}} r)
         [target_tm]⊢⁺
         ((l <+ (([1] : List (Fin 2)) ^ k)) <{{B}} (([1] : List (Fin 2)) ^ 1 +> r)) := by
-      dsimp [HPow.hPow, list_nat_repeat]
+      dsimp [HPow.hPow]
       execute 1
     refine stepStar_trans (stepPlus_stepStar h1) ?_
     refine stepStar_trans (ih l (([1] : List (Fin 2)) ^ 1 +> r)) ?_
     rw [← listblank_append_right_assoc, list_pow_add_comm]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 theorem rule_BR_nil (R : List ℕ) :
     (cfg_BR [] R) [target_tm]⊢⁺ (cfg_ER [0] R) := by
   unfold cfg_BR cfg_ER
   rw [encLeft_cons, encLeft_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 theorem rule_BR_zero (L R : List ℕ) :
@@ -278,7 +248,7 @@ theorem rule_BR_zero (L R : List ℕ) :
   have h_pre : (⟨some B, ⟨0, ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L))).cons 0) <+ (([1] : List (Fin 2)) ^ (0 + 1)), (([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
       ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L))) <{{B}} ((([1] : List (Fin 2)) ^ 3) +> ((([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)))) := by
-    dsimp [HPow.hPow, list_nat_repeat]
+    dsimp [HPow.hPow]
     execute 5
   refine stepPlus_stepStar_stepPlus h_pre ?_
   refine stepStar_trans (b_walk_left (headWeight L) ((encLeft1 L.tail).cons 0) ((([1] : List (Fin 2)) ^ 3) +> ((([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)))) ?_
@@ -292,7 +262,7 @@ theorem rule_BR_one (L R : List ℕ) :
     (cfg_BR (1 :: L) R) [target_tm]⊢⁺ (cfg_BR L (0 :: (tailWeight R + 1) :: R.tail)) := by
   unfold cfg_BR
   rw [encLeft_cons 1 L]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 theorem rule_BR_ge2 (a : ℕ) (L R : List ℕ) :
@@ -305,7 +275,7 @@ theorem rule_BR_ge2 (a : ℕ) (L R : List ℕ) :
   have h_pre : (⟨some B, ⟨0, (((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1))) <+ (([1] : List (Fin 2)) ^ 2), (encRight1 R).tail⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
       ((((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1))) <{{B}} ((encRight1 ((tailWeight R + 1) :: R.tail)).cons 0)) := by
-    dsimp [HPow.hPow, list_nat_repeat]
+    dsimp [HPow.hPow]
     execute 3
   refine stepPlus_stepStar_stepPlus h_pre ?_
   refine stepStar_trans (b_walk_left (a + 1) ((encLeft1 L).cons 0) ((encRight1 ((tailWeight R + 1) :: R.tail)).cons 0)) ?_
@@ -317,14 +287,14 @@ theorem rule_ER_nil (L : List ℕ) :
     (cfg_ER L []) [target_tm]⊢⁺ (cfg_BR L [3]) := by
   unfold cfg_ER cfg_BR
   rw [encRight_cons 3 [], encRight_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 7
 
 theorem rule_ER_zero_zero_nil (L : List ℕ) :
     (cfg_ER L [0, 0]) [target_tm]⊢⁺ (cfg_BR (bumpHead L) [3]) := by
   unfold cfg_ER cfg_BR
   rw [encRight_cons 0 [0], encRight_cons 0 [], encRight_cons 3 [], encRight_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 12
 
 theorem rule_ER_zero_zero_cons (e : ℕ) (L R' : List ℕ) :
@@ -332,28 +302,28 @@ theorem rule_ER_zero_zero_cons (e : ℕ) (L R' : List ℕ) :
     (cfg_ER (bumpHead (bumpHead L)) ((e + 2) :: R')) := by
   unfold cfg_ER
   rw [encRight_cons 0 (0 :: e :: R'), encRight_cons 0 (e :: R'), encRight_cons e R', encRight_cons (e + 2) R']
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 12
 
 theorem rule_ER_zero_succ (d : ℕ) (L R' : List ℕ) :
     (cfg_ER L (0 :: (d + 1) :: R')) [target_tm]⊢⁺ (cfg_ER (bumpHead L) (0 :: d :: R')) := by
   unfold cfg_ER
   rw [encRight_cons 0 ((d + 1) :: R'), encRight_cons (d + 1) R', encRight_cons 0 (d :: R'), encRight_cons d R']
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 5
 
 theorem rule_ER_two (L R' : List ℕ) :
     (cfg_ER L (2 :: R')) [target_tm]⊢⁺ (cfg_ER (1 :: L) (bumpHead R')) := by
   unfold cfg_ER
   rw [encRight_cons 2 R', encLeft_cons 1 L]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 3
 
 theorem rule_ER_ge3 (d : ℕ) (L R' : List ℕ) :
     (cfg_ER L ((d + 3) :: R')) [target_tm]⊢⁺ (cfg_ER (1 :: L) (d :: R')) := by
   unfold cfg_ER
   rw [encRight_tail_decomp ((d + 3) :: R'), encRight_tail_decomp (d :: R'), encLeft_cons 1 L]
-  dsimp [tailWeight, List.tail, HPow.hPow, list_nat_repeat]
+  dsimp [tailWeight, List.tail, HPow.hPow]
   execute 3
 
 theorem rule_ER_peel_all (L R : List ℕ) (d k : ℕ) :
@@ -362,7 +332,7 @@ theorem rule_ER_peel_all (L R : List ℕ) (d k : ℕ) :
   induction k generalizing L with
   | zero =>
     simp only [Nat.mul_zero, Nat.add_zero, List.replicate, List.nil_append]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ k ih =>
     have h_arith : d + 3 * (k + 1) = (d + 3 * k) + 3 := by omega
     rw [h_arith]
@@ -371,7 +341,7 @@ theorem rule_ER_peel_all (L R : List ℕ) (d k : ℕ) :
     have h_rep : List.replicate k 1 ++ (1 :: L) = List.replicate (k + 1) 1 ++ L := by
       rw [List.replicate_succ', List.append_assoc, List.singleton_append]
     rw [h_rep]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 theorem rule_E00_peel_all (a d k : ℕ) (L R : List ℕ) :
     (cfg_E00 (a :: L) ((d + k) :: R)) [target_tm]⊢*
@@ -380,7 +350,7 @@ theorem rule_E00_peel_all (a d k : ℕ) (L R : List ℕ) :
   induction k generalizing a with
   | zero =>
     simp only [Nat.add_zero]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ k ih =>
     have h_arith : d + (k + 1) = (d + k) + 1 := by omega
     rw [h_arith]
@@ -390,13 +360,13 @@ theorem rule_E00_peel_all (a d k : ℕ) (L R : List ℕ) :
     refine stepStar_trans (ih (a + 1)) ?_
     have h_eq : (a + 1) + k = a + (k + 1) := by omega
     rw [h_eq]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 theorem init_to_cfg_BR :
     (init []) [target_tm]⊢⁺ (cfg_BR [0] []) := by
   unfold cfg_BR
   rw [encLeft_cons, encLeft_nil, encRight_nil]
-  dsimp [HPow.hPow, list_nat_repeat]
+  dsimp [HPow.hPow]
   execute 1
 
 -- ============================================================================
@@ -474,7 +444,7 @@ lemma br_sweep_midR (A B : List ℕ) (hB : B ≠ []) :
   induction A generalizing B with
   | nil =>
     simp only [incList_nil, List.nil_append, List.reverse_nil]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | cons a A' ih =>
     simp only [incList_cons, List.cons_append, List.reverse_cons, List.append_assoc]
     refine stepStar_trans (stepPlus_stepStar (rule_BR_midR a (incList A' ++ [0]) B hB)) ?_
@@ -575,7 +545,7 @@ lemma er_even_prefix : ∀ (P : List ℕ), P.length % 2 = 0 → ∀ (A rest : Li
     (cfg_ER (incList (A ++ fromQ (stepBlock P)).reverse ++ [0]) (toR_B rest))
   | [], _, A, rest, _ => by
     simp [fromQ, stepBlock]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | [q], hP, _, _, _ => by
     simp at hP
   | q :: y :: P', hP, A, rest, hrest => by
@@ -687,7 +657,7 @@ lemma er_peel_two_chain (C : List ℕ) (L : List ℕ) :
       rw [List.replicate_add, List.replicate_add, List.replicate_one]
       simp [List.append_assoc]
     rw [h_rep]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
 
 lemma er_two_end_base (k : ℕ) (C A : List ℕ) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B ((3 * k + 2) :: fromQ (C ++ [1])))) [target_tm]⊢⁺
@@ -2332,11 +2302,11 @@ lemma era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
   obtain ⟨k, rfl⟩ := hinv
   exact ⟨_, top_era_step k, ⟨k + 1, rfl⟩⟩
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm :=
   closed_inv_does_not_halt target_tm EraInv era_inv_init era_inv_step
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD

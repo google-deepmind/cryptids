@@ -2,44 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LD---` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LD---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LD---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 1, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -1408,7 +1387,7 @@ lemma z28 (len k c J V : Nat) (w : zF) (l r : zB)
       (z18 (LC len (k + c) l) (w +> r)) [z00]⊢* (z18 (LC len k l) (w' +> r)) := by
   induction c generalizing V w with
   | zero =>
-    refine ⟨w,by simpa using hm,by simp; exact ⟨0,rfl⟩⟩
+    refine ⟨w,by simpa using hm,by simp; try exact ⟨0,rfl⟩⟩
   | succ c ih =>
     rcases z26 hm (by omega) with ⟨w1,hm1,hr⟩
     rcases ih (1 + V) w1 (by omega) (by omega) hm1 with ⟨w',hm',hrun⟩
@@ -1677,7 +1656,7 @@ lemma z2o (n : Nat) (l : zB) :
 lemma z2p (len k c v : Nat) (l : zB) (hk : k + c < 2 ^ len) :
     (z18 (LC len (k + c) l) (RC v)) [z00]⊢* (z18 (LC len k l) (RC (v + c))) := by
   induction c generalizing v with
-  | zero => simp; exact ⟨0,rfl⟩
+  | zero => simp; try exact ⟨0,rfl⟩
   | succ c ih =>
     have hkc : k + (c + 1) = 1 + (k + c) := by omega
     rw [hkc]
@@ -3623,7 +3602,7 @@ lemma z4m : ∀ (t n v : Nat) (w : zF) (r : zB),
     zDg n v w ->
     (z18 (LC (n + t) 0 ldh) (w +> (d ^ t) +> z +> r)) [z00]⊢*
     (z18 (LC (n + t) 0 ldh) ((d ^ t) +> w +> z +> (o1 ^ t) +> r))
-  | 0,n,v,w,r,_ => by simp; exact ⟨0,rfl⟩
+  | 0,n,v,w,r,_ => by simp; try exact ⟨0,rfl⟩
   | t + 1,n,v,w,r,h => by
     have htop := z4i h
     have hrun := z4m t (n + 1) (v + 2 ^ n) (w ++ d) r htop
@@ -3646,7 +3625,7 @@ lemma z4n : ∀ (u n v : Nat) (w : zF) (r : zB),
     zDg n v w ->
     (z18 (LC (n + u) 0 ldh) (w +> (z ^ u) +> r)) [z00]⊢*
     (z18 (LC (n + u) 0 ldh) ((d ^ u) +> w +> (o1 ^ u) +> r))
-  | 0,n,v,w,r,_ => by simp; exact ⟨0,rfl⟩
+  | 0,n,v,w,r,_ => by simp; try exact ⟨0,rfl⟩
   | u + 1,n,v,w,r,h => by
     have htop := z2d h
     have hrun := z4n u (n + 1) v (w ++ z) r htop
@@ -4895,9 +4874,7 @@ lemma z5O : ∀ (n : Nat) (c : Cfg (Fin 2) (Fin 6)),
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -4920,5 +4897,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   dsimp [Option.bind] at hstep
   rw [hstep]
   rfl
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH

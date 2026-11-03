@@ -2,21 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RC---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+import Mathlib.Tactic.Ring
+import Mathlib.Tactic.Positivity
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RC---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RCHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RCHHH"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
@@ -35,7 +37,9 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 2, Stmt.write 1 Dir.right)
   | 5, 1 => none
 
--- END TRUSTED DEFINITIONS
+theorem target_eq : target = target_tm := by
+  funext q s
+  fin_cases q <;> fin_cases s <;> rfl
 
 -- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
 
@@ -1762,29 +1766,29 @@ theorem rule_right_pow (l r : ListBlank (Fin 2)) (n k : Nat) :
   induction k generalizing l with
   | zero =>
     simp only [pow_zero_list, listblank_append_nil]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ k ih =>
     rw [pow_succ_list, listblank_append_right_assoc]
     refine (rule_right l _ n).trans ((ih (S_word n +> l)).trans ?_)
     rw [ListBlank.append_pow_comm, ← listblank_append_right_assoc, ← pow_succ_list]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
 
 theorem rule_left_pow (l r : ListBlank (Fin 2)) (n k : Nat) :
     ReachesStar target_tm (CfgL (((S_word n) ^ k) +> l) r) (CfgL l (((D_word n) ^ k) +> r)) := by
   induction k generalizing r with
   | zero =>
     simp only [pow_zero_list, listblank_append_nil]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ k ih =>
     rw [pow_succ_list, listblank_append_right_assoc]
     refine (rule_left _ r n).trans ((ih (D_word n +> r)).trans ?_)
     rw [ListBlank.append_pow_comm, ← listblank_append_right_assoc, ← pow_succ_list]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
 
 theorem right_list (v : Digits) (l r : ListBlank (Fin 2)) :
     ReachesStar target_tm (CfgR l (plug (ds v) r)) (CfgR (plug (ss v) l) r) := by
   induction v generalizing l with
-  | nil => exact ReachesStar.refl _ _
+  | nil => try exact ReachesStar.refl _ _
   | cons nk v ih =>
     rcases nk with ⟨n, k⟩
     rw [ds_cons, ss_cons, plug_app]
@@ -1794,7 +1798,7 @@ theorem right_list (v : Digits) (l r : ListBlank (Fin 2)) :
 theorem left_list (v : Digits) (l r : ListBlank (Fin 2)) :
     ReachesStar target_tm (CfgL (plug (ss v) l) r) (CfgL l (plug (ds v) r)) := by
   induction v generalizing l r with
-  | nil => exact ReachesStar.refl _ _
+  | nil => try exact ReachesStar.refl _ _
   | cons nk v ih =>
     rcases nk with ⟨n, k⟩
     rw [ds_cons, ss_cons, plug_app]
@@ -1866,13 +1870,13 @@ theorem pairsR (k n : Nat) (l r : ListBlank (Fin 2)) :
   induction k generalizing l with
   | zero =>
     simp only [Nat.zero_mul, pow_zero_list, listblank_append_nil]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ k ih =>
     have hmul : (k + 1) * 2 = 2 + k * 2 := by omega
     rw [hmul, pow_two_add, listblank_append_right_assoc, listblank_append_right_assoc]
     refine (rule_pairR l _ n).trans ((ih (PL_word n +> l)).trans ?_)
     rw [ListBlank.append_pow_comm, ← listblank_append_right_assoc, ← pow_succ_list]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
 
 theorem loopL {k : Nat} {r s : ListBlank (Fin 2)} (h : calls k r s) (l : ListBlank (Fin 2)) (b : Nat) :
     ReachesStar target_tm
@@ -1881,7 +1885,7 @@ theorem loopL {k : Nat} {r s : ListBlank (Fin 2)} (h : calls k r s) (l : ListBla
   induction h generalizing l with
   | zero r =>
     simp only [pow_zero_list, listblank_append_nil]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | @succ n r0 u t hcall htail ih =>
     rw [pow_succ_list [1, 1, 1] n, listblank_append_right_assoc]
     exact (rule_restart _ r0 b).trans ((hcall _).trans (ih l))
@@ -1893,7 +1897,7 @@ theorem loopR {k : Nat} {r s : ListBlank (Fin 2)} (h : calls k r s) (l : ListBla
   induction h generalizing l with
   | zero r =>
     simp only [pow_zero_list, listblank_append_nil]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | @succ n r0 u t hcall htail ih =>
     rw [pow_succ_list [1, 1, 1] n, listblank_append_right_assoc]
     exact (hcall _).trans ((rule_restart _ u b).trans (ih l))
@@ -1979,7 +1983,7 @@ theorem returnsP_J (k n : Nat) {r s : ListBlank (Fin 2)} (h : calls (k * (1 + n 
     rw [hz] at h
     cases h
     simp only [pow_zero_list, listblank_append_nil]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ k ih =>
     have hmul : (k + 1) * (1 + n * 2) = (1 + n * 2) + k * (1 + n * 2) := by ring
     rw [hmul] at h
@@ -1991,7 +1995,7 @@ theorem returnsP_J (k n : Nat) {r s : ListBlank (Fin 2)} (h : calls (k * (1 + n 
     simp only [pow_succ_list, pow_zero_list, List.append_nil] at hv'
     refine (ih hv').trans ?_
     rw [ListBlank.append_pow_comm, ← listblank_append_right_assoc, ← pow_succ_list]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
 
 theorem returnsP_L (k n : Nat) {r s : ListBlank (Fin 2)} (h : calls ((1 + k) * (1 + n * 2)) r s) (l : ListBlank (Fin 2)) :
     ReachesStar target_tm
@@ -2400,13 +2404,14 @@ theorem high_valid (x : High) : valid (high_rule x) := by
     intro u l r _ _ hr
     dsimp only [high_rule, Mode.hat, plug]
     have ht := tail_spec u 1 t r (by omega) hr
-    have h1 : (if match t with | .TDefect0 _ _ _ _ | .TDefect1 _ _ _ => true | _ => false then 1 else 1) = 1 := by
-      cases t <;> rfl
-    rw [h1] at ht
-    cases ht with
-    | @succ _ _ s _ hcall hzero =>
-      cases hzero
-      exact hcall l
+    revert ht
+    cases t
+    all_goals
+      intro ht
+      cases ht with
+      | @succ _ _ s _ hcall hzero =>
+        cases hzero
+        exact hcall l
   | Pairs n k =>
     intro u l r hu _ _; dsimp only [high_rule, mk_rule, imm, Mode.hat, withNat] at hu ⊢
     rw [hu rfl]
@@ -2420,13 +2425,14 @@ theorem high_valid (x : High) : valid (high_rule x) := by
     have hh : 0 < h := by
       cases t <;> cases fromR <;> dsimp [h, h0, tail_calls] <;> omega
     have ht := tail_spec u h t r hh hr
-    have htc : (if match t with | .TDefect0 _ _ _ _ | .TDefect1 _ _ _ => true | _ => false then 1 else h) = h := by
-      cases t <;> rfl
-    rw [htc] at ht
-    rw [plug_app, plug_power, plug_run, plug_power]
-    cases fromR <;> dsimp [Mode.hat, SymWord.toList]
-    · exact loopL ht l b
-    · exact loopR_to_L' hh ht l b
+    revert ht
+    cases t
+    all_goals
+      intro ht
+      rw [plug_app, plug_power, plug_run, plug_power]
+      cases fromR <;> dsimp [Mode.hat, SymWord.toList]
+      · exact loopL ht l b
+      · exact loopR_to_L' hh ht l b
   | LoopsJ k b t =>
     intro u l r _ _ hr
     dsimp only [high_rule, withNat, Mode.hat, SymWord.toList, plug]
@@ -2434,11 +2440,12 @@ theorem high_valid (x : High) : valid (high_rule x) := by
     have hh : 0 < h := by
       cases t <;> dsimp [h, tail_calls] <;> omega
     have ht := tail_spec u h t r hh hr
-    have htc : (if match t with | .TDefect0 _ _ _ _ | .TDefect1 _ _ _ => true | _ => false then 1 else h) = h := by
-      cases t <;> rfl
-    rw [htc] at ht
-    rw [plug_app, plug_power, plug_run, plug_power]
-    exact loopJ' hh ht l b
+    revert ht
+    cases t
+    all_goals
+      intro ht
+      rw [plug_app, plug_power, plug_run, plug_power]
+      exact loopJ' hh ht l b
   | Returns fromJ n k t =>
     intro u l r _ _ hr
     dsimp only [high_rule, withNat]
@@ -2449,13 +2456,14 @@ theorem high_valid (x : High) : valid (high_rule x) := by
       | .TDefect1 m v _ => Tail.TBlank m v
     have hpos : 0 < (1 + k) * (1 + n * 2) := by positivity
     have ht := tail_spec u ((1 + k) * (1 + n * 2)) t_clean r hpos hr
-    have htc : (if match t_clean with | .TDefect0 _ _ _ _ | .TDefect1 _ _ _ => true | _ => false then 1 else (1 + k) * (1 + n * 2)) = (1 + k) * (1 + n * 2) := by
-      cases t <;> rfl
-    rw [htc] at ht
-    cases fromJ <;> (
-      simp only [Bool.false_eq_true, ↓reduceIte, Mode.hat, List.append_assoc, plug_app, plug_word, plug_dn, plug_run, plug, SymWord.toList])
-    · exact returnsP_L k n ht l
-    · exact returnsP_J (1 + k) n ht l
+    revert ht
+    cases t
+    all_goals
+      intro ht
+      cases fromJ <;> (
+        simp only [Bool.false_eq_true, ↓reduceIte, Mode.hat, List.append_assoc, plug_app, plug_word, plug_dn, plug_run, plug, SymWord.toList])
+      · exact returnsP_L k n ht l
+      · exact returnsP_J (1 + k) n ht l
 
 
 -- ============================================================================
@@ -2502,7 +2510,7 @@ theorem Runs.move_right_sym_spec (m : Nat) (l r l' r' : Runs)
   | zero =>
     simp [move_right_sym] at h
     rcases h with ⟨rfl, rfl⟩
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ m ih =>
     rcases r with _ | ⟨⟨w, k⟩, r_rest⟩; · contradiction
     cases w <;> try contradiction
@@ -2525,7 +2533,7 @@ theorem Runs.move_left_sym_spec (m : Nat) (l r l' r' : Runs)
   | zero =>
     simp [move_left_sym] at h
     rcases h with ⟨rfl, rfl⟩
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ m ih =>
     rcases l with _ | ⟨⟨w, k⟩, l_rest⟩; · contradiction
     cases w <;> try contradiction
@@ -2550,7 +2558,7 @@ theorem raw_steps_spec (k : Nat) (c : RMConfig) :
     | .inl c' => ReachesStar target_tm c.denote c'.denote
     | .inr b => b = true → HaltsFrom target_tm c.denote := by
   induction k generalizing c with
-  | zero => exact ReachesStar.refl _ _
+  | zero => try exact ReachesStar.refl _ _
   | succ k ih =>
     dsimp only [raw_steps]
     have hd_eq : (if Nat.ble 3 c.state.val then c else align c).denote = c.denote := by
@@ -2786,7 +2794,7 @@ theorem move_right_sym_plug (m : Nat) (l r l' r' : Runs) (t : ListBlank (Fin 2))
   | zero =>
     simp [Runs.move_right_sym] at h
     rcases h with ⟨rfl, rfl⟩
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ m ih =>
     rcases r with _ | ⟨⟨w, k⟩, r_rest⟩; · contradiction
     cases w <;> try contradiction
@@ -2804,7 +2812,7 @@ theorem move_left_sym_plug (m : Nat) (l r l' r' : Runs) (t : ListBlank (Fin 2))
   | zero =>
     simp [Runs.move_left_sym] at h
     rcases h with ⟨rfl, rfl⟩
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ m ih =>
     rcases l with _ | ⟨⟨w, k⟩, l_rest⟩; · contradiction
     cases w <;> try contradiction
@@ -3675,15 +3683,15 @@ def fc_6 : FastConfig := ⟨[(.raw [1, 0], 10), (.raw [1, 1], 7), (.S 0, 2), (.P
 def fc_7 : FastConfig := ⟨[(.raw [1, 0], 2), (.raw [1, 1], 57), (.S 0, 2), (.PL 58, 1535), (.raw [1, 0], 7), (.raw [1, 1], 1), (.S 0, 2), (.raw [1, 0], 2), (.raw [1, 1], 60), (.S 0, 2), (.PL 61, 41), (.S 65, 1), (.raw [1, 0], 67), (.raw [1], 1), (.raw [1, 1], 62), (.S 0, 2), (.PL 64, 306), (.raw [1, 0], 68), (.raw [1, 1], 65), (.S 0, 2), (.PL 67, 8), (.raw [1, 0], 72), (.raw [1, 1], 70), (.S 0, 2), (.PL 70, 60), (.raw [1, 0], 74), (.raw [1, 1], 72), (.S 0, 2), (.PL 73, 1), (.S 77, 1), (.raw [1, 0], 79), (.raw [1], 1), (.raw [1, 1], 74), (.S 0, 2), (.PL 76, 11), (.S 80, 1), (.raw [1, 0], 83), (.raw [0, 1], 1), (.S 0, 1), (.raw [1, 0], 2), (.raw [1, 1], 81), (.S 0, 2), (.PL 82, 1), (.raw [1, 0], 86), (.raw [1, 1], 12), (.S 0, 2), (.raw [1, 0], 2), (.S 0, 2), (.S 7, 1), (.S 91, 1), (.raw [1, 0], 5), (.raw [0], 1)], [(.raw [1, 0], 1), (.D 2, 1), (.D 0, 1), (.D 3, 1), (.D 57, 420), (.D 55, 1), (.D 54, 15357), (.D 53, 1), (.D 0, 1), (.D 51, 2101), (.D 50, 1), (.D 0, 1), (.D 3, 1), (.D 47, 1), (.D 48, 76790), (.D 47, 1), (.D 45, 10508), (.D 44, 1), (.D 0, 1), (.D 3, 1), (.D 8, 1), (.D 42, 383954), (.D 41, 1), (.D 0, 1), (.D 3, 1), (.D 39, 52548), (.D 38, 1), (.D 11, 1), (.D 36, 1919778), (.D 35, 1), (.D 33, 262742), (.D 32, 1), (.D 0, 1), (.D 26, 1), (.D 30, 9598892), (.D 29, 1), (.D 5, 1), (.D 27, 1313718), (.D 25, 1), (.D 24, 47994464), (.D 23, 1), (.D 0, 1), (.D 2, 1), (.D 0, 1), (.D 21, 6568593), (.D 20, 1), (.D 18, 239972325), (.D 17, 1), (.D 0, 1), (.D 15, 32842965), (.D 14, 1), (.D 0, 2), (.D 11, 1), (.D 12, 1199861640), (.D 11, 1), (.D 0, 1), (.D 3, 1), (.D 9, 164214797), (.D 8, 1), (.D 0, 2), (.D 5, 1), (.D 6, 5999308300), (.D 5, 1), (.D 0, 1), (.D 3, 821073829), (.D 2, 1), (.D 0, 29996541603)], .MR, none⟩
 def fc_8 : FastConfig := ⟨[(.S 14, 1), (.raw [1, 0], 2), (.raw [1], 1), (.raw [0], 1)], [(.raw [1, 0], 1), (.D 95, 1), (.D 91, 1), (.D 90, 5), (.D 89, 1), (.D 85, 1), (.D 84, 28), (.D 83, 1), (.D 12, 1), (.D 81, 3), (.D 79, 1), (.D 78, 146), (.D 76, 1), (.D 75, 19), (.D 73, 1), (.D 0, 1), (.D 3, 1), (.D 72, 731), (.D 71, 1), (.D 0, 2), (.D 2, 1), (.D 69, 99), (.D 68, 1), (.D 0, 1), (.D 3, 1), (.D 66, 3661), (.D 65, 1), (.D 6, 1), (.D 63, 500), (.D 62, 1), (.D 0, 2), (.D 2, 1), (.D 60, 18307), (.D 59, 1), (.D 0, 1), (.D 3, 1), (.D 57, 2505), (.D 56, 1), (.D 11, 1), (.D 54, 91541), (.D 53, 1), (.D 0, 1), (.D 51, 12528), (.D 50, 1), (.D 48, 457710), (.D 47, 1), (.D 0, 1), (.D 45, 62642), (.D 44, 1), (.D 0, 1), (.D 3, 1), (.D 42, 2288553), (.D 41, 1), (.D 0, 1), (.D 2, 1), (.D 0, 1), (.D 39, 313214), (.D 38, 1), (.D 0, 1), (.D 36, 11442772), (.D 35, 1), (.D 5, 1), (.D 6, 1), (.D 33, 1566073), (.D 32, 1), (.D 23, 1), (.D 30, 57213862), (.D 29, 1), (.D 27, 7830368), (.D 26, 1), (.D 0, 2), (.D 2, 1), (.D 24, 286069314), (.D 23, 1), (.D 0, 1), (.D 9, 1), (.D 21, 39151846), (.D 19, 1), (.D 18, 1430346572), (.D 17, 1), (.D 0, 1), (.D 8, 1), (.D 15, 195759238), (.D 14, 1), (.D 0, 1), (.D 8, 1), (.D 12, 7151732876), (.D 11, 1), (.D 5, 1), (.D 0, 1), (.D 9, 978796133), (.D 8, 1), (.D 0, 1), (.D 3, 1), (.D 5, 1), (.D 6, 35758664452), (.D 4, 1), (.D 3, 4893980722), (.D 2, 1), (.D 0, 178793322217)], .MR, none⟩
 
-theorem step_0 : run_tree st_0 fc_0 = .inl fc_1 := by decide +kernel
-theorem step_1 : run_tree st_1 fc_1 = .inl fc_2 := by decide +kernel
-theorem step_2 : run_tree st_2 fc_2 = .inl fc_3 := by decide +kernel
-theorem step_3 : run_tree st_3 fc_3 = .inl fc_4 := by decide +kernel
-theorem step_4 : run_tree st_4 fc_4 = .inl fc_5 := by decide +kernel
-theorem step_5 : run_tree st_5 fc_5 = .inl fc_6 := by decide +kernel
-theorem step_6 : run_tree st_6 fc_6 = .inl fc_7 := by decide +kernel
-theorem step_7 : run_tree st_7 fc_7 = .inl fc_8 := by decide +kernel
-theorem step_8 : run_tree st_8 fc_8 = .inr true := by decide +kernel
+theorem step_0 : run_tree st_0 fc_0 = .inl fc_1 := rfl
+theorem step_1 : run_tree st_1 fc_1 = .inl fc_2 := rfl
+theorem step_2 : run_tree st_2 fc_2 = .inl fc_3 := rfl
+theorem step_3 : run_tree st_3 fc_3 = .inl fc_4 := rfl
+theorem step_4 : run_tree st_4 fc_4 = .inl fc_5 := rfl
+theorem step_5 : run_tree st_5 fc_5 = .inl fc_6 := rfl
+theorem step_6 : run_tree st_6 fc_6 = .inl fc_7 := rfl
+theorem step_7 : run_tree st_7 fc_7 = .inl fc_8 := rfl
+theorem step_8 : run_tree st_8 fc_8 = .inr true := rfl
 
 theorem chain_tree {t : CertTree} {fc fc' : FastConfig}
     (hwf : fc.WF) (h : run_tree t fc = .inl fc')
@@ -3718,10 +3726,8 @@ theorem full_halt : HaltsFrom target_tm (init []) := by
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
-
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
-
-theorem is_halt : IsHalt target_tm := (isHalt_iff_haltsFrom_init target_tm).mpr Solution.full_halt
+theorem is_halt : IsHalt target := by
+  rw [target_eq]
+  exact (isHalt_iff_haltsFrom_init target_tm).mpr Solution.full_halt
 
 end BusyBeaver.M_1RB1RA_1LC0RD_1LD1LB_1RA0LE_0LB1LF_1RCHHH

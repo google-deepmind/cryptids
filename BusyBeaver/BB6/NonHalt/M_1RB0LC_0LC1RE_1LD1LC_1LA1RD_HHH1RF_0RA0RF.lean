@@ -2,44 +2,26 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LC_0LC1RE_1LD1LC_1LA1RD_---1RF_0RA0RF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LC_0LC1RE_1LD1LC_1LA1RD_---1RF_0RA0RF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LC_0LC1RE_1LD1LC_1LA1RD_HHH1RF_0RA0RF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0LC_0LC1RE_1LD1LC_1LA1RD_---1RF_0RA0RF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 3, Stmt.write 1 Dir.right)
-  | 4, 0 => none
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 1 => some (some 5, Stmt.write 0 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_0LC1RE_1LD1LC_1LA1RD_HHH1RF_0RA0RF"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -155,20 +137,20 @@ lemma pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
     ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 macro "step1" : tactic => `(tactic| (
-  try simp only [init_nil, pow_succ_list, pow_zero_list,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     zero_cons_default, default_head, default_tail]
   refine multiStep_step (by rfl) ?_
-  simp only [Turing.Tape.move, Tape.write,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Tape.write,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     zero_cons_default, default_head, default_tail]))
 
 macro "run_steps" n:num : tactic => `(tactic| (
   iterate $n step1
-  simp only [pow_succ_list, pow_zero_list,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
@@ -553,7 +535,7 @@ lemma hanoi_inc_iter (n k d : Nat) (L R : ListBlank (Fin 2)) :
   induction n generalizing k d L with
   | zero =>
     simp only [Nat.mul_zero, Nat.add_zero, pow_zero_list, listblank_append_nil]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | succ n ih =>
     have hL : ([0] : List (Fin 2)) ^ (3 * (n + 1)) +> L =
         ([0] : List (Fin 2)) ^ 3 +> (([0] : List (Fin 2)) ^ (3 * n) +> L) := by
@@ -689,7 +671,7 @@ lemma return_sweep_iter (n a b : Nat) (L R : ListBlank (Fin 2)) :
   induction n generalizing a b L with
   | zero =>
     simp only [Nat.mul_zero, Nat.add_zero, pow_zero_list, listblank_append_nil]
-    exact stepStar_refl _ _
+    try exact stepStar_refl _ _
   | succ n ih =>
     have hL : ([1, 1, 1, 0] : List (Fin 2)) ^ (n + 1) +> L =
         (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >>
@@ -1389,9 +1371,7 @@ theorem reach_arbitrarily_long :
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
@@ -1400,7 +1380,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   | some cfg' => rfl
   | none =>
     have h_none : multiStep target_tm (init []) (k + 1) = none := by
-      rw [multiStep_succ, hk]; exact h_step
+      rw [multiStep_succ', hk]; exact h_step
     rcases reach_arbitrarily_long (k + 1) with ⟨N, h_ge, hN⟩
     have h_split : N = (k + 1) + (N - (k + 1)) := by omega
     have h_none_N : multiStep target_tm (init []) N = none := by
@@ -1408,5 +1388,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
       exact multiStep_none_add h_none (N - (k + 1))
     rw [h_none_N] at hN
     nomatch hN
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LC_0LC1RE_1LD1LC_1LA1RD_HHH1RF_0RA0RF

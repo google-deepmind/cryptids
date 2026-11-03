@@ -2,43 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LD_1RC0RF_1LC1LA_0LE---_1LF0RB_0RC0RE` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LD_1RC0RF_1LC1LA_0LE---_1LF0RB_0RC0RE`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LD_1RC0RF_1LC1LA_0LE---_1LF0RB_0RC0RE`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => none
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 5, 1 => some (some 4, Stmt.write 0 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -169,7 +149,7 @@ macro "step_tm" : tactic => `(tactic|
 
 macro "exec_tm" n:num : tactic => `(tactic| (
   iterate $n step_tm
-  try simp only [zero_cons_default]
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, zero_cons_default]
   exact Reaches.refl _))
 
 -- ============================================================================
@@ -298,7 +278,7 @@ lemma G_halt (m : Nat) : ReachHalt (G 0 m) := by
     rw [show 3 * m + 5 + 3 = 1 + (3 * m + 7) by omega, R1_add 1 (3 * m + 7) default]; rfl
   rw [hr]
   exact ReachHalt.next (step_cfg_left rfl b1 default (R1 (3 * m + 7) default))
-    (ReachHalt.done (by simp [cfg, step, target_tm]))
+    (ReachHalt.done (by have hM : target_tm 3 b1 = none := rfl; simp [cfg, step, hM]))
 
 lemma G_mod1 (m : Nat) : Reaches (G 1 m) (G (3 * m + 8) 0) := by
   unfold G
@@ -690,11 +670,9 @@ theorem tower_halts : ReachHalt (G 5 0) := by
     exact G_drain (a15 / 4) 0 (G_halt (MSeq (a15 / 4)))
   exact r1 (r2 (r3 (r4 (r5 (r6 (r7 (r8 (r9 (r10 (r11 (r12 (r13 (r14 (r15 hfin))))))))))))))
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   rw [IsHalt, init_eq_cfg]
   exact ReachHalt.to_isHalt (init_to_G5 tower_halts)
 

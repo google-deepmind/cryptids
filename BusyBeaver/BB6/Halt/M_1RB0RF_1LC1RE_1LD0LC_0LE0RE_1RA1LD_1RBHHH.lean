@@ -2,44 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RB---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RB---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -823,8 +802,8 @@ macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 macro "step_tm" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z0T (by (try simp only [Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
-    simp only [Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z0i,zDh,zDt])
+    refine z0T (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z0i,zDh,zDt])
 macro "execute5" : tactic =>
   `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)))
 macro "execute" : tactic =>
@@ -928,7 +907,7 @@ lemma z14 (n : Nat) (l r : zB) :
     rw [h_mul4,z0k,append_assoc]
     have h1 : (([1] +> l) {{B}}> ((rd1 ^ 4) +> (rd1 ^ (n * 4)) +> r)) [target_tm]⊢*
         (([1] +> (ld1 ^ 3) +> l) {{B}}> ((rd1 ^ (n * 4)) +> r)) := by
-      dsimp [rd1,ld1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+      dsimp [rd1,ld1,HPow.hPow, ListBlank.append]; execute
     have h2 := ih ((ld1 ^ 3) +> l) r
     rw [<- append_assoc (ld1 ^ (n * 3)) (ld1 ^ 3) l,<- z0k,h_mul3] at h2
     exact zSt h1 h2
@@ -1043,7 +1022,7 @@ lemma z1f (l r : zB) (n : Nat) :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 1) +> [1,1,0,0] +> r)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 1) +> [1,1,0,0] +> r)) [target_tm]⊢⁺
       (z0U ((ld1 ^ (n * 3)) +> ld0 +> l) (rd1 +> r)) := by
-    unfold z0U; dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    unfold z0U; dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z15 l (rd1 +> r) (n * 3)
   exact zPt (z0S h1 h2) h3
 lemma z1g (l r : zB) (n : Nat) {l' : zB} (h : z19 l l') :
@@ -1053,12 +1032,12 @@ lemma z1g (l r : zB) (n : Nat) {l' : zB} (h : z19 l l') :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 2) +> [1,1,0,0] +> r)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 2) +> [1,1,0,0] +> r)) [target_tm]⊢⁺
       (((ld1 ^ (n * 3)) +> ld0 +> l) <{{D}} ([1,0] +> [1,0,1,0,1,0,1,0,0] +> r)) := by
-    dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z1d h (n * 3) ([1,0,1,0,1,0,1,0,0] +> r)
   unfold z0V at h3 ⊢
   have h4 : (([1,0,1,1,1] +> (ld0 ^ (n * 3)) +> l') {{B}}> ([1,0] +> [1,0,1,0,1,0,1,0,0] +> r)) [target_tm]⊢*
       (([1,0,1,1,1] +> (ld0 ^ 2) +> (ld0 ^ (n * 3)) +> l') {{B}}> (rd1 +> r)) := by
-    dsimp [ld0,rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [ld0,rd1,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld0 ^ 2) (ld0 ^ (n * 3)) l',<- z0k,show 2 + n * 3 = n * 3 + 2 by omega] at h4
   exact z0R (z0R (z0S h1 h2) h3) h4
 lemma z1h (l r : zB) (n : Nat) :
@@ -1068,12 +1047,12 @@ lemma z1h (l r : zB) (n : Nat) :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 3) +> [1,1,0,0] +> r)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 3) +> [1,1,0,0] +> r)) [target_tm]⊢⁺
       (z0U ((ld1 ^ (n * 3)) +> ld0 +> l) ([1,0,1,0,1,0,1,0,0] +> r)) := by
-    unfold z0U; dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    unfold z0U; dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z15 l ([1,0,1,0,1,0,1,0,0] +> r) (n * 3)
   unfold z0V at h3 ⊢
   have h4 : (([1,0,1,1,1] +> (ld0 ^ (n * 3)) +> ld1 +> l) {{B}}> ([1,0,1,0,1,0,1,0,0] +> r)) [target_tm]⊢*
       (([1,0,1,1,1] +> (ld0 ^ 2) +> (ld0 ^ (n * 3)) +> ld1 +> l) {{B}}> ([0] +> r)) := by
-    dsimp [ld0,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [ld0,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld0 ^ 2) (ld0 ^ (n * 3)) (ld1 +> l),<- z0k,show 2 + n * 3 = n * 3 + 2 by omega] at h4
   exact z0R (zPt (z0S h1 h2) h3) h4
 lemma z1i (l r : zB) (n : Nat) :
@@ -1091,12 +1070,12 @@ lemma z1j (l r : zB) (n : Nat) {l' : zB} (h : z19 l l') :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 1) +> [1,0,1,0,0] +> r)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 1) +> [1,0,1,0,0] +> r)) [target_tm]⊢⁺
       (((ld1 ^ (n * 3)) +> ld0 +> l) <{{D}} ([1,0] +> [1,0,1,0,1,0,1] +> r)) := by
-    dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z1d h (n * 3) ([1,0,1,0,1,0,1] +> r)
   unfold z0V at h3 ⊢
   have h4 : (([1,0,1,1,1] +> (ld0 ^ (n * 3)) +> l') {{B}}> ([1,0] +> [1,0,1,0,1,0,1] +> r)) [target_tm]⊢*
       (([1,0,1,1,1] +> (ld0 ^ 2) +> (ld0 ^ (n * 3)) +> l') {{B}}> ([1] +> r)) := by
-    dsimp [ld0,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [ld0,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld0 ^ 2) (ld0 ^ (n * 3)) l',<- z0k,show 2 + n * 3 = n * 3 + 2 by omega] at h4
   exact z0R (z0R (z0S h1 h2) h3) h4
 lemma z1k (l r : zB) (n : Nat) :
@@ -1106,13 +1085,13 @@ lemma z1k (l r : zB) (n : Nat) :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 2) +> [1,0,1,0,0] +> r)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 2) +> [1,0,1,0,0] +> r)) [target_tm]⊢⁺
       (z0U ((ld1 ^ (n * 3)) +> ld0 +> l) ([1,0,1,0,1,0,1] +> r)) := by
-    unfold z0U; dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    unfold z0U; dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z15 l ([1,0,1,0,1,0,1] +> r) (n * 3)
   unfold z0V at h3
   unfold z0W
   have h4 : (([1,0,1,1,1] +> (ld0 ^ (n * 3)) +> ld1 +> l) {{B}}> ([1,0,1,0,1,0,1] +> r)) [target_tm]⊢*
       ((ld0 +> (ld0 ^ 2) +> (ld0 ^ (n * 3)) +> ld1 +> l) {{F}}> r) := by
-    dsimp [ld0,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [ld0,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld0 ^ 2) (ld0 ^ (n * 3)) (ld1 +> l),<- z0k,show 2 + n * 3 = n * 3 + 2 by omega] at h4
   exact z0R (zPt (z0S h1 h2) h3) h4
 lemma z1l (l r : zB) (n : Nat) {l' : zB} (h : z19 l l') :
@@ -1122,13 +1101,13 @@ lemma z1l (l r : zB) (n : Nat) {l' : zB} (h : z19 l l') :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 3) +> [1,0,1,0,0] +> r)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 3) +> [1,0,1,0,0] +> r)) [target_tm]⊢⁺
       (((ld1 ^ (n * 3)) +> ld0 +> l) <{{D}} ([1,0] +> [1,0,1,0,1,0,1,0,1,0,1,0,1] +> r)) := by
-    dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z1d h (n * 3) ([1,0,1,0,1,0,1,0,1,0,1,0,1] +> r)
   unfold z0V at h3
   unfold z0W
   have h4 : (([1,0,1,1,1] +> (ld0 ^ (n * 3)) +> l') {{B}}> ([1,0] +> [1,0,1,0,1,0,1,0,1,0,1,0,1] +> r)) [target_tm]⊢*
       ((ld0 +> (ld0 ^ 4) +> (ld0 ^ (n * 3)) +> l') {{F}}> r) := by
-    dsimp [ld0,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [ld0,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld0 ^ 4) (ld0 ^ (n * 3)) l',<- z0k,show 4 + n * 3 = n * 3 + 4 by omega] at h4
   exact z0R (z0R (z0S h1 h2) h3) h4
 lemma z1m (l r : zB) :
@@ -1157,7 +1136,7 @@ lemma z1o (l : zB) (n : Nat) :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 1) +> [1,1,0,1] +> default)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 1) +> [1,1,0,1] +> default)) [target_tm]⊢*
       (z0U (ld1 +> (ld1 ^ (n * 3)) +> ld0 +> l) default) := by
-    unfold z0U; dsimp [rd1,ld1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    unfold z0U; dsimp [rd1,ld1,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc ld1 (ld1 ^ (n * 3)) (ld0 +> l),<- z0j] at h2
   exact zSt h1 h2
 lemma z1p (l : zB) (n : Nat) {l' : zB} (h : z19 l l') :
@@ -1167,12 +1146,12 @@ lemma z1p (l : zB) (n : Nat) {l' : zB} (h : z19 l l') :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 2) +> [1,1,0,1] +> default)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 2) +> [1,1,0,1] +> default)) [target_tm]⊢*
       (((ld1 ^ (n * 3)) +> ld0 +> l) <{{D}} ([1,0] +> [1,0,1,0,1,0,1,0,1,0] +> default)) := by
-    dsimp [rd1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [rd1,HPow.hPow, ListBlank.append]; execute
   have h3 := z1d h (n * 3) ([1,0,1,0,1,0,1,0,1,0] +> default)
   unfold z0V at h3 ⊢
   have h4 : (([1,0,1,1,1] +> (ld0 ^ (n * 3)) +> l') {{B}}> ([1,0] +> [1,0,1,0,1,0,1,0,1,0] +> default)) [target_tm]⊢*
       (([1,0,1,1,1] +> (ld0 ^ 3) +> (ld0 ^ (n * 3)) +> l') {{B}}> default) := by
-    dsimp [ld0,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    dsimp [ld0,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld0 ^ 3) (ld0 ^ (n * 3)) l',<- z0k,show 3 + n * 3 = n * 3 + 3 by omega] at h4
   exact zSt (zSt (zSt h1 h2) h3) h4
 lemma z1q (l : zB) (n : Nat) :
@@ -1182,7 +1161,7 @@ lemma z1q (l : zB) (n : Nat) :
   have h1 := z14 n (ld0 +> l) ((rd1 ^ 3) +> [1,1,0,1] +> default)
   have h2 : (([1] +> (ld1 ^ (n * 3)) +> ld0 +> l) {{B}}> ((rd1 ^ 3) +> [1,1,0,1] +> default)) [target_tm]⊢*
       (z0U ((ld1 ^ 2) +> (ld1 ^ (n * 3)) +> ld0 +> l) (rd1 +> default)) := by
-    unfold z0U; dsimp [rd1,ld1,HPow.hPow,list_nat_repeat,ListBlank.append]; execute
+    unfold z0U; dsimp [rd1,ld1,HPow.hPow, ListBlank.append]; execute
   rw [<- append_assoc (ld1 ^ 2) (ld1 ^ (n * 3)) (ld0 +> l),<- z0k,show 2 + n * 3 = n * 3 + 2 by omega] at h2
   exact zSt h1 h2
 lemma z1r : ((default) {{A}}> (default)) [target_tm]⊢* (([0,0,1,1,1,1] +> default) <{{D}} ([1,0,1,0,1] +> default)) := by execute
@@ -1205,7 +1184,7 @@ lemma init_tm : (init []) [target_tm]⊢*
   have hr : (([1,1,1,1,1,1,1,1,1,1,1,1,1] +> default) <{{E}} ([0,1,0,1,0,1,0,0,0,0,0,0,0,0,1] +> default)) =
       (z0U ((ld1 ^ 3) +> ldh) ([1,0,0,0,0,0,0,0,0,1,0,0] +> default)) := by
     unfold z0U ldh
-    simp [ld1,HPow.hPow,list_nat_repeat]
+    simp [ld1,HPow.hPow]
   rwa [hr] at h
 def LC (len k : Nat) : zB := z0o ld0 ld1 len k ldh
 def RC (m : Nat) : zB := z0q rd0 rd1 m
@@ -2242,9 +2221,7 @@ lemma z37 : (init []) [target_tm]⊢* (z2P Forward13.seed) := by
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -2256,7 +2233,7 @@ set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
 open Solution in
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   exact z2p z37 (z36 175 Forward13.seed Forward13.numerical_halt)
 
 end BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH

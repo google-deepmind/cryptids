@@ -2,43 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0RE---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0RE---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0REHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0RE---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0REHHH"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 variable {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
@@ -46,7 +28,7 @@ abbrev C : Fin 6 := 2
 abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
-@[reducible] private def holdout_0451_tm : Machine (Fin 2) (Fin 6) := target_tm
+abbrev holdout_0451_tm : Machine (Fin 2) (Fin 6) := target_tm
 -- ============================================================================
 -- Section 6: Direct-on-Cells (k, xs) Sk1 / TM91 Formalization
 -- ============================================================================
@@ -145,8 +127,8 @@ local macro "finish" : tactic =>
   `(tactic| exists 0 <;> rfl)
 local macro "step_tm" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
-    simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
 local macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | finish | step_tm)))
 
@@ -232,7 +214,7 @@ lemma stop_step (l r : ListBlank (Fin 2)) :
 
 lemma stop_isNone (l r : ListBlank (Fin 2)) :
     (step holdout_0451_tm ((([1, 1, 1, 0] : List (Fin 2)) +> l) {{F}}> ([1] +> r))).isNone = true := by
-  simp [step, holdout_0451_tm, target_tm, F, ListBlank.append, Turing.ListBlank.head_cons]
+  simp [step, holdout_0451_tm, target_tm, F, ListBlank.append, Turing.ListBlank.head_cons]; rfl
 
 lemma emit_true_step (r : ListBlank (Fin 2)) :
     ((default : ListBlank (Fin 2)) <{{D}} ([1] +> r)) [holdout_0451_tm]⊢*
@@ -341,7 +323,7 @@ lemma init_reaches_start :
   have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = ((default : ListBlank (Fin 2)) {{A}}> default) := rfl
   rw [h0]
   unfold denote_state start words_tape W
-  dsimp [ListBlank.append, list_nat_repeat]
+  dsimp [ListBlank.append]
   execute
 
 -- ============================================================================
@@ -1067,13 +1049,13 @@ lemma push_cell_fast_spec (p : Bool) (m k : Nat) (xs : FastCells) (hwf : WF xs) 
       | nil =>
         refine ⟨?_, trivial⟩
         rw [hmk0]
-        dsimp [W, words_tape, bit, list_nat_repeat, to_cells]
+        dsimp [W, words_tape, bit, to_cells]
         exact zero_cons_default.symm
       | cell p2 n2 rest =>
         cases p2
         · refine ⟨?_, hwf⟩
           rw [hmk0]
-          dsimp [to_cells, words_tape, bit, list_nat_repeat]
+          dsimp [to_cells, words_tape, bit]
           rw [pow_append_tape W 1 n2]
           rfl
         · refine ⟨?_, hwf⟩
@@ -1132,7 +1114,7 @@ lemma pop_cell_bit_fast_spec (k : Nat) (xs : FastCells) (hwf : WF xs) :
     | nil =>
       refine ⟨?_, trivial⟩
       rw [hk0]
-      dsimp [W, words_tape, list_nat_repeat, to_cells, nat_bit]
+      dsimp [W, words_tape, to_cells, nat_bit]
       exact zero_cons_default.symm
     | cell p n rest =>
       cases p <;> (refine ⟨?_, hwf⟩; rw [hk0]; rfl)
@@ -2073,7 +2055,7 @@ lemma batch_fused_ub_spec (xs : FastCells) (ub : Nat) (hwf : WF xs) :
             (to_cells ys_norm) ys_rest hv_new_le hwf_f hW
           refine ⟨hcap.2, ⟨⟨hpow, hv_new_le, wf_ns_mono (Nat.le_refl _) (by omega_fast) hns⟩, hys_wf⟩,
             unpack_block (v + t) (F_next + f) ns ys_rest, hB_blk, ?_⟩
-          dsimp only [to_cells, words_tape, list_nat_repeat, append_nil_tape, nat_add_eq]
+          dsimp only [to_cells, words_tape, append_nil_tape, nat_add_eq]
           exact habs
       · -- next_ub == 0
         dsimp only
@@ -2305,10 +2287,8 @@ lemma holdout_0451_halt : IsHalt holdout_0451_tm := by
 
 end
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := holdout_0451_halt
+theorem is_halt : IsHalt target := holdout_0451_halt
 
 end BusyBeaver.M_1RB0RC_1LC1RF_1RA1LD_1RD0LE_1LD1LC_0REHHH

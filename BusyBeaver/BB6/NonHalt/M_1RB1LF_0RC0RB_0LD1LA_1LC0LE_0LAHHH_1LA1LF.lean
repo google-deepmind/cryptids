@@ -2,43 +2,34 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LA---_1LA1LF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LA---_1LA1LF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LA---_1LA1LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 4, 1 => none
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 5, Stmt.write 1 Dir.left)
+local macro "normalize" : tactic => `(tactic| (
+  try simp only [ListBlank.append_cons, ListBlank.append_nil,
+    ListBlank.head_cons, ListBlank.tail_cons,
+    ListBlank.head_default, ListBlank.head_default_fin, ListBlank.tail_default,
+    ListBlank.cons_zero_default, ListBlank.cons_default_default,
+    list_pow_zero, list_pow_succ,
+    List.nil_append, List.cons_append, List.append_nil,
+    Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -90,21 +81,8 @@ set_option maxHeartbeats 8000000
 @[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
 @[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-omit [Inhabited Γ] in
 @[simp]
-theorem list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m := match m with
-  | 0 => by simp_rw [HPow.hPow, add_zero, list_nat_repeat, List.append_nil]
-  | m + 1 => by
-    rw [add_comm m 1, ← add_assoc, add_comm 1 m, list_pow_add]
-    simp only [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
-    rw [← List.append_assoc, ← List.append_assoc, List.append_cancel_right_eq]
-    induction n with
-    | zero => simp
-    | succ n ih => simpa
 
-omit [Inhabited Γ] in
-theorem list_pow_add_comm (l : List Γ) (n m : Nat) : l^n ++ l^m = l^m ++ l^n := by
-  rw [← list_pow_add, add_comm, list_pow_add]
 
 lemma listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
     (s <+ l₁) <+ l₂ = s <+ (l₂ ++ l₁) := by
@@ -120,7 +98,7 @@ lemma listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
 lemma list_pow_append_one (u : List (Fin 2)) (k : Nat) :
     u^k ++ u = u^(k + 1) := by
   have h := list_pow_add_comm u k 1
-  dsimp -failIfUnchanged [HPow.hPow, list_nat_repeat] at h ⊢
+  dsimp -failIfUnchanged [HPow.hPow] at h ⊢
   rw [List.append_nil] at h
   exact h
 
@@ -206,13 +184,13 @@ lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 @[simp] lemma init_nil : (init ([] : List (Fin 2))) = (default {{A}}> default) := rfl
 
 macro "finish" : tactic =>
-  `(tactic| (refine ⟨0, ?_⟩; simp only [init_nil, multiStep_zero, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, zero_cons_default]; rfl))
+  `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, multiStep_zero, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, zero_cons_default]; rfl))
 macro "step" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]); rfl) ?_ <;>
-    simp only [init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
 macro "execute" : tactic =>
-  `(tactic| (iterate 25 (all_goals (first | finish | step))))
+  `(tactic| (iterate 25 (all_goals (first | exact ⟨0, rfl⟩ | step))))
 
 
 -- ============================================================================
@@ -1414,7 +1392,7 @@ lemma count_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules t
     have h1 : 1 + 0 + a = 1 + a := by omega
     have h2 : 0 + b = b := by omega
     rw [h1, h2]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | @next n' x' y' z' hxy _ ih =>
     intro l hn
     obtain ⟨l', hl', hstep1⟩ := H_spec rules hxy hn
@@ -1581,7 +1559,7 @@ lemma shift_F_left (j : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ (([1] : List (Fin 2)) ^ j)) <{{F}} r) [target_tm]⊢*
     (l <{{F}} ((([1] : List (Fin 2)) ^ j) +> r)) := by
   induction j generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ j ih =>
     rw [pow_succ_list, ← listblank_append_append]
     have h1 : (((l <+ (([1] : List (Fin 2)) ^ j)) <+ ([1] : List (Fin 2))) <{{F}} r) [target_tm]⊢*
@@ -1618,7 +1596,7 @@ lemma rule_scan_right (l r : ListBlank (Fin 2)) (j : Nat) :
     (l {{B}}> ((([1] : List (Fin 2)) ^ j) +> r)) [target_tm]⊢*
     ((l <+ (([0] : List (Fin 2)) ^ j)) {{B}}> r) := by
   induction j generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ j ih =>
     rw [pow_succ_append_right]
     have h1 : (l {{B}}> (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r))) [target_tm]⊢*
@@ -1634,7 +1612,7 @@ lemma rule_scan_overflow (l r : ListBlank (Fin 2)) (j : Nat) :
     ((l <+ (([0, 0] : List (Fin 2)) ^ j)) <{{C}} r) [target_tm]⊢*
     (l <{{C}} ((([1, 0] : List (Fin 2)) ^ j) +> r)) := by
   induction j generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ j ih =>
     rw [pow_succ_list, ← listblank_append_append]
     have h1 : (((l <+ (([0, 0] : List (Fin 2)) ^ j)) <+ ([0, 0] : List (Fin 2))) <{{C}} r) [target_tm]⊢*
@@ -1650,7 +1628,7 @@ lemma shift_inc_right (j : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ ([0, 0] : List (Fin 2))) {{C}}> ((([1, 0] : List (Fin 2)) ^ j) +> r)) [target_tm]⊢*
     (((l <+ (([1, 0] : List (Fin 2)) ^ j)) <+ ([0, 0] : List (Fin 2))) {{C}}> r) := by
   induction j generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ j ih =>
     rw [pow_succ_append_right]
     have h1 : ((l <+ ([0, 0] : List (Fin 2))) {{C}}> (([1, 0] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ j) +> r))) [target_tm]⊢*
@@ -1666,7 +1644,7 @@ lemma shift_inc_left (j : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ (([1, 0] : List (Fin 2)) ^ j)) <{{A}} r) [target_tm]⊢*
     (l <{{A}} ((([1, 1] : List (Fin 2)) ^ j) +> r)) := by
   induction j generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ j ih =>
     rw [pow_succ_list, ← listblank_append_append]
     have h1 : (((l <+ (([1, 0] : List (Fin 2)) ^ j)) <+ ([1, 0] : List (Fin 2))) <{{A}} r) [target_tm]⊢*
@@ -1682,7 +1660,7 @@ lemma scan_right_pair (j : Nat) (l r : ListBlank (Fin 2)) :
     (l {{B}}> ((([1, 1] : List (Fin 2)) ^ j) +> r)) [target_tm]⊢*
     ((l <+ (([0, 0] : List (Fin 2)) ^ j)) {{B}}> r) := by
   induction j generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ j ih =>
     rw [pow_succ_append_right]
     have h1 : (l {{B}}> (([1, 1] : List (Fin 2)) +> ((([1, 1] : List (Fin 2)) ^ j) +> r))) [target_tm]⊢*
@@ -1740,9 +1718,7 @@ lemma tm249_init :
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -1757,5 +1733,7 @@ open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine PairCounter.nonhalt_from tm249_rules tm249_init ?_ (PairCounter.Num.one PairCounter.Num.nil)
   exact PairCounter.Safe.main PairCounter.Normal.D ⟨by decide, fun _ => by decide⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF

@@ -2,43 +2,27 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LF_0RC---_1RD0RA_1LE0RC_0LA0LE_1LE1LB` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LF_0RC---_1RD0RA_1LE0RC_0LA0LE_1LE1LB`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0LF_0RC---_1RD0RA_1LE0RC_0LA0LE_1LE1LB`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => none
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 2, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 1, Stmt.write 1 Dir.left)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -134,13 +118,13 @@ lemma step_stepStar_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
 
 macro "finish" : tactic =>
-  `(tactic| (refine ⟨0, ?_⟩; simp only [init_nil, multiStep_zero, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, zero_cons_default]; rfl))
+  `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, multiStep_zero, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, zero_cons_default]; rfl))
 macro "step" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]); rfl) ?_ <;>
-    simp only [init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
 macro "execute" : tactic =>
-  `(tactic| (repeat' (first | finish | step)))
+  `(tactic| (repeat' (first | exact ⟨0, rfl⟩ | step)))
 
 -- ============================================================================
 -- Token and Processed-Token Encodings (`PR_SBC.v`)
@@ -281,7 +265,7 @@ lemma prc_app (xs ys : List tok) : prc (xs ++ ys) = prc ys ++ prc xs := by
 lemma Csweep (ts : List tok) (h : noT0 ts) (l r : ListBlank (Fin 2)) :
     (l {{C}}> (tw ts +> r)) [target_tm]⊢* ((pl (prc ts) +> l) {{C}}> r) := by
   induction ts generalizing l with
-  | nil => exact ⟨0, rfl⟩
+  | nil => try exact ⟨0, rfl⟩
   | cons t ts ih =>
     have hprc : pl (prc (t :: ts)) +> l = pl (prc ts) +> (pw (proc t) +> l) := by
       simp [prc, pl_app, str_app_assoc]
@@ -337,11 +321,11 @@ lemma retf_spec_n : ∀ (n : Nat) (ps : List ptok), ps.length ≤ n →
     cases ps with
     | nil =>
       rcases hr with ⟨rfl, rfl, rfl⟩
-      exact ⟨0, rfl⟩
+      try exact ⟨0, rfl⟩
     | cons _ _ => simp at hn
   | n + 1, [], _, m, rs, m', ps', rs', hr, l, r => by
     rcases hr with ⟨rfl, rfl, rfl⟩
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | n + 1, .P :: ps, hn, m, rs, m', ps', rs', hr, l, r => by
     by_cases hmE : m = E
     · subst hmE
@@ -360,7 +344,7 @@ lemma retf_spec_n : ∀ (n : Nat) (ps : List ptok), ps.length ≤ n →
       · unfold retf at hr
         simp only [hmE, hmF, ite_false] at hr
         rcases hr with ⟨rfl, rfl, rfl⟩
-        exact ⟨0, rfl⟩
+        try exact ⟨0, rfl⟩
   | n + 1, .PZ :: ps, hn, m, rs, m', ps', rs', hr, l, r => by
     by_cases hmE : m = E
     · subst hmE
@@ -374,25 +358,25 @@ lemma retf_spec_n : ∀ (n : Nat) (ps : List ptok), ps.length ≤ n →
         cases ps with
         | nil =>
           rcases hr with ⟨rfl, rfl, rfl⟩
-          exact ⟨0, rfl⟩
+          try exact ⟨0, rfl⟩
         | cons p2 ps'' =>
           cases p2 with
           | PZ =>
             rcases hr with ⟨rfl, rfl, rfl⟩
-            exact ⟨0, rfl⟩
+            try exact ⟨0, rfl⟩
           | P =>
             cases rs with
             | nil =>
               rcases hr with ⟨rfl, rfl, rfl⟩
-              exact ⟨0, rfl⟩
+              try exact ⟨0, rfl⟩
             | cons r0 rs0 =>
               cases r0 with
               | T1 =>
                 rcases hr with ⟨rfl, rfl, rfl⟩
-                exact ⟨0, rfl⟩
+                try exact ⟨0, rfl⟩
               | TZ =>
                 rcases hr with ⟨rfl, rfl, rfl⟩
-                exact ⟨0, rfl⟩
+                try exact ⟨0, rfl⟩
               | T0 =>
                 have hr' : retf E ps'' (.T0 :: .TZ :: .T1 :: rs0) = (m', ps', rs') := hr
                 have h1 : ((pl (.PZ :: .P :: ps'') +> l) <{{F}} (tw (.T0 :: rs0) +> r)) [target_tm]⊢*
@@ -403,7 +387,7 @@ lemma retf_spec_n : ∀ (n : Nat) (ps : List ptok), ps.length ≤ n →
       · unfold retf at hr
         simp only [hmE, hmF, ite_false] at hr
         rcases hr with ⟨rfl, rfl, rfl⟩
-        exact ⟨0, rfl⟩
+        try exact ⟨0, rfl⟩
 
 lemma retf_spec (ps : List ptok) (m : Fin 6) (rs : List tok) (m' : Fin 6) (ps' : List ptok) (rs' : List tok)
     (hr : retf m ps rs = (m', ps', rs')) (l r : ListBlank (Fin 2)) :
@@ -414,7 +398,7 @@ lemma CTZs (g : Nat) (l r : ListBlank (Fin 2)) :
     (l {{C}}> ((([1, 0, 0] : List (Fin 2)) ^ g) +> r)) [target_tm]⊢*
     ((((([0, 1, 0] : List (Fin 2)) ^ g) +> l)) {{C}}> r) := by
   induction g generalizing l with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ g ih =>
     rw [pow_succ_list, str_app_assoc]
     have h1 := CTZ l ((([1, 0, 0] : List (Fin 2)) ^ g) +> r)
@@ -429,7 +413,7 @@ lemma EPZs (g : Nat) (l r : ListBlank (Fin 2)) :
     ((((([0, 1, 0] : List (Fin 2)) ^ g) +> l)) <{{E}} r) [target_tm]⊢*
     (l <{{E}} ((([1, 0, 0] : List (Fin 2)) ^ g) +> r)) := by
   induction g generalizing r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ g ih =>
     rw [pow_succ_list, str_app_assoc]
     have h1 := EPZ ((([0, 1, 0] : List (Fin 2)) ^ g) +> l) r
@@ -1443,7 +1427,7 @@ lemma P100s (m : Nat) : ∀ (n : Nat) (l : ListBlank (Fin 2)) (p : Nat) (gs : Li
   | zero =>
     intro n l p gs v H St _
     simp
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ m ih =>
     intro n l p gs v H St hv
     have hm : m + 1 + n = (m + n) + 1 := by omega
@@ -1542,7 +1526,7 @@ lemma Incs (m : Nat) : ∀ (a : Nat) (gs : List Nat) (v : Nat) (H : Bool) (St : 
   | zero =>
     intro a gs v H St _
     simp
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ m ih =>
     intro a gs v H St hv
     have s1 := Inc1 a gs v H St (by omega)
@@ -1576,7 +1560,7 @@ lemma P010s (m : Nat) : ∀ (X : List (Fin 2)) (Y : ListBlank (Fin 2)) (p : Nat)
   | zero =>
     intro X Y p gs v H St _
     simp
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | succ m ih =>
     intro X Y p gs v H St hv
     have hL : (([1, 0] ++ ((([0, 1, 0] : List (Fin 2)) ^ (m + 1)) ++ X)) +> Y) =
@@ -1664,7 +1648,7 @@ lemma Zones (L : List Nat) (hL : AllGe2 L) :
   | nil =>
     intro X Y p gs v H St _
     simp [zw, zp, zg, zv]
-    exact ⟨0, rfl⟩
+    try exact ⟨0, rfl⟩
   | cons g L ih =>
     intro X Y p gs v H St hv
     rcases hL with ⟨hg, hL'⟩
@@ -2433,9 +2417,7 @@ lemma INV0 : INV 121 [28] 5 St0 := by
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -2454,5 +2436,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   · rintro _ ⟨a, G, r1, St, rfl, hinv⟩
     rcases step_inv a G r1 St hinv with ⟨a', G', r1', St', hstep, hinv'⟩
     exact ⟨KX a' G' r1' St', hstep, a', G', r1', St', rfl, hinv'⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB

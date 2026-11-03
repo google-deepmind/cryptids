@@ -2,43 +2,31 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LE_0RC0RB_1LD0LD_1RA1LC_---1LF_1LA0LC` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LE_0RC0RB_1LD0LD_1RA1LC_---1LF_1LA0LC`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+local macro "normalize" : tactic => `(tactic| (
+  try simp only [ListBlank.append_cons, ListBlank.append_nil,
+    ListBlank.head_cons, ListBlank.tail_cons,
+    ListBlank.head_default, ListBlank.head_default_fin, ListBlank.tail_default,
+    ListBlank.cons_zero_default, ListBlank.cons_default_default,
+    list_pow_zero, list_pow_succ,
+    List.nil_append, List.cons_append, List.append_nil,
+    Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LE_0RC0RB_1LD0LD_1RA1LC_---1LF_1LA0LC`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 4, 0 => none
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 2, Stmt.write 0 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 noncomputable section
@@ -152,11 +140,11 @@ theorem rep_snoc (x n : Nat) (l : List Nat) :
 theorem Slefts (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     ReachesStar target_tm (CfgS l (n * 2 + a) r) (CfgS l a (List.replicate n 1 ++ r)) := by
   induction n generalizing r with
-  | zero => simp; exact ReachesStar.refl _ _
+  | zero => simp; try exact ReachesStar.refl _ _
   | succ n ih =>
     have h1 : (n + 1) * 2 + a = 2 + (n * 2 + a) := by omega
     rw [h1]
-    exact (Spos l (n * 2 + a) r).trans ((ih (1 :: r)).trans (by rw [rep_snoc, Nat.add_comm 1 n]; exact ReachesStar.refl _ _))
+    exact (Spos l (n * 2 + a) r).trans ((ih (1 :: r)).trans (by rw [rep_snoc, Nat.add_comm 1 n]; try exact ReachesStar.refl _ _))
 
 theorem Trights (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     ReachesStar target_tm (CfgT l a ((1 + n) :: r)) (CfgT (List.replicate n 0 ++ a :: l) 0 (0 :: r)) := by
@@ -165,17 +153,17 @@ theorem Trights (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
   | succ n ih =>
     have h1 : 1 + (n + 1) = 1 + (1 + n) := by omega
     rw [h1]
-    exact (Tpos l a (1 + n) r).trans ((ih (a :: l) 0).trans (by rw [rep_snoc, Nat.add_comm 1 n]; exact ReachesStar.refl _ _))
+    exact (Tpos l a (1 + n) r).trans ((ih (a :: l) 0).trans (by rw [rep_snoc, Nat.add_comm 1 n]; try exact ReachesStar.refl _ _))
 
 theorem Tmixs (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     ReachesStar target_tm (CfgT l a (0 :: (List.replicate n 1 ++ r))) (CfgT l (n * 2 + a) (0 :: r)) := by
   induction n generalizing a with
-  | zero => simp; exact ReachesStar.refl _ _
+  | zero => simp; try exact ReachesStar.refl _ _
   | succ n ih =>
     simp only [List.replicate_succ, List.cons_append]
     exact (Tmix l a 0 (List.replicate n 1 ++ r)).trans ((ih (2 + a)).trans (by
       have h1 : n * 2 + (2 + a) = (n + 1) * 2 + a := by omega
-      rw [h1]; exact ReachesStar.refl _ _))
+      rw [h1]; try exact ReachesStar.refl _ _))
 
 theorem Inc (l : List Nat) (a b : Nat) (r : List Nat) :
     ReachesStar target_tm (CfgS (a :: l) (5 + b * 2) (0 :: r)) (CfgS ((2 + a) :: l) (1 + b * 2) (0 :: 1 :: r)) := by
@@ -197,7 +185,7 @@ theorem Incs (n k : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     ReachesStar target_tm (CfgS (a :: l) (n * 4 + 1 + k * 2) (0 :: r))
       (CfgS ((n * 2 + a) :: l) (1 + k * 2) (0 :: (List.replicate n 1 ++ r))) := by
   induction n generalizing a r with
-  | zero => simp; exact ReachesStar.refl _ _
+  | zero => simp; try exact ReachesStar.refl _ _
   | succ n ih =>
     have h1 : (n + 1) * 4 + 1 + k * 2 = 5 + (n * 2 + k) * 2 := by omega
     rw [h1]
@@ -207,7 +195,7 @@ theorem Incs (n k : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     refine (ih (2 + a) (1 :: r)).trans ?_
     have h3 : n * 2 + (2 + a) = (n + 1) * 2 + a := by omega
     rw [h3, rep_snoc, Nat.add_comm 1 n]
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
 
 theorem init_step : ReachesStar target_tm (init []) (CfgT [] 1 []) := by
   simp only [CfgT, LC, RC]; normalize; bb_steps
@@ -303,13 +291,13 @@ theorem step_odd1_r (l : List Nat) (x fa m : Nat) (r : List Nat) (h : fa % 4 = 1
     refine (Sone l x (0 :: (List.replicate (m + 1) 1 ++ r))).trans ?_
     refine (Tmixs (m + 1) l (2 + x) r).trans ?_
     have heq : (m + 1) * 2 + (2 + x) = x + 1 + 2 * m + 3 := by omega
-    rw [heq]; exact ReachesStar.refl _ _
+    rw [heq]; try exact ReachesStar.refl _ _
   · have hfa : (fa / 4 - 1) * 4 + 5 = fa := by omega
     rw [← hfa]
     refine (S_odd1_lemma (fa / 4 - 1) (m + 1) l x r).trans ?_
     have heq : (fa / 4 - 1 + 1 + (m + 1)) * 2 + (2 + ((fa / 4 - 1 + 1) * 2 + x)) =
         x + ((fa / 4 - 1) * 4 + 5) + 2 * m + 3 := by omega
-    rw [heq]; exact ReachesStar.refl _ _
+    rw [heq]; try exact ReachesStar.refl _ _
 
 theorem step_odd1_end (l : List Nat) (x fa : Nat) (h : fa % 4 = 1) :
     ReachesStar target_tm (CfgS (x :: l) fa [0, 1]) (CfgS l (x + fa + 2) [0, 1]) := by
@@ -386,7 +374,7 @@ theorem step_down_nil4 (fa : Nat) (r : List Nat) (h1 : fa % 8 = 4) (h2 : 12 ≤ 
     have hlen : (2 * arec_0 + 3) / 4 = arec_0 / 2 := by omega
     rw [hlen, rep_snoc, Nat.add_comm 1 (arec_0 / 2)]
   have ha2 : 1 + (2 * arec_0 + 3) / 2 - 2 = arec_0 := by omega
-  rw [hrep2, ha2]; exact ReachesStar.refl _ _
+  rw [hrep2, ha2]; try exact ReachesStar.refl _ _
 
 theorem step_leaf_mod4_2 (arec_0 : Nat) (r : List Nat) (h1 : arec_0 % 4 = 2) :
     ReachesStar target_tm
@@ -400,7 +388,7 @@ theorem step_leaf_mod4_2 (arec_0 : Nat) (r : List Nat) (h1 : arec_0 % 4 = 2) :
   rw [hr]
   refine (step_odd1_r [1] 0 (arec_0 - 1) 1 r hodd1).trans ?_
   have ha : 0 + (arec_0 - 1) + 2 * 1 + 3 = arec_0 + 4 := by omega
-  rw [ha]; exact ReachesStar.refl _ _
+  rw [ha]; try exact ReachesStar.refl _ _
 
 theorem step_leaf_mod8_0 (arec_0 : Nat) (r : List Nat) (h1 : arec_0 % 8 = 0) (h2 : 8 ≤ arec_0) :
     let ah := arec_0 / 2
@@ -431,7 +419,7 @@ theorem step_leaf_mod8_0 (arec_0 : Nat) (r : List Nat) (h1 : arec_0 % 8 = 0) (h2
   refine (T_21_lemma (ah / 2 + 1) [] (ah + 1) r).trans ?_
   have ha3 : 2 + (ah + 1) = ah + 3 := by omega
   have ha4 : (ah / 2 + 1) * 2 = ah + 2 := by omega
-  rw [ha3, ha4]; exact ReachesStar.refl _ _
+  rw [ha3, ha4]; try exact ReachesStar.refl _ _
 
 theorem step_up_nil4 (arec_0 q_top : Nat) (l r : List Nat) (h1 : arec_0 % 2 = 0) (h2 : 2 ≤ q_top) :
     ReachesStar target_tm
@@ -444,7 +432,7 @@ theorem step_up_nil4 (arec_0 q_top : Nat) (l r : List Nat) (h1 : arec_0 % 2 = 0)
   refine (T_21_lemma (arec_0 + 4) (q_top :: l) (arec_0 + 2) r).trans ?_
   have hp : 2 + (arec_0 + 2) = arec_0 + 4 := by omega
   have ha2 : (arec_0 + 4) * 2 = 2 * arec_0 + 8 := by omega
-  rw [hp, ha2]; exact ReachesStar.refl _ _
+  rw [hp, ha2]; try exact ReachesStar.refl _ _
 
 theorem step_start_loop (arec_0 q_top : Nat) (l : List Nat) (h1 : arec_0 % 2 = 0) (h2 : 2 ≤ q_top) :
     ReachesStar target_tm
@@ -484,7 +472,7 @@ theorem step_down_cons_r (l : List Nat) (x0 fa : Nat) (r : List Nat) (h1 : fa % 
       (CfgS l (x0 + fa / 2 - 2) (0 :: 1 :: 2 :: (List.replicate (fa / 4 + 1) 1 ++ r))) := by
   refine (step_odd3_r l x0 fa (1 :: r) h1 h2).trans ?_
   rw [rep_snoc, Nat.add_comm 1 (fa / 4)]
-  exact ReachesStar.refl _ _
+  try exact ReachesStar.refl _ _
 
 theorem step_up_cons_r (fa q_top : Nat) (l_in r : List Nat) (h1 : fa % 4 = 3) (h2 : 2 ≤ q_top) :
     ReachesStar target_tm
@@ -493,7 +481,7 @@ theorem step_up_cons_r (fa q_top : Nat) (l_in r : List Nat) (h1 : fa % 4 = 3) (h
   refine (T_21_lemma (fa / 4 + 1) l_in (q_top - 2) r).trans ?_
   have hq : 2 + (q_top - 2) = q_top := by omega
   have ha : (fa / 4 + 1) * 2 = fa / 2 + 1 := by omega
-  rw [hq, ha]; exact ReachesStar.refl _ _
+  rw [hq, ha]; try exact ReachesStar.refl _ _
 
 theorem step_up_walk_odd3 (fa q_top : Nat) (l_in : List Nat) (h1 : fa % 4 = 3) (h2 : 2 ≤ q_top) :
     ReachesStar target_tm
@@ -540,7 +528,7 @@ theorem step_plus_6 (m : Nat) (h1 : m % 2 = 0) (h2 : m % 8 ≠ 4) (h3 : 6 ≤ m)
     have hodd : (m + 3) % 4 = 1 := by omega
     refine (step_odd1_end [] 1 (m + 3) hodd).trans ?_
     have ha2 : 1 + (m + 3) + 2 = m + 6 := by omega
-    rw [ha2]; exact ReachesStar.refl _ _
+    rw [ha2]; try exact ReachesStar.refl _ _
   · refine (step_leaf_mod8_0 m [] hm8 hmge).trans ?_
     have ha1 : m / 2 + 2 = 1 + (m / 2 + 1) := by omega
     rw [ha1]
@@ -548,13 +536,13 @@ theorem step_plus_6 (m : Nat) (h1 : m % 2 = 0) (h2 : m % 8 ≠ 4) (h3 : 6 ≤ m)
     have hodd : (m / 2 + 1) % 4 = 1 := by omega
     refine (step_odd1_end [] (m / 2 + 3) (m / 2 + 1) hodd).trans ?_
     have ha2 : (m / 2 + 3) + (m / 2 + 1) + 2 = m + 6 := by omega
-    rw [ha2]; exact ReachesStar.refl _ _
+    rw [ha2]; try exact ReachesStar.refl _ _
 
 theorem finish_even_spec (fa_f : Nat) (h1 : fa_f % 2 = 0) (h2 : 6 ≤ fa_f) :
     ReachesStar target_tm (Cn fa_f) (Cn (fa_f + 6 * (((fa_f - 4) / 2) % 4))) := by
   rcases (by omega : ((fa_f - 4) / 2) % 4 = 0 ∨ ((fa_f - 4) / 2) % 4 = 1 ∨
       ((fa_f - 4) / 2) % 4 = 2 ∨ ((fa_f - 4) / 2) % 4 = 3) with hr0 | hr1 | hr2 | hr3
-  · rw [hr0, Nat.mul_zero, Nat.add_zero]; exact ReachesStar.refl _ _
+  · rw [hr0, Nat.mul_zero, Nat.add_zero]; try exact ReachesStar.refl _ _
   · rw [hr1, Nat.mul_one]
     exact step_plus_6 fa_f h1 (by omega) h2
   · rw [hr2]
@@ -744,7 +732,7 @@ theorem val_step_up_nil4 (g_f t arec_0 w_half q_top w_qtop : Nat) (l r : List Na
     omega
   refine h.trans ?_
   rw [hpo, hpt]
-  exact ReachesStar.refl _ _
+  try exact ReachesStar.refl _ _
 
 theorem val_step_start_loop (g_f t arec_0 wQtr wHalf q_top w_qtop : Nat) (l : List Nat)
     (hg0 : 0 < g_f) (hg8 : g_f % 8 = 0) (hwH : g_f ∣ wHalf) (hwQ : g_f ∣ wQtr) (hwqt : g_f ∣ w_qtop)
@@ -842,7 +830,7 @@ theorem val_step_cons_mod3_r (g_f t x0 w_x x1 w_x1 fa w : Nat) (l r : List Nat)
     rw [hdiv2]; dsimp [val]; omega
   refine h.trans ?_
   rw [hx_new, ha_new]
-  exact ReachesStar.refl _ _
+  try exact ReachesStar.refl _ _
 
 theorem val_step_walk_odd3_mod3 (g_f t x0 w_x x1 w_x1 fa w : Nat) (l : List Nat)
     (hg0 : 0 < g_f) (hg8 : g_f % 8 = 0) (hwx : g_f ∣ w_x) (hwx1 : g_f ∣ w_x1) (hw : g_f ∣ w) (hwh : g_f ∣ (w / 2))
@@ -2614,27 +2602,27 @@ theorem chainRight_spec (fuel : Nat) (t : RuleTrie) (n rs rd : Nat)
 theorem jumpRight_spec (fuel : Nat) (t : RuleTrie) (n : Nat) (ht : RuleTrie.Valid t) :
     ReachesStar target_tm (Cn n) (Cn (jumpRight fuel t n)) := by
   induction fuel generalizing n with
-  | zero => exact ReachesStar.refl _ _
+  | zero => try exact ReachesStar.refl _ _
   | succ fuel ih =>
     dsimp only [jumpRight, Nat.rec, jumpStep]
     have hlu := trieLookup_spec t (Nat.div n 8) OptRule.none ht trivial
     cases hl : trieLookup t (Nat.div n 8) OptRule.none with
-    | none => dsimp only [OptRule.rec]; exact ReachesStar.refl _ _
+    | none => dsimp only [OptRule.rec]; try exact ReachesStar.refl _ _
     | some sb ss sd =>
       rw [hl] at hlu
       dsimp only [OptRule.rec, jumpStepSome, nat_add_eq]
       cases hap : applies sb ss n <;> dsimp only [Bool.rec]
-      · exact ReachesStar.refl _ _
+      · try exact ReachesStar.refl _ _
       · exact (apply_rule sb ss sd n hlu hap).trans (ih (n + sd))
 
 theorem runEvalJump_spec (t : RuleTrie) (steps n : Nat) (ht : RuleTrie.Valid t) :
     ReachesStar target_tm (Cn n) (Cn (runEvalJump t steps n)) := by
   induction steps generalizing n with
-  | zero => exact ReachesStar.refl _ _
+  | zero => try exact ReachesStar.refl _ _
   | succ steps ih =>
     dsimp only [runEvalJump, Nat.rec, runEvalJumpStep, runEvalJumpStepAux, nat_add_eq]
     cases hle : Nat.ble (n + 1) (fastEval n) <;> dsimp only [Bool.rec]
-    · exact ReachesStar.refl _ _
+    · try exact ReachesStar.refl _ _
     · have hgt : n + 1 ≤ fastEval n := Nat.le_of_ble_eq_true hle
       rcases fastEval_spec n with h0 | hstep
       · omega
@@ -2653,7 +2641,7 @@ theorem runTwoStage_spec (steps1 steps2 n : Nat) (t : RuleTrie) (ht : RuleTrie.V
     | none =>
       dsimp only [CmpRule.rec, runEvalJumpStepAux, nat_add_eq]
       cases hle : Nat.ble (n + 1) (fastEval n) <;> dsimp only [Bool.rec]
-      · exact ReachesStar.refl _ _
+      · try exact ReachesStar.refl _ _
       · have hgt : n + 1 ≤ fastEval n := Nat.le_of_ble_eq_true hle
         rcases fastEval_spec n with h0 | hstep
         · omega
@@ -2789,15 +2777,15 @@ theorem drain_T_spec (o : Ops) (v : o.num → Nat) (H : Laws o v) (fuel : Nat)
       (CfgT (expand o v l) (v a) (0 :: expand o v r2))
       (CfgT (expand o v res.1) (v res.2.1) (0 :: expand o v res.2.2)) := by
   induction fuel generalizing l a r2 with
-  | zero => exact ReachesStar.refl _ _
+  | zero => try exact ReachesStar.refl _ _
   | succ fuel ih =>
     rcases r2 with _ | ⟨⟨d2, n2⟩, _ | ⟨⟨d1, k⟩, r3⟩⟩
-    · exact ReachesStar.refl _ _
-    · exact ReachesStar.refl _ _
+    · try exact ReachesStar.refl _ _
+    · try exact ReachesStar.refl _ _
     · dsimp only [drain_T]
       cases h1 : o.eq d2 (o.con 2) <;> cases h2 : o.eq n2 (o.con 1) <;> cases h3 : o.eq d1 (o.con 1) <;>
         simp only [Bool.and_self, Bool.and_false, Bool.false_and, Bool.false_eq_true, ↓reduceIte]
-      any_goals exact ReachesStar.refl _ _
+      any_goals try exact ReachesStar.refl _ _
       have hd2 := H.eq_ok _ _ h1; rw [H.con_ok] at hd2
       have hn2 := H.eq_ok _ _ h2; rw [H.con_ok] at hn2
       have hd1 := H.eq_ok _ _ h3; rw [H.con_ok] at hd1
@@ -3523,7 +3511,7 @@ theorem run_to_20_spec (fuel : Nat) (x : Frame Nat) (h : run_to_20 fuel x = true
         subst hn20
         unfold den
         rw [cut_spec numbers id number_laws x 20 hcut]
-        exact ReachesStar.refl _ _
+        try exact ReachesStar.refl _ _
 
 def run_to_halt : Nat → Frame Nat → Bool
   | 0, _ => false
@@ -4775,7 +4763,7 @@ theorem jumpsF_spec (lim : Nat) (hT : TabV lim) (cnt : Nat) :
     change JRes.ok p x = JRes.ok p' x' at h
     injection h with h1 h2
     subst h1
-    exact ReachesStar.refl _ _
+    try exact ReachesStar.refl _ _
   | succ cnt ih =>
     intro p x p' x' h
     change jStepF lim cnt (Nat.rec (motive := fun _ => Nat → Nat → JRes) JRes.ok (jStepF lim) cnt) p x =
@@ -5249,10 +5237,8 @@ theorem full_halt : HaltsFrom target_tm (init []) := by
 end
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := (isHalt_iff_haltsFrom_init target_tm).mpr Solution.full_halt
+theorem is_halt : IsHalt target := (isHalt_iff_haltsFrom_init target_tm).mpr Solution.full_halt
 
 end BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC

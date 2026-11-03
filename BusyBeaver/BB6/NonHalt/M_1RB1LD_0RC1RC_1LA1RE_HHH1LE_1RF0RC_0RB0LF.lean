@@ -2,44 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
-import BusyBeaver.Longitudinal
+module
 
-/-!
-# Busy Beaver Machine `1RB1LD_0RC1RC_1LA1RE_---1LE_1RF0RC_0RB0LF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`, `BusyBeaver.Longitudinal`
-and defines `target_tm` for `1RB1LD_0RC1RC_1LA1RE_---1LE_1RF0RC_0RB0LF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LD_0RC1RC_1LA1RE_HHH1LE_1RF0RC_0RB0LF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_0RC1RC_1LA1RE_HHH1LE_1RF0RC_0RB0LF"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB1LD_0RC1RC_1LA1RE_---1LE_1RF0RC_0RB0LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 2, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 3, 0 => none
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 2, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 5, 1 => some (some 5, Stmt.write 0 Dir.left)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
@@ -98,7 +79,7 @@ lemma shiftR_2_11 (k : Nat) (l r : ListBlank (Fin 2)) :
     (l {{2}}> (([1, 1] : List (Fin 2)) ^ k +> r)) [tm1]⊢*
       ((([0, 1] : List (Fin 2)) ^ k +> l) {{2}}> r) := by
   induction k generalizing l with
-  | zero => exact stepStar_refl tm1 _
+  | zero => try exact stepStar_refl tm1 _
   | succ k ih =>
     rw [right_pow_succ ([1, 1] : List (Fin 2)) k r,
         right_pow_succ_right ([0, 1] : List (Fin 2)) k l]
@@ -123,7 +104,7 @@ lemma shiftR_4_11 (k : Nat) (l r : ListBlank (Fin 2)) :
     (l {{4}}> (([1, 1] : List (Fin 2)) ^ k +> r)) [tm1]⊢*
       ((([1, 0] : List (Fin 2)) ^ k +> l) {{4}}> r) := by
   induction k generalizing l with
-  | zero => exact stepStar_refl tm1 _
+  | zero => try exact stepStar_refl tm1 _
   | succ k ih =>
     rw [right_pow_succ ([1, 1] : List (Fin 2)) k r,
         right_pow_succ_right ([1, 0] : List (Fin 2)) k l]
@@ -149,7 +130,7 @@ lemma shiftL_5_10 (k : Nat) (l r : ListBlank (Fin 2)) :
     ((([1, 0] : List (Fin 2)) ^ k +> l) <{{5}} ([0, 0] +> r)) [tm1]⊢*
       (l <{{5}} ([0, 0] +> (([1, 1] : List (Fin 2)) ^ k +> r))) := by
   induction k generalizing r with
-  | zero => exact stepStar_refl tm1 _
+  | zero => try exact stepStar_refl tm1 _
   | succ k ih =>
     rw [right_pow_succ ([1, 0] : List (Fin 2)) k l,
         right_pow_succ_right ([1, 1] : List (Fin 2)) k r]
@@ -165,7 +146,7 @@ lemma shiftL_5_01 (k : Nat) (l r : ListBlank (Fin 2)) :
     ((([0, 1] : List (Fin 2)) ^ k +> l) <{{5}} ([0, 0, 0] +> r)) [tm1]⊢*
       (l <{{5}} ([0, 0, 0] +> (([1, 1] : List (Fin 2)) ^ k +> r))) := by
   induction k generalizing r with
-  | zero => exact stepStar_refl tm1 _
+  | zero => try exact stepStar_refl tm1 _
   | succ k ih =>
     rw [right_pow_succ ([0, 1] : List (Fin 2)) k l,
         right_pow_succ_right ([1, 1] : List (Fin 2)) k r]
@@ -1341,7 +1322,7 @@ lemma S_iter (k n a b c d : Nat) :
         Kr (24 * 0 + n) (1 + a) (2 * 0 + 3 + b) (3 + c) (2 * 0 + 1 + d) :=
       Kr_congr (by omega) (by omega) (by omega) (by omega) (by omega)
     rw [h0]
-    exact stepStar_refl tm1 _
+    try exact stepStar_refl tm1 _
   | succ k ih =>
     have h_lhs : Kr n (4 * (k + 1) + 1 + a) (3 + b) (3 + c) (1 + d) =
         Kr n (5 + (4 * k + a)) (3 + b) (3 + c) (1 + d) :=
@@ -1726,14 +1707,14 @@ lemma init_to_ev : (init []) [target_tm]⊢* Ev 6431 20 :=
 def Inv (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ N X : Nat, cfg = Ev N X
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine IsNotHalt.of_reachesPlus_invariant (P := Inv) init_to_ev ⟨6431, 20, rfl⟩ ?_
   rintro _ ⟨N, X, rfl⟩
   exact ⟨Ev (48 * X + 716 + N) (4 + X), DC N X, 48 * X + 716 + N, 4 + X, rfl⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LD_0RC1RC_1LA1RE_HHH1LE_1RF0RC_0RB0LF
 

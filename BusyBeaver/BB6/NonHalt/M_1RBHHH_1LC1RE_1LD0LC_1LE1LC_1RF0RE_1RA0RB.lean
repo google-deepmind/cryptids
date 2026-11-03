@@ -2,44 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
-import BusyBeaver.Longitudinal
+module
 
-/-!
-# Busy Beaver Machine `1RB---_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`, `BusyBeaver.Longitudinal`
-and defines `target_tm` for `1RB---_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB---_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => none
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 5, 1 => some (some 1, Stmt.write 0 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open BusyBeaver.Longitudinal
 
 local notation "zB" => ListBlank (Fin 2)
@@ -73,7 +54,7 @@ lemma runSteps_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
     (h : runSteps M n x = some x') (l₀ r₀ : zB) :
     (BoundedConfig.toCfg x l₀ r₀) [M]⊢* (BoundedConfig.toCfg x' l₀ r₀) := by
   induction n generalizing x with
-  | zero => cases h; exact stepStar_refl M _
+  | zero => cases h; try exact stepStar_refl M _
   | succ n ih =>
     dsimp [runSteps] at h
     rcases hst : BoundedConfig.step M x with _ | y <;> rw [hst] at h
@@ -2076,9 +2057,7 @@ lemma neverHaltsFrom_tm : NeverHaltsFrom tm (init []) := by
   refine NeverHaltsFrom.of_reachesPlus_invariant Inv_step ?_
   exact ⟨RootG 11, l, r, .ReadyG 11 (by decide) (by decide), hd, rfl⟩
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg ⟨k, hk⟩
@@ -2088,5 +2067,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   have hsome := neverHaltsFrom_tm (flipCfg cfg) ⟨k, hflip⟩
   rw [step_flipTM] at hsome
   cases hst : step target_tm cfg <;> simp_all
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB

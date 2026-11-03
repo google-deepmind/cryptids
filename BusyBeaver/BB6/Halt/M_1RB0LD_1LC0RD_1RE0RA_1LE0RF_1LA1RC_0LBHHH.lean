@@ -2,43 +2,28 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LB---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Excursion
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LB---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 2, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 1, Stmt.write 0 Dir.left)
-  | 5, 1 => none
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedTactic false
 set_option linter.unreachableTactic false
 set_option linter.unusedVariables false
@@ -150,8 +135,8 @@ local macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 local macro "step_tm" : tactic =>
   `(tactic| (try refine qE ?_) <;>
-    refine qt (by (try simp only [Turing.ListBlank.head_cons,default_head]); rfl) ?_ <;>
-    simp only [Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,zero_cons_default,default_head,default_tail])
+    refine qt (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons,default_head]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,zero_cons_default,default_head,default_tail])
 local macro "execute5" : tactic =>
   `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)))
 local macro "execute" : tactic =>
@@ -4944,10 +4929,8 @@ lemma holdout_0491_halt :
     IsHalt holdout_0491_tm :=
   qW tm104_halt
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := holdout_0491_halt
+theorem is_halt : IsHalt target := holdout_0491_halt
 
 end BusyBeaver.M_1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH

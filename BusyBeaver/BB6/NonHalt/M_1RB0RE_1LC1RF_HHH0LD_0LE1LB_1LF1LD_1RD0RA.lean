@@ -2,42 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RE_1LC1RF_---0LD_0LE1LB_1LF1LD_1RD0RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RE_1LC1RF_---0LD_0LE1LB_1LF1LD_1RD0RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1LC1RF_HHH0LD_0LE1LB_1LF1LD_1RD0RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RF_HHH0LD_0LE1LB_1LF1LD_1RD0RA"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0RE_1LC1RF_---0LD_0LE1LB_1LF1LD_1RD0RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 2, 0 => none
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 1, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 5, 1 => some (some 0, Stmt.write 0 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
 set_option linter.unreachableTactic false
@@ -1602,14 +1584,14 @@ lemma init_reaches_conj_inv_128 :
   · simp only [cfg_of, init, Tape.mk₁, List.head?, Option.getD, List.tail, append_cons, append_nil, zero_cons_default, default_head, default_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; rfl
   · simp only [cfg_of, cfg_modeC, conjCfg, mirrorTape, σ_EFDBAC, encL, encL_tail, prepend10, append_cons, append_nil, zero_cons_default, default_head, default_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Option.map]; rfl
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm :=
   does_not_halt_of_conj_invariant tableIso_311_128 Inv
     ⟨cfg_modeC (encL 7 []) default, stepPlus_stepStar init_reaches_conj_inv_128,
       ⟨7, [], rfl, Or.inl ⟨rfl, by omega⟩⟩⟩
     inv_step
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0RE_1LC1RF_HHH0LD_0LE1LB_1LF1LD_1RD0RA

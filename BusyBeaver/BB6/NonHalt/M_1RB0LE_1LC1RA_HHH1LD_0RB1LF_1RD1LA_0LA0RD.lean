@@ -2,43 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LE_1LC1RA_---1LD_0RB1LF_1RD1LA_0LA0RD` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LE_1LC1RA_---1LD_0RB1LF_1RD1LA_0LA0RD`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LE_1LC1RA_HHH1LD_0RB1LF_1RD1LA_0LA0RD
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC1RA_HHH1LD_0RB1LF_1RD1LA_0LA0RD"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LE_1LC1RA_---1LD_0RB1LF_1RD1LA_0LA0RD`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 2, 0 => none
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 1 => some (some 3, Stmt.write 0 Dir.right)
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -243,7 +223,7 @@ lemma plus_right {q q' : Fin 6} {b a : Fin 2}
 
 macro "step_tm" : tactic => `(tactic| (
   dsimp -failIfUnchanged only [c0, c1, b0, b1]
-  try simp only [zero_cons_default]
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, zero_cons_default]
   first
   | refine star_right rfl ?_
   | refine star_left rfl ?_
@@ -598,9 +578,7 @@ theorem reach_arbitrarily_long :
     rcases hplus.to_multiStep with ⟨m, hm_pos, hm⟩
     exact ⟨N + m, c', by omega, hc', multiStep_trans _ _ _ N m hN hm⟩
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg ⟨k, hk⟩
@@ -616,5 +594,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
       exact multiStep_none_add h_none (N - (k + 1))
     rw [h_none_N] at hN
     nomatch hN
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LE_1LC1RA_HHH1LD_0RB1LF_1RD1LA_0LA0RD

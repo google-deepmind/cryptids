@@ -2,44 +2,26 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RC---_1LA0RF` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RC---_1LA0RF`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RCHHH_1LA0RF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RC---_1LA0RF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 1, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 4, 1 => none
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 5, Stmt.write 0 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RCHHH_1LA0RF"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 def A : Fin 6 := 0
@@ -160,21 +142,21 @@ def p01 : List (Fin 2) := [0, 1]
 def one_tok : List (Fin 2) := [1]
 
 macro "step1" : tactic => `(tactic| (
-  try simp only [init_nil, U0, U1, d0, d1, d2, d3, p11, p10, p01, one_tok,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, U0, U1, d0, d1, d2, d3, p11, p10, p01, one_tok,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     zero_cons_default, default_head, default_tail]
   refine multiStep_step (by rfl) ?_
-  simp only [Turing.Tape.move, Tape.write,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Tape.write,
     listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     zero_cons_default, default_head, default_tail]))
 
 macro "run_steps" n:num : tactic => `(tactic| (
   iterate $n step1
-  simp only [U0, U1, d0, d1, d2, d3, p11, p10, p01, one_tok,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, U0, U1, d0, d1, d2, d3, p11, p10, p01, one_tok,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
     listblank_append_cons, listblank_append_nil,
@@ -285,7 +267,7 @@ lemma StackLast (l r : ListBlank (Fin 2)) :
 lemma LastReturn (m : Nat) (l r : ListBlank (Fin 2)) :
     (l {{B}}> (p11 ^ m +> r)) [target_tm]⊢* ((l <+ p11 ^ m) {{B}}> r) := by
   induction m generalizing l with
-  | zero => exact stepStar_refl _
+  | zero => try exact stepStar_refl _
   | succ m ih =>
     rw [right_pow_succ p11 m r, left_pow_succ_right l p11 m]
     exact stepStar_trans (stepPlus_to_stepStar (StackLast l _)) (ih (l <+ p11))
@@ -293,13 +275,13 @@ lemma LastReturn (m : Nat) (l r : ListBlank (Fin 2)) :
 lemma H3_enter_pow (k : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ d3 ^ k) <{{C}} r) [target_tm]⊢* (l <{{C}} (p11 ^ (k * 2) +> r)) := by
   induction k generalizing r with
-  | zero => exact stepStar_refl _
+  | zero => try exact stepStar_refl _
   | succ k ih =>
     rw [left_pow_succ l d3 k]
     refine stepStar_trans (stepPlus_to_stepStar (H3_enter (l <+ d3 ^ k) r)) ?_
     refine stepStar_trans (ih (p11 ^ 2 +> r)) ?_
     rw [← right_pow_add p11 (k * 2) 2 r, show k * 2 + 2 = (k + 1) * 2 by omega]
-    exact stepStar_refl _
+    try exact stepStar_refl _
 
 lemma overflow_turn (l r : ListBlank (Fin 2)) :
     ((l <+ [1, 1, 0, 1]) <{{C}} r) [target_tm]⊢⁺ (l {{B}}> (p11 ^ 2 +> r)) :=
@@ -316,13 +298,13 @@ lemma overflow_c_step (l r : ListBlank (Fin 2)) :
 lemma overflow_c_scan (m : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ p11 ^ m) <{{C}} r) [target_tm]⊢* (l <{{C}} (p01 ^ m +> r)) := by
   induction m generalizing r with
-  | zero => exact stepStar_refl _
+  | zero => try exact stepStar_refl _
   | succ m ih =>
     rw [left_pow_succ l p11 m]
     refine stepStar_trans (stepPlus_to_stepStar (overflow_c_step (l <+ p11 ^ m) r)) ?_
     refine stepStar_trans (ih (p01 +> r)) ?_
     rw [← right_pow_succ_right p01 m r]
-    exact stepStar_refl _
+    try exact stepStar_refl _
 
 lemma TerminalOverflow (l r : ListBlank (Fin 2)) (k : Nat) :
     ((l <+ [1, 1, 0, 1] <+ d3 ^ k <+ U1) <{{D}} r) [target_tm]⊢⁺
@@ -791,7 +773,7 @@ lemma FrameWalkCalls (q : Nat) {xs ys : List Bool} {l l' : ListBlank (Fin 2)}
   | zero =>
     have hxy : xs = ys := fvalue_injective hlen (by omega)
     subst hxy; subst hps
-    exact stepStar_refl _
+    try exact stepStar_refl _
   | succ q ih =>
     rcases hps with ⟨lm, hp, hps'⟩
     have hys_bound := fvalue_bound ys
@@ -808,13 +790,13 @@ lemma Descend (m : Nat) (l r : ListBlank (Fin 2)) :
     (l <{{D}} (Frame (List.replicate m false) +> r)) := by
   rw [Frame_zeros]
   induction m generalizing r with
-  | zero => exact stepStar_refl _
+  | zero => try exact stepStar_refl _
   | succ m ih =>
     rw [left_pow_succ l p11 m]
     refine stepStar_trans (stepPlus_to_stepStar (StackEnter (l <+ p11 ^ m) r)) ?_
     refine stepStar_trans (ih (p10 +> r)) ?_
     rw [← right_pow_succ_right p10 m r]
-    exact stepStar_refl _
+    try exact stepStar_refl _
 
 lemma Drain (q : Nat) (bs : List Bool) (l l' r : ListBlank (Fin 2))
     (hval : fvalue bs + q + 1 = 2 ^ bs.length) (hps : sidePs (q + 1) l l') :
@@ -1568,9 +1550,7 @@ theorem reach_arbitrarily_long :
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
@@ -1579,7 +1559,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   | some cfg' => rfl
   | none =>
     have h_none : multiStep target_tm (init []) (k + 1) = none := by
-      rw [multiStep_succ, hk]; exact h_step
+      rw [multiStep_succ', hk]; exact h_step
     rcases reach_arbitrarily_long (k + 1) with ⟨N, _, h_ge, _, hN⟩
     have h_split : N = (k + 1) + (N - (k + 1)) := by omega
     have h_none_N : multiStep target_tm (init []) N = none := by
@@ -1587,5 +1567,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
       exact multiStep_none_add h_none (N - (k + 1))
     rw [h_none_N] at hN
     nomatch hN
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LB_1LC1RB_1RF1LD_0LE0LC_0RCHHH_1LA0RF

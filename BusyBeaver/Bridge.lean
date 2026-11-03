@@ -38,7 +38,8 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
     let wChar := chars[3 * i]!
     let dChar := chars[3 * i + 1]!
     let sChar := chars[3 * i + 2]!
-    if wChar == '-' && dChar == '-' && sChar == '-' then
+    if (wChar == '-' && dChar == '-' && sChar == '-') ||
+        (wChar == 'H' && dChar == 'H' && sChar == 'H') then
       cellStxs := cellStxs.push (← `(none))
     else
       if !wChar.isDigit then

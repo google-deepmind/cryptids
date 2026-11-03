@@ -2,43 +2,33 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LC---` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LC---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+local macro "normalize" : tactic => `(tactic| (
+  try simp only [ListBlank.append_cons, ListBlank.append_nil,
+    ListBlank.head_cons, ListBlank.tail_cons,
+    ListBlank.head_default, ListBlank.head_default_fin, ListBlank.tail_default,
+    ListBlank.cons_zero_default, ListBlank.cons_default_default,
+    list_pow_zero, list_pow_succ,
+    List.nil_append, List.cons_append, List.append_nil,
+    Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LC---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 5, 1 => none
-
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
@@ -193,7 +183,7 @@ lemma steps_L_101 (b : ℕ) (L r : ListBlank (Fin 2)) :
     (toDHCfg (hL, .left) ([1, 0, 1] ^ b +> L) r) [tm]⊢*
       (toDHCfg (hL, .left) L ([1, 1, 0] ^ b +> r)) := by
   induction b generalizing r with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ b ih =>
     rw [pow_succ_list, append_assoc]
     refine stepStar_trans (step_L_101 ([1, 0, 1] ^ b +> L) r) ?_
@@ -212,7 +202,7 @@ lemma steps_R_A_110 (b : ℕ) (L r : ListBlank (Fin 2)) :
     (toDHCfg (hR, .right) L ([1, 1, 0] ^ b +> r)) [tm]⊢*
       (toDHCfg (hR, .right) ([1, 0, 1] ^ b +> L) r) := by
   induction b generalizing L with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ b ih =>
     rw [pow_succ_list [1, 1, 0] b, append_assoc]
     refine stepStar_trans (step_R_A_110 L ([1, 1, 0] ^ b +> r)) ?_
@@ -229,7 +219,7 @@ lemma step_R_C_110 (L r : ListBlank (Fin 2)) :
 lemma steps_R_C_110 (k : ℕ) (L r : ListBlank (Fin 2)) :
     (L {{C}}> ([1, 1, 0] ^ k +> r)) [tm]⊢* (([1, 1, 1] ^ k +> L) {{C}}> r) := by
   induction k generalizing L with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ k ih =>
     rw [pow_succ_list [1, 1, 0] k, append_assoc]
     refine stepStar_trans (step_R_C_110 L ([1, 1, 0] ^ k +> r)) ?_
@@ -667,7 +657,7 @@ lemma left1_calls (a : ℕ) :
     intro b r r' h_side
     cases h_side
     rw [Nat.add_zero]
-    exact stepStar_refl tm _
+    try exact stepStar_refl tm _
   | succ a ih =>
     intro b r r' h_side
     rw [pow_succ_list h a] at h_side
@@ -777,9 +767,7 @@ lemma init_reaches_tm :
   dsimp [tape, word]
   bb_steps
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine Counter.does_not_halt_of_invariant
@@ -789,5 +777,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   · rintro _ ⟨n, r, rfl, h_mem, h_pot⟩
     obtain ⟨n', r', h_step, h_mem', h_pot'⟩ := next_step n r h_mem h_pot
     exact ⟨flipCfg (stateCfg n' r'), stepPlus_unflipTM h_step, n', r', rfl, h_mem', h_pot'⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH

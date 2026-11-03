@@ -2,42 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RA---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RA---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
@@ -346,8 +329,8 @@ macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 macro "step_tm" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z0T (by (try simp only [Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
-    simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
+    refine z0T (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
 macro "execute5" : tactic =>
   `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)))
 macro "execute" : tactic =>
@@ -3812,12 +3795,10 @@ set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 800000
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 open Solution in
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   rcases reach_0 with ⟨fuel, hfuel⟩
   rcases run_m_sound fuel cfg_0 cfg_end hfuel with ⟨n, hn⟩
   refine ⟨map_cfg_0365 (mstate_to_cfg cfg_end), ⟨n, ?_⟩, ?_⟩

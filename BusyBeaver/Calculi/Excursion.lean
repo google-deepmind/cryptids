@@ -1,9 +1,13 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
-public import BusyBeaver.Counter
+public import BusyBeaver.Calculi.Counter
 
 /-!
-# Decreasing Halt-Budget Calculus, Conjugate-Shift Excursion Algebra & Arithmetic Views (`BusyBeaver.Excursion`)
+# Decreasing Halt-Budget Calculus, Conjugate-Shift Excursion Algebra & Arithmetic Views (`BusyBeaver.Calculi.Excursion`)
 
 Ported from the Coq BB(6) verification suite (`ccz181078/busycoq`, branch `BB6`):
 - `Queue_v1.v`: Decreasing halt-budget non-halting calculus (`HaltsIn`, `Leads`, `Advances`,
@@ -24,7 +28,7 @@ All declarations live in `namespace BusyBeaver.Excursion` with `@[scoped simp]` 
 importing `BusyBeaver.Basic` does not alter the default `simp` set of existing proofs.
 -/
 
-public section
+@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver BusyBeaver.Counter
 

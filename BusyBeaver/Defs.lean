@@ -106,14 +106,8 @@ scoped notation:67 s:67 " << " a:68 => ListBlank.cons a s
 scoped infixr:67 " >> " => ListBlank.cons
 scoped notation:67 s:67 " <+ " l:68 => ListBlank.append l s
 scoped infixr:67 " +> " => ListBlank.append
-@[inherit_doc Cfg.headRight]
-scoped notation3 l " {{" q "}}> " r => Cfg.headRight q l r
-@[inherit_doc Cfg.headLeft]
-scoped notation3 l " <{{" q "}} " r => Cfg.headLeft q l r
-
-def list_nat_repeat {Γ : Type*} : List Γ → Nat → List Γ
-  | _, 0 => []
-  | l, n + 1 => l ++ list_nat_repeat l n
+scoped notation3 l " {{" q "}}> " r => (⟨some q, ⟨ListBlank.head r, l, ListBlank.tail r⟩⟩ : Cfg _ _)
+scoped notation3 l " <{{" q "}} " r => (⟨some q, ⟨ListBlank.head l, ListBlank.tail l, r⟩⟩ : Cfg _ _)
 
 
 /-- Repeat finite list `l` `n` times (`l ^ n`). -/
@@ -703,19 +697,6 @@ def HasTransducerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
             (evalTransducerCfg m_rl (List.replicate (s₄ * (n + 1)) tL' ++ L) R)))
 
 
-/-- Legacy alias `IsCryptid` for `HasCollatzReduction`. -/
-abbrev IsCryptid (M : Machine Γ Λ) : Prop := HasCollatzReduction M
 
-/-- Alias `IsStackCryptid` for `HasStackReduction`. -/
-abbrev IsStackCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ] (M : Machine (Fin (k + 2)) Λ) : Prop :=
-  HasStackReduction M
-
-/-- Alias `IsOdometerCryptid` for `HasOdometerReduction`. -/
-abbrev IsOdometerCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ] (M : Machine (Fin (k + 2)) Λ) : Prop :=
-  HasOdometerReduction M
-
-/-- Alias `IsTransducerCryptid` for `HasTransducerReduction`. -/
-abbrev IsTransducerCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ] (M : Machine (Fin (k + 2)) Λ) : Prop :=
-  HasTransducerReduction M
 
 end BusyBeaver

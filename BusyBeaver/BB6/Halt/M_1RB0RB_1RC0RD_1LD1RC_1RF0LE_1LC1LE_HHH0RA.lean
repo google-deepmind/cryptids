@@ -2,42 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_---0RA` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_---0RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_HHH0RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_---0RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 1 Dir.right)
-  | 3, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 5, 0 => none
-  | 5, 1 => some (some 0, Stmt.write 0 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_HHH0RA"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.unusedSimpArgs false
@@ -122,11 +105,11 @@ lemma z0T {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
   z0R (z0Q tm c₁ c₂ h₁) h₂
 
 macro "finish" : tactic =>
-  `(tactic| (try simp only [append_cons, append_nil, List.cons_append, List.nil_append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, z0i, zDh, zDt]) <;> exists 0 <;> fail)
+  `(tactic| (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, List.cons_append, List.nil_append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, z0i, zDh, zDt]) <;> exists 0 <;> fail)
 macro "step_tm" : tactic =>
-  `(tactic| (try dsimp only [append_cons, append_nil]) <;> (try refine zPs ?_) <;>
-    refine z0T (by (try simp only [append_cons, append_nil, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
-    simp only [append_cons, append_nil, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
+  `(tactic| (try dsimp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil]) <;> (try refine zPs ?_) <;>
+    refine z0T (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
 macro "execute5" : tactic =>
   `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)))
 macro "execute" : tactic =>
@@ -213,11 +196,11 @@ lemma HS10 (b : Nat) (l r : List Nat) :
   cases l with
   | nil =>
     dsimp only [S, LC, W1, zPz, z0j, List.cons_append, List.nil_append]
-    refine ⟨(([1, 0, 0, 0] : zF) +> ((W1 ^ b) +> RC r)) {{F}}> default, ?_, by simp [step, target_tm, F]⟩
+    refine ⟨(([1, 0, 0, 0] : zF) +> ((W1 ^ b) +> RC r)) {{F}}> default, ?_, by (simp [step, target_tm, F]; rfl)⟩
     execute
   | cons x0 l1 =>
     dsimp only [S, LC, W1, zPz, z0j, List.cons_append, List.nil_append]
-    refine ⟨(([1, 0, 0, 0] : zF) +> ((W1 ^ b) +> RC r)) {{F}}> (([0] : zF) +> ((W1 ^ x0) +> LC l1)), ?_, by simp [step, target_tm, F]⟩
+    refine ⟨(([1, 0, 0, 0] : zF) +> ((W1 ^ b) +> RC r)) {{F}}> (([0] : zF) +> ((W1 ^ x0) +> LC l1)), ?_, by (simp [step, target_tm, F]; rfl)⟩
     execute
 
 lemma S112 (a b : Nat) (l r : List Nat) :
@@ -233,7 +216,7 @@ lemma S110 (a b c : Nat) (l r : List Nat) :
       (([0] : zF) +> ((W1 ^ a) +> (([0] : zF) +> ((W1 ^ b) +> LC l)))))))))) [target_tm]⊢*
       ((W1 +> (([1, 0, 1, 0, 0, 0] : zF) +> ((W1 ^ c) +> RC r))) {{C}}>
       ((W1 ^ a) +> (([0] : zF) +> ((W1 ^ b) +> LC l)))) := by
-    dsimp [W1, list_nat_repeat]; execute
+    dsimp [W1]; execute
   have h2 := bounce_C a (([1, 0, 1, 0, 0, 0] : zF) +> ((W1 ^ c) +> RC r)) ((W1 ^ b) +> LC l)
   have h3 : ((([1, 0, 1, 0, 0, 0] : zF) +> ((W1 ^ c) +> RC r)) <{{E}}
       ((W1 ^ a) +> (([0, 1] : zF) +> ((W1 ^ b) +> LC l)))) [target_tm]⊢*
@@ -245,7 +228,7 @@ lemma S110 (a b c : Nat) (l r : List Nat) :
       ((W1 ^ a) +> (([0, 1] : zF) +> (([1] : zF) +> ((W1 ^ b) +> LC l))))) [target_tm]⊢*
       ((([0, 0] : zF) +> ((W1 ^ (c + 1)) +> RC r)) {{B}}>
       ((W1 ^ (a + 2)) +> (([0] : zF) +> ((W1 ^ (b + 2)) +> LC l)))) := by
-    dsimp [W1, list_nat_repeat]; execute
+    dsimp [W1]; execute
   exact zSt h1 (zSt h2 (zSt h3 (zSt h4 h5)))
 
 lemma start_S0 (a b m : Nat) (l : List Nat) (r : zB) :
@@ -257,7 +240,7 @@ lemma start_S0 (a b m : Nat) (l : List Nat) (r : zB) :
   have h2 := bounce_C a (([0, 0] : zF) +> ((W1 ^ m) +> r)) ((W1 ^ b) +> LC l)
   have h3 : ((([0, 0] : zF) +> ((W1 ^ m) +> r)) <{{E}} ((W1 ^ a) +> (([0, 1] : zF) +> ((W1 ^ b) +> LC l)))) [target_tm]⊢*
       (((W1 ^ m) +> r) <{{D}} ((W1 ^ (a + 2)) +> (([0] : zF) +> ((W1 ^ (b + 1)) +> LC l)))) := by
-    dsimp [W1, list_nat_repeat]; execute
+    dsimp [W1]; execute
   exact zSt h1 (zSt h2 h3)
 
 lemma S01 (a b c : Nat) (l r : List Nat) :
@@ -2351,11 +2334,9 @@ end
 
 end
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   exact halt_from_trans init_to_S halt_0
 
 end BusyBeaver.M_1RB0RB_1RC0RD_1LD1RC_1RF0LE_1LC1LE_HHH0RA

@@ -2,43 +2,28 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RF---_0LD1RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Excursion
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RF---_0LD1RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RF---_0LD1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 0 Dir.right)
-  | 4, 1 => none
-  | 5, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
+abbrev target_tm_alias : Machine (Fin 2) (Fin 6) := target_tm
 variable {α zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
@@ -46,7 +31,6 @@ abbrev C : Fin 6 := 2
 abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
-@[reducible] private def target_tm_alias : Machine (Fin 2) (Fin 6) := target_tm
 abbrev qi : Machine (Fin 2) (Fin 6)
   | 0,0 => some (some 1,Stmt.write 1 Dir.left)
   | 0,1 => some (some 4,Stmt.write 1 Dir.left)
@@ -3146,10 +3130,10 @@ lemma target_tm_is_nonhalt :
     IsDoesNotHalt target_tm_alias :=
   qI tm17_nonhalt
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := target_tm_is_nonhalt
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA

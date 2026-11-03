@@ -1,9 +1,13 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
-public import BusyBeaver.Counter
+public import BusyBeaver.Calculi.Counter
 
 /-!
-# 2D Longitudinal Space-Time Calculus (`BusyBeaver.Longitudinal`)
+# 2D Longitudinal Space-Time Calculus (`BusyBeaver.Calculi.Longitudinal`)
 
 Polymorphic 2D space-time boundary-trace calculus (`DH0`, `DH`, `toDHCfg`, `SideRL`, `SideLR`,
 `SegRR`, `SegLL`, `SegRL`, `SegLR`, `SideRLs`, `SegLRs`, `SegRLs`, `SegLLs`, `SideRLsHalt`),
@@ -13,7 +17,7 @@ libraries (`UC1`, `UC2`, `UC3`, `BCR`, `BC`), parametric Shift-Overflow Binary C
 
 All declarations live in `namespace BusyBeaver.Longitudinal` with `@[scoped simp]` attributes so
 that importing `BusyBeaver.Basic` never alters the default `simp` set of existing proofs; activate
-them in a proof file with `open BusyBeaver.Longitudinal` (or `open Longitudinal`).
+them in a proof file with `open BusyBeaver.Calculi.Longitudinal` (or `open Longitudinal`).
 -/
 
 @[expose] public section

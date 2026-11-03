@@ -2,43 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LA---` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LA---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LAHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 1 => none
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LAHHH"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 20000000
 set_option maxHeartbeats 40000000
 
@@ -66,19 +48,7 @@ def F : Fin 6 := 5
 
 omit [Inhabited Γ] in
 @[simp]
-theorem list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m := match m with
-  | 0 => by simp_rw [HPow.hPow, add_zero, list_nat_repeat, List.append_nil]
-  | m + 1 => by
-    rw [add_comm m 1, ← add_assoc, add_comm 1 m, list_pow_add]
-    simp only [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
-    rw [← List.append_assoc, ← List.append_assoc, List.append_cancel_right_eq]
-    induction n with
-    | zero => simp
-    | succ n ih => simpa
 
-omit [Inhabited Γ] in
-theorem list_pow_add_comm (l : List Γ) (n m : Nat) : l^n ++ l^m = l^m ++ l^n := by
-  rw [← list_pow_add, add_comm, list_pow_add]
 
 lemma listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
@@ -125,12 +95,12 @@ def bumpHead : List ℕ → List ℕ
   | nil => simp [bumpHead, encRight1]
   | cons d R' => rfl
 
-macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [listblank_append_cons, listblank_append_nil, zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
+macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, listblank_append_cons, listblank_append_nil, zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
 macro "step" : tactic => `(tactic| (
   try refine stepPlus_stepStar ?_
-  try simp only [listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head]
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head]
   apply step_stepStar_stepPlus (by rfl)
-  simp only [Turing.Tape.move, listblank_append_cons, listblank_append_nil,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
     zero_cons_default, default_head, default_tail]))
 macro "execute" n:num : tactic => `(tactic| (
@@ -327,11 +297,11 @@ lemma rep0_add_split (a b : ℕ) : rep0 (a + b) = rep0 a ++ rep0 b :=
   List.replicate_add a b 0
 
 macro "norm_list" : tactic => `(tactic|
-  simp only [HPow.hPow, list_nat_repeat, List.append_eq,
+  simp only [HPow.hPow, List.append_eq,
     blkL, blkR, bumpHead,
     List.replicate_succ, List.replicate_zero, rep0_add_split,
     List.nil_append, List.cons_append, List.append_nil, List.append_assoc,
-    rep0_append_zero_cons])
+    rep0_append_zero_cons, List.flatten_cons, List.flatten_nil])
 
 theorem rule_BR_zeros_all (L R : List ℕ) (k : ℕ) :
     (cfg_BR L (rep0 k ++ R)) [target_tm]⊢* (cfg_BR (rep0 k ++ L) R) := by
@@ -460,10 +430,10 @@ theorem rule_BR_blkR_succ : ∀ (k r : ℕ) (L R : List ℕ),
     (cfg_BR (0 :: L) ((blkR r) ^ (k + 1) ++ R)) [target_tm]⊢*
     (cfg_BR (rep0 3 ++ 1 :: ((blkL r) ^ k ++ (rep0 r ++ L))) R)
   | 0, r, L, R => by
-    simpa [HPow.hPow, list_nat_repeat, List.append_eq] using rule_BR_blkR_one r L R
+    simpa [HPow.hPow, List.append_eq, List.replicate_succ, List.replicate_zero, List.flatten_cons, List.flatten_nil] using rule_BR_blkR_one r L R
   | k + 1, r, L, R => by
     have heqR : (blkR r) ^ (k + 2) ++ R = blkR r ++ ((blkR r) ^ (k + 1) ++ R) := by
-      simp [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
+      simp [HPow.hPow, List.replicate_succ, List.flatten_cons, List.append_assoc]
     rw [heqR]
     have h1 := rule_BR_blkR_one r L ((blkR r) ^ (k + 1) ++ R)
     have h2 := rule_BR_blkR_succ k r (0 :: 0 :: 1 :: (rep0 r ++ L)) R
@@ -547,11 +517,11 @@ lemma decSegs_pushSeg (r c : ℕ) (segs : List (ℕ × ℕ)) :
 
 macro "norm_all" : tactic => `(tactic|
   simp only [decL, decR, decSegs, decLState, decSegs_pushSeg,
-    HPow.hPow, list_nat_repeat, List.append_eq,
+    HPow.hPow, List.append_eq,
     blkL, blkR, bumpHead,
     List.replicate_succ, List.replicate_zero, rep0_add_split,
     List.nil_append, List.cons_append, List.append_nil, List.append_assoc,
-    rep0_append_zero_cons])
+    rep0_append_zero_cons, List.flatten_cons, List.flatten_nil])
 
 theorem clean_sweep_core : ∀ (segs : List (ℕ × ℕ)) (bot : ℕ) (R : List ℕ),
     (cfg_C (0 :: (decSegs segs ++ rep0 (bot + 3))) R) [target_tm]⊢*
@@ -665,11 +635,11 @@ theorem clean_P1_one (r : ℕ) (segs : List (ℕ × ℕ)) (bot : ℕ) (R : List 
 theorem clean_P1_pow : ∀ (q r : ℕ) (segs : List (ℕ × ℕ)) (bot : ℕ) (R : List ℕ),
     (cfg_B (decLState (.clean 0 segs (bot + q))) (0 :: ((blkR r) ^ q ++ R))) [target_tm]⊢*
     (cfg_B (decLState (.clean 0 (pushSeg (r + 3) q segs) bot)) (0 :: R))
-  | 0, r, segs, bot, R => by simp [pushSeg, HPow.hPow, list_nat_repeat]
+  | 0, r, segs, bot, R => by simp [pushSeg, HPow.hPow, List.flatten_nil]
   | q + 1, r, segs, bot, R => by
     rw [show bot + (q + 1) = (bot + q) + 1 by omega]
     have heqR : (blkR r) ^ (q + 1) ++ R = blkR r ++ ((blkR r) ^ q ++ R) := by
-      simp [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
+      simp [HPow.hPow, List.replicate_succ, List.flatten_cons, List.append_assoc]
     rw [heqR]
     have h1 := clean_P1_one r segs (bot + q) ((blkR r) ^ q ++ R)
     have h2 := clean_P1_pow q r (pushSeg (r + 3) 1 segs) bot R
@@ -724,12 +694,12 @@ theorem clean_P2_one (r : ℕ) (segs : List (ℕ × ℕ)) (bot : ℕ) (R : List 
 theorem clean_P2_pow : ∀ (q r : ℕ) (segs : List (ℕ × ℕ)) (bot : ℕ) (R : List ℕ),
     (cfg_B (decLState (.clean 0 segs (bot + q * (r + 1)))) (1 :: 1 :: ((blkR r) ^ q ++ R))) [target_tm]⊢*
     (cfg_B (decLState (.clean 0 (pushSeg (4 * r + 3) q segs) bot)) (1 :: 1 :: R))
-  | 0, r, segs, bot, R => by simp [pushSeg, HPow.hPow, list_nat_repeat]
+  | 0, r, segs, bot, R => by simp [pushSeg, HPow.hPow, List.flatten_nil]
   | q + 1, r, segs, bot, R => by
     rw [show bot + (q + 1) * (r + 1) = (bot + q * (r + 1)) + (r + 1) by
       rw [Nat.succ_mul, Nat.add_assoc]]
     have heqR : (blkR r) ^ (q + 1) ++ R = blkR r ++ ((blkR r) ^ q ++ R) := by
-      simp [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
+      simp [HPow.hPow, List.replicate_succ, List.flatten_cons, List.append_assoc]
     rw [heqR]
     have h1 := clean_P2_one r segs (bot + q * (r + 1)) ((blkR r) ^ q ++ R)
     have h2 := clean_P2_pow q r (pushSeg (4 * r + 3) 1 segs) bot R
@@ -1142,7 +1112,7 @@ lemma decL_segsToItems : ∀ (segs : List (ℕ × ℕ)) (acc : List Item),
     unfold segsToItems; split
     · next hc =>
       rw [Nat.beq_eq] at hc; subst hc
-      simpa [decSegs, HPow.hPow, list_nat_repeat] using decL_segsToItems ss acc
+      simpa [decSegs, HPow.hPow] using decL_segsToItems ss acc
     · simp [decL, decSegs, decL_segsToItems ss acc, List.append_assoc]
 
 lemma decL_unpackClean (c0 : ℕ) (segs : List (ℕ × ℕ)) (bot : ℕ) :
@@ -1186,7 +1156,7 @@ lemma packTail_spec : ∀ (items : List Item) (cur0 : ℕ) (segs : List (ℕ × 
     unfold packTail at h; split at h
     · next hc =>
       rw [Nat.beq_eq] at hc; subst hc
-      simpa [decL, HPow.hPow, list_nat_repeat] using packTail_spec rest cur0 segs bot h
+      simpa [decL, HPow.hPow] using packTail_spec rest cur0 segs bot h
     · next hc0 =>
       have hne : c ≠ 0 := fun heq => hc0 (Nat.beq_eq.mpr heq)
       cases hp : packTail 0 rest with
@@ -1224,7 +1194,7 @@ lemma packHead_spec : ∀ (items : List Item) (cur0 : ℕ) (ls : LState),
     unfold packHead at h; split at h
     · next hc =>
       rw [Nat.beq_eq] at hc; subst hc
-      simpa [decL, HPow.hPow, list_nat_repeat] using packHead_spec rest cur0 ls h
+      simpa [decL, HPow.hPow] using packHead_spec rest cur0 ls h
     · next hc0 =>
       have hne : c ≠ 0 := fun heq => hc0 (Nat.beq_eq.mpr heq)
       cases hp : packTail 0 rest with
@@ -1701,7 +1671,7 @@ lemma stepRawC_halts (items R : List Item) (hh : StateHalts (stepRawC items R)) 
             rw [decL, decL, List.append_nil, show cz - 4 + 4 = cz by omega]
           rw [heq]
           simpa [evalRle, evalStackCfg1, decLState, decL, decR_pushRk2,
-            HPow.hPow, list_nat_repeat, List.append_eq] using
+            HPow.hPow, List.append_eq] using
             rule_C_bot_four (cz - 4) (decR R)
         · exact stepRawCAtomic_halts [.z cz] R hh
       · cases hd2 with
@@ -1723,7 +1693,7 @@ lemma stepRawC_halts (items R : List Item) (hh : StateHalts (stepRawC items R)) 
               rw [decL, decL, show cz - 3 + 3 = cz by omega]
             rw [heq]
             simpa [evalRle, evalStackCfg1, decLState, decL_pushL0, decR_pushRk2,
-              HPow.hPow, list_nat_repeat, List.append_eq] using
+              HPow.hPow, List.append_eq] using
               rule_C_r_add_three (cz - 3) (decL L2) (decR R)
           · exact stepRawCAtomic_halts _ R hh
         | z _ => exact stepRawCAtomic_halts _ R hh
@@ -2389,11 +2359,9 @@ lemma reach_2 : StateHalts ckpt2 := chunk_back chunk_2 reach_3
 lemma reach_1 : StateHalts ckpt1 := chunk_back chunk_1 reach_2
 lemma reach_0 : StateHalts ckpt0 := chunk_back chunk_0 reach_1
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   rcases reach_0 with hfalse | hcan
   · simp [ckpt0] at hfalse
   · exact canHalt_of_stepPlus init_reaches_stack hcan

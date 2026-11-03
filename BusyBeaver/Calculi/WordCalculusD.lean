@@ -1,6 +1,10 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
-public import BusyBeaver.WordCalculusC
+public import BusyBeaver.Calculi.WordCalculusC
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 

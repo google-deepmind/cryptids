@@ -2470,16 +2470,10 @@ private theorem rule_odd_gen (a g h : Nat) (ha : a ≥ 1) (hg : g % 2 = 1) (hh :
         0] : List (Fin 2))^(k+3)
         +> default) {{E}}> ((1 : Fin 2) >> ([1] : List (Fin 2))^(h-3) +> default)) := by
         dsimp -failIfUnchanged [c2]
-        have h_head : ((1 : Fin 2) >> ([1] : List (Fin 2))^(h-3)
-          +> default : ListBlank (Fin 2)).head = 1 := by
-          rw [Turing.ListBlank.head_cons]
-        have h_tail : ((1 : Fin 2) >> ([1] : List (Fin 2))^(h-3)
-          +> default : ListBlank (Fin 2)).tail = ([1] : List (Fin 2))^(h-3) +> default := by
-          rw [Turing.ListBlank.tail_cons]
-        rw [Cfg.headRight, h_head, h_tail]
+        simp only [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
       rw [h_bounce_cast] at h_phases3_plus
       have h_final := ReachesPlus.trans_star h_phases3_plus h_bounce
-      simp only [Cfg.headRight, ListBlank.head_cons, ListBlank.tail_cons] at h_final
+      simp only [ListBlank.head_cons, ListBlank.tail_cons] at h_final
       have h_final_cast : (⟨some A, ⟨1, ([1] : List (Fin 2))^2 +> ([1,
         0] : List (Fin 2))^(k+2) +> default,
         ([1] : List (Fin 2))^(h-3) +> default⟩⟩ : Cfg (Fin 2) (Fin 6)) =

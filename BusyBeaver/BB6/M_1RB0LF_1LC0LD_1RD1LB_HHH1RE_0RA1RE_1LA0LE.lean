@@ -136,13 +136,13 @@ private def cfg_E (a b : Nat) : Cfg (Fin 2) (Fin 6) :=
           {{E}}> default
 
 def F_R (b k : Nat) (r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
-  (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ ([1, 0] : List (Fin 2)) ^ k)
-          {{F}}>
+  Cfg.headRight F
+    ((((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ ([1, 0] : List (Fin 2)) ^ k))
     ([0, 0] +> r)
 
 def cfg_A (b k c : Nat) : Cfg (Fin 2) (Fin 6) :=
-  (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ ([1, 0] : List (Fin 2)) ^ k)
-          {{F}}>
+  Cfg.headRight F
+    ((((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ ([1, 0] : List (Fin 2)) ^ k))
     ([0, 0] +> (([1] : List (Fin 2)) ^ c +> default))
 
 private theorem cfg_A_eq_F_R (b k c : Nat) :
@@ -185,7 +185,9 @@ private theorem step_E_b0 (a : Nat) :
       ((((default : ListBlank (Fin 2)) <+ ([1, 0] : List (Fin 2)) ^ a) <+ [0]) {{C}}> ([1] +> ([1]
               +> default))) := by
     bb_steps
-  rw [ListBlank.append_cons, ListBlank.append_nil, <- default_append_01_pow a] at h1
+  have heq : (([0] : List (Fin 2)) +> [1, 0] ^ a +> default) = (([0, 1] : List (Fin 2)) ^ a +> default) := by
+    rw [ListBlank.append_cons, ListBlank.append_nil, ← default_append_01_pow]
+  rw [heq] at h1
   have h2 := shift_CB_left a default ([1] +> default)
   rw [pair_pow_eq_singleton_pow_two_mul 1 a] at h2
   have h3 : ((default : ListBlank (Fin 2)) {{C}}> ([1] +> (([1] : List (Fin 2)) ^ (2 * a) +> ([1]
@@ -414,7 +416,9 @@ private theorem D100_0_11 (k : Nat) (r : ListBlank (Fin 2)) :
     (D100 0 k ([1, 1] +> r)) [target]⊢⁺ (F_R 1 (k + 1) r) := by
   unfold D100 F_R
   simp only [list_pow_zero, ListBlank.append_nil]
-  rw [ListBlank.append_cons, ListBlank.append_nil, <- default_append_01_pow k]
+  have heq : (([0] : List (Fin 2)) +> [1, 0] ^ k +> default) = (([0, 1] : List (Fin 2)) ^ k +> default) := by
+    rw [ListBlank.append_cons, ListBlank.append_nil, ← default_append_01_pow]
+  rw [heq]
   have h1 : (((default : ListBlank (Fin 2)) <+ ([0, 1] : List (Fin 2)) ^ k) {{D}}>
       ([1, 0, 0] +> ([1, 1] +> r)))
       [target]⊢⁺
@@ -808,8 +812,9 @@ def Odd_cfg (p k n m c : Nat) : Cfg (Fin 2) (Fin 6) :=
       (([0, 1] : List (Fin 2)) ^ (m + 1) +> (([1] : List (Fin 2)) ^ c +> default)))
 
 def ETail_cfg (k m c : Nat) : Cfg (Fin 2) (Fin 6) :=
-  (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ (2 * (k + 4) + 1)) {{E}}>
-    (([0, 1] : List (Fin 2)) ^ m +> (([1] : List (Fin 2)) ^ c +> default)))
+  Cfg.headRight E
+    ((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ (2 * (k + 4) + 1))
+    (([0, 1] : List (Fin 2)) ^ m +> (([1] : List (Fin 2)) ^ c +> default))
 
 private theorem rule_A_b2_ksucc_c1 (k c : Nat) :
     (cfg_A 2 (k + 1) (c + 1)) [target]⊢⁺ (Odd_cfg 2 0 0 k c) := by

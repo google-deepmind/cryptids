@@ -2,44 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RE_1LC0RA_0RA0LD_1LE---_1RF0LF_0LC0RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RE_1LC0RA_0RA0LD_1LE---_1RF0LF_0LC0RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RE_1LC0RA_0RA0LD_1LE---_1RF0LF_0LC0RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => none
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 5, 1 => some (some 0, Stmt.write 0 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 set_option linter.unusedVariables false
@@ -145,8 +126,8 @@ macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 macro "step" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
-    simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
 macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | finish | step)))
 
@@ -913,9 +894,7 @@ def Inv0504 (c : Cfg (Fin 2) (Fin 6)) : Prop :=
 
 end Solution
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -943,5 +922,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     refine ⟨cfg_h01B (evalW (shift true u)) (evalS []),
       ⟨shift true u, hw'_high, by omega, by omega, rfl⟩, ?_⟩
     exact stepPlus_trans (hstep []) (step_modeB_reparse (evalW_shift true u hdu).symm)
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA

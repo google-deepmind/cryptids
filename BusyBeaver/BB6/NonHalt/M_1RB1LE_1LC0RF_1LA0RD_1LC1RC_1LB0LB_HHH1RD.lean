@@ -2,43 +2,35 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_---1RD` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_---1RD`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_---1RD`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 2, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 1, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 5, 0 => none
-  | 5, 1 => some (some 3, Stmt.write 1 Dir.right)
+local macro "normalize" : tactic => `(tactic| (
+  try simp only [ListBlank.append_cons, ListBlank.append_nil,
+    ListBlank.head_cons, ListBlank.tail_cons,
+    ListBlank.head_default, ListBlank.head_default_fin, ListBlank.tail_default,
+    ListBlank.cons_zero_default, ListBlank.cons_default_default,
+    list_pow_zero, list_pow_succ,
+    List.nil_append, List.cons_append, List.append_nil,
+    Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open BusyBeaver.Longitudinal
 
 local notation "Γ" => Fin 2
@@ -77,7 +69,7 @@ lemma runSteps_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
     (h : runSteps M n x = some x') (l₀ r₀ : ListBlank (Fin 2)) :
     (BoundedConfig.toCfg x l₀ r₀) [M]⊢* (BoundedConfig.toCfg x' l₀ r₀) := by
   induction n generalizing x with
-  | zero => cases h; exact stepStar_refl M _
+  | zero => cases h; try exact stepStar_refl M _
   | succ n ih =>
     dsimp [runSteps] at h
     rcases hst : BoundedConfig.step M x with _ | y <;> rw [hst] at h
@@ -202,7 +194,7 @@ private lemma shift_C_zw_step (l r : ListBlank Γ) :
 private lemma shift_C_zw (n : ℕ) (l r : ListBlank Γ) :
     (l {{C}}> (zw ^ n +> r)) [tm]⊢* ((uw ^ n +> l) {{C}}> r) := by
   induction n generalizing l with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ n ih =>
     rw [pow_succ_list, append_assoc]
     refine stepStar_trans (shift_C_zw_step l (zw ^ n +> r)) ?_
@@ -217,7 +209,7 @@ private lemma shift_D_back_step (l r : ListBlank Γ) :
 private lemma shift_D_back (n : ℕ) (l r : ListBlank Γ) :
     ((uw ^ n +> l) <{{D}} (bw +> r)) [tm]⊢* (l <{{D}} (bw +> (zw ^ n +> r))) := by
   induction n generalizing r with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ n ih =>
     rw [pow_succ_list, append_assoc]
     refine stepStar_trans (shift_D_back_step (uw ^ n +> l) r) ?_
@@ -304,7 +296,7 @@ private lemma shift_C_jw_step (l r : ListBlank Γ) :
 private lemma shift_C_jw (k : ℕ) (l r : ListBlank Γ) :
     (l {{C}}> (jw ^ k +> r)) [tm]⊢* (([I, I, I, I] ^ k +> l) {{C}}> r) := by
   induction k generalizing l with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ k ih =>
     rw [pow_succ_list, append_assoc]
     refine stepStar_trans (shift_C_jw_step l (jw ^ k +> r)) ?_
@@ -319,7 +311,7 @@ private lemma shift_C_IIII_step (l r : ListBlank Γ) :
 private lemma shift_C_IIII (k : ℕ) (l r : ListBlank Γ) :
     (([I, I, I, I] ^ k +> l) <{{C}} r) [tm]⊢* (l <{{C}} (kw ^ k +> r)) := by
   induction k generalizing r with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ k ih =>
     rw [pow_succ_list, append_assoc]
     refine stepStar_trans (shift_C_IIII_step ([I, I, I, I] ^ k +> l) r) ?_
@@ -337,7 +329,7 @@ private lemma shift_C_lw (n : ℕ) (l r : ListBlank Γ) :
     ((uw ^ n +> l) <{{C}} ([I, O, I, O, I] +> r)) [tm]⊢*
       (l <{{C}} ([I, O, I, O, I] +> (lw ^ n +> r))) := by
   induction n generalizing r with
-  | zero => exact stepStar_refl tm _
+  | zero => try exact stepStar_refl tm _
   | succ n ih =>
     rw [pow_succ_list, append_assoc]
     refine stepStar_trans (shift_C_lw_step (uw ^ n +> l) r) ?_
@@ -1078,7 +1070,7 @@ lemma P_calls (n k : ℕ) (r s : ListBlank Γ) (H : SideRLs tm (hf ^ k) r s) :
   | zero =>
     cases H
     rw [Nat.add_zero]
-    exact stepStar_refl tm _
+    try exact stepStar_refl tm _
   | succ k ih =>
     rw [pow_succ_list] at H
     obtain ⟨r₁, H₁, H₂⟩ := H.split
@@ -1836,9 +1828,7 @@ lemma I_step_target (a b : ℕ) (u : ListBlank Γ) :
   rw [flipTM_flipTM] at h
   exact h
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine Counter.does_not_halt_of_invariant
@@ -1850,5 +1840,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   exact ⟨flipCfg (Inv b (e a b) (family_prefix a +> u)),
     I_step_target a b u,
     b, e a b, family_prefix a +> u, rfl⟩
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD

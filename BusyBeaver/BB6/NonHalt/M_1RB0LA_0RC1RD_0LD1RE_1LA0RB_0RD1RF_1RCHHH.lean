@@ -2,25 +2,23 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RC---` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Longitudinal
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RC---`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RCHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RCHHH"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-/-- Transition function for `1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RC---`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
   | 0, 1 => some (some 0, Stmt.write 0 Dir.left)
@@ -35,10 +33,10 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 2, Stmt.write 1 Dir.right)
   | 5, 1 => none
 
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+theorem target_eq_target_tm : target = target_tm := by
+  funext q a
+  fin_cases q <;> fin_cases a <;> simp [target, machine, ConjectureMachines.Machine.toBB, ConjectureMachines.Machine.ofRows, target_tm]
+set_option maxHeartbeats 4000000
 open BusyBeaver.Longitudinal (DH0 toDHCfg flipTM SegRL SegRR SegLL SegRLs SideRLs)
 open BusyBeaver.Longitudinal.BoundedConfig (toCfg all0_spec steps_spec steps1_spec_true
   segRLs_c_spec sideRLs_c_spec)
@@ -297,8 +295,8 @@ lemma round0 :
     have h := sideRLs_c_spec target_tm (hs := [(hR, hL)] ^ 2)
       (r := [1, 0, 0, 1]) (r' := w ++ [1]) (T := 200) (by decide)
     rwa [ListBlank.append_assoc] at h
-  simpa [CfgAt, z, ListBlank.append_cons, ListBlank.append_nil] using
-    Longitudinal.SBC.round sbc_rules (n := 2) (s := [1] +> default) (by decide) hG
+  have hr := Longitudinal.SBC.round sbc_rules (k := 0) (n := 2) (s := [1] +> default) (by decide) hG
+  exact hr
 
 lemma round1 :
     (CfgAt hR d₀ d₁ dh 1 ([1, 1, 0, 1] +> default)) [target_tm]⊢⁺
@@ -308,8 +306,8 @@ lemma round1 :
     have h := sideRLs_c_spec target_tm (hs := [(hR, hL)] ^ 6)
       (r := [1, 1, 0, 1]) (r' := w ++ [1, 0, 0, 1, 1]) (T := 200) (by decide)
     rwa [ListBlank.append_assoc] at h
-  simpa [CfgAt, z, ListBlank.append_cons, ListBlank.append_nil] using
-    Longitudinal.SBC.round sbc_rules (n := 6) (s := [1, 0, 0, 1, 1] +> default) (by decide) hG
+  have hr := Longitudinal.SBC.round sbc_rules (k := 1) (n := 6) (s := [1, 0, 0, 1, 1] +> default) (by decide) hG
+  exact hr
 
 lemma round2 :
     (CfgAt hR d₀ d₁ dh 2 ([1, 1, 0, 1, 0, 0, 1, 1] +> default)) [target_tm]⊢⁺
@@ -319,19 +317,22 @@ lemma round2 :
     have h := sideRLs_c_spec target_tm (hs := [(hR, hL)] ^ 14)
       (r := [1, 1, 0, 1, 0, 0, 1, 1]) (r' := w ++ (w ^ 3 ++ u ^ 2)) (T := 200) (by decide)
     rwa [ListBlank.append_assoc, ListBlank.append_assoc] at h
-  exact Longitudinal.SBC.round sbc_rules (n := 14) (s := w ^ 3 +> (u ^ 2 +> default))
+  have hr := Longitudinal.SBC.round sbc_rules (k := 2) (n := 14) (s := w ^ 3 +> (u ^ 2 +> default))
     (by decide) hG
+  exact hr
 
 lemma init_reaches : (init []) [target_tm]⊢* (S hR w u z d₀ d₁ dh 3 3 2) :=
   stepStar_trans init_to_step76
     (stepStar_trans step76_to_step103
       (stepPlus_stepStar (stepPlus_trans round0 (stepPlus_trans round1 round2))))
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm :=
   Longitudinal.SBC.does_not_halt sbc_rules init_reaches (by decide) (by decide)
+
+theorem is_not_halt : IsNotHalt target := by
+  rw [target_eq_target_tm]
+  exact is_does_not_halt
 
 end BusyBeaver.M_1RB0LA_0RC1RD_0LD1RE_1LA0RB_0RD1RF_1RCHHH

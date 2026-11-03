@@ -2,23 +2,24 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_---1RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_---1RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_HHH1RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_HHH1RA"
+
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 /-- Transition function for `1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_---1RA`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
@@ -35,13 +36,22 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => none
   | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
 
+theorem target_eq : target = target_tm := by
+  funext q s
+  fin_cases q <;> fin_cases s <;> rfl
+
 -- END TRUSTED DEFINITIONS
 
 -- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
 
 namespace State270System
-open BusyBeaver.Simp BusyBeaver.Counter
+open BusyBeaver BusyBeaver.Counter SixState
 abbrev holdout_270_tm : Machine (Fin 2) (Fin 6) := target_tm
+def A : Fin 6 := 0
+def B : Fin 6 := 1
+def C : Fin 6 := 2
+def D : Fin 6 := 3
+def E : Fin 6 := 4
 
 set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 2000000
@@ -64,21 +74,6 @@ lemma zero_cons_default : (0 : Fin 2) >> default = default := by
 lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
 lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-omit [Inhabited Γ] in
-lemma list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m := match m with
-  | 0 => by simp_rw [HPow.hPow, add_zero, list_nat_repeat, List.append_nil]
-  | m + 1 => by
-    rw [add_comm m 1, ← add_assoc, add_comm 1 m, list_pow_add]
-    simp only [HPow.hPow, list_nat_repeat, List.append_eq, List.append_assoc]
-    rw [← List.append_assoc, ← List.append_assoc, List.append_cancel_right_eq]
-    induction n with
-    | zero => simp
-    | succ n ih => simpa
-
-omit [Inhabited Γ] in
-lemma list_pow_add_comm (l : List Γ) (n m : Nat) : l^n ++ l^m = l^m ++ l^n := by
-  rw [← list_pow_add, add_comm, list_pow_add]
-
 lemma listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
     (s <+ l₁) <+ l₂ = s <+ (l₂ ++ l₁) := by
   unfold ListBlank.append
@@ -89,13 +84,6 @@ lemma listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
   · rename_i _ l₂ l₁
     refine (congr_arg _ ?_).symm
     exact ListBlank.append_assoc l₁ _ s
-
-lemma list_pow_append_one (u : List (Fin 2)) (k : Nat) :
-    u^k ++ u = u^(k + 1) := by
-  have h := list_pow_add_comm u k 1
-  dsimp [HPow.hPow, list_nat_repeat] at h ⊢
-  rw [List.append_nil] at h
-  exact h
 
 lemma pow_add_append_right (u : List (Fin 2)) (m n : Nat) {r : ListBlank (Fin 2)} :
     (u ^ (m + n)) +> r = (u ^ m) +> ((u ^ n) +> r) := by
@@ -167,8 +155,8 @@ local macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 local macro "gstep" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
-    simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
 local macro "execute5" : tactic =>
   `(tactic| (any_goals (first | finish | gstep)) <;> (any_goals (first | finish | gstep)) <;> (any_goals (first | finish | gstep)) <;> (any_goals (first | finish | gstep)) <;> (any_goals (first | finish | gstep)))
 local macro "execute" : tactic =>
@@ -3018,33 +3006,37 @@ lemma GoodPhiW_of_GoodDs_sub2 {d2 : Nat} {ds2 : List Nat} (hd2 : d2 ≥ 3) (h : 
       rw [if_neg (by intro heq; injection heq with h1 _; omega)]
       rw [if_neg (by intro heq; injection heq with h1 _; omega)]
       rw [if_neg (by intro heq; injection heq with h1 _; omega)]
-      by_cases h_25 : (match d3 :: ds3 with | [d, 1] => decide (d ≥ 25) | _ => false) = true
-      · rw [if_pos h_25]
-        cases ds3 with
-        | nil => cases h_25
+      split_ifs with h_25 hod
+      · cases ds3 with
+        | nil =>
+          change false = true at h_25; cases h_25
         | cons d4 ds4 =>
           cases ds4 with
           | nil =>
             cases d4 with
-            | zero => cases h_25
+            | zero =>
+              change false = true at h_25; cases h_25
             | succ d4' =>
               cases d4' with
               | zero =>
                 have hd3_25 : d3 ≥ 25 := of_decide_eq_true h_25
                 have hd39 := GoodDs_d_ge25_1 hd3_25 h
                 simp; omega
-              | succ _ => cases h_25
+              | succ _ =>
+                change false = true at h_25; cases h_25
           | cons _ _ =>
             cases d4 with
-            | zero => cases h_25
-            | succ d4' => cases d4' <;> cases h_25
-      · rw [if_neg h_25]
-        by_cases hod : isOddDrainDs (d3 :: ds3) = true
-        · rw [if_pos hod]
-          have hd19 := GoodDs_isOddDrainDs_ge19 hd2 hod h
-          simp; omega
-        · rw [if_neg hod]
-          simp; omega
+            | zero =>
+              change false = true at h_25; cases h_25
+            | succ d4' =>
+              cases d4' with
+              | zero =>
+                change false = true at h_25; cases h_25
+              | succ _ =>
+                change false = true at h_25; cases h_25
+      · have hd19 := GoodDs_isOddDrainDs_ge19 hd2 hod h
+        simp; omega
+      · simp; omega
 
 lemma checkChainAux_B_ge3_c0_ok_ge22 (fuel a : Nat) (suf : List LTok) (ha : a ≥ 22) :
     checkChainAux fuel true (.p3z a :: .p5 :: suf) 0 0 2 [] = true := by
@@ -3539,9 +3531,8 @@ lemma step_Inv_ModeB_b2_m1 (ls : List LTok) (ds : List Nat)
                     have hf := hch (fuel + 1)
                     rw [hch_step fuel] at hf
                     dsimp only [checkChainAux] at hf
-                    have h_m_t : (match [m4 + 5, 0] with | [d] => decide (d ≥ 8) | [d, 0] => decide (d ≥ 8) | _ => false) = decide (m4 + 5 ≥ 8) := rfl
-                    rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false, h_m_t,
-                      if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_pos (decide_eq_true hd8),
+                    rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false,
+                      if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_pos (by exact decide_eq_true hd8),
                       if_neg (show ¬(0 + epW ls < if isOddDrainDs [m4 + 5, 0] = true then 18 else 16) by omega),
                       hz_ls2] at hf
                     have h_hnat : headNat [m4 + 5, 0] = m4 + 5 := rfl
@@ -3554,8 +3545,6 @@ lemma step_Inv_ModeB_b2_m1 (ls : List LTok) (ds : List Nat)
                 · omega
               | succ c' =>
                 dsimp only [nextState]
-                have h_m_f : (match ((m'' + 3) :: (c' + 1) :: ds'') with | [d] => decide (d ≥ 8) | [d, 0] => decide (d ≥ 8) | _ => false) = false := by
-                  cases ds'' <;> rfl
                 have h_or_f : ¬((m'' + 3) :: (c' + 1) :: ds'' = [] ∨
                     (m'' + 3) :: (c' + 1) :: ds'' = [0] ∨
                     (m'' + 3) :: (c' + 1) :: ds'' = [1] ∨
@@ -3587,8 +3576,8 @@ lemma step_Inv_ModeB_b2_m1 (ls : List LTok) (ds : List Nat)
                       have hf := hch (fuel + 1)
                       rw [hch_step fuel] at hf
                       dsimp only [checkChainAux] at hf
-                      rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false, h_m_f,
-                        if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_neg Bool.false_ne_true,
+                      rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false,
+                        if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_neg (by exact Bool.false_ne_true),
                         if_neg h_or_f, if_pos ⟨by omega, by omega⟩, if_neg h_d_cond1, if_neg h_d_cond2,
                         if_neg (show ¬(0 + epW ls < 16) by omega), hz_ls0,
                         if_neg (show ¬((1 : Nat) = 1 ∧ ([] : List Nat) = [] ∧ 0 + 3 ≥ 25) by omega)] at hf
@@ -3597,10 +3586,9 @@ lemma step_Inv_ModeB_b2_m1 (ls : List LTok) (ds : List Nat)
                       exact hf
                   · have hm''22 : m'' ≥ 22 := by omega
                     have hepw36 : epW ls ≥ 36 := by
-                      have h_m25_t : (match ([m'' + 3, 1] : List Nat) with | [d, 1] => decide (d ≥ 25) | _ => false) = true :=
-                        decide_eq_true hd25
-                      rw [h_m25_t, if_pos (by rfl)] at hphiw
-                      simp only [decide_eq_true_eq] at hphiw; omega
+                      rw [if_pos (by exact decide_eq_true hd25)] at hphiw
+                      simp only [decide_eq_true_eq] at hphiw
+                      omega
                     have hz38 : z0 (.p3z 0 :: .p3z 0 :: ls) ≥ 38 := by omega
                     refine ⟨?_, ?_⟩
                     · have h_g : (!GoodDs [] || !checkDs2 (.ModeB_ge3 (.p5 :: .p3z 0 :: .p3z 0 :: ls) m'' 0 []) ||
@@ -3630,8 +3618,8 @@ lemma step_Inv_ModeB_b2_m1 (ls : List LTok) (ds : List Nat)
                       have hf := hch (fuel + 1)
                       rw [hch_step fuel] at hf
                       dsimp only [checkChainAux] at hf
-                      rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false, h_m_f,
-                        if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_neg Bool.false_ne_true,
+                      rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false,
+                        if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_neg (by exact Bool.false_ne_true),
                         if_neg h_or_f, if_pos ⟨by omega, by omega⟩, if_neg h_d_cond1, if_neg h_d_cond2,
                         if_neg (show ¬(0 + epW ls < 16) by omega), hz_ls0,
                         if_pos ⟨rfl, rfl, hd25⟩] at hf
@@ -3739,19 +3727,35 @@ lemma step_Inv_ModeB_b2_m1 (ls : List LTok) (ds : List Nat)
                     have hf := hch (fuel + 1)
                     rw [hch_step fuel] at hf
                     dsimp only [checkChainAux] at hf
-                    rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false,
-                      if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, h_m_f, if_neg Bool.false_ne_true,
-                      if_neg h_or_f, if_pos ⟨by omega, by omega⟩, if_neg h_d_cond1, if_neg h_d_cond2,
-                      if_neg (show ¬(0 + epW ls < 16) by omega), hz_ls0,
-                      if_neg h_not_25_1] at hf
-                    have hm_sub : m'' + 3 - 3 = m'' := by omega
-                    have hc_sub : c' + 1 - 1 = c' := by omega
-                    have hm_mul : 2 * (c' + 1) = 2 * c' + 2 := by omega
-                    rw [hm_sub, hc_sub, hm_mul] at hf
-                    dsimp only [invChain]
-                    by_cases hm_ev : m'' % 2 = 0
-                    · rw [if_pos hm_ev, if_neg (by intro ⟨_, hc0, _⟩; omega)]; exact hf
-                    · rw [if_neg hm_ev, if_neg (by intro ⟨_, hc1, _⟩; omega), if_neg (by omega)]; exact hf
+                    cases ds'' with
+                    | nil =>
+                      rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false,
+                        if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_neg (by exact Bool.false_ne_true),
+                        if_neg h_or_f, if_pos ⟨by omega, by omega⟩, if_neg h_d_cond1, if_neg h_d_cond2,
+                        if_neg (show ¬(0 + epW ls < 16) by omega), hz_ls0,
+                        if_neg h_not_25_1] at hf
+                      have hm_sub : m'' + 3 - 3 = m'' := by omega
+                      have hc_sub : c' + 1 - 1 = c' := by omega
+                      have hm_mul : 2 * (c' + 1) = 2 * c' + 2 := by omega
+                      rw [hm_sub, hc_sub, hm_mul] at hf
+                      dsimp only [invChain]
+                      by_cases hm_ev : m'' % 2 = 0
+                      · rw [if_pos hm_ev, if_neg (by intro ⟨_, hc0, _⟩; omega)]; exact hf
+                      · rw [if_neg hm_ev, if_neg (by intro ⟨_, hc1, _⟩; omega), if_neg (by omega)]; exact hf
+                    | cons d_ds ds_rest =>
+                      rw [hdec_0_2, hnp5, Bool.and_false, Bool.or_false, Bool.and_false,
+                        if_neg Bool.false_ne_true, if_neg Bool.false_ne_true, if_neg (by exact Bool.false_ne_true),
+                        if_neg h_or_f, if_pos ⟨by omega, by omega⟩, if_neg h_d_cond1, if_neg h_d_cond2,
+                        if_neg (show ¬(0 + epW ls < 16) by omega), hz_ls0,
+                        if_neg h_not_25_1] at hf
+                      have hm_sub : m'' + 3 - 3 = m'' := by omega
+                      have hc_sub : c' + 1 - 1 = c' := by omega
+                      have hm_mul : 2 * (c' + 1) = 2 * c' + 2 := by omega
+                      rw [hm_sub, hc_sub, hm_mul] at hf
+                      dsimp only [invChain]
+                      by_cases hm_ev : m'' % 2 = 0
+                      · rw [if_pos hm_ev, if_neg (by intro ⟨_, hc0, _⟩; omega)]; exact hf
+                      · rw [if_neg hm_ev, if_neg (by intro ⟨_, hc1, _⟩; omega), if_neg (by omega)]; exact hf
 
 lemma step_Inv_ModeB_b2 (ls : List LTok) (m : Nat) (ds : List Nat)
     (hinv : Inv (.ModeB_b2 ls m ds)) :
@@ -3885,7 +3889,7 @@ lemma ds_ne_two_of_checkDs2_ModeE_ge2 {ls : List LTok} {k c : Nat} {ds : List Na
     simp [hk0] at h
   · simp [hip] at h
   · have hge : decide (k + epSum ls ≥ 2 * c + 6) = false := decide_eq_false (by omega)
-    simp [hge] at h
+    simp [hge] at h; omega
 
 lemma d25_check_of_ge36 (cz : Nat) (ds : List Nat) :
     (∀ d, ds = [d, 1] → d ≥ 25 → cz ≥ 36) →
@@ -3904,12 +3908,9 @@ lemma d25_check_of_ge36 (cz : Nat) (ds : List Nat) :
           cases d2' with
           | zero =>
             intro h
-            have hm : (match [d, 0 + 1] with | [d, 1] => decide (d ≥ 25) | _ => false) = decide (d ≥ 25) := rfl
-            rw [hm]
             by_cases hd : d ≥ 25
-            · rw [decide_eq_true hd, Bool.not_true, Bool.false_or]
-              exact decide_eq_true (h d rfl hd)
-            · rw [decide_eq_false hd]; rfl
+            · simp [hd, h d rfl hd]
+            · simp [hd]
           | succ _ => intro _; rfl
       | cons _ _ =>
         cases d2 with
@@ -3923,20 +3924,20 @@ lemma d25_ge36_of_check {c : Nat} {ds : List Nat}
     (h : (!(match ds with | [d, 1] => decide (d ≥ 25) | _ => false) || decide (c ≥ 36)) = true) :
     ∀ d, ds = [d, 1] → d ≥ 25 → c ≥ 36 := by
   intro d rfl hd
-  have hm : (match [d, 1] with | [d, 1] => decide (d ≥ 25) | _ => false) = decide (d ≥ 25) := rfl
-  rw [hm, decide_eq_true hd, Bool.not_true, Bool.false_or, decide_eq_true_eq] at h
+  simp [hd] at h
   exact h
 
 lemma GoodPhiW_d25_ge35 {phiW : Nat} {d : Nat} (hd : d ≥ 25)
     (h : GoodPhiW phiW [d, 1] false = true) : phiW ≥ 35 := by
-  have h1 : [d, 1] ≠ [2] := by intro hc; injection hc with _ hc2; cases hc2
-  have h2 : [d, 1] ≠ [0] := by intro hc; injection hc with _ hc2; cases hc2
-  have h3 : [d, 1] ≠ [1] := by intro hc; injection hc with _ hc2; cases hc2
-  have h4 : [d, 1] ≠ [] := by intro hc; cases hc
-  have h_m25 : (match [d, 1] with | [d, 1] => decide (d ≥ 25) | _ => false) = decide (d ≥ 25) := rfl
   dsimp only [GoodPhiW] at h
-  rw [if_neg h1, if_neg h2, if_neg h3, if_neg h4, h_m25, if_pos (decide_eq_true hd)] at h
-  exact of_decide_eq_true h
+  split_ifs at h with h1 h2 h3 h4 h5
+  · cases h1
+  · cases h2
+  · cases h3
+  · cases h4
+  · exact of_decide_eq_true h
+  · exfalso; apply h5; exact decide_eq_true hd
+  · exfalso; apply h5; exact decide_eq_true hd
 
 lemma prefSumW_p3z_m2_bound (m2 : Nat) (ls' : List LTok) (k c : Nat)
     (hk1 : k ≤ 2 * c + 4) (hk2 : k + prefSumW (.p3z (m2 + 2) :: ls') ≤ 2 * c + 6) :
@@ -6138,8 +6139,10 @@ lemma drainPop_eq_checkChain (fuel : Nat) (ls : List LTok) (cp1 kb mrg : Nat) (d
         rcases hr0_prop with hnil | h0 | h1' | h2'
         · cases hnil
         · injection h0 with hd0; subst hd0
-          simp only [List.cons_ne_self, imp_false, ite_false, ite_true, List.cons.injEq,
-            OfNat.ofNat_ne_zero, false_and]; rw [encSegs_pushSeg, htail]
+          have h01 : ([0] : List Nat) ≠ [1] := by decide
+          have h02 : ([0] : List Nat) ≠ [2] := by decide
+          have h0nil : ([0] : List Nat) ≠ [] := by decide
+          simp only [h0nil, h01, h02, ite_false, ite_true]; rw [encSegs_pushSeg, htail]
         · injection h1' with hd1; subst hd1
           have h10 : ([1] : List Nat) ≠ [0] := by decide
           have h1nil : ([1] : List Nat) ≠ [] := by decide
@@ -12398,5 +12401,9 @@ end State270System
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   exact State270System.holdout_270_nonhalt_of_Inv_s0 State270System.ChainClosure.inv_s0
+
+theorem is_not_halt : IsNotHalt target := by
+  rw [target_eq]
+  exact is_does_not_halt
 
 end BusyBeaver.M_1RB0RA_0RC0LE_1LD1RF_1LB1RD_1LD1LE_HHH1RA

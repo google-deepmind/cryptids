@@ -2,43 +2,31 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB0RE_1RC0RB_0RD0RF_0LE---_1LF1LE_1LA0LE` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Counter
+public import BusyBeaver.Calculi.WordCalculusA
+public import BusyBeaver.Calculi.WordCalculusB
+public import BusyBeaver.Calculi.WordCalculusC
+public import BusyBeaver.Calculi.WordCalculusD
+public import BusyBeaver.Calculi.WordCalculusE
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RE_1RC0RB_0RD0RF_0LE---_1LF1LE_1LA0LE`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1RC0RB_0RD0RF_0LEHHH_1LF1LE_1LA0LE
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RE_1RC0RB_0RD0RF_0LE---_1LF1LE_1LA0LE`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => none
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 4, Stmt.write 0 Dir.left)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC0RB_0RD0RF_0LEHHH_1LF1LE_1LA0LE"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
@@ -180,8 +168,8 @@ local macro "finish" : tactic =>
   `(tactic| exact refl_star _)
 local macro "step" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z03 (by (try simp only [Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
-    simp only [Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z00,zDh,zDt])
+    refine z03 (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons,zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z00,zDh,zDt])
 lemma step_Lg_p {q q' : Fin 6} {s a : Fin 2} {l r : zB} {ce : Cfg (Fin 2) (Fin 6)}
     (ht : target_tm q s = some (some q', Stmt.write a Dir.left))
     (h : ⟨some q', ⟨l.head, l.tail, a >> r⟩⟩ [target_tm]⊢* ce) :
@@ -1119,9 +1107,7 @@ set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 2000000
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg h_reach
@@ -1132,5 +1118,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   have h_some := Solution.zIm h_N
   rw [Solution.zMs,hn] at h_some
   exact h_some
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0RE_1RC0RB_0RD0RF_0LEHHH_1LF1LE_1LA0LE

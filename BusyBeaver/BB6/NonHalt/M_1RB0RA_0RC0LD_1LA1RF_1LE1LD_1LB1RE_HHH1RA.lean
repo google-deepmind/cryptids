@@ -2,44 +2,26 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
-import BusyBeaver.Excursion
+module
 
-/-!
-# Busy Beaver Machine `1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_---1RA` — `is_does_not_halt` (`IsNotHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
+public import BusyBeaver.Calculi.Excursion
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`, `BusyBeaver.Excursion`
-and defines `target_tm` for `1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_---1RA`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_HHH1RA
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_---1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 1, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 5, 0 => none
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_HHH1RA"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open BusyBeaver.Excursion
 
 set_option linter.unusedSimpArgs false
@@ -153,20 +135,20 @@ lemma pow_blk_add (u : List (Fin 2)) (a b : ℕ) (s : T) : u ^ (a + b) +> s = u 
   | succ n ih => rw [pow1_succ, ih, z_cons_def]
 
 local macro "step1" : tactic => `(tactic| (
-  try simp only [K, m_init_nil, p_succ_list, p_zero_list, Nat.mul_zero, Nat.zero_add, Nat.add_zero, Nat.mul_one,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, K, m_init_nil, p_succ_list, p_zero_list, Nat.mul_zero, Nat.zero_add, Nat.add_zero, Nat.mul_one,
     List.singleton_append, List.nil_append, List.cons_append,
     lb_append_cons, lb_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     z_cons_def, def_head, def_tail]
   refine ms_step (by rfl) ?_
-  simp only [Turing.Tape.move, Tape.write,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Tape.write,
     lb_append_cons, lb_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
     z_cons_def, def_head, def_tail]))
 
 local macro "run_steps" n:num : tactic => `(tactic| (
   iterate $n step1
-  simp only [K, p_succ_list, p_zero_list, Nat.mul_zero, Nat.zero_add, Nat.add_zero, Nat.mul_one,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, K, p_succ_list, p_zero_list, Nat.mul_zero, Nat.zero_add, Nat.add_zero, Nat.mul_one,
     List.singleton_append, List.nil_append, List.cons_append,
     lb_append_cons, lb_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
@@ -1665,14 +1647,14 @@ theorem entry : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) [tm]⊢⁺ Beq 
 
 end M240
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   exact BusyBeaver.Excursion.does_not_halt_of_advances
     (M240.sp_to_ss M240.entry)
     (M240.root_of_5 M240.validL_nil)
     M240.root_advances
+
+theorem is_not_halt : IsNotHalt target := is_does_not_halt
 
 end BusyBeaver.M_1RB0RA_0RC0LD_1LA1RF_1LE1LD_1LB1RE_HHH1RA

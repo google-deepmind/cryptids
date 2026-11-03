@@ -2,43 +2,25 @@
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import BusyBeaver.Basic
+module
 
-/-!
-# Busy Beaver Machine `1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_---1LB` — `is_halt` (`IsHalt target_tm`)
+public import BusyBeaver.Basic
+public import BusyBeaver.Bridge
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_---1LB`. Do not modify the trusted
-definitions section or the goal theorem signature.
--/
+@[expose] public section
 
-open Mathlib Relation Nat Turing BusyBeaver
+open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_HHH1LB
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
-
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- Transition function for `1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_---1LB`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 5, 0 => none
-  | 5, 1 => some (some 1, Stmt.write 1 Dir.left)
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RE_1LC0LB_1LD1LC_0RA1RF_1RD1RE_HHH1LB"
 
--- END TRUSTED DEFINITIONS
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 
@@ -114,11 +96,11 @@ lemma z0T {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
   z0R (z0Q tm c₁ c₂ h₁) h₂
 
 macro "finish" : tactic =>
-  `(tactic| (try dsimp only [append_cons, append_nil]) <;> exists 0 <;> fail)
+  `(tactic| (try dsimp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil]) <;> exists 0 <;> fail)
 macro "step_tm" : tactic =>
-  `(tactic| (try dsimp only [append_cons, append_nil]) <;> (try refine zPs ?_) <;>
-    refine z0T (by (try simp only [append_cons, append_nil, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
-    simp only [append_cons, append_nil, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
+  `(tactic| (try dsimp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil]) <;> (try refine zPs ?_) <;>
+    refine z0T (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
 macro "execute5" : tactic =>
   `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)))
 macro "execute" : tactic =>
@@ -147,7 +129,7 @@ lemma start_sweep (r : zB) :
 lemma sweep_ones (n : Nat) (l r : zB) :
     (l {{E}}> ((W1 ^ n) +> r)) [target_tm]⊢* ((l <+ (W1 ^ n)) {{E}}> r) := by
   induction n generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ n ih =>
     rw [z0j, append_assoc]
     have h1 : (l {{E}}> (W1 +> (W1 ^ n) +> r)) [target_tm]⊢*
@@ -165,7 +147,7 @@ lemma sweep_011 (l r : zB) :
 
 lemma sweep_010_halt (l r : zB) :
     IsHaltFrom (l {{E}}> (([0, 1, 0] : zF) +> r)) := by
-  refine ⟨((l << 1 << 1) {{F}}> (([0] : zF) +> r)), ?_, by simp [step, target_tm, F]⟩
+  refine ⟨((l << 1 << 1) {{F}}> (([0] : zF) +> r)), ?_, by (simp [step, target_tm, F]; rfl)⟩
   execute
 
 lemma sweep_001 (l r : zB) :
@@ -183,7 +165,7 @@ lemma sweep_0000 (l r : zB) :
 lemma back_some_C (n : Nat) (l r : zB) :
     ((l <+ (W1 ^ n)) <{{C}} r) [target_tm]⊢* (l <{{C}} ((W1 ^ n) +> r)) := by
   induction n generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ n ih =>
     rw [z0j, append_assoc]
     have h1 : (((l <+ (W1 ^ n)) << 1) <{{C}} r) [target_tm]⊢*
@@ -198,7 +180,7 @@ lemma back_some_C (n : Nat) (l r : zB) :
 lemma back_some_B (n : Nat) (l r : zB) :
     ((l <+ (W1 ^ n)) <{{B}} r) [target_tm]⊢* (l <{{B}} ((W0 ^ n) +> r)) := by
   induction n generalizing l r with
-  | zero => exact ⟨0, rfl⟩
+  | zero => try exact ⟨0, rfl⟩
   | succ n ih =>
     rw [z0j, append_assoc]
     have h1 : (((l <+ (W1 ^ n)) << 1) <{{B}} r) [target_tm]⊢*
@@ -289,7 +271,7 @@ lemma ff_loop (q a : Nat) (s : zB) :
     (default <{{C}} ((W1 ^ a) +> (([0, 0, 1, 1] : zF) +> ((W0 ^ (4 * q)) +> s)))) [target_tm]⊢*
     (default <{{C}} ((W1 ^ (a + 6 * q)) +> (([0, 0, 1, 1] : zF) +> s))) := by
   induction q generalizing a with
-  | zero => simp; exact ⟨0, rfl⟩
+  | zero => simp; try exact ⟨0, rfl⟩
   | succ q ih =>
     have hq : 4 * (q + 1) = 4 + 4 * q := by omega
     rw [hq, z0k W0 4 (4 * q), append_assoc]
@@ -1384,11 +1366,9 @@ lemma halt_0 {tail : zB} (ht : @Valid tail st_0) : IsHaltFrom (default <{{C}} de
 
 end
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
 
-theorem is_halt : IsHalt target_tm := by
+theorem is_halt : IsHalt target := by
   have h_seed_pad_eq : denote_tape_tail default st_0 = denote_tape_tail default seed := by
     simp [st_0, seed, denote_tape_tail]
   have h_valid_0 : @Valid default st_0 := by
