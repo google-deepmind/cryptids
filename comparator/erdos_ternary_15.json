@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.ErdosTernary15",
+  "theorem_names": [
+    "ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_exists_counterexample",
+    "ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_not_erdosTernary"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

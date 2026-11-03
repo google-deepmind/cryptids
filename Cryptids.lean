@@ -19,20 +19,26 @@ public import Cryptids.Semantics.Riemann120
 public import Cryptids.Semantics.Riemann95
 public import Cryptids.Semantics.Zf
 public import Cryptids.Semantics.Zf393
+public import Cryptids.ErdosTernary15
+public import Cryptids.Semantics.ErdosTernary15
+public import Cryptids.ErdosTernary14
+public import Cryptids.Semantics.ErdosTernary14
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
 
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
-(`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), and the **Riemann
-Hypothesis** (`120 → 104 → 95` states), as well as complete Lean 4 formalizations of all publicly
-known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`),
+(`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
+Hypothesis** (`120 → 104 → 95` states), and **Erdős's ternary conjecture** (`15 → 14`
+states), as well as complete Lean 4 formalizations of all publicly
+known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
+`erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
 
 - `Cryptids.Propositions` — Shared definitions of `GoldbachConjecture`,
-  `MatiyasevichRiemannCounterexample`, `ZFInconsistent`, `WadeZFInconsistent`, and deeply embedded
-  first-order Peano Arithmetic (`PATerm`, `PAFormula`, `PAProvable`, `paHalts`,
-  `paZFInconsistent`).
+  `MatiyasevichRiemannCounterexample`, `ZFInconsistent`, `WadeZFInconsistent`,
+  `ErdosTernaryConjecture`, and deeply embedded first-order Peano Arithmetic (`PATerm`,
+  `PAFormula`, `PAProvable`, `paHalts`, `paZFInconsistent`).
 - `Cryptids.Machines` — Turing machine execution model, bundled machines (`BundledMachine`), and
   machine table definitions (`ConjectureMachines.Machines.*`).
 - `Cryptids.Goldbach21`, `Cryptids.Zf380`, `Cryptids.Riemann104` — Proofs of
@@ -57,6 +63,16 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   completeness (`paProvable_iff_holdsIn_all_models`), and object-level `PAProvable` proofs that
   `zf_380` and `zf_393` halt iff `ZF` is inconsistent (`paProvable_halts_zf380_iff_zf393`,
   `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent`).
+- `Cryptids.ErdosTernary15`, `Cryptids.Semantics.ErdosTernary15` — Stérin and Woods's 15-state
+  machine for Erdős's ternary conjecture (`erdosTernary15`), with a constructive proof of
+  `Halts erdosTernary15 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` and end-to-end proofs of
+  `ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_exists_counterexample` and
+  `ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_not_erdosTernary`.
+- `Cryptids.ErdosTernary14`, `Cryptids.Semantics.ErdosTernary14` — Stérin's 14-state machine for
+  the same conjecture (`erdosTernary14`), with constructive proofs of
+  `Halts erdosTernary14 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` and `Halts candidate ↔ Halts reference` relative to
+  `erdosTernary15`, and
+  `ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

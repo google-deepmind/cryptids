@@ -1,0 +1,77 @@
+; This machine halts if and only if Erdős' conjecture on powers of two is false:
+;
+; "For all n > 8, there is at least one 2 in the ternary representation of 2^n"
+;
+; P. Erdős. Some unconventional problems in number theory. Mathematics Magazine, 52(2):67–70, 1979.
+;
+; The machine has 15 states and 2 symbols.
+; The machine simulates 'powers_of_two_5_4.txt' with the following encoding table:
+;
+; 0: ba, 1: ab, 2: aa, #: bb
+;
+; This machine was proven correct: 
+
+initial_state: mul2_G_sim
+redundancy: 2
+blank_symbol: b
+
+mul2_F_sim
+a a R mul2_F_a
+b b R mul2_F_b
+
+mul2_F_a
+a b R mul2_G_sim
+b a R mul2_F_sim
+
+mul2_F_b
+a a R mul2_F_sim
+b b L find_2_a
+
+find_2_sim
+a a L find_2_a
+b b L find_2_b
+
+find_2_a
+a a L rewind_sim
+b b L find_2_sim
+
+find_2_b
+a a L find_2_sim
+b b L check_halt_sim
+
+mul2_G_sim
+a a R mul2_G_a
+b a R mul2_G_b
+
+mul2_G_a
+a a R mul2_G_sim
+b a L mul2_G_extra
+
+mul2_G_b
+a b R mul2_F_sim
+b b R mul2_F_sim
+
+mul2_G_extra
+a b R mul2_G_a
+b b R rewind_b
+
+rewind_sim
+a a L rewind_a
+b b L rewind_b
+
+rewind_a
+a a L rewind_sim
+b b L rewind_sim
+
+rewind_b
+a a L rewind_sim
+b b R mul2_G_b
+
+check_halt_sim
+a b L check_halt_a
+b a R rewind_b
+
+check_halt_a
+a HALT
+b a R mul2_G_extra
+

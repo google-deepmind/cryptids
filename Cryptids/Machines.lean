@@ -225,6 +225,16 @@ namespace Machines
 /-- Rows of `riemann95`. -/ def riemann95Rows : List (List (Option (Fin 2 × Dir × Fin 95))) :=
   load_machine_rows% "artifacts/riemann_95/machine.txt"
 /-- 95-state RH candidate. -/ def riemann95 : Machine 95 2 := Machine.ofRows riemann95Rows
+/-- Rows of `erdosTernary15`. -/
+def erdosTernary15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
+  load_machine_rows% "baselines/tables/erdos_ternary_15.txt"
+/-- 15-state Erdős machine. -/
+def erdosTernary15 : Machine 15 2 := Machine.ofRows erdosTernary15Rows
+/-- Rows of `erdosTernary14`. -/
+def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
+  load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
+/-- 14-state Erdős candidate. -/
+def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff
