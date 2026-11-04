@@ -29,26 +29,24 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000
 
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
-@[simp] lemma init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 def encRight : List Bool → ListBlank (Fin 2)
   | [] => default
   | false :: R => (1 : Fin 2) >> (0 : Fin 2) >> encRight R
   | true :: R => (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> encRight R
 
-@[simp] lemma encRight_nil : encRight [] = default := rfl
-@[simp] lemma encRight_false (R : List Bool) :
+@[simp] theorem encRight_nil : encRight [] = default := rfl
+@[simp] theorem encRight_false (R : List Bool) :
     encRight (false :: R) = (1 : Fin 2) >> (0 : Fin 2) >> encRight R := rfl
-@[simp] lemma encRight_true (R : List Bool) :
+@[simp] theorem encRight_true (R : List Bool) :
     encRight (true :: R) = (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> encRight R := rfl
 
 macro "finish" : tactic => `(tactic| (
@@ -619,7 +617,7 @@ theorem init_to_state0 : (init []) [target_tm]⊢⁺ State 0 := by
   have h2 := run_NormSteps normSteps_base3 0
   exact stepPlus_trans h0 (stepPlus_stepStar_stepPlus h1 h2)
 
-lemma inv_arb_long (Inv : Cfg (Fin 2) (Fin 6) → Prop)
+theorem inv_arb_long (Inv : Cfg (Fin 2) (Fin 6) → Prop)
     (h_init : ∃ c₀, Inv c₀ ∧ ((init []) [target_tm]⊢⁺ c₀))
     (h_step : ∀ c, Inv c → ∃ c', Inv c' ∧ (c [target_tm]⊢⁺ c')) (m : ℕ) :
     ∃ n c, m ≤ n ∧ Inv c ∧ ((init []) [target_tm]⊢^{n} c) := by
@@ -632,7 +630,7 @@ lemma inv_arb_long (Inv : Cfg (Fin 2) (Fin 6) → Prop)
     obtain ⟨c', hc', k, hk_pos, hk⟩ := h_step c hc
     exact ⟨n + k, c', by omega, hc', multiStep_trans hn hk⟩
 
-lemma not_halt_of_inv (Inv : Cfg (Fin 2) (Fin 6) → Prop)
+theorem not_halt_of_inv (Inv : Cfg (Fin 2) (Fin 6) → Prop)
     (h_init : ∃ c₀, Inv c₀ ∧ ((init []) [target_tm]⊢⁺ c₀))
     (h_step : ∀ c, Inv c → ∃ c', Inv c' ∧ (c [target_tm]⊢⁺ c')) :
     IsNotHalt target_tm := by

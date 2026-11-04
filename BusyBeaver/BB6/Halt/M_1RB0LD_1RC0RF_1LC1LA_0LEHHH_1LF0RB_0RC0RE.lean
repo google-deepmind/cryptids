@@ -36,13 +36,13 @@ inductive ReachHalt : Cfg (Fin 2) (Fin 6) → Prop
 def Reaches (c c' : Cfg (Fin 2) (Fin 6)) : Prop :=
   ReachHalt c' → ReachHalt c
 
-lemma Reaches.refl (c : Cfg (Fin 2) (Fin 6)) : Reaches c c := id
+theorem Reaches.refl (c : Cfg (Fin 2) (Fin 6)) : Reaches c c := id
 
-lemma Reaches.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)} (h₁ : Reaches c₁ c₂) (h₂ : Reaches c₂ c₃) :
+theorem Reaches.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)} (h₁ : Reaches c₁ c₂) (h₂ : Reaches c₂ c₃) :
     Reaches c₁ c₃ :=
   fun h => h₁ (h₂ h)
 
-lemma multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
+theorem multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
     (h : step target_tm c = some c') :
     multiStep target_tm c (n + 1) = multiStep target_tm c' n := by
   unfold multiStep
@@ -50,7 +50,7 @@ lemma multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
   change (Option.bind · (step target_tm))^[n] (step target_tm c) = _
   rw [h]
 
-lemma ReachHalt.to_isHalt {c : Cfg (Fin 2) (Fin 6)} (h : ReachHalt c) :
+theorem ReachHalt.to_isHalt {c : Cfg (Fin 2) (Fin 6)} (h : ReachHalt c) :
     ∃ cfg, (c [target_tm]⊢* cfg) ∧ (step target_tm cfg).isNone := by
   induction h with
   | done hnone => exact ⟨_, ⟨0, rfl⟩, hnone⟩
@@ -64,75 +64,75 @@ lemma ReachHalt.to_isHalt {c : Cfg (Fin 2) (Fin 6)} (h : ReachHalt c) :
 def cfg (q : Fin 6) (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ⟨some q, ⟨r.head, l, r.tail⟩⟩
 
-@[simp] lemma zero_cons_default : ListBlank.cons b0 default = default := by
+@[simp] theorem zero_cons_default : ListBlank.cons b0 default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = b0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = b0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma init_eq_cfg : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = cfg A default default := rfl
+theorem init_eq_cfg : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = cfg A default default := rfl
 
-lemma step_cfg_right {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     (l r : ListBlank (Fin 2)) :
     step target_tm (cfg q l (ListBlank.cons b r)) = some (cfg q' (ListBlank.cons a l) r) := by
   simp [cfg, step, h, Turing.Tape.write, Turing.Tape.move]
 
-lemma step_cfg_left {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_left {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     (c : Fin 2) (l r : ListBlank (Fin 2)) :
     step target_tm (cfg q (ListBlank.cons c l) (ListBlank.cons b r)) =
       some (cfg q' l (ListBlank.cons c (ListBlank.cons a r))) := by
   simp [cfg, step, h, Turing.Tape.write, Turing.Tape.move]
 
-lemma step_cfg_right_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_right_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.right))
     (l : ListBlank (Fin 2)) :
     step target_tm (cfg q l default) = some (cfg q' (ListBlank.cons a l) default) := by
   simpa using! step_cfg_right h l default
 
-lemma step_cfg_left_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_left_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.left))
     (c : Fin 2) (l : ListBlank (Fin 2)) :
     step target_tm (cfg q (ListBlank.cons c l) default) =
       some (cfg q' l (ListBlank.cons c (ListBlank.cons a default))) := by
   simpa using! step_cfg_left h c l default
 
-lemma step_cfg_left_lnil {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_left_lnil {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     (r : ListBlank (Fin 2)) :
     step target_tm (cfg q default (ListBlank.cons b r)) =
       some (cfg q' default (ListBlank.cons b0 (ListBlank.cons a r))) := by
   simpa using! step_cfg_left h b0 default r
 
-lemma reach_right {q q' : Fin 6} {b a : Fin 2}
+theorem reach_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' (ListBlank.cons a l) r) target) :
     Reaches (cfg q l (ListBlank.cons b r)) target :=
   fun ht => ReachHalt.next (step_cfg_right h l r) (hr ht)
 
-lemma reach_left {q q' : Fin 6} {b a : Fin 2}
+theorem reach_left {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     {c : Fin 2} {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' l (ListBlank.cons c (ListBlank.cons a r))) target) :
     Reaches (cfg q (ListBlank.cons c l) (ListBlank.cons b r)) target :=
   fun ht => ReachHalt.next (step_cfg_left h c l r) (hr ht)
 
-lemma reach_right_nil {q q' : Fin 6} {a : Fin 2}
+theorem reach_right_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.right))
     {l : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' (ListBlank.cons a l) default) target) :
     Reaches (cfg q l default) target :=
   fun ht => ReachHalt.next (step_cfg_right_nil h l) (hr ht)
 
-lemma reach_left_nil {q q' : Fin 6} {a : Fin 2}
+theorem reach_left_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.left))
     {c : Fin 2} {l : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' l (ListBlank.cons c (ListBlank.cons a default))) target) :
     Reaches (cfg q (ListBlank.cons c l) default) target :=
   fun ht => ReachHalt.next (step_cfg_left_nil h c l) (hr ht)
 
-lemma reach_left_lnil {q q' : Fin 6} {b a : Fin 2}
+theorem reach_left_lnil {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     {r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' default (ListBlank.cons b0 (ListBlank.cons a r))) target) :
@@ -164,17 +164,17 @@ def R1 : Nat → ListBlank (Fin 2) → ListBlank (Fin 2)
   | 0, r => r
   | n + 1, r => c1 (R1 n r)
 
-lemma L0_add (m n : Nat) (l : ListBlank (Fin 2)) : L0 (m + n) l = L0 m (L0 n l) := by
+theorem L0_add (m n : Nat) (l : ListBlank (Fin 2)) : L0 (m + n) l = L0 m (L0 n l) := by
   induction m with
   | zero => simp [L0]
   | succ m ih => simp [L0, Nat.succ_add, ih]
 
-lemma R1_add (m n : Nat) (r : ListBlank (Fin 2)) : R1 (m + n) r = R1 m (R1 n r) := by
+theorem R1_add (m n : Nat) (r : ListBlank (Fin 2)) : R1 (m + n) r = R1 m (R1 n r) := by
   induction m with
   | zero => simp [R1]
   | succ m ih => simp [R1, Nat.succ_add, ih]
 
-lemma R1_snoc : ∀ (c : Nat) (r : ListBlank (Fin 2)), R1 c (c1 r) = c1 (R1 c r)
+theorem R1_snoc : ∀ (c : Nat) (r : ListBlank (Fin 2)), R1 c (c1 r) = c1 (R1 c r)
   | 0, _ => rfl
   | c + 1, r => by simp [R1, R1_snoc c r]
 
@@ -182,7 +182,7 @@ lemma R1_snoc : ∀ (c : Nat) (r : ListBlank (Fin 2)), R1 c (c1 r) = c1 (R1 c r)
 def G (a m : Nat) : Cfg (Fin 2) (Fin 6) :=
   cfg C (L0 (3 * m + 5) (c1 (c1 (L0 a (c1 default))))) default
 
-lemma init_to_G5 : Reaches (cfg A default default) (G 5 0) := by
+theorem init_to_G5 : Reaches (cfg A default default) (G 5 0) := by
   unfold G
   exec_tm 45
 
@@ -190,7 +190,7 @@ lemma init_to_G5 : Reaches (cfg A default default) (G 5 0) := by
 -- Inner Sweep Lemmas (`sweep_C0`, `sweep_B111`, `pump_A`)
 -- ============================================================================
 
-lemma sweep_C0 : ∀ (c : Nat) (l r : ListBlank (Fin 2)),
+theorem sweep_C0 : ∀ (c : Nat) (l r : ListBlank (Fin 2)),
     Reaches (cfg C (L0 c l) (c0 r)) (cfg C l (c0 (R1 c r)))
   | 0, l, r => Reaches.refl _
   | c + 1, l, r => by
@@ -200,7 +200,7 @@ lemma sweep_C0 : ∀ (c : Nat) (l r : ListBlank (Fin 2)),
     rw [← heq, ← R1_snoc c r]
     exact sweep_C0 c l (c1 r)
 
-lemma exit_11_C0 (c : Nat) (l : ListBlank (Fin 2)) :
+theorem exit_11_C0 (c : Nat) (l : ListBlank (Fin 2)) :
     Reaches (cfg C (L0 c (c1 (c1 l))) default) (cfg A l (R1 (c + 3) default)) := by
   have hs : Reaches (cfg C (L0 c (c1 (c1 l))) default) (cfg C (c1 (c1 l)) (c0 (R1 c default))) := by
     simpa using! sweep_C0 c (c1 (c1 l)) default
@@ -213,7 +213,7 @@ lemma exit_11_C0 (c : Nat) (l : ListBlank (Fin 2)) :
   rw [heq]
   exact Reaches.refl _
 
-lemma sweep_B111 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
+theorem sweep_B111 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
     Reaches (cfg B l (R1 (3 * k) r)) (cfg B (L0 (3 * k) l) r)
   | 0, l, r => Reaches.refl _
   | k + 1, l, r => by
@@ -227,7 +227,7 @@ lemma sweep_B111 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
     step_tm
     exact sweep_B111 k (c0 (c0 (c0 l))) r
 
-lemma finish_A0_mod3 (k : Nat) (u : ListBlank (Fin 2)) :
+theorem finish_A0_mod3 (k : Nat) (u : ListBlank (Fin 2)) :
     Reaches (cfg A u (c0 (R1 (3 * k + 9) default)))
             (cfg C (L0 5 (c1 (c1 (L0 (3 * k + 8) (c1 u))))) default) := by
   have hr : R1 (3 * k + 9) default = R1 (3 * (k + 3)) default := rfl
@@ -241,7 +241,7 @@ lemma finish_A0_mod3 (k : Nat) (u : ListBlank (Fin 2)) :
   simp only [L0]
   exec_tm 22
 
-lemma pump_A : ∀ (c : Nat) (l : ListBlank (Fin 2)) (k : Nat),
+theorem pump_A : ∀ (c : Nat) (l : ListBlank (Fin 2)) (k : Nat),
     Reaches (cfg A (L0 c l) (c0 (R1 (3 * k + 1) default)))
             (cfg A l (c0 (R1 (3 * (k + c) + 1) default)))
   | 0, l, k => by simpa [L0] using! Reaches.refl _
@@ -271,7 +271,7 @@ lemma pump_A : ∀ (c : Nat) (l : ListBlank (Fin 2)) (k : Nat),
 -- Exact Macro-Transition Rules on `G(a, m)`
 -- ============================================================================
 
-lemma G_halt (m : Nat) : ReachHalt (G 0 m) := by
+theorem G_halt (m : Nat) : ReachHalt (G 0 m) := by
   unfold G
   apply exit_11_C0 (3 * m + 5) (c1 default)
   have hr : R1 (3 * m + 5 + 3) default = c1 (R1 (3 * m + 7) default) := by
@@ -280,7 +280,7 @@ lemma G_halt (m : Nat) : ReachHalt (G 0 m) := by
   exact ReachHalt.next (step_cfg_left rfl b1 default (R1 (3 * m + 7) default))
     (ReachHalt.done (by have hM : target_tm 3 b1 = none := rfl; simp [cfg, step, hM]))
 
-lemma G_mod1 (m : Nat) : Reaches (G 1 m) (G (3 * m + 8) 0) := by
+theorem G_mod1 (m : Nat) : Reaches (G 1 m) (G (3 * m + 8) 0) := by
   unfold G
   refine Reaches.trans (exit_11_C0 (3 * m + 5) (L0 1 (c1 default))) ?_
   have hr : R1 (3 * m + 5 + 3) default = c1 (R1 (3 * m + 7) default) := by
@@ -295,7 +295,7 @@ lemma G_mod1 (m : Nat) : Reaches (G 1 m) (G (3 * m + 8) 0) := by
   rw [hr2]
   exact finish_A0_mod3 m default
 
-lemma G_mod2 (m : Nat) : Reaches (G 2 m) (G (3 * m + 8) 0) := by
+theorem G_mod2 (m : Nat) : Reaches (G 2 m) (G (3 * m + 8) 0) := by
   unfold G
   refine Reaches.trans (exit_11_C0 (3 * m + 5) (L0 2 (c1 default))) ?_
   have hr : R1 (3 * m + 5 + 3) default = c1 (c1 (R1 (3 * m + 6) default)) := by
@@ -310,7 +310,7 @@ lemma G_mod2 (m : Nat) : Reaches (G 2 m) (G (3 * m + 8) 0) := by
   rw [hr2]
   exact finish_A0_mod3 m default
 
-lemma G_mod3 (m : Nat) : Reaches (G 3 m) (G (3 * m + 14) 0) := by
+theorem G_mod3 (m : Nat) : Reaches (G 3 m) (G (3 * m + 14) 0) := by
   unfold G
   refine Reaches.trans (exit_11_C0 (3 * m + 5) (L0 3 (c1 default))) ?_
   have hr : R1 (3 * m + 5 + 3) default = c1 (c1 (c1 (c1 (R1 (3 * m + 4) default)))) := by
@@ -326,7 +326,7 @@ lemma G_mod3 (m : Nat) : Reaches (G 3 m) (G (3 * m + 14) 0) := by
   rw [hr2]
   simpa [show 3 * (m + 2) + 8 = 3 * m + 14 by omega] using! finish_A0_mod3 (m + 2) default
 
-lemma G_step4 (a m : Nat) : Reaches (G (a + 4) m) (G a (3 * m + 9)) := by
+theorem G_step4 (a m : Nat) : Reaches (G (a + 4) m) (G a (3 * m + 9)) := by
   unfold G
   have hl0 : L0 (a + 4) (c1 default) = L0 4 (L0 a (c1 default)) := by
     rw [← L0_add 4 a (c1 default)]
@@ -379,14 +379,14 @@ def MSeq : Nat → Nat
   | 0 => 0
   | k + 1 => 3 * MSeq k + 9
 
-lemma G_drain : ∀ (k r : Nat), Reaches (G (4 * k + r) 0) (G r (MSeq k))
+theorem G_drain : ∀ (k r : Nat), Reaches (G (4 * k + r) 0) (G r (MSeq k))
   | 0, r => by simpa [MSeq] using! Reaches.refl _
   | k + 1, r => by
     have hsplit : 4 * (k + 1) + r = (4 * k + r) + 4 := by omega
     rw [hsplit]
     exact Reaches.trans (G_drain k (r + 4)) (by simpa [MSeq] using! G_step4 r (MSeq k))
 
-lemma two_MSeq_add_nine : ∀ k : Nat, 2 * MSeq k + 9 = 3 ^ (k + 2)
+theorem two_MSeq_add_nine : ∀ k : Nat, 2 * MSeq k + 9 = 3 ^ (k + 2)
   | 0 => rfl
   | k + 1 => by
     have ih := two_MSeq_add_nine k
@@ -394,13 +394,13 @@ lemma two_MSeq_add_nine : ∀ k : Nat, 2 * MSeq k + 9 = 3 ^ (k + 2)
     rw [show 3 ^ (k + 1 + 2) = 3 * 3 ^ (k + 2) by ring]
     omega
 
-lemma two_TSeq_add_one (k : Nat) : 2 * (3 * MSeq k + 13) + 1 = 3 ^ (k + 3) := by
+theorem two_TSeq_add_one (k : Nat) : 2 * (3 * MSeq k + 13) + 1 = 3 ^ (k + 3) := by
   have ih := two_MSeq_add_nine k
   rw [show 3 ^ (k + 3) = 3 * 3 ^ (k + 2) by ring]
   omega
 
 /-- Euler totient congruence `2^(e + 3) ∣ 3^(2^(e + 1)) - 1` for all `e : Nat`. -/
-lemma pow2_dvd_pow3_sub1 : ∀ e : Nat, 2 ^ (e + 3) ∣ 3 ^ (2 ^ (e + 1)) - 1
+theorem pow2_dvd_pow3_sub1 : ∀ e : Nat, 2 ^ (e + 3) ∣ 3 ^ (2 ^ (e + 1)) - 1
   | 0 => by decide
   | e + 1 => by
     rcases pow2_dvd_pow3_sub1 e with ⟨q, hq⟩
@@ -413,7 +413,7 @@ lemma pow2_dvd_pow3_sub1 : ∀ e : Nat, 2 ^ (e + 3) ∣ 3 ^ (2 ^ (e + 1)) - 1
       ring
     exact ⟨q + 2 ^ (e + 2) * q * q, by omega⟩
 
-lemma pow3_add_period (e k : Nat) :
+theorem pow3_add_period (e k : Nat) :
     3 ^ (k + 2 ^ (e + 1)) % 2 ^ (e + 3) = 3 ^ k % 2 ^ (e + 3) := by
   rcases pow2_dvd_pow3_sub1 e with ⟨q, hq⟩
   have hge1 : 1 ≤ 3 ^ (2 ^ (e + 1)) := Nat.one_le_pow _ _ (by decide)
@@ -422,7 +422,7 @@ lemma pow3_add_period (e k : Nat) :
     rw [Nat.pow_add, h3]; ring
   rw [hrew, Nat.mul_add_mod]
 
-lemma pow3_mod_pow2 (e : Nat) : ∀ k : Nat,
+theorem pow3_mod_pow2 (e : Nat) : ∀ k : Nat,
     3 ^ k % 2 ^ (e + 3) = 3 ^ (k % 2 ^ (e + 1)) % 2 ^ (e + 3) := by
   intro k
   induction k using Nat.strongRecOn with
@@ -434,7 +434,7 @@ lemma pow3_mod_pow2 (e : Nat) : ∀ k : Nat,
       have hsub : k = (k - 2 ^ (e + 1)) + 2 ^ (e + 1) := by omega
       rw [hsub, pow3_add_period, ih (k - 2 ^ (e + 1)) (by omega), Nat.add_mod_right]
 
-lemma two_mul_add_one_mod (x m : Nat) (hm : 0 < m) :
+theorem two_mul_add_one_mod (x m : Nat) (hm : 0 < m) :
     (2 * x + 1) % (2 * m) = 2 * (x % m) + 1 := by
   have hx := Nat.div_add_mod x m
   have hrem : x % m < m := Nat.mod_lt x hm
@@ -442,7 +442,7 @@ lemma two_mul_add_one_mod (x m : Nat) (hm : 0 < m) :
   have hlt : 2 * (x % m) + 1 < 2 * m := by omega
   rw [hrew, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt]
 
-lemma div4_mod (a m : Nat) (hm : 0 < m) :
+theorem div4_mod (a m : Nat) (hm : 0 < m) :
     (a % (4 * m)) / 4 = (a / 4) % m := by
   have hdiv4 := Nat.div_add_mod a 4
   have hrem4 : a % 4 < 4 := Nat.mod_lt a (by decide)
@@ -454,7 +454,7 @@ lemma div4_mod (a m : Nat) (hm : 0 < m) :
   rw [Nat.mul_add_mod, Nat.mod_eq_of_lt hlt]
   omega
 
-lemma mod_eq_of_add_one (X Y m : Nat) (h : (X + 1) % m = (Y + 1) % m) : X % m = Y % m := by
+theorem mod_eq_of_add_one (X Y m : Nat) (h : (X + 1) % m = (Y + 1) % m) : X % m = Y % m := by
   by_cases hm : m = 0
   · subst hm; simpa using! h
   · have hx := Nat.div_add_mod X m
@@ -485,7 +485,7 @@ lemma mod_eq_of_add_one (X Y m : Nat) (h : (X + 1) % m = (Y + 1) % m) : X % m = 
         rw [this, Nat.mul_add_mod, Nat.mod_eq_of_lt (by omega)]
       omega
 
-lemma mod_eq_of_add_five (X Y m : Nat) (h : (X + 5) % m = (Y + 5) % m) : X % m = Y % m := by
+theorem mod_eq_of_add_five (X Y m : Nat) (h : (X + 5) % m = (Y + 5) % m) : X % m = Y % m := by
   apply mod_eq_of_add_one
   apply mod_eq_of_add_one
   apply mod_eq_of_add_one
@@ -493,14 +493,14 @@ lemma mod_eq_of_add_five (X Y m : Nat) (h : (X + 5) % m = (Y + 5) % m) : X % m =
   apply mod_eq_of_add_one
   simpa [Nat.add_assoc] using! h
 
-lemma TSeq_mod_half (k m : Nat) (hm : 0 < m) :
+theorem TSeq_mod_half (k m : Nat) (hm : 0 < m) :
     (3 * MSeq k + 13) % m = (3 ^ (k + 3) % (2 * m)) / 2 := by
   have h1 := two_TSeq_add_one k
   have h2 := two_mul_add_one_mod (3 * MSeq k + 13) m hm
   rw [← h1, h2]
   omega
 
-lemma TSeq_mod_congr (e a r_mod : Nat)
+theorem TSeq_mod_congr (e a r_mod : Nat)
     (ha : a % 2 ^ (e + 3) = r_mod) :
     (3 * MSeq (a / 4) + 13) % 2 ^ (e + 2) = (3 * MSeq (r_mod / 4) + 13) % 2 ^ (e + 2) := by
   have hdiv_mod : (a / 4) % 2 ^ (e + 1) = r_mod / 4 := by
@@ -519,14 +519,14 @@ lemma TSeq_mod_congr (e a r_mod : Nat)
       TSeq_mod_half (r_mod / 4) (2 ^ (e + 2)) (by positivity),
       ← hpow, h3eq]
 
-lemma MSeq_mod_step (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
+theorem MSeq_mod_step (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
     (3 * MSeq (a / 4) + 8) % 2 ^ (e + 2) = (3 * MSeq (r_mod / 4) + 8) % 2 ^ (e + 2) := by
   apply mod_eq_of_add_five
   simpa [show (3 * MSeq (a / 4) + 8) + 5 = 3 * MSeq (a / 4) + 13 by omega,
          show (3 * MSeq (r_mod / 4) + 8) + 5 = 3 * MSeq (r_mod / 4) + 13 by omega] using
     TSeq_mod_congr e a r_mod ha
 
-lemma MSeq_mod_step3 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
+theorem MSeq_mod_step3 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
     (3 * MSeq (a / 4) + 14) % 2 ^ (e + 2) = (3 * MSeq (r_mod / 4) + 14) % 2 ^ (e + 2) := by
   have h := TSeq_mod_congr e a r_mod ha
   rw [show 3 * MSeq (a / 4) + 14 = (3 * MSeq (a / 4) + 13) + 1 by omega,
@@ -535,12 +535,12 @@ lemma MSeq_mod_step3 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
       h,
       Nat.mod_add_mod (3 * MSeq (r_mod / 4) + 13) (2 ^ (e + 2)) 1]
 
-lemma a_mod4_eq (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
+theorem a_mod4_eq (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) :
     a % 4 = r_mod % 4 := by
   have h4dvd : 4 ∣ 2 ^ (e + 3) := ⟨2 ^ (e + 1), by ring⟩
   rw [← ha, Nat.mod_mod_of_dvd a h4dvd]
 
-lemma step_mod1 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 ^ (e + 3))
+theorem step_mod1 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 ^ (e + 3))
     (hr4 : r_mod % 4 = 1) :
     ∃ a', Reaches (G a 0) (G a' 0) ∧ a' % 2 ^ (e + 2) = (3 * MSeq (r_mod / 4) + 8) % 2 ^ (e + 2) := by
   refine ⟨3 * MSeq (a / 4) + 8, ?_, MSeq_mod_step e a r_mod ha⟩
@@ -550,7 +550,7 @@ lemma step_mod1 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 
   nth_rw 1 [ha4]
   exact Reaches.trans (G_drain (a / 4) 1) (G_mod1 (MSeq (a / 4)))
 
-lemma step_mod2 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 ^ (e + 3))
+theorem step_mod2 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 ^ (e + 3))
     (hr4 : r_mod % 4 = 2) :
     ∃ a', Reaches (G a 0) (G a' 0) ∧ a' % 2 ^ (e + 2) = (3 * MSeq (r_mod / 4) + 8) % 2 ^ (e + 2) := by
   refine ⟨3 * MSeq (a / 4) + 8, ?_, MSeq_mod_step e a r_mod ha⟩
@@ -560,7 +560,7 @@ lemma step_mod2 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 
   nth_rw 1 [ha4]
   exact Reaches.trans (G_drain (a / 4) 2) (G_mod2 (MSeq (a / 4)))
 
-lemma step_mod3 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 ^ (e + 3))
+theorem step_mod3 (e a r_mod : Nat) (ha : a % 2 ^ (e + 3) = r_mod) (_ : r_mod < 2 ^ (e + 3))
     (hr4 : r_mod % 4 = 3) :
     ∃ a', Reaches (G a 0) (G a' 0) ∧ a' % 2 ^ (e + 2) = (3 * MSeq (r_mod / 4) + 14) % 2 ^ (e + 2) := by
   refine ⟨3 * MSeq (a / 4) + 14, ?_, MSeq_mod_step3 e a r_mod ha⟩
@@ -580,7 +580,7 @@ def pow3ModBin : Nat → Nat → Nat → Nat
       let sq := (half * half) % m
       if n % 2 = 1 then (3 * sq) % m else sq
 
-lemma pow3ModBin_eq : ∀ (fuel n m : Nat), n < 2 ^ fuel → pow3ModBin fuel n m = 3 ^ n % m
+theorem pow3ModBin_eq : ∀ (fuel n m : Nat), n < 2 ^ fuel → pow3ModBin fuel n m = 3 ^ n % m
   | 0, n, m, hn => by
     have h0 : n = 0 := by omega
     subst h0; rfl
@@ -603,7 +603,7 @@ lemma pow3ModBin_eq : ∀ (fuel n m : Nat), n < 2 ^ fuel → pow3ModBin fuel n m
       rw [pow3ModBin_eq fuel (n / 2) m hlt]
       rw [← Nat.mul_mod, ← Nat.pow_add, show n / 2 + n / 2 = n by omega]
 
-lemma MSeq_fast_step1 (e r_mod : Nat) (hlt : r_mod / 4 + 3 < 2 ^ 16) :
+theorem MSeq_fast_step1 (e r_mod : Nat) (hlt : r_mod / 4 + 3 < 2 ^ 16) :
     (3 * MSeq (r_mod / 4) + 8) % 2 ^ (e + 2) =
     (pow3ModBin 16 (r_mod / 4 + 3) (2 ^ (e + 3)) / 2 + 5 * 2 ^ (e + 2) - 5) % 2 ^ (e + 2) := by
   apply mod_eq_of_add_five
@@ -623,7 +623,7 @@ lemma MSeq_fast_step1 (e r_mod : Nat) (hlt : r_mod / 4 + 3 < 2 ^ 16) :
     omega
   rw [hadd, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt2]
 
-lemma MSeq_fast_step3 (e r_mod : Nat) (hlt : r_mod / 4 + 3 < 2 ^ 16) :
+theorem MSeq_fast_step3 (e r_mod : Nat) (hlt : r_mod / 4 + 3 < 2 ^ 16) :
     (3 * MSeq (r_mod / 4) + 14) % 2 ^ (e + 2) =
     (pow3ModBin 16 (r_mod / 4 + 3) (2 ^ (e + 3)) / 2 + 1) % 2 ^ (e + 2) := by
   have hpow : 2 ^ (e + 3) = 2 * 2 ^ (e + 2) := by ring

@@ -38,12 +38,8 @@ def tm_coq : Machine (Fin 2) (Fin 6)
 
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 20000000
 set_option maxHeartbeats 0
@@ -55,17 +51,17 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 0 = some config := rfl
 
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 1 = step M config := rfl
 
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+theorem multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
@@ -73,32 +69,32 @@ lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+theorem multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
+theorem multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢^{n} c₃) : c₁ [tm]⊢^{n + 1} c₃ := by
   have := multiStep_trans tm c₁ c₂ c₃ 1 n h₁ h₂
   rwa [Nat.add_comm 1 n] at this
 
-lemma stepStar_refl (tm : Machine Γ Λ) (c : Cfg Γ Λ) : c [tm]⊢* c :=
+theorem stepStar_refl (tm : Machine Γ Λ) (c : Cfg Γ Λ) : c [tm]⊢* c :=
   ⟨0, rfl⟩
 
-lemma stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   rcases h₁ with ⟨n, hn⟩; rcases h₂ with ⟨m, hm⟩
   exact ⟨n + m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_of_multiStep {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} {n : Nat}
+theorem stepStar_of_multiStep {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} {n : Nat}
     (h : c₁ [tm]⊢^{n} c₂) : c₁ [tm]⊢* c₂ := ⟨n, h⟩
 
 omit [Inhabited Γ] in
-@[simp] lemma pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
 
 omit [Inhabited Γ] in
-@[simp] lemma pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+@[simp] theorem pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 
 omit [Inhabited Γ] in
 theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
@@ -108,26 +104,26 @@ theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m :=
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
-lemma pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
+theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
   rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
 
 omit [Inhabited Γ] in
-lemma pow_comm_one (l : List Γ) (n : Nat) : l ^ n ++ l = l ++ l ^ n := by
+theorem pow_comm_one (l : List Γ) (n : Nat) : l ^ n ++ l = l ++ l ^ n := by
   rw [← pow_succ_right, ← pow_succ_list]
 
-@[simp] lemma listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
+@[simp] theorem listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
-@[simp] lemma listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
+@[simp] theorem listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
     (a :: l) +> s = a >> (l +> s) := rfl
 
-@[simp] lemma listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
+@[simp] theorem listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) :=
   Turing.ListBlank.append_assoc l₁ l₂ s
 
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
   change ListBlank.cons default default = default
   exact ListBlank.cons_head_tail default
 
@@ -595,7 +591,7 @@ def sideRL (q₁ q₂ : Fin 6) (R R' : ListBlank (Fin 2)) : Prop :=
 def haltsFrom (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ cfg, (c [tm_coq]⊢* cfg) ∧ (step tm_coq cfg).isNone
 
-lemma haltsFrom_stepStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h₁ : c₁ [tm_coq]⊢* c₂) (h₂ : haltsFrom c₂) :
+theorem haltsFrom_stepStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h₁ : c₁ [tm_coq]⊢* c₂) (h₂ : haltsFrom c₂) :
     haltsFrom c₁ := by
   rcases h₂ with ⟨cfg, h₂, hnone⟩
   exact ⟨cfg, stepStar_trans h₁ h₂, hnone⟩
@@ -603,40 +599,40 @@ lemma haltsFrom_stepStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h₁ : c₁ [tm_coq]
 def sideRL_halt (R : ListBlank (Fin 2)) : Prop :=
   ∀ l, haltsFrom (l {{B}}> R)
 
-lemma segRR_app {q₁ q₂ q₃ : Fin 6} {w₁ w₂ m₁ m₂ : List (Fin 2)}
+theorem segRR_app {q₁ q₂ q₃ : Fin 6} {w₁ w₂ m₁ m₂ : List (Fin 2)}
     (h₁ : segRR q₁ q₂ w₁ m₁) (h₂ : segRR q₂ q₃ w₂ m₂) :
     segRR q₁ q₃ (w₁ ++ w₂) (m₂ ++ m₁) := by
   intro l r
   rw [listblank_append_assoc, listblank_append_assoc]
   exact stepStar_trans (h₁ l (w₂ +> r)) (h₂ (m₁ +> l) r)
 
-lemma segLL_app {q₁ q₂ q₃ : Fin 6} {w₁ w₂ o₁ o₂ : List (Fin 2)}
+theorem segLL_app {q₁ q₂ q₃ : Fin 6} {w₁ w₂ o₁ o₂ : List (Fin 2)}
     (h₁ : segLL q₁ q₂ w₁ o₁) (h₂ : segLL q₂ q₃ w₂ o₂) :
     segLL q₁ q₃ (w₁ ++ w₂) (o₂ ++ o₁) := by
   intro l r
   rw [listblank_append_assoc, listblank_append_assoc]
   exact stepStar_trans (h₁ (w₂ +> l) r) (h₂ l (o₁ +> r))
 
-lemma segRR_RL_LL {q₁ q₂ q₃ q₄ : Fin 6} {w₁ w₂ m w₁' w₂' : List (Fin 2)}
+theorem segRR_RL_LL {q₁ q₂ q₃ q₄ : Fin 6} {w₁ w₂ m w₁' w₂' : List (Fin 2)}
     (h₁ : segRR q₁ q₂ w₁ m) (h₂ : segRL q₂ q₃ w₂ w₂') (h₃ : segLL q₃ q₄ m w₁') :
     segRL q₁ q₄ (w₁ ++ w₂) (w₁' ++ w₂') := by
   intro l r
   rw [listblank_append_assoc, listblank_append_assoc]
   exact stepStar_trans (h₁ l (w₂ +> r)) (stepStar_trans (h₂ (m +> l) r) (h₃ l (w₂' +> r)))
 
-lemma segRR_sideRL_LL {q₁ q₂ q₃ q₄ : Fin 6} {w m w' : List (Fin 2)} {r r' : ListBlank (Fin 2)}
+theorem segRR_sideRL_LL {q₁ q₂ q₃ q₄ : Fin 6} {w m w' : List (Fin 2)} {r r' : ListBlank (Fin 2)}
     (h₁ : segRR q₁ q₂ w m) (h₂ : sideRL q₂ q₃ r r') (h₃ : segLL q₃ q₄ m w') :
     sideRL q₁ q₄ (w +> r) (w' +> r') := by
   intro l
   exact stepStar_trans (h₁ l r) (stepStar_trans (h₂ (m +> l)) (h₃ l r'))
 
-lemma segRL_frame {q₁ q₂ : Fin 6} {w w' : List (Fin 2)} (u : List (Fin 2))
+theorem segRL_frame {q₁ q₂ : Fin 6} {w w' : List (Fin 2)} (u : List (Fin 2))
     (h : segRL q₁ q₂ w w') : segRL q₁ q₂ (w ++ u) (w' ++ u) := by
   intro l r
   rw [listblank_append_assoc, listblank_append_assoc]
   exact h l (u +> r)
 
-lemma segRL_side {q₁ q₂ : Fin 6} {w w' : List (Fin 2)} (R : ListBlank (Fin 2))
+theorem segRL_side {q₁ q₂ : Fin 6} {w w' : List (Fin 2)} (R : ListBlank (Fin 2))
     (h : segRL q₁ q₂ w w') : sideRL q₁ q₂ (w +> R) (w' +> R) := by
   intro l; exact h l R
 
@@ -645,14 +641,14 @@ inductive sideRLs : Nat → ListBlank (Fin 2) → ListBlank (Fin 2) → Prop
   | succ {n : Nat} {R R₁ R' : ListBlank (Fin 2)} :
       sideRL B D R R₁ → sideRLs n R₁ R' → sideRLs (n + 1) R R'
 
-lemma sideRLs_append : ∀ {n₁ n₂ : Nat} {R₁ R₂ R₃ : ListBlank (Fin 2)},
+theorem sideRLs_append : ∀ {n₁ n₂ : Nat} {R₁ R₂ R₃ : ListBlank (Fin 2)},
     sideRLs n₁ R₁ R₂ → sideRLs n₂ R₂ R₃ → sideRLs (n₁ + n₂) R₁ R₃
   | 0, _, _, _, _, .zero _, h₂ => by simpa using h₂
   | n₁ + 1, n₂, _, _, _, .succ h step₁, h₂ => by
     rw [Nat.succ_add]
     exact .succ h (sideRLs_append step₁ h₂)
 
-lemma sideRLs_split : ∀ {n₁ n₂ : Nat} {R R' : ListBlank (Fin 2)},
+theorem sideRLs_split : ∀ {n₁ n₂ : Nat} {R R' : ListBlank (Fin 2)},
     sideRLs (n₁ + n₂) R R' → ∃ R₁, sideRLs n₁ R R₁ ∧ sideRLs n₂ R₁ R'
   | 0, n₂, R, R', h => by
     rw [Nat.zero_add] at h
@@ -667,17 +663,17 @@ lemma sideRLs_split : ∀ {n₁ n₂ : Nat} {R R' : ListBlank (Fin 2)},
 def segRLs (n p : Nat) (w w' : List (Fin 2)) : Prop :=
   ∀ R R', sideRLs p R R' → sideRLs n (w +> R) (w' +> R')
 
-lemma segRLs_O (w : List (Fin 2)) : segRLs 0 0 w w := by
+theorem segRLs_O (w : List (Fin 2)) : segRLs 0 0 w w := by
   intro R R' h; cases h; exact .zero (w +> R)
 
-lemma segRLs_trans {n₁ n₂ p₁ p₂ : Nat} {w₁ w₂ w₃ : List (Fin 2)}
+theorem segRLs_trans {n₁ n₂ p₁ p₂ : Nat} {w₁ w₂ w₃ : List (Fin 2)}
     (h₁ : segRLs n₁ p₁ w₁ w₂) (h₂ : segRLs n₂ p₂ w₂ w₃) :
     segRLs (n₁ + n₂) (p₁ + p₂) w₁ w₃ := by
   intro R R' h
   rcases sideRLs_split h with ⟨R₁, hp₁, hp₂⟩
   exact sideRLs_append (h₁ R R₁ hp₁) (h₂ R₁ R' hp₂)
 
-lemma lrcons1 {w₁ w₂ m : List (Fin 2)} (hR : segRR B B w₁ m) (hL : segLL D D m w₂) :
+theorem lrcons1 {w₁ w₂ m : List (Fin 2)} (hR : segRR B B w₁ m) (hL : segLL D D m w₂) :
     segRLs 1 1 w₁ w₂ := by
   intro R R' h
   cases h with
@@ -685,7 +681,7 @@ lemma lrcons1 {w₁ w₂ m : List (Fin 2)} (hR : segRR B B w₁ m) (hL : segLL D
     cases h₀
     exact .succ (segRR_sideRL_LL hR h₁ hL) (.zero (w₂ +> R'))
 
-lemma side1 {w w' : List (Fin 2)} {r r' : ListBlank (Fin 2)}
+theorem side1 {w w' : List (Fin 2)} {r r' : ListBlank (Fin 2)}
     (h₁ : segRLs 1 1 w w') (h₂ : sideRL B D r r') :
     sideRL B D (w +> r) (w' +> r') := by
   have h := h₁ r r' (.succ h₂ (.zero r'))
@@ -697,23 +693,23 @@ lemma side1 {w w' : List (Fin 2)} {r r' : ListBlank (Fin 2)}
 def passRL (w w' : List (Fin 2)) : Prop :=
   segRLs 1 1 w w' ∧ ∀ R, sideRL_halt R → sideRL_halt (w +> R)
 
-lemma lrcons1_pass {w₁ w₂ m : List (Fin 2)} (hR : segRR B B w₁ m) (hL : segLL D D m w₂) :
+theorem lrcons1_pass {w₁ w₂ m : List (Fin 2)} (hR : segRR B B w₁ m) (hL : segLL D D m w₂) :
     passRL w₁ w₂ :=
   ⟨lrcons1 hR hL, fun R hHalt l => haltsFrom_stepStar (hR l R) (hHalt (m +> l))⟩
 
-lemma stop1s {w w' : List (Fin 2)} (h : segRL B D w w') : segRLs 1 0 w w' := by
+theorem stop1s {w w' : List (Fin 2)} (h : segRL B D w w') : segRLs 1 0 w w' := by
   intro R R' h0
   cases h0
   exact .succ (segRL_side R h) (.zero (w' +> R))
 
-lemma segRR_pow {q : Fin 6} {u v : List (Fin 2)} (h : segRR q q u v) :
+theorem segRR_pow {q : Fin 6} {u v : List (Fin 2)} (h : segRR q q u v) :
     ∀ k : ℕ, segRR q q (u ^ k) (v ^ k)
   | 0 => fun _ _ => ⟨0, rfl⟩
   | k + 1 => by
     rw [pow_succ_list, pow_succ_right]
     exact segRR_app h (segRR_pow h k)
 
-lemma segLL_pow {q : Fin 6} {u v : List (Fin 2)} (h : segLL q q u v) :
+theorem segLL_pow {q : Fin 6} {u v : List (Fin 2)} (h : segLL q q u v) :
     ∀ k : ℕ, segLL q q (u ^ k) (v ^ k)
   | 0 => fun _ _ => ⟨0, rfl⟩
   | k + 1 => by
@@ -724,7 +720,7 @@ lemma segLL_pow {q : Fin 6} {u v : List (Fin 2)} (h : segLL q q u v) :
 -- Word Algebra & Definitions
 -- ============================================================================
 
-lemma pow_01_zero (n : ℕ) : ([0, 1] : List (Fin 2)) ^ n ++ [0] = [0] ++ ([1, 0] : List (Fin 2)) ^ n := by
+theorem pow_01_zero (n : ℕ) : ([0, 1] : List (Fin 2)) ^ n ++ [0] = [0] ++ ([1, 0] : List (Fin 2)) ^ n := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -734,7 +730,7 @@ lemma pow_01_zero (n : ℕ) : ([0, 1] : List (Fin 2)) ^ n ++ [0] = [0] ++ ([1, 0
       _ = [0] ++ ([1, 0] ++ [1, 0] ^ n) := rfl
       _ = [0] ++ [1, 0] ^ (n + 1) := by rw [← pow_succ_list]
 
-lemma one_pow_01 (n : ℕ) : ([1] : List (Fin 2)) ++ ([0, 1] : List (Fin 2)) ^ n = ([1, 0] : List (Fin 2)) ^ n ++ [1] := by
+theorem one_pow_01 (n : ℕ) : ([1] : List (Fin 2)) ++ ([0, 1] : List (Fin 2)) ^ n = ([1, 0] : List (Fin 2)) ^ n ++ [1] := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -744,11 +740,11 @@ lemma one_pow_01 (n : ℕ) : ([1] : List (Fin 2)) ++ ([0, 1] : List (Fin 2)) ^ n
       _ = ([1, 0] ++ [1, 0] ^ n) ++ [1] := by rw [← List.append_assoc]
       _ = [1, 0] ^ (n + 1) ++ [1] := by rw [← pow_succ_list]
 
-lemma zero_pow10_one (n : ℕ) : ([0] : List (Fin 2)) ++ ([1, 0] : List (Fin 2)) ^ n ++ [1] = ([0, 1] : List (Fin 2)) ^ (n + 1) := by
+theorem zero_pow10_one (n : ℕ) : ([0] : List (Fin 2)) ++ ([1, 0] : List (Fin 2)) ^ n ++ [1] = ([0, 1] : List (Fin 2)) ^ (n + 1) := by
   rw [← pow_01_zero, List.append_assoc]
   exact (pow_succ_right [0, 1] n).symm
 
-lemma one_pow111 (n : ℕ) : ([1] : List (Fin 2)) ++ ([1, 1, 1] : List (Fin 2)) ^ n = ([1, 1, 1] : List (Fin 2)) ^ n ++ [1] := by
+theorem one_pow111 (n : ℕ) : ([1] : List (Fin 2)) ++ ([1, 1, 1] : List (Fin 2)) ^ n = ([1, 1, 1] : List (Fin 2)) ^ n ++ [1] := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -758,7 +754,7 @@ lemma one_pow111 (n : ℕ) : ([1] : List (Fin 2)) ++ ([1, 1, 1] : List (Fin 2)) 
       _ = ([1, 1, 1] ++ [1, 1, 1] ^ n) ++ [1] := by rw [← List.append_assoc]
       _ = [1, 1, 1] ^ (n + 1) ++ [1] := by rw [← pow_succ_list]
 
-lemma two_ones_pow111 (n : ℕ) : ([1, 1] : List (Fin 2)) ++ ([1, 1, 1] : List (Fin 2)) ^ n = ([1, 1, 1] : List (Fin 2)) ^ n ++ [1, 1] := by
+theorem two_ones_pow111 (n : ℕ) : ([1, 1] : List (Fin 2)) ++ ([1, 1, 1] : List (Fin 2)) ^ n = ([1, 1, 1] : List (Fin 2)) ^ n ++ [1, 1] := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -774,7 +770,7 @@ def bmid (m j : ℕ) : List (Fin 2) := [0, 1] ++ [0, 1, 1] ^ j ++ [0, 1] ^ m
 def lbw (m j : ℕ) : List (Fin 2) := [0, 1, 1] ^ j ++ [0, 1] ^ (m + 1)
 def xbmid (x : ℕ) : List (Fin 2) := [0, 0, 1] ++ [0, 1] ^ x
 
-lemma blk_eq_10 (m j : ℕ) : blk m j = [0] ++ [1, 0] ^ m ++ stack j := by
+theorem blk_eq_10 (m j : ℕ) : blk m j = [0] ++ [1, 0] ^ m ++ stack j := by
   unfold blk stack
   rw [← zero_pow10_one, List.append_assoc]
 
@@ -794,7 +790,7 @@ def clbw : List (ℕ × ℕ) → List (Fin 2)
   | [] => []
   | p :: ch => clbw ch ++ lbwp p
 
-lemma cw_app (l₁ l₂ : List (ℕ × ℕ)) : cw (l₁ ++ l₂) = cw l₁ ++ cw l₂ := by
+theorem cw_app (l₁ l₂ : List (ℕ × ℕ)) : cw (l₁ ++ l₂) = cw l₁ ++ cw l₂ := by
   induction l₁ with
   | nil => rfl
   | cons p l₁ ih => simp [cw, ih, List.append_assoc]
@@ -819,17 +815,17 @@ def consume (bs : List (ℕ × ℕ)) (a : ℕ) : Option (ℕ × List (ℕ × ℕ
 -- Shift Rules & Block / Chain Lemmas
 -- ============================================================================
 
-lemma shift_F_01 : segRR F F [0, 1] [0, 1] :=
+theorem shift_F_01 : segRR F F [0, 1] [0, 1] :=
   fun l r => dmultiStep_star 2 ⟨F, .right, [], [0, 1]⟩ ⟨F, .right, [0, 1], []⟩ l r rfl
 
-lemma B_to_F_01 : segRR B F [0, 1] [0, 1] :=
+theorem B_to_F_01 : segRR B F [0, 1] [0, 1] :=
   fun l r => dmultiStep_star 4 ⟨B, .right, [], [0, 1]⟩ ⟨F, .right, [0, 1], []⟩ l r rfl
 
-lemma shift_F_111 (l r : ListBlank (Fin 2)) :
+theorem shift_F_111 (l r : ListBlank (Fin 2)) :
     (([0, 1] +> l) {{F}}> ([1, 1, 1] +> r)) [tm_coq]⊢* (([0, 1, 0, 1, 1] +> l) {{F}}> r) :=
   dmultiStep_star 9 ⟨F, .right, [0, 1], [1, 1, 1]⟩ ⟨F, .right, [0, 1, 0, 1, 1], []⟩ l r rfl
 
-lemma shift_F_111_pow : ∀ (j : ℕ) (l r : ListBlank (Fin 2)),
+theorem shift_F_111_pow : ∀ (j : ℕ) (l r : ListBlank (Fin 2)),
     (([0, 1] +> l) {{F}}> ([1, 1, 1] ^ j +> r)) [tm_coq]⊢* ((([0, 1] ++ [0, 1, 1] ^ j) +> l) {{F}}> r)
   | 0, l, r => ⟨0, rfl⟩
   | j + 1, l, r => by
@@ -840,20 +836,20 @@ lemma shift_F_111_pow : ∀ (j : ℕ) (l r : ListBlank (Fin 2)),
       shift_F_111 l ([1, 1, 1] ^ j +> r)
     exact stepStar_trans h1 (shift_F_111_pow j ([0, 1, 1] +> l) r)
 
-lemma shift_D_01 : segLL D D [0, 1] [0, 1] :=
+theorem shift_D_01 : segLL D D [0, 1] [0, 1] :=
   fun l r => dmultiStep_star 2 ⟨D, .left, [0, 1], []⟩ ⟨D, .left, [], [0, 1]⟩ l r rfl
 
-lemma shift_D_011 : segLL D D [0, 1, 1] [1, 1, 1] :=
+theorem shift_D_011 : segLL D D [0, 1, 1] [1, 1, 1] :=
   fun l r => dmultiStep_star 5 ⟨D, .left, [0, 1, 1], []⟩ ⟨D, .left, [], [1, 1, 1]⟩ l r rfl
 
-lemma shift_A_01 : segLL A A [0, 1] [0, 1] :=
+theorem shift_A_01 : segLL A A [0, 1] [0, 1] :=
   fun l r => dmultiStep_star 2 ⟨A, .left, [0, 1], []⟩ ⟨A, .left, [], [0, 1]⟩ l r rfl
 
-lemma A_default_to_F (R : ListBlank (Fin 2)) :
+theorem A_default_to_F (R : ListBlank (Fin 2)) :
     (default <{{A}} R) [tm_coq]⊢* (([0, 1] +> default) {{F}}> R) :=
   ldmultiStep_star 5 ⟨A, .left, [], []⟩ ⟨F, .right, [0, 1], []⟩ R rfl
 
-lemma blkRR_F (m j : ℕ) : segRR F F (blk m j) (bmid m j) := by
+theorem blkRR_F (m j : ℕ) : segRR F F (blk m j) (bmid m j) := by
   intro l r
   unfold blk bmid
   rw [listblank_append_assoc]
@@ -863,7 +859,7 @@ lemma blkRR_F (m j : ℕ) : segRR F F (blk m j) (bmid m j) := by
   have h2 := shift_F_111_pow j ([0, 1] ^ m +> l) r
   simpa [List.append_assoc] using stepStar_trans h1 h2
 
-lemma blkRR_B (m j : ℕ) : segRR B F (blk m j) (bmid m j) := by
+theorem blkRR_B (m j : ℕ) : segRR B F (blk m j) (bmid m j) := by
   intro l r
   unfold blk bmid
   rw [listblank_append_assoc]
@@ -875,45 +871,45 @@ lemma blkRR_B (m j : ℕ) : segRR B F (blk m j) (bmid m j) := by
   have h2 := shift_F_111_pow j ([0, 1] ^ m +> l) r
   simpa [List.append_assoc] using stepStar_trans h1 h2
 
-lemma blkLL (m j : ℕ) : segLL D D (lbw m j) (blk m j) :=
+theorem blkLL (m j : ℕ) : segLL D D (lbw m j) (blk m j) :=
   segLL_app (segLL_pow shift_D_011 j) (segLL_pow shift_D_01 (m + 1))
 
-lemma sweepLL : segLL D D [0, 1] [0, 1] := shift_D_01
-lemma yLL_glue (j : ℕ) : segLL D D ([0, 1, 1] ^ j) ([1, 1, 1] ^ j) := segLL_pow shift_D_011 j
+theorem sweepLL : segLL D D [0, 1] [0, 1] := shift_D_01
+theorem yLL_glue (j : ℕ) : segLL D D ([0, 1, 1] ^ j) ([1, 1, 1] ^ j) := segLL_pow shift_D_011 j
 
-lemma chainRR : ∀ ch : List (ℕ × ℕ), segRR F F (cw ch) (cmid ch)
+theorem chainRR : ∀ ch : List (ℕ × ℕ), segRR F F (cw ch) (cmid ch)
   | [] => fun _ _ => ⟨0, rfl⟩
   | p :: ch => segRR_app (blkRR_F p.1 p.2) (chainRR ch)
 
-lemma chainLL : ∀ ch : List (ℕ × ℕ), segLL D D (clbw ch) (cw ch)
+theorem chainLL : ∀ ch : List (ℕ × ℕ), segLL D D (clbw ch) (cw ch)
   | [] => fun _ _ => ⟨0, rfl⟩
   | p :: ch => segLL_app (chainLL ch) (blkLL p.1 p.2)
 
-lemma bmid_shift (m j : ℕ) : bmid m j ++ [0, 1] = [0, 1] ++ lbw m j := by
+theorem bmid_shift (m j : ℕ) : bmid m j ++ [0, 1] = [0, 1] ++ lbw m j := by
   unfold bmid lbw
   rw [List.append_assoc, List.append_assoc, ← pow_succ_right]
 
-lemma cmid_shift : ∀ ch : List (ℕ × ℕ), cmid ch ++ [0, 1] = [0, 1] ++ clbw ch
+theorem cmid_shift : ∀ ch : List (ℕ × ℕ), cmid ch ++ [0, 1] = [0, 1] ++ clbw ch
   | [] => rfl
   | p :: ch => by
     simp only [cmid, clbw, bmidp, lbwp]
     rw [List.append_assoc, bmid_shift, ← List.append_assoc, cmid_shift ch, List.append_assoc]
 
-lemma bmid_S (m j : ℕ) : bmid (m + 1) j = [0, 1] ++ lbw m j := by
+theorem bmid_S (m j : ℕ) : bmid (m + 1) j = [0, 1] ++ lbw m j := by
   rw [← bmid_shift]
   unfold bmid
   rw [pow_succ_right]
   simp [List.append_assoc]
 
-lemma prefRR (c j : ℕ) (ch : List (ℕ × ℕ)) : segRR B F (pw c j ch) (cmid ch ++ bmid c j) :=
+theorem prefRR (c j : ℕ) (ch : List (ℕ × ℕ)) : segRR B F (pw c j ch) (cmid ch ++ bmid c j) :=
   segRR_app (blkRR_B c j) (chainRR ch)
 
-lemma prefLL (c j : ℕ) (ch : List (ℕ × ℕ)) : segLL D D (cmid ch ++ bmid (c + 1) j) (pw c j ch ++ [0, 1]) := by
+theorem prefLL (c j : ℕ) (ch : List (ℕ × ℕ)) : segLL D D (cmid ch ++ bmid (c + 1) j) (pw c j ch ++ [0, 1]) := by
   rw [bmid_S, ← List.append_assoc, cmid_shift, List.append_assoc]
   have h := segLL_app sweepLL (segLL_app (chainLL ch) (blkLL c j))
   simpa [pw, List.append_assoc] using h
 
-lemma prefLL_glue (j : ℕ) (ch : List (ℕ × ℕ)) : segLL D D (cmid ch ++ bmid 0 j) ([1, 1, 1] ^ j ++ cw ch ++ [0, 1]) := by
+theorem prefLL_glue (j : ℕ) (ch : List (ℕ × ℕ)) : segLL D D (cmid ch ++ bmid 0 j) ([1, 1, 1] ^ j ++ cw ch ++ [0, 1]) := by
   have hb0 : bmid 0 j = [0, 1] ++ [0, 1, 1] ^ j := by unfold bmid; simp
   rw [hb0, ← List.append_assoc, cmid_shift, List.append_assoc]
   have h := segLL_app sweepLL (segLL_app (chainLL ch) (yLL_glue j))
@@ -923,17 +919,17 @@ lemma prefLL_glue (j : ℕ) (ch : List (ℕ × ℕ)) : segLL D D (cmid ch ++ bmi
 -- Digits, Edge, Root, Resets & Uniform Touch Lemmas
 -- ============================================================================
 
-lemma leadLL_start : segLL A D [0, 1, 0, 1, 1] [0, 0, 1, 0, 1] :=
+theorem leadLL_start : segLL A D [0, 1, 0, 1, 1] [0, 0, 1, 0, 1] :=
   fun l r => dmultiStep_star 5 ⟨A, .left, [0, 1, 0, 1, 1], []⟩ ⟨D, .left, [], [0, 0, 1, 0, 1]⟩ l r rfl
 
-lemma leadLL (a : ℕ) : segLL A D (bmid a 1) ([0, 1] ^ a ++ [0, 0] ++ [1, 0, 1]) := by
+theorem leadLL (a : ℕ) : segLL A D (bmid a 1) ([0, 1] ^ a ++ [0, 0] ++ [1, 0, 1]) := by
   have h := segLL_app leadLL_start (segLL_pow shift_D_01 a)
   simpa [bmid, List.append_assoc] using h
 
-lemma xbRR_end : segRR F B [1] [0] :=
+theorem xbRR_end : segRR F B [1] [0] :=
   fun l r => dmultiStep_star 1 ⟨F, .right, [], [1]⟩ ⟨B, .right, [0], []⟩ l r rfl
 
-lemma xbRR (x : ℕ) : segRR F B ([0] ++ [1, 0] ^ x ++ [1, 1]) (xbmid x) := by
+theorem xbRR (x : ℕ) : segRR F B ([0] ++ [1, 0] ^ x ++ [1, 1]) (xbmid x) := by
   have h := segRR_app (segRR_pow shift_F_01 (x + 1)) xbRR_end
   have heq1 : ([0] : List (Fin 2)) ++ [1, 0] ^ x ++ [1, 1] = [0, 1] ^ (x + 1) ++ [1] := by
     rw [← zero_pow10_one]; simp [List.append_assoc]
@@ -941,10 +937,10 @@ lemma xbRR (x : ℕ) : segRR F B ([0] ++ [1, 0] ^ x ++ [1, 1]) (xbmid x) := by
   rw [heq1, ← heq2]
   exact h
 
-lemma xbLL_start : segLL D A [0, 0, 1] [0, 1, 1] :=
+theorem xbLL_start : segLL D A [0, 0, 1] [0, 1, 1] :=
   fun l r => dmultiStep_star 3 ⟨D, .left, [0, 0, 1], []⟩ ⟨A, .left, [], [0, 1, 1]⟩ l r rfl
 
-lemma xbLL (x : ℕ) : segLL D A (xbmid x) ([0] ++ [1, 0] ^ x ++ [1, 1]) := by
+theorem xbLL (x : ℕ) : segLL D A (xbmid x) ([0] ++ [1, 0] ^ x ++ [1, 1]) := by
   have h := segLL_app xbLL_start (segLL_pow shift_A_01 x)
   have heq : ([0, 1] : List (Fin 2)) ^ x ++ [0, 1, 1] = [0] ++ [1, 0] ^ x ++ [1, 1] := by
     calc ([0, 1] : List (Fin 2)) ^ x ++ [0, 1, 1]
@@ -956,37 +952,37 @@ lemma xbLL (x : ℕ) : segLL D A (xbmid x) ([0] ++ [1, 0] ^ x ++ [1, 1]) := by
   rw [← heq]
   exact h
 
-lemma leadstop_turn : segRL F D [0, 0] [1, 1] :=
+theorem leadstop_turn : segRL F D [0, 0] [1, 1] :=
   fun l r => dmultiStep_star 3 ⟨F, .right, [], [0, 0]⟩ ⟨D, .left, [], [1, 1]⟩ l r rfl
 
-lemma leadstop0 (x : ℕ) : segRL F D ([0, 0] ++ [1, 0] ^ (x + 1)) ([1, 1, 1] ++ [0] ++ [1, 0] ^ x) := by
+theorem leadstop0 (x : ℕ) : segRL F D ([0, 0] ++ [1, 0] ^ (x + 1)) ([1, 1, 1] ++ [0] ++ [1, 0] ^ x) := by
   have h := segRL_frame ([1, 0] ^ (x + 1)) leadstop_turn
   simpa [pow_succ_list, List.append_assoc] using h
 
-lemma leadstopS (a x : ℕ) :
+theorem leadstopS (a x : ℕ) :
     segRL F D ([0, 1] ^ (a + 1) ++ [0, 0] ++ [1, 0] ^ (x + 1)) (lead1 a x) := by
   have h := segRR_RL_LL (segRR_pow shift_F_01 (a + 1)) (leadstop0 x) (segLL_pow shift_D_01 (a + 1))
   simpa [lead1, blk, List.append_assoc] using h
 
-lemma stopK1 (c a : ℕ) : segRL B D (lead0 (c + 1) (a + 1)) (lead1 c a) := by
+theorem stopK1 (c a : ℕ) : segRL B D (lead0 (c + 1) (a + 1)) (lead1 c a) := by
   have hR : segRR B F ([0, 1] ^ (c + 1)) ([0, 1] ^ (c + 1)) := by
     have h0 := segRR_app B_to_F_01 (segRR_pow shift_F_01 c)
     rwa [← pow_succ_right, ← pow_succ_list] at h0
   have h := segRR_RL_LL hR (leadstop0 a) (segLL_pow shift_D_01 (c + 1))
   simpa [lead0, lead1, blk, List.append_assoc] using h
 
-lemma stop1 (c a : ℕ) : segRL B D (lead0 (c + 1) (a + 1)) (lead1 c a) := stopK1 c a
+theorem stop1 (c a : ℕ) : segRL B D (lead0 (c + 1) (a + 1)) (lead1 c a) := stopK1 c a
 
-lemma halt0 (x : ℕ) (l r : ListBlank (Fin 2)) : haltsFrom (l {{B}}> (lead0 0 x +> r)) := by
+theorem halt0 (x : ℕ) (l r : ListBlank (Fin 2)) : haltsFrom (l {{B}}> (lead0 0 x +> r)) := by
   refine ⟨([1] +> l) {{C}}> ([0] +> ([1, 0] ^ x +> r)), ?_, ?_⟩
   · simpa [lead0, evalDCfg] using dmultiStep_star 1 ⟨B, .right, [], [0, 0]⟩ ⟨C, .right, [1], [0]⟩ l ([1, 0] ^ x +> r) rfl
   · simp [step, C, tm_coq]
 
-lemma shift_E_111 (l r : ListBlank (Fin 2)) :
+theorem shift_E_111 (l r : ListBlank (Fin 2)) :
     (([1] +> l) {{E}}> ([1, 1, 1] +> r)) [tm_coq]⊢* (([1, 0, 1, 1] +> l) {{E}}> r) :=
   dmultiStep_star 9 ⟨E, .right, [1], [1, 1, 1]⟩ ⟨E, .right, [1, 0, 1, 1], []⟩ l r rfl
 
-lemma shift_E_111_pow : ∀ (k : ℕ) (l r : ListBlank (Fin 2)),
+theorem shift_E_111_pow : ∀ (k : ℕ) (l r : ListBlank (Fin 2)),
     (([1] +> l) {{E}}> ([1, 1, 1] ^ k +> r)) [tm_coq]⊢* ((([1] ++ [0, 1, 1] ^ k) +> l) {{E}}> r)
   | 0, l, r => ⟨0, rfl⟩
   | k + 1, l, r => by
@@ -997,11 +993,11 @@ lemma shift_E_111_pow : ∀ (k : ℕ) (l r : ListBlank (Fin 2)),
       shift_E_111 l ([1, 1, 1] ^ k +> r)
     exact stepStar_trans h1 (shift_E_111_pow k ([0, 1, 1] +> l) r)
 
-lemma bounce_E_default (l : ListBlank (Fin 2)) :
+theorem bounce_E_default (l : ListBlank (Fin 2)) :
     (([1] +> l) {{E}}> default) [tm_coq]⊢* (l <{{D}} ([1, 1] +> default)) :=
   rdmultiStep_star 2 ⟨E, .right, [1], []⟩ ⟨D, .left, [], [1, 1]⟩ l rfl
 
-lemma edgeE_bounce (k : ℕ) (l : ListBlank (Fin 2)) :
+theorem edgeE_bounce (k : ℕ) (l : ListBlank (Fin 2)) :
     (([1] +> l) {{E}}> ([1, 1, 1] ^ k +> default)) [tm_coq]⊢* (l <{{D}} (([1, 1] ++ [1, 1, 1] ^ k) +> default)) := by
   have h1 := shift_E_111_pow k l default
   rw [listblank_append_assoc] at h1
@@ -1010,14 +1006,14 @@ lemma edgeE_bounce (k : ℕ) (l : ListBlank (Fin 2)) :
   rw [← listblank_append_assoc, ← two_ones_pow111] at h3
   exact stepStar_trans h1 (stepStar_trans h2 h3)
 
-lemma edge0L0 (f : ℕ) : sideRL F D (([0] ++ [1, 1, 1] ^ f) +> default) (([1, 1] ++ [1, 1, 1] ^ f) +> default) := by
+theorem edge0L0 (f : ℕ) : sideRL F D (([0] ++ [1, 1, 1] ^ f) +> default) (([1, 1] ++ [1, 1, 1] ^ f) +> default) := by
   intro l
   rw [listblank_append_assoc]
   have h1 : (l {{F}}> ([0] +> ([1, 1, 1] ^ f +> default))) [tm_coq]⊢* (([1] +> l) {{E}}> ([1, 1, 1] ^ f +> default)) :=
     dmultiStep_star 1 ⟨F, .right, [], [0]⟩ ⟨E, .right, [1], []⟩ l ([1, 1, 1] ^ f +> default) rfl
   exact stepStar_trans h1 (edgeE_bounce f l)
 
-lemma z_absorb (f : ℕ) : sideRL B D (edgew 0 (f + 1) +> default) (([1, 1] ++ [1, 1, 1] ^ (f + 1)) +> default) := by
+theorem z_absorb (f : ℕ) : sideRL B D (edgew 0 (f + 1) +> default) (([1, 1] ++ [1, 1, 1] ^ (f + 1)) +> default) := by
   intro l
   have h1 := dmultiStep_star 3 ⟨B, .right, [], [0, 1]⟩ ⟨E, .right, [1], [1]⟩ l ([1, 1] +> ([1, 1, 1] ^ f +> default)) rfl
   have h1' : (l {{B}}> (edgew 0 (f + 1) +> default)) [tm_coq]⊢*
@@ -1025,7 +1021,7 @@ lemma z_absorb (f : ℕ) : sideRL B D (edgew 0 (f + 1) +> default) (([1, 1] ++ [
     simpa [edgew, evalDCfg, pow_succ_list, List.append_assoc] using h1
   exact stepStar_trans h1' (edgeE_bounce (f + 1) l)
 
-lemma edge0L (x f : ℕ) : sideRL F D (([0] ++ [1, 0] ^ (x + 1) ++ [1, 1, 1] ^ f) +> default) (([0] ++ [1, 0] ^ x ++ [1, 1, 1] ^ (f + 1)) +> default) := by
+theorem edge0L (x f : ℕ) : sideRL F D (([0] ++ [1, 0] ^ (x + 1) ++ [1, 1, 1] ^ f) +> default) (([0] ++ [1, 0] ^ x ++ [1, 1, 1] ^ (f + 1)) +> default) := by
   have heq1 : ([0] : List (Fin 2)) ++ [1, 0] ^ (x + 1) ++ [1, 1, 1] ^ f = [0, 1] ^ (x + 1) ++ ([0] ++ [1, 1, 1] ^ f) := by
     calc ([0] : List (Fin 2)) ++ [1, 0] ^ (x + 1) ++ [1, 1, 1] ^ f
       _ = ([0] ++ [1, 0] ^ x ++ [1]) ++ ([0] ++ [1, 1, 1] ^ f) := by
@@ -1037,7 +1033,7 @@ lemma edge0L (x f : ℕ) : sideRL F D (([0] ++ [1, 0] ^ (x + 1) ++ [1, 1, 1] ^ f
   have h := segRR_sideRL_LL (segRR_pow shift_F_01 (x + 1)) (edge0L0 f) (segLL_pow shift_D_01 (x + 1))
   rwa [← listblank_append_assoc, ← listblank_append_assoc, ← heq1, heq2] at h
 
-lemma edge0E (y f : ℕ) : sideRL B D (([0] ++ [1, 0] ^ (y + 1) ++ [1, 1, 1] ^ f) +> default) (([0] ++ [1, 0] ^ y ++ [1, 1, 1] ^ (f + 1)) +> default) := by
+theorem edge0E (y f : ℕ) : sideRL B D (([0] ++ [1, 0] ^ (y + 1) ++ [1, 1, 1] ^ f) +> default) (([0] ++ [1, 0] ^ y ++ [1, 1, 1] ^ (f + 1)) +> default) := by
   have hR : segRR B F ([0, 1] ^ (y + 1)) ([0, 1] ^ (y + 1)) := by
     have h0 := segRR_app B_to_F_01 (segRR_pow shift_F_01 y)
     rwa [← pow_succ_right, ← pow_succ_list] at h0
@@ -1052,7 +1048,7 @@ lemma edge0E (y f : ℕ) : sideRL B D (([0] ++ [1, 0] ^ (y + 1) ++ [1, 1, 1] ^ f
   have h := segRR_sideRL_LL hR (edge0L0 f) (segLL_pow shift_D_01 (y + 1))
   rwa [← listblank_append_assoc, ← listblank_append_assoc, ← heq1, heq2] at h
 
-lemma u0E (y f : ℕ) : sideRL B D (edgew (y + 1) f +> default) (edgew y (f + 1) +> default) :=
+theorem u0E (y f : ℕ) : sideRL B D (edgew (y + 1) f +> default) (edgew y (f + 1) +> default) :=
   edge0E y f
 
 def root (t : ℕ) (X : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
@@ -1060,11 +1056,11 @@ def root (t : ℕ) (X : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 
 def wmid (t : ℕ) : List (Fin 2) := [0, 0, 1] ++ [0, 1] ^ (t + 1)
 
-lemma pow_01_append_default (k : ℕ) :
+theorem pow_01_append_default (k : ℕ) :
     ([0, 1] : List (Fin 2)) ^ k +> ([0, 1] +> (default : ListBlank (Fin 2))) = [0, 1] ^ (k + 1) +> default := by
   rw [← listblank_append_assoc, ← pow_succ_right]
 
-lemma root_in (t : ℕ) (X : ListBlank (Fin 2)) :
+theorem root_in (t : ℕ) (X : ListBlank (Fin 2)) :
     (root t X) [tm_coq]⊢* ((wmid t +> default) {{B}}> X) := by
   unfold root wmid
   have heq : ([0, 1] : List (Fin 2)) ^ t ++ [0, 1, 1] = [0, 1] ^ (t + 1) ++ [1] := by
@@ -1077,17 +1073,17 @@ lemma root_in (t : ℕ) (X : ListBlank (Fin 2)) :
   have h := stepStar_trans h1 (stepStar_trans h2 h3)
   simpa [pow_succ_list, List.append_assoc] using h
 
-lemma root_out (t : ℕ) (X : ListBlank (Fin 2)) :
+theorem root_out (t : ℕ) (X : ListBlank (Fin 2)) :
     ((wmid t +> default) <{{D}} X) [tm_coq]⊢* (root (t + 1) X) := by
   unfold wmid root
   have h := segLL_app xbLL_start (segLL_pow shift_A_01 (t + 1)) default X
   simpa [List.append_assoc] using h
 
-lemma root_step (t : ℕ) (X X' : ListBlank (Fin 2)) (h : sideRL B D X X') :
+theorem root_step (t : ℕ) (X X' : ListBlank (Fin 2)) (h : sideRL B D X X') :
     (root t X) [tm_coq]⊢* (root (t + 1) X') :=
   stepStar_trans (root_in t X) (stepStar_trans (h (wmid t +> default)) (root_out t X'))
 
-lemma root_steps : ∀ (n t : ℕ) (X X' : ListBlank (Fin 2)),
+theorem root_steps : ∀ (n t : ℕ) (X X' : ListBlank (Fin 2)),
     sideRLs n X X' → (root t X) [tm_coq]⊢* (root (n + t) X')
   | 0, t, X, _, .zero _ => by simp [stepStar_refl]
   | n + 1, t, X, X', .succ h₁ hs => by
@@ -1097,43 +1093,43 @@ lemma root_steps : ∀ (n t : ℕ) (X X' : ListBlank (Fin 2)),
     rw [hn] at hrest
     exact stepStar_trans hstep hrest
 
-lemma root_halt (t : ℕ) (X : ListBlank (Fin 2)) (h : sideRL_halt X) :
+theorem root_halt (t : ℕ) (X : ListBlank (Fin 2)) (h : sideRL_halt X) :
     haltsFrom (root t X) :=
   haltsFrom_stepStar (root_in t X) (h (wmid t +> default))
 
-lemma gen_RL {ci co : List (Fin 2)} (hF : segRL F D ci co) (c j : ℕ) (ch : List (ℕ × ℕ)) :
+theorem gen_RL {ci co : List (Fin 2)} (hF : segRL F D ci co) (c j : ℕ) (ch : List (ℕ × ℕ)) :
     segRL B D (pw (c + 1) j ch ++ ci) (pw c j ch ++ [0, 1] ++ co) := by
   have h := segRR_RL_LL (prefRR (c + 1) j ch) hF (prefLL c j ch)
   simpa [List.append_assoc] using h
 
-lemma gen_RLg {ci co : List (Fin 2)} (hF : segRL F D ci co) (j : ℕ) (ch : List (ℕ × ℕ)) :
+theorem gen_RLg {ci co : List (Fin 2)} (hF : segRL F D ci co) (j : ℕ) (ch : List (ℕ × ℕ)) :
     segRL B D (pw 0 j ch ++ ci) ([1, 1, 1] ^ j ++ cw ch ++ [0, 1] ++ co) := by
   have h := segRR_RL_LL (prefRR 0 j ch) hF (prefLL_glue j ch)
   simpa [List.append_assoc] using h
 
-lemma gen_fwd {ci m co : List (Fin 2)} (hR : segRR F B ci m) (hL : segLL D D m co) (c j : ℕ) (ch : List (ℕ × ℕ)) :
+theorem gen_fwd {ci m co : List (Fin 2)} (hR : segRR F B ci m) (hL : segLL D D m co) (c j : ℕ) (ch : List (ℕ × ℕ)) :
     passRL (pw (c + 1) j ch ++ ci) (pw c j ch ++ [0, 1] ++ co) := by
   have h := lrcons1_pass (segRR_app (prefRR (c + 1) j ch) hR) (segLL_app hL (prefLL c j ch))
   simpa [List.append_assoc] using h
 
-lemma gen_fwdg {ci m co : List (Fin 2)} (hR : segRR F B ci m) (hL : segLL D D m co) (j : ℕ) (ch : List (ℕ × ℕ)) :
+theorem gen_fwdg {ci m co : List (Fin 2)} (hR : segRR F B ci m) (hL : segLL D D m co) (j : ℕ) (ch : List (ℕ × ℕ)) :
     passRL (pw 0 j ch ++ ci) ([1, 1, 1] ^ j ++ cw ch ++ [0, 1] ++ co) := by
   have h := lrcons1_pass (segRR_app (prefRR 0 j ch) hR) (segLL_app hL (prefLL_glue j ch))
   simpa [List.append_assoc] using h
 
-lemma gen_side {ci co : List (Fin 2)} {R R' : ListBlank (Fin 2)}
+theorem gen_side {ci co : List (Fin 2)} {R R' : ListBlank (Fin 2)}
     (hF : sideRL F D (ci +> R) (co +> R')) (c j : ℕ) (ch : List (ℕ × ℕ)) :
     sideRL B D ((pw (c + 1) j ch ++ ci) +> R) ((pw c j ch ++ [0, 1] ++ co) +> R') := by
   have h := segRR_sideRL_LL (prefRR (c + 1) j ch) hF (prefLL c j ch)
   simpa [List.append_assoc] using h
 
-lemma gen_sideg {ci co : List (Fin 2)} {R R' : ListBlank (Fin 2)}
+theorem gen_sideg {ci co : List (Fin 2)} {R R' : ListBlank (Fin 2)}
     (hF : sideRL F D (ci +> R) (co +> R')) (j : ℕ) (ch : List (ℕ × ℕ)) :
     sideRL B D ((pw 0 j ch ++ ci) +> R) (([1, 1, 1] ^ j ++ cw ch ++ [0, 1] ++ co) +> R') := by
   have h := segRR_sideRL_LL (prefRR 0 j ch) hF (prefLL_glue j ch)
   simpa [List.append_assoc] using h
 
-lemma cstopF (a x : ℕ) (far : List (Fin 2)) :
+theorem cstopF (a x : ℕ) (far : List (Fin 2)) :
     ∃ co, segRL F D (lead0 a (x + 1) ++ far) co ∧ [0, 1] ++ co = lead1 a x ++ far := by
   cases a with
   | zero =>
@@ -1145,7 +1141,7 @@ lemma cstopF (a x : ℕ) (far : List (Fin 2)) :
     · simpa [lead0, List.append_assoc] using segRL_frame far (leadstopS a x)
     · simp [lead1, blk, pow_succ_list, List.append_assoc]
 
-lemma t_stop (bs : List (ℕ × ℕ)) (a x : ℕ) (far : List (Fin 2)) (ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem t_stop (bs : List (ℕ × ℕ)) (a x : ℕ) (far : List (Fin 2)) (ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (h : consume bs a = some (ov, bs', a')) :
     segRL B D (uw bs false a (x + 1) far) ([1, 1, 1] ^ ov ++ uw bs' true a' x far) := by
   rcases cstopF a x far with ⟨co, hF, hE⟩
@@ -1173,17 +1169,17 @@ lemma t_stop (bs : List (ℕ × ℕ)) (a x : ℕ) (far : List (Fin 2)) (ov : ℕ
 def cpass_mid (a x : ℕ) : List (Fin 2) := xbmid x ++ bmid a 1
 def cpass_co (a x : ℕ) : List (Fin 2) := ([0, 1] ^ a ++ [0, 0] ++ [1, 0, 1]) ++ ([0] ++ [1, 0] ^ x ++ [1, 1])
 
-lemma cpassRR (a x : ℕ) : segRR F B (lead1 a x ++ [1, 1]) (cpass_mid a x) := by
+theorem cpassRR (a x : ℕ) : segRR F B (lead1 a x ++ [1, 1]) (cpass_mid a x) := by
   have h := segRR_app (blkRR_F a 1) (xbRR x)
   simpa [lead1, cpass_mid, List.append_assoc] using h
 
-lemma cpassLL (a x : ℕ) : segLL D D (cpass_mid a x) (cpass_co a x) :=
+theorem cpassLL (a x : ℕ) : segLL D D (cpass_mid a x) (cpass_co a x) :=
   segLL_app (xbLL x) (leadLL a)
 
-lemma cpass_co_eq (a x : ℕ) : cpass_co a x = lead0 a (x + 2) ++ tailw 0 := by
+theorem cpass_co_eq (a x : ℕ) : cpass_co a x = lead0 a (x + 2) ++ tailw 0 := by
   simp [cpass_co, lead0, tailw, pow_succ_list, List.append_assoc]
 
-lemma passK1 (a x : ℕ) : passRL (lead1 a x ++ [1, 1]) (lead0 a (x + 2) ++ [1, 1]) := by
+theorem passK1 (a x : ℕ) : passRL (lead1 a x ++ [1, 1]) (lead0 a (x + 2) ++ [1, 1]) := by
   have hR : segRR B B (lead1 a x ++ [1, 1]) (cpass_mid a x) := by
     simpa [lead1, cpass_mid, List.append_assoc] using segRR_app (blkRR_B a 1) (xbRR x)
   have hL : segLL D D (cpass_mid a x) (lead0 a (x + 2) ++ [1, 1]) := by
@@ -1191,7 +1187,7 @@ lemma passK1 (a x : ℕ) : passRL (lead1 a x ++ [1, 1]) (lead0 a (x + 2) ++ [1, 
     rwa [cpass_co_eq] at h
   exact lrcons1_pass hR hL
 
-lemma t_pass (bs : List (ℕ × ℕ)) (a x ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem t_pass (bs : List (ℕ × ℕ)) (a x ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (h : consume bs (a + 1) = some (ov, bs', a')) :
     passRL (uw bs true a x (tailw 0)) ([1, 1, 1] ^ ov ++ uw bs' false a' (x + 2) (tailw 0)) := by
   cases bs with
@@ -1212,7 +1208,7 @@ lemma t_pass (bs : List (ℕ × ℕ)) (a x ov : ℕ) (bs' : List (ℕ × ℕ)) (
       rw [cpass_co_eq] at hg
       simpa [uw, leadw, lead0, pw, cw, blkp, tailw, pow_succ_list, List.append_assoc] using hg
 
-lemma lead1_tailw_eq (a x g : ℕ) :
+theorem lead1_tailw_eq (a x g : ℕ) :
     lead1 a x ++ tailw (g + 1) = blk a 1 ++ blk x (g + 1) ++ [1] := by
   calc lead1 a x ++ tailw (g + 1)
     _ = blk a 1 ++ ([0] ++ [1, 0] ^ x ++ [1]) ++ ([1] ++ [1, 1, 1] ^ (g + 1)) := by
@@ -1222,7 +1218,7 @@ lemma lead1_tailw_eq (a x g : ℕ) :
     _ = blk a 1 ++ blk x (g + 1) ++ [1] := by
       simp [blk, List.append_assoc]
 
-lemma lead1_edge1w_eq (a x f : ℕ) :
+theorem lead1_edge1w_eq (a x f : ℕ) :
     lead1 a x ++ edge1w f = blk a 1 ++ blk x f := by
   calc lead1 a x ++ edge1w f
     _ = blk a 1 ++ ([0] ++ [1, 0] ^ x ++ [1]) ++ [1, 1, 1] ^ f := by
@@ -1235,30 +1231,30 @@ lemma lead1_edge1w_eq (a x f : ℕ) :
 def um (a x g : ℕ) : List (Fin 2) := ([0] ++ bmid x (g + 1)) ++ bmid a 1
 def uco (a x g : ℕ) : List (Fin 2) := [0, 1] ^ a ++ [1, 1, 1] ++ blk x g ++ [0, 0, 1, 0, 1, 1]
 
-lemma u_RF (a x g : ℕ) : segRR F B (lead1 a x ++ tailw (g + 1)) (um a x g) := by
+theorem u_RF (a x g : ℕ) : segRR F B (lead1 a x ++ tailw (g + 1)) (um a x g) := by
   rw [lead1_tailw_eq]
   have h := segRR_app (segRR_app (blkRR_F a 1) (blkRR_F x (g + 1))) xbRR_end
   simpa [um, List.append_assoc] using h
 
-lemma u_RB (a x g : ℕ) : segRR B B (lead1 a x ++ tailw (g + 1)) (um a x g) := by
+theorem u_RB (a x g : ℕ) : segRR B B (lead1 a x ++ tailw (g + 1)) (um a x g) := by
   rw [lead1_tailw_eq]
   have h := segRR_app (segRR_app (blkRR_B a 1) (blkRR_F x (g + 1))) xbRR_end
   simpa [um, List.append_assoc] using h
 
-lemma u_L_start : segLL D D [0, 0, 1, 0, 1, 1] [0, 0, 1, 0, 1, 1] :=
+theorem u_L_start : segLL D D [0, 0, 1, 0, 1, 1] [0, 0, 1, 0, 1, 1] :=
   fun l r => dmultiStep_star 6 ⟨D, .left, [0, 0, 1, 0, 1, 1], []⟩ ⟨D, .left, [], [0, 0, 1, 0, 1, 1]⟩ l r rfl
 
-lemma um_eq (a x g : ℕ) : um a x g = [0, 0, 1, 0, 1, 1] ++ (lbw x g ++ ([0, 1, 1] ++ [0, 1] ^ a)) := by
+theorem um_eq (a x g : ℕ) : um a x g = [0, 0, 1, 0, 1, 1] ++ (lbw x g ++ ([0, 1, 1] ++ [0, 1] ^ a)) := by
   unfold um bmid lbw
   rw [pow_succ_list ([0, 1, 1] : List (Fin 2)) g, pow_succ_right ([0, 1] : List (Fin 2)) x]
   simp [List.append_assoc]
 
-lemma u_L (a x g : ℕ) : segLL D D (um a x g) (uco a x g) := by
+theorem u_L (a x g : ℕ) : segLL D D (um a x g) (uco a x g) := by
   rw [um_eq]
   have h := segLL_app u_L_start (segLL_app (blkLL x g) (segLL_app shift_D_011 (segLL_pow shift_D_01 a)))
   simpa [uco, List.append_assoc] using h
 
-lemma t_ungl1 (bs : List (ℕ × ℕ)) (a x ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem t_ungl1 (bs : List (ℕ × ℕ)) (a x ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (h : consume (bs ++ [(a, 1)]) (x + 1) = some (ov, bs', a')) :
     passRL (uw bs true a x (tailw 1)) ([1, 1, 1] ^ ov ++ uw bs' false a' 1 (tailw 0)) := by
   cases bs with
@@ -1283,7 +1279,7 @@ lemma t_ungl1 (bs : List (ℕ × ℕ)) (a x ov : ℕ) (bs' : List (ℕ × ℕ)) 
       have hg := gen_fwd (u_RF a x 0) (u_L a x 0) c j r
       simpa [uw, leadw, pw, cw, cw_app, blkp, uco, blk, lead0, tailw, pow_succ_list, List.append_assoc] using hg
 
-lemma t_ungl2 (bs : List (ℕ × ℕ)) (a x g ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem t_ungl2 (bs : List (ℕ × ℕ)) (a x g ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (h : consume (bs ++ [(a, 1), (x, g + 1)]) 0 = some (ov, bs', a')) :
     passRL (uw bs true a x (tailw (g + 2))) ([1, 1, 1] ^ ov ++ uw bs' false a' 1 (tailw 0)) := by
   cases bs with
@@ -1308,11 +1304,11 @@ lemma t_ungl2 (bs : List (ℕ × ℕ)) (a x g ov : ℕ) (bs' : List (ℕ × ℕ)
       have hg := gen_fwd (u_RF a x (g + 1)) (u_L a x (g + 1)) c j r
       simpa [uw, leadw, pw, cw, cw_app, blkp, uco, blk, lead0, tailw, pow_succ_list, List.append_assoc] using hg
 
-lemma t_halt (x : ℕ) (far : List (Fin 2)) (l r : ListBlank (Fin 2)) :
+theorem t_halt (x : ℕ) (far : List (Fin 2)) (l r : ListBlank (Fin 2)) :
     haltsFrom (l {{B}}> (uw [] false 0 x far +> r)) := by
   simpa [uw, leadw, cw] using halt0 x l (far +> r)
 
-lemma z_lead (bs : List (ℕ × ℕ)) (x f ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem z_lead (bs : List (ℕ × ℕ)) (x f ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (hne : bs ≠ []) (h : consume bs 0 = some (ov, bs', a')) :
     sideRL B D ((cw bs ++ edgew x f) +> default) (([1, 1, 1] ^ ov ++ cw bs' ++ edgew x (f + 1)) +> default) := by
   cases bs with
@@ -1338,27 +1334,27 @@ lemma z_lead (bs : List (ℕ × ℕ)) (x f ov : ℕ) (bs' : List (ℕ × ℕ)) (
         have hg := gen_side (edge0L x f) c j r
         simpa [pw, cw, blkp, edgew, List.append_assoc] using hg
 
-lemma z_empty (y f : ℕ) : sideRL B D (edgew (y + 1) f +> default) (edgew y (f + 1) +> default) :=
+theorem z_empty (y f : ℕ) : sideRL B D (edgew (y + 1) f +> default) (edgew y (f + 1) +> default) :=
   u0E y f
 
-lemma z_stop (bs : List (ℕ × ℕ)) (a x f ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem z_stop (bs : List (ℕ × ℕ)) (a x f ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (h : consume bs a = some (ov, bs', a')) :
     sideRL B D (uw bs false a (x + 1) (edge1w f) +> default) (([1, 1, 1] ^ ov ++ uw bs' true a' x (edge1w f)) +> default) :=
   segRL_side default (t_stop bs a x (edge1w f) ov bs' a' h)
 
 def zco (a x f : ℕ) : List (Fin 2) := [0, 1] ^ a ++ [1, 1, 1] ++ blk x f ++ edgew 0 1
 
-lemma bounce_F_default (l : ListBlank (Fin 2)) :
+theorem bounce_F_default (l : ListBlank (Fin 2)) :
     (([0, 1] +> l) {{F}}> default) [tm_coq]⊢* (l <{{D}} (edgew 0 1 +> default)) :=
   rdmultiStep_star 5 ⟨F, .right, [0, 1], []⟩ ⟨D, .left, [], [0, 1, 1, 1]⟩ l rfl
 
-lemma bmid_pair_eq (a x f : ℕ) :
+theorem bmid_pair_eq (a x f : ℕ) :
     bmid x f ++ bmid a 1 = [0, 1] ++ (lbw x f ++ ([0, 1, 1] ++ [0, 1] ^ a)) := by
   unfold bmid lbw
   rw [pow_succ_right ([0, 1] : List (Fin 2)) x]
   simp [List.append_assoc]
 
-lemma z1_bounce_LL (a x f : ℕ) (l : ListBlank (Fin 2)) :
+theorem z1_bounce_LL (a x f : ℕ) (l : ListBlank (Fin 2)) :
     (((bmid x f ++ bmid a 1) +> l) {{F}}> default) [tm_coq]⊢* (l <{{D}} (zco a x f +> default)) := by
   rw [bmid_pair_eq, listblank_append_assoc]
   have h1 := bounce_F_default ((lbw x f ++ ([0, 1, 1] ++ [0, 1] ^ a)) +> l)
@@ -1366,19 +1362,19 @@ lemma z1_bounce_LL (a x f : ℕ) (l : ListBlank (Fin 2)) :
   have h := stepStar_trans h1 h2
   simpa [zco, List.append_assoc] using h
 
-lemma z1F (a x f : ℕ) : sideRL F D ((lead1 a x ++ edge1w f) +> default) (zco a x f +> default) := by
+theorem z1F (a x f : ℕ) : sideRL F D ((lead1 a x ++ edge1w f) +> default) (zco a x f +> default) := by
   intro l
   rw [lead1_edge1w_eq]
   have hR := segRR_app (blkRR_F a 1) (blkRR_F x f) l default
   exact stepStar_trans hR (z1_bounce_LL a x f l)
 
-lemma z1B (a x f : ℕ) : sideRL B D ((lead1 a x ++ edge1w f) +> default) (zco a x f +> default) := by
+theorem z1B (a x f : ℕ) : sideRL B D ((lead1 a x ++ edge1w f) +> default) (zco a x f +> default) := by
   intro l
   rw [lead1_edge1w_eq]
   have hR := segRR_app (blkRR_B a 1) (blkRR_F x f) l default
   exact stepStar_trans hR (z1_bounce_LL a x f l)
 
-lemma z_1111 (bs : List (ℕ × ℕ)) (a x f ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
+theorem z_1111 (bs : List (ℕ × ℕ)) (a x f ov : ℕ) (bs' : List (ℕ × ℕ)) (a' : ℕ)
     (h : consume (bs ++ [(a, 1), (x, f)]) 0 = some (ov, bs', a')) :
     sideRL B D (uw bs true a x (edge1w f) +> default) (([1, 1, 1] ^ ov ++ cw bs' ++ edgew 0 1) +> default) := by
   cases bs with
@@ -1408,7 +1404,7 @@ def NT (s g : ℕ) (X : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 
 def rmid (t : ℕ) : List (Fin 2) := [0, 0, 1, 0, 1, 1] ++ [0, 1] ^ (t + 1)
 
-lemma reset1_in (t : ℕ) (X : ListBlank (Fin 2)) :
+theorem reset1_in (t : ℕ) (X : ListBlank (Fin 2)) :
     (root t ([1, 1, 1] +> X)) [tm_coq]⊢* ((rmid t +> default) {{B}}> X) := by
   unfold root rmid
   have heq : ([0, 1] : List (Fin 2)) ^ t ++ [0, 1, 1] ++ [1, 1, 1] = [0, 1] ^ (t + 1) ++ ([1, 1, 1] ++ [1]) := by
@@ -1424,11 +1420,11 @@ lemma reset1_in (t : ℕ) (X : ListBlank (Fin 2)) :
   have h := stepStar_trans h1 (stepStar_trans h2 (stepStar_trans h3 h4))
   simpa [List.append_assoc] using h
 
-lemma D_default_to_A (R : ListBlank (Fin 2)) :
+theorem D_default_to_A (R : ListBlank (Fin 2)) :
     (default <{{D}} R) [tm_coq]⊢* (default <{{A}} ([1] +> R)) :=
   ldmultiStep_star 1 ⟨D, .left, [], []⟩ ⟨A, .left, [], [1]⟩ R rfl
 
-lemma reset1_out (t : ℕ) (X : ListBlank (Fin 2)) :
+theorem reset1_out (t : ℕ) (X : ListBlank (Fin 2)) :
     ((rmid t +> default) <{{D}} X) [tm_coq]⊢* (NT (t + 1) 0 X) := by
   unfold rmid NT
   have h1 := segLL_app u_L_start (segLL_pow shift_D_01 (t + 1)) default X
@@ -1440,15 +1436,15 @@ lemma reset1_out (t : ℕ) (X : ListBlank (Fin 2)) :
     simp [tailw, List.append_assoc]
   rwa [← listblank_append_assoc, heq] at h
 
-lemma reset1 (t : ℕ) (X X' : ListBlank (Fin 2)) (h : sideRL B D X X') :
+theorem reset1 (t : ℕ) (X X' : ListBlank (Fin 2)) (h : sideRL B D X X') :
     (root t ([1, 1, 1] +> X)) [tm_coq]⊢* (NT (t + 1) 0 X') :=
   stepStar_trans (reset1_in t X) (stepStar_trans (h (rmid t +> default)) (reset1_out t X'))
 
-lemma reset1_halt (t : ℕ) (X : ListBlank (Fin 2)) (h : sideRL_halt X) :
+theorem reset1_halt (t : ℕ) (X : ListBlank (Fin 2)) (h : sideRL_halt X) :
     haltsFrom (root t ([1, 1, 1] +> X)) :=
   haltsFrom_stepStar (reset1_in t X) (h (rmid t +> default))
 
-lemma reset2 (s g : ℕ) (X : ListBlank (Fin 2)) :
+theorem reset2 (s g : ℕ) (X : ListBlank (Fin 2)) :
     (NT (s + 1) g X) [tm_coq]⊢* (root 0 ((lead1 s 0 ++ tailw g) +> X)) := by
   unfold NT root
   have heq : ([1, 0] : List (Fin 2)) ^ (s + 1) ++ [1] ++ [0, 0] ++ [1, 0] ++ tailw g =
@@ -1467,7 +1463,7 @@ lemma reset2 (s g : ℕ) (X : ListBlank (Fin 2)) :
 -- Closed-Form Batch Lemmas (`pairK`, `pair1`, `clK0`, `clK1`, `cl10`, `cl11`, `zLs`, `zEs`)
 -- ============================================================================
 
-lemma pairK : ∀ (q c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ),
+theorem pairK : ∀ (q c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ),
     segRLs (q * 2) q
       (uw ((q * 2 + c, j) :: r) false a (x + 1) (tailw 0))
       (uw ((c, j) :: r) false (q + a) (q + x + 1) (tailw 0))
@@ -1486,7 +1482,7 @@ lemma pairK : ∀ (q c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ),
     rw [hc]
     exact h
 
-lemma pair1 : ∀ (q a x : ℕ),
+theorem pair1 : ∀ (q a x : ℕ),
     segRLs (q * 2) q
       (uw [] false (q + a) (x + 1) (tailw 0))
       (uw [] false a (q + x + 1) (tailw 0))
@@ -1505,7 +1501,7 @@ lemma pair1 : ∀ (q a x : ℕ),
 
 def b2n (b : Bool) : ℕ := if b then 1 else 0
 
-lemma clK0 (q : ℕ) (rb : Bool) (c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ) :
+theorem clK0 (q : ℕ) (rb : Bool) (c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ) :
     segRLs (q * 2 + b2n rb) q
       (uw ((q * 2 + b2n rb + c, j) :: r) false a (x + 1) (tailw 0))
       (uw ((c, j) :: r) rb (q + a) (q + (x + 1) - b2n rb) (tailw 0)) := by
@@ -1520,7 +1516,7 @@ lemma clK0 (q : ℕ) (rb : Bool) (c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ)
     have hx : q + (x + 1) - 1 = q + x := by omega
     simpa [b2n, hc, hx] using h
 
-lemma clK1 (q : ℕ) (rb : Bool) (c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ) :
+theorem clK1 (q : ℕ) (rb : Bool) (c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ) :
     segRLs (q * 2 + b2n rb + 1) (q + 1)
       (uw ((q * 2 + b2n rb + c + 1, j) :: r) true a x (tailw 0))
       (uw ((c, j) :: r) rb (q + (a + 1)) (q + (x + 2) - b2n rb) (tailw 0)) := by
@@ -1532,7 +1528,7 @@ lemma clK1 (q : ℕ) (rb : Bool) (c j : ℕ) (r : List (ℕ × ℕ)) (a x : ℕ)
   rw [hn1, hn2] at h
   exact h
 
-lemma cl10 (q : ℕ) (rb : Bool) (a x : ℕ) :
+theorem cl10 (q : ℕ) (rb : Bool) (a x : ℕ) :
     segRLs (q * 2 + b2n rb) q
       (uw [] false (q + b2n rb + a) (x + 1) (tailw 0))
       (uw [] rb a (q + (x + 1) - b2n rb) (tailw 0)) := by
@@ -1547,7 +1543,7 @@ lemma cl10 (q : ℕ) (rb : Bool) (a x : ℕ) :
     have hx : q + (x + 1) - 1 = q + x := by omega
     simpa [b2n, ha, hx] using h
 
-lemma cl11 (q : ℕ) (rb : Bool) (a x : ℕ) :
+theorem cl11 (q : ℕ) (rb : Bool) (a x : ℕ) :
     segRLs (q * 2 + b2n rb + 1) (q + 1)
       (uw [] true (q + b2n rb + a) x (tailw 0))
       (uw [] rb a (q + (x + 2) - b2n rb) (tailw 0)) := by
@@ -1559,7 +1555,7 @@ lemma cl11 (q : ℕ) (rb : Bool) (a x : ℕ) :
   rw [hn1, hn2] at h
   exact h
 
-lemma zLs : ∀ (m c j : ℕ) (r : List (ℕ × ℕ)) (x f : ℕ),
+theorem zLs : ∀ (m c j : ℕ) (r : List (ℕ × ℕ)) (x f : ℕ),
     sideRLs m ((cw ((m + c, j) :: r) ++ edgew x f) +> default)
       ((cw ((c, j) :: r) ++ edgew x (m + f)) +> default)
   | 0, c, j, r, x, f => by simpa using .zero _
@@ -1572,7 +1568,7 @@ lemma zLs : ∀ (m c j : ℕ) (r : List (ℕ × ℕ)) (x f : ℕ),
     rw [hm2] at h2
     exact .succ h1 h2
 
-lemma zEs : ∀ (m y f : ℕ),
+theorem zEs : ∀ (m y f : ℕ),
     sideRLs m (edgew (m + y) f +> default) (edgew y (m + f) +> default)
   | 0, y, f => by simpa using .zero _
   | m + 1, y, f => by
@@ -1591,12 +1587,12 @@ lemma zEs : ∀ (m y f : ℕ),
 def strictNat {α : Type} (x : ℕ) (k : ℕ → α) : α :=
   Nat.casesOn (motive := fun _ => α) (Nat.add x 1) (k 0) k
 
-@[simp] lemma strictNat_eq {α : Type} (x : ℕ) (k : ℕ → α) : strictNat x k = k x := rfl
+@[simp] theorem strictNat_eq {α : Type} (x : ℕ) (k : ℕ → α) : strictNat x k = k x := rfl
 
 def strictBool {α : Type} (b : Bool) (k : Bool → α) : α :=
   Bool.casesOn (motive := fun _ => α) b (k false) (k true)
 
-@[simp] lemma strictBool_eq {α : Type} (b : Bool) (k : Bool → α) : strictBool b k = k b := by
+@[simp] theorem strictBool_eq {α : Type} (b : Bool) (k : Bool → α) : strictBool b k = k b := by
   cases b <;> rfl
 
 inductive PairN where
@@ -1637,13 +1633,13 @@ def bsqToList : BSQ → List (ℕ × ℕ)
   | .mk (p :: r) back => pairToProd p :: (r.map pairToProd ++ (revAux back []).map pairToProd)
   | .dummy => []
 
-lemma revAux_eq (xs acc : List PairN) : revAux xs acc = xs.reverse ++ acc := by
+theorem revAux_eq (xs acc : List PairN) : revAux xs acc = xs.reverse ++ acc := by
   induction xs generalizing acc with
   | nil => rfl
   | cons x xs ih =>
     simp only [revAux, ih, List.reverse_cons, List.append_assoc, List.singleton_append]
 
-lemma bsqToList_qNorm (r back : List PairN) :
+theorem bsqToList_qNorm (r back : List PairN) :
     bsqToList (qNorm r back) = r.map pairToProd ++ (revAux back []).map pairToProd := by
   cases r with
   | cons p r' => rfl
@@ -1659,14 +1655,14 @@ lemma bsqToList_qNorm (r back : List PairN) :
       | nil => contradiction
       | cons p' r' => simp [bsqToList, revAux]
 
-lemma bsqToList_qPush1 (q : BSQ) (c j : ℕ) :
+theorem bsqToList_qPush1 (q : BSQ) (c j : ℕ) :
     bsqToList (qPush1 q c j) = bsqToList q ++ [(c, j)] := by
   rcases q with ⟨_ | ⟨p, r⟩, back⟩ | _
   · rfl
   · simp [qPush1, bsqToList, revAux_eq, pairToProd, List.append_assoc]
   · rfl
 
-lemma bsqToList_qPush2 (q : BSQ) (c1 j1 c2 j2 : ℕ) :
+theorem bsqToList_qPush2 (q : BSQ) (c1 j1 c2 j2 : ℕ) :
     bsqToList (qPush2 q c1 j1 c2 j2) = bsqToList q ++ [(c1, j1), (c2, j2)] := by
   simp [qPush2, bsqToList_qPush1, List.append_assoc]
 
@@ -1716,7 +1712,7 @@ def consumeN (q : BSQ) (a : ℕ) : ConRes :=
       .some 0 (.mk [] []) a1
   | _ => .none
 
-lemma consumeN_spec (q : BSQ) (a ov : ℕ) (q' : BSQ) (a' : ℕ)
+theorem consumeN_spec (q : BSQ) (a ov : ℕ) (q' : BSQ) (a' : ℕ)
     (h : consumeN q a = .some ov q' a') :
     consume (bsqToList q) a = some (ov, bsqToList q', a') := by
   rcases q with ⟨_ | ⟨⟨_ | c, j⟩ | _, r⟩, back⟩ | _
@@ -1788,7 +1784,7 @@ def touchN (u : UnitN) : TRes :=
       | .dummy => .tfail
   | .dummy => .tfail
 
-lemma touchN_stop (u : UnitN) (ov : ℕ) (u' : UnitN) (h : touchN u = .tstop ov u') :
+theorem touchN_stop (u : UnitN) (ov : ℕ) (u' : UnitN) (h : touchN u = .tstop ov u') :
     segRL B D (uwN u) ([1, 1, 1] ^ ov ++ uwN u') := by
   rcases u with ⟨⟨front, back⟩ | _, _ | _, ua, _ | ux, ug⟩ | _
   · cases front with
@@ -1868,7 +1864,7 @@ lemma touchN_stop (u : UnitN) (ov : ℕ) (u' : UnitN) (h : touchN u = .tstop ov 
         cases hc : consumeN (qPush2 .dummy ua 1 (ux + 1) (ug2 + 1)) 0 <;> rw [hc] at h <;> nomatch h
   · nomatch h
 
-lemma touchN_pass (u : UnitN) (ov : ℕ) (u' : UnitN) (h : touchN u = .tpass ov u') :
+theorem touchN_pass (u : UnitN) (ov : ℕ) (u' : UnitN) (h : touchN u = .tpass ov u') :
     passRL (uwN u) ([1, 1, 1] ^ ov ++ uwN u') ∧ unitG u' = 0 := by
   rcases u with ⟨q, _ | _, ua, ux, ug⟩ | _
   · rcases q with ⟨_ | ⟨p, r⟩, back⟩ | _
@@ -1917,7 +1913,7 @@ lemma touchN_pass (u : UnitN) (ov : ℕ) (u' : UnitN) (h : touchN u = .tpass ov 
         exact ⟨t_ungl2 (bsqToList q) ua ux ug o (bsqToList q') a' hspec, rfl⟩
   · nomatch h
 
-lemma touchN_halt (u : UnitN) (h : touchN u = .thalt) (l r : ListBlank (Fin 2)) :
+theorem touchN_halt (u : UnitN) (h : touchN u = .thalt) (l r : ListBlank (Fin 2)) :
     haltsFrom (l {{B}}> (uwN u +> r)) := by
   rcases u with ⟨q, _ | _, ua, ux, ug⟩ | _
   · rcases q with ⟨_ | ⟨p, r'⟩, back⟩ | _
@@ -1981,7 +1977,7 @@ def ztouch (z : ZN) : ZRes :=
     | .none => .zfail
   | _ => .zfail
 
-lemma ztouch_ret (z : ZN) (ov : ℕ) (z' : ZN) (h : ztouch z = .zret ov z') :
+theorem ztouch_ret (z : ZN) (ov : ℕ) (z' : ZN) (h : ztouch z = .zret ov z') :
     sideRL B D (zside z) ([1, 1, 1] ^ ov +> zside z') := by
   rcases z with ⟨⟨_ | ⟨p, r⟩, back⟩ | _, x, f⟩ | ⟨q, _ | _, a, x, f⟩
   · cases x with
@@ -2027,7 +2023,7 @@ lemma ztouch_ret (z : ZN) (ov : ℕ) (z' : ZN) (h : ztouch z = .zret ov z') :
       have hz := z_1111 (bsqToList q) a x f o (bsqToList q') a' hspec
       simpa [zside] using hz
 
-lemma ztouch_abs (z : ZN) (f : ℕ) (h : ztouch z = .zabs f) :
+theorem ztouch_abs (z : ZN) (f : ℕ) (h : ztouch z = .zabs f) :
     sideRL B D (zside z) (([1, 1] ++ [1, 1, 1] ^ f) +> default) := by
   rcases z with ⟨⟨_ | ⟨p, r⟩, back⟩ | _, x, f'⟩ | ⟨q, _ | _, a, x, f'⟩
   · cases x with
@@ -2093,20 +2089,20 @@ def dwords : List UnitN → List (Fin 2)
   | [] => []
   | u :: us => uwN u ++ dwords us
 
-lemma setg_word (u : UnitN) (g : ℕ) (hg : unitG u = 0) :
+theorem setg_word (u : UnitN) (g : ℕ) (hg : unitG u = 0) :
     uwN u ++ [1, 1, 1] ^ g = uwN (setg u g) := by
   rcases u with ⟨q, bit, a, x, _ | g0⟩ | _
   · simp [uwN, setg, uw, tailw, List.append_assoc]
   · nomatch hg
   · nomatch hg
 
-lemma abs_word (q : BSQ) (bit : Bool) (a x g f : ℕ) (hg : g = 0) :
+theorem abs_word (q : BSQ) (bit : Bool) (a x g f : ℕ) (hg : g = 0) :
     uwN (.mk q bit a x g) ++ ([1, 1] ++ [1, 1, 1] ^ f) =
       uw (bsqToList q) bit a x (edge1w (g + f + 1)) := by
   subst hg
   simp [uwN, uw, tailw, edge1w, pow_succ_list, List.append_assoc]
 
-lemma callN_ret : ∀ (us : List UnitN) (z : ZN) (ov : ℕ) (us' : List UnitN) (z' : ZN),
+theorem callN_ret : ∀ (us : List UnitN) (z : ZN) (ov : ℕ) (us' : List UnitN) (z' : ZN),
     callN us z = .cret ov us' z' →
     sideRL B D (dwords us +> zside z) (([1, 1, 1] ^ ov ++ dwords us') +> zside z')
   | [], z, ov, us', z', h => by
@@ -2166,7 +2162,7 @@ lemma callN_ret : ∀ (us : List UnitN) (z : ZN) (ov : ℕ) (us' : List UnitN) (
         | chalt => rw [hc] at h; nomatch h
         | cfail => rw [hc] at h; nomatch h
 
-lemma callN_halt : ∀ (us : List UnitN) (z : ZN),
+theorem callN_halt : ∀ (us : List UnitN) (z : ZN),
     callN us z = .chalt → sideRL_halt (dwords us +> zside z)
   | [], z, h => by
     try dsimp [callN] at h
@@ -2226,7 +2222,7 @@ def simCfgHalt : SimCfg → Prop
   | .halt => True
   | .mk tl us z => haltsFrom (denoteCfg tl us z)
 
-lemma inc1_sound (c : SimCfg) (h : simCfgHalt (inc1 c)) : simCfgHalt c := by
+theorem inc1_sound (c : SimCfg) (h : simCfgHalt (inc1 c)) : simCfgHalt c := by
   rcases c with ⟨⟨t, _ | _ | g⟩ | ⟨_ | s1, g⟩, us, z⟩ | _
   · try dsimp [inc1] at h
     cases hc : callN us z with
@@ -2267,11 +2263,11 @@ def nodd (n : ℕ) : Bool := Nat.beq (Nat.mod n 2) 1
 def ndiv2 (n : ℕ) : ℕ := Nat.div n 2
 def nlt (a b : ℕ) : Bool := Nat.ble (Nat.add a 1) b
 
-lemma ndiv2_nodd (n : ℕ) : ndiv2 n * 2 + b2n (nodd n) = n := by
+theorem ndiv2_nodd (n : ℕ) : ndiv2 n * 2 + b2n (nodd n) = n := by
   change (n / 2) * 2 + b2n (Nat.beq (n % 2) 1) = n
   rcases Nat.mod_two_eq_zero_or_one n with h | h <;> simp [h, b2n] <;> omega
 
-lemma nlt_false_iff (a b : ℕ) : nlt a b = false ↔ b ≤ a := by
+theorem nlt_false_iff (a b : ℕ) : nlt a b = false ↔ b ≤ a := by
   change Nat.ble (a + 1) b = false ↔ b ≤ a
   rw [← Bool.not_eq_true, Nat.ble_eq]
   omega
@@ -2339,7 +2335,7 @@ def closedU (n : ℕ) (u : UnitN) : CResU :=
         .some (.mk (.mk [] []) rb a' x' 0) q1
   | _ => .none
 
-lemma closedU_spec (n : ℕ) (u u' : UnitN) (p : ℕ) (h : closedU n u = .some u' p) :
+theorem closedU_spec (n : ℕ) (u u' : UnitN) (p : ℕ) (h : closedU n u = .some u' p) :
     segRLs n p (uwN u) (uwN u') := by
   unfold closedU at h
   cases hn0 : Nat.beq n 0 with
@@ -2509,7 +2505,7 @@ def closedZ (m : ℕ) (z : ZN) : Option ZN :=
       some (.z0 (.mk (.mk cm j :: r) back) x fm)
   | _ => none
 
-lemma closedZ_spec (m : ℕ) (z z' : ZN) (h : closedZ m z = some z') :
+theorem closedZ_spec (m : ℕ) (z z' : ZN) (h : closedZ m z = some z') :
     sideRLs m (zside z) (zside z') := by
   unfold closedZ at h
   cases hm0 : Nat.beq m 0 with
@@ -2577,7 +2573,7 @@ def batchL (n : ℕ) (us : List UnitN) (z : ZN) : BRes :=
         | .none => .none
     | .none => .none
 
-lemma batchL_spec : ∀ (us : List UnitN) (n : ℕ) (z : ZN) (us' : List UnitN) (z' : ZN),
+theorem batchL_spec : ∀ (us : List UnitN) (n : ℕ) (z : ZN) (us' : List UnitN) (z' : ZN),
     batchL n us z = .some us' z' →
     sideRLs n (dwords us +> zside z) (dwords us' +> zside z')
   | [], n, z, us', z', h => by
@@ -2691,7 +2687,7 @@ def evalCmds : Cmd → List UnitN → ZN → ℕ → HRes
         | .none => .none
       | .none => .none
 
-lemma evalCmds_spec : ∀ (cmd : Cmd) (us : List UnitN) (z : ZN) (acc tot : ℕ) (us' : List UnitN) (z' : ZN) (R₀ : ListBlank (Fin 2)),
+theorem evalCmds_spec : ∀ (cmd : Cmd) (us : List UnitN) (z : ZN) (acc tot : ℕ) (us' : List UnitN) (z' : ZN) (R₀ : ListBlank (Fin 2)),
     sideRLs acc R₀ (dwords us +> zside z) →
     evalCmds cmd us z acc = .some tot us' z' →
     sideRLs tot R₀ (dwords us' +> zside z')
@@ -2787,7 +2783,7 @@ def runHier (cmd : Cmd) (c : SimCfg) : SimCfg :=
     else c
   | _ => c
 
-lemma runHier_sound (cmd : Cmd) (c : SimCfg) (h : simCfgHalt (runHier cmd c)) : simCfgHalt c := by
+theorem runHier_sound (cmd : Cmd) (c : SimCfg) (h : simCfgHalt (runHier cmd c)) : simCfgHalt c := by
   rcases c with ⟨⟨t, _ | g⟩ | ⟨s, g⟩, us, z⟩ | _
   · try dsimp [runHier] at h
     cases he : evalCmds cmd us z 0 with
@@ -2819,7 +2815,7 @@ def evalProg : Prog → SimCfg → SimCfg
     | .mk ctl cus cz => evalProg next (.mk ctl cus cz)
     | .halt => .halt
 
-lemma evalProg_sound : ∀ (p : Prog) (c : SimCfg), simCfgHalt (evalProg p c) → simCfgHalt c
+theorem evalProg_sound : ∀ (p : Prog) (c : SimCfg), simCfgHalt (evalProg p c) → simCfgHalt c
   | .nil, c, h => h
   | .inc next, c, h => by
     try dsimp [evalProg] at h
@@ -2852,12 +2848,12 @@ def isHaltCfg : SimCfg → Bool
   | .halt => true
   | .mk _ _ _ => false
 
-lemma simCfgHalt_of_isHaltCfg (c : SimCfg) (h : isHaltCfg c = true) : simCfgHalt c := by
+theorem simCfgHalt_of_isHaltCfg (c : SimCfg) (h : isHaltCfg c = true) : simCfgHalt c := by
   cases c with
   | halt => exact True.intro
   | mk _ _ _ => nomatch h
 
-lemma evalProg_halt_sound (p : Prog) (c : SimCfg) (h : isHaltCfg (evalProg p c) = true) :
+theorem evalProg_halt_sound (p : Prog) (c : SimCfg) (h : isHaltCfg (evalProg p c) = true) :
     simCfgHalt c :=
   evalProg_sound p c (simCfgHalt_of_isHaltCfg (evalProg p c) h)
 
@@ -2867,14 +2863,14 @@ theorem bmultiStep_star (n : ℕ) (c c' : DCfg) (h : bmultiStep n c = some c') :
     (evalDCfg default default c) [tm_coq]⊢* (evalDCfg default default c') :=
   ⟨n, bmultiStep_sound n c c' h⟩
 
-lemma c342_denote_eq :
+theorem c342_denote_eq :
     evalDCfg default default ⟨A, .left, [], [1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1]⟩ =
     denoteCfg (.ntl 1 1) [] (.z0 (.mk [.mk 0 3] []) 0 1) := by
   try dsimp [evalDCfg, denoteCfg, NT, dwords, zside]
   rw [← listblank_append_assoc]
   rfl
 
-lemma init_to_c342 : (init []) [tm_coq]⊢* denoteCfg (.ntl 1 1) [] (.z0 (.mk [.mk 0 3] []) 0 1) := by
+theorem init_to_c342 : (init []) [tm_coq]⊢* denoteCfg (.ntl 1 1) [] (.z0 (.mk [.mk 0 3] []) 0 1) := by
   rw [← c342_denote_eq]
   have h0 : (init []) [tm_coq]⊢* (evalDCfg default default ⟨E, .right, [1, 0, 1], []⟩) :=
     bmultiStep_star 6 ⟨A, .left, [], []⟩ ⟨E, .right, [1, 0, 1], []⟩ rfl
@@ -2996,14 +2992,14 @@ def mirrorTape (T : Tape (Fin 2)) : Tape (Fin 2) := ⟨T.head, T.right, T.left�
 
 def mirrorCfg (c : Cfg (Fin 2) (Fin 6)) : Cfg (Fin 2) (Fin 6) := ⟨c.q, mirrorTape c.tape⟩
 
-lemma step_mirror (c : Cfg (Fin 2) (Fin 6)) :
+theorem step_mirror (c : Cfg (Fin 2) (Fin 6)) :
     step target_tm (mirrorCfg c) = (step tm_coq c).map mirrorCfg := by
   rcases c with ⟨_ | q, ⟨head, l, r⟩⟩
   · rfl
   · rcases q with ⟨_ | _ | _ | _ | _ | _ | n, hn⟩ <;>
     rcases head with ⟨_ | _ | m, hm⟩ <;> (try rfl) <;> omega
 
-lemma multiStep_mirror : ∀ (n : ℕ) (c : Cfg (Fin 2) (Fin 6)),
+theorem multiStep_mirror : ∀ (n : ℕ) (c : Cfg (Fin 2) (Fin 6)),
     multiStep target_tm (mirrorCfg c) n = (multiStep tm_coq c n).map mirrorCfg
   | 0, c => rfl
   | n + 1, c => by
@@ -3012,7 +3008,7 @@ lemma multiStep_mirror : ∀ (n : ℕ) (c : Cfg (Fin 2) (Fin 6)),
     | none => rfl
     | some c' => simp [step_mirror]
 
-lemma haltsFrom_init_to_IsHalt (h : haltsFrom (init [])) : IsHalt target_tm := by
+theorem haltsFrom_init_to_IsHalt (h : haltsFrom (init [])) : IsHalt target_tm := by
   rcases h with ⟨c', ⟨n, hn⟩, hnone⟩
   refine ⟨mirrorCfg c', ⟨n, ?_⟩, ?_⟩
   · have hm := multiStep_mirror n (init [])

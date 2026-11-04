@@ -4,47 +4,49 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import BusyBeaver.Basic
+import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
-namespace BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA
+@[expose] public section
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+namespace BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option maxRecDepth 2000000
-set_option maxHeartbeats 20000000
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
+end BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+end
+
+namespace BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA
+
+variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+abbrev target_tm : Machine (Fin 2) (Fin 6) := target
+
+namespace Solution
+
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 0 = some config := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 1 = step M config := rfl
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
     (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -53,35 +55,35 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, _, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
@@ -90,14 +92,19 @@ local macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 local macro "step" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
-    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight,
+        BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,
+        Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default,
+        default_head, default_tail])
 local macro "execute5" : tactic =>
-  `(tactic| (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)))
+  `(tactic| (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;>
+      (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;>
+      (any_goals (first | finish | step)))
 local macro "execute" : tactic =>
   `(tactic| execute5 <;> execute5 <;> execute5 <;> execute5)
 
-lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (c₀ cfg cfg' : Cfg Γ Λ) (n m : Nat)
     (hn : multiStep M c₀ n = some cfg)
     (hnm : multiStep M c₀ (n + (1 + m)) = some cfg') :
@@ -109,12 +116,12 @@ lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
   | none => rw [hs] at hnm; nomatch hnm
   | some _ => rfl
 
-lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
+theorem inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+    (M : Machine Γ Λ) {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ cfg₀, (c_init [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg')
     (N : Nat) :
-    ∃ (m : Nat) (cfg' : Cfg Γ Λ), multiStep M (init []) (N + m) = some cfg' ∧ Inv cfg' := by
+    ∃ (m : Nat) (cfg' : Cfg Γ Λ), multiStep M c_init (N + m) = some cfg' ∧ Inv cfg' := by
   induction N with
   | zero =>
     obtain ⟨cfg₀, ⟨n₀, hn₀⟩, h_inv₀⟩ := h_init
@@ -129,7 +136,7 @@ lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
       | zero => omega
       | succ k' =>
         refine ⟨k', cfg₂, ?_, h_inv₂⟩
-        have h_trans := multiStep_trans M (init []) cfg₁ cfg₂ N (k' + 1) hm hk
+        have h_trans := multiStep_trans M c_init cfg₁ cfg₂ N (k' + 1) hm hk
         have h_eq : (N + 1) + k' = N + (k' + 1) := by omega
         rwa [h_eq]
     | succ m' =>
@@ -138,15 +145,15 @@ lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
       rwa [h_eq]
 
 theorem closed_inv_does_not_halt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
+    (M : Machine Γ Λ) {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ cfg₀, (c_init [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg') :
-    IsDoesNotHalt M := by
+    ∀ cfg : Cfg Γ Λ, (c_init [M]⊢* cfg) → (step M cfg).isSome := by
   intro cfg ⟨n, hn⟩
   obtain ⟨m, cfg', hnm, _⟩ := inv_reaches_beyond M Inv h_init h_step (n + 1)
   have h_eq : (n + 1) + m = n + (1 + m) := by omega
   rw [h_eq] at hnm
-  exact multiStep_step_isSome M (init []) cfg cfg' n m hn hnm
+  exact multiStep_step_isSome M c_init cfg cfg' n m hn hnm
 
 -- ============================================================================
 -- Section 2: Macro Rules, Round, Sweeps, EraRound
@@ -155,63 +162,65 @@ theorem closed_inv_does_not_halt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 def B : Fin 6 := 1
 def E : Fin 6 := 0
 
-lemma rule_B_000 (l r : ListBlank (Fin 2)) :
+theorem rule_B_000 (l r : ListBlank (Fin 2)) :
     (([0, 0, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (([0, 0, 1] +> r) {{E}}> l) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_0011 (l r : ListBlank (Fin 2)) :
+theorem rule_B_0011 (l r : ListBlank (Fin 2)) :
     (([0, 0, 1, 1] +> r) <{{B}} l) [target_tm]⊢⁺ (([0, 1, 0, 0] +> r) {{E}}> l) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_00100 (l r : ListBlank (Fin 2)) :
+theorem rule_B_00100 (l r : ListBlank (Fin 2)) :
     (([0, 0, 1, 0, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1, 1, 1])) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_001010 (l r : ListBlank (Fin 2)) :
+theorem rule_B_001010 (l r : ListBlank (Fin 2)) :
     (([0, 0, 1, 0, 1, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1, 1, 1, 1])) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_0010110 (l r : ListBlank (Fin 2)) :
-    (([0, 0, 1, 0, 1, 1, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1, 1, 1, 1, 1])) := by
+theorem rule_B_0010110 (l r : ListBlank (Fin 2)) :
+    (([0, 0, 1, 0, 1, 1, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1, 1, 1, 1, 1])) :=
+        by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_010 (l r : ListBlank (Fin 2)) :
+theorem rule_B_010 (l r : ListBlank (Fin 2)) :
     (([0, 1, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1])) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_0110 (l r : ListBlank (Fin 2)) :
+theorem rule_B_0110 (l r : ListBlank (Fin 2)) :
     (([0, 1, 1, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1, 1])) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_B_10 (l r : ListBlank (Fin 2)) :
+theorem rule_B_10 (l r : ListBlank (Fin 2)) :
     (([1, 0] +> r) <{{B}} l) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 0])) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_01111 (l r : ListBlank (Fin 2)) :
+theorem rule_E_01111 (l r : ListBlank (Fin 2)) :
     (r {{E}}> (l <+ [0, 1, 1, 1, 1])) [target_tm]⊢⁺ (([0, 0, 0, 1, 0] +> r) {{E}}> l) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_011111 (l r : ListBlank (Fin 2)) :
+theorem rule_E_011111 (l r : ListBlank (Fin 2)) :
     (r {{E}}> (l <+ [0, 1, 1, 1, 1, 1])) [target_tm]⊢⁺ (([0, 0, 0, 0, 1, 0] +> r) {{E}}> l) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_0111111 (l r : ListBlank (Fin 2)) :
-    (r {{E}}> (l <+ [0, 1, 1, 1, 1, 1, 1])) [target_tm]⊢⁺ (([0, 0, 0, 0, 0, 1, 0] +> r) {{E}}> l) := by
+theorem rule_E_0111111 (l r : ListBlank (Fin 2)) :
+    (r {{E}}> (l <+ [0, 1, 1, 1, 1, 1, 1])) [target_tm]⊢⁺ (([0, 0, 0, 0, 0, 1, 0] +> r) {{E}}> l) :=
+        by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_011 (l r : ListBlank (Fin 2)) :
+theorem rule_E_011 (l r : ListBlank (Fin 2)) :
     (r {{E}}> (l <+ [0, 1, 1])) [target_tm]⊢⁺ (([0, 1, 0] +> r) {{E}}> l) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_0111 (l r : ListBlank (Fin 2)) :
+theorem rule_E_0111 (l r : ListBlank (Fin 2)) :
     (r {{E}}> (l <+ [0, 1, 1, 1])) [target_tm]⊢⁺ (([0, 0, 1, 0] +> r) {{E}}> l) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_00 (l r : ListBlank (Fin 2)) :
+theorem rule_E_00 (l r : ListBlank (Fin 2)) :
     (((0 : Fin 2) >> r) {{E}}> (l <+ [0, 0])) [target_tm]⊢⁺ (r <{{B}} (l <+ [0, 1, 1])) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_nil (r : ListBlank (Fin 2)) :
+theorem rule_E_nil (r : ListBlank (Fin 2)) :
     (((0 : Fin 2) >> r) {{E}}> default) [target_tm]⊢⁺ (r <{{B}} (default <+ [0, 1, 1])) := by
   dsimp [ListBlank.append]; execute
 
@@ -223,7 +232,7 @@ inductive Sweeps : Nat → ListBlank (Fin 2) → ListBlank (Fin 2) → Prop
   | succ {n : Nat} {r r₁ r₂ : ListBlank (Fin 2)} :
       Round r r₁ → Sweeps n r₁ r₂ → Sweeps (n + 1) r r₂
 
-lemma Sweeps.trans {a b : Nat} {r₁ r₂ r₃ : ListBlank (Fin 2)}
+theorem Sweeps.trans {a b : Nat} {r₁ r₂ r₃ : ListBlank (Fin 2)}
     (h₁ : Sweeps a r₁ r₂) (h₂ : Sweeps b r₂ r₃) : Sweeps (a + b) r₁ r₃ := by
   induction h₁ with
   | zero _ => simpa using h₂
@@ -231,40 +240,40 @@ lemma Sweeps.trans {a b : Nat} {r₁ r₂ r₃ : ListBlank (Fin 2)}
     rw [Nat.succ_add]
     exact Sweeps.succ hr (ih h₂)
 
-lemma round_000 (r : ListBlank (Fin 2)) :
+theorem round_000 (r : ListBlank (Fin 2)) :
     Round ([0, 0, 0] +> r) ([0, 0, 1] +> r) :=
   fun l => rule_B_000 l r
 
-lemma round_0011 (r : ListBlank (Fin 2)) :
+theorem round_0011 (r : ListBlank (Fin 2)) :
     Round ([0, 0, 1, 1] +> r) ([0, 1, 0, 0] +> r) :=
   fun l => rule_B_0011 l r
 
-lemma round_00100 {r r' : ListBlank (Fin 2)} (h : Round r r') :
+theorem round_00100 {r r' : ListBlank (Fin 2)} (h : Round r r') :
     Round ([0, 0, 1, 0, 0] +> r) ([0, 0, 0, 1, 0] +> r') :=
   fun l => stepPlus_trans (rule_B_00100 l r)
     (stepPlus_trans (h (l <+ [0, 1, 1, 1, 1])) (rule_E_01111 l r'))
 
-lemma round_001010 {r r' : ListBlank (Fin 2)} (h : Round r r') :
+theorem round_001010 {r r' : ListBlank (Fin 2)} (h : Round r r') :
     Round ([0, 0, 1, 0, 1, 0] +> r) ([0, 0, 0, 0, 1, 0] +> r') :=
   fun l => stepPlus_trans (rule_B_001010 l r)
     (stepPlus_trans (h (l <+ [0, 1, 1, 1, 1, 1])) (rule_E_011111 l r'))
 
-lemma round_0010110 {r r' : ListBlank (Fin 2)} (h : Round r r') :
+theorem round_0010110 {r r' : ListBlank (Fin 2)} (h : Round r r') :
     Round ([0, 0, 1, 0, 1, 1, 0] +> r) ([0, 0, 0, 0, 0, 1, 0] +> r') :=
   fun l => stepPlus_trans (rule_B_0010110 l r)
     (stepPlus_trans (h (l <+ [0, 1, 1, 1, 1, 1, 1])) (rule_E_0111111 l r'))
 
-lemma round_010 {r r' : ListBlank (Fin 2)} (h : Round r r') :
+theorem round_010 {r r' : ListBlank (Fin 2)} (h : Round r r') :
     Round ([0, 1, 0] +> r) ([0, 1, 0] +> r') :=
   fun l => stepPlus_trans (rule_B_010 l r)
     (stepPlus_trans (h (l <+ [0, 1, 1])) (rule_E_011 l r'))
 
-lemma round_0110 {r r' : ListBlank (Fin 2)} (h : Round r r') :
+theorem round_0110 {r r' : ListBlank (Fin 2)} (h : Round r r') :
     Round ([0, 1, 1, 0] +> r) ([0, 0, 1, 0] +> r') :=
   fun l => stepPlus_trans (rule_B_0110 l r)
     (stepPlus_trans (h (l <+ [0, 1, 1, 1])) (rule_E_0111 l r'))
 
-lemma round_10 {r₁ r r₂ : ListBlank (Fin 2)}
+theorem round_10 {r₁ r r₂ : ListBlank (Fin 2)}
     (h₁ : Round r₁ ((0 : Fin 2) >> r)) (h₂ : Round r r₂) :
     Round ([1, 0] +> r₁) ([0, 1, 0] +> r₂) :=
   fun l => stepPlus_trans (rule_B_10 l r₁)
@@ -276,11 +285,11 @@ lemma round_10 {r₁ r r₂ : ListBlank (Fin 2)}
 -- Section 3: Fueled Bool-List Round Runner (for Base Cases & Era 0 -> Era 5)
 -- ============================================================================
 
-lemma opt_map_some {α β : Type*} {f : α → β} {x : Option α} {y : β}
+theorem opt_map_some {α β : Type*} {f : α → β} {x : Option α} {y : β}
     (h : x.map f = some y) : ∃ a, x = some a ∧ f a = y := by
   cases x with
   | none => nomatch h
-  | some a => simp at h; exact ⟨a, rfl, h⟩
+  | some a => injection h with h; exact ⟨a, rfl, h⟩
 
 def b2f (b : Bool) : Fin 2 := if b then 1 else 0
 
@@ -291,9 +300,9 @@ def toTape : List Bool → ListBlank (Fin 2)
 def pad7B (bs : List Bool) : List Bool :=
   bs ++ [false, false, false, false, false, false, false]
 
-lemma toTape_pad7B (bs : List Bool) : toTape (pad7B bs) = toTape bs := by
+theorem toTape_pad7B (bs : List Bool) : toTape (pad7B bs) = toTape bs := by
   induction bs with
-  | nil => simp [pad7B, toTape, b2f, zero_cons_default]
+  | nil => simp [pad7B, toTape, b2f]
   | cons b bs ih =>
     simp only [pad7B, List.cons_append, toTape]
     rw [← pad7B, ih]
@@ -305,7 +314,7 @@ def dropTrailingFalse : List Bool → List Bool
     | [] => if b then [true] else []
     | rest => b :: rest
 
-lemma toTape_dropTrailingFalse : ∀ (bs : List Bool),
+theorem toTape_dropTrailingFalse : ∀ (bs : List Bool),
     toTape (dropTrailingFalse bs) = toTape bs
   | [] => rfl
   | b :: bs => by
@@ -315,7 +324,7 @@ lemma toTape_dropTrailingFalse : ∀ (bs : List Bool),
     | nil =>
       rw [hrest] at ih
       have hbs : toTape bs = default := ih.symm
-      cases b <;> simp [toTape, b2f, hbs, zero_cons_default]
+      cases b <;> simp [toTape, b2f, hbs]
     | cons r rs =>
       rw [hrest] at ih
       change b2f b >> toTape (r :: rs) = b2f b >> toTape bs
@@ -334,7 +343,8 @@ def roundBool : Nat → List Bool → Option (List Bool)
     | false :: false :: true :: false :: true :: false :: rest =>
       (roundBool fuel rest).map (fun r' => false :: false :: false :: false :: true :: false :: r')
     | false :: false :: true :: false :: true :: true :: false :: rest =>
-      (roundBool fuel rest).map (fun r' => false :: false :: false :: false :: false :: true :: false :: r')
+      (roundBool fuel rest).map (fun r' =>
+          false :: false :: false :: false :: false :: true :: false :: r')
     | false :: true :: false :: rest =>
       (roundBool fuel rest).map (fun r' => false :: true :: false :: r')
     | false :: true :: true :: false :: rest =>
@@ -345,7 +355,7 @@ def roundBool : Nat → List Bool → Option (List Bool)
       | _ => none
     | _ => none
 
-lemma roundBool_sound : ∀ (fuel : Nat) (bs ys : List Bool),
+theorem roundBool_sound : ∀ (fuel : Nat) (bs ys : List Bool),
     roundBool fuel bs = some ys → Round (toTape bs) (toTape ys)
   | 0, _, _, h => by nomatch h
   | fuel + 1, bs, ys, h => by
@@ -377,7 +387,8 @@ lemma roundBool_sound : ∀ (fuel : Nat) (bs ys : List Bool),
           | true => nomatch h
           | false =>
             obtain ⟨r2, hr2, rfl⟩ := opt_map_some h
-            exact round_10 (roundBool_sound fuel rest (false :: r1) hr1) (roundBool_sound fuel r1 r2 hr2)
+            exact round_10 (roundBool_sound fuel rest (false :: r1) hr1) (roundBool_sound fuel r1 r2
+                hr2)
     · nomatch h
 
 def sweepsBool (fuel : Nat) : Nat → List Bool → Option (List Bool)
@@ -387,7 +398,7 @@ def sweepsBool (fuel : Nat) : Nat → List Bool → Option (List Bool)
     | some bs1 => sweepsBool fuel n bs1
     | none => none
 
-lemma sweepsBool_sound (fuel : Nat) : ∀ (n : Nat) (bs ys : List Bool),
+theorem sweepsBool_sound (fuel : Nat) : ∀ (n : Nat) (bs ys : List Bool),
     sweepsBool fuel n bs = some ys → Sweeps n (toTape bs) (toTape ys)
   | 0, bs, ys, h => by injection h with h; subst h; exact Sweeps.zero _
   | n + 1, bs, ys, h => by
@@ -401,7 +412,7 @@ lemma sweepsBool_sound (fuel : Nat) : ∀ (n : Nat) (bs ys : List Bool),
 def roundBoolTrim (fuel : Nat) (bs : List Bool) : Option (List Bool) :=
   (roundBool fuel bs).map dropTrailingFalse
 
-lemma roundBoolTrim_sound (fuel : Nat) (bs ys : List Bool)
+theorem roundBoolTrim_sound (fuel : Nat) (bs ys : List Bool)
     (h : roundBoolTrim fuel bs = some ys) : Round (toTape bs) (toTape ys) := by
   obtain ⟨raw, hraw, rfl⟩ := opt_map_some h
   rw [toTape_dropTrailingFalse]
@@ -410,7 +421,7 @@ lemma roundBoolTrim_sound (fuel : Nat) (bs ys : List Bool)
 def sweepsBoolTrim (fuel n : Nat) (bs : List Bool) : Option (List Bool) :=
   (sweepsBool fuel n bs).map dropTrailingFalse
 
-lemma sweepsBoolTrim_sound (fuel n : Nat) (bs ys : List Bool)
+theorem sweepsBoolTrim_sound (fuel n : Nat) (bs ys : List Bool)
     (h : sweepsBoolTrim fuel n bs = some ys) : Sweeps n (toTape bs) (toTape ys) := by
   obtain ⟨raw, hraw, rfl⟩ := opt_map_some h
   rw [toTape_dropTrailingFalse]
@@ -424,7 +435,7 @@ def rep010 : Nat → ListBlank (Fin 2) → ListBlank (Fin 2)
   | 0, r => r
   | k + 1, r => [0, 1, 0] +> rep010 k r
 
-lemma rep010_add (a b : Nat) (r : ListBlank (Fin 2)) :
+theorem rep010_add (a b : Nat) (r : ListBlank (Fin 2)) :
     rep010 (a + b) r = rep010 a (rep010 b r) := by
   induction a with
   | zero => simp [rep010]
@@ -433,35 +444,35 @@ lemma rep010_add (a b : Nat) (r : ListBlank (Fin 2)) :
 def EraRound (u r' : ListBlank (Fin 2)) : Prop :=
   ∃ v : ListBlank (Fin 2), u = (0 : Fin 2) >> v ∧ Round v r'
 
-lemma eraRound_tm_step {u r' : ListBlank (Fin 2)} (h : EraRound u r') :
+theorem eraRound_tm_step {u r' : ListBlank (Fin 2)} (h : EraRound u r') :
     (u {{E}}> default) [target_tm]⊢⁺ (([0, 1, 0] +> r') {{E}}> default) := by
   obtain ⟨v, rfl, hv⟩ := h
   exact stepPlus_trans (rule_E_nil v)
     (stepPlus_trans (hv (default <+ [0, 1, 1])) (rule_E_011 default r'))
 
-lemma round_rep010 (k : Nat) {r r' : ListBlank (Fin 2)} (h : Round r r') :
+theorem round_rep010 (k : Nat) {r r' : ListBlank (Fin 2)} (h : Round r r') :
     Round (rep010 k r) (rep010 k r') := by
   induction k with
   | zero => exact h
   | succ k ih => exact round_010 ih
 
-lemma sweeps_rep010 (k : Nat) {n : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps n r r') :
+theorem sweeps_rep010 (k : Nat) {n : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps n r r') :
     Sweeps n (rep010 k r) (rep010 k r') := by
   induction h with
   | zero _ => exact Sweeps.zero _
   | succ hr _ ih => exact Sweeps.succ (round_rep010 k hr) ih
 
-lemma sweeps_010 {n : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps n r r') :
+theorem sweeps_010 {n : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps n r r') :
     Sweeps n ([0, 1, 0] +> r) ([0, 1, 0] +> r') :=
   sweeps_rep010 1 h
 
-lemma eraRound_010 {s s₁ r' : ListBlank (Fin 2)}
+theorem eraRound_010 {s s₁ r' : ListBlank (Fin 2)}
     (hR : Round s s₁) (hE : EraRound s₁ r') :
     EraRound ([0, 1, 0] +> s) ([0, 1, 0] +> r') := by
   obtain ⟨v₁, rfl, hv₁⟩ := hE
   exact ⟨[1, 0] +> s, rfl, round_10 hR hv₁⟩
 
-lemma eraRound_rep010 {N : Nat} {rem u r' : ListBlank (Fin 2)}
+theorem eraRound_rep010 {N : Nat} {rem u r' : ListBlank (Fin 2)}
     (hS : Sweeps N rem u) (hE : EraRound u r') :
     EraRound (rep010 N rem) (rep010 N r') := by
   induction hS with
@@ -473,13 +484,13 @@ def pDiv0 (r : ListBlank (Fin 2)) : ListBlank (Fin 2) := [0, 0, 0, 0, 1, 0] +> r
 def pDiv1 (r : ListBlank (Fin 2)) : ListBlank (Fin 2) := [0, 0, 1, 0, 1, 0] +> r
 def pB (r : ListBlank (Fin 2)) : ListBlank (Fin 2) := [0, 0, 1, 1, 0] +> r
 
-lemma round_pDiv0 (r : ListBlank (Fin 2)) : Round (pDiv0 r) (pDiv1 r) :=
+theorem round_pDiv0 (r : ListBlank (Fin 2)) : Round (pDiv0 r) (pDiv1 r) :=
   round_000 ([0, 1, 0] +> r)
 
-lemma round_pDiv1 {r r' : ListBlank (Fin 2)} (h : Round r r') : Round (pDiv1 r) (pDiv0 r') :=
+theorem round_pDiv1 {r r' : ListBlank (Fin 2)} (h : Round r r') : Round (pDiv1 r) (pDiv0 r') :=
   round_001010 h
 
-lemma sweeps_pDiv0_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r') :
+theorem sweeps_pDiv0_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r') :
     Sweeps (2 * k) (pDiv0 r) (pDiv0 r') := by
   induction h with
   | zero _ => exact Sweeps.zero _
@@ -490,11 +501,11 @@ lemma sweeps_pDiv0_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r')
     rw [show 2 + 2 * m = 2 * (m + 1) by omega] at htr
     exact htr
 
-lemma sweeps_pDiv0_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r') :
+theorem sweeps_pDiv0_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r') :
     Sweeps (2 * k + 1) (pDiv0 r) (pDiv1 r') :=
   Sweeps.trans (sweeps_pDiv0_even h) (Sweeps.succ (round_pDiv0 r') (Sweeps.zero _))
 
-lemma sweeps_pDiv1_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r') :
+theorem sweeps_pDiv1_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r') :
     Sweeps (2 * k) (pDiv1 r) (pDiv1 r') := by
   induction h with
   | zero _ => exact Sweeps.zero _
@@ -505,7 +516,7 @@ lemma sweeps_pDiv1_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps k r r')
     rw [show 2 + 2 * m = 2 * (m + 1) by omega] at htr
     exact htr
 
-lemma sweeps_pDiv1_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps (k + 1) r r') :
+theorem sweeps_pDiv1_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps (k + 1) r r') :
     Sweeps (2 * k + 1) (pDiv1 r) (pDiv0 r') := by
   cases h with
   | succ hr hs =>
@@ -514,20 +525,20 @@ lemma sweeps_pDiv1_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : Sweeps (k + 1) 
 def StartsZero (u : ListBlank (Fin 2)) : Prop :=
   ∃ v : ListBlank (Fin 2), u = (0 : Fin 2) >> v
 
-lemma rep010_startsZero (k : Nat) {u : ListBlank (Fin 2)} (hu : StartsZero u) :
+theorem rep010_startsZero (k : Nat) {u : ListBlank (Fin 2)} (hu : StartsZero u) :
     StartsZero (rep010 k u) := by
   cases k with
   | zero => exact hu
   | succ k => exact ⟨[1, 0] +> rep010 k u, rfl⟩
 
-lemma sweeps_pB_010_startsZero {u : ListBlank (Fin 2)} (hu : StartsZero u) :
+theorem sweeps_pB_010_startsZero {u : ListBlank (Fin 2)} (hu : StartsZero u) :
     Sweeps 2 (pB ([0, 1, 0] +> u)) ([0, 1, 0] +> pB u) := by
   obtain ⟨v, rfl⟩ := hu
   refine Sweeps.succ (round_0011 ([0, 0, 1, 0, 0] +> v)) ?_
   refine Sweeps.succ (round_010 (round_000 ([1, 0, 0] +> v))) ?_
   exact Sweeps.zero _
 
-lemma sweeps_pB_rep010 (k : Nat) {u : ListBlank (Fin 2)} (hu : StartsZero u) :
+theorem sweeps_pB_rep010 (k : Nat) {u : ListBlank (Fin 2)} (hu : StartsZero u) :
     Sweeps (2 * k) (pB (rep010 k u)) (rep010 k (pB u)) := by
   induction k with
   | zero => exact Sweeps.zero _
@@ -537,7 +548,7 @@ lemma sweeps_pB_rep010 (k : Nat) {u : ListBlank (Fin 2)} (hu : StartsZero u) :
     rw [show 2 + 2 * k = 2 * (k + 1) by omega] at htr
     exact htr
 
-lemma sweeps_pB_pDiv0 {u u₁ : ListBlank (Fin 2)} (h1 : Round u u₁) :
+theorem sweeps_pB_pDiv0 {u u₁ : ListBlank (Fin 2)} (h1 : Round u u₁) :
     Sweeps 6 (pB (pDiv0 u)) (rep010 2 (pB u₁)) := by
   refine Sweeps.succ (round_0011 ([0, 0, 0, 0, 0, 1, 0] +> u)) ?_
   refine Sweeps.succ (round_010 (round_000 ([0, 0, 0, 1, 0] +> u))) ?_
@@ -547,7 +558,7 @@ lemma sweeps_pB_pDiv0 {u u₁ : ListBlank (Fin 2)} (h1 : Round u u₁) :
   refine Sweeps.succ (round_010 (round_010 (round_000 ([1, 0] +> u₁)))) ?_
   exact Sweeps.zero _
 
-lemma sweeps_pB_pDiv1 {u u₁ r₁' : ListBlank (Fin 2)}
+theorem sweeps_pB_pDiv1 {u u₁ r₁' : ListBlank (Fin 2)}
     (h1 : Round u u₁) (hE : EraRound u₁ r₁') :
     Sweeps 3 (pB (pDiv1 u)) ([0, 1, 0] +> pDiv0 ([0, 1, 0] +> r₁')) := by
   obtain ⟨v₁, rfl, hv₁⟩ := hE
@@ -556,11 +567,11 @@ lemma sweeps_pB_pDiv1 {u u₁ r₁' : ListBlank (Fin 2)}
   refine Sweeps.succ (round_010 (round_001010 (round_10 h1 hv₁))) ?_
   exact Sweeps.zero _
 
-lemma eraRound_pDiv0 (u : ListBlank (Fin 2)) :
+theorem eraRound_pDiv0 (u : ListBlank (Fin 2)) :
     EraRound (pDiv0 u) (pB u) :=
   ⟨[0, 0, 0, 1, 0] +> u, rfl, round_000 ([1, 0] +> u)⟩
 
-lemma eraRound_pDiv1 {u u₁ r₁' : ListBlank (Fin 2)}
+theorem eraRound_pDiv1 {u u₁ r₁' : ListBlank (Fin 2)}
     (h1 : Round u u₁) (hE : EraRound u₁ r₁') :
     EraRound (pDiv1 u) (rep010 2 r₁') := by
   obtain ⟨v₁, rfl, hv₁⟩ := hE
@@ -592,7 +603,7 @@ def evalCore : CoreTree → ListBlank (Fin 2)
 def evalU (u : UTree) : ListBlank (Fin 2) :=
   rep010 u.1 (evalCore u.2)
 
-lemma evalCore_startsZero (w : CoreTree) : StartsZero (evalCore w) := by
+theorem evalCore_startsZero (w : CoreTree) : StartsZero (evalCore w) := by
   cases w with
   | sw0 => exact ⟨default, zero_cons_default.symm⟩
   | sw1 => exact ⟨[0, 1] +> default, rfl⟩
@@ -612,8 +623,11 @@ def levelCore : CoreTree → Nat
 def levelU (u : UTree) : Nat :=
   3 * u.1 + levelCore u.2
 
-lemma levelCore_pos (w : CoreTree) : 1 ≤ levelCore w := by
-  induction w <;> simp [levelCore] <;> omega
+theorem levelCore_pos (w : CoreTree) : 1 ≤ levelCore w := by
+  induction w with
+  | sw0 | sw1 | sw2 | sw3 => decide
+  | div0 k ch ih => dsimp [levelCore]; omega
+  | div1 k ch ih => dsimp [levelCore]; omega
 
 def mkSw : Nat → CoreTree
   | 0 => .sw0
@@ -638,19 +652,19 @@ def stepDefaultAux : Nat → Nat → UTree
       let sub := stepDefaultAux fuel (m / 2)
       if m % 2 = 0 then (1, .div0 sub.1 sub.2) else (1, .div1 sub.1 sub.2)
 
-lemma stepDefaultAux_le3 (fuel s : Nat) (hs : s ≤ 3) :
+theorem stepDefaultAux_le3 (fuel s : Nat) (hs : s ≤ 3) :
     stepDefaultAux fuel s = (0, mkSw s) := by
   cases fuel with
   | zero => rfl
   | succ fuel => simp [stepDefaultAux, hs]
 
-lemma stepDefaultAux_add4 (fuel m : Nat) :
+theorem stepDefaultAux_add4 (fuel m : Nat) :
     stepDefaultAux (fuel + 1) (m + 4) =
       (let sub := stepDefaultAux fuel (m / 2)
        if m % 2 = 0 then (1, .div0 sub.1 sub.2) else (1, .div1 sub.1 sub.2)) := by
   have h : ¬(m + 4 ≤ 3) := by omega
   have hm : m + 4 - 4 = m := by omega
-  simp [stepDefaultAux, h, hm]
+  simp [stepDefaultAux, hm]
 
 def stepDefault (s : Nat) : UTree :=
   stepDefaultAux s s
@@ -684,7 +698,7 @@ def stepDivCore (s : Nat) : CoreTree → CoreTree
     if s % 2 = 0 then .div1 (k + sub.1) sub.2 else .div0 (k + sub.1) sub.2
   | w => w
 
-lemma levelU_stepDefaultAux : ∀ (fuel s : Nat), s ≤ fuel →
+theorem levelU_stepDefaultAux : ∀ (fuel s : Nat), s ≤ fuel →
     levelU (stepDefaultAux fuel s) = s + 1
   | 0, s, hs => by
     have hs0 : s = 0 := by omega
@@ -702,10 +716,10 @@ lemma levelU_stepDefaultAux : ∀ (fuel s : Nat), s ≤ fuel →
       · simp only [hod, ↓reduceIte, levelU, levelCore]
         unfold levelU at ih; omega
 
-lemma levelU_stepDefault (s : Nat) : levelU (stepDefault s) = s + 1 :=
+theorem levelU_stepDefault (s : Nat) : levelU (stepDefault s) = s + 1 :=
   levelU_stepDefaultAux s s (le_refl s)
 
-lemma levelU_stepCore (s : Nat) (w : CoreTree) :
+theorem levelU_stepCore (s : Nat) (w : CoreTree) :
     levelU (stepCore s w) = levelCore w + s := by
   induction w generalizing s with
   | sw0 => simp [stepCore, levelU_stepDefault, levelCore]; omega
@@ -727,14 +741,14 @@ lemma levelU_stepCore (s : Nat) (w : CoreTree) :
     · simp only [stepCore, hod, ↓reduceIte, levelU, levelCore]
       unfold levelU at hsub; omega
 
-lemma levelU_stepU (s : Nat) (u : UTree) : levelU (stepU s u) = levelU u + s := by
+theorem levelU_stepU (s : Nat) (u : UTree) : levelU (stepU s u) = levelU u + s := by
   rcases u with ⟨k, w⟩
   have hsub := levelU_stepCore s w
   unfold stepU levelU at *
   dsimp only at *
   omega
 
-lemma levelCore_stepDiv0Sw0 (s : Nat) : levelCore (stepDiv0Sw0 s) = s + 2 := by
+theorem levelCore_stepDiv0Sw0 (s : Nat) : levelCore (stepDiv0Sw0 s) = s + 2 := by
   have hsub := levelU_stepDefault (s / 2)
   rcases (by omega : s % 2 = 0 ∨ ¬(s % 2 = 0)) with hev | hod
   · simp only [stepDiv0Sw0, hev, ↓reduceIte, levelCore]
@@ -742,7 +756,7 @@ lemma levelCore_stepDiv0Sw0 (s : Nat) : levelCore (stepDiv0Sw0 s) = s + 2 := by
   · simp only [stepDiv0Sw0, hod, ↓reduceIte, levelCore]
     unfold levelU at hsub; omega
 
-lemma levelCore_stepDivCore (s : Nat) (w : CoreTree) (hw : coreTagIdx w = none) :
+theorem levelCore_stepDivCore (s : Nat) (w : CoreTree) (hw : coreTagIdx w = none) :
     levelCore (stepDivCore s w) = levelCore w + s := by
   cases w with
   | sw0 | sw1 | sw2 | sw3 => nomatch hw
@@ -761,25 +775,25 @@ lemma levelCore_stepDivCore (s : Nat) (w : CoreTree) (hw : coreTagIdx w = none) 
     · simp only [stepDivCore, hod, ↓reduceIte, levelCore]
       unfold levelU at hsub; omega
 
-lemma round_sw0_sw1 : Round (evalCore .sw0) (evalCore .sw1) :=
+theorem round_sw0_sw1 : Round (evalCore .sw0) (evalCore .sw1) :=
   roundBoolTrim_sound 5 [] [false, false, true] rfl
 
-lemma round_sw1_sw2 : Round (evalCore .sw1) (evalCore .sw2) := by
+theorem round_sw1_sw2 : Round (evalCore .sw1) (evalCore .sw2) := by
   have h := roundBoolTrim_sound 10 [false, false, true]
     [false, false, false, true, false, false, false, true] rfl
   simpa [toTape, b2f, evalCore, zero_cons_default] using h
 
-lemma round_sw2_sw3 : Round (evalCore .sw2) (evalCore .sw3) := by
+theorem round_sw2_sw3 : Round (evalCore .sw2) (evalCore .sw3) := by
   have h := roundBoolTrim_sound 10 [false, false, false, true, false, false, false, true]
     [false, false, true, true, false, false, false, true] rfl
   simpa [toTape, b2f, evalCore, zero_cons_default] using h
 
-lemma round_sw3_div0 : Round (evalCore .sw3) (evalU (1, .div0 0 .sw0)) := by
+theorem round_sw3_div0 : Round (evalCore .sw3) (evalU (1, .div0 0 .sw0)) := by
   have h := roundBoolTrim_sound 10 [false, false, true, true, false, false, false, true]
     [false, true, false, false, false, false, false, true] rfl
   simpa [toTape, b2f, evalCore, evalU, rep010, pDiv0, zero_cons_default] using h
 
-lemma stepDefaultAux_eq (fuel₁ fuel₂ s : Nat) (h1 : s ≤ fuel₁) (h2 : s ≤ fuel₂) :
+theorem stepDefaultAux_eq (fuel₁ fuel₂ s : Nat) (h1 : s ≤ fuel₁) (h2 : s ≤ fuel₂) :
     stepDefaultAux fuel₁ s = stepDefaultAux fuel₂ s := by
   induction fuel₁ generalizing fuel₂ s with
   | zero =>
@@ -797,7 +811,7 @@ lemma stepDefaultAux_eq (fuel₁ fuel₂ s : Nat) (h1 : s ≤ fuel₁) (h2 : s �
         have heq := ih fuel₂ (m / 2) (by omega) (by omega)
         simp only [heq]
 
-lemma stepDefault_add4_eq (m : Nat) :
+theorem stepDefault_add4_eq (m : Nat) :
     stepDefault (m + 4) = (1, stepDiv0Sw0 m) := by
   change stepDefaultAux ((m + 3) + 1) (m + 4) = (1, stepDiv0Sw0 m)
   rw [stepDefaultAux_add4]
@@ -808,7 +822,7 @@ lemma stepDefault_add4_eq (m : Nat) :
   · simp only [hev, ↓reduceIte]
   · simp only [hod, ↓reduceIte]
 
-lemma stepDefault_one_more : ∀ (q : Nat),
+theorem stepDefault_one_more : ∀ (q : Nat),
     Round (evalU (stepDefault q)) (evalU (stepDefault (q + 1))) := by
   intro q
   induction q using Nat.strongRecOn with
@@ -828,44 +842,44 @@ lemma stepDefault_one_more : ∀ (q : Nat),
       rcases (by omega : m % 2 = 0 ∨ m % 2 = 1) with hev | hod
       · have hev1 : (m + 1) % 2 = 1 := by omega
         have hdiv : (m + 1) / 2 = m / 2 := by omega
-        simp [hev, hev1, hdiv, evalCore]
+        simp only [hev, hev1, hdiv, evalCore, ↓reduceIte]
         exact round_pDiv0 _
       · have hod1 : (m + 1) % 2 = 0 := by omega
         have hdiv : (m + 1) / 2 = m / 2 + 1 := by omega
         have hev' : ¬(m % 2 = 0) := by omega
-        simp [hev', hod1, hdiv, evalCore]
+        simp only [hev', hod1, hdiv, evalCore, ↓reduceIte]
         exact round_pDiv1 (ih (m / 2) (by omega))
 
-lemma round_stepDiv0Sw0 (m : Nat) :
+theorem round_stepDiv0Sw0 (m : Nat) :
     Round (evalCore (stepDiv0Sw0 m)) (evalCore (stepDiv0Sw0 (m + 1))) := by
   unfold stepDiv0Sw0
   rcases (by omega : m % 2 = 0 ∨ m % 2 = 1) with hev | hod
   · have hev1 : (m + 1) % 2 = 1 := by omega
     have hdiv : (m + 1) / 2 = m / 2 := by omega
-    simp [hev, hev1, hdiv, evalCore]
+    simp only [hev, hev1, hdiv, evalCore, ↓reduceIte]
     exact round_pDiv0 _
   · have hod1 : (m + 1) % 2 = 0 := by omega
     have hdiv : (m + 1) / 2 = m / 2 + 1 := by omega
     have hev' : ¬(m % 2 = 0) := by omega
-    simp [hev', hod1, hdiv, evalCore]
+    simp only [hev', hod1, hdiv, evalCore, ↓reduceIte]
     exact round_pDiv1 (stepDefault_one_more (m / 2))
 
-lemma stepDefault_from (t s : Nat) :
+theorem stepDefault_from (t s : Nat) :
     Sweeps s (evalU (stepDefault t)) (evalU (stepDefault (s + t))) := by
   induction s with
-  | zero => simp; exact Sweeps.zero _
+  | zero => simpa using Sweeps.zero _
   | succ s ih =>
     have h1 := Sweeps.succ (stepDefault_one_more (s + t)) (Sweeps.zero _)
     have htr := Sweeps.trans ih h1
     rw [show s + t + 1 = (s + 1) + t by omega] at htr
     exact htr
 
-lemma stepDefault_sound (s : Nat) : Sweeps s (evalCore .sw0) (evalU (stepDefault s)) := by
+theorem stepDefault_sound (s : Nat) : Sweeps s (evalCore .sw0) (evalU (stepDefault s)) := by
   have h := stepDefault_from 0 s
   rw [Nat.add_zero] at h
   exact h
 
-lemma stepCore_sound (s : Nat) (w : CoreTree) :
+theorem stepCore_sound (s : Nat) (w : CoreTree) :
     Sweeps s (evalCore w) (evalU (stepCore s w)) := by
   induction w generalizing s with
   | sw0 => exact stepDefault_sound s
@@ -888,7 +902,8 @@ lemma stepCore_sound (s : Nat) (w : CoreTree) :
       have h_eq : (s + 1) / 2 = s / 2 := by omega
       have hsub := sweeps_rep010 k (ih ((s + 1) / 2))
       rw [evalU, ← rep010_add] at hsub
-      have hsub' : Sweeps (s / 2) (rep010 k (evalCore ch)) (rep010 (k + (stepCore ((s + 1) / 2) ch).1) (evalCore (stepCore ((s + 1) / 2) ch).2)) := by
+      have hsub' : Sweeps (s / 2) (rep010 k (evalCore ch)) (rep010 (k + (stepCore ((s + 1) / 2)
+          ch).1) (evalCore (stepCore ((s + 1) / 2) ch).2)) := by
         rwa [← h_eq]
       have h := sweeps_pDiv1_even hsub'
       rwa [show 2 * (s / 2) = s by omega] at h
@@ -896,18 +911,19 @@ lemma stepCore_sound (s : Nat) (w : CoreTree) :
       have h_eq : (s + 1) / 2 = s / 2 + 1 := by omega
       have hsub := sweeps_rep010 k (ih ((s + 1) / 2))
       rw [evalU, ← rep010_add] at hsub
-      have hsub' : Sweeps (s / 2 + 1) (rep010 k (evalCore ch)) (rep010 (k + (stepCore ((s + 1) / 2) ch).1) (evalCore (stepCore ((s + 1) / 2) ch).2)) := by
+      have hsub' : Sweeps (s / 2 + 1) (rep010 k (evalCore ch)) (rep010 (k + (stepCore ((s + 1) / 2)
+          ch).1) (evalCore (stepCore ((s + 1) / 2) ch).2)) := by
         rwa [← h_eq]
       have h := sweeps_pDiv1_odd hsub'
       rwa [show 2 * (s / 2) + 1 = s by omega] at h
 
-lemma stepU_sound (s : Nat) (u : UTree) :
+theorem stepU_sound (s : Nat) (u : UTree) :
     Sweeps s (evalU u) (evalU (stepU s u)) := by
   have h := sweeps_rep010 u.1 (stepCore_sound s u.2)
   unfold stepU evalU at *
   rwa [← rep010_add] at h
 
-lemma stepDivCore_sound (s : Nat) (w : CoreTree) (hw : coreTagIdx w = none) :
+theorem stepDivCore_sound (s : Nat) (w : CoreTree) (hw : coreTagIdx w = none) :
     Sweeps s (evalCore w) (evalCore (stepDivCore s w)) := by
   cases w with
   | sw0 | sw1 | sw2 | sw3 => nomatch hw
@@ -922,7 +938,7 @@ lemma stepDivCore_sound (s : Nat) (w : CoreTree) (hw : coreTagIdx w = none) :
     · simpa [stepCore, stepDivCore, hev, evalU, rep010] using h
     · simpa [stepCore, stepDivCore, hod, evalU, rep010] using h
 
-lemma round_of_sweeps_one {r r' : ListBlank (Fin 2)} (h : Sweeps 1 r r') : Round r r' := by
+theorem round_of_sweeps_one {r r' : ListBlank (Fin 2)} (h : Sweeps 1 r r') : Round r r' := by
   cases h with
   | succ hr h0 =>
     cases h0 with
@@ -1016,52 +1032,59 @@ def opsAux : Nat → Ops
             ⟨2 + sub.p, sub.c, sub.u⟩
     }
 
-lemma bCore_sw0_sound : Sweeps 1 (pB (evalCore .sw0)) (evalU (1, .sw0)) := by
+theorem bCore_sw0_sound : Sweeps 1 (pB (evalCore .sw0)) (evalU (1, .sw0)) := by
   have h := sweepsBoolTrim_sound 10 1 [false, false, true, true, false]
     [false, true] rfl
   simpa [toTape, b2f, pB, evalCore, evalU, rep010, zero_cons_default] using h
 
-lemma bCore_sw1_sound : Sweeps 0 (pB (evalCore .sw1)) (evalU (0, .sw3)) := by
+theorem bCore_sw1_sound : Sweeps 0 (pB (evalCore .sw1)) (evalU (0, .sw3)) := by
   have heq : pB (evalCore .sw1) = evalU (0, .sw3) := by
-    simp [pB, evalCore, evalU, rep010, zero_cons_default]
+    simp [pB, evalCore, evalU, rep010]
   rw [heq]; exact Sweeps.zero _
 
-lemma bCore_sw2_sound : Sweeps 15 (pB (evalCore .sw2)) (evalU (6, .div0 0 .sw2)) := by
+set_option maxRecDepth 2000000 in
+theorem bCore_sw2_sound : Sweeps 15 (pB (evalCore .sw2)) (evalU (6, .div0 0 .sw2)) := by
   have h := sweepsBoolTrim_sound 20 15
     [false, false, true, true, false, false, false, false, true, false, false, false, true]
-    [false, true, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true, false,
-     false, false, false, false, true, false, false, false, false, true, false, false, false, true] rfl
+    [false, true, false, false, true, false, false, true, false, false, true, false, false, true,
+        false, false, true, false,
+     false, false, false, false, true, false, false, false, false, true, false, false, false,
+         true] rfl
   simpa [toTape, b2f, pB, evalCore, evalU, rep010, pDiv0, zero_cons_default] using h
 
-lemma bCore_sw3_sound : Sweeps 9 (pB (evalCore .sw3)) (evalU (3, .div0 0 .sw2)) := by
+set_option maxRecDepth 2000000 in
+theorem bCore_sw3_sound : Sweeps 9 (pB (evalCore .sw3)) (evalU (3, .div0 0 .sw2)) := by
   have h := sweepsBoolTrim_sound 20 9
     [false, false, true, true, false, false, false, true, true, false, false, false, true]
     [false, true, false, false, true, false, false, true, false,
-     false, false, false, false, true, false, false, false, false, true, false, false, false, true] rfl
+     false, false, false, false, true, false, false, false, false, true, false, false, false,
+         true] rfl
   simpa [toTape, b2f, pB, evalCore, evalU, rep010, pDiv0, zero_cons_default] using h
 
-lemma bCore_div0_sw0_sound : Sweeps 6 (pB (evalCore (.div0 0 .sw0))) (evalU (2, .sw3)) := by
+theorem bCore_div0_sw0_sound : Sweeps 6 (pB (evalCore (.div0 0 .sw0))) (evalU (2, .sw3)) := by
   have h := sweepsBoolTrim_sound 20 6
     [false, false, true, true, false, false, false, false, false, true]
-    [false, true, false, false, true, false, false, false, true, true, false, false, false, true] rfl
+    [false, true, false, false, true, false, false, false, true, true, false, false, false,
+        true] rfl
   simpa [toTape, b2f, pB, evalCore, evalU, rep010, pDiv0, zero_cons_default] using h
 
-lemma bCore_div1_sw0_sound : Sweeps 3 (pB (evalCore (.div1 0 .sw0))) (evalU (1, .div0 2 .sw1)) := by
+theorem bCore_div1_sw0_sound : Sweeps 3 (pB (evalCore (.div1 0 .sw0))) (evalU (1, .div0 2 .sw1)) :=
+    by
   have h := sweepsBoolTrim_sound 20 3
     [false, false, true, true, false, false, false, true, false, true]
     [false, true, false, false, false, false, false, true, false,
      false, true, false, false, true, false, false, false, true] rfl
   simpa [toTape, b2f, pB, evalCore, evalU, rep010, pDiv0, pDiv1, zero_cons_default] using h
 
-lemma aCore_sw0_sound : EraRound (evalCore .sw0) (rep010 0 (evalCore .sw1)) :=
+theorem aCore_sw0_sound : EraRound (evalCore .sw0) (rep010 0 (evalCore .sw1)) :=
   ⟨default, zero_cons_default.symm, round_sw0_sw1⟩
 
-lemma aCore_sw1_sound : EraRound (evalCore .sw1) (rep010 1 (evalCore .sw1)) := by
+theorem aCore_sw1_sound : EraRound (evalCore .sw1) (rep010 1 (evalCore .sw1)) := by
   refine ⟨[0, 1] +> default, rfl, ?_⟩
   have h := roundBoolTrim_sound 10 [false, true] [false, true, false, false, false, true] rfl
   simpa [toTape, b2f, evalCore, rep010, zero_cons_default] using h
 
-lemma aCore_sw2_sound :
+theorem aCore_sw2_sound :
     ∃ r', EraRound (evalCore .sw2) (rep010 0 r') ∧ Sweeps 2 r' (evalU (1, .sw2)) := by
   refine ⟨[0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1] +> default, ?_, ?_⟩
   · refine ⟨[0, 0, 1, 0, 0, 0, 1, 0] +> default, rfl, ?_⟩
@@ -1073,7 +1096,8 @@ lemma aCore_sw2_sound :
       [false, true, false, false, false, false, true, false, false, false, true] rfl
     simpa [toTape, b2f, evalU, evalCore, rep010, zero_cons_default] using h
 
-lemma aCore_sw3_sound :
+set_option maxRecDepth 2000000 in
+theorem aCore_sw3_sound :
     ∃ r', EraRound (evalCore .sw3) (rep010 0 r') ∧ Sweeps 11 r' (evalU (4, .div0 0 .sw2)) := by
   refine ⟨[0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1] +> default, ?_, ?_⟩
   · refine ⟨[0, 1, 1, 0, 0, 0, 1, 0] +> default, rfl, ?_⟩
@@ -1083,19 +1107,20 @@ lemma aCore_sw3_sound :
   · have h := sweepsBoolTrim_sound 20 11
       [false, false, true, false, false, false, false, true, false, false, false, true]
       [false, true, false, false, true, false, false, true, false, false, true, false,
-       false, false, false, false, true, false, false, false, false, true, false, false, false, true] rfl
+       false, false, false, false, true, false, false, false, false, true, false, false, false,
+           true] rfl
     simpa [toTape, b2f, evalU, evalCore, rep010, pDiv0, zero_cons_default] using h
 
-lemma aCore_div0_sw0_sound :
+theorem aCore_div0_sw0_sound :
     ∃ r', EraRound (evalCore (.div0 0 .sw0)) (rep010 0 r') ∧ Sweeps 1 r' (evalU (1, .sw0)) :=
   ⟨pB (evalCore .sw0), eraRound_pDiv0 (evalCore .sw0), bCore_sw0_sound⟩
 
-lemma aCore_div1_sw0_sound :
+theorem aCore_div1_sw0_sound :
     EraRound (evalCore (.div1 0 .sw0)) (rep010 3 (evalCore .sw1)) := by
   have h := eraRound_pDiv1 round_sw0_sw1 aCore_sw1_sound
   simpa [evalCore, rep010] using h
 
-lemma levelU_gt_one_of_ne_sw0 {k : Nat} {ch : CoreTree} (h : ¬(k = 0 ∧ ch = .sw0)) :
+theorem levelU_gt_one_of_ne_sw0 {k : Nat} {ch : CoreTree} (h : ¬(k = 0 ∧ ch = .sw0)) :
     2 ≤ levelU (k, ch) := by
   cases k with
   | zero =>
@@ -1108,7 +1133,7 @@ lemma levelU_gt_one_of_ne_sw0 {k : Nat} {ch : CoreTree} (h : ¬(k = 0 ∧ ch = .
     have := levelCore_pos ch
     unfold levelU; dsimp only; omega
 
-lemma bUFrom_sound {bCoreFn : CoreTree → ResB} {fuel : Nat}
+theorem bUFrom_sound {bCoreFn : CoreTree → ResB} {fuel : Nat}
     (hb : ∀ w : CoreTree, levelCore w ≤ fuel →
       Sweeps (bCoreFn w).c (pB (evalCore w)) (evalU (bCoreFn w).u))
     (u : UTree) (hu : levelU u ≤ fuel) :
@@ -1124,11 +1149,12 @@ lemma bUFrom_sound {bCoreFn : CoreTree → ResB} {fuel : Nat}
   dsimp only at *
   rwa [← rep010_add] at htr
 
-lemma stepCore_eq_stepDefault {w : CoreTree} {t k : Nat} (ht : coreTagIdx w = some t) :
+theorem stepCore_eq_stepDefault {w : CoreTree} {t k : Nat} (ht : coreTagIdx w = some t) :
     stepCore k w = stepDefault (k + t) := by
-  cases w <;> simp [coreTagIdx] at ht <;> subst ht <;> simp [stepCore]
+  cases w <;> simp only [coreTagIdx, Option.some.injEq, reduceCtorEq] at ht <;>
+    subst ht <;> simp [stepCore]
 
-lemma aPullSucc_sound {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree}
+theorem aPullSucc_sound {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree}
     (hk : 1 ≤ k)
     (ha : ∀ w' : CoreTree, levelCore w' ≤ fuel →
       let res := aCoreFn w'
@@ -1140,7 +1166,8 @@ lemma aPullSucc_sound {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree
   cases htag : coreTagIdx w with
   | some t =>
     have ht_le : t ≤ 3 ∧ levelCore w = t + 1 := by
-      cases w <;> simp [coreTagIdx] at htag <;> subst htag <;> simp [levelCore]
+      cases w <;> simp only [coreTagIdx, Option.some.injEq, reduceCtorEq] at htag <;>
+        subst htag <;> simp [levelCore]
     rcases (by omega : k + t ≤ 3 ∨ ¬(k + t ≤ 3)) with hs_le | hs_gt
     · simp only [aPullSucc, htag, hs_le, ↓reduceIte]
       have h_mk : levelCore (mkSw (k + t)) = k + t + 1 := by
@@ -1169,9 +1196,11 @@ lemma aPullSucc_sound {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree
       obtain ⟨r', hE, hS⟩ := ha (stepDiv0Sw0 (k + t - 3)) h_lvl
       refine ⟨r', ?_, hS⟩
       have h_step := stepCore_sound k w
-      rw [stepCore_eq_stepDefault htag, show k + t = (k + t - 4) + 4 by omega, stepDefault_add4_eq] at h_step
+      rw [stepCore_eq_stepDefault htag, show k + t = (k + t - 4) + 4 by omega,
+          stepDefault_add4_eq] at h_step
       change Sweeps k (evalCore w) ([0, 1, 0] +> evalCore (stepDiv0Sw0 (k + t - 4))) at h_step
-      have h1 : Round (evalCore (stepDiv0Sw0 (k + t - 4))) (evalCore (stepDiv0Sw0 (k + t - 3))) := by
+      have h1 : Round (evalCore (stepDiv0Sw0 (k + t - 4))) (evalCore (stepDiv0Sw0 (k + t - 3))) :=
+          by
         have := round_stepDiv0Sw0 (k + t - 4)
         rwa [show k + t - 4 + 1 = k + t - 3 by omega] at this
       have hE1 := eraRound_010 h1 hE
@@ -1191,7 +1220,7 @@ lemma aPullSucc_sound {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree
     have hE_rep := eraRound_rep010 h_sw hE
     rwa [← rep010_add] at hE_rep
 
-lemma aPullFrom_sound {aCoreFn : CoreTree → ResP} {fuel : Nat}
+theorem aPullFrom_sound {aCoreFn : CoreTree → ResP} {fuel : Nat}
     (ha : ∀ w : CoreTree, levelCore w ≤ fuel →
       let res := aCoreFn w
       ∃ r', EraRound (evalCore w) (rep010 res.p r') ∧ Sweeps res.c r' (evalU res.u))
@@ -1205,7 +1234,7 @@ lemma aPullFrom_sound {aCoreFn : CoreTree → ResP} {fuel : Nat}
     rw [hlu] at hu
     exact aPullSucc_sound (by omega : 1 ≤ k' + 1) ha hu
 
-lemma opsAux_sound : ∀ (fuel : Nat),
+theorem opsAux_sound : ∀ (fuel : Nat),
     (∀ w : CoreTree, levelCore w ≤ fuel →
       let res := (opsAux fuel).bCore w
       Sweeps res.c (pB (evalCore w)) (evalU res.u)) ∧
@@ -1231,7 +1260,8 @@ lemma opsAux_sound : ∀ (fuel : Nat),
         · next hne =>
           have hm2 := levelU_gt_one_of_ne_sw0 hne
           have h_u1_lvl : levelU (stepU 1 (k, ch)) ≤ fuel := by
-            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *; omega
+            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *;
+                omega
           have h1 := round_of_sweeps_one (stepU_sound 1 (k, ch))
           have h6 := sweeps_pB_pDiv0 h1
           have hsub := bUFrom_sound ihB (stepU 1 (k, ch)) h_u1_lvl
@@ -1246,7 +1276,8 @@ lemma opsAux_sound : ∀ (fuel : Nat),
         · next hne =>
           have hm2 := levelU_gt_one_of_ne_sw0 hne
           have h_u1_lvl : levelU (stepU 1 (k, ch)) ≤ fuel := by
-            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *; omega
+            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *;
+                omega
           have h1 := round_of_sweeps_one (stepU_sound 1 (k, ch))
           obtain ⟨r', hE, hS⟩ := aPullFrom_sound ihA (stepU 1 (k, ch)) h_u1_lvl
           have h3 := sweeps_pB_pDiv1 h1 hE
@@ -1275,11 +1306,13 @@ lemma opsAux_sound : ∀ (fuel : Nat),
         unfold opsAux
         dsimp only
         split
-        · next h0 => obtain ⟨rfl, rfl⟩ := h0; exact ⟨evalCore .sw1, aCore_div1_sw0_sound, Sweeps.zero _⟩
+        · next h0 =>
+          obtain ⟨rfl, rfl⟩ := h0; exact ⟨evalCore .sw1, aCore_div1_sw0_sound, Sweeps.zero _⟩
         · next hne =>
           have hm2 := levelU_gt_one_of_ne_sw0 hne
           have h_u1_lvl : levelU (stepU 1 (k, ch)) ≤ fuel := by
-            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *; omega
+            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *;
+                omega
           have h1 := round_of_sweeps_one (stepU_sound 1 (k, ch))
           obtain ⟨r', hE, hS⟩ := aPullFrom_sound ihA (stepU 1 (k, ch)) h_u1_lvl
           have hE' := eraRound_pDiv1 h1 hE
@@ -1295,74 +1328,86 @@ def min4 (a b c d : Nat) : Nat := min (min a b) (min c d)
 def CB4 (x : Nat) : Nat := min4 (6 * x - 3) (3 * x + 10) ((3 * x) / 2 + 25) ((11 * x) / 16 + 67)
 def CA4 (x : Nat) : Nat := min4 (3 * x) ((3 * x) / 2 + 10) ((3 * x) / 4 + 25) ((3 * x) / 8 + 64)
 def DB4 (x : Nat) : Nat := min4 (6 * x - 2) (3 * x + 31) ((3 * x) / 2 + 70) ((5 * x) / 4 + 150)
-def DAC4 (x : Nat) : Nat := min4 (4 * x - 1) ((3 * x) / 2 + 31) ((3 * x) / 4 + 70) ((21 * x) / 32 + 130)
-def DAU4 (x : Nat) : Nat := min4 (4 * x - 1) ((9 * x) / 4 + 21) ((3 * x) / 2 + 31) ((5 * x) / 4 + 71)
+def DAC4 (x : Nat) : Nat :=
+    min4 (4 * x - 1) ((3 * x) / 2 + 31) ((3 * x) / 4 + 70) ((21 * x) / 32 + 130)
+def DAU4 (x : Nat) : Nat :=
+    min4 (4 * x - 1) ((9 * x) / 4 + 21) ((3 * x) / 2 + 31) ((5 * x) / 4 + 71)
 
 def CAP (x : Nat) : Nat := max 11 (CB4 (x / 2))
 def DAP (x : Nat) : Nat := max 7 (DB4 (x / 2))
 
-lemma le_min4 {x a b c d : Nat} (ha : x ≤ a) (hb : x ≤ b) (hc : x ≤ c) (hd : x ≤ d) :
+theorem le_min4 {x a b c d : Nat} (ha : x ≤ a) (hb : x ≤ b) (hc : x ≤ c) (hd : x ≤ d) :
     x ≤ min4 a b c d := by
   unfold min4; exact le_min (le_min ha hb) (le_min hc hd)
 
-lemma le_of_min4_1 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ a :=
+theorem le_of_min4_1 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ a :=
   le_trans h (le_trans (min_le_left _ _) (min_le_left _ _))
-lemma le_of_min4_2 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ b :=
+theorem le_of_min4_2 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ b :=
   le_trans h (le_trans (min_le_left _ _) (min_le_right _ _))
-lemma le_of_min4_3 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ c :=
+theorem le_of_min4_3 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ c :=
   le_trans h (le_trans (min_le_right _ _) (min_le_left _ _))
-lemma le_of_min4_4 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ d :=
+theorem le_of_min4_4 {y a b c d : Nat} (h : y ≤ min4 a b c d) : y ≤ d :=
   le_trans h (le_trans (min_le_right _ _) (min_le_right _ _))
 
-lemma CB4_le (x : Nat) :
-    CB4 x ≤ 6 * x - 3 ∧ CB4 x ≤ 3 * x + 10 ∧ CB4 x ≤ (3 * x) / 2 + 25 ∧ CB4 x ≤ (11 * x) / 16 + 67 := by
-  have hd : CB4 x ≤ min4 (6 * x - 3) (3 * x + 10) ((3 * x) / 2 + 25) ((11 * x) / 16 + 67) := le_refl _
+theorem CB4_le (x : Nat) :
+    CB4 x ≤ 6 * x - 3 ∧ CB4 x ≤ 3 * x + 10 ∧ CB4 x ≤ (3 * x) / 2 + 25 ∧
+        CB4 x ≤ (11 * x) / 16 + 67 := by
+  have hd : CB4 x ≤ min4 (6 * x - 3) (3 * x + 10) ((3 * x) / 2 + 25) ((11 * x) / 16 + 67) :=
+      le_refl _
   exact ⟨le_of_min4_1 hd, le_of_min4_2 hd, le_of_min4_3 hd, le_of_min4_4 hd⟩
 
-lemma CA4_le (x : Nat) :
-    CA4 x ≤ 3 * x ∧ CA4 x ≤ (3 * x) / 2 + 10 ∧ CA4 x ≤ (3 * x) / 4 + 25 ∧ CA4 x ≤ (3 * x) / 8 + 64 := by
-  have hd : CA4 x ≤ min4 (3 * x) ((3 * x) / 2 + 10) ((3 * x) / 4 + 25) ((3 * x) / 8 + 64) := le_refl _
+theorem CA4_le (x : Nat) :
+    CA4 x ≤ 3 * x ∧ CA4 x ≤ (3 * x) / 2 + 10 ∧ CA4 x ≤ (3 * x) / 4 + 25 ∧
+        CA4 x ≤ (3 * x) / 8 + 64 := by
+  have hd : CA4 x ≤ min4 (3 * x) ((3 * x) / 2 + 10) ((3 * x) / 4 + 25) ((3 * x) / 8 + 64) :=
+      le_refl _
   exact ⟨le_of_min4_1 hd, le_of_min4_2 hd, le_of_min4_3 hd, le_of_min4_4 hd⟩
 
-lemma DB4_le (x : Nat) :
-    DB4 x ≤ 6 * x - 2 ∧ DB4 x ≤ 3 * x + 31 ∧ DB4 x ≤ (3 * x) / 2 + 70 ∧ DB4 x ≤ (5 * x) / 4 + 150 := by
-  have hd : DB4 x ≤ min4 (6 * x - 2) (3 * x + 31) ((3 * x) / 2 + 70) ((5 * x) / 4 + 150) := le_refl _
+theorem DB4_le (x : Nat) :
+    DB4 x ≤ 6 * x - 2 ∧ DB4 x ≤ 3 * x + 31 ∧ DB4 x ≤ (3 * x) / 2 + 70 ∧ DB4 x ≤ (5 * x) / 4 + 150 :=
+        by
+  have hd : DB4 x ≤ min4 (6 * x - 2) (3 * x + 31) ((3 * x) / 2 + 70) ((5 * x) / 4 + 150) :=
+      le_refl _
   exact ⟨le_of_min4_1 hd, le_of_min4_2 hd, le_of_min4_3 hd, le_of_min4_4 hd⟩
 
-lemma DAC4_le (x : Nat) :
-    DAC4 x ≤ 4 * x - 1 ∧ DAC4 x ≤ (3 * x) / 2 + 31 ∧ DAC4 x ≤ (3 * x) / 4 + 70 ∧ DAC4 x ≤ (21 * x) / 32 + 130 := by
-  have hd : DAC4 x ≤ min4 (4 * x - 1) ((3 * x) / 2 + 31) ((3 * x) / 4 + 70) ((21 * x) / 32 + 130) := le_refl _
+theorem DAC4_le (x : Nat) :
+    DAC4 x ≤ 4 * x - 1 ∧ DAC4 x ≤ (3 * x) / 2 + 31 ∧ DAC4 x ≤ (3 * x) / 4 + 70 ∧
+        DAC4 x ≤ (21 * x) / 32 + 130 := by
+  have hd : DAC4 x ≤ min4 (4 * x - 1) ((3 * x) / 2 + 31) ((3 * x) / 4 + 70) ((21 * x) / 32 + 130) :=
+      le_refl _
   exact ⟨le_of_min4_1 hd, le_of_min4_2 hd, le_of_min4_3 hd, le_of_min4_4 hd⟩
 
-lemma DAU4_le (x : Nat) :
-    DAU4 x ≤ 4 * x - 1 ∧ DAU4 x ≤ (9 * x) / 4 + 21 ∧ DAU4 x ≤ (3 * x) / 2 + 31 ∧ DAU4 x ≤ (5 * x) / 4 + 71 := by
-  have hd : DAU4 x ≤ min4 (4 * x - 1) ((9 * x) / 4 + 21) ((3 * x) / 2 + 31) ((5 * x) / 4 + 71) := le_refl _
+theorem DAU4_le (x : Nat) :
+    DAU4 x ≤ 4 * x - 1 ∧ DAU4 x ≤ (9 * x) / 4 + 21 ∧ DAU4 x ≤ (3 * x) / 2 + 31 ∧
+        DAU4 x ≤ (5 * x) / 4 + 71 := by
+  have hd : DAU4 x ≤ min4 (4 * x - 1) ((9 * x) / 4 + 21) ((3 * x) / 2 + 31) ((5 * x) / 4 + 71) :=
+      le_refl _
   exact ⟨le_of_min4_1 hd, le_of_min4_2 hd, le_of_min4_3 hd, le_of_min4_4 hd⟩
 
-lemma CB4_mono {x y : Nat} (h : x ≤ y) : CB4 x ≤ CB4 y := by
+theorem CB4_mono {x y : Nat} (h : x ≤ y) : CB4 x ≤ CB4 y := by
   obtain ⟨h1, h2, h3, h4⟩ := CB4_le x
   conv_rhs => unfold CB4
   refine le_min4 (by omega) (by omega) (by omega) (by omega)
 
-lemma CA4_mono {x y : Nat} (h : x ≤ y) : CA4 x ≤ CA4 y := by
+theorem CA4_mono {x y : Nat} (h : x ≤ y) : CA4 x ≤ CA4 y := by
   obtain ⟨h1, h2, h3, h4⟩ := CA4_le x
   conv_rhs => unfold CA4
   refine le_min4 (by omega) (by omega) (by omega) (by omega)
 
-lemma DB4_mono {x y : Nat} (h : x ≤ y) : DB4 x ≤ DB4 y := by
+theorem DB4_mono {x y : Nat} (h : x ≤ y) : DB4 x ≤ DB4 y := by
   obtain ⟨h1, h2, h3, h4⟩ := DB4_le x
   conv_rhs => unfold DB4
   refine le_min4 (by omega) (by omega) (by omega) (by omega)
 
-lemma CAP_mono {x y : Nat} (h : x ≤ y) : CAP x ≤ CAP y := by
+theorem CAP_mono {x y : Nat} (h : x ≤ y) : CAP x ≤ CAP y := by
   have hcb := CB4_mono (by omega : x / 2 ≤ y / 2)
   unfold CAP; omega
 
-lemma DAP_mono {x y : Nat} (h : x ≤ y) : DAP x ≤ DAP y := by
+theorem DAP_mono {x y : Nat} (h : x ≤ y) : DAP x ≤ DAP y := by
   have hdb := DB4_mono (by omega : x / 2 ≤ y / 2)
   unfold DAP; omega
 
-lemma bound_bCore_div0 {m c1 lu1 : Nat} (hm : 2 ≤ m)
+theorem bound_bCore_div0 {m c1 lu1 : Nat} (hm : 2 ≤ m)
     (hc : c1 ≤ CB4 (m + 1)) (hd : lu1 ≤ c1 + DB4 (m + 1)) :
     6 + c1 ≤ CB4 (2 * m) ∧ 6 + lu1 ≤ (6 + c1) + DB4 (2 * m) := by
   obtain ⟨h1, h2, h3, h4⟩ := CB4_le (m + 1)
@@ -1370,7 +1415,7 @@ lemma bound_bCore_div0 {m c1 lu1 : Nat} (hm : 2 ≤ m)
   refine ⟨?_, by omega⟩
   unfold CB4; refine le_min4 (by omega) (by omega) (by omega) (by omega)
 
-lemma bound_bCore_div1 {m c1 p1 lu1 : Nat} (hm : 2 ≤ m)
+theorem bound_bCore_div1 {m c1 p1 lu1 : Nat} (hm : 2 ≤ m)
     (hc : c1 ≤ CA4 (m + 1)) (hd : 3 * p1 + lu1 ≤ c1 + DAU4 (m + 1)) :
     3 + 2 * c1 ≤ CB4 (2 * m + 1) ∧
     9 + 2 * (3 * p1 + lu1) ≤ (3 + 2 * c1) + DB4 (2 * m + 1) := by
@@ -1382,7 +1427,7 @@ lemma bound_bCore_div1 {m c1 p1 lu1 : Nat} (hm : 2 ≤ m)
       unfold DB4; refine le_min4 (by omega) (by omega) (by omega) (by omega)
     omega
 
-lemma bound_bUFrom (k : Nat) {mc c0 lu0 : Nat} (hmc : 1 ≤ mc)
+theorem bound_bUFrom (k : Nat) {mc c0 lu0 : Nat} (hmc : 1 ≤ mc)
     (hc : c0 ≤ CB4 mc) (hd : lu0 ≤ c0 + DB4 mc) :
     2 * k + c0 ≤ CB4 (3 * k + mc) ∧ 3 * k + lu0 ≤ (2 * k + c0) + DB4 (3 * k + mc) := by
   obtain ⟨hc1, hc2, hc3, hc4⟩ := CB4_le mc
@@ -1395,7 +1440,7 @@ lemma bound_bUFrom (k : Nat) {mc c0 lu0 : Nat} (hmc : 1 ≤ mc)
       refine le_min4 (by omega) (by omega) (by omega) (by omega)
     omega
 
-lemma bound_aCore_div0 {m c0 lu0 : Nat} (hm : 2 ≤ m)
+theorem bound_aCore_div0 {m c0 lu0 : Nat} (hm : 2 ≤ m)
     (hc : c0 ≤ CB4 m) (hd : lu0 ≤ c0 + DB4 m) :
     c0 ≤ CA4 (2 * m) ∧ c0 ≤ CAP (2 * m) ∧
     lu0 ≤ c0 + DAC4 (2 * m) ∧ lu0 ≤ c0 + DAP (2 * m) := by
@@ -1412,7 +1457,7 @@ lemma bound_aCore_div0 {m c0 lu0 : Nat} (hm : 2 ≤ m)
     rw [hdiv]; have : DB4 m ≤ max 7 (DB4 m) := le_max_right _ _
     omega
 
-lemma bound_aCore_div1 {m c1 p1 lu1 : Nat} (hm : 2 ≤ m)
+theorem bound_aCore_div1 {m c1 p1 lu1 : Nat} (hm : 2 ≤ m)
     (hc : c1 ≤ CA4 (m + 1)) (hcap : c1 ≤ CAP (m + 1))
     (hd : 3 * p1 + lu1 ≤ c1 + DAU4 (m + 1)) (hdap : lu1 ≤ c1 + DAP (m + 1)) :
     c1 ≤ CA4 (2 * m + 1) ∧ c1 ≤ CAP (2 * m + 1) ∧
@@ -1424,7 +1469,7 @@ lemma bound_aCore_div1 {m c1 p1 lu1 : Nat} (hm : 2 ≤ m)
     omega
   · exact le_trans hdap (Nat.add_le_add_left (DAP_mono (by omega)) c1)
 
-lemma bound_aPull_sw_le {k t c0 p0 lu0 : Nat} (hk : 1 ≤ k) (hs : k + t ≤ 3)
+theorem bound_aPull_sw_le {k t c0 p0 lu0 : Nat} (hk : 1 ≤ k) (hs : k + t ≤ 3)
     (hc : c0 ≤ CA4 (k + t + 1)) (hcap : c0 ≤ CAP (k + t + 1))
     (hd : 3 * p0 + lu0 ≤ c0 + DAC4 (k + t + 1)) (hdap : lu0 ≤ c0 + DAP (k + t + 1)) :
     c0 ≤ CA4 (3 * k + (t + 1)) ∧ c0 ≤ CAP (3 * k + (t + 1)) ∧
@@ -1437,7 +1482,7 @@ lemma bound_aPull_sw_le {k t c0 p0 lu0 : Nat} (hk : 1 ≤ k) (hs : k + t ≤ 3)
     omega
   · exact le_trans hdap (Nat.add_le_add_left (DAP_mono (by omega)) c0)
 
-lemma bound_aPull_sw_gt {k t c0 p0 lu0 : Nat} (hk : 1 ≤ k) (ht : t ≤ 3) (hs : 4 ≤ k + t)
+theorem bound_aPull_sw_gt {k t c0 p0 lu0 : Nat} (hk : 1 ≤ k) (ht : t ≤ 3) (hs : 4 ≤ k + t)
     (hc : c0 ≤ CA4 (k + t - 1)) (hcap : c0 ≤ CAP (k + t - 1))
     (hd : 3 * p0 + lu0 ≤ c0 + DAC4 (k + t - 1)) (hdap : lu0 ≤ c0 + DAP (k + t - 1)) :
     c0 ≤ CA4 (3 * k + (t + 1)) ∧ c0 ≤ CAP (3 * k + (t + 1)) ∧
@@ -1450,7 +1495,7 @@ lemma bound_aPull_sw_gt {k t c0 p0 lu0 : Nat} (hk : 1 ≤ k) (ht : t ≤ 3) (hs 
     omega
   · exact le_trans hdap (Nat.add_le_add_left (DAP_mono (by omega)) c0)
 
-lemma bound_aPull_div {k mc c0 p0 lu0 : Nat} (hk : 1 ≤ k) (hmc : 2 ≤ mc)
+theorem bound_aPull_div {k mc c0 p0 lu0 : Nat} (hk : 1 ≤ k) (hmc : 2 ≤ mc)
     (hc : c0 ≤ CA4 (mc + k)) (hcap : c0 ≤ CAP (mc + k))
     (hd : 3 * p0 + lu0 ≤ c0 + DAC4 (mc + k)) (hdap : lu0 ≤ c0 + DAP (mc + k)) :
     c0 ≤ CA4 (3 * k + mc) ∧ c0 ≤ CAP (3 * k + mc) ∧
@@ -1463,7 +1508,7 @@ lemma bound_aPull_div {k mc c0 p0 lu0 : Nat} (hk : 1 ≤ k) (hmc : 2 ≤ mc)
     omega
   · exact le_trans hdap (Nat.add_le_add_left (DAP_mono (by omega)) c0)
 
-lemma bUFrom_bounds {bCoreFn : CoreTree → ResB} {fuel : Nat}
+theorem bUFrom_bounds {bCoreFn : CoreTree → ResB} {fuel : Nat}
     (hb : ∀ w : CoreTree, levelCore w ≤ fuel →
       let res := bCoreFn w
       res.c ≤ CB4 (levelCore w) ∧ levelU res.u ≤ res.c + DB4 (levelCore w))
@@ -1478,14 +1523,14 @@ lemma bUFrom_bounds {bCoreFn : CoreTree → ResB} {fuel : Nat}
   dsimp only at *
   simpa [Nat.mul_add, Nat.add_assoc] using hres
 
-lemma levelCore_ge_two_of_none {w : CoreTree} (hw : coreTagIdx w = none) :
+theorem levelCore_ge_two_of_none {w : CoreTree} (hw : coreTagIdx w = none) :
     2 ≤ levelCore w := by
   cases w with
   | sw0 | sw1 | sw2 | sw3 => nomatch hw
   | div0 k ch => have := levelCore_pos ch; simp [levelCore]; omega
   | div1 k ch => have := levelCore_pos ch; simp [levelCore]; omega
 
-lemma DAC4_le_DAU4 (x : Nat) : DAC4 x ≤ DAU4 x := by
+theorem DAC4_le_DAU4 (x : Nat) : DAC4 x ≤ DAU4 x := by
   obtain ⟨h1, h2, h3, h4⟩ := DAC4_le x
   conv_rhs => unfold DAU4
   rcases (by omega : x ≤ 12 ∨ x = 13 ∨ x = 14 ∨ 15 ≤ x) with hx | rfl | rfl | hx
@@ -1494,7 +1539,7 @@ lemma DAC4_le_DAU4 (x : Nat) : DAC4 x ≤ DAU4 x := by
   · decide
   · refine le_min4 (by omega) (by omega) (by omega) (by omega)
 
-lemma aPullSucc_bounds {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree}
+theorem aPullSucc_bounds {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTree}
     (hk : 1 ≤ k)
     (ha : ∀ w' : CoreTree, levelCore w' ≤ fuel →
       let res := aCoreFn w'
@@ -1510,7 +1555,8 @@ lemma aPullSucc_bounds {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTre
   cases htag : coreTagIdx w with
   | some t =>
     have ht_le : t ≤ 3 ∧ levelCore w = t + 1 := by
-      cases w <;> simp [coreTagIdx] at htag <;> subst htag <;> simp [levelCore]
+      cases w <;> simp only [coreTagIdx, Option.some.injEq, reduceCtorEq] at htag <;>
+        subst htag <;> simp [levelCore]
     rcases (by omega : k + t ≤ 3 ∨ ¬(k + t ≤ 3)) with hs_le | hs_gt
     · simp only [aPullSucc, htag, hs_le, ↓reduceIte]
       have h_mk : levelCore (mkSw (k + t)) = k + t + 1 := by
@@ -1541,7 +1587,7 @@ lemma aPullSucc_bounds {aCoreFn : CoreTree → ResP} {fuel k : Nat} {w : CoreTre
     rw [h_mk] at hc hcap hd hdap
     exact bound_aPull_div hk hmc2 hc hcap hd hdap
 
-lemma aPullFrom_bounds {aCoreFn : CoreTree → ResP} {fuel : Nat}
+theorem aPullFrom_bounds {aCoreFn : CoreTree → ResP} {fuel : Nat}
     (ha : ∀ w : CoreTree, levelCore w ≤ fuel →
       let res := aCoreFn w
       res.c ≤ CA4 (levelCore w) ∧ res.c ≤ CAP (levelCore w) ∧
@@ -1565,7 +1611,7 @@ lemma aPullFrom_bounds {aCoreFn : CoreTree → ResP} {fuel : Nat}
     dsimp only [aPullFrom]
     exact aPullSucc_bounds (by omega : 1 ≤ k' + 1) ha hu
 
-lemma opsAux_bounds : ∀ (fuel : Nat),
+theorem opsAux_bounds : ∀ (fuel : Nat),
     (∀ w : CoreTree, levelCore w ≤ fuel →
       let res := (opsAux fuel).bCore w
       res.c ≤ CB4 (levelCore w) ∧ levelU res.u ≤ res.c + DB4 (levelCore w)) ∧
@@ -1593,7 +1639,8 @@ lemma opsAux_bounds : ∀ (fuel : Nat),
         · next hne =>
           have hm2 := levelU_gt_one_of_ne_sw0 hne
           have h_u1_lvl : levelU (stepU 1 (k, ch)) ≤ fuel := by
-            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *; omega
+            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *;
+                omega
           obtain ⟨hc, hd⟩ := bUFrom_bounds ihB (stepU 1 (k, ch)) h_u1_lvl
           rw [levelU_stepU] at hc hd
           have hres := bound_bCore_div0 hm2 hc hd
@@ -1606,13 +1653,17 @@ lemma opsAux_bounds : ∀ (fuel : Nat),
         · next hne =>
           have hm2 := levelU_gt_one_of_ne_sw0 hne
           have h_u1_lvl : levelU (stepU 1 (k, ch)) ≤ fuel := by
-            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *; omega
+            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *;
+                omega
           obtain ⟨hc, _, hd, _⟩ := aPullFrom_bounds ihA (stepU 1 (k, ch)) h_u1_lvl
           rw [levelU_stepU] at hc hd
           have hres := bound_bCore_div1 hm2 hc hd
           refine ⟨hres.1, ?_⟩
-          have h_lu : levelU (1, .div0 (1 + (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).p + (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).u.1) (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).u.2) =
-              9 + 2 * (3 * (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).p + levelU (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).u) := by
+          have h_lu : levelU (1, .div0 (1 + (aPullFrom (opsAux fuel).aCore (stepU 1 (k,
+              ch))).p + (aPullFrom (opsAux fuel).aCore (stepU 1 (k,
+              ch))).u.1) (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).u.2) =
+              9 + 2 * (3 * (aPullFrom (opsAux fuel).aCore (stepU 1 (k,
+                  ch))).p + levelU (aPullFrom (opsAux fuel).aCore (stepU 1 (k, ch))).u) := by
             simp [levelU, levelCore]; omega
           rw [h_lu]; exact hres.2
     · intro w hw
@@ -1641,7 +1692,8 @@ lemma opsAux_bounds : ∀ (fuel : Nat),
         · next hne =>
           have hm2 := levelU_gt_one_of_ne_sw0 hne
           have h_u1_lvl : levelU (stepU 1 (k, ch)) ≤ fuel := by
-            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *; omega
+            rw [levelU_stepU]; simp [levelCore] at hw; unfold levelU at hm2 ⊢; dsimp only at *;
+                omega
           obtain ⟨hc, hcap, hd, hdap⟩ := aPullFrom_bounds ihA (stepU 1 (k, ch)) h_u1_lvl
           rw [levelU_stepU] at hc hcap hd hdap
           have hres := bound_aCore_div1 hm2 hc hcap hd hdap
@@ -1656,7 +1708,7 @@ def eraStepBool (fuel : Nat) (bs : List Bool) : Option (List Bool) :=
   | false :: v => (roundBool fuel v).map (fun r' => false :: true :: false :: r')
   | _ => none
 
-lemma eraStepBool_sound (fuel : Nat) (bs ys : List Bool)
+theorem eraStepBool_sound (fuel : Nat) (bs ys : List Bool)
     (h : eraStepBool fuel bs = some ys) :
     ((toTape bs) {{E}}> default) [target_tm]⊢⁺ ((toTape ys) {{E}}> default) := by
   rw [← toTape_pad7B bs]
@@ -1675,7 +1727,7 @@ def eraStepsBool (fuel : Nat) : Nat → List Bool → Option (List Bool)
     | some bs1 => eraStepsBool fuel m bs1
     | none => none
 
-lemma eraStepsBool_sound (fuel : Nat) : ∀ (m : Nat) (bs ys : List Bool),
+theorem eraStepsBool_sound (fuel : Nat) : ∀ (m : Nat) (bs ys : List Bool),
     eraStepsBool fuel m bs = some ys →
     ((toTape bs) {{E}}> default) [target_tm]⊢* ((toTape ys) {{E}}> default)
   | 0, bs, ys, h => by injection h with h; subst h; exact ⟨0, rfl⟩
@@ -1692,13 +1744,14 @@ def rep010Bool : Nat → List Bool → List Bool
   | 0, bs => bs
   | k + 1, bs => false :: true :: false :: rep010Bool k bs
 
-lemma toTape_rep010Bool (k : Nat) (bs : List Bool) :
+theorem toTape_rep010Bool (k : Nat) (bs : List Bool) :
     toTape (rep010Bool k bs) = rep010 k (toTape bs) := by
   induction k with
   | zero => rfl
   | succ k ih => simp [rep010Bool, rep010, toTape, b2f, ih]
 
-lemma init_reaches_era5 :
+set_option maxRecDepth 2000000 in
+theorem init_reaches_era5 :
     (init []) [target_tm]⊢* ((rep010 17 (evalCore .sw1)) {{E}}> default) := by
   have h5 : (eraStepsBool 20 5 []).map dropTrailingFalse =
       some (rep010Bool 17 [false, false, true]) := rfl
@@ -1707,7 +1760,7 @@ lemma init_reaches_era5 :
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = ((toTape []) {{E}}> default) := rfl
   have h_ys : toTape ys = rep010 17 (evalCore .sw1) := by
     rw [← toTape_dropTrailingFalse ys, hdrop, toTape_rep010Bool]
-    simp [toTape, b2f, evalCore, zero_cons_default]
+    simp [toTape, b2f, evalCore]
   rwa [← h_init, h_ys] at hstar
 
 def stepEraU (N : Nat) (u : UTree) : Option (Nat × UTree) :=
@@ -1718,7 +1771,7 @@ def stepEraU (N : Nat) (u : UTree) : Option (Nat × UTree) :=
   else
     none
 
-lemma stepEraU_sound {N N' : Nat} {rem : ListBlank (Fin 2)} {u u' : UTree}
+theorem stepEraU_sound {N N' : Nat} {rem : ListBlank (Fin 2)} {u u' : UTree}
     (hS : Sweeps N rem (evalU u)) (hstep : stepEraU N u = some (N', u')) :
     ∃ rem', (((rep010 N rem) {{E}}> default) [target_tm]⊢⁺ ((rep010 N' rem') {{E}}> default)) ∧
       Sweeps N' rem' (evalU u') := by
@@ -1739,9 +1792,12 @@ lemma stepEraU_sound {N N' : Nat} {rem : ListBlank (Fin 2)} {u u' : UTree}
           (N + (aPullFrom (opsAux (levelU u)).aCore u).p) + 1 by omega]
       rfl
     rw [h_eq] at htm
-    have hSu := stepU_sound ((N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p) - (aPullFrom (opsAux (levelU u)).aCore u).c) (aPullFrom (opsAux (levelU u)).aCore u).u
+    have hSu :=
+        stepU_sound ((N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p) - (aPullFrom (opsAux
+        (levelU u)).aCore u).c) (aPullFrom (opsAux (levelU u)).aCore u).u
     have htr := Sweeps.trans hSr hSu
-    rw [show (aPullFrom (opsAux (levelU u)).aCore u).c + ((N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p) - (aPullFrom (opsAux (levelU u)).aCore u).c) =
+    rw [show (aPullFrom (opsAux (levelU u)).aCore u).c + ((N + 1 + (aPullFrom (opsAux (levelU
+        u)).aCore u).p) - (aPullFrom (opsAux (levelU u)).aCore u).c) =
         N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p by omega] at htr
     exact ⟨r', htm, htr⟩
   · nomatch hstep
@@ -1753,7 +1809,7 @@ def runEras : Nat → Nat → UTree → Option (Nat × UTree)
     | some (N', u') => runEras m N' u'
     | none => none
 
-lemma runEras_sound : ∀ (m N N_m : Nat) (rem : ListBlank (Fin 2)) (u u_m : UTree),
+theorem runEras_sound : ∀ (m N N_m : Nat) (rem : ListBlank (Fin 2)) (u u_m : UTree),
     Sweeps N rem (evalU u) → runEras m N u = some (N_m, u_m) →
     ∃ rem_m, (((rep010 N rem) {{E}}> default) [target_tm]⊢* ((rep010 N_m rem_m) {{E}}> default)) ∧
       Sweeps N_m rem_m (evalU u_m)
@@ -1776,14 +1832,17 @@ def checkBridge : Bool :=
   | some (N, u) => decide (2440 ≤ N ∧ 3 * levelU u ≤ 8 * N + 1200)
   | none => false
 
-lemma checkBridge_eq_true : checkBridge = true := rfl
+set_option maxRecDepth 2000000 in
+set_option maxHeartbeats 20000000 in
+-- Evaluating 126 symbolic era steps requires higher recursion depth and heartbeats.
+theorem checkBridge_eq_true : checkBridge = true := rfl
 
-lemma era_inv_cap_le {N n : Nat} (hN : 2440 ≤ N) (hn : 3 * n ≤ 8 * N + 1200) :
+theorem era_inv_cap_le {N n : Nat} (hN : 2440 ≤ N) (hn : 3 * n ≤ 8 * N + 1200) :
     CAP n ≤ N + 1 := by
   obtain ⟨_, _, _, h4⟩ := CB4_le (n / 2)
   unfold CAP; omega
 
-lemma era_inv_dap_le {N N' n c lu : Nat} (hN : 2440 ≤ N) (hN' : N + 1 ≤ N')
+theorem era_inv_dap_le {N N' n c lu : Nat} (hN : 2440 ≤ N) (hN' : N + 1 ≤ N')
     (hn : 3 * n ≤ 8 * N + 1200) (hc : c ≤ N') (hd : lu ≤ c + DAP n) :
     2440 ≤ N' ∧ 3 * (lu + (N' - c)) ≤ 8 * N' + 1200 := by
   obtain ⟨_, _, _, h4⟩ := DB4_le (n / 2)
@@ -1795,7 +1854,10 @@ def EraInv (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
     Sweeps N rem (evalU u) ∧
     cfg = ((rep010 N rem) {{E}}> default)
 
-lemma era_inv_init : ∃ cfg₀, ((init []) [target_tm]⊢* cfg₀) ∧ EraInv cfg₀ := by
+set_option maxRecDepth 2000000 in
+set_option maxHeartbeats 20000000 in
+-- Unfolding 126 symbolic era steps in the initial bridge requires higher heartbeats.
+theorem era_inv_init : ∃ cfg₀, ((init []) [target_tm]⊢* cfg₀) ∧ EraInv cfg₀ := by
   have hb := checkBridge_eq_true
   unfold checkBridge at hb
   cases hrun : runEras 126 17 (stepU 17 (0, .sw1)) with
@@ -1811,7 +1873,7 @@ lemma era_inv_init : ∃ cfg₀, ((init []) [target_tm]⊢* cfg₀) ∧ EraInv c
       stepStar_trans init_reaches_era5 hstar_bridge,
       ⟨N_131, rem_131, u_131, hb.1, hb.2, hS_131, rfl⟩⟩
 
-lemma era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
+theorem era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
     ∃ cfg', (cfg [target_tm]⊢⁺ cfg') ∧ EraInv cfg' := by
   obtain ⟨N, rem, u, hN, hn, hS, rfl⟩ := hinv
   have ha_b := (opsAux_bounds (levelU u)).2
@@ -1822,22 +1884,150 @@ lemma era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
     omega
   have hstep : stepEraU N u =
       some (N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p,
-            stepU (N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p - (aPullFrom (opsAux (levelU u)).aCore u).c)
+            stepU (N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p - (aPullFrom (opsAux (levelU
+                u)).aCore u).c)
               (aPullFrom (opsAux (levelU u)).aCore u).u) := by
     unfold stepEraU
     dsimp only
-    rw [if_pos hc_le]
+    rw [ite_eq_left hc_le]
   obtain ⟨rem', htm, hS'⟩ := stepEraU_sound hS hstep
-  have h_inv' := era_inv_dap_le hN (by omega : N + 1 ≤ N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p) hn hc_le hdap
+  have h_inv' :=
+      era_inv_dap_le hN (by omega : N + 1 ≤ N + 1 + (aPullFrom (opsAux (levelU u)).aCore u).p) hn
+      hc_le hdap
   refine ⟨_, htm, ⟨_, rem', _, h_inv'.1, ?_, hS', rfl⟩⟩
   rw [levelU_stepU]
   exact h_inv'.2
 
 
 
+
+theorem init_1_reaches_era0 :
+    (((default : ListBlank (Fin 2)) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢⁺
+      ((toTape [false, false, true]) {{E}}> default) := by
+  dsimp [toTape, b2f]; execute
+
+set_option maxRecDepth 2000000 in
+theorem init_1_reaches_era1 :
+    (((default : ListBlank (Fin 2)) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢*
+      ((rep010 16 (evalCore .sw1)) {{E}}> default) := by
+  have h1 : (eraStepsBool 20 4 [false, false, true]).map dropTrailingFalse =
+      some (rep010Bool 16 [false, false, true]) := rfl
+  obtain ⟨ys, hys, hdrop⟩ := opt_map_some h1
+  have hstar := eraStepsBool_sound 20 4 [false, false, true] ys hys
+  have h_ys : toTape ys = rep010 16 (evalCore .sw1) := by
+    rw [← toTape_dropTrailingFalse ys, hdrop, toTape_rep010Bool]
+    simp [toTape, b2f, evalCore]
+  rw [h_ys] at hstar
+  exact stepStar_trans (stepPlus_stepStar init_1_reaches_era0) hstar
+
+def checkBridge_0471 : Bool :=
+  match runEras 129 16 (stepU 16 (0, .sw1)) with
+  | some (N, u) => decide (2440 ≤ N ∧ 3 * levelU u ≤ 8 * N + 1200)
+  | none => false
+
+set_option maxRecDepth 2000000 in
+set_option maxHeartbeats 20000000 in
+-- Evaluating 129 symbolic era steps requires higher recursion depth and heartbeats.
+theorem checkBridge_0471_eq_true : checkBridge_0471 = true := rfl
+
+set_option maxRecDepth 2000000 in
+set_option maxHeartbeats 20000000 in
+-- Unfolding 129 symbolic era steps in the initial bridge requires higher heartbeats.
+theorem era_inv_init_0471 :
+    ∃ cfg₀,
+        ((((default : ListBlank (Fin 2)) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢* cfg₀)
+        ∧
+      EraInv cfg₀ := by
+  have hb := checkBridge_0471_eq_true
+  unfold checkBridge_0471 at hb
+  cases hrun : runEras 129 16 (stepU 16 (0, .sw1)) with
+  | none => rw [hrun] at hb; nomatch hb
+  | some pair =>
+    rcases pair with ⟨N_133, u_133⟩
+    rw [hrun, decide_eq_true_iff] at hb
+    have hS1 : Sweeps 16 (evalCore .sw1) (evalU (stepU 16 (0, .sw1))) :=
+      stepU_sound 16 (0, .sw1)
+    obtain ⟨rem_133, hstar_bridge, hS_133⟩ :=
+      runEras_sound 129 16 N_133 (evalCore .sw1) (stepU 16 (0, .sw1)) u_133 hS1 hrun
+    exact ⟨((rep010 N_133 rem_133) {{E}}> default),
+      stepStar_trans init_1_reaches_era1 hstar_bridge,
+      ⟨N_133, rem_133, u_133, hb.1, hb.2, hS_133, rfl⟩⟩
+
+theorem init_2_reaches_era0 :
+    (((default : ListBlank (Fin 2)) {{2}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢⁺
+      ((toTape [false, true]) {{E}}> default) := by
+  dsimp [toTape, b2f]; execute
+
+theorem init_2_reaches_era1 :
+    (((default : ListBlank (Fin 2)) {{2}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢*
+      ((rep010 3 (evalCore .sw1)) {{E}}> default) := by
+  have h1 : (eraStepsBool 20 1 [false, true]).map dropTrailingFalse =
+      some (rep010Bool 3 [false, false, true]) := rfl
+  obtain ⟨ys, hys, hdrop⟩ := opt_map_some h1
+  have hstar := eraStepsBool_sound 20 1 [false, true] ys hys
+  have h_ys : toTape ys = rep010 3 (evalCore .sw1) := by
+    rw [← toTape_dropTrailingFalse ys, hdrop, toTape_rep010Bool]
+    simp [toTape, b2f, evalCore]
+  rw [h_ys] at hstar
+  exact stepStar_trans (stepPlus_stepStar init_2_reaches_era0) hstar
+
+def checkBridge_0689 : Bool :=
+  match runEras 132 3 (stepU 3 (0, .sw1)) with
+  | some (N, u) => decide (2440 ≤ N ∧ 3 * levelU u ≤ 8 * N + 1200)
+  | none => false
+
+set_option maxRecDepth 2000000 in
+set_option maxHeartbeats 20000000 in
+-- Evaluating 132 symbolic era steps requires higher recursion depth and heartbeats.
+theorem checkBridge_0689_eq_true : checkBridge_0689 = true := rfl
+
+set_option maxRecDepth 2000000 in
+set_option maxHeartbeats 20000000 in
+-- Unfolding 132 symbolic era steps in the initial bridge requires higher heartbeats.
+theorem era_inv_init_0689 :
+    ∃ cfg₀,
+        ((((default : ListBlank (Fin 2)) {{2}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢* cfg₀)
+        ∧
+      EraInv cfg₀ := by
+  have hb := checkBridge_0689_eq_true
+  unfold checkBridge_0689 at hb
+  cases hrun : runEras 132 3 (stepU 3 (0, .sw1)) with
+  | none => rw [hrun] at hb; nomatch hb
+  | some pair =>
+    rcases pair with ⟨N_133, u_133⟩
+    rw [hrun, decide_eq_true_iff] at hb
+    have hS1 : Sweeps 3 (evalCore .sw1) (evalU (stepU 3 (0, .sw1))) :=
+      stepU_sound 3 (0, .sw1)
+    obtain ⟨rem_133, hstar_bridge, hS_133⟩ :=
+      runEras_sound 132 3 N_133 (evalCore .sw1) (stepU 3 (0, .sw1)) u_133 hS1 hrun
+    exact ⟨((rep010 N_133 rem_133) {{E}}> default),
+      stepStar_trans init_2_reaches_era1 hstar_bridge,
+      ⟨N_133, rem_133, u_133, hb.1, hb.2, hS_133, rfl⟩⟩
+
 theorem is_does_not_halt : IsNotHalt target_tm :=
   closed_inv_does_not_halt target_tm EraInv era_inv_init era_inv_step
 
+end Solution
+
+public section
+
+open Solution in
+theorem is_not_halt_from_0471 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{1}}> default) [target]⊢* cfg) →
+      (step target cfg).isSome :=
+  closed_inv_does_not_halt target_tm EraInv era_inv_init_0471 era_inv_step
+
+open Solution in
+theorem is_not_halt_from_0689 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{2}}> default) [target]⊢* cfg) →
+      (step target cfg).isSome :=
+  closed_inv_does_not_halt target_tm EraInv era_inv_init_0689 era_inv_step
+
+open Solution in
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0RA_1LC0LD_1LE1LD_0LB0RE_1RF0LA_HHH0RA

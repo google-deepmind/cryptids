@@ -30,17 +30,17 @@ def C : Fin 6 := 2
 def D : Fin 6 := 3
 def F : Fin 6 := 5
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 0 = some config := rfl
 
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 1 = step M config := rfl
 
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+theorem multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
@@ -48,86 +48,86 @@ lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+theorem multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n + m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
+theorem multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢^{n} c₃) : c₁ [tm]⊢^{n + 1} c₃ := by
   have := multiStep_trans tm c₁ c₂ c₃ 1 n h₁ h₂
   rwa [Nat.add_comm 1 n] at this
 
-lemma stepStar_refl (c : Cfg (Fin 2) (Fin 6)) : c [target_tm]⊢* c := ⟨0, rfl⟩
+theorem stepStar_refl (c : Cfg (Fin 2) (Fin 6)) : c [target_tm]⊢* c := ⟨0, rfl⟩
 
-lemma stepPlus_to_stepStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [target_tm]⊢⁺ c₂) :
+theorem stepPlus_to_stepStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [target_tm]⊢⁺ c₂) :
     c₁ [target_tm]⊢* c₂ := by
   rcases h with ⟨n, _, hn⟩; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
+theorem stepPlus_stepStar_trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [target_tm]⊢⁺ c₂) (h₂ : c₂ [target_tm]⊢* c₃) : c₁ [target_tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, hn_pos, hn⟩; rcases h₂ with ⟨m, hm⟩
   exact ⟨n + m, Nat.add_pos_left hn_pos m, multiStep_trans target_tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_stepPlus_trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
+theorem stepStar_stepPlus_trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [target_tm]⊢* c₂) (h₂ : c₂ [target_tm]⊢⁺ c₃) : c₁ [target_tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, hn⟩; rcases h₂ with ⟨m, hm_pos, hm⟩
   exact ⟨n + m, Nat.add_pos_right n hm_pos, multiStep_trans target_tm c₁ c₂ c₃ n m hn hm⟩
 
 omit [Inhabited Γ] in
-@[simp] lemma pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
 
 omit [Inhabited Γ] in
-lemma pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+theorem pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 
 omit [Inhabited Γ] in
-@[simp] lemma list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
+@[simp] theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
   induction n with
   | zero => simp [pow_zero_list]
   | succ n ih =>
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
-lemma pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
+theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
   rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
 
-@[simp] lemma listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
+@[simp] theorem listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
-@[simp] lemma listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
+@[simp] theorem listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
     (a :: l) +> s = a >> (l +> s) := rfl
 
-@[simp] lemma listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
+@[simp] theorem listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) :=
   Turing.ListBlank.append_assoc l₁ l₂ s
 
-lemma left_pow_succ (l : ListBlank (Fin 2)) (u : List (Fin 2)) (n : Nat) :
+theorem left_pow_succ (l : ListBlank (Fin 2)) (u : List (Fin 2)) (n : Nat) :
     l <+ u ^ (n + 1) = l <+ u ^ n <+ u := by
   rw [pow_succ_list, listblank_append_assoc]
 
-lemma left_pow_succ_right (l : ListBlank (Fin 2)) (u : List (Fin 2)) (n : Nat) :
+theorem left_pow_succ_right (l : ListBlank (Fin 2)) (u : List (Fin 2)) (n : Nat) :
     l <+ u ^ (n + 1) = l <+ u <+ u ^ n := by
   rw [pow_succ_right, listblank_append_assoc]
 
-lemma right_pow_add (u : List (Fin 2)) (n m : Nat) (r : ListBlank (Fin 2)) :
+theorem right_pow_add (u : List (Fin 2)) (n m : Nat) (r : ListBlank (Fin 2)) :
     u ^ (n + m) +> r = u ^ n +> (u ^ m +> r) := by
   rw [list_pow_add, listblank_append_assoc]
 
-lemma right_pow_succ (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
+theorem right_pow_succ (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
     u ^ (n + 1) +> r = u +> (u ^ n +> r) := by
   rw [pow_succ_list, listblank_append_assoc]
 
-lemma right_pow_succ_right (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
+theorem right_pow_succ_right (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
     u ^ (n + 1) +> r = u ^ n +> (u +> r) := by
   rw [pow_succ_right, listblank_append_assoc]
 
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
   change ListBlank.cons default default = default
   exact ListBlank.cons_head_tail default
 
-@[simp] lemma init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
+@[simp] theorem init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
     ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 def U0 : List (Fin 2) := [1, 1, 0, 0, 0]
@@ -168,7 +168,7 @@ macro "run_steps" n:num : tactic => `(tactic| (
 -- Section 1: Tape Rotation & Power Shift Identities
 -- ============================================================================
 
-lemma one_zero_pow_shift (m : Nat) (r : ListBlank (Fin 2)) :
+theorem one_zero_pow_shift (m : Nat) (r : ListBlank (Fin 2)) :
     p10 ^ m +> ([1] +> r) = [1] +> (p01 ^ m +> r) := by
   induction m with
   | zero => rfl
@@ -176,7 +176,7 @@ lemma one_zero_pow_shift (m : Nat) (r : ListBlank (Fin 2)) :
     rw [right_pow_succ p10 m, ih, right_pow_succ p01 m]
     rfl
 
-lemma one_one_pow_shift (m : Nat) (l : ListBlank (Fin 2)) :
+theorem one_one_pow_shift (m : Nat) (l : ListBlank (Fin 2)) :
     l <+ p11 ^ m <+ [1] = l <+ [1] <+ p11 ^ m := by
   induction m generalizing l with
   | zero => rfl
@@ -198,7 +198,7 @@ def sidePs : Nat → ListBlank (Fin 2) → ListBlank (Fin 2) → Prop
   | 0, l, l' => l = l'
   | q + 1, l, l' => ∃ lm, sideP l lm ∧ sidePs q lm l'
 
-lemma sidePs_snoc {q : Nat} {l l' : ListBlank (Fin 2)}
+theorem sidePs_snoc {q : Nat} {l l' : ListBlank (Fin 2)}
     (h : sidePs (q + 1) l l') : ∃ lm, sidePs q l lm ∧ sideP lm l' := by
   induction q generalizing l with
   | zero =>
@@ -209,62 +209,62 @@ lemma sidePs_snoc {q : Nat} {l l' : ListBlank (Fin 2)}
     rcases ih hps with ⟨lm₂, hps₂, hp₂⟩
     exact ⟨lm₂, ⟨lm₁, hp₁, hps₂⟩, hp₂⟩
 
-lemma P0 (l : ListBlank (Fin 2)) : sideP (l <+ U0) (l <+ U1) :=
+theorem P0 (l : ListBlank (Fin 2)) : sideP (l <+ U0) (l <+ U1) :=
   fun _ => ⟨9, by omega, by run_steps 9⟩
 
-lemma P1_enter (l r : ListBlank (Fin 2)) :
+theorem P1_enter (l r : ListBlank (Fin 2)) :
     ((l <+ U1) <{{D}} r) [target_tm]⊢⁺ (l <{{C}} (p11 ^ 2 +> ([0] +> r))) :=
   ⟨7, by omega, by run_steps 7⟩
 
-lemma P1_exit (l' r : ListBlank (Fin 2)) :
+theorem P1_exit (l' r : ListBlank (Fin 2)) :
     (l' {{F}}> (p11 ^ 2 +> ([0] +> r))) [target_tm]⊢⁺ ((l' <+ U0) {{B}}> r) :=
   ⟨7, by omega, by run_steps 7⟩
 
-lemma P1 {l l' : ListBlank (Fin 2)} (h : sideH l l') : sideP (l <+ U1) (l' <+ U0) :=
+theorem P1 {l l' : ListBlank (Fin 2)} (h : sideH l l') : sideP (l <+ U1) (l' <+ U0) :=
   fun r => stepPlus_trans (P1_enter l r) (stepPlus_trans (h (p11 ^ 2 +> ([0] +> r))) (P1_exit l' r))
 
-lemma H0 (l : ListBlank (Fin 2)) : sideH (l <+ d0) (l <+ d1) :=
+theorem H0 (l : ListBlank (Fin 2)) : sideH (l <+ d0) (l <+ d1) :=
   fun _ => ⟨1, by omega, by run_steps 1⟩
 
-lemma H1 (l : ListBlank (Fin 2)) : sideH (l <+ d1) (l <+ d2) :=
+theorem H1 (l : ListBlank (Fin 2)) : sideH (l <+ d1) (l <+ d2) :=
   fun _ => ⟨5, by omega, by run_steps 5⟩
 
-lemma H2 (l : ListBlank (Fin 2)) : sideH (l <+ d2) (l <+ d3) :=
+theorem H2 (l : ListBlank (Fin 2)) : sideH (l <+ d2) (l <+ d3) :=
   fun _ => ⟨1, by omega, by run_steps 1⟩
 
-lemma H3_enter (l r : ListBlank (Fin 2)) :
+theorem H3_enter (l r : ListBlank (Fin 2)) :
     ((l <+ d3) <{{C}} r) [target_tm]⊢⁺ (l <{{C}} (p11 ^ 2 +> r)) :=
   ⟨6, by omega, by run_steps 6⟩
 
-lemma H3_exit (l' r : ListBlank (Fin 2)) :
+theorem H3_exit (l' r : ListBlank (Fin 2)) :
     (l' {{F}}> (p11 ^ 2 +> r)) [target_tm]⊢⁺ ((l' <+ d0) {{F}}> r) :=
   ⟨4, by omega, by run_steps 4⟩
 
-lemma H3 {l l' : ListBlank (Fin 2)} (h : sideH l l') : sideH (l <+ d3) (l' <+ d0) :=
+theorem H3 {l l' : ListBlank (Fin 2)} (h : sideH l l') : sideH (l <+ d3) (l' <+ d0) :=
   fun r => stepPlus_trans (H3_enter l r) (stepPlus_trans (h (p11 ^ 2 +> r)) (H3_exit l' r))
 
-lemma HT0 (l : ListBlank (Fin 2)) : sideH (l <+ [0, 0, 0]) (l <+ [1, 0, 0]) :=
+theorem HT0 (l : ListBlank (Fin 2)) : sideH (l <+ [0, 0, 0]) (l <+ [1, 0, 0]) :=
   fun _ => ⟨1, by omega, by run_steps 1⟩
 
-lemma HT1 (l : ListBlank (Fin 2)) : sideH (l <+ [1, 0, 0]) (l <+ [0, 1, 0]) :=
+theorem HT1 (l : ListBlank (Fin 2)) : sideH (l <+ [1, 0, 0]) (l <+ [0, 1, 0]) :=
   fun _ => ⟨5, by omega, by run_steps 5⟩
 
-lemma HT2 (l : ListBlank (Fin 2)) : sideH (l <+ [0, 1, 0]) (l <+ [1, 1, 0]) :=
+theorem HT2 (l : ListBlank (Fin 2)) : sideH (l <+ [0, 1, 0]) (l <+ [1, 1, 0]) :=
   fun _ => ⟨1, by omega, by run_steps 1⟩
 
-lemma StackEnter (l r : ListBlank (Fin 2)) :
+theorem StackEnter (l r : ListBlank (Fin 2)) :
     ((l <+ p11) <{{D}} r) [target_tm]⊢⁺ (l <{{D}} (p10 +> r)) :=
   ⟨2, by omega, by run_steps 2⟩
 
-lemma StackFirst (l r : ListBlank (Fin 2)) :
+theorem StackFirst (l r : ListBlank (Fin 2)) :
     (l {{B}}> (p10 +> r)) [target_tm]⊢⁺ (l <{{D}} (p11 +> r)) :=
   ⟨3, by omega, by run_steps 3⟩
 
-lemma StackLast (l r : ListBlank (Fin 2)) :
+theorem StackLast (l r : ListBlank (Fin 2)) :
     (l {{B}}> (p11 +> r)) [target_tm]⊢⁺ ((l <+ p11) {{B}}> r) :=
   ⟨2, by omega, by run_steps 2⟩
 
-lemma LastReturn (m : Nat) (l r : ListBlank (Fin 2)) :
+theorem LastReturn (m : Nat) (l r : ListBlank (Fin 2)) :
     (l {{B}}> (p11 ^ m +> r)) [target_tm]⊢* ((l <+ p11 ^ m) {{B}}> r) := by
   induction m generalizing l with
   | zero => try exact stepStar_refl _
@@ -272,7 +272,7 @@ lemma LastReturn (m : Nat) (l r : ListBlank (Fin 2)) :
     rw [right_pow_succ p11 m r, left_pow_succ_right l p11 m]
     exact stepStar_trans (stepPlus_to_stepStar (StackLast l _)) (ih (l <+ p11))
 
-lemma H3_enter_pow (k : Nat) (l r : ListBlank (Fin 2)) :
+theorem H3_enter_pow (k : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ d3 ^ k) <{{C}} r) [target_tm]⊢* (l <{{C}} (p11 ^ (k * 2) +> r)) := by
   induction k generalizing r with
   | zero => try exact stepStar_refl _
@@ -283,19 +283,19 @@ lemma H3_enter_pow (k : Nat) (l r : ListBlank (Fin 2)) :
     rw [← right_pow_add p11 (k * 2) 2 r, show k * 2 + 2 = (k + 1) * 2 by omega]
     try exact stepStar_refl _
 
-lemma overflow_turn (l r : ListBlank (Fin 2)) :
+theorem overflow_turn (l r : ListBlank (Fin 2)) :
     ((l <+ [1, 1, 0, 1]) <{{C}} r) [target_tm]⊢⁺ (l {{B}}> (p11 ^ 2 +> r)) :=
   ⟨5, by omega, by run_steps 5⟩
 
-lemma overflow_b0 (l r : ListBlank (Fin 2)) :
+theorem overflow_b0 (l r : ListBlank (Fin 2)) :
     (l {{B}}> ([0] +> r)) [target_tm]⊢⁺ (l <{{C}} ([1] +> r)) :=
   ⟨1, by omega, by run_steps 1⟩
 
-lemma overflow_c_step (l r : ListBlank (Fin 2)) :
+theorem overflow_c_step (l r : ListBlank (Fin 2)) :
     ((l <+ p11) <{{C}} r) [target_tm]⊢⁺ (l <{{C}} (p01 +> r)) :=
   ⟨2, by omega, by run_steps 2⟩
 
-lemma overflow_c_scan (m : Nat) (l r : ListBlank (Fin 2)) :
+theorem overflow_c_scan (m : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ p11 ^ m) <{{C}} r) [target_tm]⊢* (l <{{C}} (p01 ^ m +> r)) := by
   induction m generalizing r with
   | zero => try exact stepStar_refl _
@@ -306,7 +306,7 @@ lemma overflow_c_scan (m : Nat) (l r : ListBlank (Fin 2)) :
     rw [← right_pow_succ_right p01 m r]
     try exact stepStar_refl _
 
-lemma TerminalOverflow (l r : ListBlank (Fin 2)) (k : Nat) :
+theorem TerminalOverflow (l r : ListBlank (Fin 2)) (k : Nat) :
     ((l <+ [1, 1, 0, 1] <+ d3 ^ k <+ U1) <{{D}} r) [target_tm]⊢⁺
     (l <{{C}} (p01 ^ (k * 2 + 4) +> ([1] +> r))) := by
   have h1 : ((l <+ [1, 1, 0, 1] <+ d3 ^ k <+ U1) <{{D}} r) [target_tm]⊢⁺
@@ -326,21 +326,21 @@ lemma TerminalOverflow (l r : ListBlank (Fin 2)) (k : Nat) :
   exact stepPlus_stepStar_trans
     (stepPlus_trans (stepPlus_stepStar_trans h1 h2) (stepPlus_trans (stepPlus_stepStar_trans h3 h4) h5)) h6
 
-lemma Reentry0 (l r : ListBlank (Fin 2)) :
+theorem Reentry0 (l r : ListBlank (Fin 2)) :
     ((l <+ [0, 0, 0, 0, 0, 0]) <{{C}} (p01 ^ 3 +> r)) [target_tm]⊢⁺
     ((l <+ [1, 1, 0, 0, 0, 1, 0, 0, 0]) <{{D}} ([1, 1, 1] +> r)) :=
   ⟨15, by omega, by run_steps 15⟩
 
-lemma Reentry1 (l r : ListBlank (Fin 2)) :
+theorem Reentry1 (l r : ListBlank (Fin 2)) :
     ((l <+ [1, 0, 0, 0]) <{{C}} (p01 ^ 2 +> r)) [target_tm]⊢⁺
     ((l <+ U1) <{{D}} ([1, 1, 1] +> r)) :=
   ⟨11, by omega, by run_steps 11⟩
 
-lemma Restart0 (l r : ListBlank (Fin 2)) :
+theorem Restart0 (l r : ListBlank (Fin 2)) :
     ((l <+ [1]) {{B}}> ([0] +> r)) [target_tm]⊢⁺ (l <{{D}} (p11 +> r)) :=
   ⟨2, by omega, by run_steps 2⟩
 
-lemma Restart11 (l r : ListBlank (Fin 2)) :
+theorem Restart11 (l r : ListBlank (Fin 2)) :
     (l {{B}}> ([1, 1, 0] +> r)) [target_tm]⊢⁺ ((l <+ [1]) <{{D}} (p11 +> r)) :=
   ⟨4, by omega, by run_steps 4⟩
 
@@ -355,10 +355,10 @@ inductive RC : Nat → ListBlank (Fin 2) → Prop where
   | d2 (n : Nat) (l : ListBlank (Fin 2)) : RC n l → RC (2 + 4 * n) (l <+ d2)
   | d3 (n : Nat) (l : ListBlank (Fin 2)) : RC n l → RC (3 + 4 * n) (l <+ d3)
 
-lemma d0_default : (default : ListBlank (Fin 2)) <+ d0 = default := by
+theorem d0_default : (default : ListBlank (Fin 2)) <+ d0 = default := by
   simp [d0]
 
-lemma RC_zero_unique {l : ListBlank (Fin 2)} (h : RC 0 l) : l = default := by
+theorem RC_zero_unique {l : ListBlank (Fin 2)} (h : RC 0 l) : l = default := by
   generalize hn : (0 : Nat) = n at h
   induction h with
   | zero => rfl
@@ -369,7 +369,7 @@ lemma RC_zero_unique {l : ListBlank (Fin 2)} (h : RC 0 l) : l = default := by
   | d2 => omega
   | d3 => omega
 
-lemma RC_unique {n : Nat} {l l' : ListBlank (Fin 2)} (h : RC n l) (h' : RC n l') : l = l' := by
+theorem RC_unique {n : Nat} {l l' : ListBlank (Fin 2)} (h : RC n l) (h' : RC n l') : l = l' := by
   induction h generalizing l' with
   | zero => exact (RC_zero_unique h').symm
   | d0 n l h ih =>
@@ -416,7 +416,7 @@ lemma RC_unique {n : Nat} {l l' : ListBlank (Fin 2)} (h : RC n l) (h' : RC n l')
       have : n = n' := by omega
       subst this; rw [ih h']
 
-lemma RInc {n : Nat} {l : ListBlank (Fin 2)} (h : RC n l) :
+theorem RInc {n : Nat} {l : ListBlank (Fin 2)} (h : RC n l) :
     ∃ l', RC (n + 1) l' ∧ sideH l l' := by
   induction h with
   | zero =>
@@ -446,7 +446,7 @@ inductive NC : Nat → ListBlank (Fin 2) → Prop where
   | u0 (n : Nat) (l : ListBlank (Fin 2)) : RC n l → NC (2 * n) (l <+ U0)
   | u1 (n : Nat) (l : ListBlank (Fin 2)) : RC n l → NC (1 + 2 * n) (l <+ U1)
 
-lemma NC_unique {n : Nat} {l l' : ListBlank (Fin 2)} (h : NC n l) (h' : NC n l') : l = l' := by
+theorem NC_unique {n : Nat} {l l' : ListBlank (Fin 2)} (h : NC n l) (h' : NC n l') : l = l' := by
   cases h with
   | u0 n l h =>
     generalize hm : 2 * n = m at h'
@@ -463,7 +463,7 @@ lemma NC_unique {n : Nat} {l l' : ListBlank (Fin 2)} (h : NC n l) (h' : NC n l')
       have : n = n' := by omega
       subst this; rw [RC_unique h h']
 
-lemma NormalInc {n : Nat} {l : ListBlank (Fin 2)} (h : NC n l) :
+theorem NormalInc {n : Nat} {l : ListBlank (Fin 2)} (h : NC n l) :
     ∃ l', NC (n + 1) l' ∧ sideP l l' := by
   cases h with
   | u0 n l h =>
@@ -476,7 +476,7 @@ lemma NormalInc {n : Nat} {l : ListBlank (Fin 2)} (h : NC n l) :
     rw [show (1 + 2 * n) + 1 = 2 * (n + 1) by omega]
     exact NC.u0 (n + 1) l' hl'
 
-lemma NormalAdds_ex (q : Nat) {n : Nat} {l : ListBlank (Fin 2)} (h : NC n l) :
+theorem NormalAdds_ex (q : Nat) {n : Nat} {l : ListBlank (Fin 2)} (h : NC n l) :
     ∃ l', NC (n + q) l' ∧ sidePs q l l' := by
   induction q generalizing n l with
   | zero => exact ⟨l, h, rfl⟩
@@ -486,7 +486,7 @@ lemma NormalAdds_ex (q : Nat) {n : Nat} {l : ListBlank (Fin 2)} (h : NC n l) :
     rw [show n + (q + 1) = (n + 1) + q by omega]
     exact ⟨l₂, hl₂, ⟨l₁, hp, hps⟩⟩
 
-lemma NormalAdds (q : Nat) {n : Nat} {l l' : ListBlank (Fin 2)}
+theorem NormalAdds (q : Nat) {n : Nat} {l l' : ListBlank (Fin 2)}
     (h : NC n l) (h' : NC (n + q) l') : sidePs q l l' := by
   rcases NormalAdds_ex q h with ⟨l₂, hl₂, hps⟩
   rw [NC_unique h' hl₂]
@@ -502,7 +502,7 @@ inductive FC (tail : ListBlank (Fin 2)) : Nat → Nat → ListBlank (Fin 2) → 
   | d2 (k n : Nat) (l : ListBlank (Fin 2)) : FC tail k n l → FC tail (k + 1) (2 + 4 * n) (l <+ d2)
   | d3 (k n : Nat) (l : ListBlank (Fin 2)) : FC tail k n l → FC tail (k + 1) (3 + 4 * n) (l <+ d3)
 
-lemma FC_zero_inv {tail : ListBlank (Fin 2)} {K m : Nat} {l' : ListBlank (Fin 2)}
+theorem FC_zero_inv {tail : ListBlank (Fin 2)} {K m : Nat} {l' : ListBlank (Fin 2)}
     (h : FC tail K m l') (hK : K = 0) :
     (m = 0 ∧ l' = tail <+ [0, 0, 0]) ∨
     (m = 1 ∧ l' = tail <+ [1, 0, 0]) ∨
@@ -515,7 +515,7 @@ lemma FC_zero_inv {tail : ListBlank (Fin 2)} {K m : Nat} {l' : ListBlank (Fin 2)
   | t3 => exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩))
   | _ => omega
 
-lemma FC_unique {tail : ListBlank (Fin 2)} {k n : Nat} {l l' : ListBlank (Fin 2)}
+theorem FC_unique {tail : ListBlank (Fin 2)} {k n : Nat} {l l' : ListBlank (Fin 2)}
     (h : FC tail k n l) (h' : FC tail k n l') : l = l' := by
   induction h generalizing l' with
   | t0 =>
@@ -559,7 +559,7 @@ lemma FC_unique {tail : ListBlank (Fin 2)} {k n : Nat} {l l' : ListBlank (Fin 2)
       subst hk'; subst hn'; rw [ih h']
     | _ => omega
 
-lemma FiniteRInc {tail : ListBlank (Fin 2)} {k n : Nat} {l : ListBlank (Fin 2)}
+theorem FiniteRInc {tail : ListBlank (Fin 2)} {k n : Nat} {l : ListBlank (Fin 2)}
     (h : FC tail k n l) (hbound : n + 1 < 4 ^ (k + 1)) :
     ∃ l', FC tail k (n + 1) l' ∧ sideH l l' := by
   induction h with
@@ -591,7 +591,7 @@ inductive FNC (tail : ListBlank (Fin 2)) (k : Nat) : Nat → ListBlank (Fin 2) �
   | u0 (n : Nat) (l : ListBlank (Fin 2)) : FC tail k n l → FNC tail k (2 * n) (l <+ U0)
   | u1 (n : Nat) (l : ListBlank (Fin 2)) : FC tail k n l → FNC tail k (1 + 2 * n) (l <+ U1)
 
-lemma FNC_unique {tail : ListBlank (Fin 2)} {k n : Nat} {l l' : ListBlank (Fin 2)}
+theorem FNC_unique {tail : ListBlank (Fin 2)} {k n : Nat} {l l' : ListBlank (Fin 2)}
     (h : FNC tail k n l) (h' : FNC tail k n l') : l = l' := by
   cases h with
   | u0 n l h =>
@@ -609,7 +609,7 @@ lemma FNC_unique {tail : ListBlank (Fin 2)} {k n : Nat} {l l' : ListBlank (Fin 2
       have : n = n' := by omega
       subst this; rw [FC_unique h h']
 
-lemma FiniteInc {tail : ListBlank (Fin 2)} {k n : Nat} {l : ListBlank (Fin 2)}
+theorem FiniteInc {tail : ListBlank (Fin 2)} {k n : Nat} {l : ListBlank (Fin 2)}
     (h : FNC tail k n l) (hbound : n + 1 < 2 * 4 ^ (k + 1)) :
     ∃ l', FNC tail k (n + 1) l' ∧ sideP l l' := by
   cases h with
@@ -624,7 +624,7 @@ lemma FiniteInc {tail : ListBlank (Fin 2)} {k n : Nat} {l : ListBlank (Fin 2)}
     rw [show (1 + 2 * n) + 1 = 2 * (n + 1) by omega]
     exact FNC.u0 (n + 1) l' hl'
 
-lemma FiniteAdds_ex {tail : ListBlank (Fin 2)} {k : Nat} (q : Nat) {n : Nat} {l : ListBlank (Fin 2)}
+theorem FiniteAdds_ex {tail : ListBlank (Fin 2)} {k : Nat} (q : Nat) {n : Nat} {l : ListBlank (Fin 2)}
     (h : FNC tail k n l) (hbound : n + q < 2 * 4 ^ (k + 1)) :
     ∃ l', FNC tail k (n + q) l' ∧ sidePs q l l' := by
   induction q generalizing n l with
@@ -637,7 +637,7 @@ lemma FiniteAdds_ex {tail : ListBlank (Fin 2)} {k : Nat} (q : Nat) {n : Nat} {l 
     rw [show n + (q + 1) = (n + 1) + q by omega]
     exact ⟨l₂, hl₂, ⟨l₁, hp, hps⟩⟩
 
-lemma FiniteAdds {tail : ListBlank (Fin 2)} {k : Nat} (q : Nat) {n : Nat} {l l' : ListBlank (Fin 2)}
+theorem FiniteAdds {tail : ListBlank (Fin 2)} {k : Nat} (q : Nat) {n : Nat} {l l' : ListBlank (Fin 2)}
     (h : FNC tail k n l) (h' : FNC tail k (n + q) l') (hbound : n + q < 2 * 4 ^ (k + 1)) :
     sidePs q l l' := by
   rcases FiniteAdds_ex q h hbound with ⟨l₂, hl₂, hps⟩
@@ -664,12 +664,12 @@ def finc : List Bool → List Bool
   | false :: bs => true :: bs
   | true :: bs => false :: finc bs
 
-lemma Frame_app (xs ys : List Bool) : Frame (xs ++ ys) = Frame xs ++ Frame ys := by
+theorem Frame_app (xs ys : List Bool) : Frame (xs ++ ys) = Frame xs ++ Frame ys := by
   induction xs with
   | nil => rfl
   | cons b xs ih => simp [Frame, ih]
 
-lemma fvalue_app (xs ys : List Bool) :
+theorem fvalue_app (xs ys : List Bool) :
     fvalue (xs ++ ys) = fvalue xs + 2 ^ xs.length * fvalue ys := by
   induction xs with
   | nil => simp [fvalue]
@@ -677,12 +677,12 @@ lemma fvalue_app (xs ys : List Bool) :
     simp only [List.cons_append, fvalue, List.length_cons, ih, Nat.pow_succ]
     ring
 
-lemma fvalue_zeros (m : Nat) : fvalue (List.replicate m false) = 0 := by
+theorem fvalue_zeros (m : Nat) : fvalue (List.replicate m false) = 0 := by
   induction m with
   | zero => rfl
   | succ m ih => simp [List.replicate_succ, fvalue, bval, ih]
 
-lemma fvalue_bound (bs : List Bool) : fvalue bs < 2 ^ bs.length := by
+theorem fvalue_bound (bs : List Bool) : fvalue bs < 2 ^ bs.length := by
   induction bs with
   | nil => simp [fvalue]
   | cons b bs ih =>
@@ -690,12 +690,12 @@ lemma fvalue_bound (bs : List Bool) : fvalue bs < 2 ^ bs.length := by
     · change 0 + 2 * fvalue bs < 2 ^ bs.length * 2; omega
     · change 1 + 2 * fvalue bs < 2 ^ bs.length * 2; omega
 
-lemma finc_length (bs : List Bool) : (finc bs).length = bs.length := by
+theorem finc_length (bs : List Bool) : (finc bs).length = bs.length := by
   induction bs with
   | nil => rfl
   | cons b bs ih => cases b <;> simp [finc, ih]
 
-lemma fvalue_finc (bs : List Bool) (h : fvalue bs + 1 < 2 ^ bs.length) :
+theorem fvalue_finc (bs : List Bool) (h : fvalue bs + 1 < 2 ^ bs.length) :
     fvalue (finc bs) = fvalue bs + 1 := by
   induction bs with
   | nil => simp [fvalue] at h
@@ -709,7 +709,7 @@ lemma fvalue_finc (bs : List Bool) (h : fvalue bs + 1 < 2 ^ bs.length) :
       rw [ih hbs]
       omega
 
-lemma fvalue_injective {xs ys : List Bool}
+theorem fvalue_injective {xs ys : List Bool}
     (hlen : xs.length = ys.length) (hval : fvalue xs = fvalue ys) : xs = ys := by
   induction xs generalizing ys with
   | nil =>
@@ -729,28 +729,28 @@ lemma fvalue_injective {xs ys : List Bool}
       · change 1 + 2 * fvalue xs = 1 + 2 * fvalue ys at hval
         congr 1; exact ih (by omega) (by omega)
 
-lemma fvalue_ones (m : Nat) : fvalue (List.replicate m true) + 1 = 2 ^ m := by
+theorem fvalue_ones (m : Nat) : fvalue (List.replicate m true) + 1 = 2 ^ m := by
   induction m with
   | zero => rfl
   | succ m ih =>
     change (1 + 2 * fvalue (List.replicate m true)) + 1 = 2 ^ m * 2
     omega
 
-lemma Frame_ones (m : Nat) : Frame (List.replicate m true) = p11 ^ m := by
+theorem Frame_ones (m : Nat) : Frame (List.replicate m true) = p11 ^ m := by
   induction m with
   | zero => rfl
   | succ m ih =>
     rw [List.replicate_succ, Frame, ih, pow_succ_list]
     rfl
 
-lemma Frame_zeros (m : Nat) : Frame (List.replicate m false) = p10 ^ m := by
+theorem Frame_zeros (m : Nat) : Frame (List.replicate m false) = p10 ^ m := by
   induction m with
   | zero => rfl
   | succ m ih =>
     rw [List.replicate_succ, Frame, ih, pow_succ_list]
     rfl
 
-lemma FrameInc (bs : List Bool) (h : fvalue bs + 1 < 2 ^ bs.length)
+theorem FrameInc (bs : List Bool) (h : fvalue bs + 1 < 2 ^ bs.length)
     (l r : ListBlank (Fin 2)) :
     (l {{B}}> (Frame bs +> r)) [target_tm]⊢⁺ (l <{{D}} (Frame (finc bs) +> r)) := by
   induction bs generalizing l with
@@ -765,7 +765,7 @@ lemma FrameInc (bs : List Bool) (h : fvalue bs + 1 < 2 ^ bs.length)
       exact stepPlus_trans (StackLast l (Frame bs +> r))
         (stepPlus_trans (ih hbs (l <+ p11)) (StackEnter l (Frame (finc bs) +> r)))
 
-lemma FrameWalkCalls (q : Nat) {xs ys : List Bool} {l l' : ListBlank (Fin 2)}
+theorem FrameWalkCalls (q : Nat) {xs ys : List Bool} {l l' : ListBlank (Fin 2)}
     (hlen : xs.length = ys.length) (hval : fvalue xs + q = fvalue ys)
     (hps : sidePs q l l') (r : ListBlank (Fin 2)) :
     (l <{{D}} (Frame xs +> r)) [target_tm]⊢* (l' <{{D}} (Frame ys +> r)) := by
@@ -785,7 +785,7 @@ lemma FrameWalkCalls (q : Nat) {xs ys : List Bool} {l l' : ListBlank (Fin 2)}
       (stepStar_trans (stepPlus_to_stepStar (FrameInc xs hxs_inc lm r))
         (ih hlen' hval' hps'))
 
-lemma Descend (m : Nat) (l r : ListBlank (Fin 2)) :
+theorem Descend (m : Nat) (l r : ListBlank (Fin 2)) :
     ((l <+ p11 ^ m) <{{D}} r) [target_tm]⊢*
     (l <{{D}} (Frame (List.replicate m false) +> r)) := by
   rw [Frame_zeros]
@@ -798,7 +798,7 @@ lemma Descend (m : Nat) (l r : ListBlank (Fin 2)) :
     rw [← right_pow_succ_right p10 m r]
     try exact stepStar_refl _
 
-lemma Drain (q : Nat) (bs : List Bool) (l l' r : ListBlank (Fin 2))
+theorem Drain (q : Nat) (bs : List Bool) (l l' r : ListBlank (Fin 2))
     (hval : fvalue bs + q + 1 = 2 ^ bs.length) (hps : sidePs (q + 1) l l') :
     (l <{{D}} (Frame bs +> r)) [target_tm]⊢⁺
     ((l' <+ p11 ^ bs.length) {{B}}> r) := by
@@ -812,7 +812,7 @@ lemma Drain (q : Nat) (bs : List Bool) (l l' r : ListBlank (Fin 2))
   have hret := LastReturn bs.length l' r
   exact stepStar_stepPlus_trans hwalk (stepPlus_stepStar_trans hcall hret)
 
-lemma Double {l lm l' : ListBlank (Fin 2)} (h₁ : sideP l lm) (h₂ : sideP lm l') :
+theorem Double {l lm l' : ListBlank (Fin 2)} (h₁ : sideP l lm) (h₂ : sideP lm l') :
     sideP (l <+ p11) (l' <+ p11) := by
   intro r
   exact stepPlus_trans (StackEnter l r)
@@ -820,7 +820,7 @@ lemma Double {l lm l' : ListBlank (Fin 2)} (h₁ : sideP l lm) (h₂ : sideP lm 
       (stepPlus_trans (StackFirst lm r)
         (stepPlus_trans (h₂ (p11 +> r)) (StackLast l' r))))
 
-lemma Double_ps (q : Nat) {l l' : ListBlank (Fin 2)} (h : sidePs (q * 2) l l') :
+theorem Double_ps (q : Nat) {l l' : ListBlank (Fin 2)} (h : sidePs (q * 2) l l') :
     sidePs q (l <+ p11) (l' <+ p11) := by
   induction q generalizing l with
   | zero =>
@@ -831,7 +831,7 @@ lemma Double_ps (q : Nat) {l l' : ListBlank (Fin 2)} (h : sidePs (q * 2) l l') :
     rcases h with ⟨lm₁, hp₁, lm₂, hp₂, hps⟩
     exact ⟨lm₂ <+ p11, Double hp₁ hp₂, ih hps⟩
 
-lemma Multiplier (n q : Nat) {l l' : ListBlank (Fin 2)} (h : sidePs (q * 2 ^ n) l l') :
+theorem Multiplier (n q : Nat) {l l' : ListBlank (Fin 2)} (h : sidePs (q * 2 ^ n) l l') :
     sidePs q (l <+ p11 ^ n) (l' <+ p11 ^ n) := by
   induction n generalizing q with
   | zero =>
@@ -868,7 +868,7 @@ def evalue : List Bool → Nat
   | [] => 0
   | b :: w => bnat b + evalue w * 4
 
-lemma evalue_app (u v : List Bool) :
+theorem evalue_app (u v : List Bool) :
     evalue (u ++ v) = evalue u + evalue v * 4 ^ u.length := by
   induction u with
   | nil => simp [evalue]
@@ -876,22 +876,22 @@ lemma evalue_app (u v : List Bool) :
     simp only [List.cons_append, evalue, List.length_cons, ih, Nat.pow_succ]
     ring
 
-lemma evalue_zeroes (n : Nat) : evalue (List.replicate n false) = 0 := by
+theorem evalue_zeroes (n : Nat) : evalue (List.replicate n false) = 0 := by
   induction n with
   | zero => rfl
   | succ n ih => simp [List.replicate_succ, evalue, bnat, ih]
 
-lemma sparse_app (u v : List Bool) : sparse (u ++ v) = sparse u ++ sparse v := by
+theorem sparse_app (u v : List Bool) : sparse (u ++ v) = sparse u ++ sparse v := by
   induction u with
   | nil => rfl
   | cons b u ih => simp [sparse, ih]
 
-lemma doubled_app (u v : List Bool) : doubled (u ++ v) = doubled u ++ doubled v := by
+theorem doubled_app (u v : List Bool) : doubled (u ++ v) = doubled u ++ doubled v := by
   induction u with
   | nil => rfl
   | cons b u ih => simp [doubled, ih]
 
-lemma sparse_shift (w : List Bool) : ([0] : List (Fin 2)) ++ sparse w = doubled w ++ [0] := by
+theorem sparse_shift (w : List Bool) : ([0] : List (Fin 2)) ++ sparse w = doubled w ++ [0] := by
   induction w with
   | nil => rfl
   | cons b w ih =>
@@ -899,38 +899,38 @@ lemma sparse_shift (w : List Bool) : ([0] : List (Fin 2)) ++ sparse w = doubled 
     · exact congrArg (fun xs => (0 : Fin 2) :: 0 :: 0 :: 0 :: xs) ih
     · exact congrArg (fun xs => (0 : Fin 2) :: 1 :: 0 :: 0 :: xs) ih
 
-lemma init_step_1 :
+theorem init_step_1 :
     (init ([] : List (Fin 2))) [target_tm]⊢*
     ((default <+ [1, 1, 0, 0, 0, 1, 1]) <{{D}} ([1, 1, 1, 1] +> default)) :=
   ⟨79, by run_steps 79⟩
 
-lemma init_step_2 :
+theorem init_step_2 :
     ((default <+ [1, 1, 0, 0, 0, 1, 1]) <{{D}} ([1, 1, 1, 1] +> default)) [target_tm]⊢*
     ((default <+ [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1]) <{{D}} ([1, 1, 1, 1] +> default)) :=
   ⟨81, by run_steps 81⟩
 
-lemma init_step_3 :
+theorem init_step_3 :
     ((default <+ [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1]) <{{D}} ([1, 1, 1, 1] +> default)) [target_tm]⊢*
     ((default <+ [1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1]) <{{D}} ([1, 1, 1, 1, 1, 1] +> default)) :=
   ⟨78, by run_steps 78⟩
 
-lemma init_step_4 :
+theorem init_step_4 :
     ((default <+ [1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1]) <{{D}} ([1, 1, 1, 1, 1, 1] +> default)) [target_tm]⊢*
     ((default <+ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]) <{{D}} ([1, 1] +> default)) :=
   ⟨87, by run_steps 87⟩
 
-lemma init_step_5 :
+theorem init_step_5 :
     ((default <+ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]) <{{D}} ([1, 1] +> default)) [target_tm]⊢*
     ((default <+ [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1]) <{{D}} ([1, 1, 1, 1] +> default)) :=
   ⟨164, by run_steps 164⟩
 
-lemma init_step_6 :
+theorem init_step_6 :
     ((default <+ [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1]) <{{D}} ([1, 1, 1, 1] +> default)) [target_tm]⊢*
     E_cfg false [true] := by
   unfold E_cfg bnat sparse
   exact ⟨175, by run_steps 175⟩
 
-lemma Entry_init : (init ([] : List (Fin 2))) [target_tm]⊢* E_cfg false [true] :=
+theorem Entry_init : (init ([] : List (Fin 2))) [target_tm]⊢* E_cfg false [true] :=
   stepStar_trans init_step_1
     (stepStar_trans init_step_2
       (stepStar_trans init_step_3
@@ -940,7 +940,7 @@ lemma Entry_init : (init ([] : List (Fin 2))) [target_tm]⊢* E_cfg false [true]
 def exit_bits (b : Bool) (w : List Bool) : List Bool :=
   (w.flatMap fun d => [true, !d]) ++ [true, true, true] ++ List.replicate (bnat b) false
 
-lemma exit_bits_length (b : Bool) (w : List Bool) :
+theorem exit_bits_length (b : Bool) (w : List Bool) :
     (exit_bits b w).length = w.length * 2 + 3 + bnat b := by
   induction w with
   | nil =>
@@ -952,7 +952,7 @@ lemma exit_bits_length (b : Bool) (w : List Bool) :
     simp only [List.flatMap_cons, List.cons_append, List.nil_append, List.length_cons]
     omega
 
-lemma exit_bits_value (b : Bool) (w : List Bool) :
+theorem exit_bits_value (b : Bool) (w : List Bool) :
     2 * evalue w + fvalue (exit_bits b w) + 1 = 2 * 4 ^ (w.length + 1) := by
   induction w with
   | nil => cases b <;> rfl
@@ -973,19 +973,19 @@ def reentry_radius (b : Bool) (w : List Bool) : Nat := w.length * 2 + 1 + bnat b
 def reentry_bits (b : Bool) (w : List Bool) : List Bool :=
   [true] ++ List.replicate (reentry_radius b w) false ++ [true] ++ exit_bits b w ++ [true]
 
-lemma reentry_bits_length (b : Bool) (w : List Bool) :
+theorem reentry_bits_length (b : Bool) (w : List Bool) :
     (reentry_bits b w).length = w.length * 4 + 7 + bnat b * 2 := by
   simp only [reentry_bits, List.length_append, List.length_replicate,
     exit_bits_length, reentry_radius, List.length_cons, List.length_nil]
   omega
 
-lemma reentry_bits_length_parts (b : Bool) (w : List Bool) :
+theorem reentry_bits_length_parts (b : Bool) (w : List Bool) :
     (reentry_bits b w).length = reentry_radius b w + (exit_bits b w).length + 3 := by
   simp only [reentry_bits, List.length_append, List.length_replicate,
     List.length_cons, List.length_nil]
   omega
 
-lemma reentry_bits_value (b : Bool) (w : List Bool) :
+theorem reentry_bits_value (b : Bool) (w : List Bool) :
     fvalue (reentry_bits b w) = 1 + 2 ^ (reentry_radius b w + 1) *
       (1 + 2 * fvalue (exit_bits b w) + 2 ^ ((exit_bits b w).length + 1)) := by
   have hb1 : bval true = 1 := rfl
@@ -993,14 +993,14 @@ lemma reentry_bits_value (b : Bool) (w : List Bool) :
     List.length_replicate, fvalue, hb1, List.length_cons, List.length_nil, Nat.pow_succ, Nat.pow_zero]
   ring
 
-lemma pow2_twice (k : Nat) : 2 ^ (k * 2) = 4 ^ k := by
+theorem pow2_twice (k : Nat) : 2 ^ (k * 2) = 4 ^ k := by
   induction k with
   | zero => rfl
   | succ k ih =>
     rw [show (k + 1) * 2 = k * 2 + 1 + 1 by omega, Nat.pow_succ, Nat.pow_succ, ih, Nat.pow_succ]
     ring
 
-lemma pow2_exit_length (b : Bool) (k : Nat) :
+theorem pow2_exit_length (b : Bool) (k : Nat) :
     2 ^ (k * 2 + 3 + bnat b + 1) = (1 + bnat b) * 4 ^ (k + 2) := by
   cases b
   · change 2 ^ (k * 2 + 3 + 0 + 1) = (1 + 0) * 4 ^ (k + 2)
@@ -1011,7 +1011,7 @@ lemma pow2_exit_length (b : Bool) (k : Nat) :
 def drain_A (b : Bool) (w : List Bool) : Nat := 4 * evalue w + 1 + bnat b * 4 ^ (w.length + 2)
 def drain_q (b : Bool) (w : List Bool) : Nat := drain_A b w * 2 ^ (reentry_radius b w + 1) - 2
 
-lemma exit_budget_identity (b : Bool) (w : List Bool) :
+theorem exit_budget_identity (b : Bool) (w : List Bool) :
     drain_A b w + 2 * fvalue (exit_bits b w) + 1 = 2 ^ ((exit_bits b w).length + 1) := by
   have he := exit_bits_value b w
   rw [exit_bits_length, pow2_exit_length]
@@ -1025,7 +1025,7 @@ lemma exit_budget_identity (b : Bool) (w : List Bool) :
       (1 + 1) * (4 ^ (w.length + 1) * 4)
     omega
 
-lemma drain_budget (b : Bool) (w : List Bool) :
+theorem drain_budget (b : Bool) (w : List Bool) :
     fvalue (reentry_bits b w) + drain_q b w + 1 = 2 ^ (reentry_bits b w).length := by
   have ha := exit_budget_identity b w
   have hv := reentry_bits_value b w
@@ -1049,7 +1049,7 @@ lemma drain_budget (b : Bool) (w : List Bool) :
   change (1 + R * (1 + 2 * j + N)) + (a * R - 2) + 1 = R * N * 2
   omega
 
-lemma Reentry0Frames (k : Nat) (bs : List Bool) :
+theorem Reentry0Frames (k : Nat) (bs : List Bool) :
     ((default : ListBlank (Fin 2)) <{{C}}
       (p01 ^ (k * 2 + 4) +> ([1] +> (Frame bs +> (p11 +> default))))) [target_tm]⊢⁺
     ((default <+ d1 <+ U0) <{{D}}
@@ -1077,7 +1077,7 @@ lemma Reentry0Frames (k : Nat) (bs : List Bool) :
   rw [h_lhs, ← h_rhs]
   exact Reentry0 default _
 
-lemma Reentry1Frames (k : Nat) (bs : List Bool) :
+theorem Reentry1Frames (k : Nat) (bs : List Bool) :
     ((default <+ [1]) <{{C}}
       (p01 ^ (k * 2 + 4) +> ([1] +> (Frame bs +> (p11 +> default))))) [target_tm]⊢⁺
     ((default <+ U1) <{{D}}
@@ -1108,7 +1108,7 @@ lemma Reentry1Frames (k : Nat) (bs : List Bool) :
 -- Section 6: Cycle Closure & Non-Halting (TM6Cycle / TM6Target / TM6Outer)
 -- ============================================================================
 
-lemma sparse_RC (w : List Bool) : RC (evalue w) (default <+ sparse w) := by
+theorem sparse_RC (w : List Bool) : RC (evalue w) (default <+ sparse w) := by
   induction w with
   | nil => exact RC.zero
   | cons b w ih =>
@@ -1120,7 +1120,7 @@ lemma sparse_RC (w : List Bool) : RC (evalue w) (default <+ sparse w) := by
       rw [show 1 + evalue w * 4 = 1 + 4 * evalue w by omega]
       exact RC.d1 (evalue w) (default <+ sparse w) ih
 
-lemma doubled_RC (w : List Bool) : RC (evalue w * 2) (default <+ doubled w) := by
+theorem doubled_RC (w : List Bool) : RC (evalue w * 2) (default <+ doubled w) := by
   induction w with
   | nil => exact RC.zero
   | cons b w ih =>
@@ -1132,7 +1132,7 @@ lemma doubled_RC (w : List Bool) : RC (evalue w * 2) (default <+ doubled w) := b
       rw [show (1 + evalue w * 4) * 2 = 2 + 4 * (evalue w * 2) by omega]
       exact RC.d2 (evalue w * 2) (default <+ doubled w) ih
 
-lemma sparse_FC (w : List Bool) (tail : ListBlank (Fin 2)) :
+theorem sparse_FC (w : List Bool) (tail : ListBlank (Fin 2)) :
     FC tail w.length (evalue w) (tail <+ [0, 0, 0] <+ sparse w) := by
   induction w with
   | nil => exact FC.t0
@@ -1145,7 +1145,7 @@ lemma sparse_FC (w : List Bool) (tail : ListBlank (Fin 2)) :
       rw [show 1 + evalue w * 4 = 1 + 4 * evalue w by omega]
       exact FC.d1 w.length (evalue w) (tail <+ [0, 0, 0] <+ sparse w) ih
 
-lemma FC_last (k : Nat) (tail : ListBlank (Fin 2)) :
+theorem FC_last (k : Nat) (tail : ListBlank (Fin 2)) :
     FC tail k (4 ^ (k + 1) - 1) (tail <+ [1, 1, 0] <+ d3 ^ k) := by
   induction k with
   | zero => exact FC.t3
@@ -1158,7 +1158,7 @@ lemma FC_last (k : Nat) (tail : ListBlank (Fin 2)) :
     rw [hpow]
     exact FC.d3 k (4 ^ (k + 1) - 1) (tail <+ [1, 1, 0] <+ d3 ^ k) ih
 
-lemma FNC_last (k : Nat) (tail : ListBlank (Fin 2)) :
+theorem FNC_last (k : Nat) (tail : ListBlank (Fin 2)) :
     FNC tail k (2 * 4 ^ (k + 1) - 1) (tail <+ [1, 1, 0] <+ d3 ^ k <+ U1) := by
   have hpow : 2 * 4 ^ (k + 1) - 1 = 1 + 2 * (4 ^ (k + 1) - 1) := by
     have := Nat.one_le_pow (k + 1) 4 (by omega)
@@ -1166,7 +1166,7 @@ lemma FNC_last (k : Nat) (tail : ListBlank (Fin 2)) :
   rw [hpow]
   exact FNC.u1 (4 ^ (k + 1) - 1) (tail <+ [1, 1, 0] <+ d3 ^ k) (FC_last k tail)
 
-lemma FirstExit {n k v : Nat} {bs : List Bool} {l x r : ListBlank (Fin 2)}
+theorem FirstExit {n k v : Nat} {bs : List Bool} {l x r : ListBlank (Fin 2)}
     (hx : FNC (l <+ [1]) k v x) (hlen : bs.length = n)
     (hval : v + fvalue bs + 1 = 2 * 4 ^ (k + 1)) :
     ((x <+ p11 ^ n) <{{D}} r) [target_tm]⊢⁺
@@ -1185,7 +1185,7 @@ lemma FirstExit {n k v : Nat} {bs : List Bool} {l x r : ListBlank (Fin 2)}
   rw [h_eq] at hwalk
   exact stepStar_stepPlus_trans (stepStar_trans hdesc hwalk) hovf
 
-lemma E_exit (b : Bool) (w : List Bool) :
+theorem E_exit (b : Bool) (w : List Bool) :
     (E_cfg b w) [target_tm]⊢⁺
     ((default <+ one_tok ^ (bnat b)) <{{C}}
       (p01 ^ (w.length * 2 + 4) +>
@@ -1198,14 +1198,14 @@ lemma E_exit (b : Bool) (w : List Bool) :
 def reentry_left (b : Bool) : ListBlank (Fin 2) :=
   if b then default <+ U1 else default <+ d1 <+ U0
 
-lemma reentry_normal (b : Bool) : NC (2 - bnat b) (reentry_left b) := by
+theorem reentry_normal (b : Bool) : NC (2 - bnat b) (reentry_left b) := by
   cases b <;> unfold reentry_left bnat
   · change NC (2 * (1 + 4 * 0)) (default <+ d1 <+ U0)
     exact NC.u0 1 (default <+ d1) (RC.d1 0 default RC.zero)
   · change NC (1 + 2 * 0) (default <+ U1)
     exact NC.u1 0 default RC.zero
 
-lemma E_reentry (b : Bool) (w : List Bool) :
+theorem E_reentry (b : Bool) (w : List Bool) :
     (E_cfg b w) [target_tm]⊢⁺
     ((reentry_left b) <{{D}} (Frame (reentry_bits b w) +> default)) := by
   refine stepPlus_trans (E_exit b w) ?_
@@ -1213,7 +1213,7 @@ lemma E_reentry (b : Bool) (w : List Bool) :
   · exact Reentry0Frames w.length (exit_bits false w)
   · exact Reentry1Frames w.length (exit_bits true w)
 
-lemma E_drain (b : Bool) (w : List Bool) :
+theorem E_drain (b : Bool) (w : List Bool) :
     ∃ l, NC ((2 - bnat b) + (drain_q b w + 1)) l ∧
       (E_cfg b w) [target_tm]⊢⁺
       ((l <+ p11 ^ (w.length * 4 + 7 + bnat b * 2)) {{B}}> default) := by
@@ -1222,7 +1222,7 @@ lemma E_drain (b : Bool) (w : List Bool) :
   rw [← reentry_bits_length b w]
   exact Drain (drain_q b w) (reentry_bits b w) (reentry_left b) l default (drain_budget b w) hps
 
-lemma sparse_with_tail_RC (t : List Bool) {n : Nat} {l : ListBlank (Fin 2)} (hl : RC n l) :
+theorem sparse_with_tail_RC (t : List Bool) {n : Nat} {l : ListBlank (Fin 2)} (hl : RC n l) :
     RC (evalue t + n * 4 ^ t.length) (l <+ sparse t) := by
   induction t with
   | nil =>
@@ -1238,7 +1238,7 @@ lemma sparse_with_tail_RC (t : List Bool) {n : Nat} {l : ListBlank (Fin 2)} (hl 
       rw [show (1 + evalue t * 4) + n * (4 ^ t.length * 4) = 1 + 4 * (evalue t + n * 4 ^ t.length) by ring]
       exact RC.d1 _ _ ih
 
-lemma doubled_with_tail_RC (t : List Bool) {n : Nat} {l : ListBlank (Fin 2)} (hl : RC n l) :
+theorem doubled_with_tail_RC (t : List Bool) {n : Nat} {l : ListBlank (Fin 2)} (hl : RC n l) :
     RC (2 * evalue t + n * 4 ^ t.length) (l <+ doubled t) := by
   induction t with
   | nil =>
@@ -1257,23 +1257,23 @@ lemma doubled_with_tail_RC (t : List Bool) {n : Nat} {l : ListBlank (Fin 2)} (hl
 def core (b : Bool) (w : List Bool) : List Bool :=
   List.replicate (w.length + bnat b) false ++ [true] ++ w
 
-lemma core_length (b : Bool) (w : List Bool) :
+theorem core_length (b : Bool) (w : List Bool) :
     (core b w).length = w.length * 2 + 1 + bnat b := by
   simp only [core, List.length_append, List.length_replicate, List.length_cons, List.length_nil]
   omega
 
-lemma next_word_core (b : Bool) (w : List Bool) :
+theorem next_word_core (b : Bool) (w : List Bool) :
     next_word b w = core b w ++ [false] := by
   simp [next_word, core, List.append_assoc]
 
-lemma core_value (b : Bool) (w : List Bool) :
+theorem core_value (b : Bool) (w : List Bool) :
     evalue (core b w) = (4 * evalue w + 1) * 4 ^ (w.length + bnat b) := by
   have hb1 : bnat true = 1 := rfl
   simp only [core, List.append_assoc, evalue_app, evalue_zeroes, List.length_replicate,
     evalue, hb1, List.length_cons, List.length_nil, Nat.pow_succ, Nat.pow_zero]
   ring
 
-lemma drain_joint_value (b : Bool) (w : List Bool) :
+theorem drain_joint_value (b : Bool) (w : List Bool) :
     (2 - bnat b) + (drain_q b w + 1) =
     drain_A b w * 2 ^ (reentry_radius b w + 1) + 1 - bnat b := by
   have ha : 1 ≤ drain_A b w := by unfold drain_A; omega
@@ -1289,7 +1289,7 @@ lemma drain_joint_value (b : Bool) (w : List Bool) :
       drain_A true w * 2 ^ (reentry_radius true w + 1) + 1 - 1
     omega
 
-lemma drain_core_value (b : Bool) (w : List Bool) :
+theorem drain_core_value (b : Bool) (w : List Bool) :
     (2 - bnat b) + (drain_q b w + 1) =
     if b then 2 * (evalue (core b w) + 4 ^ ((core b w).length + 1))
          else 1 + 4 * evalue (core b w) := by
@@ -1316,13 +1316,13 @@ def outer_left (b : Bool) (t : List Bool) : ListBlank (Fin 2) :=
   if b then default <+ d1 <+ d0 <+ sparse t <+ U0
        else default <+ doubled t <+ U1
 
-lemma outer_left_false_NC (t : List Bool) :
+theorem outer_left_false_NC (t : List Bool) :
     NC (1 + 4 * evalue t) (outer_left false t) := by
   unfold outer_left
   rw [show 1 + 4 * evalue t = 1 + 2 * (evalue t * 2) by ring]
   exact NC.u1 (evalue t * 2) (default <+ doubled t) (doubled_RC t)
 
-lemma outer_left_true_NC (t : List Bool) :
+theorem outer_left_true_NC (t : List Bool) :
     NC (2 * (evalue t + 4 ^ (t.length + 1))) (outer_left true t) := by
   unfold outer_left
   have hr4 : RC 4 (default <+ d1 <+ d0) := RC.d0 1 (default <+ d1) (RC.d1 0 default RC.zero)
@@ -1331,14 +1331,14 @@ lemma outer_left_true_NC (t : List Bool) :
     rw [Nat.pow_succ]; ring]
   exact NC.u0 (evalue t + 4 * 4 ^ t.length) _ hst
 
-lemma drain_target_NC (b : Bool) (w : List Bool) :
+theorem drain_target_NC (b : Bool) (w : List Bool) :
     NC ((2 - bnat b) + (drain_q b w + 1)) (outer_left b (core b w)) := by
   rw [drain_core_value]
   cases b
   · exact outer_left_false_NC (core false w)
   · exact outer_left_true_NC (core true w)
 
-lemma Batch (n v : Nat) (l l' r : ListBlank (Fin 2))
+theorem Batch (n v : Nat) (l l' r : ListBlank (Fin 2))
     (hl : NC v l) (hl' : NC (v + 2 ^ n) l') :
     ((l <+ p11 ^ n) <{{D}} r) [target_tm]⊢⁺
     ((l' <+ p11 ^ n) {{B}}> r) := by
@@ -1349,11 +1349,11 @@ lemma Batch (n v : Nat) (l l' r : ListBlank (Fin 2))
   rcases hmul with ⟨lm, hp, rfl⟩
   exact hp r
 
-lemma Shift (t : List Bool) (l : ListBlank (Fin 2)) :
+theorem Shift (t : List Bool) (l : ListBlank (Fin 2)) :
     l <+ [0] <+ doubled t = l <+ sparse t <+ [0] := by
   rw [← listblank_append_assoc, ← sparse_shift, listblank_append_assoc]
 
-lemma Blank0 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
+theorem Blank0 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
     ((l <+ sparse t <+ U0 <+ p11 ^ (n + 1)) {{B}}> default) [target_tm]⊢⁺
     ((l <+ [0] <+ doubled t <+ U1 <+ p11 ^ n) <{{D}} (p11 +> default)) := by
   have h_eq : l <+ sparse t <+ U0 <+ p11 ^ (n + 1) =
@@ -1365,7 +1365,7 @@ lemma Blank0 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
   rw [show ([0] : List (Fin 2)) +> (default : ListBlank (Fin 2)) = default by simp] at h_step
   rwa [h_eq]
 
-lemma Blank1 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
+theorem Blank1 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
     ((l <+ [0] <+ doubled t <+ U1 <+ p11 ^ (n + 1)) {{B}}> default) [target_tm]⊢⁺
     ((l <+ sparse t <+ U0 <+ p11 ^ (n + 1)) <{{D}} (p11 +> default)) := by
   have h_eq : l <+ [0] <+ doubled t <+ U1 <+ p11 ^ (n + 1) =
@@ -1377,7 +1377,7 @@ lemma Blank1 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
   rw [show ([0] : List (Fin 2)) +> (default : ListBlank (Fin 2)) = default by simp] at h_step
   rwa [h_eq]
 
-lemma Boundary0 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
+theorem Boundary0 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
     ((l <+ sparse t <+ U0 <+ p11 ^ n) {{B}}> (p11 +> default)) [target_tm]⊢⁺
     ((l <+ [0] <+ doubled t <+ U1 <+ p11 ^ n) <{{D}} (p11 +> default)) := by
   have h_eq : l <+ sparse t <+ U0 <+ p11 ^ n <+ [1] =
@@ -1389,7 +1389,7 @@ lemma Boundary0 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
   have h_step := Restart11 (l <+ sparse t <+ U0 <+ p11 ^ n) default
   rwa [← h_r] at h_step
 
-lemma Boundary1 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
+theorem Boundary1 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
     ((l <+ [0] <+ doubled t <+ U1 <+ p11 ^ n) {{B}}> (p11 +> default)) [target_tm]⊢⁺
     ((l <+ sparse t <+ U0 <+ p11 ^ (n + 1)) <{{D}} (p11 +> default)) := by
   have h_eq : l <+ [0] <+ doubled t <+ U1 <+ p11 ^ n <+ [1] =
@@ -1401,13 +1401,13 @@ lemma Boundary1 (n : Nat) (t : List Bool) (l : ListBlank (Fin 2)) :
   have h_step := Restart11 (l <+ [0] <+ doubled t <+ U1 <+ p11 ^ n) default
   rwa [← h_r] at h_step
 
-lemma pow_batch4 (n : Nat) : 2 ^ (n * 2 + 4) = 16 * 4 ^ n := by
+theorem pow_batch4 (n : Nat) : 2 ^ (n * 2 + 4) = 16 * 4 ^ n := by
   rw [Nat.pow_add, pow2_twice]; ring
 
-lemma pow_batch5 (n : Nat) : 2 ^ (n * 2 + 5) = 32 * 4 ^ n := by
+theorem pow_batch5 (n : Nat) : 2 ^ (n * 2 + 5) = 32 * 4 ^ n := by
   rw [Nat.pow_add, pow2_twice]; ring
 
-lemma Outer0 (t : List Bool) :
+theorem Outer0 (t : List Bool) :
     ((default <+ doubled t <+ U1 <+ p11 ^ (t.length * 2 + 5)) {{B}}> default) [target_tm]⊢⁺
     E_cfg true (t ++ [false]) := by
   have h1 : ((default <+ doubled t <+ U1 <+ p11 ^ (t.length * 2 + 5)) {{B}}> default) [target_tm]⊢⁺
@@ -1467,7 +1467,7 @@ lemma Outer0 (t : List Bool) :
     rwa [h_l1, h_rhs] at h5'
   exact stepPlus_trans h1 (stepPlus_trans h2 (stepPlus_trans h3 (stepPlus_trans h4 h5)))
 
-lemma Outer1 (t : List Bool) :
+theorem Outer1 (t : List Bool) :
     ((default <+ d1 <+ d0 <+ sparse t <+ U0 <+ p11 ^ (t.length * 2 + 5)) {{B}}> default) [target_tm]⊢⁺
     E_cfg false (t ++ [false]) := by
   have h1 : ((default <+ d1 <+ d0 <+ sparse t <+ U0 <+ p11 ^ (t.length * 2 + 5)) {{B}}> default) [target_tm]⊢⁺
@@ -1507,7 +1507,7 @@ lemma Outer1 (t : List Bool) :
     rwa [h_l1, h_rhs] at h3'
   exact stepPlus_trans h1 (stepPlus_trans h2 h3)
 
-lemma E_outer (b : Bool) (w : List Bool) :
+theorem E_outer (b : Bool) (w : List Bool) :
     (E_cfg b w) [target_tm]⊢⁺
     ((outer_left b (core b w) <+ p11 ^ ((core b w).length * 2 + 5)) {{B}}> default) := by
   rcases E_drain b w with ⟨l, hnc, hstep⟩
@@ -1517,7 +1517,7 @@ lemma E_outer (b : Bool) (w : List Bool) :
     rw [core_length]; omega
   rwa [hexp] at hstep
 
-lemma E_step (b : Bool) (w : List Bool) :
+theorem E_step (b : Bool) (w : List Bool) :
     (E_cfg b w) [target_tm]⊢⁺ E_cfg (!b) (next_word b w) := by
   refine stepPlus_trans (E_outer b w) ?_
   rw [next_word_core]
@@ -1528,12 +1528,12 @@ lemma E_step (b : Bool) (w : List Bool) :
 def Allowed (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ b w, c = E_cfg b w
 
-lemma Allowed_step {c : Cfg (Fin 2) (Fin 6)} (h : Allowed c) :
+theorem Allowed_step {c : Cfg (Fin 2) (Fin 6)} (h : Allowed c) :
     ∃ c', Allowed c' ∧ c [target_tm]⊢⁺ c' := by
   rcases h with ⟨b, w, rfl⟩
   exact ⟨E_cfg (!b) (next_word b w), ⟨!b, next_word b w, rfl⟩, E_step b w⟩
 
-lemma multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
+theorem multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
     (h : multiStep target_tm c k = none) (d : Nat) :
     multiStep target_tm c (k + d) = none := by
   rw [multiStep_add, h]; rfl

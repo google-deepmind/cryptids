@@ -21,9 +21,6 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option autoImplicit true
-set_option linter.unusedSimpArgs false
-
-
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -42,7 +39,7 @@ namespace Solution
 set_option maxRecDepth 200000
 set_option maxHeartbeats 2000000
 
-@[simp] lemma init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
+@[simp] theorem init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
     ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 -- ============================================================================
@@ -57,25 +54,25 @@ def encWord : LD → List (Fin 2)
 def Lmp (x : List LD) : ListBlank (Fin 2) :=
   encTape encWord ([1, 1, 1, 1, 1, 1] +> default) x
 
-@[simp] lemma Lmp_nil : Lmp [] = [1, 1, 1, 1, 1, 1] +> default := rfl
+@[simp] theorem Lmp_nil : Lmp [] = [1, 1, 1, 1, 1, 1] +> default := rfl
 
-lemma Lmp_cons (d : LD) (xs : List LD) : Lmp (d :: xs) = encWord d +> Lmp xs :=
+theorem Lmp_cons (d : LD) (xs : List LD) : Lmp (d :: xs) = encWord d +> Lmp xs :=
   encTape_cons encWord ([1, 1, 1, 1, 1, 1] +> default) d xs
 
-@[simp] lemma Lmp_W0 (xs : List LD) :
+@[simp] theorem Lmp_W0 (xs : List LD) :
     Lmp (.W0 :: xs) = (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> Lmp xs := by
   rw [Lmp_cons]; rfl
 
-@[simp] lemma Lmp_W1 (xs : List LD) :
+@[simp] theorem Lmp_W1 (xs : List LD) :
     Lmp (.W1 :: xs) = (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> Lmp xs := by
   rw [Lmp_cons]; rfl
 
-@[simp] lemma Lmp_head (x : List LD) : (Lmp x).head = 1 := by
+@[simp] theorem Lmp_head (x : List LD) : (Lmp x).head = 1 := by
   cases x with
   | nil => rfl
   | cons d xs => cases d <;> simp [Lmp_W0, Lmp_W1]
 
-@[simp] lemma Lmp_cons_tail (x : List LD) :
+@[simp] theorem Lmp_cons_tail (x : List LD) :
     (1 : Fin 2) >> (Lmp x).tail = Lmp x := by
   rw [← Lmp_head x, Turing.ListBlank.cons_head_tail]
 
@@ -226,7 +223,7 @@ theorem LIncs_RC {n : ℕ} {x x' : List LD} (h : LIncs n x x') :
     rw [heq]
     exact stepStar_trans (LInc_RC h1 m) (ih (m + 2))
 
-lemma LIncsP_pow9_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
+theorem LIncsP_pow9_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
     LIncsP (512 * n + 511)
       ((([.W1, .W0] : List LD) ^ 9) ++ xs)
       ((([.W1, .W1] : List LD) ^ 9) ++ xs') := by
@@ -243,7 +240,7 @@ lemma LIncsP_pow9_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
       512 * n + 511 := by omega
   rwa [heq] at h9
 
-lemma LOv2_correct_aux {w u y : List LD} (h : LOv2 w u y) (hu : u = [.W0, .W0]) :
+theorem LOv2_correct_aux {w u y : List LD} (h : LOv2 w u y) (hu : u = [.W0, .W0]) :
     ∀ (r : ListBlank (Fin 2)),
       (cfgL (Lmp w) ([1] +> r)) [target_tm]⊢* (cfgC (Lmp y) r) := by
   induction h with
@@ -377,7 +374,7 @@ theorem x2_to_x3 :
 
 theorem isBuffer_8_B1 : IsBuffer 8 [.W1, .W1, .W0] := by decide
 
-lemma LInc_round_tail (m : ℕ) (s : List LD) :
+theorem LInc_round_tail (m : ℕ) (s : List LD) :
     LInc ((([.W1] : List LD) ^ (2 * m + 1)) ++
       ([.W0, .W0, .W1, .W0] ++ ((([.W1, .W0] : List LD) ^ 10) ++ s)))
       ((([.W1, .W0] : List LD) ^ m) ++
@@ -385,7 +382,7 @@ lemma LInc_round_tail (m : ℕ) (s : List LD) :
   rw [pow_W1_odd]
   exact LInc_pow_11_10 m ([.W0, .W1, .W0] ++ ((([.W1, .W0] : List LD) ^ 10) ++ s))
 
-lemma chain_round_step_aux {r m : ℕ} (hr : r ≤ 8) (hm : m ≥ 26)
+theorem chain_round_step_aux {r m : ℕ} (hr : r ≤ 8) (hm : m ≥ 26)
     {T T₀' u u' W' : List LD}
     (h_10 : LIncsP m ((([.W1, .W0] : List LD) ^ 10) ++ (T ++ u)) ((([.W1, .W1] : List LD) ^ 10) ++ W'))
     (h_ov : LOv2 W' [.W0, .W0] ([.W0, .W0, .W1, .W0] ++ (T₀' ++ u')))

@@ -22,11 +22,6 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
-
-
 variable {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
@@ -35,8 +30,6 @@ abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
 abbrev holdout_0641_tm : Machine (Fin 2) (Fin 6) := target_tm
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option maxHeartbeats 8000000
 set_option maxRecDepth 200000
 inductive BTree (α : Type) where
@@ -67,7 +60,7 @@ def qU (a b : Letter) : Bool :=
   match a,b with
   | .Odd,.Odd | .Even,.Even | .Gap,.Gap => true
   | _,_ => false
-lemma qam (a b : Letter) : (qU a b=true) ↔ a=b:= by
+theorem qam (a b : Letter) : (qU a b=true) ↔ a=b:= by
   cases a <;> cases b <;> decide
 def qau (even : Bool) (g : Nat) (s : Nat) : Option Nat :=
   let u:=(s / 2) * 2
@@ -90,7 +83,7 @@ def qau (even : Bool) (g : Nat) (s : Nat) : Option Nat :=
       if j == 0 then
         if 2 <= s then some (2 ^ r * u - 3) else none
       else some (2 ^ (r + 1) * (u + 1) - 3)
-lemma qat (b : Bool) (g s s' t : Nat)
+theorem qat (b : Bool) (g s s' t : Nat)
     (h : qau b g s=some s') (hst : s <= t) :
     ∃ t',qau b g t=some t' /\ s' <= t':= by
   have hu : (s / 2) * 2 <= (t / 2) * 2:= by omega
@@ -116,7 +109,7 @@ lemma qat (b : Bool) (g s s' t : Nat)
         (try contradiction) <;> (try omega) <;>
         (injection h with h; refine ⟨_,rfl,by omega⟩)
   )
-lemma atom_large (b : Bool) (g s : Nat) (hg : 4 <= g) (hs : 2 <= s) :
+theorem atom_large (b : Bool) (g s : Nat) (hg : 4 <= g) (hs : 2 <= s) :
     ∃ v,qau b g s=some v /\ 8 * (s / 2) - (if b then 1 else 3) <= v:= by
   rcases g with _ | _ | _ | g
   · omega
@@ -158,7 +151,7 @@ lemma atom_large (b : Bool) (g s : Nat) (hg : 4 <= g) (hs : 2 <= s) :
 def qq (b : Bool) (g s : Nat) : Option Nat :=
   if g < 4 then qau b g s
   else if 2 <= s then some (8 * (s / 2) - (if b then 1 else 3)) else none
-lemma qbj (b : Bool) (g s v t : Nat)
+theorem qbj (b : Bool) (g s v t : Nat)
     (h : qq b (min 4 g) s=some v) (hst : s <= t) :
     ∃ v',qau b g t=some v' /\ v <= v':= by
   by_cases hg : g < 4
@@ -197,7 +190,7 @@ def getBoundRow (r : CapRow) : Nat -> Nat
   | _ => 0
 def memEdge (es : List (Letter × Nat)) (c : Letter) (q : Nat) : Bool :=
   es.any (fun e => qU e.1 c && (e.2 == q))
-lemma qaZ (es : List (Letter × Nat)) (c : Letter) (q : Nat) :
+theorem qaZ (es : List (Letter × Nat)) (c : Letter) (q : Nat) :
     memEdge es c q=true ↔ (c,q) ∈ es:= by
   unfold memEdge
   simp only [List.any_eq_true,Bool.and_eq_true,qam,beq_iff_eq,Prod.exists]
@@ -412,25 +405,25 @@ def qV (q : Nat) : Bool :=
   (node q).edges.all (qbo q)
 def qag : Bool :=
   (List.range q7).all qV
-lemma qaM : qag=true:= by decide
-lemma qa9 (q : Nat) (hq : q < q7) : qV q=true:= by
+theorem qaM : qag=true:= by decide
+theorem qa9 (q : Nat) (hq : q < q7) : qV q=true:= by
   have h:=qaM
   unfold qag at h
   rw [List.all_eq_true] at h
   exact h q (List.mem_range.mpr hq)
-lemma qaL (q : Nat) (hq : q < q7) :
+theorem qaL (q : Nat) (hq : q < q7) :
     (node q).final=qa7 (node q):= by
   have h:=qa9 q hq
   unfold qV at h
   simp only [Bool.and_eq_true,beq_iff_eq] at h
   exact h.1.1
-lemma checked_final (q : Nat) (hq : q < q7) (hf : (node q).final=true) :
+theorem checked_final (q : Nat) (hq : q < q7) (hf : (node q).final=true) :
     29 <= qA q 0:= by
   have h:=qa9 q hq
   unfold qV at h
   simp only [Bool.and_eq_true,hf,↓reduceIte,decide_eq_true_eq] at h
   exact h.1.2
-lemma qG (q : Nat) (c : Letter) (q' : Nat)
+theorem qG (q : Nat) (c : Letter) (q' : Nat)
     (hq : q < q7) (he : (c,q') ∈ (node q).edges) :
     q' < q7 /\ ∀ g,g < 5 -> qy q c q' g=true:= by
   have h:=qa9 q hq
@@ -450,7 +443,7 @@ lemma qG (q : Nat) (c : Letter) (q' : Nat)
   · exact hedge.1.2
   · exact hedge.2
   · omega
-lemma checked_gap (q q' g : Nat) (hq : q < q7)
+theorem checked_gap (q q' g : Nat) (hq : q < q7)
     (he : (.G,q') ∈ (node q).edges) (hg : g < 5) (hb : 0 < qA q' g) :
     qA q' g <= qA q (min 4 (g + 1)):= by
   have h:=(qG q .Gap q' hq he).2 g hg
@@ -460,7 +453,7 @@ lemma checked_gap (q q' g : Nat) (hq : q < q7)
   rw [hne] at h
   simp only [Bool.false_eq_true,↓reduceIte,Bool.and_eq_true,decide_eq_true_eq] at h
   exact h.2
-lemma checked_gaps (q n : Nat) (w : List Letter) (f : Nat)
+theorem checked_gaps (q n : Nat) (w : List Letter) (f : Nat)
     (hq : q < q7) (hp : Path q (List.replicate n .Gap ++ w) f) :
     ∃ q',q' < q7 /\ Path q' w f /\
       (0 < qA q' 0 -> qA q' 0 <= qA q (min 4 n)):= by
@@ -479,7 +472,7 @@ lemma checked_gaps (q n : Nat) (w : List Letter) (f : Nat)
       have hmin : min 4 (min 4 n + 1)=min 4 (n + 1):= by omega
       rw [hmin] at hg1
       omega
-lemma checked_digit (q q' : Nat) (b : Bool) (g : Nat)
+theorem checked_digit (q q' : Nat) (b : Bool) (g : Nat)
     (hq : q < q7)
     (he : ((if b then Letter.Even else Letter.Odd),q') ∈ (node q).edges)
     (hb : 0 < qA q' (min 4 g)) :
@@ -507,7 +500,7 @@ def qaP : List Nat -> List Nat -> Bool
   | _ :: _,[] => false
   | x :: xs,y :: ys =>
     if x == y then qaP xs ys else qaP (x :: xs) ys
-lemma qax {xs ys : List Nat} (h : qaP xs ys=true) {q : Nat} (hq : q ∈ xs) :
+theorem qax {xs ys : List Nat} (h : qaP xs ys=true) {q : Nat} (hq : q ∈ xs) :
     q ∈ ys:= by
   induction ys generalizing xs with
   | nil =>
@@ -1765,7 +1758,7 @@ def qay (u : Nat) (c : Letter) : List Nat :=
 def qbl (u : Nat) : Option Letter -> List Nat
   | none => [u]
   | some c => qay u c
-lemma qaX (u : Nat) (c : Letter) (v : Nat) :
+theorem qaX (u : Nat) (c : Letter) (v : Nat) :
     v ∈ qay u c ↔ (c,v) ∈ (node u).edges:= by
   unfold qay
   simp only [List.mem_map,List.mem_filter,qam,Prod.exists]
@@ -1777,7 +1770,7 @@ def qas (vs : List Nat) (c : Letter) : List Nat -> List Nat -> Bool
   | q :: qs,p :: ps =>
     vs.any (fun x => x == p) && memEdge (node p).edges c q && qas vs c qs ps
   | _,_ => false
-lemma qbi (vs : List Nat) (c : Letter) (qs ps : List Nat)
+theorem qbi (vs : List Nat) (c : Letter) (qs ps : List Nat)
     (h : qas vs c qs ps=true) {q : Nat} (hq : q ∈ qs) :
     ∃ p,p ∈ vs /\ (c,q) ∈ (node p).edges:= by
   induction qs generalizing ps with
@@ -1804,13 +1797,13 @@ def qT (k : Nat) : Bool :=
   ((!m.accepting) || m.vertices.any (fun u => qz u))
 def qb0 : Bool :=
   (List.range qE).all qT
-lemma masks_checked : qb0=true:= by decide
-lemma qa8 (k : Nat) (hk : k < qE) : qT k=true:= by
+theorem masks_checked : qb0=true:= by decide
+theorem qa8 (k : Nat) (hk : k < qE) : qT k=true:= by
   have h:=masks_checked
   unfold qb0 at h
   rw [List.all_eq_true] at h
   exact h k (List.mem_range.mpr hk)
-lemma qal (k k' p : Nat) (hk : k < qE)
+theorem qal (k k' p : Nat) (hk : k < qE)
     (hk' : k' ∈ (qe k).sub_none) (hp : p ∈ (qe k').vertices) :
     p ∈ (qe k).vertices:= by
   have hm:=qa8 k hk
@@ -1819,7 +1812,7 @@ lemma qal (k k' p : Nat) (hk : k < qE)
   have h1:=hm.1.1.1.1
   rw [List.all_eq_true] at h1
   exact qax (h1 k' hk') hp
-lemma qak (k : Nat) (c : Letter) (k' q : Nat) (hk : k < qE)
+theorem qak (k : Nat) (c : Letter) (k' q : Nat) (hk : k < qE)
     (hk' : k' ∈ mask_sub (qe k) (some c)) (hq : q ∈ (qe k').vertices) :
     ∃ p,p ∈ (qe k).vertices /\ (c,q) ∈ (node p).edges:= by
   have hm:=qa8 k hk
@@ -1835,7 +1828,7 @@ lemma qak (k : Nat) (c : Letter) (k' q : Nat) (hk : k < qE)
   have hsub:=hc.2
   rw [List.all_eq_true] at hsub
   exact qbi _ c _ _ hc.1 (qax (hsub k' hk') hq)
-lemma qb1 (k : Nat) (hk : k < qE)
+theorem qb1 (k : Nat) (hk : k < qE)
     (hf : (qe k).accepting=true) :
     ∃ p,p ∈ (qe k).vertices /\ qz p=true:= by
   have hm:=qa8 k hk
@@ -1847,7 +1840,7 @@ lemma qb1 (k : Nat) (hk : k < qE)
   exact hacc
 def qb7 (xs ys : List Nat) : Bool :=
   xs.any (fun x => (x < qE) && ys.any (fun y => x == y))
-lemma qbg {xs ys : List Nat} (h : qb7 xs ys=true) :
+theorem qbg {xs ys : List Nat} (h : qb7 xs ys=true) :
     ∃ k,k < qE /\ k ∈ xs /\ k ∈ ys:= by
   unfold qb7 at h
   simp only [List.any_eq_true,Bool.and_eq_true,decide_eq_true_eq,beq_iff_eq] at h
@@ -1866,8 +1859,8 @@ def qae (u v : Nat) : Bool :=
     if qz u && (tnode v).trans_final then (qe k).accepting else true)
 def qar : Bool :=
   (List.range q7).all (fun u => (List.range qa4).all (qae u))
-lemma qb9 : qar=true:= by decide
-lemma qaG (u v : Nat) (hu : u < q7) (hv : v < qa4) :
+theorem qb9 : qar=true:= by decide
+theorem qaG (u v : Nat) (hu : u < q7) (hv : v < qa4) :
     qae u v=true:= by
   have h:=qb9
   unfold qar at h
@@ -1883,7 +1876,7 @@ inductive TransPath : Nat -> List Letter -> List Letter -> Nat -> Prop where
   | cons (v : Nat) (i o : Option Letter) (v' : Nat) (xs ys : List Letter) (v'' : Nat) :
       (i,o,v') ∈ (tnode v).trans_edges -> TransPath v' xs ys v'' ->
       TransPath v (emit i ++ xs) (emit o ++ ys) v''
-lemma q8 {u : Nat} {xs ys : List Letter} {v : Nat} {xs' ys' : List Letter} {w : Nat}
+theorem q8 {u : Nat} {xs ys : List Letter} {v : Nat} {xs' ys' : List Letter} {w : Nat}
     (h1 : TransPath u xs ys v) (h2 : TransPath v xs' ys' w) :
     TransPath u (xs ++ xs') (ys ++ ys') w:= by
   induction h1 with
@@ -1907,7 +1900,7 @@ def qaC : List (Option Letter × Option Letter × Nat) -> List Letter
 def trace_end : Nat -> List (Option Letter × Option Letter × Nat) -> Nat
   | q,[] => q
   | _,(_,_,q') :: es => trace_end q' es
-lemma q2 (q : Nat) (es : List (Option Letter × Option Letter × Nat))
+theorem q2 (q : Nat) (es : List (Option Letter × Option Letter × Nat))
     (h : qah q es=true) :
     TransPath q (qaO es) (qaC es) (trace_end q es):= by
   induction es generalizing q with
@@ -1922,7 +1915,7 @@ lemma q2 (q : Nat) (es : List (Option Letter × Option Letter × Nat))
       rcases h.1 with ⟨e',he',rfl⟩
       exact he'
     exact TransPath.cons q i o q' _ _ _ hmem (ih q' h.2)
-lemma input_path (u : Nat) (i : Option Letter) (xs : List Letter) (q : Nat)
+theorem input_path (u : Nat) (i : Option Letter) (xs : List Letter) (q : Nat)
     (hp : Path u (emit i ++ xs) q) :
     ∃ u',u' ∈ qbl u i /\ Path u' xs q:= by
   cases i with
@@ -1933,7 +1926,7 @@ lemma input_path (u : Nat) (i : Option Letter) (xs : List Letter) (q : Nat)
     cases hp with
     | cons _ _ u' _ _ he hr =>
       exact ⟨u',(qaX u c u').mpr he,hr⟩
-lemma closure_sound {v : Nat} {xs ys : List Letter} {v' : Nat}
+theorem closure_sound {v : Nat} {xs ys : List Letter} {v' : Nat}
     (ht : TransPath v xs ys v') (hf : (tnode v').trans_final=true) :
     ∀ u q k,u < q7 -> v < qa4 -> k ∈ cell u v ->
     Path u xs q -> qz q=true ->
@@ -1985,8 +1978,8 @@ def qao : Bool :=
   qaP (qe 0).vertices starts &&
   starts.all (fun u => (u < q7) && (qv < qa4) &&
     (cell u qv).any (fun k => k == 0))
-lemma qb6 : qao=true:= by decide
-lemma qb5 {xs ys : List Letter} {v' : Nat}
+theorem qb6 : qao=true:= by decide
+theorem qb5 {xs ys : List Letter} {v' : Nat}
     (ht : TransPath qv xs ys v')
     (hf : (tnode v').trans_final=true)
     (hl : qI xs) : qI ys:= by
@@ -2002,7 +1995,7 @@ lemma qb5 {xs ys : List Letter} {v' : Nat}
   rcases hu_ok.2 with ⟨k0,hk0_cell,rfl⟩
   rcases closure_sound ht hf u q 0 hu_ok.1.1 hu_ok.1.2 hk0_cell hp hq with ⟨p,q',hp_mem,hp_ys,hq'⟩
   exact ⟨p,q',qax hsub hp_mem,hp_ys,hq'⟩
-lemma path_core (w : List Letter) (u f : Nat) (hu : u < q7)
+theorem path_core (w : List Letter) (u f : Nat) (hu : u < q7)
     (hp : Path u (w ++ [.Even]) f) (hfin : qz f=true) :
     ∃ v,Path u w v /\ (node v).final=true:= by
   induction w generalizing u with
@@ -2026,7 +2019,7 @@ lemma path_core (w : List Letter) (u f : Nat) (hu : u < q7)
       exact ⟨v,Path.cons u c q' w v he hp_v,hv_fin⟩
 def qx : Bool :=
   starts.all (fun q => (q < q7) && (0 < qA q 0) && (qA q 0 <= 12))
-lemma qap : qx=true:= by decide
+theorem qap : qx=true:= by decide
 def qa6 (flip : Bool) : Nat:=if flip then 1 else 12
 def qO (flip : Bool) (d : Letter) : Letter :=
   if flip then
@@ -2035,63 +2028,63 @@ def qO (flip : Bool) (d : Letter) : Letter :=
     | .Even => .Odd
     | .Gap => .Gap
   else d
-lemma start_path (f : Bool) : TransPath 0 [] [qO f .Odd] (qa6 f):= by
+theorem start_path (f : Bool) : TransPath 0 [] [qO f .Odd] (qa6 f):= by
   cases f
   · exact q2 0 [(none,some .O,12)] (by decide)
   · exact q2 0 [(none,some .E,1)] (by decide)
-lemma bare_path (f : Bool) : TransPath (qa6 (!f)) [.Odd] [.Gap,.Gap,.Gap] (qa6 f):= by
+theorem bare_path (f : Bool) : TransPath (qa6 (!f)) [.Odd] [.Gap,.Gap,.Gap] (qa6 f):= by
   cases f
   · exact q2 1 [(some .O,none,47),(none,some .G,48),(none,some .G,14),(none,some .G,12)] (by decide)
   · exact q2 12 [(some .O,none,46),(none,some .G,49),(none,some .G,15),(none,some .G,1)] (by decide)
-lemma p0_path (f : Bool) : TransPath 12 [.Even] ([] ++ [qO f .Even] ++ []) (qa6 f):= by
+theorem p0_path (f : Bool) : TransPath 12 [.Even] ([] ++ [qO f .Even] ++ []) (qa6 f):= by
   cases f
   · exact q2 12 [(some .E,none,23),(none,some .E,12)] (by decide)
   · exact q2 12 [(some .E,none,23),(none,some .O,1)] (by decide)
-lemma p1_path (f : Bool) : TransPath 12 [.Even,.Gap] ([.Gap] ++ [qO f .Odd] ++ []) (qa6 f):= by
+theorem p1_path (f : Bool) : TransPath 12 [.Even,.Gap] ([.Gap] ++ [qO f .Odd] ++ []) (qa6 f):= by
   cases f
   · exact q2 12 [(some .E,none,9),(some .G,none,16),(none,some .G,0),(none,some .O,12)] (by decide)
   · exact q2 12 [(some .E,none,9),(some .G,none,16),(none,some .G,0),(none,some .E,1)] (by decide)
-lemma q1_path (f : Bool) : TransPath 12 [.Odd,.Gap] ([] ++ [qO f .Even] ++ [.Gap]) (qa6 f):= by
+theorem q1_path (f : Bool) : TransPath 12 [.Odd,.Gap] ([] ++ [qO f .Even] ++ [.Gap]) (qa6 f):= by
   cases f
   · exact q2 12 [(some .O,none,11),(some .G,none,13),(none,some .E,14),(none,some .G,12)] (by decide)
   · exact q2 12 [(some .O,none,11),(some .G,none,13),(none,some .O,15),(none,some .G,1)] (by decide)
-lemma q2_path (f : Bool) : TransPath 12 [.Odd,.Gap,.Gap] ([.Gap] ++ [qO f .Odd] ++ [.Gap]) (qa6 f):= by
+theorem q2_path (f : Bool) : TransPath 12 [.Odd,.Gap,.Gap] ([.Gap] ++ [qO f .Odd] ++ [.Gap]) (qa6 f):= by
   cases f
   · exact q2 12 [(some .O,none,17),(some .G,none,18),(some .G,none,19),(none,some .G,20),(none,some .O,14),(none,some .G,12)] (by decide)
   · exact q2 12 [(some .O,none,17),(some .G,none,18),(some .G,none,19),(none,some .G,20),(none,some .E,15),(none,some .G,1)] (by decide)
-lemma p2_prefix : TransPath 12 [.Even,.Gap,.Gap] [.Gap,.Gap] 45 :=
+theorem p2_prefix : TransPath 12 [.Even,.Gap,.Gap] [.Gap,.Gap] 45 :=
   q2 12 [(some .E,none,6),(some .G,none,7),(some .G,none,8),(none,some .G,10),(none,some .G,45)] (by decide)
-lemma p3_prefix : TransPath 12 [.Even,.Gap,.Gap,.Gap] [.Odd] 45 :=
+theorem p3_prefix : TransPath 12 [.Even,.Gap,.Gap,.Gap] [.Odd] 45 :=
   q2 12 [(some .E,none,39),(some .G,none,44),(some .G,none,50),(some .G,none,34),(none,some .O,45)] (by decide)
-lemma p4_prefix : TransPath 12 [.Even,.Gap,.Gap,.Gap,.Gap] [.Gap,.Even] 45 :=
+theorem p4_prefix : TransPath 12 [.Even,.Gap,.Gap,.Gap,.Gap] [.Gap,.Even] 45 :=
   q2 12 [(some .E,none,61),(some .G,none,2),(some .G,none,3),(some .G,none,4),(some .G,none,5),(none,some .G,60),(none,some .E,45)] (by decide)
-lemma q3_prefix : TransPath 12 [.Odd,.Gap,.Gap,.Gap] [.Gap,.Gap] 27 :=
+theorem q3_prefix : TransPath 12 [.Odd,.Gap,.Gap,.Gap] [.Gap,.Gap] 27 :=
   q2 12 [(some .O,none,21),(some .G,none,22),(some .G,none,24),(some .G,none,25),(none,some .G,26),(none,some .G,27)] (by decide)
-lemma q4_prefix : TransPath 12 [.Odd,.Gap,.Gap,.Gap,.Gap] [.Odd] 27 :=
+theorem q4_prefix : TransPath 12 [.Odd,.Gap,.Gap,.Gap,.Gap] [.Odd] 27 :=
   q2 12 [(some .O,none,31),(some .G,none,32),(some .G,none,33),(some .G,none,35),(some .G,none,36),(none,some .O,27)] (by decide)
-lemma q5_prefix : TransPath 12 [.Odd,.Gap,.Gap,.Gap,.Gap,.Gap] [.Gap,.Even] 27 :=
+theorem q5_prefix : TransPath 12 [.Odd,.Gap,.Gap,.Gap,.Gap,.Gap] [.Gap,.Even] 27 :=
   q2 12 [(some .O,none,37),(some .G,none,38),(some .G,none,40),(some .G,none,41),(some .G,none,42),(some .G,none,43),(none,some .G,30),(none,some .E,27)] (by decide)
-lemma p_loop : TransPath 45 [.Gap,.Gap,.Gap] [.Even] 45 :=
+theorem p_loop : TransPath 45 [.Gap,.Gap,.Gap] [.Even] 45 :=
   q2 45 [(some .G,none,56),(some .G,none,59),(some .G,none,60),(none,some .E,45)] (by decide)
-lemma p_suffix (f : Bool) : TransPath 45 [] ([qO f .Odd] ++ []) (qa6 f):= by
+theorem p_suffix (f : Bool) : TransPath 45 [] ([qO f .Odd] ++ []) (qa6 f):= by
   cases f
   · exact q2 45 [(none,some .O,12)] (by decide)
   · exact q2 45 [(none,some .E,1)] (by decide)
-lemma q_loop : TransPath 27 [.Gap,.Gap,.Gap] [.Even] 27 :=
+theorem q_loop : TransPath 27 [.Gap,.Gap,.Gap] [.Even] 27 :=
   q2 27 [(some .G,none,28),(some .G,none,29),(some .G,none,30),(none,some .E,27)] (by decide)
-lemma q_suffix (f : Bool) : TransPath 27 [] ([qO f .Odd] ++ [.Gap]) (qa6 f):= by
+theorem q_suffix (f : Bool) : TransPath 27 [] ([qO f .Odd] ++ [.Gap]) (qa6 f):= by
   cases f
   · exact q2 27 [(none,some .O,14),(none,some .G,12)] (by decide)
   · exact q2 27 [(none,some .E,15),(none,some .G,1)] (by decide)
-lemma tail0_prefix : TransPath 12 [.Even] [.Odd,.Even,.Even,.Even,.Even] 57 :=
+theorem tail0_prefix : TransPath 12 [.Even] [.Odd,.Even,.Even,.Even,.Even] 57 :=
   q2 12 [(some .E,none,51),(none,some .O,52),(none,some .E,53),(none,some .E,54),(none,some .E,55),(none,some .E,57)] (by decide)
-lemma tail1_prefix : TransPath 12 [.Even] [.Gap,.Even,.Even,.Even,.Even] 57 :=
+theorem tail1_prefix : TransPath 12 [.Even] [.Gap,.Even,.Even,.Even,.Even] 57 :=
   q2 12 [(some .E,none,51),(none,some .G,52),(none,some .E,53),(none,some .E,54),(none,some .E,55),(none,some .E,57)] (by decide)
-lemma tail2_prefix : TransPath 12 [.Even] [.Gap,.Gap,.Even,.Even,.Even,.Even] 57 :=
+theorem tail2_prefix : TransPath 12 [.Even] [.Gap,.Gap,.Even,.Even,.Even,.Even] 57 :=
   q2 12 [(some .E,none,51),(none,some .G,58),(none,some .G,52),(none,some .E,53),(none,some .E,54),(none,some .E,55),(none,some .E,57)] (by decide)
-lemma tail_loop : TransPath 57 [] [.Even] 57 :=
+theorem tail_loop : TransPath 57 [] [.Even] 57 :=
   q2 57 [(none,some .E,57)] (by decide)
-lemma pump (k n : Nat) (h : TransPath k [.Gap,.Gap,.Gap] [.Even] k) :
+theorem pump (k n : Nat) (h : TransPath k [.Gap,.Gap,.Gap] [.Even] k) :
     TransPath k (List.replicate (n * 3) .Gap) (List.replicate n .Even) k:= by
   induction n with
   | zero => exact TransPath.nil k
@@ -2099,7 +2092,7 @@ lemma pump (k n : Nat) (h : TransPath k [.Gap,.Gap,.Gap] [.Even] k) :
     have heq : (n + 1) * 3=3 + n * 3:= by omega
     rw [heq,List.replicate_add,List.replicate_succ]
     exact q8 h ih
-lemma qbp (c : Letter) (g : Nat) (pre : List Letter) (k : Nat) (suf : List Letter) (n q : Nat)
+theorem qbp (c : Letter) (g : Nat) (pre : List Letter) (k : Nat) (suf : List Letter) (n q : Nat)
     (hpre : TransPath 12 (c :: List.replicate g .Gap) pre k)
     (hloop : TransPath k [.Gap,.Gap,.Gap] [.Even] k)
     (hsuf : TransPath k [] suf q) :
@@ -2137,7 +2130,7 @@ def qaz : Block -> List Letter
 def back (b : Block) : List Letter:=if q3 b then [] else [.Gap]
 def q4 (b : Block) (f : Bool) : List Letter :=
   qaz b ++ [qO f (qa b)] ++ back b
-lemma block_path (b : Block) (f : Bool) (h : b ≠ .BQ0) :
+theorem block_path (b : Block) (f : Bool) (h : b ≠ .BQ0) :
     TransPath 12 (qi b) (q4 b f) (qa6 f):= by
   cases b with
   | BP0 => exact p0_path f
@@ -2173,7 +2166,7 @@ def qM : List Block -> List Letter
   | [] => []
   | .BQ0 :: xs => [.Gap,.Gap,.Gap] ++ qM xs
   | b :: xs => q4 b (q6 xs) ++ qM xs
-lemma blocks_path (xs : List Block) :
+theorem blocks_path (xs : List Block) :
     TransPath (qa6 (q6 xs)) (qb xs) (qM xs) 12:= by
   induction xs with
   | nil => exact TransPath.nil 12
@@ -2192,12 +2185,12 @@ def qu (j : Nat) : List Letter :=
   | _ => [.Gap,.Gap]
 def q9 (j q : Nat) : Nat :=
   q + match j with | 0 => 0 | _ => 1
-lemma tail_repeats (n : Nat) : TransPath 57 [] (List.replicate n .Even) 57:= by
+theorem tail_repeats (n : Nat) : TransPath 57 [] (List.replicate n .Even) 57:= by
   induction n with
   | zero => exact TransPath.nil 57
   | succ n ih =>
     simpa using! q8 tail_loop ih
-lemma tail_path (j n : Nat) (hj : j < 3) :
+theorem tail_path (j n : Nat) (hj : j < 3) :
     TransPath 12 [.Even] (qu j ++ List.replicate (4 + n) .Even) 57:= by
   rw [List.replicate_add,<- List.append_assoc]
   have hpre : TransPath 12 [.Even] (qu j ++ List.replicate 4 .Even) 57:= by
@@ -2209,7 +2202,7 @@ lemma tail_path (j n : Nat) (hj : j < 3) :
   simpa using! q8 hpre (tail_repeats n)
 def qL (xs : List Block) : List Letter :=
   qO (q6 xs) .Odd :: qM xs
-lemma boundary_path (xs : List Block) (j n : Nat) (hj : j < 3) :
+theorem boundary_path (xs : List Block) (j n : Nat) (hj : j < 3) :
     TransPath qv (qb xs ++ [.Even])
       (qL xs ++ qu j ++ List.replicate (4 + n) .Even) 57:= by
   unfold qL qv
@@ -2219,7 +2212,7 @@ lemma boundary_path (xs : List Block) (j n : Nat) (hj : j < 3) :
   have h23:=q8 h2 h3
   have h123:=q8 h1 h23
   simpa [List.append_assoc] using! h123
-lemma macro_closed (xs : List Block) (j n : Nat) (hj : j < 3)
+theorem macro_closed (xs : List Block) (j n : Nat) (hj : j < 3)
     (hl : qI (qb xs ++ [.Even])) :
     qI (qL xs ++ qu j ++ List.replicate (4 + n) .Even) :=
   qb5 (boundary_path xs j n hj) (by decide) hl
@@ -2229,7 +2222,7 @@ inductive BlocksRun : Nat -> List Block -> Nat -> Prop where
       qau (q3 b) (gaps b) s=some s' ->
       BlocksRun s' xs s'' ->
       BlocksRun s (b :: xs) s''
-lemma qbh (xs : List Block) (u q : Nat)
+theorem qbh (xs : List Block) (u q : Nat)
     (hu : u < q7) (hp : Path u (qb xs) q) (hf : (node q).final=true) :
     0 < qA u 0 /\ ∀ s,qA u 0 - 1 <= s ->
       ∃ t,BlocksRun s xs t /\ 28 <= t:= by
@@ -2253,7 +2246,7 @@ lemma qbh (xs : List Block) (u q : Nat)
       rcases hstep s hs with ⟨s',ha,hs'⟩
       rcases hs_z s' (by omega) with ⟨t,hrun,ht⟩
       exact ⟨t,BlocksRun.cons s b s' xs t ha hrun,ht⟩
-lemma qaB (xs : List Block)
+theorem qaB (xs : List Block)
     (hl : qI (qb xs ++ [.Even])) :
     ∃ t,BlocksRun 11 xs t /\ 28 <= t:= by
   rcases hl with ⟨u,f,hu_st,hp,hfin⟩
@@ -2274,7 +2267,7 @@ def qbn (p : Bool) (g : Nat) : Block :=
     match g with
     | 0 => .BQ0 | 1 => .BQ1 | 2 => .BQ2
     | _ => match g % 3 with | 0 => .BQ3 (g / 3 - 1) | 1 => .BQ4 (g / 3 - 1) | _ => .BQ5 (g / 3 - 1)
-lemma qQ (p : Bool) (g : Nat) :
+theorem qQ (p : Bool) (g : Nat) :
     qi (qbn p g)=(if p then .Even else .Odd) :: List.replicate g .Gap:= by
   cases p <;> (
     rcases g with _ | _ | _ | g
@@ -2289,7 +2282,7 @@ lemma qQ (p : Bool) (g : Nat) :
       · rw [h1]; simp only [qi,symbol,q3,↓reduceIte,Bool.false_eq_true,gaps]; congr 2; omega
       · rw [h2]; simp only [qi,symbol,q3,↓reduceIte,Bool.false_eq_true,gaps]; congr 2; omega
   )
-lemma words_blocks (w : List Letter) :
+theorem words_blocks (w : List Letter) :
     ∃ g xs,w=List.replicate g .Gap ++ qb xs:= by
   induction w with
   | nil => exact ⟨0,[],rfl⟩
@@ -2304,7 +2297,7 @@ lemma words_blocks (w : List Letter) :
       simp only [List.replicate_zero,List.nil_append,qb,qQ,↓reduceIte,List.cons_append]
     | Gap =>
       exact ⟨g + 1,xs,by simp [List.replicate_succ]⟩
-lemma digit_blocks (d : Letter) (w : List Letter) (hd : d ≠ .Gap) :
+theorem digit_blocks (d : Letter) (w : List Letter) (hd : d ≠ .Gap) :
     ∃ xs,qb xs=d :: w:= by
   rcases words_blocks w with ⟨g,xs,rfl⟩
   cases d with
@@ -2323,7 +2316,7 @@ def qac : Nat -> List Letter -> List Nat -> Nat -> Bool
   | u,c :: cs,u' :: us,q =>
     memEdge (node u).edges c u' && qac u' cs us q
   | _,_,_,_ => false
-lemma qaI (u : Nat) (w : List Letter) (us : List Nat) (q : Nat)
+theorem qaI (u : Nat) (w : List Letter) (us : List Nat) (q : Nat)
     (h : qac u w us q=true) : Path u w q:= by
   induction w generalizing u us with
   | nil =>
@@ -2341,41 +2334,41 @@ lemma qaI (u : Nat) (w : List Letter) (us : List Nat) (q : Nat)
       unfold qac at h
       simp only [Bool.and_eq_true] at h
       exact Path.cons u c u' cs q ((qaZ _ _ _).mp h.1) (ih u' us' h.2)
-lemma qbe : qI qaF:= by
+theorem qbe : qI qaF:= by
   refine ⟨440,378,by decide,?_,by decide⟩
   exact qaI 440 qaF [441,452,463,469,472,473,474,475,476,442,454,464,465,466,467,468,470,471,443,444,445,446,447,448,449,450,451,453,455,456,457,458,459,460,461,462,305,375,376,377,378] 378 (by decide)
-@[simp] lemma zMz (M : Machine Γ Λ) (qd : Cfg Γ Λ) : multiStep M qd 0=some qd:=rfl
-@[simp] lemma zMo (M : Machine Γ Λ) (qd : Cfg Γ Λ) : multiStep M qd 1=step M qd:=rfl
-@[simp] lemma zMs (M : Machine Γ Λ) (qd : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem zMz (M : Machine Γ Λ) (qd : Cfg Γ Λ) : multiStep M qd 0=some qd:=rfl
+@[simp] theorem zMo (M : Machine Γ Λ) (qd : Cfg Γ Λ) : multiStep M qd 1=step M qd:=rfl
+@[simp] theorem zMs (M : Machine Γ Λ) (qd : Cfg Γ Λ) (n : Nat) :
     multiStep M qd (n + 1)=Option.bind (multiStep M qd n) (step M):= by
   rw [multiStep,Function.iterate_succ',Function.comp_apply,multiStep]
-@[simp] lemma zZcd : (0 : Fin 2) >> default=default:= by
+@[simp] theorem zZcd : (0 : Fin 2) >> default=default:= by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : ListBlank (Fin 2)).head=0:=rfl
-@[simp] lemma zDt : (default : ListBlank (Fin 2)).tail=default:=rfl
-@[simp] lemma append_nil (s : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> s=s:=rfl
-@[simp] lemma append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 2)) :
+@[simp] theorem zDh : (default : ListBlank (Fin 2)).head=0:=rfl
+@[simp] theorem zDt : (default : ListBlank (Fin 2)).tail=default:=rfl
+@[simp] theorem append_nil (s : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> s=s:=rfl
+@[simp] theorem append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 2)) :
     (a :: l) +> s=a >> (l +> s):=rfl
-@[simp] lemma append_assoc (l1 l2 : List (Fin 2)) (s : ListBlank (Fin 2)) :
+@[simp] theorem append_assoc (l1 l2 : List (Fin 2)) (s : ListBlank (Fin 2)) :
     (l1 ++ l2) +> s=l1 +> (l2 +> s):= by
   induction l1 with
   | nil => rfl
   | cons a l1 ih => simp only [List.cons_append,append_cons,ih]
-lemma qb2 (l : List (Fin 2)) : l ^ (0 : Nat)=[]:=rfl
-lemma zLp (l : List (Fin 2)) (n : Nat) : l ^ (n + 1)=l ++ l ^ n:=rfl
-lemma qD (l : List (Fin 2)) (m n : Nat) : l ^ (m + n)=l ^ m ++ l ^ n:= by
+theorem qb2 (l : List (Fin 2)) : l ^ (0 : Nat)=[]:=rfl
+theorem zLp (l : List (Fin 2)) (n : Nat) : l ^ (n + 1)=l ++ l ^ n:=rfl
+theorem qD (l : List (Fin 2)) (m n : Nat) : l ^ (m + n)=l ^ m ++ l ^ n:= by
   induction m with
   | zero => simp [qb2]
   | succ m ih => rw [Nat.succ_add,zLp,zLp,ih,List.append_assoc]
-lemma zLp' (l : List (Fin 2)) (n : Nat) : l ^ (n + 1)=l ^ n ++ l:= by
+theorem zLp' (l : List (Fin 2)) (n : Nat) : l ^ (n + 1)=l ^ n ++ l:= by
   rw [qD,zLp,qb2,List.append_nil]
-lemma zSm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂:= by simp [h]
-lemma zSp2 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSp2 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂:=⟨1,by decide,zSm tm c₁ c₂ h⟩
-lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m)=(multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m):= by
   induction m with
@@ -2383,27 +2376,27 @@ lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
   | succ m' ih =>
     rw [Nat.add_succ,zMs,ih,Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃:= by
   rw [zMa,h₁]; simp [h₂]
-lemma qaj {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem qaj {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} (c : Cfg Γ Λ) : c [tm]⊢* c:=⟨0,rfl⟩
-lemma zSt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃:= by
   rcases h₁ with ⟨n,hn⟩; rcases h₂ with ⟨m,hm⟩
   exact ⟨n + m,zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂:= by obtain ⟨n,_,hn⟩:=h; exact ⟨n,hn⟩
-lemma zPsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zPsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃:= by
   obtain ⟨n,n_pos,hn⟩:=h₁; obtain ⟨m,hm⟩:=h₂
   exact ⟨n + m,lt_of_lt_of_le n_pos (Nat.le_add_right n m),zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma zSsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   zPsp (zSp2 tm c₁ c₂ h₁) h₂
@@ -2424,41 +2417,41 @@ def e4 : List (Fin 2):=[1,1,1,1,1,1]
 def gap (n : Nat) : List (Fin 2):=([1,0] : List (Fin 2)) ^ n
 def q5 : List (Fin 2):=[0,0,1,0,0,1]
 def qg : List (Fin 2):=[0,1,1,0,0,1]
-lemma qn (l : ListBlank (Fin 2)) (v : List (Fin 2)) (n : Nat) :
+theorem qn (l : ListBlank (Fin 2)) (v : List (Fin 2)) (n : Nat) :
     l <+ v ^ (n + 1)=(l <+ v ^ n) <+ v:= by
   change v ^ (n + 1) +> l=v +> (v ^ n +> l)
   rw [zLp,append_assoc]
-lemma ql (l : ListBlank (Fin 2)) (v : List (Fin 2)) (n : Nat) :
+theorem ql (l : ListBlank (Fin 2)) (v : List (Fin 2)) (n : Nat) :
     l <+ v ^ (n + 1)=(l <+ v) <+ v ^ n:= by
   change v ^ (n + 1) +> l=v ^ n +> (v +> l)
   rw [zLp',append_assoc]
 def J (l l' : ListBlank (Fin 2)) : Prop :=
   ∀ r,(l <{{C}} ((1 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l' {{B}}> ((1 : Fin 2) >> r))
-lemma J_from_B {l l' : ListBlank (Fin 2)} (h : J l l') (r : ListBlank (Fin 2)) :
+theorem J_from_B {l l' : ListBlank (Fin 2)} (h : J l l') (r : ListBlank (Fin 2)) :
     (l {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢⁺ (l' {{B}}> ((1 : Fin 2) >> r)) :=
   zSsp (by norm_tape; rfl) (h r)
-lemma qJ {l l' : ListBlank (Fin 2)} (h : J l l') (r : ListBlank (Fin 2)) :
+theorem qJ {l l' : ListBlank (Fin 2)} (h : J l l') (r : ListBlank (Fin 2)) :
     (l {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l' {{B}}> ((1 : Fin 2) >> r)) :=
   zPs (J_from_B h r)
-lemma J1 (l : ListBlank (Fin 2)) : J (l <+ e1) (l <+ e2):= by
+theorem J1 (l : ListBlank (Fin 2)) : J (l <+ e1) (l <+ e2):= by
   intro r; unfold e1 e2; execute
-lemma J2 (l : ListBlank (Fin 2)) : J (l <+ e2) (l <+ e3):= by
+theorem J2 (l : ListBlank (Fin 2)) : J (l <+ e2) (l <+ e3):= by
   intro r; unfold e2 e3; execute
-lemma J3 (l : ListBlank (Fin 2)) : J (l <+ e3) (l <+ e4):= by
+theorem J3 (l : ListBlank (Fin 2)) : J (l <+ e3) (l <+ e4):= by
   intro r; unfold e3 e4; execute
-lemma qb3 (l r : ListBlank (Fin 2)) :
+theorem qb3 (l r : ListBlank (Fin 2)) :
     ((l <+ e4) <{{C}} ((1 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l {{B}}> ((0 : Fin 2) >> (q5 +> r))):= by
   unfold e4 q5; execute
-lemma qb4 (l r : ListBlank (Fin 2)) :
+theorem qb4 (l r : ListBlank (Fin 2)) :
     ((l <+ e4) {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l {{B}}> ((0 : Fin 2) >> (q5 +> r))) :=
   zSt (zPs (zSp2 _ _ _ (by norm_tape; rfl))) (qb3 l r)
-lemma qaH (l r : ListBlank (Fin 2)) :
+theorem qaH (l r : ListBlank (Fin 2)) :
     (l {{B}}> ((1 : Fin 2) >> (q5 +> r))) [holdout_0641_tm]⊢* (l {{B}}> ((0 : Fin 2) >> (qg +> r))):= by
   unfold q5 qg; execute
-lemma carry_return (l r : ListBlank (Fin 2)) :
+theorem carry_return (l r : ListBlank (Fin 2)) :
     (l {{B}}> ((1 : Fin 2) >> (qg +> r))) [holdout_0641_tm]⊢* ((l <+ e1) {{B}}> ((1 : Fin 2) >> r)):= by
   unfold qg e1; execute
-lemma J4 {l l' l'' : ListBlank (Fin 2)} (h1 : J l l') (h2 : J l' l'') :
+theorem J4 {l l' l'' : ListBlank (Fin 2)} (h1 : J l l') (h2 : J l' l'') :
     J (l <+ e4) (l'' <+ e1):= by
   intro r
   refine zSt (qb3 l r) ?_
@@ -2466,13 +2459,13 @@ lemma J4 {l l' l'' : ListBlank (Fin 2)} (h1 : J l l') (h2 : J l' l'') :
   refine zSt (qaH l' r) ?_
   refine zSt (qJ h2 (qg +> r)) ?_
   exact carry_return l'' r
-lemma qaK (l r : ListBlank (Fin 2)) :
+theorem qaK (l r : ListBlank (Fin 2)) :
     ((l <+ ([1,0] : List (Fin 2))) <{{C}} ((1 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l {{B}}> ((0 : Fin 2) >> (([0,1] : List (Fin 2)) +> r))):= by
   execute
-lemma qbd (l r : ListBlank (Fin 2)) :
+theorem qbd (l r : ListBlank (Fin 2)) :
     ((l <+ ([1,0] : List (Fin 2))) {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l {{B}}> ((0 : Fin 2) >> (([0,1] : List (Fin 2)) +> r))):= by
   execute
-lemma qan (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem qan (l r : ListBlank (Fin 2)) (n : Nat) :
     ((l <+ gap n) {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢*
       (l {{B}}> ((0 : Fin 2) >> (([0,1] : List (Fin 2)) ^ n +> r))):= by
   induction n generalizing r with
@@ -2484,10 +2477,10 @@ lemma qan (l r : ListBlank (Fin 2)) (n : Nat) :
     have h:=ih (([0,1] : List (Fin 2)) +> r)
     rw [<- append_assoc,<- zLp'] at h
     exact h
-lemma qaU (l r : ListBlank (Fin 2)) :
+theorem qaU (l r : ListBlank (Fin 2)) :
     (l {{B}}> ((1 : Fin 2) >> (([0,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢* ((l <+ ([1,0] : List (Fin 2))) {{B}}> ((1 : Fin 2) >> r)):= by
   execute
-lemma qbk (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem qbk (l r : ListBlank (Fin 2)) (n : Nat) :
     (l {{B}}> ((1 : Fin 2) >> (([0,1] : List (Fin 2)) ^ n +> r))) [holdout_0641_tm]⊢*
       ((l <+ gap n) {{B}}> ((1 : Fin 2) >> r)):= by
   induction n generalizing l with
@@ -2499,7 +2492,7 @@ lemma qbk (l r : ListBlank (Fin 2)) (n : Nat) :
     have h:=ih (l <+ ([1,0] : List (Fin 2)))
     rw [<- ql] at h
     exact h
-lemma J_gaps {l l' : ListBlank (Fin 2)} (n : Nat) (h : J l l') :
+theorem J_gaps {l l' : ListBlank (Fin 2)} (n : Nat) (h : J l l') :
     J (l <+ gap n) (l' <+ gap n):= by
   intro r
   cases n with
@@ -2517,7 +2510,7 @@ lemma J_gaps {l l' : ListBlank (Fin 2)} (n : Nat) (h : J l l') :
     refine zSt h1 ?_
     refine zSt (qJ h (([0,1] : List (Fin 2)) ^ (n + 1) +> r)) ?_
     exact qbk l' r (n + 1)
-lemma left_three (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem left_three (l r : ListBlank (Fin 2)) (n : Nat) :
     ((l <+ e3) {{B}}> ((0 : Fin 2) >> (([0,1] : List (Fin 2)) ^ n +> (q5 +> r)))) [holdout_0641_tm]⊢*
       (l {{B}}> ((0 : Fin 2) >> (q5 +> (([0,1] : List (Fin 2)) ^ n +> (qg +> r))))):= by
   refine zSt (qJ (J3 l) (([0,1] : List (Fin 2)) ^ n +> (q5 +> r))) ?_
@@ -2525,37 +2518,37 @@ lemma left_three (l r : ListBlank (Fin 2)) (n : Nat) :
   refine zSt (qaH ((l <+ e4) <+ gap n) r) ?_
   refine zSt (qan (l <+ e4) (qg +> r) n) ?_
   exact qb4 l (([0,1] : List (Fin 2)) ^ n +> (qg +> r))
-lemma header (r : ListBlank (Fin 2)) :
+theorem header (r : ListBlank (Fin 2)) :
     ((default : ListBlank (Fin 2)) {{B}}> ((0 : Fin 2) >> (q5 +> (q5 +> (q5 +> (([0,1] : List (Fin 2)) ^ 2 +> (q5 +> r)))))))
       [holdout_0641_tm]⊢*
     ((((((((default : ListBlank (Fin 2)) <+ e4) <+ e2) <+ e4) <+ gap 2) <+ e1) <+ gap 2) {{C}}> r):= by
   unfold q5 e1 e2 e4 gap; execute
 def qr (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6):=(l <+ gap 2) {{C}}> r
-lemma atom_P0 (l r : ListBlank (Fin 2)) :
+theorem atom_P0 (l r : ListBlank (Fin 2)) :
     (qr l (q5 +> r)) [holdout_0641_tm]⊢* (qr (l <+ e2) r):= by
   unfold qr q5 e2 gap; execute
-lemma atom_P1 (l r : ListBlank (Fin 2)) :
+theorem atom_P1 (l r : ListBlank (Fin 2)) :
     (qr l (([0,1] : List (Fin 2)) +> (q5 +> r))) [holdout_0641_tm]⊢* (qr ((l <+ gap 1) <+ e3) r):= by
   unfold qr q5 e3 gap; execute
-lemma atom_Q1 (l r : ListBlank (Fin 2)) :
+theorem atom_Q1 (l r : ListBlank (Fin 2)) :
     (qr l (([0,1] : List (Fin 2)) +> (qg +> r))) [holdout_0641_tm]⊢* (qr ((l <+ e4) <+ gap 1) r):= by
   unfold qr qg e4 gap; execute
-lemma atom_Q0_s1 (l r : ListBlank (Fin 2)) :
+theorem atom_Q0_s1 (l r : ListBlank (Fin 2)) :
     (qr l (qg +> r)) [holdout_0641_tm]⊢* (l <{{C}} ((1 : Fin 2) >> (([0,1,0,1,0,0,0,0,1] : List (Fin 2)) +> r))):= by
   unfold qr qg gap; execute
-lemma atom_Q0_s2 (l' r : ListBlank (Fin 2)) :
+theorem atom_Q0_s2 (l' r : ListBlank (Fin 2)) :
     (l' {{B}}> ((1 : Fin 2) >> (([0,1,0,1,0,0,0,0,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (l' <{{C}} ((1 : Fin 2) >> (([0,1,0,1,0,1,0,0,1] : List (Fin 2)) +> r))):= by
   execute
-lemma atom_Q0_s3 (l'' r : ListBlank (Fin 2)) :
+theorem atom_Q0_s3 (l'' r : ListBlank (Fin 2)) :
     (l'' {{B}}> ((1 : Fin 2) >> (([0,1,0,1,0,1,0,0,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (l'' <{{C}} ((1 : Fin 2) >> (([0,1,0,1,0,1,0,1,1] : List (Fin 2)) +> r))):= by
   execute
-lemma atom_Q0_s4 (l''' r : ListBlank (Fin 2)) :
+theorem atom_Q0_s4 (l''' r : ListBlank (Fin 2)) :
     (l''' {{B}}> ((1 : Fin 2) >> (([0,1,0,1,0,1,0,1,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (qr (l''' <+ gap 3) r):= by
   unfold qr gap; execute
-lemma atom_Q0 {l l' l'' l''' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (Jl'' : J l'' l''') (r : ListBlank (Fin 2)) :
+theorem atom_Q0 {l l' l'' l''' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (Jl'' : J l'' l''') (r : ListBlank (Fin 2)) :
     (qr l (qg +> r)) [holdout_0641_tm]⊢* (qr (l''' <+ gap 3) r):= by
   refine zSt (atom_Q0_s1 l r) ?_
   refine zSt (Jl (([0,1,0,1,0,0,0,0,1] : List (Fin 2)) +> r)) ?_
@@ -2564,19 +2557,19 @@ lemma atom_Q0 {l l' l'' l''' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'')
   refine zSt (atom_Q0_s3 l'' r) ?_
   refine zSt (Jl'' (([0,1,0,1,0,1,0,1,1] : List (Fin 2)) +> r)) ?_
   exact atom_Q0_s4 l''' r
-lemma atom_Q2_s1 (l r : ListBlank (Fin 2)) :
+theorem atom_Q2_s1 (l r : ListBlank (Fin 2)) :
     (qr l (([0,1] : List (Fin 2)) ^ 2 +> (qg +> r))) [holdout_0641_tm]⊢*
       (l <{{C}} ((1 : Fin 2) >> (([0,1,0,0,1,0,0,1,0,1,0,1,1] : List (Fin 2)) +> r))):= by
   unfold qr qg gap; execute
-lemma atom_Q2_s2 (l' r : ListBlank (Fin 2)) :
+theorem atom_Q2_s2 (l' r : ListBlank (Fin 2)) :
     (l' {{B}}> ((1 : Fin 2) >> (([0,1,0,0,1,0,0,1,0,1,0,1,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (l' <{{C}} ((1 : Fin 2) >> (([0,1,0,1,1,0,0,1,0,1,0,1,1] : List (Fin 2)) +> r))):= by
   execute
-lemma atom_Q2_s3 (l'' r : ListBlank (Fin 2)) :
+theorem atom_Q2_s3 (l'' r : ListBlank (Fin 2)) :
     (l'' {{B}}> ((1 : Fin 2) >> (([0,1,0,1,1,0,0,1,0,1,0,1,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (qr (((l'' <+ gap 1) <+ e1) <+ gap 1) r):= by
   unfold qr e1 gap; execute
-lemma atom_Q2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) :
+theorem atom_Q2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) :
     (qr l (([0,1] : List (Fin 2)) ^ 2 +> (qg +> r))) [holdout_0641_tm]⊢*
       (qr (((l'' <+ gap 1) <+ e1) <+ gap 1) r):= by
   refine zSt (atom_Q2_s1 l r) ?_
@@ -2584,19 +2577,19 @@ lemma atom_Q2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r :
   refine zSt (atom_Q2_s2 l' r) ?_
   refine zSt (Jl' (([0,1,0,1,1,0,0,1,0,1,0,1,1] : List (Fin 2)) +> r)) ?_
   exact atom_Q2_s3 l'' r
-lemma qaT (l r : ListBlank (Fin 2)) :
+theorem qaT (l r : ListBlank (Fin 2)) :
     (l {{C}}> (([0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢* ((l <+ ([1,1] : List (Fin 2))) {{C}}> r):= by
   execute
-lemma qa5 (l r : ListBlank (Fin 2)) :
+theorem qa5 (l r : ListBlank (Fin 2)) :
     (l {{C}}> (([0,1] : List (Fin 2)) ^ 2 +> r)) [holdout_0641_tm]⊢* ((l <+ ([1,1,1,1] : List (Fin 2))) {{C}}> r):= by
   execute
-lemma qH (l r : ListBlank (Fin 2)) :
+theorem qH (l r : ListBlank (Fin 2)) :
     (l {{C}}> (([0,1] : List (Fin 2)) ^ 3 +> r)) [holdout_0641_tm]⊢* ((l <+ e4) {{C}}> r):= by
   unfold e4; execute
-lemma qaD (l r : ListBlank (Fin 2)) :
+theorem qaD (l r : ListBlank (Fin 2)) :
     (l {{C}}> (([0,1] : List (Fin 2)) ^ 4 +> r)) [holdout_0641_tm]⊢* (((l <+ e4) <+ ([1,1] : List (Fin 2))) {{C}}> r):= by
   unfold e4; execute
-lemma qh (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem qh (l r : ListBlank (Fin 2)) (n : Nat) :
     (l {{C}}> (([0,1] : List (Fin 2)) ^ (n * 3) +> r)) [holdout_0641_tm]⊢* ((l <+ e4 ^ n) {{C}}> r):= by
   induction n generalizing l with
   | zero => finish
@@ -2607,16 +2600,16 @@ lemma qh (l r : ListBlank (Fin 2)) (n : Nat) :
     have h:=ih (l <+ e4)
     rw [<- ql] at h
     exact h
-lemma turn_P (l r : ListBlank (Fin 2)) :
+theorem turn_P (l r : ListBlank (Fin 2)) :
     (l {{C}}> (q5 +> r)) [holdout_0641_tm]⊢* (l {{D}}> (([1,0,1] : List (Fin 2)) +> (([0,1,1] : List (Fin 2)) +> r))):= by
   unfold q5; execute
-lemma turn_Q1 (l r : ListBlank (Fin 2)) :
+theorem turn_Q1 (l r : ListBlank (Fin 2)) :
     (l {{C}}> (([0,1] : List (Fin 2)) +> (qg +> r))) [holdout_0641_tm]⊢* (l {{D}}> (([1,0,1] : List (Fin 2)) +> (([0,0,0,0,1] : List (Fin 2)) +> r))):= by
   unfold qg; execute
-lemma qaQ (l r : ListBlank (Fin 2)) :
+theorem qaQ (l r : ListBlank (Fin 2)) :
     ((l <+ e4) {{D}}> (([1,0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢* (l {{D}}> (([1,0,1] : List (Fin 2)) +> (q5 +> r))):= by
   unfold e4 q5; execute
-lemma qK (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem qK (l r : ListBlank (Fin 2)) (n : Nat) :
     ((l <+ e4 ^ n) {{D}}> (([1,0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢* (l {{D}}> (([1,0,1] : List (Fin 2)) +> (q5 ^ n +> r))):= by
   induction n generalizing r with
   | zero => finish
@@ -2626,19 +2619,19 @@ lemma qK (l r : ListBlank (Fin 2)) (n : Nat) :
     have h:=ih (q5 +> r)
     rw [<- append_assoc (q5 ^ n) q5 r,<- zLp'] at h
     exact h
-lemma bounce_D2_s1 (l r : ListBlank (Fin 2)) :
+theorem bounce_D2_s1 (l r : ListBlank (Fin 2)) :
     (((l <+ gap 2) <+ ([1,1,1,1] : List (Fin 2))) {{D}}> (([1,0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢*
       (l <{{C}} ((1 : Fin 2) >> (([0,1,0,1,0,0,1,0,0,1] : List (Fin 2)) +> r))):= by
   unfold gap; execute
-lemma bounce_D2_s2 (l' r : ListBlank (Fin 2)) :
+theorem bounce_D2_s2 (l' r : ListBlank (Fin 2)) :
     (l' {{B}}> ((1 : Fin 2) >> (([0,1,0,1,0,0,1,0,0,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (l' <{{C}} ((1 : Fin 2) >> (([0,1,0,1,0,1,1,0,0,1] : List (Fin 2)) +> r))):= by
   execute
-lemma bounce_D2_s3 (l'' r : ListBlank (Fin 2)) :
+theorem bounce_D2_s3 (l'' r : ListBlank (Fin 2)) :
     (l'' {{B}}> ((1 : Fin 2) >> (([0,1,0,1,0,1,1,0,0,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢*
       (qr (l'' <+ gap 2) (([0,0,1] : List (Fin 2)) +> r)):= by
   unfold qr gap; execute
-lemma bounce_D2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) :
+theorem bounce_D2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) :
     (((l <+ gap 2) <+ ([1,1,1,1] : List (Fin 2))) {{D}}> (([1,0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢*
       (qr (l'' <+ gap 2) (([0,0,1] : List (Fin 2)) +> r)):= by
   refine zSt (bounce_D2_s1 l r) ?_
@@ -2646,15 +2639,15 @@ lemma bounce_D2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r
   refine zSt (bounce_D2_s2 l' r) ?_
   refine zSt (Jl' (([0,1,0,1,0,1,1,0,0,1] : List (Fin 2)) +> r)) ?_
   exact bounce_D2_s3 l'' r
-lemma bounce_D3 (l r : ListBlank (Fin 2)) :
+theorem bounce_D3 (l r : ListBlank (Fin 2)) :
     (((l <+ gap 2) <+ e4) {{D}}> (([1,0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢*
       (qr (l <+ e3) (([0,0,1] : List (Fin 2)) +> r)):= by
   unfold qr e3 e4 gap; execute
-lemma bounce_D4 (l r : ListBlank (Fin 2)) :
+theorem bounce_D4 (l r : ListBlank (Fin 2)) :
     ((((l <+ gap 2) <+ e4) <+ ([1,1] : List (Fin 2))) {{D}}> (([1,0,1] : List (Fin 2)) +> r)) [holdout_0641_tm]⊢*
       (qr ((l <+ gap 1) <+ e4) (([0,0,1] : List (Fin 2)) +> r)):= by
   unfold qr e4 gap; execute
-lemma qk (n : Nat) (r : ListBlank (Fin 2)) :
+theorem qk (n : Nat) (r : ListBlank (Fin 2)) :
     ([0,0,1] : List (Fin 2)) +> (q5 ^ n +> r)=q5 ^ n +> (([0,0,1] : List (Fin 2)) +> r):= by
   induction n with
   | zero => rfl
@@ -2662,7 +2655,7 @@ lemma qk (n : Nat) (r : ListBlank (Fin 2)) :
     have h1 : ([0,0,1] : List (Fin 2)) +> (q5 +> (q5 ^ n +> r)) =
         q5 +> (([0,0,1] : List (Fin 2)) +> (q5 ^ n +> r)):=rfl
     rw [zLp,append_assoc,append_assoc,h1,ih]
-lemma qab (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem qab (l r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (q5 ^ n +> r)) [holdout_0641_tm]⊢* (qr (l <+ e2 ^ n) r):= by
   induction n generalizing l with
   | zero => finish
@@ -2672,13 +2665,13 @@ lemma qab (l r : ListBlank (Fin 2)) (n : Nat) :
     have h:=ih (l <+ e2)
     rw [<- ql] at h
     exact h
-lemma finish_P (l r : ListBlank (Fin 2)) :
+theorem finish_P (l r : ListBlank (Fin 2)) :
     (qr l (([0,0,1] : List (Fin 2)) +> (([0,1,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢* (qr (l <+ e1) r):= by
   unfold qr e1 gap; execute
-lemma finish_Q (l r : ListBlank (Fin 2)) :
+theorem finish_Q (l r : ListBlank (Fin 2)) :
     (qr l (([0,0,1] : List (Fin 2)) +> (([0,0,0,0,1] : List (Fin 2)) +> r))) [holdout_0641_tm]⊢* (qr ((l <+ e3) <+ gap 1) r):= by
   unfold qr e3 gap; execute
-lemma atom_P2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) (n : Nat) :
+theorem atom_P2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (2 + n * 3) +> (q5 +> r))) [holdout_0641_tm]⊢*
       (qr (((l'' <+ gap 2) <+ e2 ^ n) <+ e1) r):= by
   unfold qr
@@ -2691,7 +2684,7 @@ lemma atom_P2 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r :
   rw [qk]
   refine zSt (qab (l'' <+ gap 2) (([0,0,1] : List (Fin 2)) +> (([0,1,1] : List (Fin 2)) +> r)) n) ?_
   exact finish_P ((l'' <+ gap 2) <+ e2 ^ n) r
-lemma atom_P3 (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem atom_P3 (l r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (3 + n * 3) +> (q5 +> r))) [holdout_0641_tm]⊢*
       (qr (((l <+ e3) <+ e2 ^ n) <+ e1) r):= by
   unfold qr
@@ -2704,7 +2697,7 @@ lemma atom_P3 (l r : ListBlank (Fin 2)) (n : Nat) :
   rw [qk]
   refine zSt (qab (l <+ e3) (([0,0,1] : List (Fin 2)) +> (([0,1,1] : List (Fin 2)) +> r)) n) ?_
   exact finish_P ((l <+ e3) <+ e2 ^ n) r
-lemma atom_P4 (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem atom_P4 (l r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (4 + n * 3) +> (q5 +> r))) [holdout_0641_tm]⊢*
       (qr ((((l <+ gap 1) <+ e4) <+ e2 ^ n) <+ e1) r):= by
   unfold qr
@@ -2717,7 +2710,7 @@ lemma atom_P4 (l r : ListBlank (Fin 2)) (n : Nat) :
   rw [qk]
   refine zSt (qab ((l <+ gap 1) <+ e4) (([0,0,1] : List (Fin 2)) +> (([0,1,1] : List (Fin 2)) +> r)) n) ?_
   exact finish_P (((l <+ gap 1) <+ e4) <+ e2 ^ n) r
-lemma atom_Q3 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) (n : Nat) :
+theorem atom_Q3 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (3 + n * 3) +> (qg +> r))) [holdout_0641_tm]⊢*
       (qr ((((l'' <+ gap 2) <+ e2 ^ n) <+ e3) <+ gap 1) r):= by
   unfold qr
@@ -2731,7 +2724,7 @@ lemma atom_Q3 {l l' l'' : ListBlank (Fin 2)} (Jl : J l l') (Jl' : J l' l'') (r :
   rw [qk]
   refine zSt (qab (l'' <+ gap 2) (([0,0,1] : List (Fin 2)) +> (([0,0,0,0,1] : List (Fin 2)) +> r)) n) ?_
   exact finish_Q ((l'' <+ gap 2) <+ e2 ^ n) r
-lemma atom_Q4 (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem atom_Q4 (l r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (4 + n * 3) +> (qg +> r))) [holdout_0641_tm]⊢*
       (qr ((((l <+ e3) <+ e2 ^ n) <+ e3) <+ gap 1) r):= by
   unfold qr
@@ -2745,7 +2738,7 @@ lemma atom_Q4 (l r : ListBlank (Fin 2)) (n : Nat) :
   rw [qk]
   refine zSt (qab (l <+ e3) (([0,0,1] : List (Fin 2)) +> (([0,0,0,0,1] : List (Fin 2)) +> r)) n) ?_
   exact finish_Q ((l <+ e3) <+ e2 ^ n) r
-lemma atom_Q5 (l r : ListBlank (Fin 2)) (n : Nat) :
+theorem atom_Q5 (l r : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (5 + n * 3) +> (qg +> r))) [holdout_0641_tm]⊢*
       (qr (((((l <+ gap 1) <+ e4) <+ e2 ^ n) <+ e3) <+ gap 1) r):= by
   unfold qr
@@ -2759,17 +2752,17 @@ lemma atom_Q5 (l r : ListBlank (Fin 2)) (n : Nat) :
   rw [qk]
   refine zSt (qab ((l <+ gap 1) <+ e4) (([0,0,1] : List (Fin 2)) +> (([0,0,0,0,1] : List (Fin 2)) +> r)) n) ?_
   exact finish_Q (((l <+ gap 1) <+ e4) <+ e2 ^ n) r
-lemma qaA (l : ListBlank (Fin 2)) (n : Nat) :
+theorem qaA (l : ListBlank (Fin 2)) (n : Nat) :
     (l <+ e4 ^ n) <+ ([1,1] : List (Fin 2))=(l <+ ([1,1] : List (Fin 2))) <+ e4 ^ n:= by
   induction n generalizing l with
   | zero => rfl
   | succ n ih =>
     have h1 : (l <+ e4) <+ ([1,1] : List (Fin 2))=(l <+ ([1,1] : List (Fin 2))) <+ e4:=rfl
     rw [ql,ih (l <+ e4),h1,<- ql]
-lemma tail_end (l : ListBlank (Fin 2)) :
+theorem tail_end (l : ListBlank (Fin 2)) :
     (l {{C}}> default) [holdout_0641_tm]⊢* ((l <+ ([1,1] : List (Fin 2))) {{B}}> default):= by
   execute
-lemma tail0 (l : ListBlank (Fin 2)) (n : Nat) :
+theorem tail0 (l : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (n * 3) +> default)) [holdout_0641_tm]⊢*
       (((l <+ e1) <+ e4 ^ n) {{B}}> default):= by
   unfold qr
@@ -2778,7 +2771,7 @@ lemma tail0 (l : ListBlank (Fin 2)) (n : Nat) :
   have heq : (l <+ gap 2) <+ ([1,1] : List (Fin 2))=l <+ e1:=rfl
   rw [qaA,heq] at h
   exact h
-lemma tail1 (l : ListBlank (Fin 2)) (n : Nat) :
+theorem tail1 (l : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (1 + n * 3) +> default)) [holdout_0641_tm]⊢*
       ((((l <+ gap 1) <+ e2) <+ e4 ^ n) {{B}}> default):= by
   unfold qr
@@ -2789,7 +2782,7 @@ lemma tail1 (l : ListBlank (Fin 2)) (n : Nat) :
   have heq : ((l <+ gap 2) <+ ([1,1] : List (Fin 2))) <+ ([1,1] : List (Fin 2))=(l <+ gap 1) <+ e2:=rfl
   rw [qaA,heq] at h
   exact h
-lemma tail2 (l : ListBlank (Fin 2)) (n : Nat) :
+theorem tail2 (l : ListBlank (Fin 2)) (n : Nat) :
     (qr l (([0,1] : List (Fin 2)) ^ (2 + n * 3) +> default)) [holdout_0641_tm]⊢*
       (((l <+ gap 2) <+ e4 ^ (1 + n)) {{B}}> default):= by
   unfold qr
@@ -2805,16 +2798,16 @@ def qf : List Letter -> List Letter
   | .Odd :: w => .Even :: w
   | .Even :: w => .Odd :: w
   | .Gap :: w => .Gap :: qf w
-lemma qP (w : List Letter) : qf (qf w)=w:= by
+theorem qP (w : List Letter) : qf (qf w)=w:= by
   induction w with
   | nil => rfl
   | cons c w ih => cases c <;> simp [qf,ih]
-lemma toggle_gaps (n : Nat) (w : List Letter) :
+theorem toggle_gaps (n : Nat) (w : List Letter) :
     qf (List.replicate n .Gap ++ w)=List.replicate n .Gap ++ qf w:= by
   induction n with
   | zero => rfl
   | succ n ih => simp [List.replicate_succ,qf,ih]
-lemma gaps_cons (n : Nat) (w : List Letter) :
+theorem gaps_cons (n : Nat) (w : List Letter) :
     List.replicate n .Gap ++ .Gap :: w=List.replicate (n + 1) .Gap ++ w:= by
   rw [List.replicate_succ',List.append_assoc,List.singleton_append]
 inductive Counter : List Letter -> Nat -> ListBlank (Fin 2) -> Prop where
@@ -2824,7 +2817,7 @@ inductive Counter : List Letter -> Nat -> ListBlank (Fin 2) -> Prop where
   | c3 {w s l} : Counter w s l -> Counter (.Odd :: w) (4 * (s / 2) + 1) (l <+ e3)
   | c4 {w s l} : Counter w s l -> Counter (.Even :: w) (4 * (s / 2)) (l <+ e4)
   | c_gap {w s l} (n : Nat) : Counter w s l -> Counter (List.replicate n .Gap ++ w) s (l <+ gap n)
-lemma qb8 (m : Nat) :
+theorem qb8 (m : Nat) :
     ∀ w s l,Counter w s l -> s < m -> 0 < s ->
     ∃ l',Counter (qf w) (s - 1) l' /\ J l l':= by
   induction m with
@@ -2863,15 +2856,15 @@ lemma qb8 (m : Nat) :
       rcases ih hb hp with ⟨l',hc',hj⟩
       refine ⟨l' <+ gap n,?_,J_gaps n hj⟩
       rw [toggle_gaps]; exact Counter.c_gap n hc'
-lemma qaq {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem qaq {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) (hs : 0 < s) :
     ∃ l',Counter (qf w) (s - 1) l' /\ J l l' :=
   qb8 (s + 1) w s l hc (by omega) hs
 def qd (l : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6):=l {{B}}> default
-lemma qaJ (l : ListBlank (Fin 2)) :
+theorem qaJ (l : ListBlank (Fin 2)) :
     (l {{B}}> ((1 : Fin 2) >> default)) [holdout_0641_tm]⊢* ((l <+ gap 1) {{B}}> default):= by
   unfold gap; execute
-lemma qaW {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem qaW {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w (s + 1) l) :
     ∃ l',Counter (.Gap :: qf w) s l' /\ (qd l) [holdout_0641_tm]⊢⁺ (qd l'):= by
   rcases qaq hc (by omega) with ⟨l',hc',hj⟩
@@ -2882,7 +2875,7 @@ lemma qaW {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     have hstep:=J_from_B hj default
     rw [zZcd] at hstep
     exact zPsp hstep (qaJ l')
-lemma qaa (s : Nat) (w : List Letter) :
+theorem qaa (s : Nat) (w : List Letter) :
     List.replicate s .Gap ++ (if s % 2 == 1 then qf (.Gap :: qf w) else .Gap :: qf w) =
     List.replicate (s + 1) .Gap ++ (if (s + 1) % 2 == 1 then qf w else w):= by
   by_cases h : (s % 2 == 1)=true
@@ -2897,7 +2890,7 @@ lemma qaa (s : Nat) (w : List Letter) :
     rw [hf,h1]
     simp only [Bool.false_eq_true,↓reduceIte]
     exact gaps_cons s (qf w)
-lemma qY (s : Nat) :
+theorem qY (s : Nat) :
     ∀ w l,Counter w s l ->
     ∃ l',Counter (List.replicate s .Gap ++ (if s % 2 == 1 then qf w else w)) 0 l' /\
       (qd l) [holdout_0641_tm]⊢* (qd l'):= by
@@ -2911,7 +2904,7 @@ lemma qY (s : Nat) :
     rcases ih (.Gap :: qf w) l1 hc1 with ⟨l2,hc2,hsteps⟩
     rw [qaa] at hc2
     exact ⟨l2,hc2,zSt (zPs hstep) hsteps⟩
-lemma qa1 {s : Nat} {w : List Letter} {l : ListBlank (Fin 2)}
+theorem qa1 {s : Nat} {w : List Letter} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) (hs : 0 < s) :
     ∃ l',Counter (List.replicate s .Gap ++ (if s % 2 == 1 then qf w else w)) 0 l' /\
       (qd l) [holdout_0641_tm]⊢⁺ (qd l'):= by
@@ -2927,12 +2920,12 @@ def qR : List Letter -> Bool
   | .Odd :: _ => true
   | .Even :: _ => false
   | .Gap :: w => qR w
-lemma low_odd_gaps (n : Nat) (w : List Letter) :
+theorem low_odd_gaps (n : Nat) (w : List Letter) :
     qR (List.replicate n .Gap ++ w)=qR w:= by
   induction n with
   | zero => rfl
   | succ n ih => simp [List.replicate_succ,qR,ih]
-lemma counter_odd {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem counter_odd {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) : (s % 2 == 1)=qR w:= by
   induction hc with
   | c0 => rfl
@@ -2946,7 +2939,7 @@ lemma counter_odd {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     simp only [qR,beq_eq_false_iff_ne]; omega
   | @c_gap w s l n _ ih =>
     rw [low_odd_gaps]; exact ih
-lemma qC {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (n : Nat)
+theorem qC {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (n : Nat)
     (hc : Counter w s l) :
     ∃ t,Counter (List.replicate n .Even ++ w) t (l <+ e2 ^ n) /\
       t / 2 + 1=2 ^ n * (s / 2 + 1):= by
@@ -2959,7 +2952,7 @@ lemma qC {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (n : Nat)
       exact Counter.c2 ht
     · have hdiv : (4 * (t / 2) + 2) / 2 + 1=2 * (t / 2 + 1):= by omega
       rw [hdiv,he,Nat.pow_succ',Nat.mul_assoc]
-lemma qad {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem qad {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) (hs : 2 <= s) :
     ∃ l1 l2,Counter w (s - 2) l2 /\ J l l1 /\ J l1 l2:= by
   rcases qaq hc (by omega) with ⟨l1,h1,j1⟩
@@ -2968,7 +2961,7 @@ lemma qad {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
   have heq : s - 1 - 1=s - 2:= by omega
   rw [heq] at h2
   exact ⟨l1,l2,h2,j1,j2⟩
-lemma counter_J3 {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem counter_J3 {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) (hs : 3 <= s) :
     ∃ l1 l2 l3,Counter (qf w) (s - 3) l3 /\ J l l1 /\ J l1 l2 /\ J l2 l3:= by
   rcases qad hc (by omega) with ⟨l1,l2,h2,j1,j2⟩
@@ -2976,7 +2969,7 @@ lemma counter_J3 {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
   have heq : s - 2 - 1=s - 3:= by omega
   rw [heq] at h3
   exact ⟨l1,l2,l3,h3,j1,j2,j3⟩
-lemma qX {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (n : Nat)
+theorem qX {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (n : Nat)
     (hc : Counter w s l) (hs : 4 <= s) :
     ∃ t,Counter (List.replicate n .Even ++ w) t (l <+ e4 ^ n) /\ s <= t:= by
   induction n with
@@ -2993,12 +2986,12 @@ def qa3 (b : Block) (w : List Letter) : List Letter :=
 def qaw : List Block -> List Letter -> List Letter
   | [],w => w
   | b :: xs,w => qaw xs (qa3 b w)
-lemma toggle_output (b : Block) (f : Bool) (w : List Letter) (h : b ≠ .BQ0) :
+theorem toggle_output (b : Block) (f : Bool) (w : List Letter) (h : b ≠ .BQ0) :
     qf ((q4 b f).reverse ++ w)=(q4 b (!f)).reverse ++ w:= by
   unfold q4
   simp only [List.reverse_append,List.append_assoc]
   cases b <;> cases f <;> first | contradiction | rfl
-lemma qaN (xs : List Block) (w : List Letter) :
+theorem qaN (xs : List Block) (w : List Letter) :
     qaw xs w=(qM xs).reverse ++ (if q6 xs then qf w else w):= by
   induction xs generalizing w with
   | nil => rfl
@@ -3018,7 +3011,7 @@ lemma qaN (xs : List Block) (w : List Letter) :
       · simp only [↓reduceIte,Bool.false_eq_true]
         rw [toggle_output b false w h]
         rfl
-lemma updated_seed (xs : List Block) (prefix_w : List Letter) :
+theorem updated_seed (xs : List Block) (prefix_w : List Letter) :
     qaw xs (.Odd :: prefix_w)=(qL xs).reverse ++ prefix_w:= by
   rw [qaN]
   unfold qL
@@ -3028,16 +3021,16 @@ def qo (b : Block) : List (Fin 2):=if q3 b then q5 else qg
 def qw : List Block -> ListBlank (Fin 2) -> ListBlank (Fin 2)
   | [],r => r
   | b :: xs,r => (([0,1] : List (Fin 2)) ^ (gaps b)) +> (qo b +> qw xs r)
-lemma qaY (a b : Nat) : (a * 2) * (b * 2)=4 * (a * b):= by
+theorem qaY (a b : Nat) : (a * 2) * (b * 2)=4 * (a * b):= by
   calc (a * 2) * (b * 2)=a * (2 * (b * 2)):= by rw [Nat.mul_assoc]
     _ = a * (4 * b):= by congr 1; omega
     _ = (a * 4) * b:= by rw [<- Nat.mul_assoc]
     _ = (4 * a) * b:= by rw [Nat.mul_comm a 4]
     _ = 4 * (a * b):= by rw [Nat.mul_assoc]
-lemma qW (a b : Nat) : (a * 2 * 2) * (b * 2 + 1)=4 * (a * (2 * b + 1)):= by
+theorem qW (a b : Nat) : (a * 2 * 2) * (b * 2 + 1)=4 * (a * (2 * b + 1)):= by
   calc (a * 2 * 2) * (b * 2 + 1)=(4 * a) * (2 * b + 1):= by congr 1 <;> omega
     _ = 4 * (a * (2 * b + 1)):= by rw [Nat.mul_assoc]
-lemma atom_BP2 (n s s' : Nat) (h : qau true (2 + n * 3) s=some s') :
+theorem atom_BP2 (n s s' : Nat) (h : qau true (2 + n * 3) s=some s') :
     2 <= s /\ s'=4 * (2 ^ n * (s / 2)) - 1:= by
   have hg : 2 + n * 3=n * 3 + 2:= by omega
   have hdiv : (n * 3 + 2) / 3=n:= by omega
@@ -3053,7 +3046,7 @@ lemma atom_BP2 (n s s' : Nat) (h : qau true (2 + n * 3) s=some s') :
       rw [Nat.pow_succ]; exact qaY (2 ^ n) (s / 2)
     rw [hp] at h
     exact ⟨hs,h.symm⟩
-lemma atom_BP3 (n s s' : Nat) (h : qau true (3 + n * 3) s=some s') :
+theorem atom_BP3 (n s s' : Nat) (h : qau true (3 + n * 3) s=some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 1:= by
   have hg : 3 + n * 3=n * 3 + 3:= by omega
   have hdiv : (n * 3 + 3) / 3=n + 1:= by omega
@@ -3067,7 +3060,7 @@ lemma atom_BP3 (n s s' : Nat) (h : qau true (3 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-lemma atom_BP4 (n s s' : Nat) (h : qau true (4 + n * 3) s=some s') :
+theorem atom_BP4 (n s s' : Nat) (h : qau true (4 + n * 3) s=some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 1:= by
   have hg : 4 + n * 3=n * 3 + 4:= by omega
   have hdiv : (n * 3 + 4) / 3=n + 1:= by omega
@@ -3081,19 +3074,19 @@ lemma atom_BP4 (n s s' : Nat) (h : qau true (4 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-lemma atom_BQ0_val (s s' : Nat) (h : qau false 0 s=some s') :
+theorem atom_BQ0_val (s s' : Nat) (h : qau false 0 s=some s') :
     3 <= s /\ s'=s - 3:= by
   unfold qau at h
   simp only [Bool.false_eq_true, ↓reduceIte] at h
   split_ifs at h with hs
   · injection h with h; exact ⟨hs,h.symm⟩
-lemma atom_BQ2_val (s s' : Nat) (h : qau false 2 s=some s') :
+theorem atom_BQ2_val (s s' : Nat) (h : qau false 2 s=some s') :
     2 <= s /\ s'=4 * ((s - 2) / 2) + 3:= by
   unfold qau at h
   simp only [Bool.false_eq_true, ↓reduceIte] at h
   split_ifs at h with hs
   · injection h with h; exact ⟨hs,by omega⟩
-lemma atom_BQ3 (n s s' : Nat) (h : qau false (3 + n * 3) s=some s') :
+theorem atom_BQ3 (n s s' : Nat) (h : qau false (3 + n * 3) s=some s') :
     2 <= s /\ s'=4 * (2 ^ n * (s / 2)) - 3:= by
   have hg : 3 + n * 3=n * 3 + 3:= by omega
   have hdiv : (n * 3 + 3) / 3=n + 1:= by omega
@@ -3109,7 +3102,7 @@ lemma atom_BQ3 (n s s' : Nat) (h : qau false (3 + n * 3) s=some s') :
       rw [Nat.pow_succ]; exact qaY (2 ^ n) (s / 2)
     rw [hp] at h
     exact ⟨hs,h.symm⟩
-lemma atom_BQ4 (n s s' : Nat) (h : qau false (4 + n * 3) s=some s') :
+theorem atom_BQ4 (n s s' : Nat) (h : qau false (4 + n * 3) s=some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 3:= by
   have hg : 4 + n * 3=n * 3 + 4:= by omega
   have hdiv : (n * 3 + 4) / 3=n + 1:= by omega
@@ -3123,7 +3116,7 @@ lemma atom_BQ4 (n s s' : Nat) (h : qau false (4 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-lemma atom_BQ5 (n s s' : Nat) (h : qau false (5 + n * 3) s=some s') :
+theorem atom_BQ5 (n s s' : Nat) (h : qau false (5 + n * 3) s=some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 3:= by
   have hg : 5 + n * 3=n * 3 + 5:= by omega
   have hdiv : (n * 3 + 5) / 3=n + 1:= by omega
@@ -3137,7 +3130,7 @@ lemma atom_BQ5 (n s s' : Nat) (h : qau false (5 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-lemma block_step (b : Block) {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} {s' : Nat}
+theorem block_step (b : Block) {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} {s' : Nat}
     (hc : Counter w s l) (hs : qau (q3 b) (gaps b) s=some s') :
     ∃ l',Counter (qa3 b w) s' l' /\
       ∀ r,(qr l ((([0,1] : List (Fin 2)) ^ (gaps b)) +> (qo b +> r))) [holdout_0641_tm]⊢* (qr l' r):= by
@@ -3247,7 +3240,7 @@ lemma block_step (b : Block) {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     rw [hts]
     have hc3:=Counter.c_gap 1 (Counter.c3 ht)
     simpa [qa3,q4,qaz,qa,back,q3,qO,List.reverse_replicate,List.append_assoc] using! hc3
-lemma blocks_steps {s : Nat} {xs : List Block} {s' : Nat} (hr : BlocksRun s xs s') :
+theorem blocks_steps {s : Nat} {xs : List Block} {s' : Nat} (hr : BlocksRun s xs s') :
     ∀ w l,Counter w s l -> ∃ l',Counter (qaw xs w) s' l' /\
       ∀ r,(qr l (qw xs r)) [holdout_0641_tm]⊢* (qr l' r):= by
   induction hr with
@@ -3259,7 +3252,7 @@ lemma blocks_steps {s : Nat} {xs : List Block} {s' : Nat} (hr : BlocksRun s xs s
     rcases block_step b hc ha with ⟨l1,hc1,hstep⟩
     rcases ih (qa3 b w) l1 hc1 with ⟨l2,hc2,hsteps⟩
     exact ⟨l2,hc2,fun r => zSt (hstep (qw xs r)) (hsteps r)⟩
-lemma finish_tail {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (q j : Nat)
+theorem finish_tail {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} (q j : Nat)
     (hc : Counter w s l) (hs : 28 <= s) (hj : j < 3) :
     ∃ l' t,
       Counter ((qu j ++ List.replicate (q9 j q) Letter.Even).reverse ++ w) t l' /\
@@ -3298,7 +3291,7 @@ def qj : List Letter -> Nat -> ListBlank (Fin 2) -> ListBlank (Fin 2)
   | .Gap :: w,g,r => qj w (g + 1) r
   | .Odd :: w,g,r => qj w 0 ((([0,1] : List (Fin 2)) ^ g) +> (qg +> r))
   | .Even :: w,g,r => qj w 0 ((([0,1] : List (Fin 2)) ^ g) +> (q5 +> r))
-lemma qaf (n : Nat) (w : List Letter) (g : Nat) (r : ListBlank (Fin 2)) :
+theorem qaf (n : Nat) (w : List Letter) (g : Nat) (r : ListBlank (Fin 2)) :
     qj (List.replicate n .Gap ++ w) g r=qj w (n + g) r:= by
   induction n generalizing g with
   | zero => simp
@@ -3306,7 +3299,7 @@ lemma qaf (n : Nat) (w : List Letter) (g : Nat) (r : ListBlank (Fin 2)) :
     simp only [List.replicate_succ,List.cons_append,qj,ih]
     have heq : n + (g + 1)=(n + 1) + g:= by omega
     rw [heq]
-lemma qbb {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem qbb {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) (hs : s <= 1) (g : Nat) (r : ListBlank (Fin 2)) :
     (l {{B}}> ((0 : Fin 2) >> ((([0,1] : List (Fin 2)) ^ g) +> (q5 +> r)))) [holdout_0641_tm]⊢*
       ((default : ListBlank (Fin 2)) {{B}}> ((0 : Fin 2) >> qj w g r)):= by
@@ -3329,14 +3322,14 @@ def qp : List Letter -> ListBlank (Fin 2) -> ListBlank (Fin 2)
   | .Gap :: w,r => qp w (([0,1] : List (Fin 2)) +> r)
   | .Even :: w,r => qj w 0 r
   | .Odd :: _,r => r
-lemma qm (n : Nat) (w : List Letter) (r : ListBlank (Fin 2)) :
+theorem qm (n : Nat) (w : List Letter) (r : ListBlank (Fin 2)) :
     qp (List.replicate n .Gap ++ w) r =
       qp w ((([0,1] : List (Fin 2)) ^ n) +> r):= by
   induction n generalizing r with
   | zero => rfl
   | succ n ih =>
     simp only [List.replicate_succ,List.cons_append,qp,ih,<- append_assoc,<- zLp']
-lemma qaS {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
+theorem qaS {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
     (hc : Counter w s l) (hs : s=0) (r : ListBlank (Fin 2)) :
     (l {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢*
       ((default : ListBlank (Fin 2)) {{B}}> ((0 : Fin 2) >> qp w r)):= by
@@ -3355,22 +3348,22 @@ lemma qaS {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
 def qc : List Letter:=[.Gap,.Gap,.Even,.Even,.Even]
 def qN : ListBlank (Fin 2) :=
   (((((default : ListBlank (Fin 2)) <+ e4) <+ e2) <+ e4) <+ gap 2) <+ e1
-lemma qbf : Counter (.Odd :: qc) 11 qN :=
+theorem qbf : Counter (.Odd :: qc) 11 qN :=
   Counter.c1 (Counter.c_gap 2 (Counter.c4 (Counter.c2 (Counter.c4 Counter.c0))))
-lemma scan_block (b : Block) (w : List Letter) (r : ListBlank (Fin 2)) :
+theorem scan_block (b : Block) (w : List Letter) (r : ListBlank (Fin 2)) :
     qj ((qi b).reverse ++ w) 0 r =
       qj w 0 ((([0,1] : List (Fin 2)) ^ (gaps b)) +> (qo b +> r)):= by
   unfold qi
   rw [List.reverse_cons,List.reverse_replicate,List.append_assoc,qaf,Nat.add_zero]
   unfold symbol qo
   cases q3 b <;> rfl
-lemma scan_blocks (xs : List Block) (w : List Letter) (r : ListBlank (Fin 2)) :
+theorem scan_blocks (xs : List Block) (w : List Letter) (r : ListBlank (Fin 2)) :
     qj ((qb xs).reverse ++ w) 0 r=qj w 0 (qw xs r):= by
   induction xs generalizing w r with
   | nil => rfl
   | cons b xs ih =>
     simp only [qb,List.reverse_append,List.append_assoc,ih,scan_block,qw]
-lemma qbc (xs : List Block) (n : Nat) (l : ListBlank (Fin 2))
+theorem qbc (xs : List Block) (n : Nat) (l : ListBlank (Fin 2))
     (hc : Counter (List.replicate n .Gap ++ .Even :: ((qb xs).reverse ++ qc)) 0 l) :
     (qd l) [holdout_0641_tm]⊢*
       (qr qN (qw xs ((([0,1] : List (Fin 2)) ^ n) +> default))):= by
@@ -3380,10 +3373,10 @@ lemma qbc (xs : List Block) (n : Nat) (l : ListBlank (Fin 2))
   refine zSt h1 ?_
   rw [qm,qp,scan_blocks]
   exact header (qw xs ((([0,1] : List (Fin 2)) ^ n) +> default))
-lemma repeat_snoc (a : Letter) (n : Nat) :
+theorem repeat_snoc (a : Letter) (n : Nat) :
     List.replicate n a ++ [a]=List.replicate (n + 1) a :=
   List.replicate_succ'.symm
-lemma cycle (xs : List Block) (s : Nat) (l : ListBlank (Fin 2))
+theorem cycle (xs : List Block) (s : Nat) (l : ListBlank (Fin 2))
     (hc : Counter (.Even :: ((qb xs).reverse ++ qc)) s l)
     (hs : 12 <= s)
     (hl : qI (qb xs ++ [.Even])) :
@@ -3440,7 +3433,7 @@ lemma cycle (xs : List Block) (s : Nat) (l : ListBlank (Fin 2))
 def qaR : ListBlank (Fin 2) :=
   ((((((((default : ListBlank (Fin 2)) <+ e4 ^ 2) <+ e2) <+ gap 2) <+ e2) <+ gap 4) <+ e2 ^ 3) <+ e1) <+ e4 ^ 32
 def seed : Cfg (Fin 2) (Fin 6):=qd qaR
-lemma seed_counter :
+theorem seed_counter :
     ∃ s,Counter (.Even :: ((qb qS).reverse ++ qc)) s qaR /\ 12 <= s:= by
   have hc0:=Counter.c0
   have hc1:=Counter.c4 (Counter.c4 hc0)
@@ -3455,36 +3448,36 @@ lemma seed_counter :
   exact hs
 def l_p1 : ListBlank (Fin 2) :=
   ((((default : ListBlank (Fin 2)) <+ e4) <+ e2) <+ e1) <+ e4
-lemma init_phase1 : (init []) [holdout_0641_tm]⊢* (qd l_p1):= by
+theorem init_phase1 : (init []) [holdout_0641_tm]⊢* (qd l_p1):= by
   unfold init qd l_p1 e1 e2 e4
   execute
-lemma hc_p1 : Counter [.Even,.Odd,.Even,.Even] 12 l_p1 :=
+theorem hc_p1 : Counter [.Even,.Odd,.Even,.Even] 12 l_p1 :=
   Counter.c4 (Counter.c1 (Counter.c2 (Counter.c4 Counter.c0)))
 def l_p3 : ListBlank (Fin 2) :=
   (((((((((default : ListBlank (Fin 2)) <+ e4) <+ e4) <+ e1) <+ gap 3) <+ e1) <+ e4) <+ e4) <+ e4) <+ e4
-lemma init_phase2 :
+theorem init_phase2 :
     ((default : ListBlank (Fin 2)) {{B}}>
       ((0 : Fin 2) >> (q5 +> (q5 +> (q5 +> (qg +> ((([0,1] : List (Fin 2)) ^ 12) +> default)))))))
     [holdout_0641_tm]⊢* (qd l_p3):= by
   unfold qd l_p3 e1 e4 gap q5 qg
   execute
-lemma hc_p3 : Counter [.Even,.Even,.Even,.Even,.Odd,.Gap,.Gap,.Gap,.Odd,.Even,.Even] 96 l_p3 :=
+theorem hc_p3 : Counter [.Even,.Even,.Even,.Even,.Odd,.Gap,.Gap,.Gap,.Odd,.Even,.Even] 96 l_p3 :=
   Counter.c4 (Counter.c4 (Counter.c4 (Counter.c4 (Counter.c1 (Counter.c_gap 3 (Counter.c1 (Counter.c4 (Counter.c4 Counter.c0))))))))
-lemma init_phase3a (r : ListBlank (Fin 2)) :
+theorem init_phase3a (r : ListBlank (Fin 2)) :
     ((default : ListBlank (Fin 2)) {{B}}>
       ((0 : Fin 2) >> (q5 +> (q5 +> (q5 +> ((([0,1] : List (Fin 2)) ^ 3) +> (qg +> r)))))))
     [holdout_0641_tm]⊢*
       (((((((default : ListBlank (Fin 2)) <+ e4) <+ e2) <+ e4) <+ gap 2) <+ e3) {{B}}> (([1,0,1,0,1,1] : List (Fin 2)) +> r)):= by
   unfold e2 e3 e4 gap q5 qg
   execute
-lemma init_phase3b (r : ListBlank (Fin 2)) :
+theorem init_phase3b (r : ListBlank (Fin 2)) :
     (((((((default : ListBlank (Fin 2)) <+ e4) <+ e2) <+ e4) <+ gap 2) <+ e3) {{B}}>
       (([1,0,1,0,1,1] : List (Fin 2)) +> (qg +> (q5 +> (q5 +> (q5 +> r))))))
     [holdout_0641_tm]⊢*
       (qr (((((((default : ListBlank (Fin 2)) <+ e4 ^ 2) <+ e2) <+ gap 2) <+ e2) <+ gap 4) <+ e2 ^ 3) r):= by
   unfold qr e2 e3 e4 gap q5 qg
   execute
-lemma init_to_seed : (init []) [holdout_0641_tm]⊢* seed:= by
+theorem init_to_seed : (init []) [holdout_0641_tm]⊢* seed:= by
   refine zSt init_phase1 ?_
   rcases qY 12 _ _ hc_p1 with ⟨l_p2,hc_p2,hbatch1⟩
   refine zSt hbatch1 ?_
@@ -3513,14 +3506,14 @@ def CycleInv (xs : List Block) (s : Nat) (l : ListBlank (Fin 2)) : Prop :=
   Counter (.Even :: ((qb xs).reverse ++ qc)) s l /\
   12 <= s /\
   qI (qb xs ++ [.Even])
-lemma zIm {c c' : Cfg (Fin 2) (Fin 6)} {j d : Nat}
+theorem zIm {c c' : Cfg (Fin 2) (Fin 6)} {j d : Nat}
     (h : multiStep holdout_0641_tm c (j + d)=some c') :
     (multiStep holdout_0641_tm c j).isSome:= by
   rw [zMa] at h
   cases h_j : multiStep holdout_0641_tm c j with
   | none => rw [h_j] at h; contradiction
   | some _ => rfl
-lemma qaV (m : Nat) :
+theorem qaV (m : Nat) :
     ∃ N ≥ m,∃ xs s l,multiStep holdout_0641_tm (init []) N=some (qd l) /\ CycleInv xs s l:= by
   induction m with
   | zero =>
@@ -3532,7 +3525,7 @@ lemma qaV (m : Nat) :
     rcases cycle xs s l hc hs hl with ⟨xs',s',l',hc',hs',hl',k,hk_pos,h_step⟩
     exact ⟨N + k,Nat.add_le_add hN hk_pos,xs',s',l',
       zMt holdout_0641_tm _ _ _ N k h_ms h_step,hc',hs',hl'⟩
-lemma holdout_0641_nonhalt :
+theorem holdout_0641_nonhalt :
     IsDoesNotHalt holdout_0641_tm:= by
   intro cfg h_reach
   rcases h_reach with ⟨n,hn⟩

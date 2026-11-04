@@ -27,15 +27,15 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 2000000
-@[simp] lemma _vault_listblank_mk_empty {Γ : Type*} [Inhabited Γ] :
+@[simp] theorem _vault_listblank_mk_empty {Γ : Type*} [Inhabited Γ] :
     Turing.ListBlank.mk ([] : List Γ) = default := by
   ext n; cases n <;> rfl
-@[simp] lemma _vault_listblank_mk_cons {Γ : Type*} [Inhabited Γ] (x : Γ) (xs : List Γ) :
+@[simp] theorem _vault_listblank_mk_cons {Γ : Type*} [Inhabited Γ] (x : Γ) (xs : List Γ) :
     Turing.ListBlank.mk (x :: xs) = Turing.ListBlank.cons x (Turing.ListBlank.mk xs) := by
   ext n; cases n <;> rfl
 
 
-variable {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
+variable {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
 abbrev C : Fin 6 := 2
@@ -43,65 +43,61 @@ abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
 abbrev holdout_0596_tm : Machine (Fin 2) (Fin 6) := target_tm
-local notation "zB" => ListBlank (Fin 2)
-local notation "zF" => List (Fin 2)
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
-set_option linter.unusedTactic false
-set_option linter.unnecessarySeqFocus false
+local notation "HalfTape" => ListBlank (Fin 2)
+local notation "BitWord" => List (Fin 2)
 set_option maxHeartbeats 2000000
 set_option maxRecDepth 2000000
-@[simp] lemma zMz (M : Machine zG_ zL_) (config : Cfg zG_ zL_) : multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine zG_ zL_) (config : Cfg zG_ zL_) : multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine zG_ zL_) (config : Cfg zG_ zL_) (n : Nat) :
+@[simp] theorem zMz (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 0 = some config := rfl
+@[simp] theorem zMo (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 1 = step M config := rfl
+@[simp] theorem zMs (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep,Function.iterate_succ',Function.comp_apply,multiStep]
-@[simp] lemma z00 : (0 : Fin 2) >> default = default := by
+@[simp] theorem z00 : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : HalfTape).head = 0 := rfl
+@[simp] theorem zDt : (default : HalfTape).tail = default := rfl
+@[simp] theorem append_nil (s : HalfTape) : ([] : BitWord) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : BitWord) (s : HalfTape) :
     (a :: l) +> s = a >> (l +> s) := rfl
-@[simp] lemma append_assoc (l1 l2 : zF) (s : zB) :
+@[simp] theorem append_assoc (l1 l2 : BitWord) (s : HalfTape) :
     (l1 ++ l2) +> s = l1 +> (l2 +> s) := by
   induction l1 with
   | nil => rfl
   | cons a l1 ih => simp only [List.cons_append,append_cons,ih]
-lemma zSm {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    (tm : Machine zG_ zL_) (c_1 c_2 : Cfg zG_ zL_) (h : c_1 [tm]⊢ c_2) :
+theorem zSm {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    (tm : Machine Γ₀ Λ₀) (c_1 c_2 : Cfg Γ₀ Λ₀) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢^{1} c_2 := by simp [h]
-lemma z01 {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    (tm : Machine zG_ zL_) (c_1 c_2 : Cfg zG_ zL_) (h : c_1 [tm]⊢ c_2) :
+theorem z01 {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    (tm : Machine Γ₀ Λ₀) (c_1 c_2 : Cfg Γ₀ Λ₀) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢⁺ c_2 := ⟨1,by decide,zSm tm c_1 c_2 h⟩
-lemma zMa {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    (tm : Machine zG_ zL_) (c_1 : Cfg zG_ zL_) (n m : Nat) :
+theorem zMa {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    (tm : Machine Γ₀ Λ₀) (c_1 : Cfg Γ₀ Λ₀) (n m : Nat) :
     multiStep tm c_1 (n + m) = (multiStep tm c_1 n).bind (fun c_2 => multiStep tm c_2 m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ,zMs,ih,Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    (tm : Machine zG_ zL_) (c_1 c_2 c_3 : Cfg zG_ zL_) (n m : Nat)
+theorem zMt {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    (tm : Machine Γ₀ Λ₀) (c_1 c_2 c_3 : Cfg Γ₀ Λ₀) (n m : Nat)
     (h₁ : c_1 [tm]⊢^{n} c_2) (h₂ : c_2 [tm]⊢^{m} c_3) :
     c_1 [tm]⊢^{n+m} c_3 := by
   rw [zMa,h₁]; simp [h₂]
-lemma zPs {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    {tm : Machine zG_ zL_} {c_1 c_2 : Cfg zG_ zL_} (h : c_1 [tm]⊢⁺ c_2) :
+theorem zPs {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    {tm : Machine Γ₀ Λ₀} {c_1 c_2 : Cfg Γ₀ Λ₀} (h : c_1 [tm]⊢⁺ c_2) :
     c_1 [tm]⊢* c_2 := by obtain ⟨n,_,hn⟩ := h; exact ⟨n,hn⟩
-lemma zPt {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    {tm : Machine zG_ zL_} {c_1 c_2 c_3 : Cfg zG_ zL_}
+theorem zPt {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    {tm : Machine Γ₀ Λ₀} {c_1 c_2 c_3 : Cfg Γ₀ Λ₀}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n,n_pos,hn⟩ := h₁; obtain ⟨m,m_pos,hm⟩ := h₂
   exact ⟨n + m,by omega,zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z02 {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    {tm : Machine zG_ zL_} {c_1 c_2 c_3 : Cfg zG_ zL_}
+theorem z02 {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    {tm : Machine Γ₀ Λ₀} {c_1 c_2 c_3 : Cfg Γ₀ Λ₀}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n,n_pos,hn⟩ := h₁; obtain ⟨m,hm⟩ := h₂
   exact ⟨n + m,lt_of_lt_of_le n_pos (Nat.le_add_right n m),zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z03 {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
-    {tm : Machine zG_ zL_} {c_1 c_2 c_3 : Cfg zG_ zL_}
+theorem z03 {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
+    {tm : Machine Γ₀ Λ₀} {c_1 c_2 c_3 : Cfg Γ₀ Λ₀}
     (h₁ : c_1 [tm]⊢ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 :=
   z02 (z01 tm c_1 c_2 h₁) h₂
 local macro "finish" : tactic =>
@@ -112,13 +108,13 @@ local macro "gstep" : tactic =>
     simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,Tape.write,z00,zDh,zDt])
 local macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | finish | gstep)))
-abbrev t : zF := [1,1,0,0]
-abbrev d0 : zF := [0,0]
-abbrev d1 : zF := [1,0]
-abbrev one : zF := [1]
-abbrev w_pre : zF := t ++ one
-abbrev lh : zB := (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default
-@[simp] lemma zDd : d0 +> (default : zB) = default := by
+abbrev t : BitWord := [1,1,0,0]
+abbrev d0 : BitWord := [0,0]
+abbrev d1 : BitWord := [1,0]
+abbrev one : BitWord := [1]
+abbrev w_pre : BitWord := t ++ one
+abbrev lh : HalfTape := (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default
+@[simp] theorem zDd : d0 +> (default : HalfTape) = default := by
   simp [d0]
 inductive Call where
   | ch
@@ -130,42 +126,42 @@ def zCs : Call -> Fin 6
   | .cj => B
   | .cp => B
   | .ca => C
-def zCw : Call -> zF
+def zCw : Call -> BitWord
   | .ch => [1]
   | .cj => [1,1]
   | .cp => [1,0]
   | .ca => [1,1,1,0,1,1]
-def zCR (l : zB) (c : Call) (r : zB) : Cfg (Fin 2) (Fin 6) :=
+def zCR (l : HalfTape) (c : Call) (r : HalfTape) : Cfg (Fin 2) (Fin 6) :=
   ((l <+ zCw c) {{zCs c}}> r)
-def zCL (l : zB) (r : zB) : Cfg (Fin 2) (Fin 6) :=
+def zCL (l : HalfTape) (r : HalfTape) : Cfg (Fin 2) (Fin 6) :=
   (l <{{D}} ([0] +> r))
-def zCf (q : Nat) (r : zB) : Cfg (Fin 2) (Fin 6) :=
+def zCf (q : Nat) (r : HalfTape) : Cfg (Fin 2) (Fin 6) :=
   zCR lh .ca ((w_pre ++ t ^ (2 + q) ++ (d1 ++ one)) +> r)
-def z04 (c : Call) (r1 r2 : zB) : Prop :=
+def z04 (c : Call) (r1 r2 : HalfTape) : Prop :=
   ∀ l,(zCR l c r1) [holdout_0596_tm]⊢⁺ (zCL l r2)
-inductive Side : List Call -> zB -> zB -> Prop where
-  | nil (r : zB) : Side [] r r
-  | cons {c : Call} {ls : List Call} {r1 r2 r3 : zB} :
+inductive Side : List Call -> HalfTape -> HalfTape -> Prop where
+  | nil (r : HalfTape) : Side [] r r
+  | cons {c : Call} {ls : List Call} {r1 r2 r3 : HalfTape} :
       z04 c r1 r2 -> Side ls r2 r3 -> Side (c :: ls) r1 r3
-def Seg (ls_in ls_out : List Call) (w1 w2 : zF) : Prop :=
+def Seg (ls_in ls_out : List Call) (w1 w2 : BitWord) : Prop :=
   ∀ r1 r2,Side ls_out r1 r2 -> Side ls_in (w1 +> r1) (w2 +> r2)
-@[simp] lemma z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-@[simp] lemma zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
+@[simp] theorem z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+@[simp] theorem zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
   rw [Nat.add_comm 1 n]; rfl
-@[simp] lemma z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
+@[simp] theorem z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
   change l ++ [] = l; exact List.append_nil l
-lemma z07 {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
+theorem z07 {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
   | zero => simp
   | succ m ih =>
     rw [Nat.add_right_comm,zLp,zLp,ih,List.append_assoc]
-lemma z08 {ls1 ls2 : List Call} {r1 r2 r3 : zB}
+theorem z08 {ls1 ls2 : List Call} {r1 r2 r3 : HalfTape}
     (h1 : Side ls1 r1 r2) (h2 : Side ls2 r2 r3) : Side (ls1 ++ ls2) r1 r3 := by
   induction h1 with
   | nil _ => exact h2
   | cons hc _ ih => exact Side.cons hc (ih h2)
-lemma z09 {ls1 ls2 : List Call} {r1 r3 : zB}
+theorem z09 {ls1 ls2 : List Call} {r1 r3 : HalfTape}
     (h : Side (ls1 ++ ls2) r1 r3) : ∃ r2,Side ls1 r1 r2 /\ Side ls2 r2 r3 := by
   induction ls1 generalizing r1 with
   | nil => exact ⟨r1,Side.nil r1,h⟩
@@ -173,32 +169,32 @@ lemma z09 {ls1 ls2 : List Call} {r1 r3 : zB}
     rcases h with _ | ⟨hc,hrest⟩
     rcases ih hrest with ⟨r2,h1,h2⟩
     exact ⟨r2,Side.cons hc h1,h2⟩
-lemma z0a (w : zF) : Seg [] [] w w := by
+theorem z0a (w : BitWord) : Seg [] [] w w := by
   intro r1 r2 h; cases h; exact Side.nil (w +> r1)
-lemma z0b (ls : List Call) : Seg ls ls [] [] := by
+theorem z0b (ls : List Call) : Seg ls ls [] [] := by
   intro r1 r2 h; exact h
-lemma zSc {ls1 ls2 : List Call} {w1 w2 : zF} {r1 r2 : zB}
+theorem zSc {ls1 ls2 : List Call} {w1 w2 : BitWord} {r1 r2 : HalfTape}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Side ls2 r1 r2) :
     Side ls1 (w1 +> r1) (w2 +> r2) :=
   h1 r1 r2 h2
-lemma zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : zF}
+theorem zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : BitWord}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Seg ls3 ls4 w2 w3) :
     Seg (ls1 ++ ls3) (ls2 ++ ls4) w1 w3 := by
   intro r1 r3 h
   rcases z09 h with ⟨r2,ha,hb⟩
   exact z08 (h1 r1 r2 ha) (h2 r2 r3 hb)
-lemma zS0 {ls1 ls2 ls3 : List Call} {w1 w2 u1 u2 : zF}
+theorem zS0 {ls1 ls2 ls3 : List Call} {w1 w2 u1 u2 : BitWord}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Seg ls2 ls3 u1 u2) :
     Seg ls1 ls3 (w1 ++ u1) (w2 ++ u2) := by
   intro r1 r2 h
   rw [append_assoc w1 u1 r1,append_assoc w2 u2 r2]
   exact h1 (u1 +> r1) (u2 +> r2) (h2 r1 r2 h)
-lemma zS4 {c : Call} {w1 w2 : zF}
+theorem zS4 {c : Call} {w1 w2 : BitWord}
     (h1 : ∀ l r,(zCR l c (w1 +> r)) [holdout_0596_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c] [] w1 w2 := by
   intro r1 r2 h; cases h
   exact Side.cons (fun l => h1 l r1) (Side.nil _)
-lemma zS2 {c_in c_out : Call} {w1 w2 mid : zF}
+theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
     (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [holdout_0596_tm]⊢⁺ (zCR (mid +> l) c_out r))
     (h2 : ∀ l r,(zCL (mid +> l) r) [holdout_0596_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c_out] w1 w2 := by
@@ -207,7 +203,7 @@ lemma zS2 {c_in c_out : Call} {w1 w2 mid : zF}
   cases hnil
   refine Side.cons (fun l => ?_) (Side.nil _)
   exact zPt (h1 l r1) (zPt (hc1 (mid +> l)) (h2 l r2))
-lemma zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : zF}
+theorem zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : BitWord}
     (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [holdout_0596_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
     (h2 : ∀ l r,(zCL (mid1 +> l) r) [holdout_0596_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
     (h3 : ∀ l r,(zCL (mid2 +> l) r) [holdout_0596_tm]⊢⁺ (zCL l (w2 +> r))) :
@@ -221,69 +217,69 @@ lemma zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : zF}
     (zPt (hc1 (mid1 +> l))
       (zPt (h2 l _)
         (zPt (hc2 (mid2 +> l)) (h3 l r3))))
-lemma z0c : Seg [.cp] [.ch] t (t ++ [0]) :=
+theorem z0c : Seg [.cp] [.ch] t (t ++ [0]) :=
   zS2 (mid := [1,1,0,1,0])
     (fun l r => by unfold zCR zCw zCs t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-lemma z0d : Seg [.cj] [.ch] t (t ++ one) :=
+theorem z0d : Seg [.cj] [.ch] t (t ++ one) :=
   zS2 (mid := [1,1,0,1,1])
     (fun l r => by unfold zCR zCw zCs t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-lemma z0e : Seg [.ch] [.cj] (t ++ [0]) t :=
+theorem z0e : Seg [.ch] [.cj] (t ++ [0]) t :=
   zS2 (mid := [1,0,1,0])
     (fun l r => by unfold zCR zCw zCs t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [append_cons,append_nil]; execute)
-lemma zH2 : Seg [.ch] [.cj,.ch] (t ++ one) t :=
+theorem zH2 : Seg [.ch] [.cj,.ch] (t ++ one) t :=
   zS5 (mid1 := [1,0,1,1]) (mid2 := [1,0,1,0])
     (fun l r => by unfold zCR zCw zCs t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL zCR zCw zCs; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [append_cons,append_nil]; execute)
-lemma z0f : Seg [.ch] [.ch,.ch] t t :=
+theorem z0f : Seg [.ch] [.ch,.ch] t t :=
   zS5 (mid1 := [1,0,1,1]) (mid2 := [1,0,1,0])
     (fun l r => by unfold zCR zCw zCs t; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL zCR zCw zCs; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [append_cons,append_nil]; execute)
-lemma z0g : Seg [.cp] [] (d1 ++ d0) (t ++ one) :=
+theorem z0g : Seg [.cp] [] (d1 ++ d0) (t ++ one) :=
   zS4 (fun l r => by unfold zCR zCL zCw zCs d1 d0 t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-lemma z0h : Seg [.cj] [.cj] (d1 ++ d0) t :=
+theorem z0h : Seg [.cj] [.cj] (d1 ++ d0) t :=
   zS2 (mid := [1,0,1,0])
     (fun l r => by unfold zCR zCw zCs d1 d0; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [append_cons,append_nil]; execute)
-lemma z0i : Seg [.cp] [.cp] (d1 ++ d1) t :=
+theorem z0i : Seg [.cp] [.cp] (d1 ++ d1) t :=
   zS2 (mid := [1,0,1,0])
     (fun l r => by unfold zCR zCw zCs d1; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [append_cons,append_nil]; execute)
-lemma z0j : Seg [.cj] [.cp,.ch] (d1 ++ d1) t :=
+theorem z0j : Seg [.cj] [.cp,.ch] (d1 ++ d1) t :=
   zS5 (mid1 := [1,0,1,1]) (mid2 := [1,0,1,0])
     (fun l r => by unfold zCR zCw zCs d1; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL zCR zCw zCs; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [append_cons,append_nil]; execute)
-lemma z0k : Seg [.cj] [] d0 (d0 ++ one) :=
+theorem z0k : Seg [.cj] [] d0 (d0 ++ one) :=
   zS4 (fun l r => by unfold zCR zCL zCw zCs d0 one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-lemma zH1 : Seg [.ch] [] (d0 ++ one) (d1 ++ one) :=
+theorem zH1 : Seg [.ch] [] (d0 ++ one) (d1 ++ one) :=
   zS4 (fun l r => by unfold zCR zCL zCw zCs d0 d1 one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-lemma zH3 : Seg [.ch] [.cj] (d1 ++ one) d0 :=
+theorem zH3 : Seg [.ch] [.cj] (d1 ++ one) d0 :=
   zS2 (mid := [1,1])
     (fun l r => by unfold zCR zCw zCs d1 one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL d0; simp only [append_cons,append_nil]; execute)
-lemma z0l : Seg [.cj] [.cp] d1 d0 :=
+theorem z0l : Seg [.cj] [.cp] d1 d0 :=
   zS2 (mid := [1,1])
     (fun l r => by unfold zCR zCw zCs d1; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL d0; simp only [append_cons,append_nil]; execute)
-lemma zH0 : Seg [.ch] [] d0 d1 :=
+theorem zH0 : Seg [.ch] [] d0 d1 :=
   zS4 (fun l r => by unfold zCR zCL zCw zCs d0 d1; simp only [append_cons,append_nil]; execute)
-lemma zH4 : Seg [.ch] [.ch] d1 d0 :=
+theorem zH4 : Seg [.ch] [.ch] d1 d0 :=
   zS2 (mid := [1,1])
     (fun l r => by unfold zCR zCw zCs d1; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL d0; simp only [append_cons,append_nil]; execute)
-lemma zS3 (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t := by
+theorem zS3 (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t := by
   induction n with
   | zero => exact z0a t
   | succ n ih =>
     have h_eq : (n + 1) * 2 = 2 + n * 2 := by omega
     rw [zLp,h_eq,z07]
     exact zSg z0f ih
-lemma zSa {w2 : zF} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
+theorem zSa {w2 : BitWord} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
     Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) w2 w2 := by
   induction n with
   | zero => exact z0a w2
@@ -291,73 +287,73 @@ lemma zSa {w2 : zF} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
     have h_eq : (n + 1) * 2 = 2 + n * 2 := by omega
     rw [h_eq,z07,zLp]
     exact zSg hw ih
-lemma z0m : Seg [.ch,.ch] [.ch] d0 d0 :=
+theorem z0m : Seg [.ch,.ch] [.ch] d0 d0 :=
   zSg zH0 zH4
-lemma z0n : Seg [.ch,.ch] [.ch] d1 d1 :=
+theorem z0n : Seg [.ch,.ch] [.ch] d1 d1 :=
   zSg zH4 zH0
-lemma H_T (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t :=
+theorem H_T (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t :=
   zS3 n
-lemma z0o (n : Nat) : Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) d0 d0 :=
+theorem z0o (n : Nat) : Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) d0 d0 :=
   zSa z0m n
-lemma z0p (n : Nat) : Seg ([Call.ch] ^ (1 + n * 2)) ([Call.ch] ^ n) d0 d1 := by
+theorem z0p (n : Nat) : Seg ([Call.ch] ^ (1 + n * 2)) ([Call.ch] ^ n) d0 d1 := by
   simpa only [zLp',List.cons_append,List.nil_append] using!
     zSg zH0 (zSa z0n n)
-lemma z0q (n : Nat) : Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) d1 d1 :=
+theorem z0q (n : Nat) : Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) d1 d1 :=
   zSa z0n n
-lemma z0r (n : Nat) : Seg ([Call.ch] ^ (1 + n * 2)) ([Call.ch] ^ (1 + n)) d1 d0 := by
+theorem z0r (n : Nat) : Seg ([Call.ch] ^ (1 + n * 2)) ([Call.ch] ^ (1 + n)) d1 d0 := by
   simpa only [zLp',List.cons_append,List.nil_append] using!
     zSg zH4 (zSa z0m n)
-lemma z0s : Side [.ch] default (d1 +> default) := by
+theorem z0s : Side [.ch] default (d1 +> default) := by
   refine Side.cons (fun l => ?_) (Side.nil _)
   unfold zCR zCL zCw zCs d1
   simp only [append_cons,append_nil,z00]
   execute
-lemma z0t (n : Nat) : Seg ([.cp] ++ [.ch] ^ (1 + n)) ([.ch] ++ [.cj] ++ [.ch] ^ (n * 2)) t t := by
+theorem z0t (n : Nat) : Seg ([.cp] ++ [.ch] ^ (1 + n)) ([.ch] ++ [.cj] ++ [.ch] ^ (n * 2)) t t := by
   simpa only [zLp',List.cons_append,List.nil_append] using!
     zSg (zSg z0c z0e) (zS3 n)
-lemma z0u (n : Nat) : Seg ([.cj] ++ [.ch] ^ (1 + n)) ([.ch] ++ [.cj] ++ [.ch] ^ (1 + n * 2)) t t := by
+theorem z0u (n : Nat) : Seg ([.cj] ++ [.ch] ^ (1 + n)) ([.ch] ++ [.cj] ++ [.ch] ^ (1 + n * 2)) t t := by
   simpa only [zLp',List.cons_append,List.nil_append] using!
     zSg (zSg z0d zH2) (zS3 n)
-lemma z0v (n : Nat) : Seg ([.cp] ++ [.ch] ^ (1 + n)) ([.cj] ++ [.ch] ^ (1 + n * 2)) (d1 ++ d0) t := by
+theorem z0v (n : Nat) : Seg ([.cp] ++ [.ch] ^ (1 + n)) ([.cj] ++ [.ch] ^ (1 + n * 2)) (d1 ++ d0) t := by
   simpa only [zLp',List.cons_append,List.nil_append] using!
     zSg (zSg z0g zH2) (zS3 n)
-lemma z0w (n : Nat) : Seg ([.cj] ++ [.ch] ^ n) ([.cj] ++ [.ch] ^ (n * 2)) (d1 ++ d0) t :=
+theorem z0w (n : Nat) : Seg ([.cj] ++ [.ch] ^ n) ([.cj] ++ [.ch] ^ (n * 2)) (d1 ++ d0) t :=
   zSg z0h (zS3 n)
-lemma z0x (n : Nat) : Seg ([.cp] ++ [.ch] ^ n) ([.cp] ++ [.ch] ^ (n * 2)) (d1 ++ d1) t :=
+theorem z0x (n : Nat) : Seg ([.cp] ++ [.ch] ^ n) ([.cp] ++ [.ch] ^ (n * 2)) (d1 ++ d1) t :=
   zSg z0i (zS3 n)
-lemma z0y (n : Nat) : Seg ([.cj] ++ [.ch] ^ n) ([.cp] ++ [.ch] ^ (1 + n * 2)) (d1 ++ d1) t := by
+theorem z0y (n : Nat) : Seg ([.cj] ++ [.ch] ^ n) ([.cp] ++ [.ch] ^ (1 + n * 2)) (d1 ++ d1) t := by
   simpa only [zLp',List.cons_append,List.nil_append] using! zSg z0j (zS3 n)
-lemma z0z (n : Nat) : Seg ([.cj] ++ [.ch] ^ (2 + n * 2)) ([.cj] ++ [.ch] ^ n) d0 d0 := by
+theorem z0z (n : Nat) : Seg ([.cj] ++ [.ch] ^ (2 + n * 2)) ([.cj] ++ [.ch] ^ n) d0 d0 := by
   have h0 : Seg [.cj,.ch,.ch] [.cj] d0 d0 :=
     zSg z0k (zSg zH1 zH3)
   have h1 := zSg h0 (zSa z0m n)
   have heq : (2 + n * 2) = 1 + (1 + n * 2) := by omega
   simpa only [heq,zLp',List.cons_append,List.nil_append] using! h1
-lemma z0A (n : Nat) : Seg ([.cj] ++ [.ch] ^ (n * 2)) ([.cp] ++ [.ch] ^ n) d1 d0 :=
+theorem z0A (n : Nat) : Seg ([.cj] ++ [.ch] ^ (n * 2)) ([.cp] ++ [.ch] ^ n) d1 d0 :=
   zSg z0l (zSa z0m n)
-lemma z0B : Seg [.cj,.ch] [] d0 (d1 ++ one) :=
+theorem z0B : Seg [.cj,.ch] [] d0 (d1 ++ one) :=
   zSg z0k zH1
-lemma z0C (n : Nat) : Seg ([.cj] ++ [.ch] ^ (3 + n * 2)) ([.cj] ++ [.ch] ^ n) d0 d1 := by
+theorem z0C (n : Nat) : Seg ([.cj] ++ [.ch] ^ (3 + n * 2)) ([.cj] ++ [.ch] ^ n) d0 d1 := by
   have h0 : Seg [.cj,.ch,.ch,.ch] [.cj] d0 d1 :=
     zSg z0k (zSg zH1 (zSg zH3 zH0))
   have h1 := zSg h0 (zSa z0n n)
   have heq : (3 + n * 2) = 1 + (1 + (1 + n * 2)) := by omega
   simpa only [heq,zLp',List.cons_append,List.nil_append] using! h1
-lemma z0D (n : Nat) : Seg ([.cj] ++ [.ch] ^ (1 + n * 2)) ([.cp] ++ [.ch] ^ n) d1 d1 := by
+theorem z0D (n : Nat) : Seg ([.cj] ++ [.ch] ^ (1 + n * 2)) ([.cp] ++ [.ch] ^ n) d1 d1 := by
   have h0 : Seg [.cj,.ch] [.cp] d1 d1 := zSg z0l zH0
   have h1 := zSg h0 (zSa z0n n)
   simpa only [zLp',List.cons_append,List.nil_append] using! h1
-lemma z0E (n : Nat) : Seg ([.ch] ^ n ++ [.cj,.ch]) ([.ch] ^ (1 + n * 2) ++ [.cj,.ch]) t t := by
+theorem z0E (n : Nat) : Seg ([.ch] ^ n ++ [.cj,.ch]) ([.ch] ^ (1 + n * 2) ++ [.cj,.ch]) t t := by
   have h0 := zSg (H_T n) (z0u 0)
   have heq : 1 + n * 2 = n * 2 + 1 := by omega
   rw [heq,z07]
   simpa only [z05,z06,List.append_nil,List.append_assoc,List.cons_append,List.nil_append] using! h0
-lemma z0F (n : Nat) : Seg ([.ch] ^ (1 + n * 2)) ([.cj] ++ [.ch] ^ n) (d1 ++ one) d0 := by
+theorem z0F (n : Nat) : Seg ([.ch] ^ (1 + n * 2)) ([.cj] ++ [.ch] ^ n) (d1 ++ one) d0 := by
   simpa only [zLp',List.cons_append,List.nil_append] using!
     zSg zH3 (zSa z0m n)
-lemma z0G (n : Nat) : Seg ([.ch] ^ (1 + n * 2) ++ [.cj,.ch]) ([.cj] ++ [.ch] ^ n) (d1 ++ one) (d1 ++ one) := by
+theorem z0G (n : Nat) : Seg ([.ch] ^ (1 + n * 2) ++ [.cj,.ch]) ([.cj] ++ [.ch] ^ n) (d1 ++ one) (d1 ++ one) := by
   simpa only [List.append_nil] using! zSg (z0F n) z0B
-lemma z0H (q : Nat) :
+theorem z0H (q : Nat) :
     ∀ n,Seg (([Call.ch] ^ n) ++ [.cj,.ch]) (([Call.ch] ^ ((1 + n) * 2 ^ q - 1)) ++ [.cj,.ch]) (t ^ q) (t ^ q) := by
   induction q with
   | zero =>
@@ -372,32 +368,31 @@ lemma z0H (q : Nat) :
       rw [Nat.pow_succ]; ring_nf
     rw [heq] at h1
     exact h1
-lemma z0I : Seg [.ca] [.cj,.ch] w_pre (w_pre ++ t) :=
+theorem z0I : Seg [.ca] [.cj,.ch] w_pre (w_pre ++ t) :=
   zS5 (mid1 := [1,0,1,1,1,1,0,1,1]) (mid2 := [1,0,1,0,1,1,0,1,1])
     (fun l r => by unfold zCR zCw zCs w_pre t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
     (fun l r => by unfold zCL zCR zCw zCs; simp only [append_cons,append_nil]; execute)
     (fun l r => by unfold zCL w_pre t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-lemma z0J (r : zB) :
+theorem z0J (r : HalfTape) :
     (zCL lh r) [holdout_0596_tm]⊢⁺ (zCR lh .ca r) := by
   unfold zCL zCR lh zCw zCs
   simp only [append_cons,append_nil,z00]
   execute
-open WordCalculus Word e_Choice
-local notation "zW" => List Word
-local notation "zR" => List.replicate
-inductive Num : Nat -> zF -> List Call -> Prop where
+open WordCalculus Word ChoiceE
+local notation "WordList" => List Word
+inductive Num : Nat -> BitWord -> List Call -> Prop where
   | zero : Num 0 one []
   | odd (n : Nat) : Num (1 + n * 2) [] ([.cp] ++ [.ch] ^ n)
   | even (n : Nat) : Num (2 + n * 2) [] ([.cj] ++ [.ch] ^ n)
-lemma loc_z2u {k : Nat} (hK : 0 < k) : ∃ hs,Num k [] hs := by
-  rcases z0U k with ⟨a,rfl⟩ | ⟨a,rfl⟩
+theorem loc_z2u {k : Nat} (hK : 0 < k) : ∃ hs,Num k [] hs := by
+  rcases even_or_odd_mul_two k with ⟨a,rfl⟩ | ⟨a,rfl⟩
   · cases a with
     | zero => omega
     | succ a =>
       have heq : (a + 1) * 2 = 2 + a * 2 := by omega
       rw [heq]; exact ⟨[.cj] ++ [.ch] ^ a,Num.even a⟩
   · exact ⟨[.cp] ++ [.ch] ^ a,Num.odd a⟩
-lemma loc_z2v {k : Nat} {hs hs' : List Call} (h1 : Num k [] hs) (h2 : Num k [] hs') :
+theorem loc_z2v {k : Nat} {hs hs' : List Call} (h1 : Num k [] hs) (h2 : Num k [] hs') :
     hs = hs' := by
   cases h1 with
   | @odd n =>
@@ -414,14 +409,14 @@ lemma loc_z2v {k : Nat} {hs hs' : List Call} (h1 : Num k [] hs) (h2 : Num k [] h
     | @even m =>
       have hnm : n = m := by omega
       subst hnm; rfl
-def loc_z2w (k : Nat) (r r' : zB) : Prop :=
+def loc_z2w (k : Nat) (r r' : HalfTape) : Prop :=
   ∀ w hs,Num k w hs -> Side hs (w +> r) r'
-lemma loc_z2x {r r' : zB} (h : loc_z2w 0 r r') :
+theorem loc_z2x {r r' : HalfTape} (h : loc_z2w 0 r r') :
     r' = one +> r := by
   have h0 := h one [] Num.zero
   cases h0
   rfl
-lemma loc_z2y {n : Nat} {r r' : zB}
+theorem loc_z2y {n : Nat} {r r' : HalfTape}
     (hI : loc_z2w (n * 2) r r') : loc_z2w (2 + n * 4) (d0 +> r) (d0 +> r') := by
   intro w hs hN
   generalize hk : 2 + n * 4 = k at hN
@@ -445,7 +440,7 @@ lemma loc_z2y {n : Nat} {r r' : zB}
       have hN2 : Num ((n + 1) * 2) [] ([.cj] ++ [.ch] ^ n) := by
         rw [heq]; exact Num.even n
       simpa using! hI [] _ hN2
-lemma loc_z2z {n : Nat} {r r' : zB}
+theorem loc_z2z {n : Nat} {r r' : HalfTape}
     (hI : loc_z2w (n * 2) r r') : loc_z2w (4 + n * 4) (d0 +> r) (d1 +> r') := by
   intro w hs hN
   generalize hk : 4 + n * 4 = k at hN
@@ -470,16 +465,16 @@ lemma loc_z2z {n : Nat} {r r' : zB}
         have heq2 : (n + 1) * 2 = 2 + n * 2 := by omega
         rw [heq2]; exact Num.even n
       simpa using! hI [] _ hN2
-lemma loc_z2A {A H : Nat} {da : zW} (hD : zDg A H da) (hZ : A = 0) :
-    zTs da default = default := by
+theorem loc_z2A {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hZ : A = 0) :
+    evalWords da default = default := by
   induction hD with
   | nil => rfl
   | @zero A H u _ ih =>
     have hA0 : A = 0 := by omega
-    rw [zTs,ih hA0,zDd]
+    rw [evalWords,ih hA0,zDd]
   | one _ => omega
-lemma loc_z2B {A H : Nat} {da : zW} (hD : zDg A H da) (hPos : 0 < A) :
-    loc_z2w ((A - 1) * 2) default (zTs da default) := by
+theorem loc_z2B {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hPos : 0 < A) :
+    loc_z2w ((A - 1) * 2) default (evalWords da default) := by
   induction hD with
   | nil => omega
   | @zero A H u _ ih =>
@@ -488,13 +483,13 @@ lemma loc_z2B {A H : Nat} {da : zW} (hD : zDg A H da) (hPos : 0 < A) :
     have hs := loc_z2y hIH
     rw [zDd] at hs
     have heq : (A * 2 - 1) * 2 = 2 + (A - 1) * 4 := by omega
-    rw [zTs]
+    rw [evalWords]
     rwa [heq]
   | @one A H u hDu ih =>
     cases A with
     | zero =>
-      have h_side : zTs (Q :: u) default = one +> default := by
-        rw [zTs,loc_z2A hDu rfl]
+      have h_side : evalWords (Q :: u) default = one +> default := by
+        rw [evalWords,loc_z2A hDu rfl]
         simp [d1,one]
       rw [h_side]
       intro w hs hN
@@ -513,35 +508,35 @@ lemma loc_z2B {A H : Nat} {da : zW} (hD : zDg A H da) (hPos : 0 < A) :
       have hs := loc_z2z hIH
       rw [zDd] at hs
       have heq : (1 + (A + 1) * 2 - 1) * 2 = 4 + A * 4 := by omega
-      rw [zTs]
+      rw [evalWords]
       rwa [heq]
-lemma zEd {n : Nat} {u : zW} {b : Nat} {v : zW}
-    (hI : zEf n u b v) :
-    ∀ {A H : Nat},zDg A H v -> Seg ([Call.ch] ^ n) ([Call.ch] ^ b) (zWt u) (zWt v) := by
+theorem zEd {n : Nat} {u : WordList} {b : Nat} {v : WordList}
+    (hI : WordEffect n u b v) :
+    ∀ {A H : Nat},DigitVal A H v -> Seg ([Call.ch] ^ n) ([Call.ch] ^ b) (wordsToBits u) (wordsToBits v) := by
   induction hI with
   | nil n =>
     intro A H _
     exact z0b _
   | T _ _ =>
     intro A H hD
-    exact False.elim (z0X hD)
+    exact False.elim (digitVal_not_cons_V hD)
   | d00 _ ih =>
     intro A H hD
-    rcases zD0 hD with ⟨A',H',hD',_,_⟩
+    rcases digitVal_cons_K_inv hD with ⟨A',H',hD',_,_⟩
     exact zS0 (z0o _) (ih hD')
   | d01 _ ih =>
     intro A H hD
-    rcases zD1 hD with ⟨A',H',hD',_,_⟩
+    rcases digitVal_cons_Q_inv hD with ⟨A',H',hD',_,_⟩
     exact zS0 (z0p _) (ih hD')
   | d10 _ ih =>
     intro A H hD
-    rcases zD1 hD with ⟨A',H',hD',_,_⟩
+    rcases digitVal_cons_Q_inv hD with ⟨A',H',hD',_,_⟩
     exact zS0 (z0q _) (ih hD')
   | d11 _ ih =>
     intro A H hD
-    rcases zD0 hD with ⟨A',H',hD',_,_⟩
+    rcases digitVal_cons_K_inv hD with ⟨A',H',hD',_,_⟩
     exact zS0 (z0r _) (ih hD')
-lemma loc_z2C {n : Nat} {hs hs' : List Call}
+theorem loc_z2C {n : Nat} {hs hs' : List Call}
     (hI : Num (3 + n) [] hs) (hJ : Num (2 + n * 2) [] hs') :
     Seg hs ([Call.ch] ++ hs') t t := by
   generalize hk1 : 3 + n = k1 at hI
@@ -571,7 +566,7 @@ lemma loc_z2C {n : Nat} {hs hs' : List Call}
         subst hq
         rw [h1m]
         exact z0u m
-lemma loc_z2D {n : Nat} {hs hs' : List Call}
+theorem loc_z2D {n : Nat} {hs hs' : List Call}
     (hI : Num (1 + n) [] hs) (hJ : Num (n * 2) [] hs') :
     Seg hs hs' (d1 ++ d0) t := by
   generalize hk1 : 1 + n = k1 at hI
@@ -596,7 +591,7 @@ lemma loc_z2D {n : Nat} {hs hs' : List Call}
       have hq : q = m * 2 := by omega
       subst hq
       exact z0w m
-lemma loc_z2E {n : Nat} {hs hs' : List Call}
+theorem loc_z2E {n : Nat} {hs hs' : List Call}
     (hI : Num (1 + n) [] hs) (hJ : Num (1 + n * 2) [] hs') :
     Seg hs hs' (d1 ++ d1) t := by
   generalize hk1 : 1 + n = k1 at hI
@@ -616,7 +611,7 @@ lemma loc_z2E {n : Nat} {hs hs' : List Call}
       subst hq
       exact z0y m
     | even _ => omega
-lemma loc_z2F {n : Nat} {hs hs' : List Call}
+theorem loc_z2F {n : Nat} {hs hs' : List Call}
     (hI : Num (2 + n * 4) [] hs) (hJ : Num (n * 2) [] hs') :
     Seg hs hs' d0 d0 := by
   generalize hk1 : 2 + n * 4 = k1 at hI
@@ -633,7 +628,7 @@ lemma loc_z2F {n : Nat} {hs hs' : List Call}
         have hm : m = 2 + q * 2 := by omega
         subst hm
         exact z0z q
-lemma loc_z2G {n : Nat} {hs hs' : List Call}
+theorem loc_z2G {n : Nat} {hs hs' : List Call}
     (hI : Num (2 + n * 4) [] hs) (hJ : Num (1 + n * 2) [] hs') :
     Seg hs hs' d1 d0 := by
   generalize hk1 : 2 + n * 4 = k1 at hI
@@ -647,7 +642,7 @@ lemma loc_z2G {n : Nat} {hs hs' : List Call}
       subst hm
       exact z0A q
     | even _ => omega
-lemma loc_z2H {n : Nat} {hs hs' : List Call}
+theorem loc_z2H {n : Nat} {hs hs' : List Call}
     (hI : Num (4 + n * 4) [] hs) (hJ : Num (n * 2) [] hs') :
     Seg hs hs' d0 d1 := by
   generalize hk1 : 4 + n * 4 = k1 at hI
@@ -664,7 +659,7 @@ lemma loc_z2H {n : Nat} {hs hs' : List Call}
         have hm : m = 3 + q * 2 := by omega
         subst hm
         exact z0C q
-lemma loc_z2I {n : Nat} {hs hs' : List Call}
+theorem loc_z2I {n : Nat} {hs hs' : List Call}
     (hI : Num (4 + n * 4) [] hs) (hJ : Num (1 + n * 2) [] hs') :
     Seg hs hs' d1 d1 := by
   generalize hk1 : 4 + n * 4 = k1 at hI
@@ -678,11 +673,11 @@ lemma loc_z2I {n : Nat} {hs hs' : List Call}
       subst hm
       exact z0D q
     | even _ => omega
-lemma loc_z2J {k : Nat} {v : zW} {k' : Nat} {w : zW} {a b : Rat}
-    (hI : zPS k v k' w a b) :
-    ∀ {u : zW} {n n' : Nat} {hs hs' : List Call},
-      zEf n u n' v -> Num k [] hs -> Num k' [] hs' ->
-      Seg (([Call.ch] ^ n) ++ hs) (([Call.ch] ^ n') ++ hs') (zWt u) (zWt w) := by
+theorem loc_z2J {k : Nat} {v : WordList} {k' : Nat} {w : WordList} {a b : Rat}
+    (hI : PhaseScan k v k' w a b) :
+    ∀ {u : WordList} {n n' : Nat} {hs hs' : List Call},
+      WordEffect n u n' v -> Num k [] hs -> Num k' [] hs' ->
+      Seg (([Call.ch] ^ n) ++ hs) (([Call.ch] ^ n') ++ hs') (wordsToBits u) (wordsToBits w) := by
   induction hI with
   | nil k =>
     intro u n n' hs hs' hE hN hN'
@@ -703,67 +698,67 @@ lemma loc_z2J {k : Nat} {v : zW} {k' : Nat} {w : zW} {a b : Rat}
       exact zS0 hStep hIH
   | @pair0 m u _ _ _ _ hSub ih =>
     intro u0 n0 n1 hs hs' hE hN hN'
-    change zEf n0 u0 n1 ([Q,K] ++ u) at hE
-    rcases z1F [Q,K] hE with ⟨u1,u2,q,rfl,hL,hR⟩
-    have hPos : 0 < m * 2 := z1M hSub (by cases hN' <;> omega)
+    change WordEffect n0 u0 n1 ([Q,K] ++ u) at hE
+    rcases wordEffect_split_output [Q,K] hE with ⟨u1,u2,q,rfl,hL,hR⟩
+    have hPos : 0 < m * 2 := phaseScan_pos_of_out_pos hSub (by cases hN' <;> omega)
     rcases loc_z2u hPos with ⟨hs0,hN0⟩
-    have hD10 : zDg 1 2 [Q,K] := zDg.one (zDg.zero zDg.nil)
+    have hD10 : DigitVal 1 2 [Q,K] := DigitVal.one (DigitVal.zero DigitVal.nil)
     have hStep := zSg (zEd hL hD10) (loc_z2D hN hN0)
-    rw [z17]
+    rw [wordsToBits_append]
     exact zS0 hStep (ih hR hN0 hN')
   | @pair1 m u _ _ _ _ hSub ih =>
     intro u0 n0 n1 hs hs' hE hN hN'
-    change zEf n0 u0 n1 ([Q,Q] ++ u) at hE
-    rcases z1F [Q,Q] hE with ⟨u1,u2,q,rfl,hL,hR⟩
+    change WordEffect n0 u0 n1 ([Q,Q] ++ u) at hE
+    rcases wordEffect_split_output [Q,Q] hE with ⟨u1,u2,q,rfl,hL,hR⟩
     rcases loc_z2u (by omega : 0 < 1 + m * 2) with ⟨hs0,hN0⟩
-    have hD11 : zDg 3 2 [Q,Q] := zDg.one (zDg.one zDg.nil)
+    have hD11 : DigitVal 3 2 [Q,Q] := DigitVal.one (DigitVal.one DigitVal.nil)
     have hStep := zSg (zEd hL hD11) (loc_z2E hN hN0)
-    rw [z17]
+    rw [wordsToBits_append]
     exact zS0 hStep (ih hR hN0 hN')
   | @short00 m u _ _ _ _ hSub ih =>
     intro u0 n0 n1 hs hs' hE hN hN'
-    change zEf n0 u0 n1 ([K] ++ u) at hE
-    rcases z1F [K] hE with ⟨u1,u2,q,rfl,hL,hR⟩
-    have hPos : 0 < m * 2 := z1M hSub (by cases hN' <;> omega)
+    change WordEffect n0 u0 n1 ([K] ++ u) at hE
+    rcases wordEffect_split_output [K] hE with ⟨u1,u2,q,rfl,hL,hR⟩
+    have hPos : 0 < m * 2 := phaseScan_pos_of_out_pos hSub (by cases hN' <;> omega)
     rcases loc_z2u hPos with ⟨hs0,hN0⟩
-    have hD0 : zDg 0 1 [K] := zDg.zero zDg.nil
+    have hD0 : DigitVal 0 1 [K] := DigitVal.zero DigitVal.nil
     have hStep := zSg (zEd hL hD0) (loc_z2F hN hN0)
-    rw [z17]
+    rw [wordsToBits_append]
     exact zS0 hStep (ih hR hN0 hN')
   | @short01 m u _ _ _ _ hSub ih =>
     intro u0 n0 n1 hs hs' hE hN hN'
-    change zEf n0 u0 n1 ([Q] ++ u) at hE
-    rcases z1F [Q] hE with ⟨u1,u2,q,rfl,hL,hR⟩
+    change WordEffect n0 u0 n1 ([Q] ++ u) at hE
+    rcases wordEffect_split_output [Q] hE with ⟨u1,u2,q,rfl,hL,hR⟩
     rcases loc_z2u (by omega : 0 < 1 + m * 2) with ⟨hs0,hN0⟩
-    have hD1 : zDg 1 1 [Q] := zDg.one zDg.nil
+    have hD1 : DigitVal 1 1 [Q] := DigitVal.one DigitVal.nil
     have hStep := zSg (zEd hL hD1) (loc_z2G hN hN0)
-    rw [z17]
+    rw [wordsToBits_append]
     exact zS0 hStep (ih hR hN0 hN')
   | @short10 m u _ _ _ _ hSub ih =>
     intro u0 n0 n1 hs hs' hE hN hN'
-    change zEf n0 u0 n1 ([K] ++ u) at hE
-    rcases z1F [K] hE with ⟨u1,u2,q,rfl,hL,hR⟩
-    have hPos : 0 < m * 2 := z1M hSub (by cases hN' <;> omega)
+    change WordEffect n0 u0 n1 ([K] ++ u) at hE
+    rcases wordEffect_split_output [K] hE with ⟨u1,u2,q,rfl,hL,hR⟩
+    have hPos : 0 < m * 2 := phaseScan_pos_of_out_pos hSub (by cases hN' <;> omega)
     rcases loc_z2u hPos with ⟨hs0,hN0⟩
-    have hD0 : zDg 0 1 [K] := zDg.zero zDg.nil
+    have hD0 : DigitVal 0 1 [K] := DigitVal.zero DigitVal.nil
     have hStep := zSg (zEd hL hD0) (loc_z2H hN hN0)
-    rw [z17]
+    rw [wordsToBits_append]
     exact zS0 hStep (ih hR hN0 hN')
   | @short11 m u _ _ _ _ hSub ih =>
     intro u0 n0 n1 hs hs' hE hN hN'
-    change zEf n0 u0 n1 ([Q] ++ u) at hE
-    rcases z1F [Q] hE with ⟨u1,u2,q,rfl,hL,hR⟩
+    change WordEffect n0 u0 n1 ([Q] ++ u) at hE
+    rcases wordEffect_split_output [Q] hE with ⟨u1,u2,q,rfl,hL,hR⟩
     rcases loc_z2u (by omega : 0 < 1 + m * 2) with ⟨hs0,hN0⟩
-    have hD1 : zDg 1 1 [Q] := zDg.one zDg.nil
+    have hD1 : DigitVal 1 1 [Q] := DigitVal.one DigitVal.nil
     have hStep := zSg (zEd hL hD1) (loc_z2I hN hN0)
-    rw [z17]
+    rw [wordsToBits_append]
     exact zS0 hStep (ih hR hN0 hN')
-lemma loc_z2K {k : Nat} {v : zW} {k' : Nat} {w : zW} {a b : Rat}
-    (hI : zPS k v k' w a b) {u : zW} {r r' : zB}
-    (hE : zEf 0 u 0 v) (hK : 0 < k') (hC : loc_z2w k' r r') :
-    loc_z2w k (zTs u r) (zTs w r') := by
+theorem loc_z2K {k : Nat} {v : WordList} {k' : Nat} {w : WordList} {a b : Rat}
+    (hI : PhaseScan k v k' w a b) {u : WordList} {r r' : HalfTape}
+    (hE : WordEffect 0 u 0 v) (hK : 0 < k') (hC : loc_z2w k' r r') :
+    loc_z2w k (evalWords u r) (evalWords w r') := by
   intro w0 hs hN
-  have hPosK : 0 < k := z1M hI hK
+  have hPosK : 0 < k := phaseScan_pos_of_out_pos hI hK
   have hw0 : w0 = [] := by
     cases hN with
     | zero => omega
@@ -774,27 +769,27 @@ lemma loc_z2K {k : Nat} {v : zW} {k' : Nat} {w : zW} {a b : Rat}
   have hSeg := loc_z2J hI hE hN hN'
   dsimp at hSeg
   have hSide := zSc hSeg (hC [] hs' hN')
-  rwa [z16,z16] at hSide
-lemma loc_z2L {q : Nat} {orig out : zW} (hS : EStep q orig out) :
-    loc_z2w (4 * 2 ^ q) (zTs orig default) (zTs out default) := by
+  rwa [wordsToBits_append_tape,wordsToBits_append_tape] at hSide
+theorem loc_z2L {q : Nat} {orig out : WordList} (hS : EStep q orig out) :
+    loc_z2w (4 * 2 ^ q) (evalWords orig default) (evalWords out default) := by
   rcases hS with ⟨eff,n,v,a0,b0,J,da,hE,hI,hPos,hDA⟩
-  have hBlank : zTs [K] default = default := by simp [zTs,d0]
-  have hC : loc_z2w (n * 2) default (zTs da default) := by
+  have hBlank : evalWords [K] default = default := by simp [evalWords,d0]
+  have hC : loc_z2w (n * 2) default (evalWords da default) := by
     have heq : n * 2 = ((1 + n) - 1) * 2 := by omega
     rw [heq]
     exact loc_z2B hDA (by omega)
   have hRun := loc_z2K hI hE (by omega : 0 < n * 2) hC
-  rwa [z15,hBlank,<- z15] at hRun
-lemma loc_z2M (q : Nat) :
+  rwa [evalWords_append,hBlank,<- evalWords_append] at hRun
+theorem loc_z2M (q : Nat) :
     Seg [.cj,.ch] ([.cj] ++ [.ch] ^ (2 ^ q - 1)) (t ^ (1 + q) ++ (d1 ++ one)) (t ^ (1 + q) ++ (d1 ++ one)) := by
-  have hpos := zPp q
+  have hpos := pow_two_pos q
   have hT := z0H (1 + q) 0
   have heq : (1 + 0) * 2 ^ (1 + q) - 1 = 1 + (2 ^ q - 1) * 2 := by
-    rw [zP2]; omega
+    rw [pow_two_one_add]; omega
   rw [heq] at hT
   dsimp at hT
   exact zS0 hT (z0G (2 ^ q - 1))
-lemma loc_z2N (q : Nat) :
+theorem loc_z2N (q : Nat) :
     Seg [.ca] ([.cj] ++ [.ch] ^ (2 ^ (1 + q) - 1))
       (w_pre ++ (t ^ (2 + q) ++ (d1 ++ one)))
       (w_pre ++ (t ^ (2 + (q + 1)) ++ (d1 ++ one))) := by
@@ -806,11 +801,11 @@ lemma loc_z2N (q : Nat) :
     simp only [List.append_assoc]
   rw [heq1] at h1
   rwa [heq2] at h1
-lemma loc_z2O (q : Nat) {r r' : zB} (hI : loc_z2w (4 * 2 ^ q) r r') :
+theorem loc_z2O (q : Nat) {r r' : HalfTape} (hI : loc_z2w (4 * 2 ^ q) r r') :
     (zCf q r) [holdout_0596_tm]⊢⁺ zCf (q + 1) r' := by
-  have hpos := zPp q
+  have hpos := pow_two_pos q
   have h_num : Num (4 * 2 ^ q) [] ([.cj] ++ [.ch] ^ (2 ^ (1 + q) - 1)) := by
-    have heq : 4 * 2 ^ q = 2 + (2 ^ (1 + q) - 1) * 2 := by rw [zP2]; omega
+    have heq : 4 * 2 ^ q = 2 + (2 ^ (1 + q) - 1) * 2 := by rw [pow_two_one_add]; omega
     rw [heq]; exact Num.even (2 ^ (1 + q) - 1)
   have hC := hI [] ([.cj] ++ [.ch] ^ (2 ^ (1 + q) - 1)) h_num
   have hS := zSc (loc_z2N q) hC
@@ -818,19 +813,19 @@ lemma loc_z2O (q : Nat) {r r' : zB} (hI : loc_z2w (4 * 2 ^ q) r r') :
   cases hnil
   have h_step := zPt (hca lh) (z0J _)
   simpa only [zCf,List.append_assoc] using! h_step
-lemma loc_z2P {q : Nat} {orig out : zW} (hS : EStep q orig out) :
-    (zCf q (zTs orig default)) [holdout_0596_tm]⊢⁺ zCf (q + 1) (zTs out default) :=
+theorem loc_z2P {q : Nat} {orig out : WordList} (hS : EStep q orig out) :
+    (zCf q (evalWords orig default)) [holdout_0596_tm]⊢⁺ zCf (q + 1) (evalWords out default) :=
   loc_z2O q (loc_z2L hS)
-lemma loc_z2Q {h : Nat} {u : zW} {j : Nat} {v : zW} (hR : ERounds h u j v) :
-    (zCf h (zTs u default)) [holdout_0596_tm]⊢* zCf j (zTs v default) := by
+theorem loc_z2Q {h : Nat} {u : WordList} {j : Nat} {v : WordList} (hR : ERounds h u j v) :
+    (zCf h (evalWords u default)) [holdout_0596_tm]⊢* zCf j (evalWords v default) := by
   induction hR with
   | refl _ _ => exact ⟨0,rfl⟩
   | next hS _ ih =>
     rcases loc_z2P hS with ⟨n,_,hn⟩
     rcases ih with ⟨m,hm⟩
     exact ⟨n + m,zMt holdout_0596_tm _ _ _ n m hn hm⟩
-def loc_z2R : zW := [Q,K,K,Q,K,K,K,Q]
-def loc_z2S : List e_Code := [
+def loc_z2R : WordList := [Q,K,K,Q,K,K,K,Q]
+def loc_z2S : List CodeE := [
   (.More CP0 63 (.More CS00 31 (.More CP0 61 (.More CS00 30 (.More CS10 14 (.More CP0 27 (.Stop 27))))))),
   (.More CT 125 (.More CS11 62 (.More CT 122 (.More CP1 245 (.More CT 488 (.More CP0 977 (.More CP1 1953 (.More CP0 3906 (.Stop 3906))))))))),
   (.More CT 253 (.More CS10 126 (.More CT 249 (.More CT 497 (.More CT 993 (.More CT 1985 (.More CT 3969 (.More CT 7937 (.More CS10 3968 (.More CP0 7935 (.More CS00 3967 (.More CS00 1983 (.More CS00 991 (.More CS01 495 (.More CP1 990 (.More CP1 1980 (.More CP0 3960 (.Stop 3960)))))))))))))))))),
@@ -839,20 +834,20 @@ def loc_z2S : List e_Code := [
   (.More CT 2045 (.More CS10 1022 (.More CT 2041 (.More CT 4081 (.More CT 8161 (.More CT 16321 (.More CT 32641 (.More CT 65281 (.More CS10 32640 (.More CT 65277 (.More CT 130553 (.More CT 261105 (.More CT 522209 (.More CT 1044417 (.More CT 2088833 (.More CS10 1044416 (.More CT 2088829 (.More CT 4177657 (.More CT 8355313 (.More CT 16710625 (.More CT 33421249 (.More CT 66842497 (.More CS10 33421248 (.More CS11 16710623 (.More CP1 33421246 (.More CT 66842490 (.More CS00 33421245 (.More CT 66842487 (.More CT 133684973 (.More CT 267369945 (.More CS10 133684972 (.More CS10 66842485 (.More CS00 33421242 (.More CP1 66842483 (.More CP0 133684966 (.More CP0 267369931 (.More CS00 133684965 (.More CS01 66842482 (.More CP1 133684964 (.More CP1 267369928 (.More CP0 534739856 (.More CP1 1069479711 (.More CP1 2138959422 (.More CP1 4277918844 (.More CP0 8555837688 (.Stop 8555837688)))))))))))))))))))))))))))))))))))))))))))))),
   (.More CT 4093 (.More CS10 2046 (.More CT 4089 (.More CT 8177 (.More CT 16353 (.More CT 32705 (.More CT 65409 (.More CT 130817 (.More CS10 65408 (.More CT 130813 (.More CT 261625 (.More CT 523249 (.More CT 1046497 (.More CT 2092993 (.More CT 4185985 (.More CS10 2092992 (.More CT 4185981 (.More CT 8371961 (.More CT 16743921 (.More CT 33487841 (.More CT 66975681 (.More CT 133951361 (.More CS10 66975680 (.More CS11 33487839 (.More CT 66975676 (.More CT 133951351 (.More CS11 66975675 (.More CT 133951348 (.More CT 267902695 (.More CT 535805389 (.More CS10 267902694 (.More CP0 535805387 (.More CT 1071610771 (.More CT 2143221541 (.More CT 4286443081 (.More CP1 8572886163 (.More CT 17145772324 (.More CT 34291544647 (.More CT 68583089293 (.More CT 137166178585 (.More CT 274332357169 (.More CT 548664714337 (.More CT 1097329428673 (.More CS10 548664714336 (.More CS10 274332357167 (.More CS00 137166178583 (.More CP1 274332357165 (.More CP1 548664714330 (.More CP1 1097329428660 (.More CP0 2194658857320 (.More CS11 1097329428659 (.More CP0 2194658857318 (.More CS11 1097329428658 (.More CP1 2194658857316 (.More CP0 4389317714632 (.More CP1 8778635429263 (.More CP1 17557270858526 (.More CP0 35114541717052 (.More CS11 17557270858525 (.More CP1 35114541717050 (.More CP1 70229083434100 (.More CP1 140458166868200 (.More CP0 280916333736400 (.Stop 280916333736400))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 ]
-def loc_z2T : zW := [V,Q,V,V,V,V,V,V,Q,V,V,V,V,V,V,Q,V,V,V,V,V,V,Q,Q,V,V,Q,V,V,V,Q,V,V,V,V,V,V,V,V,V,V,V,V,Q,Q,K,V,V,V,V,Q,V,Q,V,V,V,V,V,Q,V,V,V,V]
-def loc_z2U : zW := [Q,K,K,K,Q,K,Q,Q,Q,K,K,K,Q,Q,K,Q,K,K,K,Q,K,K,Q,K,K,Q,Q,Q,K,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,Q,Q,Q]
-def loc_z2V : zW := [K,K,K,K,K,Q,Q,Q,Q,Q,K,Q,Q,Q,K,Q,K,K,K,Q,Q,K,K,K,Q,Q,Q,K,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,Q,Q,Q,Q]
+def loc_z2T : WordList := [V,Q,V,V,V,V,V,V,Q,V,V,V,V,V,V,Q,V,V,V,V,V,V,Q,Q,V,V,Q,V,V,V,Q,V,V,V,V,V,V,V,V,V,V,V,V,Q,Q,K,V,V,V,V,Q,V,Q,V,V,V,V,V,Q,V,V,V,V]
+def loc_z2U : WordList := [Q,K,K,K,Q,K,Q,Q,Q,K,K,K,Q,Q,K,Q,K,K,K,Q,K,K,Q,K,K,Q,Q,Q,K,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,Q,Q,Q]
+def loc_z2V : WordList := [K,K,K,K,K,Q,Q,Q,Q,Q,K,Q,Q,Q,K,Q,K,K,K,Q,Q,K,K,K,Q,Q,Q,K,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,K,Q,Q,Q,Q,Q,Q,Q,Q,Q]
 set_option maxRecDepth 500000 in
-lemma loc_z2W :
+theorem loc_z2W :
     ERounds 4 loc_z2R 11 (loc_z2T ++ loc_z2U) := by
   have h1 : ERounds 4 loc_z2R (4 + loc_z2S.length) (loc_z2T ++ loc_z2U) := by
-    apply e_z2p loc_z2S
+    apply evalERounds_sound loc_z2S
     decide
   simpa using! h1
 set_option maxRecDepth 500000 in
-lemma loc_z2X :
+theorem loc_z2X :
     EGood 11 (loc_z2T ++ loc_z2U) := by
-  apply e_z2s 11 loc_z2T loc_z2U loc_z2V
+  apply eGood_of_check 11 loc_z2T loc_z2U loc_z2V
   · decide
   · exact EGuard.T 1 _
   · decide
@@ -862,7 +857,7 @@ lemma loc_z2X :
   · decide
   · decide
   · decide
-  · norm_num [loc_z2T,loc_z2V,z1e,z1f,z1h]
+  · norm_num [loc_z2T,loc_z2V,wordMass,wordMassK,wordScale]
 def loc_z2Y : Cfg (Fin 2) (Fin 6) :=
   (([1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,0,1] +> default) {{D}}> ([1,1] +> default))
 def loc_z2Z : Cfg (Fin 2) (Fin 6) :=
@@ -899,97 +894,97 @@ def loc_z3e : Cfg (Fin 2) (Fin 6) :=
   (([1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,1,1,0,1] +> default) {{C}}> ([1] +> default))
 def loc_z3f : Cfg (Fin 2) (Fin 6) :=
   (([1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,1,1,0,1] +> default) {{B}}> ([1,0,0,1,1,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,1] +> default))
-lemma loc_z3g : (init []) [holdout_0596_tm]⊢⁺ loc_z2Y := by
+theorem loc_z3g : (init []) [holdout_0596_tm]⊢⁺ loc_z2Y := by
   unfold init loc_z2Y
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3h : (loc_z2Y) [holdout_0596_tm]⊢⁺ loc_z2Z := by
+theorem loc_z3h : (loc_z2Y) [holdout_0596_tm]⊢⁺ loc_z2Z := by
   unfold loc_z2Y loc_z2Z
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3i : (loc_z2Z) [holdout_0596_tm]⊢⁺ loc_z30 := by
+theorem loc_z3i : (loc_z2Z) [holdout_0596_tm]⊢⁺ loc_z30 := by
   unfold loc_z2Z loc_z30
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3j : (loc_z30) [holdout_0596_tm]⊢⁺ loc_z31 := by
+theorem loc_z3j : (loc_z30) [holdout_0596_tm]⊢⁺ loc_z31 := by
   unfold loc_z30 loc_z31
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3k : (loc_z31) [holdout_0596_tm]⊢⁺ loc_z32 := by
+theorem loc_z3k : (loc_z31) [holdout_0596_tm]⊢⁺ loc_z32 := by
   unfold loc_z31 loc_z32
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3l : (loc_z32) [holdout_0596_tm]⊢⁺ loc_z33 := by
+theorem loc_z3l : (loc_z32) [holdout_0596_tm]⊢⁺ loc_z33 := by
   unfold loc_z32 loc_z33
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3m : (loc_z33) [holdout_0596_tm]⊢⁺ loc_z34 := by
+theorem loc_z3m : (loc_z33) [holdout_0596_tm]⊢⁺ loc_z34 := by
   unfold loc_z33 loc_z34
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3n : (loc_z34) [holdout_0596_tm]⊢⁺ loc_z35 := by
+theorem loc_z3n : (loc_z34) [holdout_0596_tm]⊢⁺ loc_z35 := by
   unfold loc_z34 loc_z35
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3o : (loc_z35) [holdout_0596_tm]⊢⁺ loc_z36 := by
+theorem loc_z3o : (loc_z35) [holdout_0596_tm]⊢⁺ loc_z36 := by
   unfold loc_z35 loc_z36
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3p : (loc_z36) [holdout_0596_tm]⊢⁺ loc_z37 := by
+theorem z3p : (loc_z36) [holdout_0596_tm]⊢⁺ loc_z37 := by
   unfold loc_z36 loc_z37
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3q : (loc_z37) [holdout_0596_tm]⊢⁺ loc_z38 := by
+theorem z3q : (loc_z37) [holdout_0596_tm]⊢⁺ loc_z38 := by
   unfold loc_z37 loc_z38
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3r : (loc_z38) [holdout_0596_tm]⊢⁺ loc_z39 := by
+theorem z3r : (loc_z38) [holdout_0596_tm]⊢⁺ loc_z39 := by
   unfold loc_z38 loc_z39
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3s : (loc_z39) [holdout_0596_tm]⊢⁺ loc_z3a := by
+theorem z3s : (loc_z39) [holdout_0596_tm]⊢⁺ loc_z3a := by
   unfold loc_z39 loc_z3a
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3t : (loc_z3a) [holdout_0596_tm]⊢⁺ loc_z3b := by
+theorem z3t : (loc_z3a) [holdout_0596_tm]⊢⁺ loc_z3b := by
   unfold loc_z3a loc_z3b
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3u : (loc_z3b) [holdout_0596_tm]⊢⁺ loc_z3c := by
+theorem z3u : (loc_z3b) [holdout_0596_tm]⊢⁺ loc_z3c := by
   unfold loc_z3b loc_z3c
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3v : (loc_z3c) [holdout_0596_tm]⊢⁺ loc_z3d := by
+theorem z3v : (loc_z3c) [holdout_0596_tm]⊢⁺ loc_z3d := by
   unfold loc_z3c loc_z3d
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3w : (loc_z3d) [holdout_0596_tm]⊢⁺ loc_z3e := by
+theorem z3w : (loc_z3d) [holdout_0596_tm]⊢⁺ loc_z3e := by
   unfold loc_z3d loc_z3e
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3x : (loc_z3e) [holdout_0596_tm]⊢⁺ loc_z3f := by
+theorem z3x : (loc_z3e) [holdout_0596_tm]⊢⁺ loc_z3f := by
   unfold loc_z3e loc_z3f
   simp only [append_cons,append_nil,z00]
   execute
-lemma z3y : loc_z3f [holdout_0596_tm]⊢⁺ zCf 4 (zTs loc_z2R default) := by
-  have h_target : zCf 4 (zTs loc_z2R default) = (([1,1,1,0,1,1,1,0,1] +> default) {{C}}> ([1,1,0,0,1,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1] +> default)) := by
+theorem z3y : loc_z3f [holdout_0596_tm]⊢⁺ zCf 4 (evalWords loc_z2R default) := by
+  have h_target : zCf 4 (evalWords loc_z2R default) = (([1,1,1,0,1,1,1,0,1] +> default) {{C}}> ([1,1,0,0,1,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1] +> default)) := by
     unfold zCf zCR lh zCw zCs w_pre t d1 one loc_z2R
-    simp only [zTs,d0,d1,t,one,zLp,z05,List.cons_append,List.nil_append,append_cons,append_nil,z00]
+    simp only [evalWords,d0,d1,t,one,zLp,z05,List.cons_append,List.nil_append,append_cons,append_nil,z00]
   rw [h_target]
   unfold loc_z3f
   simp only [append_cons,append_nil,z00]
   execute
-lemma loc_z3z : (init []) [holdout_0596_tm]⊢⁺ zCf 4 (zTs loc_z2R default) :=
+theorem loc_z3z : (init []) [holdout_0596_tm]⊢⁺ zCf 4 (evalWords loc_z2R default) :=
   (zPt loc_z3g (zPt loc_z3h (zPt loc_z3i (zPt loc_z3j (zPt loc_z3k (zPt loc_z3l (zPt loc_z3m (zPt loc_z3n (zPt loc_z3o (zPt z3p (zPt z3q (zPt z3r (zPt z3s (zPt z3t (zPt z3u (zPt z3v (zPt z3w (zPt z3x z3y))))))))))))))))))
-lemma zIm {c c' : Cfg (Fin 2) (Fin 6)} {j d : Nat}
+theorem zIm {c c' : Cfg (Fin 2) (Fin 6)} {j d : Nat}
     (h : multiStep holdout_0596_tm c (j + d) = some c') :
     (multiStep holdout_0596_tm c j).isSome := by
   rw [zMa] at h
   cases h_j : multiStep holdout_0596_tm c j with
   | none => rw [h_j] at h; contradiction
   | some _ => rfl
-lemma loc_z3A (m : Nat) :
-    ∃ N ≥ m,∃ q w,multiStep holdout_0596_tm (init []) N = some (zCf q (zTs w default)) /\ EGood q w := by
+theorem loc_z3A (m : Nat) :
+    ∃ N ≥ m,∃ q w,multiStep holdout_0596_tm (init []) N = some (zCf q (evalWords w default)) /\ EGood q w := by
   induction m with
   | zero =>
     rcases loc_z3z with ⟨k1,_,hk1⟩
@@ -998,11 +993,11 @@ lemma loc_z3A (m : Nat) :
       zMt holdout_0596_tm _ _ _ k1 k2 hk1 hk2,loc_z2X⟩
   | succ m ih =>
     rcases ih with ⟨N,hN,q,w,h_ms,h_good⟩
-    rcases e_z2d h_good with ⟨w',hStep,h_good'⟩
+    rcases eGood_progress h_good with ⟨w',hStep,h_good'⟩
     rcases loc_z2P hStep with ⟨k,hk_pos,h_step_k⟩
     exact ⟨N + k,Nat.add_le_add hN hk_pos,q + 1,w',
       zMt holdout_0596_tm _ _ _ N k h_ms h_step_k,h_good'⟩
-lemma holdout_0596_nonhalt :
+theorem holdout_0596_nonhalt :
     IsDoesNotHalt holdout_0596_tm := by
   intro cfg h_reach
   rcases h_reach with ⟨n,hn⟩

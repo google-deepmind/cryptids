@@ -27,8 +27,8 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.Counter
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
+
+
 
 -- ============================================================================
 -- 1. Multi-Step & Tape / List-Repeat Algebra
@@ -38,23 +38,23 @@ section MultiStepAlgebra
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-@[scoped simp] private lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[scoped simp] private theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 0 = some config := rfl
 
-@[scoped simp] private lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[scoped simp] private theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 1 = step M config := rfl
 
-@[scoped simp] private lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[scoped simp] private theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma step_multiStep (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem step_multiStep (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂ := by simp [h]
 
-lemma step_stepPlus (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem step_stepPlus (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, step_multiStep tm c₁ c₂ h⟩
 
-private lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+private theorem multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
@@ -62,117 +62,119 @@ private lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) 
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+theorem multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
+theorem multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢^{n} c₃) : c₁ [tm]⊢^{n + 1} c₃ := by
   have := multiStep_trans tm c₁ c₂ c₃ 1 n h₁ h₂
   rwa [Nat.add_comm 1 n] at this
 
-lemma stepStar_refl (tm : Machine Γ Λ) (c : Cfg Γ Λ) : c [tm]⊢* c :=
+theorem stepStar_refl (tm : Machine Γ Λ) (c : Cfg Γ Λ) : c [tm]⊢* c :=
   ⟨0, rfl⟩
 
-lemma stepStar_of_multiStep {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} {n : Nat}
+theorem stepStar_of_multiStep {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} {n : Nat}
     (h : c₁ [tm]⊢^{n} c₂) : c₁ [tm]⊢* c₂ := ⟨n, h⟩
 
-lemma stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   rcases h₁ with ⟨n, hn⟩; rcases h₂ with ⟨m, hm⟩
   exact ⟨n + m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ}
+theorem stepPlus_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ}
     (h : c₁ [tm]⊢⁺ c₂) : c₁ [tm]⊢* c₂ := by
   rcases h with ⟨n, _, hn⟩; exact ⟨n, hn⟩
 
-lemma stepPlus_stepPlus_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepPlus_stepPlus_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, n_pos, hn⟩; rcases h₂ with ⟨m, _, hm⟩
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepPlus_stepPlus h₁ h₂
 
-lemma stepPlus_to_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
+theorem stepPlus_to_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ :=
   stepPlus_stepStar h
 
-lemma stepPlus_stepStar_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepPlus_stepStar_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, n_pos, hn⟩; rcases h₂ with ⟨m, hm⟩
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_stepPlus_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepStar_stepPlus_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, hn⟩; rcases h₂ with ⟨m, m_pos, hm⟩
   exact ⟨n + m, Nat.lt_add_left n m_pos, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepPlus_stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus h₁ h₂
 
-lemma stepStar_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepStar_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepStar_stepPlus_stepPlus h₁ h₂
 
-lemma step_stepStar_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem step_stepStar_stepPlus {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
 
 omit [Inhabited Γ] in
-@[scoped simp] lemma pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
+@[scoped simp] theorem pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
 
 omit [Inhabited Γ] in
-lemma pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+theorem pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 
 omit [Inhabited Γ] in
-@[scoped simp] private theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
+@[scoped simp] private theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m
+    := by
   induction n with
-  | zero => simp [pow_zero_list]
+  | zero => simp
   | succ n ih =>
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
-lemma pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
-  rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
+theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
+  rw [list_pow_add]; simp [pow_succ_list]
 
 omit [Inhabited Γ] in
-@[scoped simp] lemma nil_pow_list : ∀ (n : Nat), ([] : List Γ) ^ n = []
+@[scoped simp] theorem nil_pow_list : ∀ (n : Nat), ([] : List Γ) ^ n = []
   | 0 => rfl
   | n + 1 => by simp [pow_succ_list, nil_pow_list n]
 
-@[scoped simp] lemma listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
+@[scoped simp] theorem listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
-@[scoped simp] lemma listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
+@[scoped simp] theorem listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
     (a :: l) +> s = a >> (l +> s) := rfl
 
-@[scoped simp] lemma listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
+@[scoped simp] theorem listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) :=
   Turing.ListBlank.append_assoc l₁ l₂ s
 
-@[scoped simp] lemma default_head_gen : (default : ListBlank Γ).head = default := rfl
-@[scoped simp] lemma default_tail_gen : (default : ListBlank Γ).tail = default := rfl
+@[scoped simp] theorem default_head_gen : (default : ListBlank Γ).head = default := rfl
+@[scoped simp] theorem default_tail_gen : (default : ListBlank Γ).tail = default := rfl
 
-@[scoped simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[scoped simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[scoped simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[scoped simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-@[scoped simp] lemma zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
+@[scoped simp] theorem zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default :=
+    by
   change ListBlank.cons default default = default
   exact ListBlank.cons_head_tail default
 
-@[scoped simp] lemma zeros_append_default :
+@[scoped simp] theorem zeros_append_default :
     ∀ (k : ℕ), (([0] : List (Fin 2)) ^ k) +> (default : ListBlank (Fin 2)) = default
   | 0 => rfl
   | k + 1 => by simp [pow_succ_list, zeros_append_default k]
 
-lemma right_pow_succ (u : List Γ) (n : Nat) (r : ListBlank Γ) :
+theorem right_pow_succ (u : List Γ) (n : Nat) (r : ListBlank Γ) :
     u ^ (n + 1) +> r = u +> (u ^ n +> r) := by
   rw [pow_succ_list, listblank_append_assoc]
 
-lemma right_pow_succ_right (u : List Γ) (n : Nat) (r : ListBlank Γ) :
+theorem right_pow_succ_right (u : List Γ) (n : Nat) (r : ListBlank Γ) :
     u ^ (n + 1) +> r = u ^ n +> (u +> r) := by
   rw [pow_succ_right, listblank_append_assoc]
 
@@ -186,10 +188,10 @@ section WindowSteppers
 
 /-- Head-centered finite-window configuration over symbol type `Γ` and state type `Λ`. -/
 structure CCfg (Γ Λ : Type*) where
-  q   : Λ
+  q : Λ
   cur : Γ
-  l   : List Γ
-  r   : List Γ
+  l : List Γ
+  r : List Γ
   deriving DecidableEq
 
 abbrev CCfg.head {Γ Λ : Type*} (c : CCfg Γ Λ) : Γ := c.cur
@@ -219,7 +221,7 @@ variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 def pushWindow [DecidableEq Γ] (blank : Bool) (w : Γ) (xs : List Γ) : List Γ :=
   if blank && xs.isEmpty && w == default then [] else w :: xs
 
-lemma pushWindow_append [DecidableEq Γ] {blank : Bool} (w : Γ) (xs : List Γ)
+theorem pushWindow_append [DecidableEq Γ] {blank : Bool} (w : Γ) (xs : List Γ)
     (tail : ListBlank Γ) (h_blank : blank = true → tail = default) :
     pushWindow blank w xs +> tail = w >> (xs +> tail) := by
   unfold pushWindow
@@ -378,7 +380,8 @@ def bstep [DecidableEq Γ] (tm : Machine Γ Λ) : CCfg Γ Λ → Option (CCfg Γ
 def bmultiStep [DecidableEq Γ] (tm : Machine Γ Λ) : ℕ → CCfg Γ Λ → Option (CCfg Γ Λ) :=
   multiStepWindow true true tm
 
-theorem bstep_sound [DecidableEq Γ] {tm : Machine Γ Λ} (c c' : CCfg Γ Λ) (h : bstep tm c = some c') :
+theorem bstep_sound [DecidableEq Γ] {tm : Machine Γ Λ} (c c' : CCfg Γ Λ) (h : bstep tm c = some c')
+    :
     (evalBCfg c) [tm]⊢ (evalBCfg c') :=
   stepWindow_sound default default (fun _ => rfl) (fun _ => rfl) h
 
@@ -420,7 +423,7 @@ def step_local (tm : Machine Γ Λ) (s : LocalState Γ Λ) : Option (LocalState 
       | some (some q', Stmt.write b' .right) => some ⟨b' :: s.l, r, q', .right⟩
       | _ => none
 
-lemma step_local_spec {tm : Machine Γ Λ} {s1 s2 : LocalState Γ Λ}
+theorem step_local_spec {tm : Machine Γ Λ} {s1 s2 : LocalState Γ Λ}
     (h : step_local tm s1 = some s2) (L R : ListBlank Γ) :
     (cfg_of s1.q s1.d (s1.l +> L) (s1.r +> R)) [tm]⊢
     (cfg_of s2.q s2.d (s2.l +> L) (s2.r +> R)) := by
@@ -476,7 +479,7 @@ def run_local (tm : Machine Γ Λ) : Nat → LocalState Γ Λ → Option (LocalS
     | some s' => run_local tm n s'
     | none => none
 
-lemma run_local_spec {tm : Machine Γ Λ} {n : Nat} {s1 s2 : LocalState Γ Λ}
+theorem run_local_spec {tm : Machine Γ Λ} {n : Nat} {s1 s2 : LocalState Γ Λ}
     (h : run_local tm n s1 = some s2) (L R : ListBlank Γ) :
     (cfg_of s1.q s1.d (s1.l +> L) (s1.r +> R)) [tm]⊢*
     (cfg_of s2.q s2.d (s2.l +> L) (s2.r +> R)) := by
@@ -493,7 +496,7 @@ lemma run_local_spec {tm : Machine Γ Λ} {n : Nat} {s1 s2 : LocalState Γ Λ}
       rw [hs] at h
       exact stepPlus_stepStar (step_stepStar_stepPlus (step_local_spec hs L R) (ih h))
 
-lemma run_local_plus_eq {tm : Machine Γ Λ} {n : Nat} {s1 s2 : LocalState Γ Λ}
+theorem run_local_plus_eq {tm : Machine Γ Λ} {n : Nat} {s1 s2 : LocalState Γ Λ}
     {c1 c2 : Cfg Γ Λ} (L R : ListBlank Γ)
     (h : run_local tm (n + 1) s1 = some s2)
     (h1 : cfg_of s1.q s1.d (s1.l +> L) (s1.r +> R) = c1)
@@ -523,14 +526,14 @@ def encWords (w : Tok → List Γ) : List Tok → List Γ
   | d :: xs => w d ++ encWords w xs
 
 omit [Inhabited Γ] in
-@[scoped simp] lemma encWords_nil (w : Tok → List Γ) : encWords w [] = [] := rfl
+@[scoped simp] theorem encWords_nil (w : Tok → List Γ) : encWords w [] = [] := rfl
 
 omit [Inhabited Γ] in
-@[scoped simp] lemma encWords_cons (w : Tok → List Γ) (d : Tok) (xs : List Tok) :
+@[scoped simp] theorem encWords_cons (w : Tok → List Γ) (d : Tok) (xs : List Tok) :
     encWords w (d :: xs) = w d ++ encWords w xs := rfl
 
 omit [Inhabited Γ] in
-@[scoped simp] lemma encWords_append (w : Tok → List Γ) (x y : List Tok) :
+@[scoped simp] theorem encWords_append (w : Tok → List Γ) (x y : List Tok) :
     encWords w (x ++ y) = encWords w x ++ encWords w y := by
   induction x with
   | nil => rfl
@@ -540,14 +543,14 @@ omit [Inhabited Γ] in
 def encTape (w : Tok → List Γ) (sentinel : ListBlank Γ) (x : List Tok) : ListBlank Γ :=
   encWords w x +> sentinel
 
-@[scoped simp] lemma encTape_nil (w : Tok → List Γ) (sentinel : ListBlank Γ) :
+@[scoped simp] theorem encTape_nil (w : Tok → List Γ) (sentinel : ListBlank Γ) :
     encTape w sentinel [] = sentinel := rfl
 
-lemma encTape_cons (w : Tok → List Γ) (sentinel : ListBlank Γ) (d : Tok) (xs : List Tok) :
+theorem encTape_cons (w : Tok → List Γ) (sentinel : ListBlank Γ) (d : Tok) (xs : List Tok) :
     encTape w sentinel (d :: xs) = w d +> encTape w sentinel xs := by
   simp only [encTape, encWords_cons, listblank_append_assoc]
 
-@[scoped simp] lemma encTape_append (w : Tok → List Γ) (sentinel : ListBlank Γ) (x y : List Tok) :
+@[scoped simp] theorem encTape_append (w : Tok → List Γ) (sentinel : ListBlank Γ) (x y : List Tok) :
     encTape w sentinel (x ++ y) = encWords w x +> encTape w sentinel y := by
   simp only [encTape, encWords_append, listblank_append_assoc]
 
@@ -564,7 +567,8 @@ inductive IterRel {α : Type*} (Inc : α → α → Prop) : ℕ → α → α �
   | zero (x : α) : IterRel Inc 0 x x
   | succ {n : ℕ} {x y z : α} : Inc x y → IterRel Inc n y z → IterRel Inc (n + 1) x z
 
-/-- Composition of iterated relation steps: `IterRel Inc m x y → IterRel Inc n y z → IterRel Inc (m + n) x z`. -/
+/-- Composition of iterated relation steps: `IterRel Inc m x y → IterRel Inc n y z → IterRel Inc (m
+    + n) x z`. -/
 theorem IterRel_trans {α : Type*} {Inc : α → α → Prop} {m n : ℕ} {x y z : α}
     (h₁ : IterRel Inc m x y) (h₂ : IterRel Inc n y z) : IterRel Inc (m + n) x z := by
   induction h₁ with
@@ -594,7 +598,7 @@ inductive LD
   | W1 : LD
   deriving DecidableEq, Repr
 
-lemma pow_W1_odd : ∀ (m : ℕ) (s : List LD),
+theorem pow_W1_odd : ∀ (m : ℕ) (s : List LD),
     ((([.W1] : List LD) ^ (2 * m + 1)) ++ s) =
       ((([.W1, .W1] : List LD) ^ m) ++ (.W1 :: s))
   | 0, s => rfl
@@ -608,14 +612,14 @@ inductive LInc : List LD → List LD → Prop
   | w10 (xs : List LD) : LInc (.W1 :: .W0 :: xs) (.W1 :: .W1 :: xs)
   | w11 {xs xs' : List LD} : LInc xs xs' → LInc (.W1 :: .W1 :: xs) (.W1 :: .W0 :: xs')
 
-lemma LInc_append {a a' : List LD} (h : LInc a a') (b : List LD) :
+theorem LInc_append {a a' : List LD} (h : LInc a a') (b : List LD) :
     LInc (a ++ b) (a' ++ b) := by
   induction h with
   | w0 _ ih => exact .w0 ih
   | w10 xs => exact .w10 (xs ++ b)
   | w11 _ ih => exact .w11 ih
 
-lemma LInc_pow_11_10 : ∀ (k : ℕ) (s : List LD),
+theorem LInc_pow_11_10 : ∀ (k : ℕ) (s : List LD),
     LInc ((([.W1, .W1] : List LD) ^ k) ++ (.W1 :: .W0 :: s))
       ((([.W1, .W0] : List LD) ^ k) ++ (.W1 :: .W1 :: s))
   | 0, s => .w10 s
@@ -623,13 +627,13 @@ lemma LInc_pow_11_10 : ∀ (k : ℕ) (s : List LD),
 
 abbrev LIncs : ℕ → List LD → List LD → Prop := IterRel LInc
 
-lemma LIncs_w0 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
+theorem LIncs_w0 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
     LIncs n (.W0 :: xs) (.W0 :: xs') := by
   induction h with
   | zero xs => exact .zero (.W0 :: xs)
   | succ h1 _ ih => exact .succ (.w0 h1) ih
 
-lemma LIncs_w11 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
+theorem LIncs_w11 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
     LIncs (2 * n) (.W1 :: .W1 :: xs) (.W1 :: .W1 :: xs') := by
   induction h with
   | zero xs => exact .zero (.W1 :: .W1 :: xs)
@@ -637,7 +641,7 @@ lemma LIncs_w11 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
     rw [Nat.mul_succ]
     exact .succ (.w11 h1) (.succ (.w10 y) ih)
 
-lemma LIncs_w10 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
+theorem LIncs_w10 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
     LIncs (2 * n + 1) (.W1 :: .W0 :: xs) (.W1 :: .W1 :: xs') :=
   .succ (.w10 xs) (LIncs_w11 h)
 
@@ -646,8 +650,10 @@ lemma LIncs_w10 {n : ℕ} {xs xs' : List LD} (h : LIncs n xs xs') :
 inductive LIncsP : ℕ → List LD → List LD → Prop
   | nil : LIncsP 0 [] []
   | w0 {n : ℕ} {xs xs' : List LD} : LIncsP n xs xs' → LIncsP n (.W0 :: xs) (.W0 :: xs')
-  | w10 {n : ℕ} {xs xs' : List LD} : LIncsP n xs xs' → LIncsP (2 * n + 1) (.W1 :: .W0 :: xs) (.W1 :: .W1 :: xs')
-  | w11 {n : ℕ} {xs xs' : List LD} : LIncsP n xs xs' → LIncsP (2 * n) (.W1 :: .W1 :: xs) (.W1 :: .W1 :: xs')
+  | w10 {n : ℕ} {xs xs' : List LD} : LIncsP n xs xs' → LIncsP (2 * n + 1) (.W1 :: .W0 :: xs) (.W1 ::
+    .W1 :: xs')
+  | w11 {n : ℕ} {xs xs' : List LD} : LIncsP n xs xs' → LIncsP (2 * n) (.W1 :: .W1 :: xs) (.W1 :: .W1
+    :: xs')
 
 theorem LIncsP_to_LIncs {n : ℕ} {x x' : List LD} (h : LIncsP n x x') : LIncs n x x' := by
   induction h with
@@ -656,7 +662,7 @@ theorem LIncsP_to_LIncs {n : ℕ} {x x' : List LD} (h : LIncsP n x x') : LIncs n
   | w10 _ ih => exact LIncs_w10 ih
   | w11 _ ih => exact LIncs_w11 ih
 
-lemma LIncsP_append {m : ℕ} {a a' : List LD} (ha : LIncsP m a a') :
+theorem LIncsP_append {m : ℕ} {a a' : List LD} (ha : LIncsP m a a') :
     ∀ {n : ℕ} {b b' : List LD}, LIncsP n b b' → ∃ k, LIncsP k (a ++ b) (a' ++ b') := by
   induction ha with
   | nil => intro n b b' hb; exact ⟨n, hb⟩
@@ -673,7 +679,7 @@ lemma LIncsP_append {m : ℕ} {a a' : List LD} (ha : LIncsP m a a') :
     rcases ih hb with ⟨k, hk⟩
     exact ⟨2 * k, .w11 hk⟩
 
-lemma LIncsP_pow_10 : ∀ (k : ℕ) {n : ℕ} {xs xs' : List LD},
+theorem LIncsP_pow_10 : ∀ (k : ℕ) {n : ℕ} {xs xs' : List LD},
     LIncsP n xs xs' →
     ∃ m, LIncsP m ((([.W1, .W0] : List LD) ^ k) ++ xs) ((([.W1, .W1] : List LD) ^ k) ++ xs')
   | 0, _, _, _, h => ⟨_, h⟩
@@ -681,7 +687,7 @@ lemma LIncsP_pow_10 : ∀ (k : ℕ) {n : ℕ} {xs xs' : List LD},
     rcases LIncsP_pow_10 k h with ⟨m, hm⟩
     exact ⟨2 * m + 1, .w10 hm⟩
 
-lemma LIncsP_pow10_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
+theorem LIncsP_pow10_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
     LIncsP (2 * (512 * n + 511) + 1)
       ((([.W1, .W0] : List LD) ^ 10) ++ xs)
       ((([.W1, .W1] : List LD) ^ 10) ++ xs') := by
@@ -695,7 +701,8 @@ lemma LIncsP_pow10_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
   have h8 := LIncsP.w10 h7
   have h9 := LIncsP.w10 h8
   have h10 := LIncsP.w10 h9
-  have heq : 2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * n + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1 =
+  have heq : 2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * n + 1) + 1) + 1) + 1) + 1) + 1) + 1) +
+    1) + 1) + 1 =
       2 * (512 * n + 511) + 1 := by omega
   rwa [heq] at h10
 
@@ -711,7 +718,7 @@ inductive LOv2 : List LD → List LD → List LD → Prop
       LOv2 xs u (.W1 :: z) → LInc z z' →
       LOv2 (.W1 :: .W1 :: xs) u (.W0 :: .W0 :: .W0 :: z')
 
-lemma LOv2_append {a b u v w : List LD} (ha : LOv2 a v w) (hb : LOv2 b u v) :
+theorem LOv2_append {a b u v w : List LD} (ha : LOv2 a v w) (hb : LOv2 b u v) :
     LOv2 (a ++ b) u w := by
   induction ha with
   | nil => exact hb
@@ -719,7 +726,7 @@ lemma LOv2_append {a b u v w : List LD} (ha : LOv2 a v w) (hb : LOv2 b u v) :
   | w11_0 _ ih => exact .w11_0 (ih hb)
   | w11_1 _ hz ih => exact .w11_1 (ih hb) hz
 
-lemma LOv2_suffix {w u y : List LD} (h : LOv2 w u y) (s : List LD) :
+theorem LOv2_suffix {w u y : List LD} (h : LOv2 w u y) (s : List LD) :
     LOv2 w (u ++ s) (y ++ s) := by
   induction h with
   | nil _ => exact .nil _
@@ -727,7 +734,7 @@ lemma LOv2_suffix {w u y : List LD} (h : LOv2 w u y) (s : List LD) :
   | w11_0 _ ih => exact .w11_0 ih
   | w11_1 _ hz ih => exact .w11_1 ih (LInc_append hz s)
 
-lemma LOv2_pow_11 : ∀ (k : ℕ) (s : List LD),
+theorem LOv2_pow_11 : ∀ (k : ℕ) (s : List LD),
     LOv2 ((([.W1, .W1] : List LD) ^ k))
       ([.W0, .W0, .W1, .W0] ++ s)
       ([.W0, .W0, .W1, .W0] ++ ((([.W1, .W0] : List LD) ^ k) ++ s))
@@ -841,7 +848,7 @@ def checkBuffer : ℕ → List LD → Bool
 
 abbrev IsBuffer (r : ℕ) (b : List LD) : Prop := checkBuffer r b = true
 
-lemma checkBuffer_mono : ∀ {r : ℕ} {b : List LD},
+theorem checkBuffer_mono : ∀ {r : ℕ} {b : List LD},
     checkBuffer (r + 1) b = true → checkBuffer r b = true
   | 0, b, h => by
     unfold checkBuffer stepBuffer at h
@@ -856,7 +863,7 @@ lemma checkBuffer_mono : ∀ {r : ℕ} {b : List LD},
       rw [hs] at h
       exact checkBuffer_mono h
 
-lemma isBuffer_le {k r : ℕ} (hkr : k ≤ r) {b : List LD} (hb : IsBuffer r b) :
+theorem isBuffer_le {k r : ℕ} (hkr : k ≤ r) {b : List LD} (hb : IsBuffer r b) :
     IsBuffer k b := by
   induction r generalizing k with
   | zero =>
@@ -933,7 +940,8 @@ theorem macroStepFinite_spec {u u' : List LD} (h : macroStepFinite u = some u') 
         cases d with
         | W0 =>
           intro h; injection h with h'; subst h'
-          exact ⟨lincspCount u, up, lincspFinite_sound h_lp, .w11_0 (.w11_0 (lov2Finite_sound h_ov))⟩
+          exact ⟨lincspCount u, up, lincspFinite_sound h_lp, .w11_0 (.w11_0 (lov2Finite_sound
+            h_ov))⟩
         | W1 =>
           simp only [Option.map_eq_some_iff]
           rintro ⟨z', hz, rfl⟩
@@ -951,7 +959,7 @@ inductive ChainTail (r : ℕ) : List LD → Prop
       IsBuffer r B → ChainTail r T →
       ChainTail r ((([.W1, .W0] : List LD) ^ (2 * r)) ++ (B ++ T))
 
-lemma ChainTail_pow_pair : ∀ (k : ℕ) {r : ℕ} {T : List LD},
+theorem ChainTail_pow_pair : ∀ (k : ℕ) {r : ℕ} {T : List LD},
     ChainTail r T → ChainTail r ((([.W1, .W0] : List LD) ^ k) ++ T)
   | 0, _, _, h => h
   | k + 1, _, _, h => ChainTail.pair (ChainTail_pow_pair k h)
@@ -970,7 +978,8 @@ theorem ChainTail_step {r : ℕ} {T : List LD} (hT : ChainTail (r + 1) T)
       have : 2 * (r + 1) = 2 * r + 2 := by omega
       rw [this, list_pow_add, List.append_assoc]; rfl
     rw [h_2]
-    have h_lp2 : LIncsP (2 * (2 * nu + 1) + 1) ([.W1, .W0, .W1, .W0] ++ u) ([.W1, .W1, .W1, .W1] ++ up) :=
+    have h_lp2 : LIncsP (2 * (2 * nu + 1) + 1) ([.W1, .W0, .W1, .W0] ++ u) ([.W1, .W1, .W1, .W1] ++
+      up) :=
       .w10 (.w10 h_up)
     rcases LIncsP_pow_10 (2 * r) h_lp2 with ⟨n_all, h_all⟩
     refine ⟨n_all, _, ([.W1, .W0] : List LD) ^ (2 * r), h_all, ?_, .nil⟩
@@ -990,14 +999,15 @@ theorem ChainTail_step {r : ℕ} {T : List LD} (hT : ChainTail (r + 1) T)
     rw [h_2]
     rcases LIncsP_append (.w10 (.w10 h_lpB)) h_lp0 with ⟨n_mid, h_mid⟩
     rcases LIncsP_pow_10 (2 * r) h_mid with ⟨n_all, h_all⟩
-    refine ⟨n_all, _, ((([.W1, .W0] : List LD) ^ (2 * r)) ++ (B' ++ T₀')), h_all, ?_, .buf hB' h_ct0⟩
+    refine ⟨n_all, _, ((([.W1, .W0] : List LD) ^ (2 * r)) ++ (B' ++ T₀')), h_all, ?_, .buf hB'
+      h_ct0⟩
     have h_ov_mid : LOv2 (([.W1, .W1, .W1, .W1] ++ bp) ++ W₀') [.W0, .W0]
         ([.W0, .W0, .W1, .W0] ++ (B' ++ (T₀' ++ u'))) :=
       LOv2_append (h_ovB (T₀' ++ u')) h_ov0
     have h_ov_top := LOv2_append (LOv2_pow_11 (2 * r) (B' ++ (T₀' ++ u'))) h_ov_mid
     simpa only [List.append_assoc] using! h_ov_top
 
-lemma ChainTail_zero_lincsp {T : List LD} (hT : ChainTail 0 T) :
+theorem ChainTail_zero_lincsp {T : List LD} (hT : ChainTail 0 T) :
     ∃ n T', LIncsP n T T' := by
   induction hT with
   | nil => exact ⟨0, [], .nil⟩
@@ -1018,14 +1028,14 @@ inductive Only011 : List LD → Prop
   | w0 {xs : List LD} : Only011 xs → Only011 (.W0 :: xs)
   | w11 {xs : List LD} : Only011 xs → Only011 (.W1 :: .W1 :: xs)
 
-lemma Only011_append {a b : List LD} (ha : Only011 a) (hb : Only011 b) :
+theorem Only011_append {a b : List LD} (ha : Only011 a) (hb : Only011 b) :
     Only011 (a ++ b) := by
   induction ha with
   | nil => exact hb
   | w0 _ ih => exact .w0 ih
   | w11 _ ih => exact .w11 ih
 
-lemma LIncsP_only011 {n : ℕ} {x x' : List LD} (h : LIncsP n x x') : Only011 x' := by
+theorem LIncsP_only011 {n : ℕ} {x x' : List LD} (h : LIncsP n x x') : Only011 x' := by
   induction h with
   | nil => exact .nil
   | w0 _ ih => exact .w0 ih
@@ -1048,10 +1058,12 @@ theorem checkOnly011_sound : ∀ {w : List LD}, checkOnly011 w = true → Only01
 /-- LSB-first positional binary value relation over two chosen digit tokens `d0, d1 : Tok`. -/
 inductive DigitVal {Tok : Type*} (d0 d1 : Tok) : Nat → Nat → List Tok → Prop where
   | nil : DigitVal d0 d1 0 0 []
-  | zero {A H : Nat} {u : List Tok} : DigitVal d0 d1 A H u → DigitVal d0 d1 (A * 2) (1 + H) (d0 :: u)
-  | one {A H : Nat} {u : List Tok} : DigitVal d0 d1 A H u → DigitVal d0 d1 (1 + A * 2) (1 + H) (d1 :: u)
+  | zero {A H : Nat} {u : List Tok} : DigitVal d0 d1 A H u → DigitVal d0 d1 (A * 2) (1 + H) (d0 ::
+    u)
+  | one {A H : Nat} {u : List Tok} : DigitVal d0 d1 A H u → DigitVal d0 d1 (1 + A * 2) (1 + H) (d1
+    :: u)
 
-lemma digitVal_exists {Tok : Type*} (d0 d1 : Tok) (H : Nat) :
+theorem digitVal_exists {Tok : Type*} (d0 d1 : Tok) (H : Nat) :
     ∀ A, A < 2 ^ H → ∃ u, DigitVal d0 d1 A H u := by
   induction H with
   | zero =>
@@ -1070,7 +1082,7 @@ lemma digitVal_exists {Tok : Type*} (d0 d1 : Tok) (H : Nat) :
       have ha2 : 2 * a + 1 = 1 + a * 2 := by omega
       rw [h1H, ha2]; exact ⟨d1 :: u, DigitVal.one hI⟩
 
-lemma digitVal_append {Tok : Type*} {d0 d1 : Tok} {A H : Nat} {u : List Tok}
+theorem digitVal_append {Tok : Type*} {d0 d1 : Tok} {A H : Nat} {u : List Tok}
     (h1 : DigitVal d0 d1 A H u) :
     ∀ {B J : Nat} {v : List Tok},
       DigitVal d0 d1 B J v → DigitVal d0 d1 (A + B * 2 ^ H) (H + J) (u ++ v) := by
@@ -1127,7 +1139,7 @@ def dec_l_fuel : Nat → List LTok → List LTok
 def dec_l (l : List LTok) : List LTok := dec_l_fuel l.length l
 
 @[scoped simp]
-lemma length_dec_l_fuel (n : Nat) (l : List LTok) : (dec_l_fuel n l).length = l.length := by
+theorem length_dec_l_fuel (n : Nat) (l : List LTok) : (dec_l_fuel n l).length = l.length := by
   induction n generalizing l with
   | zero => rfl
   | succ n ih =>
@@ -1136,16 +1148,16 @@ lemma length_dec_l_fuel (n : Nat) (l : List LTok) : (dec_l_fuel n l).length = l.
     | cons t tl => cases t <;> simp [dec_l_fuel, ih]
 
 @[scoped simp]
-lemma length_dec_l (l : List LTok) : (dec_l l).length = l.length :=
+theorem length_dec_l (l : List LTok) : (dec_l l).length = l.length :=
   length_dec_l_fuel l.length l
 
-@[scoped simp] lemma dec_l_nil : dec_l [] = [] := rfl
-@[scoped simp] lemma dec_l_L0 (l : List LTok) : dec_l (.L0 :: l) = .L1 :: l := rfl
-@[scoped simp] lemma dec_l_L1 (l : List LTok) : dec_l (.L1 :: l) = .L0 :: dec_l l := rfl
-@[scoped simp] lemma dec_l_L2 (l : List LTok) : dec_l (.L2 :: l) = .L2 :: dec_l (dec_l l) := by
+@[scoped simp] theorem dec_l_nil : dec_l [] = [] := rfl
+@[scoped simp] theorem dec_l_L0 (l : List LTok) : dec_l (.L0 :: l) = .L1 :: l := rfl
+@[scoped simp] theorem dec_l_L1 (l : List LTok) : dec_l (.L1 :: l) = .L0 :: dec_l l := rfl
+@[scoped simp] theorem dec_l_L2 (l : List LTok) : dec_l (.L2 :: l) = .L2 :: dec_l (dec_l l) := by
   simp only [dec_l, List.length_cons, dec_l_fuel, length_dec_l_fuel]
 
-lemma cap_dec_l_aux (n : Nat) :
+theorem cap_dec_l_aux (n : Nat) :
     ∀ l : List LTok, l.length ≤ n → cap l ≥ 1 → cap (dec_l l) = cap l - 1 := by
   induction n with
   | zero =>
@@ -1171,7 +1183,7 @@ lemma cap_dec_l_aux (n : Nat) :
         have ih2 := ih (dec_l l) (by rw [length_dec_l]; exact hlen) h3
         rw [ih2, ih1]; omega
 
-lemma cap_dec_l (l : List LTok) (h : cap l ≥ 1) : cap (dec_l l) = cap l - 1 :=
+theorem cap_dec_l (l : List LTok) (h : cap l ≥ 1) : cap (dec_l l) = cap l - 1 :=
   cap_dec_l_aux l.length l (Nat.le_refl _) h
 
 end CapacityCounter
@@ -1187,28 +1199,28 @@ def add_last : List ℕ → ℕ → List ℕ
   | [x], c => [x + c]
   | x :: y :: rest, c => x :: add_last (y :: rest) c
 
-lemma add_last_cons (x : ℕ) {ks : List ℕ} (hne : ks ≠ []) (c : ℕ) :
+theorem add_last_cons (x : ℕ) {ks : List ℕ} (hne : ks ≠ []) (c : ℕ) :
     add_last (x :: ks) c = x :: add_last ks c := by
   cases ks with
   | nil => contradiction
   | cons _ _ => rfl
 
-@[scoped simp] lemma add_last_length : ∀ (ks : List ℕ) (c : ℕ), (add_last ks c).length = ks.length
+@[scoped simp] theorem add_last_length : ∀ (ks : List ℕ) (c : ℕ), (add_last ks c).length = ks.length
   | [], _ => rfl
   | [_], _ => rfl
   | _ :: _ :: _, _ => by simp [add_last, add_last_length]
 
-@[scoped simp] lemma add_last_ne_nil : ∀ (ks : List ℕ) (c : ℕ), ks ≠ [] → add_last ks c ≠ []
+@[scoped simp] theorem add_last_ne_nil : ∀ (ks : List ℕ) (c : ℕ), ks ≠ [] → add_last ks c ≠ []
   | [], _, h => absurd rfl h
   | [_], _, _ => by simp [add_last]
   | _ :: _ :: _, _, _ => by simp [add_last]
 
-@[scoped simp] lemma add_last_zero : ∀ (ks : List ℕ), add_last ks 0 = ks
+@[scoped simp] theorem add_last_zero : ∀ (ks : List ℕ), add_last ks 0 = ks
   | [] => rfl
   | [x] => by simp [add_last]
   | x :: y :: rest => by simp [add_last, add_last_zero]
 
-lemma add_last_add : ∀ (ks : List ℕ) (a b : ℕ),
+theorem add_last_add : ∀ (ks : List ℕ) (a b : ℕ),
     add_last (add_last ks a) b = add_last ks (a + b)
   | [], _, _ => rfl
   | [x], a, b => by simp [add_last, Nat.add_assoc]
@@ -1224,13 +1236,13 @@ def bump_enc_twice (m₀ : ℕ) (ms : List ℕ) : ℕ × List ℕ :=
   let p := bump_enc m₀ ms
   bump_enc p.1 p.2
 
-lemma bump_enc_nonempty (k₀ : ℕ) {ks : List ℕ} (hne : ks ≠ []) :
+theorem bump_enc_nonempty (k₀ : ℕ) {ks : List ℕ} (hne : ks ≠ []) :
     bump_enc k₀ ks = (k₀, add_last ks 3) := by
   cases ks with
   | nil => contradiction
   | cons _ _ => rfl
 
-lemma bump_enc_twice_nonempty (m₀ : ℕ) {ms : List ℕ} (hne : ms ≠ []) :
+theorem bump_enc_twice_nonempty (m₀ : ℕ) {ms : List ℕ} (hne : ms ≠ []) :
     bump_enc_twice m₀ ms = (m₀, add_last ms 6) := by
   unfold bump_enc_twice
   rw [bump_enc_nonempty m₀ hne, bump_enc_nonempty m₀ (add_last_ne_nil ms 3 hne), add_last_add]
@@ -1240,7 +1252,7 @@ def ValidKS : List ℕ → Prop
   | [_] => True
   | k :: k' :: rest => k ≥ 1 ∧ ValidKS (k' :: rest)
 
-lemma ValidKS_add_last : ∀ (ks : List ℕ) (c : ℕ), ValidKS ks → ValidKS (add_last ks c)
+theorem ValidKS_add_last : ∀ (ks : List ℕ) (c : ℕ), ValidKS ks → ValidKS (add_last ks c)
   | [], _, _ => trivial
   | [_], _, _ => trivial
   | k :: y :: rest, c, ⟨hk, hrest⟩ => by
@@ -1253,7 +1265,7 @@ lemma ValidKS_add_last : ∀ (ks : List ℕ) (c : ℕ), ValidKS ks → ValidKS (
       rw [h_al] at h_ih
       exact ⟨hk, h_ih⟩
 
-lemma ValidKS_bump_enc (k₀ : ℕ) (ks : List ℕ) (h : ValidKS ks) : ValidKS (bump_enc k₀ ks).2 := by
+theorem ValidKS_bump_enc (k₀ : ℕ) (ks : List ℕ) (h : ValidKS ks) : ValidKS (bump_enc k₀ ks).2 := by
   cases ks with
   | nil => trivial
   | cons k₁ rest => exact ValidKS_add_last (k₁ :: rest) 3 h
@@ -1262,24 +1274,24 @@ def GoodKS (s : ℕ) : List ℕ → Prop
   | [] => True
   | k :: rest => s ≤ 35 * (k + 2) ∧ GoodKS (s + 63 * (k + 2)) rest
 
-lemma GoodKS_mono : ∀ (ks : List ℕ) (s₁ s₂ : ℕ), s₁ ≤ s₂ → GoodKS s₂ ks → GoodKS s₁ ks
+theorem GoodKS_mono : ∀ (ks : List ℕ) (s₁ s₂ : ℕ), s₁ ≤ s₂ → GoodKS s₂ ks → GoodKS s₁ ks
   | [], _, _, _, _ => trivial
   | k :: rest, s₁, s₂, hle, ⟨h1, h2⟩ =>
     ⟨by omega, GoodKS_mono rest (s₁ + 63 * (k + 2)) (s₂ + 63 * (k + 2)) (by omega) h2⟩
 
-lemma GoodKS_add_last : ∀ (ks : List ℕ) (s c : ℕ), GoodKS s ks → GoodKS s (add_last ks c)
+theorem GoodKS_add_last : ∀ (ks : List ℕ) (s c : ℕ), GoodKS s ks → GoodKS s (add_last ks c)
   | [], _, _, _ => trivial
   | [k], s, c, ⟨h1, _⟩ => ⟨by omega, trivial⟩
   | k :: y :: rest, s, c, ⟨h1, h2⟩ =>
     ⟨h1, GoodKS_add_last (y :: rest) (s + 63 * (k + 2)) c h2⟩
 
-lemma GoodKS_valid : ∀ (ks : List ℕ) (s : ℕ), s ≥ 71 → GoodKS s ks → ValidKS ks
+theorem GoodKS_valid : ∀ (ks : List ℕ) (s : ℕ), s ≥ 71 → GoodKS s ks → ValidKS ks
   | [], _, _, _ => trivial
   | [_], _, _, _ => trivial
   | k :: y :: rest, s, hs, ⟨h1, h2⟩ =>
     ⟨by omega, GoodKS_valid (y :: rest) (s + 63 * (k + 2)) (by omega) h2⟩
 
-lemma GoodKS_succ_valid (s w : ℕ) (ws : List ℕ) (h : GoodKS s ((w + 1) :: ws)) :
+theorem GoodKS_succ_valid (s w : ℕ) (ws : List ℕ) (h : GoodKS s ((w + 1) :: ws)) :
     ValidKS ((w + 1) :: ws) := by
   cases ws with
   | nil => trivial
@@ -1307,12 +1319,13 @@ inductive Side (CallStep : Call → ListBlank Γ → ListBlank Γ → Prop) :
   | cons {c : Call} {ls : List Call} {r1 r2 r3 : ListBlank Γ} :
       CallStep c r1 r2 → Side CallStep ls r2 r3 → Side CallStep (c :: ls) r1 r3
 
-/-- Segment transformer lifting `Side CallStep ls_out` to `Side CallStep ls_in` across finite words `w1 ↦ w2`. -/
+/-- Segment transformer lifting `Side CallStep ls_out` to `Side CallStep ls_in` across finite words
+    `w1 ↦ w2`. -/
 def Seg (CallStep : Call → ListBlank Γ → ListBlank Γ → Prop)
     (ls_in ls_out : List Call) (w1 w2 : List Γ) : Prop :=
   ∀ r1 r2, Side CallStep ls_out r1 r2 → Side CallStep ls_in (w1 +> r1) (w2 +> r2)
 
-lemma Side_append {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
+theorem Side_append {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
     {ls1 ls2 : List Call} {r1 r2 r3 : ListBlank Γ}
     (h1 : Side CallStep ls1 r1 r2) (h2 : Side CallStep ls2 r2 r3) :
     Side CallStep (ls1 ++ ls2) r1 r3 := by
@@ -1320,7 +1333,7 @@ lemma Side_append {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
   | nil _ => exact h2
   | cons hc _ ih => exact Side.cons hc (ih h2)
 
-lemma Side_split {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
+theorem Side_split {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
     {ls1 ls2 : List Call} {r1 r3 : ListBlank Γ}
     (h : Side CallStep (ls1 ++ ls2) r1 r3) :
     ∃ r2, Side CallStep ls1 r1 r2 ∧ Side CallStep ls2 r2 r3 := by
@@ -1331,21 +1344,21 @@ lemma Side_split {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
     rcases ih hrest with ⟨r2, h1, h2⟩
     exact ⟨r2, Side.cons hc h1, h2⟩
 
-lemma Seg_nil {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop} (w : List Γ) :
+theorem Seg_nil {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop} (w : List Γ) :
     Seg CallStep [] [] w w := by
   intro r1 r2 h; cases h; exact Side.nil (w +> r1)
 
-lemma Seg_refl {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop} (ls : List Call) :
+theorem Seg_refl {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop} (ls : List Call) :
     Seg CallStep ls ls [] [] := by
   intro r1 r2 h; exact h
 
-lemma Seg_apply {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
+theorem Seg_apply {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
     {ls1 ls2 : List Call} {w1 w2 : List Γ} {r1 r2 : ListBlank Γ}
     (h1 : Seg CallStep ls1 ls2 w1 w2) (h2 : Side CallStep ls2 r1 r2) :
     Side CallStep ls1 (w1 +> r1) (w2 +> r2) :=
   h1 r1 r2 h2
 
-lemma Seg_par {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
+theorem Seg_par {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
     {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : List Γ}
     (h1 : Seg CallStep ls1 ls2 w1 w2) (h2 : Seg CallStep ls3 ls4 w2 w3) :
     Seg CallStep (ls1 ++ ls3) (ls2 ++ ls4) w1 w3 := by
@@ -1353,7 +1366,7 @@ lemma Seg_par {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
   rcases Side_split h with ⟨r2, ha, hb⟩
   exact Side_append (h1 r1 r2 ha) (h2 r2 r3 hb)
 
-lemma Seg_seq {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
+theorem Seg_seq {CallStep : Call → ListBlank Γ → ListBlank Γ → Prop}
     {ls1 ls2 ls3 : List Call} {w1 w2 v1 v2 : List Γ}
     (h1 : Seg CallStep ls1 ls2 w1 w2) (h2 : Seg CallStep ls2 ls3 v1 v2) :
     Seg CallStep ls1 ls3 (w1 ++ v1) (w2 ++ v2) := by
@@ -1371,7 +1384,7 @@ section EraClosure
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-lemma isSome_step_of_multiStep_gt {M : Machine Γ Λ} {c₀ c c' : Cfg Γ Λ} {n M_steps : ℕ}
+theorem isSome_step_of_multiStep_gt {M : Machine Γ Λ} {c₀ c c' : Cfg Γ Λ} {n M_steps : ℕ}
     (hn : multiStep M c₀ n = some c)
     (hM : multiStep M c₀ M_steps = some c')
     (h_lt : n < M_steps) :
@@ -1392,17 +1405,17 @@ lemma isSome_step_of_multiStep_gt {M : Machine Γ Λ} {c₀ c c' : Cfg Γ Λ} {n
     rw [h_none d] at hM
     cases hM
 
-theorem does_not_halt_of_arbitrarily_long {M : Machine Γ Λ}
-    (h_long : ∀ N : ℕ, ∃ k ≥ N, ∃ c', (init []) [M]⊢^{k} c') :
-    ∀ (cfg : Cfg Γ Λ), ((init []) [M]⊢* cfg) → (step M cfg).isSome := by
+theorem does_not_halt_of_arbitrarily_long {M : Machine Γ Λ} {c_init : Cfg Γ Λ}
+    (h_long : ∀ N : ℕ, ∃ k ≥ N, ∃ c', c_init [M]⊢^{k} c') :
+    ∀ (cfg : Cfg Γ Λ), (c_init [M]⊢* cfg) → (step M cfg).isSome := by
   intro cfg ⟨n, hn⟩
   obtain ⟨k, hk, c', hc'⟩ := h_long (n + 1)
   exact isSome_step_of_multiStep_gt hn hc' (by omega)
 
-theorem does_not_halt_of_invariant {M : Machine Γ Λ} (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ c₀, ((init []) [M]⊢* c₀) ∧ Inv c₀)
+theorem does_not_halt_of_invariant {M : Machine Γ Λ} {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ c₀, (c_init [M]⊢* c₀) ∧ Inv c₀)
     (h_step : ∀ c, Inv c → ∃ c', (c [M]⊢⁺ c') ∧ Inv c') :
-    ∀ (cfg : Cfg Γ Λ), ((init []) [M]⊢* cfg) → (step M cfg).isSome := by
+    ∀ (cfg : Cfg Γ Λ), (c_init [M]⊢* cfg) → (step M cfg).isSome := by
   rcases h_init with ⟨c₀, ⟨n₀, hn₀⟩, h_inv₀⟩
   have h_chain : ∀ m : ℕ, ∃ k ≥ m, ∃ c, (c₀ [M]⊢^{k} c) ∧ Inv c := by
     intro m
@@ -1415,7 +1428,7 @@ theorem does_not_halt_of_invariant {M : Machine Γ Λ} (Inv : Cfg Γ Λ → Prop
   apply does_not_halt_of_arbitrarily_long
   intro N
   rcases h_chain N with ⟨k, hk, c, hc, _⟩
-  exact ⟨n₀ + k, by omega, c, multiStep_trans M (init []) c₀ c n₀ k hn₀ hc⟩
+  exact ⟨n₀ + k, by omega, c, multiStep_trans M c_init c₀ c n₀ k hn₀ hc⟩
 
 theorem does_not_halt_of_stepPlus_chain {M : Machine Γ Λ}
     (C : ℕ → Cfg Γ Λ) (i₀ : ℕ)
@@ -1433,6 +1446,13 @@ def flipDir : Dir → Dir
 
 def conjStmt (f : Bool) : Stmt Γ → Stmt Γ
   | ⟨w, d⟩ => ⟨w, if f then flipDir d else d⟩
+
+instance [DecidableEq Γ] : DecidableEq (Stmt Γ) :=
+  fun ⟨s₁, d₁⟩ ⟨s₂, d₂⟩ =>
+    if hs : s₁ = s₂ then
+      if hd : d₁ = d₂ then isTrue (by subst hs hd; rfl)
+      else isFalse (fun h => hd (Stmt.write.inj h).2)
+    else isFalse (fun h => hs (Stmt.write.inj h).1)
 
 def conjOut (σ : Λ → Λ) (f : Bool) :
     Option Λ × Stmt Γ → Option Λ × Stmt Γ
@@ -1492,6 +1512,31 @@ theorem does_not_halt_of_conj_invariant {M_tgt M_src : Machine Γ Λ} {σ : Λ �
     refine ⟨conjCfg σ f c', ⟨k, hk_pos, ?_⟩, c', rfl, h_inv'⟩
     rw [multiStep_conj_of_tableIso h_iso c k, h_ms, Option.map_some]
 
+theorem does_not_halt_of_conj_stem {M_tgt M_src : Machine Γ Λ} {σ : Λ → Λ} {f : Bool}
+    (h_iso : ∀ (q : Λ) (a : Γ), M_tgt (σ q) a = (M_src q a).map (conjOut σ f))
+    (c₁ : Cfg Γ Λ)
+    (h_stem : (init []) [M_tgt]⊢* conjCfg σ f c₁)
+    (h_src : ∀ cfg : Cfg Γ Λ, (c₁ [M_src]⊢* cfg) → (step M_src cfg).isSome) :
+    ∀ (cfg : Cfg Γ Λ), ((init []) [M_tgt]⊢* cfg) → (step M_tgt cfg).isSome := by
+  rcases h_stem with ⟨k₀, hk₀⟩
+  intro cfg ⟨n, hn⟩
+  by_cases hlt : n < k₀
+  · exact isSome_step_of_multiStep_gt hn hk₀ hlt
+  · have h_split : n = k₀ + (n - k₀) := by omega
+    rw [h_split, multiStep_add, hk₀] at hn
+    dsimp [Option.bind] at hn
+    rw [multiStep_conj_of_tableIso h_iso c₁ (n - k₀)] at hn
+    rcases Option.map_eq_some_iff.mp hn with ⟨c, hc, rfl⟩
+    have hsome := h_src c ⟨n - k₀, hc⟩
+    rw [step_conj_of_tableIso h_iso c, Option.isSome_map]
+    exact hsome
+
+theorem init_reaches_conjCfg_default {M_tgt : Machine (Fin 2) (Fin 6)}
+    {σ : Fin 6 → Fin 6} {f : Bool} {q₀ : Fin 6} (hq : σ q₀ = 0) :
+    (init []) [M_tgt]⊢* conjCfg σ f ((default : ListBlank (Fin 2)) {{q₀}}> default) := by
+  refine ⟨0, ?_⟩
+  cases f <;> simp [multiStep, conjCfg, mirrorTape, init, Tape.mk₁, Tape.mk₂, Tape.mk', hq]
+
 end EraClosure
 
 -- ============================================================================
@@ -1502,10 +1547,10 @@ section InductiveTapeCounter
 
 def rd0 : List (Fin 2) := [0, 0, 0, 0]
 
-@[scoped simp] lemma rd0_append_default : rd0 +> (default : ListBlank (Fin 2)) = default := by
+@[scoped simp] theorem rd0_append_default : rd0 +> (default : ListBlank (Fin 2)) = default := by
   simp [rd0]
 
-@[scoped simp] lemma three_zeros_append_default :
+@[scoped simp] theorem three_zeros_append_default :
     ([0, 0, 0] : List (Fin 2)) +> (default : ListBlank (Fin 2)) = default := by
   simp
 
@@ -1517,18 +1562,20 @@ inductive RC (d : List (Fin 2)) : Nat → ListBlank (Fin 2) → Prop
 inductive FC (d : List (Fin 2)) (tail : ListBlank (Fin 2)) : Nat → Nat → ListBlank (Fin 2) → Prop
   | nil : FC d tail 0 0 tail
   | d0 (k n : Nat) (r : ListBlank (Fin 2)) : FC d tail k n r → FC d tail (k + 1) (n * 2) (rd0 +> r)
-  | d1 (k n : Nat) (r : ListBlank (Fin 2)) : FC d tail k n r → FC d tail (k + 1) (1 + n * 2) (d +> r)
+  | d1 (k n : Nat) (r : ListBlank (Fin 2)) : FC d tail k n r → FC d tail (k + 1) (1 + n * 2) (d +>
+    r)
 
-lemma RC_eq {d : List (Fin 2)} {n m : Nat} {r s : ListBlank (Fin 2)}
+theorem RC_eq {d : List (Fin 2)} {n m : Nat} {r s : ListBlank (Fin 2)}
     (h : RC d n r) (hn : n = m) (hr : r = s) : RC d m s := by
   subst hn; subst hr; exact h
 
-lemma FC_eq {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k k' n n' : Nat} {r r' : ListBlank (Fin 2)}
+theorem FC_eq {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k k' n n' : Nat} {r r' : ListBlank (Fin
+    2)}
     (h : FC d tail k n r) (hk : k = k') (hn : n = n') (hr : r = r') :
     FC d tail k' n' r' := by
   subst hk; subst hn; subst hr; exact h
 
-lemma RC_zero_unique {d : List (Fin 2)} {r : ListBlank (Fin 2)} (h : RC d 0 r) : r = default := by
+theorem RC_zero_unique {d : List (Fin 2)} {r : ListBlank (Fin 2)} (h : RC d 0 r) : r = default := by
   generalize hn : (0 : Nat) = n at h
   induction h with
   | zero => rfl
@@ -1537,7 +1584,7 @@ lemma RC_zero_unique {d : List (Fin 2)} {r : ListBlank (Fin 2)} (h : RC d 0 r) :
     rw [ih hn0.symm, rd0_append_default]
   | d1 _ _ _ _ => omega
 
-lemma RC_inv_d0 {d : List (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)} (hs : RC d (n * 2) s) :
+theorem RC_inv_d0 {d : List (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)} (hs : RC d (n * 2) s) :
     (n = 0 ∧ s = default) ∨ ∃ s0, s = rd0 +> s0 ∧ RC d n s0 := by
   generalize hm : n * 2 = m at hs
   cases hs with
@@ -1548,7 +1595,7 @@ lemma RC_inv_d0 {d : List (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)} (hs : RC d 
     exact Or.inr ⟨s0, rfl, hs0⟩
   | d1 _ _ _ => omega
 
-lemma RC_inv_d1 {d : List (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)} (hs : RC d (1 + n * 2) s) :
+theorem RC_inv_d1 {d : List (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)} (hs : RC d (1 + n * 2) s) :
     ∃ s0, s = d +> s0 ∧ RC d n s0 := by
   generalize hm : 1 + n * 2 = m at hs
   cases hs with
@@ -1559,7 +1606,7 @@ lemma RC_inv_d1 {d : List (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)} (hs : RC d 
     subst hn
     exact ⟨s0, rfl, hs0⟩
 
-lemma FC_inv_nil {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)}
+theorem FC_inv_nil {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {n : Nat} {s : ListBlank (Fin 2)}
     (hs : FC d tail 0 n s) : s = tail := by
   generalize hk : (0 : Nat) = k at hs
   cases hs with
@@ -1567,7 +1614,7 @@ lemma FC_inv_nil {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {n : Nat} {s : Li
   | d0 _ _ _ _ => omega
   | d1 _ _ _ _ => omega
 
-lemma FC_inv_d0 {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {s : ListBlank (Fin 2)}
+theorem FC_inv_d0 {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {s : ListBlank (Fin 2)}
     (hs : FC d tail (k + 1) (n * 2) s) : ∃ s0, s = rd0 +> s0 ∧ FC d tail k n s0 := by
   generalize hk : k + 1 = K, hm : n * 2 = m at hs
   cases hs with
@@ -1579,7 +1626,7 @@ lemma FC_inv_d0 {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {s : L
     exact ⟨s0, rfl, hs0⟩
   | d1 _ _ _ _ => omega
 
-lemma FC_inv_d1 {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {s : ListBlank (Fin 2)}
+theorem FC_inv_d1 {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {s : ListBlank (Fin 2)}
     (hs : FC d tail (k + 1) (1 + n * 2) s) : ∃ s0, s = d +> s0 ∧ FC d tail k n s0 := by
   generalize hk : k + 1 = K, hm : 1 + n * 2 = m at hs
   cases hs with
@@ -1591,7 +1638,7 @@ lemma FC_inv_d1 {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {s : L
     subst hk0; subst hn0
     exact ⟨s0, rfl, hs0⟩
 
-lemma RC_unique {d : List (Fin 2)} {n : Nat} {r s : ListBlank (Fin 2)}
+theorem RC_unique {d : List (Fin 2)} {n : Nat} {r s : ListBlank (Fin 2)}
     (hr : RC d n r) (hs : RC d n s) : r = s := by
   induction hr generalizing s with
   | zero => exact (RC_zero_unique hs).symm
@@ -1603,7 +1650,8 @@ lemma RC_unique {d : List (Fin 2)} {n : Nat} {r s : ListBlank (Fin 2)}
     rcases RC_inv_d1 hs with ⟨s0, rfl, hs0⟩
     rw [ih hs0]
 
-lemma FC_unique {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r s : ListBlank (Fin 2)}
+theorem FC_unique {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r s : ListBlank (Fin
+    2)}
     (hr : FC d tail k n r) (hs : FC d tail k n s) : r = s := by
   induction hr generalizing s with
   | nil => exact (FC_inv_nil hs).symm
@@ -1614,9 +1662,9 @@ lemma FC_unique {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r s :
     rcases FC_inv_d1 hs with ⟨s0, rfl, hs0⟩
     rw [ih hs0]
 
-lemma pow2_pos (k : Nat) : 0 < 2 ^ k := Nat.two_pow_pos k
+theorem pow2_pos (k : Nat) : 0 < 2 ^ k := Nat.two_pow_pos k
 
-lemma FC_zero (d : List (Fin 2)) (tail : ListBlank (Fin 2)) (k : Nat) :
+theorem FC_zero (d : List (Fin 2)) (tail : ListBlank (Fin 2)) (k : Nat) :
     FC d tail k 0 (rd0 ^ k +> tail) := by
   induction k with
   | zero => exact FC.nil
@@ -1624,7 +1672,7 @@ lemma FC_zero (d : List (Fin 2)) (tail : ListBlank (Fin 2)) (k : Nat) :
     rw [right_pow_succ rd0 k tail]
     exact FC_eq (FC.d0 k 0 (rd0 ^ k +> tail) ih) rfl (by omega) rfl
 
-lemma FC_full (d : List (Fin 2)) (tail : ListBlank (Fin 2)) (k : Nat) :
+theorem FC_full (d : List (Fin 2)) (tail : ListBlank (Fin 2)) (k : Nat) :
     FC d tail k (2 ^ k - 1) (d ^ k +> tail) := by
   induction k with
   | zero => exact FC.nil
@@ -1633,22 +1681,24 @@ lemma FC_full (d : List (Fin 2)) (tail : ListBlank (Fin 2)) (k : Nat) :
     rw [right_pow_succ d k tail]
     exact FC_eq (FC.d1 k (2 ^ k - 1) (d ^ k +> tail) ih) rfl (by rw [Nat.pow_succ]; omega) rfl
 
-lemma FC_full_unique {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k : Nat} {r : ListBlank (Fin 2)}
+theorem FC_full_unique {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k : Nat} {r : ListBlank (Fin
+    2)}
     (h : FC d tail k (2 ^ k - 1) r) : r = d ^ k +> tail :=
   FC_unique h (FC_full d tail k)
 
-lemma FC_RC {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r : ListBlank (Fin 2)} {m : Nat}
+theorem FC_RC {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r : ListBlank (Fin 2)} {m :
+    Nat}
     (hf : FC d tail k n r) (hr : RC d m tail) : RC d (n + 2 ^ k * m) r := by
   induction hf with
   | nil => exact RC_eq hr (by omega) rfl
   | d0 k n r _ ih => exact RC_eq (RC.d0 (n + 2 ^ k * m) r ih) (by rw [Nat.pow_succ]; ring) rfl
   | d1 k n r _ ih => exact RC_eq (RC.d1 (n + 2 ^ k * m) r ih) (by rw [Nat.pow_succ]; ring) rfl
 
-lemma RC_zeros {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)} (k : Nat) (hr : RC d n r) :
+theorem RC_zeros {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)} (k : Nat) (hr : RC d n r) :
     RC d (2 ^ k * n) (rd0 ^ k +> r) := by
   simpa using FC_RC (FC_zero d r k) hr
 
-lemma RC_carry {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)} (h : RC d n r) :
+theorem RC_carry {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)} (h : RC d n r) :
     ∃ (k : Nat) (s : ListBlank (Fin 2)),
       r = d ^ k +> (rd0 +> s) ∧ RC d (n + 1) (rd0 ^ k +> (d +> s)) := by
   induction h with
@@ -1665,7 +1715,7 @@ lemma RC_carry {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)} (h : RC d n 
     · rw [right_pow_succ rd0 k (d +> s)]
       exact RC_eq (RC.d0 (n + 1) (rd0 ^ k +> (d +> s)) hs) (by omega) rfl
 
-lemma RC_positive_split {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)}
+theorem RC_positive_split {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)}
     (h : RC d n r) (hn : 0 < n) :
     ∃ t q s, r = rd0 ^ t +> (d +> s) ∧ RC d q s ∧ n = 2 ^ t * (1 + q * 2) ∧ q < n := by
   induction h with
@@ -1678,7 +1728,7 @@ lemma RC_positive_split {d : List (Fin 2)} {n : Nat} {r : ListBlank (Fin 2)}
   | d1 n r hr _ =>
     exact ⟨0, n, r, rfl, hr, by omega, by omega⟩
 
-lemma FC_carry {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r : ListBlank (Fin 2)}
+theorem FC_carry {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r : ListBlank (Fin 2)}
     (h : FC d tail k n r) (hb : n + 1 < 2 ^ k) :
     ∃ j s, j < k ∧ r = d ^ j +> (rd0 +> s) ∧ FC d tail k (n + 1) (rd0 ^ j +> (d +> s)) := by
   induction h with
@@ -1693,7 +1743,7 @@ lemma FC_carry {d : List (Fin 2)} {tail : ListBlank (Fin 2)} {k n : Nat} {r : Li
     · rw [right_pow_succ rd0 j (d +> s)]
       exact FC_eq (FC.d0 k (n + 1) (rd0 ^ j +> (d +> s)) hs) rfl (by omega) rfl
 
-lemma zero3_rd0 (n : Nat) (r : ListBlank (Fin 2)) :
+theorem zero3_rd0 (n : Nat) (r : ListBlank (Fin 2)) :
     ([0, 0, 0] : List (Fin 2)) +> (rd0 ^ n +> r) = rd0 ^ n +> ([0, 0, 0] +> r) := by
   induction n with
   | zero => rfl
@@ -1701,7 +1751,7 @@ lemma zero3_rd0 (n : Nat) (r : ListBlank (Fin 2)) :
     rw [right_pow_succ rd0 n r, right_pow_succ rd0 n ([0, 0, 0] +> r), ← ih]
     rfl
 
-lemma one_zero_comm_rd0_pow (t : Nat) (s : ListBlank (Fin 2)) :
+theorem one_zero_comm_rd0_pow (t : Nat) (s : ListBlank (Fin 2)) :
     ([0] : List (Fin 2)) +> (rd0 ^ t +> s) = rd0 ^ t +> ([0] +> s) := by
   induction t with
   | zero => rfl
@@ -1718,7 +1768,7 @@ end InductiveTapeCounter
 section Base4SeparatorOdometer
 
 /-- 3-Step Composition helper for stepPlus transitions. -/
-lemma stepPlus_trans3 {α : Type*} {stepPlus : α → α → Prop}
+theorem stepPlus_trans3 {α : Type*} {stepPlus : α → α → Prop}
     (htrans : ∀ {a b c : α}, stepPlus a b → stepPlus b c → stepPlus a c)
     {a b c d : α} (h1 : stepPlus a b) (h2 : stepPlus b c) (h3 : stepPlus c d) :
     stepPlus a d :=

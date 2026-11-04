@@ -36,9 +36,6 @@ theorem target_eq : target = target_tm := by
   funext q s
   fin_cases q <;> fin_cases s <;> rfl
 set_option Elab.async false
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 set_option maxRecDepth 200000
 set_option maxHeartbeats 4000000
 
@@ -2909,19 +2906,19 @@ def b2f : Bool → Fin 2
 def toLB : List Bool → ListBlank (Fin 2)
   | [] => default
   | b :: xs => ListBlank.cons (b2f b) (toLB xs)
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
-lemma toLB_head (L : List Bool) : (toLB L).head = b2f (L.headD false) := by
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+theorem toLB_head (L : List Bool) : (toLB L).head = b2f (L.headD false) := by
   cases L with
   | nil => rfl
   | cons b xs => simp [toLB]
-lemma toLB_tail (L : List Bool) : (toLB L).tail = toLB L.tail := by
+theorem toLB_tail (L : List Bool) : (toLB L).tail = toLB L.tail := by
   cases L with
   | nil => rfl
   | cons b xs => simp [toLB]
 def toBBCfg (c : Cert.Cfg) (hq : c.q < 6) : Cfg (Fin 2) (Fin 6) :=
   ⟨some ⟨c.q, hq⟩, ⟨b2f c.h, toLB c.L, toLB c.R⟩⟩
-lemma step_bridge (c : Cert.Cfg) (hq : c.q < 6) (hnh : ¬ Cert.halted Cert.M c) :
+theorem step_bridge (c : Cert.Cfg) (hq : c.q < 6) (hnh : ¬ Cert.halted Cert.M c) :
     ∃ (hq' : (Cert.step Cert.M c).q < 6),
       step holdout_0084_tm (toBBCfg c hq) = some (toBBCfg (Cert.step Cert.M c) hq') := by
   obtain ⟨q, L, h, R⟩ := c
@@ -2935,7 +2932,7 @@ lemma step_bridge (c : Cert.Cfg) (hq : c.q < 6) (hnh : ¬ Cert.halted Cert.M c) 
     · exact ⟨by simp [Cert.step, Cert.M]; try decide, by simp [toBBCfg, Cert.step, Cert.M, step, holdout_0084_tm, target_tm, Tape.write, Tape.move, toLB, toLB_head, toLB_tail, b2f]⟩
   · cases h <;> exact ⟨by simp [Cert.step, Cert.M]; try decide, by simp [toBBCfg, Cert.step, Cert.M, step, holdout_0084_tm, target_tm, Tape.write, Tape.move, toLB, toLB_head, toLB_tail, b2f]⟩
   · change q + 6 < 6 at hq; omega
-lemma multiStep_bridge (n : Nat) :
+theorem multiStep_bridge (n : Nat) :
     ∃ (hq : (Cert.run Cert.M n (Cert.blank 0)).q < 6),
       multiStep holdout_0084_tm (init []) n = some (toBBCfg (Cert.run Cert.M n (Cert.blank 0)) hq) := by
   induction n with
@@ -2946,7 +2943,7 @@ lemma multiStep_bridge (n : Nat) :
     rw [show Cert.run Cert.M (n + 1) (Cert.blank 0) = Cert.step Cert.M (Cert.run Cert.M n (Cert.blank 0)) from by rw [Cert.run_add]; rfl]
     refine ⟨hq', ?_⟩
     rw [multiStep_succ', hn, Option.bind_some, hst]
-lemma holdout_0084_nonhalt :
+theorem holdout_0084_nonhalt :
     IsDoesNotHalt holdout_0084_tm := by
   intro cfg ⟨n, hn⟩
   obtain ⟨hq, hms⟩ := multiStep_bridge n

@@ -33,9 +33,6 @@ def F : Fin 6 := 5
 
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
-set_option linter.unusedSimpArgs false
-set_option linter.unnecessarySeqFocus false
-set_option linter.unusedVariables false
 set_option maxHeartbeats 2000000
 
 def tm15 : Machine (Fin 2) (Fin 6)
@@ -63,18 +60,18 @@ def perm_0155 : Fin 6 → Fin 6
 def map_cfg_0155 (c : Cfg (Fin 2) (Fin 6)) : Cfg (Fin 2) (Fin 6) :=
   ⟨c.q.map perm_0155, c.tape⟩
 
-lemma step_map_0155 (c : Cfg (Fin 2) (Fin 6)) :
+theorem step_map_0155 (c : Cfg (Fin 2) (Fin 6)) :
     step target_tm (map_cfg_0155 c) = (step tm15 c).map map_cfg_0155 := by
   rcases c with ⟨_ | ⟨_ | _ | _ | _ | _ | _ | q, hq⟩, ⟨⟨_ | _ | h, hh⟩, l, r⟩⟩ <;> try rfl
   all_goals omega
 
-@[simp] lemma zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma multiStep_map_0155 (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
+theorem multiStep_map_0155 (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     multiStep target_tm (map_cfg_0155 c) n = (multiStep tm15 c n).map map_cfg_0155 := by
   induction n with
   | zero => rfl
@@ -84,35 +81,35 @@ lemma multiStep_map_0155 (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     | none => rfl
     | some c' => exact step_map_0155 c'
 
-@[simp] lemma z0i : (0 : Fin 2) >> default = default := by
+@[simp] theorem z0i : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : zB).head = 0 := rfl
+@[simp] theorem zDt : (default : zB).tail = default := rfl
+@[simp] theorem append_nil (s : zB) : ([] : zF) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : zF) (s : zB) :
     (a :: l) +> s = a >> (l +> s) := rfl
-@[simp] lemma append_assoc (l₁ l₂ : zF) (s : zB) :
+@[simp] theorem append_assoc (l₁ l₂ : zF) (s : zB) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   induction l₁ with
   | nil => rfl
   | cons a l₁ ih => simp [ih]
-@[simp] lemma zPz (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma z0j (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-lemma z0k (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
+@[simp] theorem zPz (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem z0j (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+theorem z0k (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
   | zero => simp [Nat.zero_add]
   | succ m ih => simp [z0j, Nat.succ_add, ih, List.append_assoc]
-lemma z0l (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
+theorem z0l (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
   | zero => simp [z0j]
   | succ n ih => simp [z0j, List.append_assoc, ih]
-lemma z0m (a b : List α) (n : Nat) : (a ++ b) ^ n ++ a = a ++ (b ++ a) ^ n := by
+theorem z0m (a b : List α) (n : Nat) : (a ++ b) ^ n ++ a = a ++ (b ++ a) ^ n := by
   induction n with
   | zero => simp
   | succ n ih =>
     rw [z0j, List.append_assoc, ih, z0j]
     simp only [List.append_assoc]
-lemma z0n (a b : zF) (i : Nat) (s : zB) :
+theorem z0n (a b : zF) (i : Nat) (s : zB) :
     a +> ((b ++ a) ^ i) +> (b +> s) = ((a ++ b) ^ (i + 1)) +> s := by
   rw [<- append_assoc, <- append_assoc, <- z0m, List.append_assoc, z0l]
 
@@ -124,19 +121,19 @@ def MC : Nat → Nat → zB → zB
   | 0, n, r => (if n % 2 = 0 then [1] else [0]) +> r
   | h + 1, n, r => (if n % 2 = 0 then [1, 0, 0] else [0, 0, 0]) +> MC h (n / 2) r
 
-lemma z0s (d0 d1 : zF) (len n : Nat) (r : zB) :
+theorem z0s (d0 d1 : zF) (len n : Nat) (r : zB) :
     z0o d0 d1 (len + 1) (n * 2) r = d1 +> z0o d0 d1 len n r := by
   simp only [z0o]
   have h1 : (n * 2) % 2 = 0 := by omega
   have h2 : (n * 2) / 2 = n := by omega
   simp [h1, h2]
-lemma z0t (d0 d1 : zF) (len n : Nat) (r : zB) :
+theorem z0t (d0 d1 : zF) (len n : Nat) (r : zB) :
     z0o d0 d1 (len + 1) (n * 2 + 1) r = d0 +> z0o d0 d1 len n r := by
   simp only [z0o]
   have h1 : (n * 2 + 1) % 2 = 1 := by omega
   have h2 : (n * 2 + 1) / 2 = n := by omega
   simp [h1, h2]
-lemma z0u (d0 d1 : zF) (len : Nat) (r : zB) :
+theorem z0u (d0 d1 : zF) (len : Nat) (r : zB) :
     z0o d0 d1 len 0 r = (d1 ^ len) +> r := by
   induction len with
   | zero => rfl
@@ -144,8 +141,8 @@ lemma z0u (d0 d1 : zF) (len : Nat) (r : zB) :
     have h := z0s d0 d1 len 0 r
     simp only [Nat.zero_mul] at h
     rw [h, ih, z0j, append_assoc]
-lemma z0v (n : Nat) : 0 < 2 ^ n := Nat.two_pow_pos n
-lemma z0w (d0 d1 : zF) (len : Nat) (r : zB) :
+theorem z0v (n : Nat) : 0 < 2 ^ n := Nat.two_pow_pos n
+theorem z0w (d0 d1 : zF) (len : Nat) (r : zB) :
     z0o d0 d1 len (2 ^ len - 1) r = (d0 ^ len) +> r := by
   induction len with
   | zero => rfl
@@ -154,7 +151,7 @@ lemma z0w (d0 d1 : zF) (len : Nat) (r : zB) :
     have h1 : 2 ^ (len + 1) - 1 = (2 ^ len - 1) * 2 + 1 := by
       rw [Nat.pow_succ]; omega
     rw [h1, z0t, ih, z0j, append_assoc]
-lemma z0x (d0 d1 : zF) (len n i : Nat) (r : zB) :
+theorem z0x (d0 d1 : zF) (len n i : Nat) (r : zB) :
     z0o d0 d1 (len + i) (n * 2 ^ i) r = (d1 ^ i) +> z0o d0 d1 len n r := by
   induction i with
   | zero => simp
@@ -162,7 +159,7 @@ lemma z0x (d0 d1 : zF) (len n i : Nat) (r : zB) :
     have h1 : len + (i + 1) = (len + i) + 1 := by omega
     have h2 : n * 2 ^ (i + 1) = (n * 2 ^ i) * 2 := by rw [Nat.pow_succ, ← Nat.mul_assoc]
     rw [h1, h2, z0s, ih, z0j, append_assoc]
-lemma z0y' (d0 d1 : zF) (len n i : Nat) (r : zB) :
+theorem z0y' (d0 d1 : zF) (len n i : Nat) (r : zB) :
     z0o d0 d1 (len + i) ((n + 1) * 2 ^ i - 1) r =
     (d0 ^ i) +> z0o d0 d1 len n r := by
   induction i with
@@ -182,19 +179,19 @@ abbrev ld1 : zF := [1, 1, 1, 1]
 abbrev rd0 : zF := [0, 0, 0]
 abbrev rd1 : zF := [1, 0, 0]
 
-lemma MC_s (h n : Nat) (r : zB) :
+theorem MC_s (h n : Nat) (r : zB) :
     MC (h + 1) (n * 2) r = rd1 +> MC h n r := by
   simp only [MC, rd1]
   have h1 : (n * 2) % 2 = 0 := by omega
   have h2 : (n * 2) / 2 = n := by omega
   simp [h1, h2]
-lemma MC_t (h n : Nat) (r : zB) :
+theorem MC_t (h n : Nat) (r : zB) :
     MC (h + 1) (n * 2 + 1) r = rd0 +> MC h n r := by
   simp only [MC, rd0]
   have h1 : (n * 2 + 1) % 2 = 1 := by omega
   have h2 : (n * 2 + 1) / 2 = n := by omega
   simp [h1, h2]
-lemma MC_lsb_0 (h n i : Nat) (r : zB) :
+theorem MC_lsb_0 (h n i : Nat) (r : zB) :
     MC (h + i) (n * 2 ^ i) r = (rd1 ^ i) +> MC h n r := by
   induction i with
   | zero => simp
@@ -202,7 +199,7 @@ lemma MC_lsb_0 (h n i : Nat) (r : zB) :
     have h1 : h + (i + 1) = (h + i) + 1 := by omega
     have h2 : n * 2 ^ (i + 1) = (n * 2 ^ i) * 2 := by rw [Nat.pow_succ, ← Nat.mul_assoc]
     rw [h1, h2, MC_s, ih, z0j, append_assoc]
-lemma MC_lsb_1 (h n i : Nat) (r : zB) :
+theorem MC_lsb_1 (h n i : Nat) (r : zB) :
     MC (h + i) ((n + 1) * 2 ^ i - 1) r = (rd0 ^ i) +> MC h n r := by
   induction i with
   | zero =>
@@ -215,12 +212,12 @@ lemma MC_lsb_1 (h n i : Nat) (r : zB) :
     have h2 : (n + 1) * 2 ^ (i + 1) - 1 = ((n + 1) * 2 ^ i - 1) * 2 + 1 := by
       rw [Nat.pow_succ, ← Nat.mul_assoc]; omega
     rw [h1, h2, MC_t, ih, z0j, append_assoc]
-lemma MC_base_0 (h : Nat) (r : zB) :
+theorem MC_base_0 (h : Nat) (r : zB) :
     MC h 0 r = (rd1 ^ h) +> [1] +> r := by
   have := MC_lsb_0 0 0 h r
   simp only [Nat.zero_add, Nat.zero_mul] at this
   rw [this]; rfl
-lemma MC_base_1 (h : Nat) (r : zB) :
+theorem MC_base_1 (h : Nat) (r : zB) :
     MC h (2 ^ (h + 1) - 1) r = (rd0 ^ h) +> [0] +> r := by
   have hp := z0v h
   have h1 : 2 ^ (h + 1) - 1 = (1 + 1) * 2 ^ h - 1 := by rw [Nat.pow_succ]; omega
@@ -229,7 +226,7 @@ lemma MC_base_1 (h : Nat) (r : zB) :
   simp only [Nat.zero_add] at this
   rw [this]; rfl
 
-lemma z0M (d0 d1 : zF) (len n : Nat) (r : zB)
+theorem z0M (d0 d1 : zF) (len n : Nat) (r : zB)
     (h : 1 + n < 2 ^ len) :
     ∃ (i : Nat) (s : zB),
       z0o d0 d1 len (1 + n) r = (d1 ^ i) +> d0 +> s ∧
@@ -253,7 +250,7 @@ lemma z0M (d0 d1 : zF) (len n : Nat) (r : zB)
       · rw [h_even, z0s, hi1, z0j, append_assoc]
       · rw [h_odd, z0t, hi0, z0j, append_assoc]
 
-lemma MC_dec (h n : Nat) (r : zB) (hn : 1 + n < 2 ^ (h + 1)) :
+theorem MC_dec (h n : Nat) (r : zB) (hn : 1 + n < 2 ^ (h + 1)) :
     ∃ (i : Nat) (s : zB),
       MC h (1 + n) r = (rd1 ^ i) +> [0] +> s ∧
       MC h n r = (rd0 ^ i) +> [1] +> s := by
@@ -279,42 +276,42 @@ lemma MC_dec (h n : Nat) (r : zB) (hn : 1 + n < 2 ^ (h + 1)) :
       · rw [h_even, MC_s, hi1, z0j, append_assoc]
       · rw [h_odd, MC_t, hi0, z0j, append_assoc]
 
-lemma zSm (tm : Machine Γ Λ) (c_1 c_2 : Cfg Γ Λ) (h : c_1 [tm]⊢ c_2) :
+theorem zSm (tm : Machine Γ Λ) (c_1 c_2 : Cfg Γ Λ) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢^{1} c_2 := by simp [h]
-lemma z0P (tm : Machine Γ Λ) (c_1 c_2 : Cfg Γ Λ) (h : c_1 [tm]⊢ c_2) :
+theorem z0P (tm : Machine Γ Λ) (c_1 c_2 : Cfg Γ Λ) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢* c_2 := ⟨1, zSm tm c_1 c_2 h⟩
-lemma z0Q (tm : Machine Γ Λ) (c_1 c_2 : Cfg Γ Λ) (h : c_1 [tm]⊢ c_2) :
+theorem z0Q (tm : Machine Γ Λ) (c_1 c_2 : Cfg Γ Λ) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢⁺ c_2 := ⟨1, by decide, zSm tm c_1 c_2 h⟩
-lemma zMa (tm : Machine Γ Λ) (c_1 : Cfg Γ Λ) (n m : Nat) :
+theorem zMa (tm : Machine Γ Λ) (c_1 : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c_1 (n + m) = (multiStep tm c_1 n).bind (fun c_2 => multiStep tm c_2 m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt (tm : Machine Γ Λ) (c_1 c_2 c_3 : Cfg Γ Λ) (n m : Nat)
+theorem zMt (tm : Machine Γ Λ) (c_1 c_2 c_3 : Cfg Γ Λ) (n m : Nat)
     (h₁ : c_1 [tm]⊢^{n} c_2) (h₂ : c_2 [tm]⊢^{m} c_3) :
     c_1 [tm]⊢^{n+m} c_3 := by
   rw [zMa, h₁]; simp [h₂]
-lemma zSt {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
+theorem zSt {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
     (h₁ : c_1 [tm]⊢* c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢* c_3 := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma zPt {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
+theorem zPt {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, _, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma zPs {tm : Machine Γ Λ} {c_1 c_2 : Cfg Γ Λ} (h : c_1 [tm]⊢⁺ c_2) :
+theorem zPs {tm : Machine Γ Λ} {c_1 c_2 : Cfg Γ Λ} (h : c_1 [tm]⊢⁺ c_2) :
     c_1 [tm]⊢* c_2 := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma z0R {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
+theorem z0R {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z0S {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
+theorem z0S {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
     (h₁ : c_1 [tm]⊢* c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n), zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z0T {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
+theorem z0T {tm : Machine Γ Λ} {c_1 c_2 c_3 : Cfg Γ Λ}
     (h₁ : c_1 [tm]⊢ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 :=
   z0R (z0Q tm c_1 c_2 h₁) h₂
 
@@ -329,7 +326,7 @@ macro "execute5" : tactic =>
 macro "execute" : tactic =>
   `(tactic| execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5)
 
-lemma sh_0_sound (n : Nat) (l r : zB) :
+theorem sh_0_sound (n : Nat) (l r : zB) :
     (l {{A}}> ((rd1 ^ n) +> r)) [tm15]⊢* ((([1, 1, 1] ^ n) +> l) {{A}}> r) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -342,7 +339,7 @@ lemma sh_0_sound (n : Nat) (l r : zB) :
     rw [<- append_assoc ([1, 1, 1] ^ n) [1, 1, 1] l, z0l] at h2
     exact zSt h1 h2
 
-lemma sh_1_sound (n : Nat) (l r : zB) :
+theorem sh_1_sound (n : Nat) (l r : zB) :
     ((([1] ^ n) +> l) <{{B}} r) [tm15]⊢* (l <{{B}} (([0] ^ n) +> r)) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -355,7 +352,7 @@ lemma sh_1_sound (n : Nat) (l r : zB) :
     rw [<- append_assoc ([0] ^ n) [0] r, z0l] at h2
     exact zSt h1 h2
 
-lemma sh_2_sound (n : Nat) (l r : zB) :
+theorem sh_2_sound (n : Nat) (l r : zB) :
     ((([1, 1] ^ n) +> l) <{{C}} r) [tm15]⊢* (l <{{C}} (([1, 0] ^ n) +> r)) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -368,7 +365,7 @@ lemma sh_2_sound (n : Nat) (l r : zB) :
     rw [<- append_assoc ([1, 0] ^ n) [1, 0] r, z0l] at h2
     exact zSt h1 h2
 
-lemma sh_3_sound (n : Nat) (l r : zB) :
+theorem sh_3_sound (n : Nat) (l r : zB) :
     (l {{D}}> (([1] ^ n) +> r)) [tm15]⊢* ((([0] ^ n) +> l) {{D}}> r) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -381,7 +378,7 @@ lemma sh_3_sound (n : Nat) (l r : zB) :
     rw [<- append_assoc ([0] ^ n) [0] l, z0l] at h2
     exact zSt h1 h2
 
-lemma sh_4_sound (n : Nat) (l r : zB) :
+theorem sh_4_sound (n : Nat) (l r : zB) :
     (l {{D}}> (([0, 1, 0] ^ n) +> r)) [tm15]⊢* ((([1, 1, 1] ^ n) +> l) {{D}}> r) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -394,7 +391,7 @@ lemma sh_4_sound (n : Nat) (l r : zB) :
     rw [<- append_assoc ([1, 1, 1] ^ n) [1, 1, 1] l, z0l] at h2
     exact zSt h1 h2
 
-lemma sh_5_sound (n : Nat) (l r : zB) :
+theorem sh_5_sound (n : Nat) (l r : zB) :
     (l {{D}}> (([0, 1, 0, 1] ^ n) +> r)) [tm15]⊢* (((ld0 ^ n) +> l) {{D}}> r) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -407,7 +404,7 @@ lemma sh_5_sound (n : Nat) (l r : zB) :
     rw [<- append_assoc (ld0 ^ n) ld0 l, z0l] at h2
     exact zSt h1 h2
 
-lemma sh_6_sound (n : Nat) (l r : zB) :
+theorem sh_6_sound (n : Nat) (l r : zB) :
     (l {{D}}> (([1, 0, 1, 0] ^ n) +> r)) [tm15]⊢* ((([1, 1, 1, 0] ^ n) +> l) {{D}}> r) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -425,7 +422,7 @@ def z0U (l r : zB) : Cfg (Fin 2) (Fin 6) :=
 def z0V (l r : zB) : Cfg (Fin 2) (Fin 6) :=
   ([1, 0, 1, 1, 1] +> l) {{A}}> r
 
-lemma z10 (n : Nat) (l r : zB) :
+theorem z10 (n : Nat) (l r : zB) :
     ((([1, 1, 1] ^ n) +> l) <{{B}} r) [tm15]⊢* (l <{{B}} ((rd0 ^ n) +> r)) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -438,7 +435,7 @@ lemma z10 (n : Nat) (l r : zB) :
     rw [<- append_assoc (rd0 ^ n) rd0 r, z0l] at h2
     exact zSt h1 h2
 
-lemma z11 (n : Nat) (l r : zB) :
+theorem z11 (n : Nat) (l r : zB) :
     (([1] +> (ld1 ^ n) +> l) <{{C}} r) [tm15]⊢*
     (([1] +> l) <{{C}} (([1, 0, 1, 0] ^ n) +> r)) := by
   induction n generalizing l r with
@@ -452,7 +449,7 @@ lemma z11 (n : Nat) (l r : zB) :
     rw [<- append_assoc ([1, 0, 1, 0] ^ n) [1, 0, 1, 0] r, z0l] at h2
     exact zSt h1 h2
 
-lemma z13 (n : Nat) (l r : zB) :
+theorem z13 (n : Nat) (l r : zB) :
     (([1, 0, 1, 1, 1] +> l) {{A}}> (([1, 0, 1, 0] ^ n) +> r)) [tm15]⊢*
     (([1, 0, 1, 1, 1] +> (ld0 ^ n) +> l) {{A}}> r) := by
   induction n generalizing l r with
@@ -466,7 +463,7 @@ lemma z13 (n : Nat) (l r : zB) :
     rw [<- append_assoc (ld0 ^ n) ld0 l, z0l] at h2
     exact zSt h1 h2
 
-lemma z15 (l r : zB) (n : Nat) :
+theorem z15 (l r : zB) (n : Nat) :
     (z0U ((ld1 ^ n) +> ld0 +> l) r) [tm15]⊢⁺
     (z0V ((ld0 ^ n) +> ld1 +> l) r) := by
   unfold z0U z0V
@@ -480,7 +477,7 @@ lemma z15 (l r : zB) (n : Nat) :
   have h3 := z13 n (ld1 +> l) r
   exact z0R (z0S h1 h2) h3
 
-lemma z15_absorb (l r : zB) (n : Nat) :
+theorem z15_absorb (l r : zB) (n : Nat) :
     (z0U ((ld1 ^ n) +> [1, 0, 1, 1] +> l) r) [tm15]⊢⁺
     (z0V ((ld0 ^ (n + 1)) +> l) r) := by
   unfold z0U z0V
@@ -495,7 +492,7 @@ lemma z15_absorb (l r : zB) (n : Nat) :
   rw [<- append_assoc (ld0 ^ n) ld0 l, z0l] at h3
   exact z0R (z0S h1 h2) h3
 
-lemma z16 (l r : zB) (n : Nat) :
+theorem z16 (l r : zB) (n : Nat) :
     (z0V l ((rd1 ^ n) +> [0] +> r)) [tm15]⊢⁺
     (z0U l ((rd0 ^ n) +> [1] +> r)) := by
   unfold z0V z0U
@@ -509,19 +506,19 @@ lemma z16 (l r : zB) (n : Nat) :
     dsimp [ListBlank.append]; execute
   exact z0R (z0R (z0S h1 h2) h3) h4
 
-lemma z1H (len k : Nat) (l r : zB) (h : 1 + k < 2 ^ len) :
+theorem z1H (len k : Nat) (l r : zB) (h : 1 + k < 2 ^ len) :
     (z0U (z0o ld0 ld1 len (1 + k) l) r) [tm15]⊢⁺ (z0V (z0o ld0 ld1 len k l) r) := by
   rcases z0M ld0 ld1 len k l h with ⟨i, s, hi1, hi0⟩
   rw [hi1, hi0]
   exact z15 s r i
 
-lemma z1J (h n : Nat) (l r : zB) (hn : 1 + n < 2 ^ (h + 1)) :
+theorem z1J (h n : Nat) (l r : zB) (hn : 1 + n < 2 ^ (h + 1)) :
     (z0V l (MC h (1 + n) r)) [tm15]⊢⁺ (z0U l (MC h n r)) := by
   rcases MC_dec h n r hn with ⟨i, s, hi1, hi0⟩
   rw [hi1, hi0]
   exact z16 l s i
 
-lemma pair_general (len val_l h val_r c : Nat) (l r : zB)
+theorem pair_general (len val_l h val_r c : Nat) (l r : zB)
     (hl : val_l + c < 2 ^ len) (hr : val_r + c < 2 ^ (h + 1)) :
     (z0V (z0o ld0 ld1 len (val_l + c) l) (MC h (val_r + c) r)) [tm15]⊢*
     (z0V (z0o ld0 ld1 len val_l l) (MC h val_r r)) := by
@@ -536,7 +533,7 @@ lemma pair_general (len val_l h val_r c : Nat) (l r : zB)
     have s3 := ih (by omega) (by omega)
     exact zSt (zSt s1 s2) s3
 
-lemma absorb_step (L h val_r : Nat) (l r : zB) (hr : val_r + 2 ^ L < 2 ^ (h + 1)) :
+theorem absorb_step (L h val_r : Nat) (l r : zB) (hr : val_r + 2 ^ L < 2 ^ (h + 1)) :
     (z0V ((ld0 ^ L) +> [1, 0, 1, 1] +> l) (MC h (val_r + 2 ^ L) r)) [tm15]⊢*
     (z0V ((ld0 ^ (L + 1)) +> l) (MC h val_r r)) := by
   have hp := z0v L
@@ -550,7 +547,7 @@ lemma absorb_step (L h val_r : Nat) (l r : zB) (hr : val_r + 2 ^ L < 2 ^ (h + 1)
   have s3 := zPs (z15_absorb l (MC h val_r r) L)
   exact zSt (zSt s1 s2) s3
 
-lemma absorb_loop (L m' h val_r : Nat) (l r : zB)
+theorem absorb_loop (L m' h val_r : Nat) (l r : zB)
     (hr : val_r + (2 ^ m' - 1) * 2 ^ L < 2 ^ (h + 1)) :
     (z0V ((ld0 ^ L) +> ([1, 0, 1, 1] ^ m') +> l) (MC h (val_r + (2 ^ m' - 1) * 2 ^ L) r)) [tm15]⊢*
     (z0V ((ld0 ^ (L + m')) +> l) (MC h val_r r)) := by
@@ -574,7 +571,7 @@ lemma absorb_loop (L m' h val_r : Nat) (l r : zB)
     rw [hL] at s2
     exact zSt s1 s2
 
-lemma absorb_general (n m' h val_r : Nat) (l r : zB)
+theorem absorb_general (n m' h val_r : Nat) (l r : zB)
     (hr : val_r + (1 + (2 ^ m' - 1) * 2 ^ (n + 1)) < 2 ^ (h + 1)) :
     (z0V ((ld1 ^ n) +> ([1, 0, 1, 1] ^ (m' + 1)) +> l)
       (MC h (val_r + (1 + (2 ^ m' - 1) * 2 ^ (n + 1))) r)) [tm15]⊢*
@@ -612,12 +609,12 @@ def rot_mod (w n p : Nat) : Nat :=
   if w ≤ 1 then p
   else if rot_k w w p = p then rot_k w (n % w) p else rot_k w n p
 
-lemma rot_k_add (w a b p : Nat) : rot_k w (a + b) p = rot_k w b (rot_k w a p) := by
+theorem rot_k_add (w a b p : Nat) : rot_k w (a + b) p = rot_k w b (rot_k w a p) := by
   induction a generalizing p with
   | zero => simp [rot_k]
   | succ a ih => simp [rot_k, Nat.succ_add, ih]
 
-lemma rot_k_period (w p : Nat) (h : rot_k w w p = p) (q r : Nat) :
+theorem rot_k_period (w p : Nat) (h : rot_k w w p = p) (q r : Nat) :
     rot_k w (w * q + r) p = rot_k w r p := by
   induction q with
   | zero => simp
@@ -626,7 +623,7 @@ lemma rot_k_period (w p : Nat) (h : rot_k w w p = p) (q r : Nat) :
       rw [Nat.mul_succ]; omega
     rw [h1, rot_k_add, h, ih]
 
-lemma rot_mod_eq (w n p : Nat) : rot_mod w n p = rot_k w n p := by
+theorem rot_mod_eq (w n p : Nat) : rot_mod w n p = rot_k w n p := by
   unfold rot_mod
   split_ifs with hw h
   · induction n generalizing p with
@@ -647,13 +644,13 @@ def stack_to_tape : Stack → zB
   | [] => default
   | b :: rest => expand_pat b.width b.pat b.len (stack_to_tape rest)
 
-lemma expand_pat_add (w p a b : Nat) (r : zB) :
+theorem expand_pat_add (w p a b : Nat) (r : zB) :
     expand_pat w p (a + b) r = expand_pat w p a (expand_pat w (rot_k w a p) b r) := by
   induction a generalizing p with
   | zero => simp [expand_pat, rot_k]
   | succ a ih => simp only [Nat.succ_add, expand_pat, rot_k, ih]
 
-lemma expand_pat_zero_pat (w n : Nat) : expand_pat w 0 n default = default := by
+theorem expand_pat_zero_pat (w n : Nat) : expand_pat w 0 n default = default := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -664,19 +661,19 @@ lemma expand_pat_zero_pat (w n : Nat) : expand_pat w 0 n default = default := by
 def with_nat (e : Nat) (f : Nat → α) : α :=
   Nat.casesOn e (f 0) (fun n => f (Nat.succ n))
 
-@[simp] lemma with_nat_eq (e : Nat) (f : Nat → α) : with_nat e f = f e := by
+@[simp] theorem with_nat_eq (e : Nat) (f : Nat → α) : with_nat e f = f e := by
   cases e <;> rfl
 
 def with_list (xs : List β) (f : List β → α) : α :=
   List.casesOn xs (f []) (fun h t => f (h :: t))
 
-@[simp] lemma with_list_eq (xs : List β) (f : List β → α) : with_list xs f = f xs := by
+@[simp] theorem with_list_eq (xs : List β) (f : List β → α) : with_list xs f = f xs := by
   cases xs <;> rfl
 
 def with_prod (p : α × β) (f : α × β → γ) : γ :=
   Prod.casesOn p (fun a b => f (a, b))
 
-@[simp] lemma with_prod_eq (p : α × β) (f : α × β → γ) : with_prod p f = f p := by
+@[simp] theorem with_prod_eq (p : α × β) (f : α × β → γ) : with_prod p f = f p := by
   cases p; rfl
 
 def with_block (b : Block) (f : Block → α) : α :=
@@ -686,14 +683,14 @@ def with_block (b : Block) (f : Block → α) : α :=
         with_nat len (fun l =>
           f ⟨p, w, l⟩))))
 
-@[simp] lemma with_block_eq (b : Block) (f : Block → α) : with_block b f = f b := by
+@[simp] theorem with_block_eq (b : Block) (f : Block → α) : with_block b f = f b := by
   cases b; simp [with_block]
 
 def with_stack (s : Stack) (f : Stack → α) : α :=
   List.casesOn s (f []) (fun top rest =>
     with_block top (fun top' => f (top' :: rest)))
 
-@[simp] lemma with_stack_eq (s : Stack) (f : Stack → α) : with_stack s f = f s := by
+@[simp] theorem with_stack_eq (s : Stack) (f : Stack → α) : with_stack s f = f s := by
   cases s <;> simp [with_stack]
 
 def push_stack_aux (b : Block) : Stack → Stack
@@ -714,7 +711,7 @@ def push_stack (pat width len : Nat) (s : Stack) : Stack :=
           with_nat len (fun l =>
             push_stack_aux ⟨p, w, l⟩ s'))))
 
-lemma push_stack_aux_sound (b : Block) (s : Stack) :
+theorem push_stack_aux_sound (b : Block) (s : Stack) :
     stack_to_tape (push_stack_aux b s) = expand_pat b.width b.pat b.len (stack_to_tape s) := by
   induction s generalizing b with
   | nil =>
@@ -730,7 +727,7 @@ lemma push_stack_aux_sound (b : Block) (s : Stack) :
       rw [ih, stack_to_tape, expand_pat_add, ← rot_mod_eq, h.2, ← h.1]
     · rfl
 
-lemma push_stack_sound (pat width len : Nat) (s : Stack) :
+theorem push_stack_sound (pat width len : Nat) (s : Stack) :
     stack_to_tape (push_stack pat width len s) = expand_pat width pat len (stack_to_tape s) := by
   unfold push_stack
   simp only [with_stack_eq, with_nat_eq]
@@ -749,10 +746,10 @@ def drop_stack (n : Nat) : Stack → Stack
         with_nat (top.len - n) (fun l' =>
           ⟨p', top.width, l'⟩ :: rest))
 
-lemma drop_stack_zero (s : Stack) : drop_stack 0 s = s := by
+theorem drop_stack_zero (s : Stack) : drop_stack 0 s = s := by
   cases s <;> rfl
 
-lemma drop_stack_top_le (top : Block) (rest : Stack) (k : Nat) (hk : k ≤ top.len) :
+theorem drop_stack_top_le (top : Block) (rest : Stack) (k : Nat) (hk : k ≤ top.len) :
     stack_to_tape (top :: rest) =
       expand_pat top.width top.pat k (stack_to_tape (drop_stack k (top :: rest))) := by
   unfold drop_stack
@@ -781,7 +778,7 @@ def pop1 : Stack → Fin 2 × Stack
           with_nat (top.len - 1) (fun l' =>
             (bit, ⟨p', top.width, l'⟩ :: rest)))
 
-lemma pop1_sound (s : Stack) :
+theorem pop1_sound (s : Stack) :
     stack_to_tape s = (pop1 s).1 >> stack_to_tape (pop1 s).2 := by
   induction s with
   | nil => exact z0i.symm
@@ -808,7 +805,7 @@ def pop_word : Nat → Nat → Stack → Option Stack
       else
         none)
 
-lemma pop_word_sound (pat w : Nat) (s s' : Stack) (h : pop_word pat w s = some s') :
+theorem pop_word_sound (pat w : Nat) (s s' : Stack) (h : pop_word pat w s = some s') :
     stack_to_tape s = word_of pat w +> stack_to_tape s' := by
   induction w generalizing pat s with
   | zero =>
@@ -823,13 +820,13 @@ def pat_word (bw : Nat) : Nat → Nat → zF
   | _, 0 => []
   | bp, w + 1 => bit_of bp :: pat_word bw (rot1 bw bp) w
 
-lemma expand_pat_word (bw bp w : Nat) (r : zB) :
+theorem expand_pat_word (bw bp w : Nat) (r : zB) :
     expand_pat bw bp w r = pat_word bw bp w +> r := by
   induction w generalizing bp with
   | zero => rfl
   | succ w ih => simp [expand_pat, pat_word, ih]
 
-lemma expand_pat_bulk (bw bp pat w bulk : Nat) (r : zB)
+theorem expand_pat_bulk (bw bp pat w bulk : Nat) (r : zB)
     (hrot : rot_k bw w bp = bp) (hw : pat_word bw bp w = word_of pat w) :
     expand_pat bw bp (bulk * w) r = ((word_of pat w) ^ bulk) +> r := by
   induction bulk with
@@ -862,7 +859,7 @@ def count_stack_mut (pat w : Nat) : Nat → Nat → Stack → Nat × Stack
                 with_stack res.2 (fun s2 => (1 + c1, s2))))
           | none => (0, top :: rest)
 
-lemma count_stack_mut_sound (pat w fuel limit : Nat) (s : Stack) :
+theorem count_stack_mut_sound (pat w fuel limit : Nat) (s : Stack) :
     (count_stack_mut pat w fuel limit s).1 ≤ limit ∧
     stack_to_tape s = ((word_of pat w) ^ (count_stack_mut pat w fuel limit s).1) +>
       stack_to_tape (count_stack_mut pat w fuel limit s).2 := by
@@ -914,7 +911,7 @@ def eval_lsb : PartList → Nat
 def with_bool (b : Bool) (f : Bool → α) : α :=
   Bool.casesOn b (f false) (f true)
 
-@[simp] lemma with_bool_eq (b : Bool) (f : Bool → α) : with_bool b f = f b := by
+@[simp] theorem with_bool_eq (b : Bool) (f : Bool → α) : with_bool b f = f b := by
   cases b <;> rfl
 
 def cons_lsb (b : Bool) (k : Nat) (xs : PartList) : PartList :=
@@ -929,7 +926,7 @@ def cons_lsb (b : Bool) (k : Nat) (xs : PartList) : PartList :=
             with_nat (k' + k2) (fun kk => (b', kk) :: rest)
           else (b', k') :: (b2, k2) :: rest)))
 
-lemma eval_cons_lsb (b : Bool) (k : Nat) (xs : PartList) :
+theorem eval_cons_lsb (b : Bool) (k : Nat) (xs : PartList) :
     eval_lsb (cons_lsb b k xs) = (if b then 2 ^ k - 1 else 0) + eval_lsb xs * 2 ^ k := by
   unfold cons_lsb
   simp only [with_bool_eq, with_nat_eq, with_list_eq]
@@ -958,7 +955,7 @@ lemma eval_cons_lsb (b : Bool) (k : Nat) (xs : PartList) :
           rw [hd]; omega
       · simp [hbb, eval_lsb]
 
-lemma bsize_cons_lsb_le (b : Bool) (k : Nat) (xs : PartList) :
+theorem bsize_cons_lsb_le (b : Bool) (k : Nat) (xs : PartList) :
     bsize_parts (cons_lsb b k xs) ≤ k + bsize_parts xs := by
   unfold cons_lsb
   simp only [with_bool_eq, with_nat_eq, with_list_eq]
@@ -972,7 +969,7 @@ lemma bsize_cons_lsb_le (b : Bool) (k : Nat) (xs : PartList) :
       dsimp only
       by_cases hbb : (b == b2) = true <;> simp [hbb, bsize_parts, Nat.add_assoc]
 
-lemma eval_lsb_lt (xs : PartList) : eval_lsb xs < 2 ^ (bsize_parts xs) := by
+theorem eval_lsb_lt (xs : PartList) : eval_lsb xs < 2 ^ (bsize_parts xs) := by
   induction xs with
   | nil => simp [eval_lsb, bsize_parts]
   | cons p xs ih =>
@@ -988,7 +985,7 @@ lemma eval_lsb_lt (xs : PartList) : eval_lsb xs < 2 ^ (bsize_parts xs) := by
       rw [Nat.add_mul, Nat.one_mul, Nat.add_comm]
     omega
 
-lemma z0o_part (b : Bool) (k len n : Nat) (r : zB) :
+theorem z0o_part (b : Bool) (k len n : Nat) (r : zB) :
     z0o ld0 ld1 (k + len) ((if b then 2 ^ k - 1 else 0) + n * 2 ^ k) r =
       ((if b then ld0 else ld1) ^ k) +> z0o ld0 ld1 len n r := by
   rw [Nat.add_comm k len]
@@ -1002,7 +999,7 @@ lemma z0o_part (b : Bool) (k len n : Nat) (r : zB) :
     rw [h1]
     exact z0y' ld0 ld1 len n k r
 
-lemma MC_part (b : Bool) (k h n : Nat) (r : zB) :
+theorem MC_part (b : Bool) (k h n : Nat) (r : zB) :
     MC (h + k) ((if b then 2 ^ k - 1 else 0) + n * 2 ^ k) r =
       ((if b then rd0 else rd1) ^ k) +> MC h n r := by
   cases b
@@ -1015,7 +1012,7 @@ lemma MC_part (b : Bool) (k h n : Nat) (r : zB) :
     rw [h1]
     exact MC_lsb_1 h n k r
 
-lemma push_ld (b : Bool) (k : Nat) (s : Stack) :
+theorem push_ld (b : Bool) (k : Nat) (s : Stack) :
     stack_to_tape (push_stack (if b then 14 else 1) (if b then 4 else 1) (k * 4) s) =
       ((if b then ld0 else ld1) ^ k) +> stack_to_tape s := by
   rw [push_stack_sound]
@@ -1023,7 +1020,7 @@ lemma push_ld (b : Bool) (k : Nat) (s : Stack) :
   · exact expand_pat_bulk 1 1 15 4 k (stack_to_tape s) rfl rfl
   · exact expand_pat_bulk 4 14 14 4 k (stack_to_tape s) rfl rfl
 
-lemma push_rd (b : Bool) (k : Nat) (s : Stack) :
+theorem push_rd (b : Bool) (k : Nat) (s : Stack) :
     stack_to_tape (push_stack (if b then 0 else 1) (if b then 1 else 3) (k * 3) s) =
       ((if b then rd0 else rd1) ^ k) +> stack_to_tape s := by
   rw [push_stack_sound]
@@ -1036,7 +1033,7 @@ def put_l_parts : PartList → Stack → Stack
   | (b, k) :: xs, s =>
     push_stack (if b then 14 else 1) (if b then 4 else 1) (k * 4) (put_l_parts xs s)
 
-lemma put_l_parts_sound (xs : PartList) (s : Stack) :
+theorem put_l_parts_sound (xs : PartList) (s : Stack) :
     stack_to_tape (put_l_parts xs s) =
       z0o ld0 ld1 (bsize_parts xs) (eval_lsb xs) (stack_to_tape s) := by
   induction xs with
@@ -1045,7 +1042,7 @@ lemma put_l_parts_sound (xs : PartList) (s : Stack) :
     rcases p with ⟨b, k⟩
     simp only [put_l_parts, bsize_parts, eval_lsb, push_ld, ih, z0o_part]
 
-lemma z0o_pad_zero (xs : PartList) (extra : Nat) (r : zB) :
+theorem z0o_pad_zero (xs : PartList) (extra : Nat) (r : zB) :
     z0o ld0 ld1 (bsize_parts xs + extra) (eval_lsb xs) r =
       z0o ld0 ld1 (bsize_parts xs) (eval_lsb xs) ((ld1 ^ extra) +> r) := by
   induction xs with
@@ -1060,7 +1057,7 @@ def put_l_stack (xs : PartList) (n : Nat) (s : Stack) : Stack :=
   let s1 := if bs < n then push_stack 1 1 ((n - bs) * 4) s else s
   put_l_parts xs s1
 
-lemma put_l_stack_sound (xs : PartList) (n : Nat) (s : Stack) (hn : bsize_parts xs ≤ n) :
+theorem put_l_stack_sound (xs : PartList) (n : Nat) (s : Stack) (hn : bsize_parts xs ≤ n) :
     stack_to_tape (put_l_stack xs n s) =
       z0o ld0 ld1 n (eval_lsb xs) (stack_to_tape s) := by
   unfold put_l_stack
@@ -1075,7 +1072,7 @@ lemma put_l_stack_sound (xs : PartList) (n : Nat) (s : Stack) (hn : bsize_parts 
   · have hz : n - bsize_parts xs = 0 := by omega
     simp [hz]
 
-lemma push_rd_base (b : Bool) (h : Nat) (s : Stack) :
+theorem push_rd_base (b : Bool) (h : Nat) (s : Stack) :
     stack_to_tape (push_stack (if b then 0 else 1) (if b then 1 else 3) ((h + 1) * 3 - 2) s) =
       MC h (if b then 2 ^ (h + 1) - 1 else 0) (stack_to_tape s) := by
   have hlen : (h + 1) * 3 - 2 = h * 3 + 1 := by omega
@@ -1105,7 +1102,7 @@ def put_r_rec : PartList → Nat → Stack → Stack
 def put_r_stack (xs : PartList) (k : Nat) (s : Stack) : Stack :=
   put_r_rec xs k s
 
-lemma put_r_rec_sound (xs : PartList) (k : Nat) (s : Stack)
+theorem put_r_rec_sound (xs : PartList) (k : Nat) (s : Stack)
     (hk : 1 ≤ k) (hbs : bsize_parts xs ≤ k) :
     stack_to_tape (put_r_rec xs k s) =
       MC (k - 1) (eval_lsb xs) (stack_to_tape s) := by
@@ -1160,7 +1157,7 @@ def parse_step_l (limit : Nat) (s : Stack) : Option (Bool × Nat × Stack) :=
         | some s1 => some (true, 1, s1)
         | none => none
 
-lemma parse_step_l_sound (limit : Nat) (s s1 : Stack) (bit : Bool) (k : Nat)
+theorem parse_step_l_sound (limit : Nat) (s s1 : Stack) (bit : Bool) (k : Nat)
     (h : parse_step_l limit s = some (bit, k, s1)) :
     stack_to_tape s = ((if bit then ld0 else ld1) ^ k) +> stack_to_tape s1 := by
   cases s with
@@ -1218,7 +1215,7 @@ def parse_l : Nat → Nat → Stack → PartList × Stack
               else
                 ((bit, k) :: r1, r2))))
 
-lemma parse_l_sound (fuel limit : Nat) (s : Stack) :
+theorem parse_l_sound (fuel limit : Nat) (s : Stack) :
     stack_to_tape s =
       z0o ld0 ld1 (bsize_parts (parse_l fuel limit s).1) (eval_lsb (parse_l fuel limit s).1)
         (stack_to_tape (parse_l fuel limit s).2) := by
@@ -1256,7 +1253,7 @@ def parse_step_r (limit : Nat) (s : Stack) : Option (Bool × Nat × Stack) :=
         | some s1 => some (true, 1, s1)
         | none => none
 
-lemma parse_step_r_sound (limit : Nat) (s s1 : Stack) (bit : Bool) (k : Nat)
+theorem parse_step_r_sound (limit : Nat) (s s1 : Stack) (bit : Bool) (k : Nat)
     (hlim : 1 ≤ limit) (h : parse_step_r limit s = some (bit, k, s1)) :
     1 ≤ k ∧ stack_to_tape s = ((if bit then rd0 else rd1) ^ k) +> stack_to_tape s1 := by
   cases s with
@@ -1327,12 +1324,12 @@ def parse_r : Nat → Nat → Stack → PartList × Stack
                 else
                   ((bit, k) :: r1, r2))))
 
-lemma rd0_default (n : Nat) : (rd0 ^ n) +> (default : zB) = default := by
+theorem rd0_default (n : Nat) : (rd0 ^ n) +> (default : zB) = default := by
   induction n with
   | zero => rfl
   | succ n ih => simp [z0j, rd0, ih]
 
-lemma parse_r_sound (fuel limit : Nat) (s : Stack)
+theorem parse_r_sound (fuel limit : Nat) (s : Stack)
     (hne : (parse_r fuel limit s).1 ≠ []) :
     1 ≤ bsize_parts (parse_r fuel limit s).1 ∧
     stack_to_tape s =
@@ -1435,7 +1432,7 @@ def sub_lsb : Nat → Bool → PartList → PartList → Option PartList
             | none => none
             | some out => some (sub_chunk_out px qy c n out))))
 
-lemma eval_split_part (p : Bool) (k n : Nat) (rest : PartList) (hn : n ≤ k) :
+theorem eval_split_part (p : Bool) (k n : Nat) (rest : PartList) (hn : n ≤ k) :
     eval_lsb ((p, k) :: rest) =
       (if p then 2 ^ n - 1 else 0) + eval_lsb (next_x p k n rest) * 2 ^ n := by
   unfold next_x
@@ -1457,7 +1454,7 @@ lemma eval_split_part (p : Bool) (k n : Nat) (rest : PartList) (hn : n ≤ k) :
     subst heq
     simp [hlt, eval_lsb]
 
-lemma bsize_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤ n) :
+theorem bsize_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤ n) :
     bsize_parts (sub_chunk_out px qy c n out) ≤ n + bsize_parts out := by
   unfold sub_chunk_out
   have h1 := bsize_cons_lsb_le (subbit px qy c).1 1
@@ -1471,7 +1468,7 @@ lemma bsize_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 �
       omega
   omega
 
-lemma eval_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤ n) :
+theorem eval_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤ n) :
     eval_lsb (sub_chunk_out px qy c n out) + (if qy then 2 ^ n - 1 else 0) + (if c then 1 else 0) =
       (if px then 2 ^ n - 1 else 0) +
       (eval_lsb out + (if sub_chunk_c px qy c n then 1 else 0)) * 2 ^ n := by
@@ -1502,7 +1499,7 @@ lemma eval_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤
     rw [hmul2]
     cases px <;> cases qy <;> cases c <;> dsimp [subbit] <;> omega
 
-lemma sub_lsb_sound (fuel : Nat) (c : Bool) (xs ys out : PartList)
+theorem sub_lsb_sound (fuel : Nat) (c : Bool) (xs ys out : PartList)
     (h : sub_lsb fuel c xs ys = some out) :
     bsize_parts out ≤ bsize_parts xs ∧
     eval_lsb out + eval_lsb ys + (if c then 1 else 0) = eval_lsb xs := by
@@ -1586,7 +1583,7 @@ structure MState where
 def mstate_to_cfg (s : MState) : Cfg (Fin 2) (Fin 6) :=
   (stack_to_tape s.l) {{s.q}}> (stack_to_tape s.r)
 
-lemma cfg_right_eq_left (q : Fin 6) (b : Fin 2) (l r : zB) :
+theorem cfg_right_eq_left (q : Fin 6) (b : Fin 2) (l r : zB) :
     (l {{q}}> (b >> r)) = ((b >> l) <{{q}} r) := by
   simp [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
 
@@ -1624,7 +1621,7 @@ def choose_limit_r (kfuel : Nat) (n : Nat) (r : Stack) : Nat :=
 def push_prefix_l (l : Stack) : Stack :=
   push_stack 1 1 1 (push_stack 0 1 1 (push_stack 1 1 3 l))
 
-lemma push_prefix_l_sound (l : Stack) :
+theorem push_prefix_l_sound (l : Stack) :
     stack_to_tape (push_prefix_l l) = [1, 0, 1, 1, 1] +> stack_to_tape l := by
   unfold push_prefix_l
   rw [push_stack_sound, push_stack_sound, push_stack_sound]
@@ -1635,7 +1632,7 @@ def build_vprime (n m_use : Nat) : PartList :=
   let v1 : PartList := if 1 < m_use then cons_lsb false n v0 else v0
   cons_lsb true 1 v1
 
-lemma eval_build_vprime (n m' : Nat) :
+theorem eval_build_vprime (n m' : Nat) :
     eval_lsb (build_vprime n (m' + 1)) = 1 + (2 ^ m' - 1) * 2 ^ (n + 1) := by
   unfold build_vprime
   dsimp only
@@ -1653,7 +1650,7 @@ def some_mstate (q : Fin 6) (l r : Stack) : Option MState :=
       with_stack r (fun r' =>
         some ⟨q, l', r'⟩)))
 
-@[simp] lemma some_mstate_eq (q : Fin 6) (l r : Stack) :
+@[simp] theorem some_mstate_eq (q : Fin 6) (l r : Stack) :
     some_mstate q l r = some ⟨q, l, r⟩ := by
   simp [some_mstate]
 
@@ -1667,7 +1664,7 @@ def do_shift_right (sq : Fin 6) (sw sin sout sout_w : Nat) (s : MState) : Option
     else none
   else none
 
-lemma do_shift_right_sound (sq : Fin 6) (sw sin sout sout_w pat_out : Nat) (s s' : MState)
+theorem do_shift_right_sound (sq : Fin 6) (sw sin sout sout_w pat_out : Nat) (s s' : MState)
     (hrot : rot_k sout_w sw sout = sout)
     (hw : pat_word sout_w sout sw = word_of pat_out sw)
     (hsh : ∀ (n : Nat) (l r : zB),
@@ -1688,7 +1685,7 @@ lemma do_shift_right_sound (sq : Fin 6) (sw sin sout sout_w pat_out : Nat) (s s'
 
 def bit_pat (b : Fin 2) : Nat := if b = 1 then 1 else 0
 
-lemma push_bit_sound (b : Fin 2) (s : Stack) :
+theorem push_bit_sound (b : Fin 2) (s : Stack) :
     stack_to_tape (push_stack (bit_pat b) 1 1 s) = b >> stack_to_tape s := by
   rw [push_stack_sound]
   rcases b with ⟨_ | _ | b, hb⟩ <;> try rfl
@@ -1708,7 +1705,7 @@ def do_shift_left (sq : Fin 6) (sw sin sout sout_w : Nat) (s : MState) : Option 
       else none)
   else none
 
-lemma do_shift_left_sound (sq : Fin 6) (sw sin sout sout_w pat_out : Nat) (s s' : MState)
+theorem do_shift_left_sound (sq : Fin 6) (sw sin sout sout_w pat_out : Nat) (s s' : MState)
     (hrot : rot_k sout_w sw sout = sout)
     (hw : pat_word sout_w sout sw = word_of pat_out sw)
     (hsh : ∀ (n : Nat) (l r : zB),
@@ -1788,7 +1785,7 @@ def can_parse_r : Stack → Bool
 def sub_lsb_checked (fuel n k : Nat) (a b : PartList) : Option PartList :=
   if n < k then none else sub_lsb fuel false a b
 
-lemma sub_lsb_checked_sound (fuel n k : Nat) (a b out : PartList)
+theorem sub_lsb_checked_sound (fuel n k : Nat) (a b out : PartList)
     (h : sub_lsb_checked fuel n k a b = some out) :
     bsize_parts out ≤ bsize_parts a ∧
     eval_lsb out + eval_lsb b + (if false then 1 else 0) = eval_lsb a := by
@@ -1832,7 +1829,7 @@ def try_pair_stack (kfuel : Nat) (s : MState) : Option MState :=
     else none
   else none
 
-lemma try_pair_stack_sound (kfuel : Nat) (s s' : MState) (h : try_pair_stack kfuel s = some s') :
+theorem try_pair_stack_sound (kfuel : Nat) (s s' : MState) (h : try_pair_stack kfuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   unfold try_pair_stack at h
   split_ifs at h with hq hpre
@@ -1905,7 +1902,7 @@ def try_absorb_sub (kfuel : Nat) (n m_use : Nat) (b : PartList) : Option (Nat ×
       | some out => some (m_use - 1, out)
       | none => none
 
-lemma try_absorb_sub_sound (kfuel : Nat) (n m_init m_use : Nat) (b out : PartList)
+theorem try_absorb_sub_sound (kfuel : Nat) (n m_init m_use : Nat) (b out : PartList)
     (hm : 1 ≤ m_init) (h : try_absorb_sub kfuel n m_init b = some (m_use, out)) :
     1 ≤ m_use ∧ sub_lsb kfuel false b (build_vprime n m_use) = some out := by
   unfold try_absorb_sub at h
@@ -1962,7 +1959,7 @@ def try_absorb_stack (kfuel : Nat) (s : MState) : Option MState :=
     else none
   else none
 
-lemma try_absorb_stack_sound (kfuel : Nat) (s s' : MState) (h : try_absorb_stack kfuel s = some s') :
+theorem try_absorb_stack_sound (kfuel : Nat) (s s' : MState) (h : try_absorb_stack kfuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   unfold try_absorb_stack at h
   split_ifs at h with hq hpre
@@ -2041,7 +2038,7 @@ def step_prim (s : MState) : Option MState :=
           let r2 := push_stack (bit_pat pl.1) 1 1 r1
           some_mstate q' pl.2 r2))
 
-lemma step_prim_sound (s s' : MState) (h : step_prim s = some s') :
+theorem step_prim_sound (s s' : MState) (h : step_prim s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   unfold step_prim at h
   simp only [with_prod_eq] at h
@@ -2110,7 +2107,7 @@ def run_prim : Nat → MState → Option MState
       | none => some s
       | some s' => run_prim fuel s'
 
-lemma run_prim_sound (fuel : Nat) (s s' : MState) (h : run_prim fuel s = some s') :
+theorem run_prim_sound (fuel : Nat) (s s' : MState) (h : run_prim fuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   induction fuel generalizing s with
   | zero => simp [run_prim] at h; subst h; exact ⟨0, rfl⟩
@@ -2129,7 +2126,7 @@ def step_prim_plus (s : MState) : Option MState :=
   | none => none
   | some s1 => run_prim 24 s1
 
-lemma step_prim_plus_sound (s s' : MState) (h : step_prim_plus s = some s') :
+theorem step_prim_plus_sound (s s' : MState) (h : step_prim_plus s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   unfold step_prim_plus at h
   cases hpr : step_prim s with
@@ -2182,7 +2179,7 @@ def step_m (s : MState) : Option MState :=
   | 3 => step_m_q3 s
   | _ => step_prim_plus s
 
-lemma step_m_sound (s s' : MState) (h : step_m s = some s') :
+theorem step_m_sound (s s' : MState) (h : step_m s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   unfold step_m at h
   rcases hq : s.q.val with _ | _ | _ | _ | n <;> rw [hq] at h
@@ -2231,7 +2228,7 @@ def run_m : Nat → MState → Option MState
     | none => none
     | some s' => run_m fuel s'
 
-lemma run_m_sound (fuel : Nat) (s s' : MState) (h : run_m fuel s = some s') :
+theorem run_m_sound (fuel : Nat) (s s' : MState) (h : run_m fuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   induction fuel generalizing s with
   | zero =>
@@ -2247,7 +2244,7 @@ lemma run_m_sound (fuel : Nat) (s s' : MState) (h : run_m fuel s = some s') :
 def is_halt_m (s : MState) : Bool :=
   s.q = 5 && (pop1 s.r).1 = 1
 
-lemma is_halt_m_sound (s : MState) (h : is_halt_m s = true) :
+theorem is_halt_m_sound (s : MState) (h : is_halt_m s = true) :
     step tm15 (mstate_to_cfg s) = none := by
   unfold is_halt_m at h
   simp only [Bool.and_eq_true, decide_eq_true_eq] at h
@@ -2263,12 +2260,8 @@ lemma is_halt_m_sound (s : MState) (h : is_halt_m s = true) :
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxHeartbeats 2000000
 
@@ -3022,43 +3015,43 @@ fun s =>
   withOptionFast macro_res (step_prim_plus_f s) some
 
 
-@[simp] lemma if_true_eq_true {α : Type} (t e : α) : (if true = true then t else e) = t := rfl
-@[simp] lemma if_false_eq_true {α : Type} (t e : α) : (if false = true then t else e) = e := rfl
-@[simp] lemma bool_true_and_b (b : Bool) : (true && b) = b := rfl
-@[simp] lemma nat_add_1_succ {α : Type} (z : α) (f : Nat → α) (x : Nat) :
+@[simp] theorem if_true_eq_true {α : Type} (t e : α) : (if true = true then t else e) = t := rfl
+@[simp] theorem if_false_eq_true {α : Type} (t e : α) : (if false = true then t else e) = e := rfl
+@[simp] theorem bool_true_and_b (b : Bool) : (true && b) = b := rfl
+@[simp] theorem nat_add_1_succ {α : Type} (z : α) (f : Nat → α) (x : Nat) :
     @Nat.rec (fun _ => α) z (fun p _ => f p) (Nat.add 1 x) = f x := by
   have h : Nat.add 1 x = Nat.succ x := Nat.add_comm 1 x
   rw [h]
 
-@[simp] lemma bool_rec_eq {α : Type} (f t : α) (b : Bool) :
+@[simp] theorem bool_rec_eq {α : Type} (f t : α) (b : Bool) :
     @Bool.rec (fun _ => α) f t b = if b then t else f := by
   cases b <;> rfl
 
-@[simp] lemma nat_beq_def (x y : Nat) : x.beq y = (x == y) := by
+@[simp] theorem nat_beq_def (x y : Nat) : x.beq y = (x == y) := by
   cases h1 : x.beq y <;> cases h2 : (x == y) <;> simp_all [Nat.beq_eq]
-@[simp] lemma nat_ble_def (x y : Nat) : x.ble y = decide (x ≤ y) := by
+@[simp] theorem nat_ble_def (x y : Nat) : x.ble y = decide (x ≤ y) := by
   by_cases h : x ≤ y
   · rw [Nat.ble_eq.mpr h, decide_eq_true h]
   · cases hb : x.ble y
     · exact (decide_eq_false h).symm
     · exact False.elim (h (Nat.ble_eq.mp hb))
-@[simp] lemma nat_add_def (x y : Nat) : x.add y = x + y := rfl
-@[simp] lemma nat_sub_def (x y : Nat) : x.sub y = x - y := rfl
-@[simp] lemma nat_mul_def (x y : Nat) : x.mul y = x * y := rfl
-@[simp] lemma nat_div_def (x y : Nat) : x.div y = x / y := rfl
-@[simp] lemma nat_mod_def (x y : Nat) : x.mod y = x % y := rfl
-@[simp] lemma nat_min_def (x y : Nat) : x.min y = min x y := rfl
-@[simp] lemma nat_max_def (x y : Nat) : x.max y = max x y := rfl
-@[simp] lemma nat_land_def (x y : Nat) : x.land y = x &&& y := rfl
-@[simp] lemma nat_shiftRight_def (x y : Nat) : x.shiftRight y = x >>> y := rfl
-@[simp] lemma nat_shiftLeft_def (x y : Nat) : x.shiftLeft y = x <<< y := rfl
+@[simp] theorem nat_add_def (x y : Nat) : x.add y = x + y := rfl
+@[simp] theorem nat_sub_def (x y : Nat) : x.sub y = x - y := rfl
+@[simp] theorem nat_mul_def (x y : Nat) : x.mul y = x * y := rfl
+@[simp] theorem nat_div_def (x y : Nat) : x.div y = x / y := rfl
+@[simp] theorem nat_mod_def (x y : Nat) : x.mod y = x % y := rfl
+@[simp] theorem nat_min_def (x y : Nat) : x.min y = min x y := rfl
+@[simp] theorem nat_max_def (x y : Nat) : x.max y = max x y := rfl
+@[simp] theorem nat_land_def (x y : Nat) : x.land y = x &&& y := rfl
+@[simp] theorem nat_shiftRight_def (x y : Nat) : x.shiftRight y = x >>> y := rfl
+@[simp] theorem nat_shiftLeft_def (x y : Nat) : x.shiftLeft y = x <<< y := rfl
 
-@[simp] lemma bnot_fast_eq (x : Bool) : bnot_fast x = !x := by cases x <;> rfl
-@[simp] lemma band_fast_eq (x y : Bool) : band_fast x y = (x && y) := by cases x <;> rfl
-@[simp] lemma bor_fast_eq (x y : Bool) : bor_fast x y = (x || y) := by cases x <;> rfl
-@[simp] lemma bxor_fast_eq (x y : Bool) : bxor_fast x y = (x ^^ y) := by cases x <;> cases y <;> rfl
+@[simp] theorem bnot_fast_eq (x : Bool) : bnot_fast x = !x := by cases x <;> rfl
+@[simp] theorem band_fast_eq (x y : Bool) : band_fast x y = (x && y) := by cases x <;> rfl
+@[simp] theorem bor_fast_eq (x y : Bool) : bor_fast x y = (x || y) := by cases x <;> rfl
+@[simp] theorem bxor_fast_eq (x y : Bool) : bxor_fast x y = (x ^^ y) := by cases x <;> cases y <;> rfl
 
-@[simp] lemma nat_min_fast_eq (x y : Nat) : nat_min_fast x y = min x y := by
+@[simp] theorem nat_min_fast_eq (x y : Nat) : nat_min_fast x y = min x y := by
   unfold nat_min_fast
   simp only [bool_rec_eq, nat_ble_def]
   by_cases h : x ≤ y
@@ -3066,7 +3059,7 @@ fun s =>
   · have h2 : y ≤ x := by omega
     simp [h, Nat.min_eq_right h2]
 
-@[simp] lemma nat_max_fast_eq (x y : Nat) : nat_max_fast x y = max x y := by
+@[simp] theorem nat_max_fast_eq (x y : Nat) : nat_max_fast x y = max x y := by
   unfold nat_max_fast
   simp only [bool_rec_eq, nat_ble_def]
   by_cases h : x ≤ y
@@ -3074,32 +3067,32 @@ fun s =>
   · have h2 : y ≤ x := by omega
     simp [h, Nat.max_eq_left h2]
 
-@[simp] lemma withOptionFast_eq {α β : Type} (o : Option α) (onNone : β) (onSome : α → β) :
+@[simp] theorem withOptionFast_eq {α β : Type} (o : Option α) (onNone : β) (onSome : α → β) :
     withOptionFast o onNone onSome = match o with | none => onNone | some a => onSome a := by
   cases o <;> rfl
 
-@[simp] lemma matchStackFast_eq {α : Type} (s : Stack) (onNil : α) (onCons : Block → Stack → α) :
+@[simp] theorem matchStackFast_eq {α : Type} (s : Stack) (onNil : α) (onCons : Block → Stack → α) :
     matchStackFast s onNil onCons = match s with | [] => onNil | hd :: tl => onCons hd tl := by
   cases s <;> rfl
 
-@[simp] lemma matchPartListFast_eq {α : Type} (xs : PartList) (onNil : α) (onCons : Bool → Nat → PartList → α) :
+@[simp] theorem matchPartListFast_eq {α : Type} (xs : PartList) (onNil : α) (onCons : Bool → Nat → PartList → α) :
     matchPartListFast xs onNil onCons = match xs with | [] => onNil | (b, k) :: tl => onCons b k tl := by
   cases xs with
   | nil => rfl
   | cons hd tl => cases hd; rfl
 
-@[simp] lemma isEmptyPartListFast_eq (xs : PartList) :
+@[simp] theorem isEmptyPartListFast_eq (xs : PartList) :
     isEmptyPartListFast xs = xs.isEmpty := by
   cases xs <;> rfl
 
-@[simp] lemma fin6_0_eq : fin6_0 = 0 := rfl
-@[simp] lemma fin6_1_eq : fin6_1 = 1 := rfl
-@[simp] lemma fin6_2_eq : fin6_2 = 2 := rfl
-@[simp] lemma fin6_3_eq : fin6_3 = 3 := rfl
-@[simp] lemma fin6_4_eq : fin6_4 = 4 := rfl
-@[simp] lemma fin6_5_eq : fin6_5 = 5 := rfl
+@[simp] theorem fin6_0_eq : fin6_0 = 0 := rfl
+@[simp] theorem fin6_1_eq : fin6_1 = 1 := rfl
+@[simp] theorem fin6_2_eq : fin6_2 = 2 := rfl
+@[simp] theorem fin6_3_eq : fin6_3 = 3 := rfl
+@[simp] theorem fin6_4_eq : fin6_4 = 4 := rfl
+@[simp] theorem fin6_5_eq : fin6_5 = 5 := rfl
 
-lemma consBlock1_eq (p w l : Nat) (rest : Stack) :
+theorem consBlock1_eq (p w l : Nat) (rest : Stack) :
     consBlock1 p w l rest = ⟨p, w, l⟩ :: rest := by
   unfold consBlock1
   have hp : Nat.add 1 p = Nat.succ p := Nat.add_comm 1 p
@@ -3107,34 +3100,34 @@ lemma consBlock1_eq (p w l : Nat) (rest : Stack) :
   have hl : Nat.add 1 l = Nat.succ l := Nat.add_comm 1 l
   rw [hp, hw, hl]
 
-@[simp] lemma withProdFast_eq {α β γ : Type} (p : α × β) (f : α → β → γ) :
+@[simp] theorem withProdFast_eq {α β γ : Type} (p : α × β) (f : α → β → γ) :
     withProdFast p f = f p.1 p.2 := by
   cases p; rfl
 
-@[simp] lemma withProd3Fast_eq {α β γ δ : Type} (p : α × β × γ) (f : α → β → γ → δ) :
+@[simp] theorem withProd3Fast_eq {α β γ δ : Type} (p : α × β × γ) (f : α → β → γ → δ) :
     withProd3Fast p f = f p.1 p.2.1 p.2.2 := by
   rcases p with ⟨a, b, c⟩; rfl
 
-@[simp] lemma withNatFast_eq {α : Type} (x : Nat) (f : Nat → α) :
+@[simp] theorem withNatFast_eq {α : Type} (x : Nat) (f : Nat → α) :
     withNatFast x f = f x := by
   unfold withNatFast
   have hx : Nat.add 1 x = Nat.succ x := Nat.add_comm 1 x
   rw [hx]
 
-@[simp] lemma withBoolFast_eq {α : Type} (b : Bool) (f : Bool → α) :
+@[simp] theorem withBoolFast_eq {α : Type} (b : Bool) (f : Bool → α) :
     withBoolFast b f = f b := by
   cases b <;> rfl
 
-@[simp] lemma withStackFast_eq {α : Type} (s : Stack) (f : Stack → α) :
+@[simp] theorem withStackFast_eq {α : Type} (s : Stack) (f : Stack → α) :
     withStackFast s f = f s := by
   cases s <;> rfl
 
-@[simp] lemma withPartFast_eq {α : Type} (p : Bool × Nat) (f : Bool → Nat → α) :
+@[simp] theorem withPartFast_eq {α : Type} (p : Bool × Nat) (f : Bool → Nat → α) :
     withPartFast p f = f p.1 p.2 := by
   rcases p with ⟨b, n⟩
   simp [withPartFast]
 
-@[simp] lemma withPartListFast_eq {α : Type} (xs : PartList) (f : PartList → α) :
+@[simp] theorem withPartListFast_eq {α : Type} (xs : PartList) (f : PartList → α) :
     withPartListFast xs f = f xs := by
   cases xs with
   | nil => rfl
@@ -3142,11 +3135,11 @@ lemma consBlock1_eq (p w l : Nat) (rest : Stack) :
     rcases hd with ⟨b, n⟩
     simp [withPartListFast]
 
-@[simp] lemma someMStateFast_eq (q : Fin 6) (l r : Stack) :
+@[simp] theorem someMStateFast_eq (q : Fin 6) (l r : Stack) :
     someMStateFast q l r = some ⟨q, l, r⟩ := by
   simp [someMStateFast]
 
-@[simp] lemma stack_len_fast_eq (s : Stack) :
+@[simp] theorem stack_len_fast_eq (s : Stack) :
     stack_len_fast s = s.length := by
   induction s with
   | nil => rfl
@@ -3154,42 +3147,42 @@ lemma consBlock1_eq (p w l : Nat) (rest : Stack) :
     change Nat.add (stack_len_fast tl) 1 = (hd :: tl).length
     simp [ih]
 
-lemma mkBlock_p_eq : mkBlock_f_p = Block.mk := by
+theorem mkBlock_p_eq : mkBlock_f_p = Block.mk := by
   funext p w l; unfold mkBlock_f_p; simp only [nat_add_1_succ]
 
-lemma rot1_p_eq : rot1_f_p = rot1 := by
+theorem rot1_p_eq : rot1_f_p = rot1 := by
   funext w p; unfold rot1_f_p rot1
   simp only [bool_rec_eq, nat_ble_def, nat_shiftRight_def, nat_land_def, nat_shiftLeft_def,
     nat_sub_def, nat_mul_def, nat_add_def,
     Nat.shiftRight_eq_div_pow, Nat.pow_one, Nat.and_one_is_mod, Nat.shiftLeft_eq, Nat.one_mul]
   by_cases hw : w ≤ 1 <;> simp [hw]
 
-lemma rot_k_zero (w n : Nat) : rot_k w n 0 = 0 := by
+theorem rot_k_zero (w n : Nat) : rot_k w n 0 = 0 := by
   induction n with
   | zero => rfl
   | succ n ih =>
     have h1 : rot1 w 0 = 0 := by simp [rot1]
     simp [rot_k, h1, ih]
 
-lemma rot_k_one_one (n : Nat) : rot_k 1 n 1 = 1 := by
+theorem rot_k_one_one (n : Nat) : rot_k 1 n 1 = 1 := by
   induction n with
   | zero => rfl
   | succ n ih =>
     have h1 : rot1 1 1 = 1 := by simp [rot1]
     simp [rot_k, h1, ih]
 
-lemma rot_mod_fin_eq :
+theorem rot_mod_fin_eq :
     ∀ (w : Fin 5) (p : Fin 16) (r : Fin 5),
       1 ≤ w.val → p.val ≤ (Nat.shiftLeft 1 w.val) - 1 → 1 ≤ r.val → r.val < w.val →
       Nat.add (Nat.shiftRight p.val r.val)
         (Nat.shiftLeft (Nat.land p.val (Nat.sub (Nat.shiftLeft 1 r.val) 1)) (Nat.sub w.val r.val)) ==
       rot_k w.val r.val p.val := by decide +kernel
 
-lemma rot_k_period_fin :
+theorem rot_k_period_fin :
     ∀ (w : Fin 5) (p : Fin 16),
       1 ≤ w.val → p.val ≤ (Nat.shiftLeft 1 w.val) - 1 → rot_k w.val w.val p.val = p.val := by decide +kernel
 
-lemma rot_mod_p_eq : rot_mod_f_p = rot_mod := by
+theorem rot_mod_p_eq : rot_mod_f_p = rot_mod := by
   funext w n p
   rw [rot_mod_eq]
   unfold rot_mod_f_p
@@ -3226,12 +3219,12 @@ lemma rot_mod_p_eq : rot_mod_f_p = rot_mod := by
     exact of_decide_eq_true hfin
   · rfl
 
-lemma bit_of_bool_p_eq : bit_of_bool_f_p = (fun x => bit_of x == 1) := by
+theorem bit_of_bool_p_eq : bit_of_bool_f_p = (fun x => bit_of x == 1) := by
   funext x; unfold bit_of_bool_f_p bit_of
   simp only [nat_land_def, nat_beq_def, Nat.and_one_is_mod]
   rcases Nat.mod_two_eq_zero_or_one x with h2 | h2 <;> rw [h2] <;> rfl
 
-lemma push_stack_aux_fast_eq (s : Stack) (p w l : Nat) :
+theorem push_stack_aux_fast_eq (s : Stack) (p w l : Nat) :
     push_stack_aux_fast s p w l = push_stack_aux ⟨p, w, l⟩ s := by
   induction s generalizing p w l with
   | nil =>
@@ -3249,13 +3242,13 @@ lemma push_stack_aux_fast_eq (s : Stack) (p w l : Nat) :
     unfold push_stack_aux
     simp only [ih, bool_rec_eq, band_fast_eq, nat_beq_def, nat_add_def, withNatFast_eq, with_nat_eq, rot_mod_p_eq]
 
-lemma push_stack_fast_eq : push_stack_fast = push_stack := by
+theorem push_stack_fast_eq : push_stack_fast = push_stack := by
   funext p w l s
   unfold push_stack_fast push_stack
   simp only [withNatFast_eq, bool_rec_eq, nat_beq_def, push_stack_aux_fast_eq, with_stack_eq, with_nat_eq]
   by_cases hl : l = 0 <;> simp [hl]
 
-lemma drop_stack_aux_fast_eq (s : Stack) (n : Nat) (hn : n ≠ 0) :
+theorem drop_stack_aux_fast_eq (s : Stack) (n : Nat) (hn : n ≠ 0) :
     drop_stack_aux_fast s n = drop_stack n s := by
   induction s generalizing n with
   | nil => rfl
@@ -3277,7 +3270,7 @@ lemma drop_stack_aux_fast_eq (s : Stack) (n : Nat) (hn : n ≠ 0) :
         exact ih (n - top.len) hrem
     · simp only [hle, decide_false, if_false_eq_true, ↓reduceIte]
 
-lemma drop_stack_fast_eq : drop_stack_fast = drop_stack := by
+theorem drop_stack_fast_eq : drop_stack_fast = drop_stack := by
   funext n s
   unfold drop_stack_fast
   simp only [withNatFast_eq, bool_rec_eq, nat_beq_def]
@@ -3287,7 +3280,7 @@ lemma drop_stack_fast_eq : drop_stack_fast = drop_stack := by
     rw [hne, if_false_eq_true]
     exact drop_stack_aux_fast_eq s n hn
 
-lemma pop1_b_fast_eq : pop1_b_fast = fun s => ((pop1 s).1 == 1, (pop1 s).2) := by
+theorem pop1_b_fast_eq : pop1_b_fast = fun s => ((pop1 s).1 == 1, (pop1 s).2) := by
   funext s
   induction s with
   | nil => rfl
@@ -3311,9 +3304,9 @@ lemma pop1_b_fast_eq : pop1_b_fast = fun s => ((pop1 s).1 == 1, (pop1 s).2) := b
       · have hne1 : (top.len == 1) = false := beq_eq_false_iff_ne.mpr h1
         rw [hne1]; simp [h1]
 
-lemma sym_xnor_eq : ∀ (a b : Fin 2), ((!(a == 1 ^^ b == 1)) = true) = (a = b) := by decide
+theorem sym_xnor_eq : ∀ (a b : Fin 2), ((!(a == 1 ^^ b == 1)) = true) = (a = b) := by decide
 
-lemma pop_word_p_eq
+theorem pop_word_p_eq
     {bit_of_bool_f} (h1 : bit_of_bool_f = fun x => bit_of x == 1)
     {pop1_b_f} (h2 : pop1_b_f = fun s => ((pop1 s).1 == 1, (pop1 s).2)) :
     pop_word_f_p bit_of_bool_f pop1_b_f = pop_word := by
@@ -3329,7 +3322,7 @@ lemma pop_word_p_eq
     have hsh : ∀ x : Nat, x >>> 1 = x / 2 := fun _ => rfl
     simp only [hsh]
 
-lemma fast_match_core_fin :
+theorem fast_match_core_fin :
     ∀ (w : Fin 5) (tw : Fin 5) (tp : Fin 16) (pat : Fin 16),
       1 ≤ w.val → 1 ≤ tw.val → tp.val ≤ (Nat.shiftLeft 1 tw.val) - 1 → pat.val ≤ (Nat.shiftLeft 1 w.val) - 1 →
       (let mul := @Bool.rec (fun _ => Nat)
@@ -3343,7 +3336,7 @@ lemma fast_match_core_fin :
       (rot_k tw.val w.val tp.val == tp.val && pat_word tw.val tp.val w.val == word_of pat.val w.val) := by
   decide +kernel
 
-lemma fast_match_p_eq :
+theorem fast_match_p_eq :
     fast_match_f_p = fun pat w top =>
       (0 < w && w ≤ top.len && rot_k top.width w top.pat == top.pat &&
        pat_word top.width top.pat w == word_of pat w) := by
@@ -3376,7 +3369,7 @@ lemma fast_match_p_eq :
       cases (pat_word top.width top.pat w == word_of pat w) <;> rfl
   · rfl
 
-lemma count_stack_mut_p_eq
+theorem count_stack_mut_p_eq
     {drop_stack_f} (h1 : drop_stack_f = drop_stack)
     {pop_word_f} (h2 : pop_word_f = pop_word)
     {fast_match_f} (h3 : fast_match_f = fun pat w top =>
@@ -3406,7 +3399,7 @@ lemma count_stack_mut_p_eq
         · rfl
         · cases pop_word pat w (top :: rest) <;> rfl
 
-lemma mkPart_p_eq : mkPart_f_p = cons_lsb := by
+theorem mkPart_p_eq : mkPart_f_p = cons_lsb := by
   funext b k xs
   unfold mkPart_f_p cons_lsb
   simp only [withNatFast_eq, withBoolFast_eq, matchPartListFast_eq, bool_rec_eq,
@@ -3423,7 +3416,7 @@ lemma mkPart_p_eq : mkPart_f_p = cons_lsb := by
       rcases hd with ⟨b2, k2⟩
       cases b <;> cases b2 <;> rfl
 
-lemma bsize_parts_p_eq : bsize_parts_f_p = bsize_parts := by
+theorem bsize_parts_p_eq : bsize_parts_f_p = bsize_parts := by
   funext xs; unfold bsize_parts_f_p
   induction xs with
   | nil => rfl
@@ -3432,7 +3425,7 @@ lemma bsize_parts_p_eq : bsize_parts_f_p = bsize_parts := by
     simp only [ih]
     rfl
 
-lemma put_l_parts_p_eq
+theorem put_l_parts_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack) :
     put_l_parts_f_p push_stack_f = put_l_parts := by
   subst h1; funext xs s; unfold put_l_parts_f_p
@@ -3443,7 +3436,7 @@ lemma put_l_parts_p_eq
     simp only [ih]
     simp only [put_l_parts, bool_rec_eq, nat_mul_def]
 
-lemma put_l_stack_p_eq
+theorem put_l_stack_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack)
     {bsize_parts_f} (h2 : bsize_parts_f = bsize_parts)
     {put_l_parts_f} (h3 : put_l_parts_f = put_l_parts) :
@@ -3456,7 +3449,7 @@ lemma put_l_stack_p_eq
   · rw [if_pos hlt, decide_eq_true (by omega), if_true_eq_true]
   · rw [if_neg hlt, decide_eq_false (by omega), if_false_eq_true]
 
-lemma put_r_rec_p_eq
+theorem put_r_rec_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack) :
     put_r_rec_f_p push_stack_f = put_r_rec := by
   subst h1; funext xs k s; unfold put_r_rec_f_p
@@ -3473,7 +3466,7 @@ lemma put_r_rec_p_eq
       rw [hne]; simp only [if_false_eq_true, hm, ↓reduceIte]
       by_cases hle : k ≤ m <;> simp [hle]
 
-lemma parse_step_l_p_eq
+theorem parse_step_l_p_eq
     {drop_stack_f} (h1 : drop_stack_f = drop_stack)
     {pop_word_f} (h2 : pop_word_f = pop_word) :
     parse_step_l_f_p drop_stack_f pop_word_f = parse_step_l := by
@@ -3491,7 +3484,7 @@ lemma parse_step_l_p_eq
       | some s1 => rfl
       | none => cases pop_word 14 4 (top :: rest) <;> rfl
 
-lemma parse_l_p_eq
+theorem parse_l_p_eq
     {parse_step_l_f} (h1 : parse_step_l_f = parse_step_l) :
     parse_l_f_p parse_step_l_f = parse_l := by
   subst h1; funext fuel limit s; unfold parse_l_f_p
@@ -3512,7 +3505,7 @@ lemma parse_l_p_eq
       | some val =>
         rcases val with ⟨b, k, s1⟩; dsimp only
 
-lemma parse_step_r_p_eq
+theorem parse_step_r_p_eq
     {drop_stack_f} (h1 : drop_stack_f = drop_stack)
     {pop_word_f} (h2 : pop_word_f = pop_word) :
     parse_step_r_f_p drop_stack_f pop_word_f = parse_step_r := by
@@ -3530,9 +3523,9 @@ lemma parse_step_r_p_eq
       | some s1 => rfl
       | none => cases pop_word 0 3 (top :: rest) <;> rfl
 
-lemma sym_not_eq_one : ∀ (x : Fin 2), ((!(x == 1)) = true) = (x = 0) := by decide
+theorem sym_not_eq_one : ∀ (x : Fin 2), ((!(x == 1)) = true) = (x = 0) := by decide
 
-lemma parse_r_p_eq
+theorem parse_r_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack)
     {pop1_b_f} (h2 : pop1_b_f = fun s => ((pop1 s).1 == 1, (pop1 s).2))
     {parse_step_r_f} (h3 : parse_step_r_f = parse_step_r) :
@@ -3558,7 +3551,7 @@ lemma parse_r_p_eq
         · simp only [sym_not_eq_one]
         · dsimp only
 
-lemma sub_lsb_p_eq
+theorem sub_lsb_p_eq
     {mkPart_f} (h1 : mkPart_f = cons_lsb) :
     sub_lsb_f_p mkPart_f = sub_lsb := by
   subst h1; funext fuel c xs ys; unfold sub_lsb_f_p
@@ -3662,7 +3655,7 @@ lemma sub_lsb_p_eq
             | some out =>
               dsimp only; unfold sub_chunk_out subbit; rw [if_neg h1]
 
-lemma sub_lsb_checked_p_eq
+theorem sub_lsb_checked_p_eq
     {sub_lsb_f} (h1 : sub_lsb_f = sub_lsb) :
     sub_lsb_checked_f_p sub_lsb_f = sub_lsb_checked := by
   subst h1; funext fuel n k a b
@@ -3672,13 +3665,13 @@ lemma sub_lsb_checked_p_eq
   · rw [if_pos hlt, decide_eq_true (by omega), if_true_eq_true]
   · rw [if_neg hlt, decide_eq_false (by omega), if_false_eq_true]
 
-lemma drop_mult3_fast_eq : drop_mult3_fast = drop_mult3 := by
+theorem drop_mult3_fast_eq : drop_mult3_fast = drop_mult3 := by
   funext top rest
   unfold drop_mult3_fast drop_mult3
   simp only [withNatFast_eq, bool_rec_eq, nat_beq_def, nat_mod_def, consBlock1_eq]
   by_cases h : top.len % 3 = 0 <;> simp [h]
 
-lemma choose_limit_r_p_eq
+theorem choose_limit_r_p_eq
     {drop_mult3_f} (h1 : drop_mult3_f = drop_mult3)
     {pop1_b_f} (h2 : pop1_b_f = fun s => ((pop1 s).1 == 1, (pop1 s).2))
     {pop_word_f} (h3 : pop_word_f = pop_word) :
@@ -3727,12 +3720,12 @@ lemma choose_limit_r_p_eq
               dsimp only
               simp only [sym_not_eq_one]
 
-lemma push_prefix_l_p_eq
+theorem push_prefix_l_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack) :
     push_prefix_l_f_p push_stack_f = push_prefix_l := by
   subst h1; rfl
 
-lemma build_vprime_p_eq
+theorem build_vprime_p_eq
     {mkPart_f} (h1 : mkPart_f = cons_lsb) :
     build_vprime_f_p mkPart_f = build_vprime := by
   subst h1; funext n m_use
@@ -3742,7 +3735,7 @@ lemma build_vprime_p_eq
   · rw [if_pos hlt, if_pos hlt, decide_eq_true (by omega), if_true_eq_true]
   · rw [if_neg hlt, if_neg hlt, decide_eq_false (by omega), if_false_eq_true]
 
-lemma can_pair_f_eq : can_pair_f = can_pair := by
+theorem can_pair_f_eq : can_pair_f = can_pair := by
   funext s; unfold can_pair_f
   induction s with
   | nil => rfl
@@ -3763,7 +3756,7 @@ lemma can_pair_f_eq : can_pair_f = can_pair := by
     · have hc1f : (top.width == 1 && top.pat == 1) = false := Bool.eq_false_iff.mpr c1
       simp only [hc1f, Bool.false_eq_true, ↓reduceIte]
 
-lemma can_absorb_f_eq : can_absorb_f = can_absorb := by
+theorem can_absorb_f_eq : can_absorb_f = can_absorb := by
   funext s; unfold can_absorb_f
   induction s with
   | nil => rfl
@@ -3784,7 +3777,7 @@ lemma can_absorb_f_eq : can_absorb_f = can_absorb := by
     · have hc1f : (top.width == 1 && top.pat == 1) = false := Bool.eq_false_iff.mpr c1
       simp only [hc1f, Bool.false_eq_true, ↓reduceIte]
 
-lemma pre_pair_l_f_eq {can_pair_fn} (h1 : can_pair_fn = can_pair) :
+theorem pre_pair_l_f_eq {can_pair_fn} (h1 : can_pair_fn = can_pair) :
     pre_pair_l_f can_pair_fn = pre_pair_l := by
   subst h1; funext s; unfold pre_pair_l_f
   match s with
@@ -3797,7 +3790,7 @@ lemma pre_pair_l_f_eq {can_pair_fn} (h1 : can_pair_fn = can_pair) :
   | [] => rfl
   | [_] => rfl
 
-lemma pre_absorb_l_f_eq {can_absorb_fn} (h1 : can_absorb_fn = can_absorb) :
+theorem pre_absorb_l_f_eq {can_absorb_fn} (h1 : can_absorb_fn = can_absorb) :
     pre_absorb_l_f can_absorb_fn = pre_absorb_l := by
   subst h1; funext s; unfold pre_absorb_l_f
   match s with
@@ -3810,14 +3803,14 @@ lemma pre_absorb_l_f_eq {can_absorb_fn} (h1 : can_absorb_fn = can_absorb) :
   | [] => rfl
   | [_] => rfl
 
-lemma can_parse_r_f_eq : can_parse_r_f = can_parse_r := by
+theorem can_parse_r_f_eq : can_parse_r_f = can_parse_r := by
   funext s; cases s with
   | nil => rfl
   | cons top rest =>
     unfold can_parse_r_f can_parse_r
     simp only [matchStackFast_eq, bnot_fast_eq, band_fast_eq, nat_beq_def, nat_mod_def, Bool.and_assoc]
 
-lemma do_shift_right_p_eq
+theorem do_shift_right_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack)
     {pop_word_f} (h2 : pop_word_f = pop_word)
     {count_stack_mut_f} (h3 : count_stack_mut_f = count_stack_mut) :
@@ -3836,9 +3829,9 @@ lemma do_shift_right_p_eq
     cases pop_word (sin + sin * 2 ^ sw) (2 * sw) s.r <;> rfl
   · simp only [hsq, ↓reduceIte]
 
-lemma bit_pat_eq : ∀ (x : Fin 2), (if x == 1 then 1 else 0) = bit_pat x := by decide
+theorem bit_pat_eq : ∀ (x : Fin 2), (if x == 1 then 1 else 0) = bit_pat x := by decide
 
-lemma do_shift_left_p_eq
+theorem do_shift_left_p_eq
     {bit_of_bool_f} (h1 : bit_of_bool_f = fun x => bit_of x == 1)
     {push_stack_f} (h2 : push_stack_f = push_stack)
     {pop1_b_f} (h3 : pop1_b_f = fun s => ((pop1 s).1 == 1, (pop1 s).2))
@@ -3867,7 +3860,7 @@ lemma do_shift_left_p_eq
       rw [hne]; simp only [Bool.false_and, Bool.false_eq_true, heq, ↓reduceIte]
   · simp only [hsq, ↓reduceIte]
 
-lemma try_pair_stack_p_eq
+theorem try_pair_stack_p_eq
     {pre_pair_l_fn} (h0a : pre_pair_l_fn = pre_pair_l)
     {can_parse_r_fn} (h0b : can_parse_r_fn = can_parse_r)
     {can_pair_fn} (h0c : can_pair_fn = can_pair)
@@ -3937,7 +3930,7 @@ lemma try_pair_stack_p_eq
   · have hqb : Nat.beq s.q.val 0 = false := by rw [nat_beq_def, beq_eq_false_iff_ne]; intro h; exact hq0 (Fin.ext h)
     rw [hqb, if_neg hq0]
 
-lemma try_absorb_stack_p_eq
+theorem try_absorb_stack_p_eq
     {pre_absorb_l_fn} (h0a : pre_absorb_l_fn = pre_absorb_l)
     {can_parse_r_fn} (h0b : can_parse_r_fn = can_parse_r)
     {can_absorb_fn} (h0c : can_absorb_fn = can_absorb)
@@ -4053,7 +4046,7 @@ lemma try_absorb_stack_p_eq
   · have hqb : Nat.beq s.q.val 0 = false := by rw [nat_beq_def, beq_eq_false_iff_ne]; intro h; exact hq0 (Fin.ext h)
     rw [hqb, if_neg hq0]
 
-lemma step_prim_p_eq
+theorem step_prim_p_eq
     {push_stack_f} (h1 : push_stack_f = push_stack)
     {pop1_b_f} (h2 : pop1_b_f = fun s => ((pop1 s).1 == 1, (pop1 s).2)) :
     step_prim_f_p push_stack_f pop1_b_f = step_prim := by
@@ -4067,14 +4060,14 @@ lemma step_prim_p_eq
   rcases q with ⟨_ | _ | _ | _ | _ | _ | q, hq⟩ <;>
     rcases b_r with ⟨_ | _ | b_r, hb⟩ <;> (try rfl) <;> (try omega)
 
-lemma has_head_bit1_f_eq : has_head_bit1_f = has_head_bit1 := by
+theorem has_head_bit1_f_eq : has_head_bit1_f = has_head_bit1 := by
   funext s; cases s with
   | nil => rfl
   | cons top rest =>
     unfold has_head_bit1_f has_head_bit1
     simp only [matchStackFast_eq, nat_land_def, nat_beq_def, Nat.and_one_is_mod]
 
-lemma can_any_macro_f_eq
+theorem can_any_macro_f_eq
     {pre_pair_l_fn} (h1 : pre_pair_l_fn = pre_pair_l)
     {pre_absorb_l_fn} (h2 : pre_absorb_l_fn = pre_absorb_l)
     {can_parse_r_fn} (h3 : can_parse_r_fn = can_parse_r) :
@@ -4121,10 +4114,10 @@ lemma can_any_macro_f_eq
     rfl
   · omega
 
-lemma fin6_beq_5 : ∀ (q : Fin 6), (q.val == 5) = decide (q = 5) := by decide
-lemma fin2_beq_1 : ∀ (x : Fin 2), (x == 1) = decide (x = 1) := by decide
+theorem fin6_beq_5 : ∀ (q : Fin 6), (q.val == 5) = decide (q = 5) := by decide
+theorem fin2_beq_1 : ∀ (x : Fin 2), (x == 1) = decide (x = 1) := by decide
 
-lemma run_prim_p_eq
+theorem run_prim_p_eq
     {pop1_b_f} (h1 : pop1_b_f = fun s => ((pop1 s).1 == 1, (pop1 s).2))
     {can_any_macro_fn} (h2 : can_any_macro_fn = can_any_macro)
     {step_prim_f} (h3 : step_prim_f = step_prim) :
@@ -4145,7 +4138,7 @@ lemma run_prim_p_eq
       | none => rfl
       | some s1 => exact ih s1
 
-lemma step_prim_plus_p_eq
+theorem step_prim_plus_p_eq
     {step_prim_f} (h1 : step_prim_f = step_prim)
     {run_prim_f} (h2 : run_prim_f = run_prim) :
     step_prim_plus_f_p step_prim_f run_prim_f = step_prim_plus := by
@@ -4155,7 +4148,7 @@ lemma step_prim_plus_p_eq
   simp only [withOptionFast_eq]
   cases step_prim s <;> rfl
 
-lemma step_m_p_eq
+theorem step_m_p_eq
     {do_shift_right_f : Nat → Fin 6 → Nat → Nat → Nat → Nat → MState → Option MState} (h1 : do_shift_right_f 8 = do_shift_right)
     {do_shift_left_f : Nat → Fin 6 → Nat → Nat → Nat → Nat → MState → Option MState} (h2 : do_shift_left_f 8 = do_shift_left)
     {try_pair_stack_f : Nat → MState → Option MState} (h3 : try_pair_stack_f = try_pair_stack)
@@ -4268,7 +4261,7 @@ noncomputable def opt_mstate_beq (o : Option MState) (target : MState) : Bool :=
 noncomputable def is_some_m (o : Option MState) : Bool := withOptionFast o false (fun _ => true)
 
 
-lemma step_m_c0_eq : step_m_c0 = step_m :=
+theorem step_m_c0_eq : step_m_c0 = step_m :=
   let h04 := bit_of_bool_p_eq
   let h06 := push_stack_fast_eq
   let h07 := drop_stack_fast_eq
@@ -4306,7 +4299,7 @@ lemma step_m_c0_eq : step_m_c0 = step_m :=
   let h29c := step_prim_plus_p_eq h29 h29b
   step_m_p_eq h25 h26 h27 h28 h29c
 
-lemma run_m_loop_eq {step_f : MState → Option MState}
+theorem run_m_loop_eq {step_f : MState → Option MState}
     (hstep : step_f = step_m) (fuel : Nat) (s0 : MState) :
     @Nat.rec (fun _ => MState → Option MState)
       (fun s => some s)
@@ -4323,24 +4316,24 @@ lemma run_m_loop_eq {step_f : MState → Option MState}
     | none => rfl
     | some s1 => exact ih s1
 
-lemma run_m_fast_eq (fuel : Nat) (s0 : MState) :
+theorem run_m_fast_eq (fuel : Nat) (s0 : MState) :
     run_m_fast fuel s0 = run_m fuel s0 :=
   run_m_loop_eq step_m_c0_eq fuel s0
 
-lemma block_beq_eq {a b : Block} (h : block_beq a b = true) : a = b := by
+theorem block_beq_eq {a b : Block} (h : block_beq a b = true) : a = b := by
   rcases a with ⟨p1, w1, l1⟩; rcases b with ⟨p2, w2, l2⟩
   simp only [block_beq, band_fast_eq, Bool.and_eq_true, Nat.beq_eq] at h
   rcases h with ⟨rfl, rfl, rfl⟩
   rfl
 
-lemma stack_beq_eq : ∀ {xs ys : Stack}, stack_beq xs ys = true → xs = ys
+theorem stack_beq_eq : ∀ {xs ys : Stack}, stack_beq xs ys = true → xs = ys
   | [], [], _ => rfl
   | x :: xs, y :: ys, h => by
     change band_fast (block_beq x y) (stack_beq xs ys) = true at h
     simp only [band_fast_eq, Bool.and_eq_true] at h
     rw [block_beq_eq h.1, stack_beq_eq h.2]
 
-lemma opt_mstate_beq_eq {o : Option MState} {t : MState} (h : opt_mstate_beq o t = true) :
+theorem opt_mstate_beq_eq {o : Option MState} {t : MState} (h : opt_mstate_beq o t = true) :
     o = some t := by
   cases o with
   | none => cases h
@@ -4350,7 +4343,7 @@ lemma opt_mstate_beq_eq {o : Option MState} {t : MState} (h : opt_mstate_beq o t
     rcases h with ⟨hq, hl, hr⟩
     rw [Fin.ext hq, stack_beq_eq hl, stack_beq_eq hr]
 
-lemma run_m_trans {m n : Nat} {s1 s2 s3 : MState}
+theorem run_m_trans {m n : Nat} {s1 s2 s3 : MState}
     (h1 : run_m m s1 = some s2) (h2 : run_m n s2 = some s3) :
     run_m (m + n) s1 = some s3 := by
   induction m generalizing s1 with
@@ -4365,11 +4358,11 @@ lemma run_m_trans {m n : Nat} {s1 s2 s3 : MState}
 def MReach (s1 s2 : MState) : Prop :=
   ∃ fuel, run_m fuel s1 = some s2
 
-lemma mreach_base_fast {k : Nat} {s1 s2 : MState}
+theorem mreach_base_fast {k : Nat} {s1 s2 : MState}
     (h : opt_mstate_beq (run_m_fast k s1) s2 = true) : MReach s1 s2 :=
   ⟨k, (run_m_fast_eq k s1).symm.trans (opt_mstate_beq_eq h)⟩
 
-lemma mreach_step_fast {k : Nat} {s1 s2 s3 : MState}
+theorem mreach_step_fast {k : Nat} {s1 s2 s3 : MState}
     (h1 : opt_mstate_beq (run_m_fast k s1) s2 = true) (h2 : MReach s2 s3) : MReach s1 s3 :=
   let ⟨n, hn⟩ := h2
   ⟨k + n, run_m_trans ((run_m_fast_eq k s1).symm.trans (opt_mstate_beq_eq h1)) hn⟩
@@ -4412,80 +4405,80 @@ private def cfg_33 : MState := ⟨3, [⟨14, 4, 36⟩, ⟨1, 1, 24⟩, ⟨14, 4,
 private def cfg_34 : MState := ⟨1, [⟨1, 1, 97919⟩, ⟨13, 4, 1⟩, ⟨1, 1, 1⟩], [⟨0, 1, 5⟩, ⟨1, 1, 1⟩, ⟨0, 1, 2⟩, ⟨1, 3, 3⟩, ⟨0, 1, 12⟩, ⟨1, 3, 9⟩, ⟨0, 1, 3⟩, ⟨1, 3, 27⟩, ⟨0, 1, 51⟩, ⟨1, 3, 3⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 153⟩, ⟨0, 1, 48⟩, ⟨1, 3, 93⟩, ⟨0, 1, 6⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 69⟩, ⟨1, 3, 6⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 111⟩, ⟨1, 3, 6⟩, ⟨0, 1, 150⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 489⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 1392⟩, ⟨1, 3, 6⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 423⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 15⟩, ⟨0, 1, 6⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 24⟩, ⟨0, 1, 3⟩, ⟨1, 3, 27⟩, ⟨0, 1, 18⟩, ⟨1, 3, 705⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 12⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 9⟩, ⟨0, 1, 3⟩, ⟨1, 3, 30⟩, ⟨0, 1, 3⟩, ⟨1, 3, 33⟩, ⟨0, 1, 129⟩, ⟨1, 3, 135⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 258⟩, ⟨1, 3, 306⟩, ⟨0, 1, 33⟩, ⟨1, 3, 15⟩, ⟨0, 1, 69⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 276⟩, ⟨1, 3, 3⟩, ⟨0, 1, 297⟩, ⟨1, 3, 3⟩, ⟨0, 1, 108⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 486⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 129⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 237⟩, ⟨1, 3, 6⟩, ⟨0, 1, 942⟩, ⟨1, 3, 3⟩, ⟨0, 1, 444⟩, ⟨1, 3, 9441⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3324⟩, ⟨0, 1, 6⟩, ⟨1, 3, 3⟩, ⟨0, 1, 339⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 1410⟩, ⟨1, 3, 3⟩, ⟨0, 1, 234⟩, ⟨1, 3, 3⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 633⟩, ⟨1, 3, 3⟩, ⟨0, 1, 192⟩, ⟨1, 3, 3⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3846⟩, ⟨1, 3, 3⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 2274⟩, ⟨1, 3, 6⟩, ⟨0, 1, 69⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 423⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 234⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 318⟩, ⟨1, 3, 3⟩, ⟨0, 1, 507⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 174⟩, ⟨1, 3, 6⟩, ⟨0, 1, 570⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27807⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 342⟩, ⟨1, 3, 6⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 111⟩, ⟨1, 3, 6⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 108⟩, ⟨1, 3, 3⟩, ⟨0, 1, 570⟩, ⟨1, 3, 3⟩, ⟨0, 1, 297⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 108⟩, ⟨1, 3, 3⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 843⟩, ⟨1, 3, 3⟩, ⟨0, 1, 111⟩, ⟨1, 3, 6⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 213⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 8970⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 1⟩]⟩ -- +1143 (step 42557, blks=227)
 private def cfg_end : MState := ⟨5, [⟨0, 1, 1⟩, ⟨1, 1, 5⟩, ⟨0, 1, 1⟩, ⟨1, 1, 20⟩, ⟨14, 4, 16⟩, ⟨13, 4, 29⟩, ⟨1, 1, 4⟩, ⟨14, 4, 36⟩, ⟨1, 1, 8⟩, ⟨14, 4, 84⟩, ⟨1, 1, 4⟩, ⟨14, 4, 4⟩, ⟨13, 4, 13⟩, ⟨13, 4, 181⟩, ⟨1, 1, 4⟩, ⟨14, 4, 4⟩, ⟨1, 1, 4⟩, ⟨14, 4, 24⟩, ⟨1, 1, 4⟩, ⟨14, 4, 40⟩, ⟨1, 1, 4⟩, ⟨14, 4, 4⟩, ⟨1, 1, 4⟩, ⟨14, 4, 4⟩, ⟨13, 4, 5⟩, ⟨1, 1, 4⟩, ⟨14, 4, 98016⟩, ⟨1, 1, 1⟩], [⟨1, 3, 6⟩, ⟨0, 1, 111⟩, ⟨1, 3, 6⟩, ⟨0, 1, 150⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 489⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 1392⟩, ⟨1, 3, 6⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 423⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 15⟩, ⟨0, 1, 6⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 24⟩, ⟨0, 1, 3⟩, ⟨1, 3, 27⟩, ⟨0, 1, 18⟩, ⟨1, 3, 705⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 12⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 9⟩, ⟨0, 1, 3⟩, ⟨1, 3, 30⟩, ⟨0, 1, 3⟩, ⟨1, 3, 33⟩, ⟨0, 1, 129⟩, ⟨1, 3, 135⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 258⟩, ⟨1, 3, 306⟩, ⟨0, 1, 33⟩, ⟨1, 3, 15⟩, ⟨0, 1, 69⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 276⟩, ⟨1, 3, 3⟩, ⟨0, 1, 297⟩, ⟨1, 3, 3⟩, ⟨0, 1, 108⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 486⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 129⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 237⟩, ⟨1, 3, 6⟩, ⟨0, 1, 942⟩, ⟨1, 3, 3⟩, ⟨0, 1, 444⟩, ⟨1, 3, 9441⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3324⟩, ⟨0, 1, 6⟩, ⟨1, 3, 3⟩, ⟨0, 1, 339⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 1410⟩, ⟨1, 3, 3⟩, ⟨0, 1, 234⟩, ⟨1, 3, 3⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 633⟩, ⟨1, 3, 3⟩, ⟨0, 1, 192⟩, ⟨1, 3, 3⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 3846⟩, ⟨1, 3, 3⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 2274⟩, ⟨1, 3, 6⟩, ⟨0, 1, 69⟩, ⟨1, 3, 6⟩, ⟨0, 1, 3⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 423⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 234⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 318⟩, ⟨1, 3, 3⟩, ⟨0, 1, 507⟩, ⟨1, 3, 3⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 48⟩, ⟨1, 3, 6⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 24⟩, ⟨1, 3, 3⟩, ⟨0, 1, 174⟩, ⟨1, 3, 6⟩, ⟨0, 1, 570⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27807⟩, ⟨1, 3, 3⟩, ⟨0, 1, 27⟩, ⟨1, 3, 6⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 342⟩, ⟨1, 3, 6⟩, ⟨0, 1, 6⟩, ⟨1, 3, 6⟩, ⟨0, 1, 111⟩, ⟨1, 3, 6⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 108⟩, ⟨1, 3, 3⟩, ⟨0, 1, 570⟩, ⟨1, 3, 3⟩, ⟨0, 1, 297⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 108⟩, ⟨1, 3, 3⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 843⟩, ⟨1, 3, 3⟩, ⟨0, 1, 111⟩, ⟨1, 3, 6⟩, ⟨0, 1, 87⟩, ⟨1, 3, 3⟩, ⟨0, 1, 213⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 66⟩, ⟨1, 3, 3⟩, ⟨0, 1, 8970⟩, ⟨1, 3, 3⟩, ⟨0, 1, 45⟩, ⟨1, 3, 3⟩, ⟨0, 1, 192⟩, ⟨1, 3, 1⟩]⟩ -- +821 (step 43378, blks=231)
 
-private lemma step_ckpt_0 : opt_mstate_beq (run_m_fast 1100 cfg_0) cfg_1 = true := by decide +kernel
-private lemma step_ckpt_1 : opt_mstate_beq (run_m_fast 1102 cfg_1) cfg_2 = true := by decide +kernel
-private lemma step_ckpt_2 : opt_mstate_beq (run_m_fast 1305 cfg_2) cfg_3 = true := by decide +kernel
-private lemma step_ckpt_3 : opt_mstate_beq (run_m_fast 1360 cfg_3) cfg_4 = true := by decide +kernel
-private lemma step_ckpt_4 : opt_mstate_beq (run_m_fast 1335 cfg_4) cfg_5 = true := by decide +kernel
-private lemma step_ckpt_5 : opt_mstate_beq (run_m_fast 1165 cfg_5) cfg_6 = true := by decide +kernel
-private lemma step_ckpt_6 : opt_mstate_beq (run_m_fast 1198 cfg_6) cfg_7 = true := by decide +kernel
-private lemma step_ckpt_7 : opt_mstate_beq (run_m_fast 1439 cfg_7) cfg_8 = true := by decide +kernel
-private lemma step_ckpt_8 : opt_mstate_beq (run_m_fast 1105 cfg_8) cfg_9 = true := by decide +kernel
-private lemma step_ckpt_9 : opt_mstate_beq (run_m_fast 1323 cfg_9) cfg_10 = true := by decide +kernel
-private lemma step_ckpt_10 : opt_mstate_beq (run_m_fast 1227 cfg_10) cfg_11 = true := by decide +kernel
-private lemma step_ckpt_11 : opt_mstate_beq (run_m_fast 1472 cfg_11) cfg_12 = true := by decide +kernel
-private lemma step_ckpt_12 : opt_mstate_beq (run_m_fast 1449 cfg_12) cfg_13 = true := by decide +kernel
-private lemma step_ckpt_13 : opt_mstate_beq (run_m_fast 1472 cfg_13) cfg_14 = true := by decide +kernel
-private lemma step_ckpt_14 : opt_mstate_beq (run_m_fast 1134 cfg_14) cfg_15 = true := by decide +kernel
-private lemma step_ckpt_15 : opt_mstate_beq (run_m_fast 1196 cfg_15) cfg_16 = true := by decide +kernel
-private lemma step_ckpt_16 : opt_mstate_beq (run_m_fast 1112 cfg_16) cfg_17 = true := by decide +kernel
-private lemma step_ckpt_17 : opt_mstate_beq (run_m_fast 1499 cfg_17) cfg_18 = true := by decide +kernel
-private lemma step_ckpt_18 : opt_mstate_beq (run_m_fast 1350 cfg_18) cfg_19 = true := by decide +kernel
-private lemma step_ckpt_19 : opt_mstate_beq (run_m_fast 1106 cfg_19) cfg_20 = true := by decide +kernel
-private lemma step_ckpt_20 : opt_mstate_beq (run_m_fast 1108 cfg_20) cfg_21 = true := by decide +kernel
-private lemma step_ckpt_21 : opt_mstate_beq (run_m_fast 1186 cfg_21) cfg_22 = true := by decide +kernel
-private lemma step_ckpt_22 : opt_mstate_beq (run_m_fast 1101 cfg_22) cfg_23 = true := by decide +kernel
-private lemma step_ckpt_23 : opt_mstate_beq (run_m_fast 1125 cfg_23) cfg_24 = true := by decide +kernel
-private lemma step_ckpt_24 : opt_mstate_beq (run_m_fast 1329 cfg_24) cfg_25 = true := by decide +kernel
-private lemma step_ckpt_25 : opt_mstate_beq (run_m_fast 1292 cfg_25) cfg_26 = true := by decide +kernel
-private lemma step_ckpt_26 : opt_mstate_beq (run_m_fast 1151 cfg_26) cfg_27 = true := by decide +kernel
-private lemma step_ckpt_27 : opt_mstate_beq (run_m_fast 1211 cfg_27) cfg_28 = true := by decide +kernel
-private lemma step_ckpt_28 : opt_mstate_beq (run_m_fast 1279 cfg_28) cfg_29 = true := by decide +kernel
-private lemma step_ckpt_29 : opt_mstate_beq (run_m_fast 1244 cfg_29) cfg_30 = true := by decide +kernel
-private lemma step_ckpt_30 : opt_mstate_beq (run_m_fast 1143 cfg_30) cfg_31 = true := by decide +kernel
-private lemma step_ckpt_31 : opt_mstate_beq (run_m_fast 1490 cfg_31) cfg_32 = true := by decide +kernel
-private lemma step_ckpt_32 : opt_mstate_beq (run_m_fast 1306 cfg_32) cfg_33 = true := by decide +kernel
-private lemma step_ckpt_33 : opt_mstate_beq (run_m_fast 1143 cfg_33) cfg_34 = true := by decide +kernel
-private lemma step_ckpt_end : opt_mstate_beq (run_m_fast 821 cfg_34) cfg_end = true := by decide +kernel
+private theorem step_ckpt_0 : opt_mstate_beq (run_m_fast 1100 cfg_0) cfg_1 = true := by decide +kernel
+private theorem step_ckpt_1 : opt_mstate_beq (run_m_fast 1102 cfg_1) cfg_2 = true := by decide +kernel
+private theorem step_ckpt_2 : opt_mstate_beq (run_m_fast 1305 cfg_2) cfg_3 = true := by decide +kernel
+private theorem step_ckpt_3 : opt_mstate_beq (run_m_fast 1360 cfg_3) cfg_4 = true := by decide +kernel
+private theorem step_ckpt_4 : opt_mstate_beq (run_m_fast 1335 cfg_4) cfg_5 = true := by decide +kernel
+private theorem step_ckpt_5 : opt_mstate_beq (run_m_fast 1165 cfg_5) cfg_6 = true := by decide +kernel
+private theorem step_ckpt_6 : opt_mstate_beq (run_m_fast 1198 cfg_6) cfg_7 = true := by decide +kernel
+private theorem step_ckpt_7 : opt_mstate_beq (run_m_fast 1439 cfg_7) cfg_8 = true := by decide +kernel
+private theorem step_ckpt_8 : opt_mstate_beq (run_m_fast 1105 cfg_8) cfg_9 = true := by decide +kernel
+private theorem step_ckpt_9 : opt_mstate_beq (run_m_fast 1323 cfg_9) cfg_10 = true := by decide +kernel
+private theorem step_ckpt_10 : opt_mstate_beq (run_m_fast 1227 cfg_10) cfg_11 = true := by decide +kernel
+private theorem step_ckpt_11 : opt_mstate_beq (run_m_fast 1472 cfg_11) cfg_12 = true := by decide +kernel
+private theorem step_ckpt_12 : opt_mstate_beq (run_m_fast 1449 cfg_12) cfg_13 = true := by decide +kernel
+private theorem step_ckpt_13 : opt_mstate_beq (run_m_fast 1472 cfg_13) cfg_14 = true := by decide +kernel
+private theorem step_ckpt_14 : opt_mstate_beq (run_m_fast 1134 cfg_14) cfg_15 = true := by decide +kernel
+private theorem step_ckpt_15 : opt_mstate_beq (run_m_fast 1196 cfg_15) cfg_16 = true := by decide +kernel
+private theorem step_ckpt_16 : opt_mstate_beq (run_m_fast 1112 cfg_16) cfg_17 = true := by decide +kernel
+private theorem step_ckpt_17 : opt_mstate_beq (run_m_fast 1499 cfg_17) cfg_18 = true := by decide +kernel
+private theorem step_ckpt_18 : opt_mstate_beq (run_m_fast 1350 cfg_18) cfg_19 = true := by decide +kernel
+private theorem step_ckpt_19 : opt_mstate_beq (run_m_fast 1106 cfg_19) cfg_20 = true := by decide +kernel
+private theorem step_ckpt_20 : opt_mstate_beq (run_m_fast 1108 cfg_20) cfg_21 = true := by decide +kernel
+private theorem step_ckpt_21 : opt_mstate_beq (run_m_fast 1186 cfg_21) cfg_22 = true := by decide +kernel
+private theorem step_ckpt_22 : opt_mstate_beq (run_m_fast 1101 cfg_22) cfg_23 = true := by decide +kernel
+private theorem step_ckpt_23 : opt_mstate_beq (run_m_fast 1125 cfg_23) cfg_24 = true := by decide +kernel
+private theorem step_ckpt_24 : opt_mstate_beq (run_m_fast 1329 cfg_24) cfg_25 = true := by decide +kernel
+private theorem step_ckpt_25 : opt_mstate_beq (run_m_fast 1292 cfg_25) cfg_26 = true := by decide +kernel
+private theorem step_ckpt_26 : opt_mstate_beq (run_m_fast 1151 cfg_26) cfg_27 = true := by decide +kernel
+private theorem step_ckpt_27 : opt_mstate_beq (run_m_fast 1211 cfg_27) cfg_28 = true := by decide +kernel
+private theorem step_ckpt_28 : opt_mstate_beq (run_m_fast 1279 cfg_28) cfg_29 = true := by decide +kernel
+private theorem step_ckpt_29 : opt_mstate_beq (run_m_fast 1244 cfg_29) cfg_30 = true := by decide +kernel
+private theorem step_ckpt_30 : opt_mstate_beq (run_m_fast 1143 cfg_30) cfg_31 = true := by decide +kernel
+private theorem step_ckpt_31 : opt_mstate_beq (run_m_fast 1490 cfg_31) cfg_32 = true := by decide +kernel
+private theorem step_ckpt_32 : opt_mstate_beq (run_m_fast 1306 cfg_32) cfg_33 = true := by decide +kernel
+private theorem step_ckpt_33 : opt_mstate_beq (run_m_fast 1143 cfg_33) cfg_34 = true := by decide +kernel
+private theorem step_ckpt_end : opt_mstate_beq (run_m_fast 821 cfg_34) cfg_end = true := by decide +kernel
 
-private lemma reach_34 : MReach cfg_34 cfg_end := mreach_base_fast step_ckpt_end
-private lemma reach_33 : MReach cfg_33 cfg_end := mreach_step_fast step_ckpt_33 reach_34
-private lemma reach_32 : MReach cfg_32 cfg_end := mreach_step_fast step_ckpt_32 reach_33
-private lemma reach_31 : MReach cfg_31 cfg_end := mreach_step_fast step_ckpt_31 reach_32
-private lemma reach_30 : MReach cfg_30 cfg_end := mreach_step_fast step_ckpt_30 reach_31
-private lemma reach_29 : MReach cfg_29 cfg_end := mreach_step_fast step_ckpt_29 reach_30
-private lemma reach_28 : MReach cfg_28 cfg_end := mreach_step_fast step_ckpt_28 reach_29
-private lemma reach_27 : MReach cfg_27 cfg_end := mreach_step_fast step_ckpt_27 reach_28
-private lemma reach_26 : MReach cfg_26 cfg_end := mreach_step_fast step_ckpt_26 reach_27
-private lemma reach_25 : MReach cfg_25 cfg_end := mreach_step_fast step_ckpt_25 reach_26
-private lemma reach_24 : MReach cfg_24 cfg_end := mreach_step_fast step_ckpt_24 reach_25
-private lemma reach_23 : MReach cfg_23 cfg_end := mreach_step_fast step_ckpt_23 reach_24
-private lemma reach_22 : MReach cfg_22 cfg_end := mreach_step_fast step_ckpt_22 reach_23
-private lemma reach_21 : MReach cfg_21 cfg_end := mreach_step_fast step_ckpt_21 reach_22
-private lemma reach_20 : MReach cfg_20 cfg_end := mreach_step_fast step_ckpt_20 reach_21
-private lemma reach_19 : MReach cfg_19 cfg_end := mreach_step_fast step_ckpt_19 reach_20
-private lemma reach_18 : MReach cfg_18 cfg_end := mreach_step_fast step_ckpt_18 reach_19
-private lemma reach_17 : MReach cfg_17 cfg_end := mreach_step_fast step_ckpt_17 reach_18
-private lemma reach_16 : MReach cfg_16 cfg_end := mreach_step_fast step_ckpt_16 reach_17
-private lemma reach_15 : MReach cfg_15 cfg_end := mreach_step_fast step_ckpt_15 reach_16
-private lemma reach_14 : MReach cfg_14 cfg_end := mreach_step_fast step_ckpt_14 reach_15
-private lemma reach_13 : MReach cfg_13 cfg_end := mreach_step_fast step_ckpt_13 reach_14
-private lemma reach_12 : MReach cfg_12 cfg_end := mreach_step_fast step_ckpt_12 reach_13
-private lemma reach_11 : MReach cfg_11 cfg_end := mreach_step_fast step_ckpt_11 reach_12
-private lemma reach_10 : MReach cfg_10 cfg_end := mreach_step_fast step_ckpt_10 reach_11
-private lemma reach_9 : MReach cfg_9 cfg_end := mreach_step_fast step_ckpt_9 reach_10
-private lemma reach_8 : MReach cfg_8 cfg_end := mreach_step_fast step_ckpt_8 reach_9
-private lemma reach_7 : MReach cfg_7 cfg_end := mreach_step_fast step_ckpt_7 reach_8
-private lemma reach_6 : MReach cfg_6 cfg_end := mreach_step_fast step_ckpt_6 reach_7
-private lemma reach_5 : MReach cfg_5 cfg_end := mreach_step_fast step_ckpt_5 reach_6
-private lemma reach_4 : MReach cfg_4 cfg_end := mreach_step_fast step_ckpt_4 reach_5
-private lemma reach_3 : MReach cfg_3 cfg_end := mreach_step_fast step_ckpt_3 reach_4
-private lemma reach_2 : MReach cfg_2 cfg_end := mreach_step_fast step_ckpt_2 reach_3
-private lemma reach_1 : MReach cfg_1 cfg_end := mreach_step_fast step_ckpt_1 reach_2
-private lemma reach_0 : MReach cfg_0 cfg_end := mreach_step_fast step_ckpt_0 reach_1
+private theorem reach_34 : MReach cfg_34 cfg_end := mreach_base_fast step_ckpt_end
+private theorem reach_33 : MReach cfg_33 cfg_end := mreach_step_fast step_ckpt_33 reach_34
+private theorem reach_32 : MReach cfg_32 cfg_end := mreach_step_fast step_ckpt_32 reach_33
+private theorem reach_31 : MReach cfg_31 cfg_end := mreach_step_fast step_ckpt_31 reach_32
+private theorem reach_30 : MReach cfg_30 cfg_end := mreach_step_fast step_ckpt_30 reach_31
+private theorem reach_29 : MReach cfg_29 cfg_end := mreach_step_fast step_ckpt_29 reach_30
+private theorem reach_28 : MReach cfg_28 cfg_end := mreach_step_fast step_ckpt_28 reach_29
+private theorem reach_27 : MReach cfg_27 cfg_end := mreach_step_fast step_ckpt_27 reach_28
+private theorem reach_26 : MReach cfg_26 cfg_end := mreach_step_fast step_ckpt_26 reach_27
+private theorem reach_25 : MReach cfg_25 cfg_end := mreach_step_fast step_ckpt_25 reach_26
+private theorem reach_24 : MReach cfg_24 cfg_end := mreach_step_fast step_ckpt_24 reach_25
+private theorem reach_23 : MReach cfg_23 cfg_end := mreach_step_fast step_ckpt_23 reach_24
+private theorem reach_22 : MReach cfg_22 cfg_end := mreach_step_fast step_ckpt_22 reach_23
+private theorem reach_21 : MReach cfg_21 cfg_end := mreach_step_fast step_ckpt_21 reach_22
+private theorem reach_20 : MReach cfg_20 cfg_end := mreach_step_fast step_ckpt_20 reach_21
+private theorem reach_19 : MReach cfg_19 cfg_end := mreach_step_fast step_ckpt_19 reach_20
+private theorem reach_18 : MReach cfg_18 cfg_end := mreach_step_fast step_ckpt_18 reach_19
+private theorem reach_17 : MReach cfg_17 cfg_end := mreach_step_fast step_ckpt_17 reach_18
+private theorem reach_16 : MReach cfg_16 cfg_end := mreach_step_fast step_ckpt_16 reach_17
+private theorem reach_15 : MReach cfg_15 cfg_end := mreach_step_fast step_ckpt_15 reach_16
+private theorem reach_14 : MReach cfg_14 cfg_end := mreach_step_fast step_ckpt_14 reach_15
+private theorem reach_13 : MReach cfg_13 cfg_end := mreach_step_fast step_ckpt_13 reach_14
+private theorem reach_12 : MReach cfg_12 cfg_end := mreach_step_fast step_ckpt_12 reach_13
+private theorem reach_11 : MReach cfg_11 cfg_end := mreach_step_fast step_ckpt_11 reach_12
+private theorem reach_10 : MReach cfg_10 cfg_end := mreach_step_fast step_ckpt_10 reach_11
+private theorem reach_9 : MReach cfg_9 cfg_end := mreach_step_fast step_ckpt_9 reach_10
+private theorem reach_8 : MReach cfg_8 cfg_end := mreach_step_fast step_ckpt_8 reach_9
+private theorem reach_7 : MReach cfg_7 cfg_end := mreach_step_fast step_ckpt_7 reach_8
+private theorem reach_6 : MReach cfg_6 cfg_end := mreach_step_fast step_ckpt_6 reach_7
+private theorem reach_5 : MReach cfg_5 cfg_end := mreach_step_fast step_ckpt_5 reach_6
+private theorem reach_4 : MReach cfg_4 cfg_end := mreach_step_fast step_ckpt_4 reach_5
+private theorem reach_3 : MReach cfg_3 cfg_end := mreach_step_fast step_ckpt_3 reach_4
+private theorem reach_2 : MReach cfg_2 cfg_end := mreach_step_fast step_ckpt_2 reach_3
+private theorem reach_1 : MReach cfg_1 cfg_end := mreach_step_fast step_ckpt_1 reach_2
+private theorem reach_0 : MReach cfg_0 cfg_end := mreach_step_fast step_ckpt_0 reach_1
 
 
-private lemma halt_cfg_end : is_halt_m cfg_end = true := by decide +kernel
+private theorem halt_cfg_end : is_halt_m cfg_end = true := by decide +kernel
 
 
 

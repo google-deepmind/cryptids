@@ -25,12 +25,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -42,61 +38,59 @@ abbrev C : Fin 6 := 2
 abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
-set_option linter.unusedSimpArgs false
-set_option linter.unnecessarySeqFocus false
 set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000000
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0=some config:=rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1=step M config:=rfl
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0=some config:=rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1=step M config:=rfl
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1)=Option.bind (multiStep M config n) (step M):= by
   rw [multiStep,Function.iterate_succ',Function.comp_apply,multiStep]
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default=default:= by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default=default:= by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head=0:=rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail=default:=rfl
-@[simp] lemma append_nil (s : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> s=s:=rfl
-@[simp] lemma append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 2)) :
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head=0:=rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail=default:=rfl
+@[simp] theorem append_nil (s : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> s=s:=rfl
+@[simp] theorem append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 2)) :
     (a :: l) +> s=a >> (l +> s):=rfl
-@[simp] lemma append_assoc (l1 l2 : List (Fin 2)) (s : ListBlank (Fin 2)) :
+@[simp] theorem append_assoc (l1 l2 : List (Fin 2)) (s : ListBlank (Fin 2)) :
     (l1 ++ l2) +> s=l1 +> (l2 +> s):= by
   induction l1 with
   | nil => rfl
   | cons a l1 ih => simp [ih]
-@[simp] lemma pow_zero_list (l : List α) : l ^ (0 : ℕ)=[]:=rfl
-@[simp] lemma pow_succ_list (l : List α) (n : ℕ) : l ^ (n + 1)=l ++ l ^ n:=rfl
-lemma qb (l : List α) (m n : ℕ) : l ^ (m + n)=l ^ m ++ l ^ n:= by
+@[simp] theorem pow_zero_list (l : List α) : l ^ (0 : ℕ)=[]:=rfl
+@[simp] theorem pow_succ_list (l : List α) (n : ℕ) : l ^ (n + 1)=l ++ l ^ n:=rfl
+theorem qb (l : List α) (m n : ℕ) : l ^ (m + n)=l ^ m ++ l ^ n:= by
   induction m with
   | zero => simp [Nat.zero_add]
   | succ m ih => simp [pow_succ_list,Nat.succ_add,ih,List.append_assoc]
-lemma pow_shift (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
+theorem pow_shift (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
   induction n with
   | zero => simp [pow_succ_list]
   | succ n ih => simp [pow_succ_list,List.append_assoc,ih]
-@[simp] lemma nil_pow_list (n : ℕ) : ([] : List α) ^ n=[]:= by
+@[simp] theorem nil_pow_list (n : ℕ) : ([] : List α) ^ n=[]:= by
   induction n with
   | zero => rfl
   | succ n ih => exact ih
-lemma commute_power {x v w : List (Fin 2)} {a b : ℕ}
+theorem commute_power {x v w : List (Fin 2)} {a b : ℕ}
     (h : x ++ v ^ a=w ^ b ++ x) (k : ℕ) :
     x ++ v ^ (k * a)=w ^ (k * b) ++ x:=
   BusyBeaver.Excursion.commute_pow_left h k
-lemma qD {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) :
+theorem qD {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) :
     w +> default=default:=
   BusyBeaver.Longitudinal.BoundedConfig.all0_spec h
-lemma qJ {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) (n : ℕ) :
+theorem qJ {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) (n : ℕ) :
     (w ^ n) +> default=default:= by
   induction n with
   | zero => rfl
   | succ n ih =>
     rw [pow_succ_list,append_assoc,ih,qD h]
-lemma qA {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem qA {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂:= by simp [h]
-lemma ql {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem ql {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢* c₂:=⟨1,qA tm c₁ c₂ h⟩
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m)=(multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m):= by
   induction m with
@@ -104,25 +98,25 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
   | succ m' ih =>
     rw [Nat.add_succ,multiStep_succ,ih,Option.bind_assoc]
     simp_rw [multiStep_succ]
-lemma qu {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem qu {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c3 : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c3) :
     c₁ [tm]⊢^{n+m} c3:= by
   rw [multiStep_add,h₁]; simp [h₂]
-lemma q0 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem q0 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c3 : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c3) : c₁ [tm]⊢* c3:= by
   obtain ⟨n,hn⟩:=h₁; obtain ⟨m,hm⟩:=h₂
   exact ⟨n + m,qu tm c₁ c₂ c3 n m hn hm⟩
-lemma qE {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem qE {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂:= by obtain ⟨n,_,hn⟩:=h; exact ⟨n,hn⟩
-lemma qm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem qm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c3 : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c3) : c₁ [tm]⊢⁺ c3:= by
   obtain ⟨n,n_pos,hn⟩:=h₁; obtain ⟨m,hm⟩:=h₂
   exact ⟨n + m,lt_of_lt_of_le n_pos (Nat.le_add_right n m),qu tm c₁ c₂ c3 n m hn hm⟩
-lemma qt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem qt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c3 : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c3) : c₁ [tm]⊢⁺ c3 :=
   qm (step_stepPlus tm c₁ c₂ h₁) h₂
@@ -140,7 +134,7 @@ macro "execute90" : tactic =>
   `(tactic| execute <;> execute)
 def q4 (n : ℕ) (f : ℕ → α) : α :=
   Nat.casesOn n (f Nat.zero) (fun m => f (Nat.succ m))
-@[simp] lemma strictNat_eq (n : ℕ) (f : ℕ → α) : q4 n f=f n:= by
+@[simp] theorem strictNat_eq (n : ℕ) (f : ℕ → α) : q4 n f=f n:= by
   cases n <;> rfl
 def W : List (Fin 2):=[1,1,1,1,0,1,1,1,1,1]
 inductive Digit where
@@ -154,7 +148,7 @@ def qP (d : Digit) (f : Digit → α) : α :=
   | .D3 => f .D3
   | .D4 => f .D4
   | .D5 => f .D5
-@[simp] lemma strictDigit_eq (d : Digit) (f : Digit → α) : qP d f=f d:= by
+@[simp] theorem strictDigit_eq (d : Digit) (f : Digit → α) : qP d f=f d:= by
   cases d <;> rfl
 def Digit.index : Digit → ℕ
   | .D0 => 0 | .D1 => 1 | .D2 => 2 | .D3 => 3 | .D4 => 4 | .D5 => 5
@@ -181,7 +175,7 @@ def qd (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) : ℕ → ListBlank (Fin 2) �
   | t + 1,r,r' =>
     ∃ r1,(∀ l,(([1,0,1] +> l) {{q}}> r) [tm]⊢* (l <{{q}} ([1] +> r1))) ∧
           qd tm q t r1 r'
-lemma sideCalls_add {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u : ℕ} {r1 r2 r3 : ListBlank (Fin 2)}
+theorem sideCalls_add {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u : ℕ} {r1 r2 r3 : ListBlank (Fin 2)}
     (h₁ : qd tm q t r1 r2) (h₂ : qd tm q u r2 r3) :
     qd tm q (t + u) r1 r3:= by
   induction t generalizing r1 with
@@ -194,7 +188,7 @@ lemma sideCalls_add {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u : ℕ} {r1 r
     rcases h₁ with ⟨rm,hstep,hrest⟩
     rw [Nat.succ_add]
     exact ⟨rm,hstep,ih hrest⟩
-lemma qQ {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u : ℕ} {r1 r3 : ListBlank (Fin 2)}
+theorem qQ {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u : ℕ} {r1 r3 : ListBlank (Fin 2)}
     (h : qd tm q (t + u) r1 r3) :
     ∃ r2,qd tm q t r1 r2 ∧ qd tm q u r2 r3:= by
   induction t generalizing r1 with
@@ -208,38 +202,38 @@ lemma qQ {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u : ℕ} {r1 r3 : ListBla
     exact ⟨r2,⟨rm,hstep,h₁⟩,h₂⟩
 def q2 (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (t u : ℕ) (w1 w2 : List (Fin 2)) : Prop :=
   ∀ r1 r2,qd tm q u r1 r2 → qd tm q t (w1 +> r1) (w2 +> r2)
-lemma qg (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (w : List (Fin 2)) :
+theorem qg (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (w : List (Fin 2)) :
     q2 tm q 0 0 w w:= by
   intro r1 r2 h
   change r1=r2 at h
   subst h
   rfl
-lemma segCalls_nil (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (t : ℕ) :
+theorem segCalls_nil (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (t : ℕ) :
     q2 tm q t t [] []:= by
   intro r1 r2 h
   exact h
-lemma q6 {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u v : ℕ}
+theorem q6 {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t u v : ℕ}
     {w1 w2 v1 v2 : List (Fin 2)}
     (h₁ : q2 tm q t u w1 w2) (h₂ : q2 tm q u v v1 v2) :
     q2 tm q t v (w1 ++ v1) (w2 ++ v2):= by
   intro r1 r2 hr
   rw [append_assoc,append_assoc]
   exact h₁ (v1 +> r1) (v2 +> r2) (h₂ r1 r2 hr)
-lemma qB {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t1 u1 t2 u2 : ℕ}
+theorem qB {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t1 u1 t2 u2 : ℕ}
     {w1 w2 w3 : List (Fin 2)}
     (h₁ : q2 tm q t1 u1 w1 w2) (h₂ : q2 tm q t2 u2 w2 w3) :
     q2 tm q (t1 + t2) (u1 + u2) w1 w3:= by
   intro r1 r3 hr
   rcases qQ hr with ⟨r2,hr₁,hr₂⟩
   exact sideCalls_add (h₁ r1 r2 hr₁) (h₂ r2 r3 hr₂)
-lemma qj {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w2 : List (Fin 2)}
+theorem qj {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w2 : List (Fin 2)}
     (h : ∀ l r,(([1,0,1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
     q2 tm q 1 0 w1 w2:= by
   intro r1 r2 hr
   change r1=r2 at hr
   subst hr
   exact ⟨w2 +> r1,fun l => h l r1,rfl⟩
-lemma qG {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w_mid w2 : List (Fin 2)}
+theorem qG {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w_mid w2 : List (Fin 2)}
     (hR : ∀ l r,(([1,0,1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (([1,0,1] +> w_mid +> l) {{q}}> r))
     (hL : ∀ l r,((w_mid +> l) <{{q}} ([1] +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
     q2 tm q 1 1 w1 w2:= by
@@ -247,7 +241,7 @@ lemma qG {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w_mid w2 : List (Fin 2)}
   rcases hr with ⟨r',hcall,rfl⟩
   refine ⟨w2 +> r',fun l => ?_,rfl⟩
   exact q0 (hR l r1) (q0 (hcall (w_mid +> l)) (hL l r'))
-lemma wall_n {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem wall_n {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W) (n : ℕ) :
     q2 tm q 1 1 (W ^ n) (W ^ n):= by
   induction n with
@@ -255,7 +249,7 @@ lemma wall_n {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
   | succ n ih =>
     rw [pow_succ_list]
     exact q6 hwall1 ih
-lemma walls {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem walls {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W) (t n : ℕ) :
     q2 tm q t t (W ^ n) (W ^ n):= by
   induction t with
@@ -263,7 +257,7 @@ lemma walls {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
   | succ t ih =>
     have h1:=qB (wall_n hwall1 n) ih
     rwa [Nat.add_comm 1 t] at h1
-lemma prefix_rule {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem prefix_rule {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
     {t u a b c : ℕ} {p p' : Digit}
     (h : q2 tm q t u (qn p ++ W ^ b) (W ^ a ++ qn p' ++ W ^ c)) (k : ℕ) :
@@ -282,7 +276,7 @@ def qx : Digit → ℕ → Effect
   | p,t + 1 =>
     let a:=qx (next p) t
     ⟨a.phase,take p + a.used,give p + a.given,qL p + a.sent⟩
-lemma total_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem total_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
     (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
     (t : ℕ) (p : Digit) (n : ℕ) :
@@ -300,7 +294,7 @@ lemma total_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     have h3:=qB h1 h2
     rw [Nat.add_comm 1 t,← Nat.add_assoc] at h3
     exact h3
-lemma total_add (p : Digit) (t u : ℕ) :
+theorem total_add (p : Digit) (t u : ℕ) :
     qx p (t + u) =
       let a:=qx p t
       let b:=qx a.phase u
@@ -317,9 +311,9 @@ lemma total_add (p : Digit) (t u : ℕ) :
     rw [ih (next p)]
     dsimp only
     congr 1 <;> omega
-lemma total_six (p : Digit) : qx p 6=⟨p,2,3,1⟩:= by
+theorem total_six (p : Digit) : qx p 6=⟨p,2,3,1⟩:= by
   cases p <;> rfl
-lemma total_period (p : Digit) (k r : ℕ) :
+theorem total_period (p : Digit) (k r : ℕ) :
     qx p (k * 6 + r) =
       let a:=qx p r
       ⟨a.phase,k * 2 + a.used,k * 3 + a.given,k + a.sent⟩:= by
@@ -341,7 +335,7 @@ def qx_fast : Digit → ℕ → Effect
   | .D4,0 => ⟨.D4,0,0,0⟩ | .D4,1 => ⟨.D5,0,0,0⟩ | .D4,2 => ⟨.D0,0,1,1⟩ | .D4,3 => ⟨.D1,0,1,1⟩ | .D4,4 => ⟨.D2,1,2,1⟩ | .D4,5 => ⟨.D3,1,2,1⟩
   | .D5,0 => ⟨.D5,0,0,0⟩ | .D5,1 => ⟨.D0,0,1,1⟩ | .D5,2 => ⟨.D1,0,1,1⟩ | .D5,3 => ⟨.D2,1,2,1⟩ | .D5,4 => ⟨.D3,1,2,1⟩ | .D5,5 => ⟨.D4,2,3,1⟩
   | p,n + 6 => qx p (n + 6)
-lemma qx_fast_eq (p : Digit) (r : ℕ) : qx_fast p r=qx p r:= by
+theorem qx_fast_eq (p : Digit) (r : ℕ) : qx_fast p r=qx p r:= by
   cases p <;> rcases r with _ | _ | _ | _ | _ | _ | r <;> rfl
 def qy (p : Digit) (t : ℕ) : Effect :=
   q4 (t / 6) (fun k =>
@@ -352,12 +346,12 @@ def qy (p : Digit) (t : ℕ) : Effect :=
           q4 (k * 3 + g) (fun g' =>
             q4 (k + s) (fun s' =>
               ⟨ph,u',g',s'⟩)))))
-lemma totalN_spec (p : Digit) (t : ℕ) : qy p t=qx p t:= by
+theorem totalN_spec (p : Digit) (t : ℕ) : qy p t=qx p t:= by
   unfold qy
   simp only [strictNat_eq,qx_fast_eq]
   have h_div : t=(t / 6) * 6 + t % 6:=(Nat.div_add_mod' t 6).symm
   conv_rhs => rw [h_div,total_period]
-lemma totalN_rule {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem totalN_rule {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
     (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
     (p : Digit) (t n : ℕ) (h : (qy p t).used ≤ n) :
@@ -387,7 +381,7 @@ def qU : ℕ → qv → Option (ℕ × qv)
               some (g,(ph,m) :: ys))
           | none => none
         else none
-lemma batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
     (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
     (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (h : qU t xs=some (e,ys)) :
@@ -427,7 +421,7 @@ lemma batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
         have h2:=ih (qy p t).sent e' ys' hb
         have h3:=q6 h1 h2
         simpa only [q9,qb,List.append_assoc] using h3
-lemma calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hemit : ∀ r,(default <{{q}} ([1] +> r)) [tm]⊢* (([1,0,1] +> default) {{q}}> r))
     (t : ℕ) (r r' : ListBlank (Fin 2)) (h : qd tm q t r r') :
     (([1,0,1] +> default) {{q}}> r) [tm]⊢* (([1,0,1] +> default) {{q}}> r'):= by
@@ -439,7 +433,7 @@ lemma calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
   | succ t ih =>
     rcases h with ⟨r1,hstep,hrest⟩
     exact q0 (hstep default) (q0 (hemit r1) (ih r1 hrest))
-lemma batch_root {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem batch_root {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hemit : ∀ r,(default <{{q}} ([1] +> r)) [tm]⊢* (([1,0,1] +> default) {{q}}> r))
     (hwall1 : q2 tm q 1 1 W W)
     (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
@@ -457,7 +451,7 @@ def q3 (r : Runs) (f : Runs → α) : α :=
   match r with
   | [] => f []
   | head :: tail => f (head :: tail)
-@[simp] lemma strictRuns_eq (r : Runs) (f : Runs → α) : q3 r f=f r:= by
+@[simp] theorem strictRuns_eq (r : Runs) (f : Runs → α) : q3 r f=f r:= by
   cases r <;> rfl
 def Runs.denote : Runs → ListBlank (Fin 2)
   | [] => default
@@ -474,7 +468,7 @@ def Runs.push (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Runs :=
           q4 (n + m) (fun nm => (b :: w',nm) :: ys)
         else
           q4 n (fun n' => (b :: w',n') :: (v,m) :: ys)
-lemma Runs.push_spec (w : List (Fin 2)) (n : ℕ) (xs : Runs) :
+theorem Runs.push_spec (w : List (Fin 2)) (n : ℕ) (xs : Runs) :
     Runs.denote (Runs.push w n xs)=(w ^ n) +> Runs.denote xs:= by
   cases w with
   | nil => simp [Runs.push,nil_pow_list]
@@ -510,7 +504,7 @@ def Runs.pop : Runs → Fin 2 × Runs
           q3 (Runs.push (b :: u :: v) n' xs) (fun xs1 =>
             q3 (Runs.push (u :: v) 1 xs1) (fun xs2 =>
               (b,xs2))))
-lemma Runs.pop_spec (xs : Runs) :
+theorem Runs.pop_spec (xs : Runs) :
     Runs.denote xs=(Runs.pop xs).1 >> Runs.denote (Runs.pop xs).2:= by
   induction xs with
   | nil =>
@@ -552,7 +546,7 @@ def strip_step : List (Fin 2) → List (Fin 2) → Option StripResult
   | [],v => some (.done v)
   | b :: w,[] => some (.more (b :: w))
   | b :: w,c :: v => if b == c then strip_step w v else none
-lemma strip_step_done {w v v' : List (Fin 2)} (h : strip_step w v=some (.done v')) :
+theorem strip_step_done {w v v' : List (Fin 2)} (h : strip_step w v=some (.done v')) :
     v=w ++ v':= by
   induction w generalizing v with
   | nil =>
@@ -569,7 +563,7 @@ lemma strip_step_done {w v v' : List (Fin 2)} (h : strip_step w v=some (.done v'
       have hbc_eq : b=c:=beq_iff_eq.mp hbc
       subst hbc_eq
       simp [ih h]
-lemma strip_step_more {w v w' : List (Fin 2)} (h : strip_step w v=some (.more w')) :
+theorem strip_step_more {w v w' : List (Fin 2)} (h : strip_step w v=some (.more w')) :
     w=v ++ w':= by
   induction w generalizing v with
   | nil =>
@@ -591,7 +585,7 @@ def Runs.remove_slow : List (Fin 2) → Runs → Option Runs
   | b :: w,xs =>
     match Runs.pop xs with
     | (b',xs') => if b == b' then Runs.remove_slow w xs' else none
-lemma Runs.remove_slow_spec {w : List (Fin 2)} {xs ys : Runs}
+theorem Runs.remove_slow_spec {w : List (Fin 2)} {xs ys : Runs}
     (h : Runs.remove_slow w xs=some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   induction w generalizing xs with
@@ -625,7 +619,7 @@ def Runs.remove_aux : ℕ → List (Fin 2) → Runs → Option Runs
         if m == 1 then Runs.remove_aux fuel w' ys
         else
           q4 (m - 1) (fun m' => Runs.remove_aux fuel w' ((c :: v,m') :: ys))
-lemma Runs.remove_aux_spec {fuel : ℕ} {w : List (Fin 2)} {xs ys : Runs}
+theorem Runs.remove_aux_spec {fuel : ℕ} {w : List (Fin 2)} {xs ys : Runs}
     (h : Runs.remove_aux fuel w xs=some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   induction fuel generalizing w xs ys with
@@ -709,7 +703,7 @@ def Runs.remove_fast1 (w : List (Fin 2)) (xs : Runs) : Option Runs :=
       some (([0,1],1) :: ([1,0,1],m + 1) :: rest)
     else none
   | _ => none
-lemma Runs.remove_fast1_spec {w : List (Fin 2)} {xs ys : Runs}
+theorem Runs.remove_fast1_spec {w : List (Fin 2)} {xs ys : Runs}
     (h : Runs.remove_fast1 w xs=some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   rcases xs with _ | ⟨⟨v,_ | _ | m⟩,rest⟩
@@ -759,7 +753,7 @@ def Runs.remove (w : List (Fin 2)) (xs : Runs) : Option Runs :=
   match Runs.remove_fast1 w xs with
   | some ys => some ys
   | none => Runs.remove_aux 16 w xs
-lemma Runs.remove_spec {w : List (Fin 2)} {xs ys : Runs}
+theorem Runs.remove_spec {w : List (Fin 2)} {xs ys : Runs}
     (h : Runs.remove w xs=some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   unfold Runs.remove at h
@@ -791,7 +785,7 @@ def Runs.skip_block (w : List (Fin 2)) (limit : ℕ) (x v : List (Fin 2)) (m : �
               else none
             else none))))
   else none
-lemma Runs.skip_block_spec {w : List (Fin 2)} {limit : ℕ} {x v : List (Fin 2)} {m : ℕ} {ys : Runs} {n : ℕ} {zs : Runs}
+theorem Runs.skip_block_spec {w : List (Fin 2)} {limit : ℕ} {x v : List (Fin 2)} {m : ℕ} {ys : Runs} {n : ℕ} {zs : Runs}
     (h : Runs.skip_block w limit x v m ys=some (n,zs)) :
     n ≤ limit ∧ x +> (v ^ m) +> Runs.denote ys=(w ^ n) +> Runs.denote zs:= by
   unfold Runs.skip_block at h
@@ -822,7 +816,7 @@ def Runs.skip_periodic (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Option (ℕ ×
     else Runs.skip_block w n [] x nx ((v,m) :: ys)
   | [(v,m)] => Runs.skip_block w n [] v m []
   | [] => none
-lemma Runs.skip_periodic_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
+theorem Runs.skip_periodic_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
     (h : Runs.skip_periodic w n xs=some (k,ys)) :
     k ≤ n ∧ Runs.denote xs=(w ^ k) +> Runs.denote ys:= by
   unfold Runs.skip_periodic at h
@@ -847,7 +841,7 @@ def Runs.skip (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Option (ℕ × Runs) :=
       if m ≤ n then some (m,ys)
       else q4 (m - n) (fun m' => some (n,(v,m') :: ys))
     else Runs.skip_periodic w n ((v,m) :: ys)
-lemma Runs.skip_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
+theorem Runs.skip_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
     (h : Runs.skip w n xs=some (k,ys)) :
     k ≤ n ∧ Runs.denote xs=(w ^ k) +> Runs.denote ys:= by
   rcases xs with _ | ⟨⟨v,m⟩,ys'⟩
@@ -882,7 +876,7 @@ def Runs.remove_fast : ℕ → List (Fin 2) → ℕ → Runs → Option Runs
         | some ys =>
           q4 (n - 1) (fun n' => Runs.remove_fast fuel w n' ys)
         | none => none
-lemma Runs.remove_fast_spec {fuel : ℕ} {w : List (Fin 2)} {n : ℕ} {xs ys : Runs}
+theorem Runs.remove_fast_spec {fuel : ℕ} {w : List (Fin 2)} {n : ℕ} {xs ys : Runs}
     (h : Runs.remove_fast fuel w n xs=some ys) :
     Runs.denote xs=(w ^ n) +> Runs.denote ys:= by
   induction fuel generalizing n xs ys with
@@ -924,7 +918,7 @@ def Runs.size : Runs → ℕ
 def Runs.zeros : Runs → Bool
   | [] => true
   | (w,_) :: xs => if BusyBeaver.Longitudinal.BoundedConfig.all0 w then Runs.zeros xs else false
-lemma Runs.zeros_spec {xs : Runs} (h : Runs.zeros xs=true) : Runs.denote xs=default:= by
+theorem Runs.zeros_spec {xs : Runs} (h : Runs.zeros xs=true) : Runs.denote xs=default:= by
   induction xs with
   | nil => rfl
   | cons wn xs ih =>
@@ -968,7 +962,7 @@ def RM.raw (tm : Machine (Fin 2) (Fin 6)) (c : RMConfig) : Option RMConfig :=
       | some (some q',Stmt.write b' .right) =>
         q3 (Runs.push [b'] 1 c.left) (fun l' =>
           some ⟨l',r,q',.right⟩)
-lemma RM.raw_spec {tm : Machine (Fin 2) (Fin 6)} {c c' : RMConfig}
+theorem RM.raw_spec {tm : Machine (Fin 2) (Fin 6)} {c c' : RMConfig}
     (h : RM.raw tm c=some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   rcases c with ⟨l,r,q,d⟩
@@ -1039,7 +1033,7 @@ def qk (d : Dir) (c : RMConfig) : RMConfig :=
       q3 (Runs.push [b] 1 c.right) (fun r' =>
         ⟨l',r',c.state,.right⟩)
   | _,_ => c
-lemma qS (d : Dir) (c : RMConfig) : (qk d c).denote=c.denote:= by
+theorem qS (d : Dir) (c : RMConfig) : (qk d c).denote=c.denote:= by
   rcases c with ⟨l,r,q,cd⟩
   cases d <;> cases cd <;> try rfl
   · unfold qk RMConfig.denote
@@ -1052,10 +1046,10 @@ lemma qS (d : Dir) (c : RMConfig) : (qk d c).denote=c.denote:= by
     rw [Runs.push_spec,Runs.pop_spec l]
     simp only [pow_succ_list,pow_zero_list,List.append_nil,append_cons,append_nil,
                Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons]
-lemma qW (d : Dir) (c : RMConfig) : (qk d c).dir=d:= by
+theorem qW (d : Dir) (c : RMConfig) : (qk d c).dir=d:= by
   rcases c with ⟨l,r,q,cd⟩
   cases d <;> cases cd <;> simp [qk]
-lemma qI (d : Dir) (c : RMConfig) : (qk d c).state=c.state:= by
+theorem qI (d : Dir) (c : RMConfig) : (qk d c).state=c.state:= by
   rcases c with ⟨l,r,q,cd⟩
   cases d <;> cases cd <;> simp [qk]
 structure Scan where
@@ -1073,7 +1067,7 @@ def q5 (tm : Machine (Fin 2) (Fin 6)) (s : Scan) : Prop :=
     | .left =>
       (((s.scan_in.reverse ^ n) +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
       (l <{{s.q}} (s.context +> (s.scan_out ^ n) +> r))
-lemma qo {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
+theorem qo {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
     (hbase : ∀ l r,((s.context.reverse +> l) {{s.q}}> (s.scan_in +> r)) [tm]⊢*
                     ((s.context.reverse +> s.scan_out.reverse +> l) {{s.q}}> r)) :
     q5 tm s:= by
@@ -1089,7 +1083,7 @@ lemma qo {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
     have h2:=ih (s.scan_out.reverse +> l) r
     rw [← append_assoc (s.scan_out.reverse ^ n) s.scan_out.reverse l,pow_shift] at h2
     exact q0 h1 h2
-lemma qf {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.left)
+theorem qf {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.left)
     (hbase : ∀ l r,((s.scan_in.reverse +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
                     (l <{{s.q}} (s.context +> s.scan_out +> r))) :
     q5 tm s:= by
@@ -1122,7 +1116,7 @@ def qr (s : Scan) (n : ℕ) (l r : Runs) : Option (Runs × Runs) :=
         q3 (Runs.push s.context.reverse 1 l1) (fun l2 =>
           some (l2,r')))
     | _,_ => none
-lemma qK {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {l r l' r' : Runs}
+theorem qK {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {l r l' r' : Runs}
     (hv : q5 tm s) (h : qr s n l r=some (l',r')) :
     (RMConfig.denote ⟨l,r,s.q,s.dir⟩) [tm]⊢* (RMConfig.denote ⟨l',r',s.q,s.dir⟩):= by
   unfold q5 at hv
@@ -1175,7 +1169,7 @@ def use_scan (s : Scan) (n : ℕ) (c : RMConfig) : Option RMConfig :=
     | some (l,r) => some ⟨l,r,s.q,s.dir⟩
     | none => none
   else none
-lemma use_scan_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {c c' : RMConfig}
+theorem use_scan_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {c c' : RMConfig}
     (hv : q5 tm s) (h : use_scan s n c=some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold use_scan at h
@@ -1199,7 +1193,7 @@ def qh_slow (p : Digit) (n : ℕ) (r : Runs) : Option Runs :=
   match Runs.remove (qn p) r with
   | none => none
   | some r1 => qi W n r1
-lemma qh_slow_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_slow p n r=some r2) :
+theorem qh_slow_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_slow p n r=some r2) :
     Runs.denote r=(qn p) +> (W ^ n) +> Runs.denote r2:= by
   unfold qh_slow at h
   cases hr1 : Runs.remove (qn p) r with
@@ -1208,35 +1202,35 @@ lemma qh_slow_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_slow p n r=some r
     rw [hr1] at h
     rw [Runs.remove_spec hr1,Runs.remove_fast_spec h]
 def W_rot : List (Fin 2):=[1,1,1,1,1,0,1,1,1,1]
-lemma w_rot_step : W_rot ++ [1]=[1] ++ W:=rfl
-lemma w_rot_comm (m : ℕ) : W_rot ^ m ++ [1]=[1] ++ W ^ m:= by
+theorem w_rot_step : W_rot ++ [1]=[1] ++ W:=rfl
+theorem w_rot_comm (m : ℕ) : W_rot ^ m ++ [1]=[1] ++ W ^ m:= by
   induction m with
   | zero => rfl
   | succ m ih =>
     rw [pow_succ_list,List.append_assoc,ih,← List.append_assoc,w_rot_step,List.append_assoc,← pow_succ_list]
-lemma w_rot_append (m : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_rot_append (m : ℕ) (s : ListBlank (Fin 2)) :
     (W_rot ^ m) +> ([1] +> s)=[1] +> (W ^ m) +> s:= by
   rw [← append_assoc,w_rot_comm,append_assoc]
-lemma w_rot_tail_eq (s : ListBlank (Fin 2)) :
+theorem w_rot_tail_eq (s : ListBlank (Fin 2)) :
     ([1,1,1,1] ^ (1 : ℕ)) +> ([1,0,1,1,1,1] ^ (1 : ℕ)) +> ([1,0] ^ (1 : ℕ)) +> s =
     [1] +> W +> ([0] ^ (1 : ℕ)) +> s:=rfl
-lemma w_rot_mid_eq (m : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_rot_mid_eq (m : ℕ) (s : ListBlank (Fin 2)) :
     (W_rot ^ m) +> ([1,1,1,1] ^ (1 : ℕ)) +> ([1,0,1,1,1,1] ^ (1 : ℕ)) +> ([1,0] ^ (1 : ℕ)) +> s =
     [1] +> (W ^ (m + 1)) +> ([0] ^ (1 : ℕ)) +> s:= by
   rw [w_rot_tail_eq,w_rot_append,← append_assoc (W ^ m) W,pow_shift]
-lemma w_rot_d0_eq (m : ℕ) (rest : Runs) :
+theorem w_rot_d0_eq (m : ℕ) (rest : Runs) :
     Runs.denote (([0],1) :: (W_rot,m) :: ([1,1,1,1],1) :: ([1,0,1,1,1,1],1) :: ([1,0],1) :: rest) =
     (qn .D0) +> (W ^ (m + 1)) +> Runs.denote (([0],1) :: rest):= by
   simp only [Runs.denote,w_rot_mid_eq]
   rfl
-lemma w_rot_d2_eq (m : ℕ) (rest : Runs) :
+theorem w_rot_d2_eq (m : ℕ) (rest : Runs) :
     Runs.denote (([0,1,1,1,1],1) :: (W_rot,m) :: ([1,1,1,1],1) :: ([1,0,1,1,1,1],1) :: ([1,0],1) :: rest) =
     (qn .D2) +> (W ^ (m + 1)) +> Runs.denote (([0],1) :: rest):= by
   simp only [Runs.denote,w_rot_mid_eq]
   rfl
-lemma w_rot_end_tail (s : ListBlank (Fin 2)) :
+theorem w_rot_end_tail (s : ListBlank (Fin 2)) :
     ([1] ^ (4 : ℕ)) +> s=[1] +> ([1] ^ (3 : ℕ)) +> s:=rfl
-lemma w_rot_end_eq (m : ℕ) (rest : Runs) :
+theorem w_rot_end_eq (m : ℕ) (rest : Runs) :
     Runs.denote (([0],1) :: (W_rot,m) :: ([1],4) :: rest) =
     (qn .D0) +> (W ^ m) +> Runs.denote (([1],3) :: rest):= by
   simp only [Runs.denote,w_rot_end_tail,w_rot_append]
@@ -1265,7 +1259,7 @@ def qh_one (p : Digit) (n : ℕ) (r : Runs) : Option Runs :=
       | _ => qh_slow p n r
     else qh_slow p n r
   | _ => qh_slow p n r
-lemma qh_one_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_one p n r=some r2) :
+theorem qh_one_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_one p n r=some r2) :
     Runs.denote r=(qn p) +> (W ^ n) +> Runs.denote r2:= by
   rcases r with _ | ⟨⟨v,mv⟩,_ | ⟨⟨w,m⟩,rest⟩⟩
   · exact qh_slow_spec h
@@ -1333,7 +1327,7 @@ def qh : qv → Runs → Option Runs
     match qh_one p n r with
     | none => none
     | some r2 => qh xs r2
-lemma qF {xs : qv} {r r' : Runs}
+theorem qF {xs : qv} {r r' : Runs}
     (h : qh xs r=some r') :
     Runs.denote r=(q9 xs) +> Runs.denote r':= by
   induction xs generalizing r with
@@ -1356,7 +1350,7 @@ def qw : qv → Runs → Runs
     q3 (qw xs r) (fun r1 =>
       q3 (Runs.push W n r1) (fun r2 =>
         Runs.push (qn p) 1 r2))
-lemma qR (xs : qv) (r : Runs) :
+theorem qR (xs : qv) (r : Runs) :
     Runs.denote (qw xs r)=(q9 xs) +> Runs.denote r:= by
   induction xs with
   | nil => rfl
@@ -1369,65 +1363,65 @@ lemma qR (xs : qv) (r : Runs) :
     rw [hw1,append_assoc,append_assoc]
 def W_s0 : List (Fin 2):=[1,0,1,1,0,0,1,1,0,1]
 def W_s1 : List (Fin 2):=[0,1,1,0,1,1,0,1,1,0]
-lemma w_s0_step : W_s1 ++ [0,1,1,0,1]=[0,1,1,0,1] ++ W_s0:=rfl
-lemma w_s0_comm (m : ℕ) : W_s1 ^ m ++ [0,1,1,0,1]=[0,1,1,0,1] ++ W_s0 ^ m:= by
+theorem w_s0_step : W_s1 ++ [0,1,1,0,1]=[0,1,1,0,1] ++ W_s0:=rfl
+theorem w_s0_comm (m : ℕ) : W_s1 ^ m ++ [0,1,1,0,1]=[0,1,1,0,1] ++ W_s0 ^ m:= by
   induction m with
   | zero => rfl
   | succ m ih =>
     rw [pow_succ_list,List.append_assoc,ih,← List.append_assoc,w_s0_step,List.append_assoc,← pow_succ_list]
-lemma w_s0_append (m : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_s0_append (m : ℕ) (s : ListBlank (Fin 2)) :
     (W_s1 ^ m) +> ([0,1,1,0,1] +> s)=[0,1,1,0,1] +> (W_s0 ^ m) +> s:= by
   rw [← append_assoc,w_s0_comm,append_assoc]
-lemma w_s0_tail_eq (k : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_s0_tail_eq (k : ℕ) (s : ListBlank (Fin 2)) :
     ([0,1] ^ (1 : ℕ)) +> ([1,0,1] ^ (k + 1)) +> s =
     [0,1,1,0,1] +> ([1,0,1] ^ k) +> s:=rfl
-lemma w_s0_head_eq (m : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_s0_head_eq (m : ℕ) (s : ListBlank (Fin 2)) :
     ([1,0,1,1,0] ^ (1 : ℕ)) +> [0,1,1,0,1] +> (W_s0 ^ m) +> s =
     (W_s0 ^ (m + 1)) +> s:=rfl
-lemma w_s0_eq (m k : ℕ) (rest : Runs) :
+theorem w_s0_eq (m k : ℕ) (rest : Runs) :
     Runs.denote (([1,0,1,1,0],1) :: (W_s1,m) :: ([0,1],1) :: ([1,0,1],k + 1) :: rest) =
     (W_s0 ^ (m + 1)) +> Runs.denote (([1,0,1],k) :: rest):= by
   simp only [Runs.denote,w_s0_tail_eq,w_s0_append,w_s0_head_eq]
 def W_s5 : List (Fin 2):=[1,0,1,1,0,1]
-lemma w_s5_eq (rest : Runs) :
+theorem w_s5_eq (rest : Runs) :
     Runs.denote (([1,0,1],3) :: ([1,0,1,1,0,1,1,0],1) :: rest) =
     (W_s5 ^ (2 : ℕ)) +> Runs.denote (([1,0,1,1,0],1) :: rest):=rfl
 def W_s9 : List (Fin 2):=[1,1,1]
-lemma w_s9_4_eq1 (rest : Runs) :
+theorem w_s9_4_eq1 (rest : Runs) :
     Runs.denote (([1,1,1,1,1,1,1,1,1],1) :: (W,1) :: rest) =
     (W_s9 ^ (4 : ℕ)) +> Runs.denote (([1,0,1,1,1,1,1],1) :: rest):=rfl
-lemma w_s9_4_eq2 (m : ℕ) (rest : Runs) :
+theorem w_s9_4_eq2 (m : ℕ) (rest : Runs) :
     Runs.denote (([1,1,1,1,1,1,1,1,1],1) :: (W,m + 1) :: rest) =
     (W_s9 ^ (4 : ℕ)) +> Runs.denote (([1,0,1,1,1,1,1],1) :: (W,m) :: rest):=rfl
-lemma w_s9_5_eq1 (rest : Runs) :
+theorem w_s9_5_eq1 (rest : Runs) :
     Runs.denote (([1,1,1,1,1,1,1,1,1,1,1,1],1) :: (W,1) :: rest) =
     (W_s9 ^ (5 : ℕ)) +> Runs.denote (([1,0,1,1,1,1,1],1) :: rest):=rfl
-lemma w_s9_5_eq2 (m : ℕ) (rest : Runs) :
+theorem w_s9_5_eq2 (m : ℕ) (rest : Runs) :
     Runs.denote (([1,1,1,1,1,1,1,1,1,1,1,1],1) :: (W,m + 1) :: rest) =
     (W_s9 ^ (5 : ℕ)) +> Runs.denote (([1,0,1,1,1,1,1],1) :: (W,m) :: rest):=rfl
 def W_s1_in : List (Fin 2):=[1,0,1,1,1,1,1,1,1,1]
-lemma w_s1_in_step : W ++ [1,1,1]=[1,1,1] ++ W_s1_in:=rfl
-lemma w_s1_in_comm (m : ℕ) : W ^ m ++ [1,1,1]=[1,1,1] ++ W_s1_in ^ m:= by
+theorem w_s1_in_step : W ++ [1,1,1]=[1,1,1] ++ W_s1_in:=rfl
+theorem w_s1_in_comm (m : ℕ) : W ^ m ++ [1,1,1]=[1,1,1] ++ W_s1_in ^ m:= by
   induction m with
   | zero => rfl
   | succ m ih =>
     rw [pow_succ_list,List.append_assoc,ih,← List.append_assoc,w_s1_in_step,List.append_assoc,← pow_succ_list]
-lemma w_s1_in_append (m : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_s1_in_append (m : ℕ) (s : ListBlank (Fin 2)) :
     (W ^ m) +> ([1,1,1] +> s)=[1,1,1] +> (W_s1_in ^ m) +> s:= by
   rw [← append_assoc,w_s1_in_comm,append_assoc]
-lemma w_s1_in_head_eq (m : ℕ) (s : ListBlank (Fin 2)) :
+theorem w_s1_in_head_eq (m : ℕ) (s : ListBlank (Fin 2)) :
     ([1,0,1,1,1,1,1] ^ (1 : ℕ)) +> [1,1,1] +> (W_s1_in ^ m) +> s =
     (W_s1_in ^ (m + 1)) +> s:=rfl
-lemma w_s1_in_tail1 (s : ListBlank (Fin 2)) :
+theorem w_s1_in_tail1 (s : ListBlank (Fin 2)) :
     ([1,1,1,1,1,1,1,1,1,1,1,1] ^ (1 : ℕ)) +> s =
     [1,1,1] +> ([1,1,1,1,1,1,1,1,1] ^ (1 : ℕ)) +> s:=rfl
-lemma w_s1_in_eq1 (m : ℕ) (rest : Runs) :
+theorem w_s1_in_eq1 (m : ℕ) (rest : Runs) :
     Runs.denote (([1,0,1,1,1,1,1],1) :: (W,m) :: ([1,1,1,1,1,1,1,1,1,1,1,1],1) :: rest) =
     (W_s1_in ^ (m + 1)) +> Runs.denote (([1,1,1,1,1,1,1,1,1],1) :: rest):= by
   simp only [Runs.denote,w_s1_in_tail1,w_s1_in_append,w_s1_in_head_eq]
-lemma w_s1_in_tail2 (s : ListBlank (Fin 2)) :
+theorem w_s1_in_tail2 (s : ListBlank (Fin 2)) :
     ([1] ^ (3 : ℕ)) +> s=[1,1,1] +> s:=rfl
-lemma w_s1_in_eq2 (m : ℕ) (rest : Runs) :
+theorem w_s1_in_eq2 (m : ℕ) (rest : Runs) :
     Runs.denote (([1,0,1,1,1,1,1],1) :: (W,m) :: ([1],3) :: rest) =
     (W_s1_in ^ (m + 1)) +> Runs.denote rest:= by
   simp only [Runs.denote,w_s1_in_tail2,w_s1_in_append,w_s1_in_head_eq]
@@ -1469,7 +1463,7 @@ def qe_fast (w : List (Fin 2)) (r : Runs) : Option (ℕ × Runs) :=
           | _ => none
       | _ => none
   | _ => none
-lemma qe_fast_spec {w : List (Fin 2)} {r s : Runs} {n : ℕ}
+theorem qe_fast_spec {w : List (Fin 2)} {r s : Runs} {n : ℕ}
     (h : qe_fast w r=some (n,s)) :
     Runs.denote r=(w ^ n) +> Runs.denote s:= by
   rcases r with _ | ⟨⟨v1,m1⟩,_ | ⟨⟨v2,m2⟩,rest2⟩⟩
@@ -1590,7 +1584,7 @@ def qe : ℕ → List (Fin 2) → Runs → ℕ × Runs
               match qe fuel w s with
               | (n,s') => q4 (1 + n) (fun n1 => (n1,s'))
             | none => (0,r)
-lemma qe_spec (fuel : ℕ) (w : List (Fin 2)) (r : Runs) :
+theorem qe_spec (fuel : ℕ) (w : List (Fin 2)) (r : Runs) :
     Runs.denote r=(w ^ (qe fuel w r).1) +> Runs.denote (qe fuel w r).2:= by
   induction fuel generalizing r with
   | zero => rfl
@@ -1648,7 +1642,7 @@ def match_digit (v : List (Fin 2)) : Option Digit :=
   else if v == [0,1,1,1,1,1,1,1,1,1] then some .D4
   else if v == [1,1,1,1,1,1,1,1,1,1,1,1] then some .D5
   else none
-lemma match_digit_spec {v : List (Fin 2)} {p : Digit} (h : match_digit v=some p) :
+theorem match_digit_spec {v : List (Fin 2)} {p : Digit} (h : match_digit v=some p) :
     v=qn p:= by
   unfold match_digit at h
   split_ifs at h with h0 h1 h2 h3 h4 h5
@@ -1750,7 +1744,7 @@ def parse_cells_rem : ℕ → Runs → qv × Runs
         | _ => ([],r)
       else ([],r)
     | _ => ([],r)
-lemma parse_cells_rem_spec (fuel : ℕ) (r : Runs) :
+theorem parse_cells_rem_spec (fuel : ℕ) (r : Runs) :
     Runs.denote r=(q9 (parse_cells_rem fuel r).1) +> Runs.denote (parse_cells_rem fuel r).2:= by
   induction fuel generalizing r with
   | zero => rfl
@@ -1875,7 +1869,7 @@ def push_qv : Digit → ℕ → qv → qv
         | .D4 => (.D2,1) :: push_qv .D2 m' xs
         | .D5 => (.D3,1) :: push_qv .D2 m' xs
         | _ => (p,0) :: (.D0,m' + 1) :: xs
-lemma push_qv_spec (p : Digit) (n : ℕ) (xs : qv) :
+theorem push_qv_spec (p : Digit) (n : ℕ) (xs : qv) :
     q9 (push_qv p n xs)=qn p ++ W ^ n ++ q9 xs:= by
   induction xs generalizing p n with
   | nil =>
@@ -1906,7 +1900,7 @@ def qU_norm : ℕ → qv → Option (ℕ × qv)
               some (g,push_qv ph m ys))
           | none => none
         else none
-lemma qU_norm_spec {t : ℕ} {xs : qv} {e : ℕ} {ys : qv}
+theorem qU_norm_spec {t : ℕ} {xs : qv} {e : ℕ} {ys : qv}
     (h : qU_norm t xs=some (e,ys)) :
     ∃ ys0,qU t xs=some (e,ys0) ∧ q9 ys=q9 ys0:= by
   induction xs generalizing t e ys with
@@ -1972,7 +1966,7 @@ def qv_loop : ℕ → ℕ → qv → ℕ × qv
         | some (e,ys) =>
           q4 (k + e) (fun k' => qv_loop fuel k' ys)
         | none => (k,xs))
-lemma qa1 {tm : Machine (Fin 2) (Fin 6)}
+theorem qa1 {tm : Machine (Fin 2) (Fin 6)}
     (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
       (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
       (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
@@ -1996,14 +1990,14 @@ lemma qa1 {tm : Machine (Fin 2) (Fin 6)}
         have hstep:=hrule (qe_xs xs) xs e ys0 k r hqU
         rw [← hq9] at hstep
         exact q0 hstep (ih (k + e) ys)
-lemma step7_pre (rest : Runs) :
+theorem step7_pre (rest : Runs) :
     Runs.denote (([0],1) :: ([1],1) :: ([0],1) :: ([1],1) :: ([1,1,1,1,0,1,1,1,1],1) :: rest) =
     (W ^ 0) +> (q9 [(.D0,0)]) +> Runs.denote (([0],1) :: ([1],1) :: ([1,1,1,1,0,1,1,1,1],1) :: rest):=rfl
-lemma step7_post (rest : Runs) :
+theorem step7_post (rest : Runs) :
     (W ^ 0) +> (q9 [(.D1,0)]) +> Runs.denote (([0],1) :: ([1],1) :: ([1,1,1,1,0,1,1,1,1],1) :: rest) =
     (W ^ 1) +> Runs.denote (([0,1,1,1,1],1) :: rest):=rfl
-lemma step7_qU : qU 1 [(.D0,0)]=some (0,[(.D1,0)]):=rfl
-lemma step7_rule {tm : Machine (Fin 2) (Fin 6)}
+theorem step7_qU : qU 1 [(.D0,0)]=some (0,[(.D1,0)]):=rfl
+theorem step7_rule {tm : Machine (Fin 2) (Fin 6)}
     (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
       (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
       (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
@@ -2020,7 +2014,7 @@ def qa0_wk (cnt k : ℕ) (l r_cells : Runs) : RMConfig :=
       q3 (qw ys r1) (fun r2 =>
         q3 (Runs.push W k_new r2) (fun r3 =>
           ⟨l,r3,E,.right⟩))
-lemma qa0_wk_spec {tm : Machine (Fin 2) (Fin 6)}
+theorem qa0_wk_spec {tm : Machine (Fin 2) (Fin 6)}
     (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
       (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
       (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
@@ -2057,7 +2051,7 @@ def qa0 (cnt : ℕ) (c : RMConfig) : Option RMConfig :=
       else none
     | none => none
   else none
-lemma qa3 {tm : Machine (Fin 2) (Fin 6)}
+theorem qa3 {tm : Machine (Fin 2) (Fin 6)}
     (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
       (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
       (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
@@ -2148,7 +2142,7 @@ def qT (q : Fin 6) (c : RMConfig) : Option RMConfig :=
             else none
           | _,_ => none
   else none
-lemma qV {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+theorem qV {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
       (([1,0,1] +> default) {{q}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
       (([1,0,1] +> default) {{q}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
@@ -2218,7 +2212,7 @@ def qc_zero (s : Scan) (c : RMConfig) : Option RMConfig :=
               some ⟨l2,r',s.q,.right⟩))
       | none => none
   else none
-lemma qc_zero_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {c c' : RMConfig}
+theorem qc_zero_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {c c' : RMConfig}
     (hv : q5 tm s) (h : qc_zero s c=some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qc_zero at h
@@ -2273,7 +2267,7 @@ def qc (s : Scan) (keep : ℕ) (c : RMConfig) : Option RMConfig :=
     let w:=match s.dir with | .left => s.scan_in.reverse | .right => s.scan_in
     let src:=match s.dir with | .left => z.left | .right => z.right
     q4 ((qe 32 w src).1 - keep) (fun n => use_scan s n c)
-lemma q8 {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {keep : ℕ} {c c' : RMConfig}
+theorem q8 {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {keep : ℕ} {c c' : RMConfig}
     (hv : q5 tm s) (h : qc s keep c=some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qc at h
@@ -2281,30 +2275,30 @@ lemma q8 {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {keep : ℕ} {c c' : RMConfig
   · exact qc_zero_spec hv h
   · simp only [strictNat_eq] at h
     exact use_scan_spec hv h
-lemma wall_1 : q2 target_tm E 1 1 W W:= by
+theorem wall_1 : q2 target_tm E 1 1 W W:= by
   apply qG (w_mid:=[1,0,1,1,0,0,1,1,0,1])
   · intro l r; dsimp [W,ListBlank.append]; execute90
   · intro l r; dsimp [W,ListBlank.append]; execute90
-lemma inc0 : q2 target_tm E 1 0 (qn .D0) (qn .D1):= by
+theorem inc0 : q2 target_tm E 1 0 (qn .D0) (qn .D1):= by
   apply qj
   intro l r; dsimp [qn,ListBlank.append]; execute90
-lemma inc1 : q2 target_tm E 1 0 (qn .D1 ++ W) (W ++ qn .D2):= by
+theorem inc1 : q2 target_tm E 1 0 (qn .D1 ++ W) (W ++ qn .D2):= by
   apply qj
   intro l r; dsimp [qn,W,ListBlank.append]; execute90
-lemma inc2 : q2 target_tm E 1 0 (qn .D2) (qn .D3):= by
+theorem inc2 : q2 target_tm E 1 0 (qn .D2) (qn .D3):= by
   apply qj
   intro l r; dsimp [qn,ListBlank.append]; execute90
-lemma inc3 : q2 target_tm E 1 0 (qn .D3 ++ W) (W ++ qn .D4):= by
+theorem inc3 : q2 target_tm E 1 0 (qn .D3 ++ W) (W ++ qn .D4):= by
   apply qj
   intro l r; dsimp [qn,W,ListBlank.append]; execute90
-lemma inc4 : q2 target_tm E 1 0 (qn .D4) (qn .D5):= by
+theorem inc4 : q2 target_tm E 1 0 (qn .D4) (qn .D5):= by
   apply qj
   intro l r; dsimp [qn,ListBlank.append]; execute90
-lemma inc5 : q2 target_tm E 1 1 (qn .D5) (W ++ qn .D0):= by
+theorem inc5 : q2 target_tm E 1 1 (qn .D5) (W ++ qn .D0):= by
   apply qG (w_mid:=[1,0,1,1,0,1,1,0,1,1,0,1])
   · intro l r; dsimp [qn,W,ListBlank.append]; execute90
   · intro l r; dsimp [qn,W,ListBlank.append]; execute90
-lemma one (p : Digit) (n : ℕ) :
+theorem one (p : Digit) (n : ℕ) :
     q2 target_tm E 1 (qL p)
       (qn p ++ W ^ (take p + n))
       (W ^ (give p) ++ qn (next p) ++ W ^ n):= by
@@ -2332,52 +2326,52 @@ lemma one (p : Digit) (n : ℕ) :
     have h:=q6 inc5 (wall_n wall_1 n)
     rw [Nat.zero_add,pow_succ_list,pow_zero_list,List.append_nil]
     simpa only [List.append_assoc] using h
-lemma emit (r : ListBlank (Fin 2)) :
+theorem emit (r : ListBlank (Fin 2)) :
     (default <{{E}} ([1] +> r)) [target_tm]⊢* (([1,0,1] +> default) {{E}}> r):= by
   dsimp [ListBlank.append]; execute90
-lemma batch_step (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (k : ℕ) (r : ListBlank (Fin 2))
+theorem batch_step (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (k : ℕ) (r : ListBlank (Fin 2))
     (h : qU t xs=some (e,ys)) :
     (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [target_tm]⊢*
     (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)) :=
   batch_root emit wall_1 one t xs e ys k r h
 def scan_0 : Scan:=⟨A,.left,[1,0,1,1,0,0,1,1,0,1],[1,1,1,1,1,0,1,1,1,1],[0,1,0]⟩
-lemma scan_0_valid : q5 target_tm scan_0:= by
+theorem scan_0_valid : q5 target_tm scan_0:= by
   apply qf rfl
   intro l r; dsimp [scan_0,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_1 : Scan:=⟨E,.right,[1,0,1,1,1,1,1,1,1,1],[0,1,1,0,1,1,0,1,1,0],[1]⟩
-lemma scan_1_valid : q5 target_tm scan_1:= by
+theorem scan_1_valid : q5 target_tm scan_1:= by
   apply qo rfl
   intro l r; dsimp [scan_1,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_2 : Scan:=⟨C,.left,[1,1,0,1,1,0,0,1,1,0],[1,1,1,1,0,1,1,1,1,1],[0,1]⟩
-lemma scan_2_valid : q5 target_tm scan_2:= by
+theorem scan_2_valid : q5 target_tm scan_2:= by
   apply qf rfl
   intro l r; dsimp [scan_2,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_3 : Scan:=⟨E,.right,[1,1,1,1,0,1,1,1,1,1],[1,0,1,1,0,0,1,1,0,1],[1,0,1]⟩
-lemma scan_3_valid : q5 target_tm scan_3:= by
+theorem scan_3_valid : q5 target_tm scan_3:= by
   apply qo rfl
   intro l r; dsimp [scan_3,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_4 : Scan:=⟨E,.left,[1,1,0,1,1,0,0,1,1,0],[1,1,1,1,1,0,1,1,1,1],[1,1,1,0]⟩
-lemma scan_4_valid : q5 target_tm scan_4:= by
+theorem scan_4_valid : q5 target_tm scan_4:= by
   apply qf rfl
   intro l r; dsimp [scan_4,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_5 : Scan:=⟨A,.left,[1,0,1,1,0,1],[1,0,1,1,1,1],[0]⟩
-lemma scan_5_valid : q5 target_tm scan_5:= by
+theorem scan_5_valid : q5 target_tm scan_5:= by
   apply qf rfl
   intro l r; dsimp [scan_5,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_6 : Scan:=⟨C,.left,[1,1,0,1,1,0],[0,1,1,1,1,1],[]⟩
-lemma scan_6_valid : q5 target_tm scan_6:= by
+theorem scan_6_valid : q5 target_tm scan_6:= by
   apply qf rfl
   intro l r; dsimp [scan_6,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_7 : Scan:=⟨E,.left,[1,1,0,1,1,0],[1,1,1,0,1,1],[]⟩
-lemma scan_7_valid : q5 target_tm scan_7:= by
+theorem scan_7_valid : q5 target_tm scan_7:= by
   apply qf rfl
   intro l r; dsimp [scan_7,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_8 : Scan:=⟨A,.right,[1,1,1],[1,0,1],[1,0]⟩
-lemma scan_8_valid : q5 target_tm scan_8:= by
+theorem scan_8_valid : q5 target_tm scan_8:= by
   apply qo rfl
   intro l r; dsimp [scan_8,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def scan_9 : Scan:=⟨E,.right,[1,1,1],[1,0,1],[1,0,1]⟩
-lemma scan_9_valid : q5 target_tm scan_9:= by
+theorem scan_9_valid : q5 target_tm scan_9:= by
   apply qo rfl
   intro l r; dsimp [scan_9,List.reverse,List.reverseAux,ListBlank.append]; execute90
 def run_raw (tm : Machine (Fin 2) (Fin 6)) : ℕ → RMConfig → Option RMConfig
@@ -2386,7 +2380,7 @@ def run_raw (tm : Machine (Fin 2) (Fin 6)) : ℕ → RMConfig → Option RMConfi
     match RM.raw tm c with
     | some c' => run_raw tm n c'
     | none => none
-lemma run_raw_spec {n : ℕ} {c c' : RMConfig}
+theorem run_raw_spec {n : ℕ} {c c' : RMConfig}
     (h : run_raw target_tm n c=some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction n generalizing c with
@@ -2415,7 +2409,7 @@ def qs (op arg : ℕ) (c : RMConfig) : Option RMConfig :=
   | 11 => qc scan_9 arg c
   | 12 => qa0 arg c
   | _ => none
-lemma qp {op arg : ℕ} {c c' : RMConfig}
+theorem qp {op arg : ℕ} {c c' : RMConfig}
     (h : qs op arg c=some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   unfold qs at h
@@ -2440,7 +2434,7 @@ def qO : ℕ → ℕ → ℕ → RMConfig → Option RMConfig
     match qs op arg c with
     | some c' => qO n op arg c'
     | none => none
-lemma run_rep1_spec {n op arg : ℕ} {c c' : RMConfig}
+theorem run_rep1_spec {n op arg : ℕ} {c c' : RMConfig}
     (h : qO n op arg c=some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction n generalizing c with
@@ -2462,7 +2456,7 @@ def qN : ℕ → ℕ → ℕ → ℕ → ℕ → RMConfig → Option RMConfig
       | some c₂ => qN n op1 arg1 op2 arg2 c₂
       | none => none
     | none => none
-lemma run_rep2_spec {n op1 arg1 op2 arg2 : ℕ} {c c' : RMConfig}
+theorem run_rep2_spec {n op1 arg1 op2 arg2 : ℕ} {c c' : RMConfig}
     (h : qN n op1 arg1 op2 arg2 c=some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction n generalizing c with
@@ -2488,7 +2482,7 @@ def exec_cmd (cmd : Cmd) (c : RMConfig) : Option RMConfig :=
   | .one op arg => qs op arg c
   | .rep1 cnt op arg => qO cnt op arg c
   | .rep2 cnt op1 arg1 op2 arg2 => qN cnt op1 arg1 op2 arg2 c
-lemma exec_cmd_spec {cmd : Cmd} {c c' : RMConfig}
+theorem exec_cmd_spec {cmd : Cmd} {c c' : RMConfig}
     (h : exec_cmd cmd c=some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   cases cmd with
@@ -2501,7 +2495,7 @@ def q7 : List Cmd → RMConfig → Option RMConfig
     match exec_cmd cmd c with
     | some c' => q7 rest c'
     | none => none
-lemma q1 {cs : List Cmd} {c c' : RMConfig}
+theorem q1 {cs : List Cmd} {c c' : RMConfig}
     (h : q7 cs c=some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction cs generalizing c with
@@ -2519,7 +2513,7 @@ def isHalted (tm : Machine (Fin 2) (Fin 6)) (c : RMConfig) : Bool :=
     | .left => (Runs.pop c.left).1
     | .right => (Runs.pop c.right).1
   (tm c.state b).isNone
-lemma isHalted_spec {c : RMConfig} (h : isHalted target_tm c=true) :
+theorem isHalted_spec {c : RMConfig} (h : isHalted target_tm c=true) :
     (step target_tm c.denote).isNone:= by
   rcases c with ⟨l,r,q,d⟩
   unfold isHalted at h
@@ -2563,83 +2557,79 @@ def cfg_21 : RMConfig:=⟨[([1],1),([0],1),([1],1)],[([1,1,1,1,0,1,1,1,1,1],3948
 def cfg_22 : RMConfig:=⟨[([0,1,1,0,1,1,0,1,1,0],2562),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],127559),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],472754),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],9895534),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],41552292),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],164534363),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],818365794),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],12917351320),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],2461626521240),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],7534382598815),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],323792040899265),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],59717583658228),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],2494067760400877),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],13565891439548005),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],136593213923510385),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],601151640881267234),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],792950258971310194),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],737169832268197593),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],9254758433741799),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],1494258270704145199),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],3685171709879685247),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],34617925443173174206),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],378258698465341521),([0,1],1),([1,0,1],5),([1,0,1,1,0,0,1,1,0,1],5133246449848418304),([1],1),([0],1),([1],2),([0],2),([1],2),([0],1),([1],1)],[([1],2),([0],1),([1],5),([0],1),([1],4)],F,.left⟩
 def cmds_0 : List Cmd:=[.one 0 72,.one 1 0,.one 0 112,.one 1 0,.one 0 139,.one 1 0,.one 1 0,.one 0 35,.one 10 0,.one 0 97,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 2,.one 8 0,.one 0 121,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 89,.one 7 0,.one 0 145,.one 1 0,.one 1 0,.one 5 0,.one 11 0,.one 0 16,.one 8 0,.one 0 299,.one 1 0,.one 1 0,.one 5 0,.one 0 46,.one 8 0,.one 0 259,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 1,.one 3 0,.one 0 26,.one 4 0,.one 0 163,.one 1 0,.one 1 0,.one 5 0,.one 11 0,.one 0 155,.one 7 0,.one 0 265,.one 1 0,.one 1 0,.one 12 4,.one 5 0,.one 11 0,.one 0 16,.one 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.one 0 46,.one 8 0,.one 0 40,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 1,.one 3 0,.one 0 26,.one 4 0,.one 0 163,.one 1 0,.one 1 0,.one 5 0,.one 11 0,.one 3 0,.one 0 7,.one 2 0,.one 0 281,.one 1 0,.one 1 0,.one 12 4]
 set_option maxHeartbeats 8000000 in
-lemma chunk_0_ok : q7 cmds_0 cfg_0=some cfg_1:= by decide +kernel
+theorem chunk_0_ok : q7 cmds_0 cfg_0=some cfg_1:= by decide +kernel
 def cmds_1 : List Cmd:=[.one 5 0,.one 11 0,.one 3 0,.one 0 7,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 1 0,.one 5 0,.one 11 0,.one 3 0,.one 0 7,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.one 11 0,.one 3 0,.one 11 0,.one 0 73,.one 7 0,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 2 11 0 3 0,.one 0 46,.one 8 0,.rep2 2 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 12 1,.one 1 0,.one 5 0,.one 11 0,.one 3 0,.one 0 31,.one 8 0,.one 0 40,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 2 11 0 3 0,.one 0 26,.rep2 2 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 13]
 set_option maxHeartbeats 8000000 in
-lemma chunk_1_ok : q7 cmds_1 cfg_1=some cfg_2:= by decide +kernel
+theorem chunk_1_ok : q7 cmds_1 cfg_1=some cfg_2:= by decide +kernel
 def cmds_2 : List Cmd:=[.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 9,.one 5 0,.rep2 2 11 0 3 0,.one 11 0,.one 0 73,.one 7 0,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 3 11 0 3 0,.one 0 46,.one 8 0,.rep2 3 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 12 4,.one 5 0,.rep2 2 11 0 3 0,.one 0 31,.one 8 0,.one 0 40,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 3 11 0 3 0,.one 0 26,.rep2 3 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 10]
 set_option maxHeartbeats 8000000 in
-lemma chunk_2_ok : q7 cmds_2 cfg_2=some cfg_3:= by decide +kernel
+theorem chunk_2_ok : q7 cmds_2 cfg_2=some cfg_3:= by decide +kernel
 def cmds_3 : List Cmd:=[.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 6,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 4 11 0 3 0,.one 11 0,.one 0 73,.one 7 0,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 10,.one 5 0,.rep2 4 11 0 3 0,.one 0 46,.one 8 0,.rep2 4 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 12 1,.one 5 0,.rep2 4 11 0 3 0,.one 0 31,.one 8 0,.one 0 40,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 5,.one 5 0,.rep2 4 11 0 3 0,.one 0 26,.rep2 4 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
-lemma chunk_3_ok : q7 cmds_3 cfg_3=some cfg_4:= by decide +kernel
+theorem chunk_3_ok : q7 cmds_3 cfg_3=some cfg_4:= by decide +kernel
 def cmds_4 : List Cmd:=[.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 12,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 7,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 13,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
-lemma chunk_4_ok : q7 cmds_4 cfg_4=some cfg_5:= by decide +kernel
+theorem chunk_4_ok : q7 cmds_4 cfg_4=some cfg_5:= by decide +kernel
 def cmds_5 : List Cmd:=[.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 12,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 23,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 7 11 0 3 0,.one 11 0,.one 0 73,.one 7 0,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 14,.one 5 0,.rep2 6 11 0 3 0,.one 0 46,.one 8 0,.rep2 6 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0]
 set_option maxHeartbeats 8000000 in
-lemma chunk_5_ok : q7 cmds_5 cfg_5=some cfg_6:= by decide +kernel
+theorem chunk_5_ok : q7 cmds_5 cfg_5=some cfg_6:= by decide +kernel
 def cmds_6 : List Cmd:=[.one 5 0,.rep2 6 11 0 3 0,.one 0 31,.one 8 0,.one 0 40,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 7 11 0 3 0,.one 0 26,.rep2 7 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 14]
 set_option maxHeartbeats 8000000 in
-lemma chunk_6_ok : q7 cmds_6 cfg_6=some cfg_7:= by decide +kernel
+theorem chunk_6_ok : q7 cmds_6 cfg_6=some cfg_7:= by decide +kernel
 def cmds_7 : List Cmd:=[.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 28,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 12,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 3]
 set_option maxHeartbeats 8000000 in
-lemma chunk_7_ok : q7 cmds_7 cfg_7=some cfg_8:= by decide +kernel
+theorem chunk_7_ok : q7 cmds_7 cfg_7=some cfg_8:= by decide +kernel
 def cmds_8 : List Cmd:=[.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 13,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 45]
 set_option maxHeartbeats 8000000 in
-lemma chunk_8_ok : q7 cmds_8 cfg_8=some cfg_9:= by decide +kernel
+theorem chunk_8_ok : q7 cmds_8 cfg_8=some cfg_9:= by decide +kernel
 def cmds_9 : List Cmd:=[.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 37,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 41,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 1 0]
 set_option maxHeartbeats 8000000 in
-lemma chunk_9_ok : q7 cmds_9 cfg_9=some cfg_10:= by decide +kernel
+theorem chunk_9_ok : q7 cmds_9 cfg_9=some cfg_10:= by decide +kernel
 def cmds_10 : List Cmd:=[.one 1 0,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 4,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 38,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 40,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 18,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 37]
 set_option maxHeartbeats 8000000 in
-lemma chunk_10_ok : q7 cmds_10 cfg_10=some cfg_11:= by decide +kernel
+theorem chunk_10_ok : q7 cmds_10 cfg_10=some cfg_11:= by decide +kernel
 def cmds_11 : List Cmd:=[.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 22,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 37,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 22,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 39,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
-lemma chunk_11_ok : q7 cmds_11 cfg_11=some cfg_12:= by decide +kernel
+theorem chunk_11_ok : q7 cmds_11 cfg_11=some cfg_12:= by decide +kernel
 def cmds_12 : List Cmd:=[.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 23,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 43,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 5,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 18,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 48,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 23]
 set_option maxHeartbeats 8000000 in
-lemma chunk_12_ok : q7 cmds_12 cfg_12=some cfg_13:= by decide +kernel
+theorem chunk_12_ok : q7 cmds_12 cfg_12=some cfg_13:= by decide +kernel
 def cmds_13 : List Cmd:=[.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 43,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 44,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 23,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 48,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
-lemma chunk_13_ok : q7 cmds_13 cfg_13=some cfg_14:= by decide +kernel
+theorem chunk_13_ok : q7 cmds_13 cfg_13=some cfg_14:= by decide +kernel
 def cmds_14 : List Cmd:=[.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 24,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 50,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 49]
 set_option maxHeartbeats 8000000 in
-lemma chunk_14_ok : q7 cmds_14 cfg_14=some cfg_15:= by decide +kernel
+theorem chunk_14_ok : q7 cmds_14 cfg_14=some cfg_15:= by decide +kernel
 def cmds_15 : List Cmd:=[.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 4,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 56,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 28,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 58,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 56,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 51]
 set_option maxHeartbeats 8000000 in
-lemma chunk_15_ok : q7 cmds_15 cfg_15=some cfg_16:= by decide +kernel
+theorem chunk_15_ok : q7 cmds_15 cfg_15=some cfg_16:= by decide +kernel
 def cmds_16 : List Cmd:=[.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 29,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 84,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 29,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 60,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
-lemma chunk_16_ok : q7 cmds_16 cfg_16=some cfg_17:= by decide +kernel
+theorem chunk_16_ok : q7 cmds_16 cfg_16=some cfg_17:= by decide +kernel
 def cmds_17 : List Cmd:=[.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 64,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 63]
 set_option maxHeartbeats 8000000 in
-lemma chunk_17_ok : q7 cmds_17 cfg_17=some cfg_18:= by decide +kernel
+theorem chunk_17_ok : q7 cmds_17 cfg_17=some cfg_18:= by decide +kernel
 def cmds_18 : List Cmd:=[.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 63,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 105,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 33]
 set_option maxHeartbeats 8000000 in
-lemma chunk_18_ok : q7 cmds_18 cfg_18=some cfg_19:= by decide +kernel
+theorem chunk_18_ok : q7 cmds_18 cfg_18=some cfg_19:= by decide +kernel
 def cmds_19 : List Cmd:=[.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 29,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 59,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 66,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 28,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 28]
 set_option maxHeartbeats 8000000 in
-lemma chunk_19_ok : q7 cmds_19 cfg_19=some cfg_20:= by decide +kernel
+theorem chunk_19_ok : q7 cmds_19 cfg_19=some cfg_20:= by decide +kernel
 def cmds_20 : List Cmd:=[.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 65,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 35,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 36,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 95,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
-lemma chunk_20_ok : q7 cmds_20 cfg_20=some cfg_21:= by decide +kernel
+theorem chunk_20_ok : q7 cmds_20 cfg_20=some cfg_21:= by decide +kernel
 def cmds_21 : List Cmd:=[.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 35,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 68,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 36,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 25 11 0 3 0,.one 0 7,.rep2 25 2 0 7 0,.one 2 0,.one 0 35,.one 12 100,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 35,.one 5 0,.rep2 22 11 0 3 0,.one 11 0,.one 0 155,.one 7 0,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 23 11 0 3 0,.one 11 0,.one 0 2,.one 9 0,.one 6 0,.one 0 13,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 31,.one 1 0,.one 1 0,.one 5 0,.rep2 23 11 0 3 0,.one 0 66,.rep2 23 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 0 36,.one 5 0,.rep2 23 11 0 3 0,.one 0 72]
 set_option maxHeartbeats 8000000 in
-lemma chunk_21_ok : q7 cmds_21 cfg_21=some cfg_22:= by decide +kernel
-lemma halted_final : isHalted target_tm cfg_22=true:= by decide +kernel
-lemma init_eq_cfg_0 : cfg_0.denote=init []:=rfl
+theorem chunk_21_ok : q7 cmds_21 cfg_21=some cfg_22:= by decide +kernel
+theorem halted_final : isHalted target_tm cfg_22=true:= by decide +kernel
+theorem init_eq_cfg_0 : cfg_0.denote=init []:=rfl
 
 end Solution
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

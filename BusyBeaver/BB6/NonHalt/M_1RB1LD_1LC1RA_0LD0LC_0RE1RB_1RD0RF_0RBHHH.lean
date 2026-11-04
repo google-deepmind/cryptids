@@ -29,62 +29,40 @@ def machine : ConjectureMachines.Machine 6 2 :=
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-abbrev target_tm : Machine (Fin 2) (Fin 6) := target
+private abbrev target_tm : Machine (Fin 2) (Fin 6) := target
+
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
-set_option linter.deprecated false
-set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
-set_option quotPrecheck false
-set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
+abbrev A : Fin 6 := 0
+abbrev B : Fin 6 := 1
+abbrev C : Fin 6 := 2
+abbrev D : Fin 6 := 3
+abbrev E : Fin 6 := 4
+abbrev F : Fin 6 := 5
 
-variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
-def A : Fin 6 := 0
-def B : Fin 6 := 1
-def C : Fin 6 := 2
-def D : Fin 6 := 3
-def E : Fin 6 := 4
-def F : Fin 6 := 5
--- ============================================================================
--- Section 2: Turing Machine Infrastructure & Notations
--- ============================================================================
-
-
-/- A Turing machine statement writing a symbol and moving in direction `dir`. -/
--- ============================================================================
--- Section 5: Specific Turing Machine: holdout_0010
--- ============================================================================
-/- Transition function for holdout_0010: `1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RC---` -/
-
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
-set_option maxHeartbeats 8000000
-
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 =
+    some config := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 =
+    step M config := rfl
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-@[simp] lemma pow_zero_list (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem pow_zero_list (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++
+    ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x
+    :: xs) +> b = x >> (xs +> b) := rfl
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
 @[simp]
-
-
-lemma listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
+theorem listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
     (s <+ l₁) <+ l₂ = s <+ (l₂ ++ l₁) := by
   unfold ListBlank.append
   split
@@ -95,45 +73,45 @@ lemma listblank_append_append (s : ListBlank Γ) (l₁ l₂ : List Γ) :
     refine (congr_arg _ ?_).symm
     exact ListBlank.append_assoc l₁ _ s
 
-lemma list_pow_append_one (u : List (Fin 2)) (k : Nat) :
+theorem list_pow_append_one (u : List (Fin 2)) (k : Nat) :
     u^k ++ u = u^(k + 1) := by
   have h := list_pow_add_comm u k 1
   dsimp -failIfUnchanged [HPow.hPow] at h ⊢
   rw [List.append_nil] at h
   exact h
 
-lemma cons_eq_singleton_append (x : Fin 2) (r : ListBlank (Fin 2)) :
+theorem cons_eq_singleton_append (x : Fin 2) (r : ListBlank (Fin 2)) :
     x >> r = [x] +> r := rfl
 
-lemma pow_add_append_right (u : List (Fin 2)) (m n : Nat) (r : ListBlank (Fin 2)) :
+theorem pow_add_append_right (u : List (Fin 2)) (m n : Nat) (r : ListBlank (Fin 2)) :
     (u ^ (m + n)) +> r = (u ^ m) +> ((u ^ n) +> r) := by
   rw [list_pow_add, ← listblank_append_append]
 
-lemma pow_succ_append_right (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
+theorem pow_succ_append_right (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
     (u ^ (n + 1)) +> r = u +> ((u ^ n) +> r) := by
   rw [pow_succ_list, ← listblank_append_append]
 
-lemma pow_add_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m n : Nat) :
+theorem pow_add_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m n : Nat) :
     s <+ (u ^ (m + n)) = (s <+ (u ^ m)) <+ (u ^ n) := by
   rw [listblank_append_append, ← list_pow_add, add_comm]
 
-lemma pow_succ_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m : Nat) :
+theorem pow_succ_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m : Nat) :
     (s <+ (u ^ m)) <+ u = s <+ (u ^ (m + 1)) := by
   rw [listblank_append_append, ← pow_succ_list]
 
-lemma step_multiStep {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_multiStep {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂ := by simp [h]
 
-lemma step_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢* c₂ := ⟨1, step_multiStep tm c₁ c₂ h⟩
 
-lemma step_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, step_multiStep tm c₁ c₂ h⟩
 
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -142,53 +120,61 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_stepPlus_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_stepPlus_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus h₁ (stepPlus_stepStar h₂)
 
-lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
 
 
-@[simp] lemma init_nil : (init ([] : List (Fin 2))) = (default {{A}}> default) := rfl
+@[simp] theorem init_nil : (init ([] : List (Fin 2))) = (default {{A}}> default) := rfl
 
 macro "finish" : tactic =>
-  `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, multiStep_zero, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, zero_cons_default]; rfl))
+  `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil,
+      multiStep_zero, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list,
+      listblank_append_nil, listblank_append_cons, zero_cons_default]; rfl))
 macro "step" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]); rfl) ?_ <;>
-    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil, listblank_append_cons, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight,
+        BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list, pow_succ_list, cons_append_list,
+        append_nil_list, listblank_append_nil, listblank_append_cons, Turing.ListBlank.head_cons,
+        Turing.ListBlank.tail_cons, default_head, default_tail]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, pow_zero_list,
+        pow_succ_list, cons_append_list, append_nil_list, listblank_append_nil,
+        listblank_append_cons, Turing.Tape.move, Turing.ListBlank.head_cons,
+        Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
 macro "execute" : tactic =>
   `(tactic| (iterate 25 (all_goals (first | exact ⟨0, rfl⟩ | step))))
 
@@ -199,13 +185,13 @@ macro "execute" : tactic =>
 
 namespace PairCounter
 
-lemma pow2_succ (k : Nat) : 2 ^ (k + 1) = 2 ^ k * 2 := by ring
-lemma pow2_one_add (k : Nat) : 2 ^ (1 + k) = 2 * 2 ^ k := by ring
-lemma pow2_two_add (k : Nat) : 2 ^ (2 + k) = 4 * 2 ^ k := by ring
-lemma pow4_succ (k : Nat) : 4 ^ (k + 1) = 4 ^ k * 4 := by ring
-lemma pow4_one_add (k : Nat) : 4 ^ (1 + k) = 4 * 4 ^ k := by ring
-lemma pow2_pos (k : Nat) : 0 < 2 ^ k := Nat.two_pow_pos k
-lemma pow4_pos (k : Nat) : 0 < 4 ^ k := by positivity
+theorem pow2_succ (k : Nat) : 2 ^ (k + 1) = 2 ^ k * 2 := by ring
+theorem pow2_one_add (k : Nat) : 2 ^ (1 + k) = 2 * 2 ^ k := by ring
+theorem pow2_two_add (k : Nat) : 2 ^ (2 + k) = 4 * 2 ^ k := by ring
+theorem pow4_succ (k : Nat) : 4 ^ (k + 1) = 4 ^ k * 4 := by ring
+theorem pow4_one_add (k : Nat) : 4 ^ (1 + k) = 4 * 4 ^ k := by ring
+theorem pow2_pos (k : Nat) : 0 < 2 ^ k := Nat.two_pow_pos k
+theorem pow4_pos (k : Nat) : 0 < 4 ^ k := by positivity
 
 inductive H : Nat → Nat → Prop where
   | even (n : Nat) : H (n * 2) (1 + n * 2)
@@ -215,10 +201,11 @@ inductive Steps : Nat → Nat → Nat → Prop where
   | zero (x : Nat) : Steps 0 x x
   | next {n x y z : Nat} : H x y → Steps n y z → Steps (1 + n) x z
 
-lemma steps_one {x y : Nat} (h : H x y) : Steps 1 x y :=
+theorem steps_one {x y : Nat} (h : H x y) : Steps 1 x y :=
   Steps.next h (Steps.zero y)
 
-lemma steps_trans {n m x y z : Nat} (h1 : Steps n x y) (h2 : Steps m y z) : Steps (n + m) x z := by
+theorem steps_trans {n m x y z : Nat} (h1 : Steps n x y) (h2 : Steps m y z) : Steps (n + m) x z :=
+    by
   induction h1 with
   | zero x =>
     simpa only [Nat.zero_add] using h2
@@ -227,7 +214,7 @@ lemma steps_trans {n m x y z : Nat} (h1 : Steps n x y) (h2 : Steps m y z) : Step
     rw [heq]
     exact Steps.next hxy (ih h2)
 
-lemma H_even_inv_aux {u y : Nat} (h : H u y) : ∀ x, u = x * 2 → y = 1 + x * 2 := by
+theorem H_even_inv_aux {u y : Nat} (h : H u y) : ∀ x, u = x * 2 → y = 1 + x * 2 := by
   cases h with
   | even n =>
     intro x hx; omega
@@ -239,10 +226,10 @@ lemma H_even_inv_aux {u y : Nat} (h : H u y) : ∀ x, u = x * 2 → y = 1 + x * 
     rw [h1, h2] at hx
     omega
 
-lemma H_even_inv {x y : Nat} (h : H (x * 2) y) : y = 1 + x * 2 :=
+theorem H_even_inv {x y : Nat} (h : H (x * 2) y) : y = 1 + x * 2 :=
   H_even_inv_aux h x rfl
 
-lemma steps_drop_even_aux {a u y : Nat} (h : Steps a u y) :
+theorem steps_drop_even_aux {a u y : Nat} (h : Steps a u y) :
     0 < a → ∀ x, u = x * 2 → Steps (a - 1) (1 + x * 2) y := by
   cases h with
   | zero => intro ha; omega
@@ -255,11 +242,11 @@ lemma steps_drop_even_aux {a u y : Nat} (h : Steps a u y) :
     rw [hn]
     exact hstep
 
-lemma steps_drop_even {a x y : Nat} (ha : 0 < a) (h : Steps a (x * 2) y) :
+theorem steps_drop_even {a x y : Nat} (ha : 0 < a) (h : Steps a (x * 2) y) :
     Steps (a - 1) (1 + x * 2) y :=
   steps_drop_even_aux h ha x rfl
 
-lemma H_four {x y : Nat} (h : H x y) : H (1 + x * 4) (y * 4) := by
+theorem H_four {x y : Nat} (h : H x y) : H (1 + x * 4) (y * 4) := by
   have hc := H.carry 0 h
   have h1 : x * 2 ^ (2 + 0) + (2 ^ (1 + 0) - 1) = 1 + x * 4 := by
     change x * 4 + 1 = 1 + x * 4; omega
@@ -267,7 +254,7 @@ lemma H_four {x y : Nat} (h : H x y) : H (1 + x * 4) (y * 4) := by
   rw [h1, h2] at hc
   exact hc
 
-lemma H_eight {x y : Nat} (h : H x y) : H (3 + x * 8) (y * 8) := by
+theorem H_eight {x y : Nat} (h : H x y) : H (3 + x * 8) (y * 8) := by
   have hc := H.carry 1 h
   have h1 : x * 2 ^ (2 + 1) + (2 ^ (1 + 1) - 1) = 3 + x * 8 := by
     change x * 8 + 3 = 3 + x * 8; omega
@@ -275,16 +262,16 @@ lemma H_eight {x y : Nat} (h : H x y) : H (3 + x * 8) (y * 8) := by
   rw [h1, h2] at hc
   exact hc
 
-lemma H_zero4 (x : Nat) : H (x * 4) (1 + x * 4) := by
+theorem H_zero4 (x : Nat) : H (x * 4) (1 + x * 4) := by
   have he := H.even (x * 2)
   have h1 : x * 2 * 2 = x * 4 := by omega
   rw [h1] at he
   exact he
 
-lemma pair_zero {x y : Nat} (h : H x y) : Steps 2 (x * 4) (y * 4) :=
+theorem pair_zero {x y : Nat} (h : H x y) : Steps 2 (x * 4) (y * 4) :=
   Steps.next (H_zero4 x) (steps_one (H_four h))
 
-lemma pair_two {x y : Nat} (h : H x y) : Steps 2 (2 + x * 8) (y * 2 * 4) := by
+theorem pair_two {x y : Nat} (h : H x y) : Steps 2 (2 + x * 8) (y * 2 * 4) := by
   have he := H.even (1 + x * 4)
   have h1 : (1 + x * 4) * 2 = 2 + x * 8 := by omega
   have h2 : 1 + (2 + x * 8) = 3 + x * 8 := by omega
@@ -294,7 +281,7 @@ lemma pair_two {x y : Nat} (h : H x y) : Steps 2 (2 + x * 8) (y * 2 * 4) := by
   rw [h3] at h8
   exact Steps.next he h8
 
-lemma steps_four {n x y : Nat} (h : Steps n x y) : Steps (n * 2) (x * 4) (y * 4) := by
+theorem steps_four {n x y : Nat} (h : Steps n x y) : Steps (n * 2) (x * 4) (y * 4) := by
   induction h with
   | zero x => exact Steps.zero (x * 4)
   | @next n' x' y' z' hxy _ ih =>
@@ -303,7 +290,7 @@ lemma steps_four {n x y : Nat} (h : Steps n x y) : Steps (n * 2) (x * 4) (y * 4)
     rw [heq] at htr
     exact htr
 
-lemma steps_zeros (k : Nat) {n x y : Nat} (h : Steps n x y) :
+theorem steps_zeros (k : Nat) {n x y : Nat} (h : Steps n x y) :
     Steps (n * 2 ^ k) (x * 4 ^ k) (y * 4 ^ k) := by
   induction k with
   | zero =>
@@ -321,7 +308,7 @@ inductive Field : Nat → Nat → Nat → Nat → Prop where
   | zero {k z w x : Nat} : Field k z w x → Field (1 + k) (z * 2) w (x * 4)
   | one {k z w x : Nat} : Field k z w x → Field (1 + k) (1 + z * 2) w (1 + x * 4)
 
-lemma field_bound {k z w x : Nat} (h : Field k z w x) : z < 2 ^ k := by
+theorem field_bound {k z w x : Nat} (h : Field k z w x) : z < 2 ^ k := by
   induction h with
   | nil w => decide
   | @zero k' z' w' x' _ ih =>
@@ -329,7 +316,7 @@ lemma field_bound {k z w x : Nat} (h : Field k z w x) : z < 2 ^ k := by
   | @one k' z' w' x' _ ih =>
     rw [pow2_one_add]; omega
 
-lemma field_zeros (k w : Nat) : Field k 0 w (w * 4 ^ k) := by
+theorem field_zeros (k w : Nat) : Field k 0 w (w * 4 ^ k) := by
   induction k with
   | zero =>
     simpa only [Nat.pow_zero, Nat.mul_one] using Field.nil w
@@ -340,7 +327,7 @@ lemma field_zeros (k w : Nat) : Field k 0 w (w * 4 ^ k) := by
     rw [h1, Nat.zero_mul, h2] at hz
     exact hz
 
-lemma field_exists (k z w : Nat) (hz : z < 2 ^ k) : ∃ x, Field k z w x := by
+theorem field_exists (k z w : Nat) (hz : z < 2 ^ k) : ∃ x, Field k z w x := by
   induction k generalizing z with
   | zero =>
     have hz0 : z = 0 := by change z < 1 at hz; omega
@@ -360,34 +347,34 @@ lemma field_exists (k z w : Nat) (hz : z < 2 ^ k) : ∃ x, Field k z w x := by
       rw [h1, hpar]
       exact Field.one hx
 
-lemma field_unique_aux {k1 z1 w1 x : Nat} (h1 : Field k1 z1 w1 x) :
-    ∀ {k2 z2 y : Nat}, Field k2 z2 w1 y → k1 = k2 → z1 = z2 → x = y := by
+theorem field_unique_aux {k1 zv1 w1 x : Nat} (h1 : Field k1 zv1 w1 x) :
+    ∀ {k2 zv2 y : Nat}, Field k2 zv2 w1 y → k1 = k2 → zv1 = zv2 → x = y := by
   induction h1 with
   | nil w =>
-    intro k2 z2 y h2 hk hz
+    intro k2 zv2 y h2 hk hz
     cases h2 with
     | nil => rfl
     | zero => omega
     | one => omega
-  | @zero k1' z1' w1' x1' _ ih =>
-    intro k2 z2 y h2 hk hz
+  | @zero k1' zv1' w1' x1' _ ih =>
+    intro k2 zv2 y h2 hk hz
     cases h2 with
     | nil => omega
-    | @zero k2' z2' _ y' h2' =>
+    | @zero k2' zv2' _ y' h2' =>
       rw [ih h2' (by omega) (by omega)]
     | one => omega
-  | @one k1' z1' w1' x1' _ ih =>
-    intro k2 z2 y h2 hk hz
+  | @one k1' zv1' w1' x1' _ ih =>
+    intro k2 zv2 y h2 hk hz
     cases h2 with
     | nil => omega
     | zero => omega
-    | @one k2' z2' _ y' h2' =>
+    | @one k2' zv2' _ y' h2' =>
       rw [ih h2' (by omega) (by omega)]
 
-lemma field_unique {k z w x y : Nat} (h1 : Field k z w x) (h2 : Field k z w y) : x = y :=
+theorem field_unique {k z w x y : Nat} (h1 : Field k z w x) (h2 : Field k z w y) : x = y :=
   field_unique_aux h1 h2 rfl rfl
 
-lemma field_compose {k z w x j v y : Nat}
+theorem field_compose {k z w x j v y : Nat}
     (h1 : Field k z w x) (h2 : Field j v x y) :
     Field (k + j) (z * 2 ^ j + v) w y := by
   induction h2 with
@@ -408,7 +395,7 @@ lemma field_compose {k z w x j v y : Nat}
     rw [h1_eq, h2_eq] at ho
     exact ho
 
-lemma field_fill {k z w x : Nat} (h : Field k z w x) : Steps z (w * 4 ^ k) x := by
+theorem field_fill {k z w x : Nat} (h : Field k z w x) : Steps z (w * 4 ^ k) x := by
   induction h with
   | nil w =>
     simpa only [Nat.pow_zero, Nat.mul_one] using Steps.zero w
@@ -424,7 +411,7 @@ lemma field_fill {k z w x : Nat} (h : Field k z w x) : Steps z (w * 4 ^ k) x := 
     rw [h1, h2] at hf
     exact hf
 
-lemma field_inc {k z w x : Nat} (h : Field k z w x) (hb : 1 + z < 2 ^ k) :
+theorem field_inc {k z w x : Nat} (h : Field k z w x) (hb : 1 + z < 2 ^ k) :
     ∃ y, Field k (1 + z) w y ∧ H x y := by
   induction h with
   | nil w =>
@@ -440,7 +427,7 @@ lemma field_inc {k z w x : Nat} (h : Field k z w x) (hb : 1 + z < 2 ^ k) :
     rw [heq] at hf
     exact hf
 
-lemma field_carry {k z w x y : Nat} (h : Field k z w x) (hb : 1 + z = 2 ^ k) (hw : H w y) :
+theorem field_carry {k z w x y : Nat} (h : Field k z w x) (hb : 1 + z = 2 ^ k) (hw : H w y) :
     H x (y * 4 ^ k) := by
   induction h with
   | nil w =>
@@ -454,27 +441,27 @@ lemma field_carry {k z w x y : Nat} (h : Field k z w x) (hb : 1 + z = 2 ^ k) (hw
     rw [heq] at hh
     exact hh
 
-lemma field_inv_zero {k1 z w x : Nat} (hf : Field k1 z w x) (hk : k1 = 0) : z = 0 ∧ x = w := by
+theorem field_inv_zero {k1 z w x : Nat} (hf : Field k1 z w x) (hk : k1 = 0) : z = 0 ∧ x = w := by
   cases hf with
   | nil => exact ⟨rfl, rfl⟩
   | zero => omega
   | one => omega
 
-lemma field_inv_succ {k1 z w x : Nat} (hf : Field k1 z w x) (k : Nat) (hk : k1 = k + 1) :
-    (∃ z0 x0, z = z0 * 2 ∧ x = x0 * 4 ∧ Field k z0 w x0) ∨
-    (∃ z0 x0, z = 1 + z0 * 2 ∧ x = 1 + x0 * 4 ∧ Field k z0 w x0) := by
+theorem field_inv_succ {k1 z w x : Nat} (hf : Field k1 z w x) (k : Nat) (hk : k1 = k + 1) :
+    (∃ zv0 x0, z = zv0 * 2 ∧ x = x0 * 4 ∧ Field k zv0 w x0) ∨
+    (∃ zv0 x0, z = 1 + zv0 * 2 ∧ x = 1 + x0 * 4 ∧ Field k zv0 w x0) := by
   cases hf with
   | nil => omega
-  | @zero k0 z0 _ x0 hf0 =>
+  | @zero k0 zv0 _ x0 hf0 =>
     have hk0 : k0 = k := by omega
     subst hk0
-    exact Or.inl ⟨z0, x0, rfl, rfl, hf0⟩
-  | @one k0 z0 _ x0 hf0 =>
+    exact Or.inl ⟨zv0, x0, rfl, rfl, hf0⟩
+  | @one k0 zv0 _ x0 hf0 =>
     have hk0 : k0 = k := by omega
     subst hk0
-    exact Or.inr ⟨z0, x0, rfl, rfl, hf0⟩
+    exact Or.inr ⟨zv0, x0, rfl, rfl, hf0⟩
 
-lemma normalize (k : Nat) : ∀ {z w x y : Nat},
+theorem normalize (k : Nat) : ∀ {z w x y : Nat},
     Field k z w x → 0 < z → H w y → Steps ((2 ^ k - z) * 2) (x * 2) (y * 2 * 4 ^ k) := by
   induction k with
   | zero =>
@@ -483,9 +470,9 @@ lemma normalize (k : Nat) : ∀ {z w x y : Nat},
     omega
   | succ k ih =>
     intro z w x y hf hz hw
-    rcases field_inv_succ hf k rfl with ⟨z0, x0, rfl, rfl, hf0⟩ | ⟨z0, x0, rfl, rfl, hf0⟩
+    rcases field_inv_succ hf k rfl with ⟨zv0, x0, rfl, rfl, hf0⟩ | ⟨zv0, x0, rfl, rfl, hf0⟩
     · have hs := steps_four (ih hf0 (by omega) hw)
-      have h1 : (2 ^ (k + 1) - z0 * 2) * 2 = (2 ^ k - z0) * 2 * 2 := by
+      have h1 : (2 ^ (k + 1) - zv0 * 2) * 2 = (2 ^ k - zv0) * 2 * 2 := by
         have hb0 := field_bound hf0
         rw [pow2_succ]; omega
       have h2 : x0 * 4 * 2 = x0 * 2 * 4 := by omega
@@ -493,23 +480,23 @@ lemma normalize (k : Nat) : ∀ {z w x y : Nat},
       rw [h1, h2, h3]
       exact hs
     · have hb0 := field_bound hf0
-      rcases (by omega : 1 + z0 = 2 ^ k ∨ 1 + z0 ≠ 2 ^ k) with he | he
+      rcases (by omega : 1 + zv0 = 2 ^ k ∨ 1 + zv0 ≠ 2 ^ k) with he | he
       · have hp := pair_two (field_carry hf0 he hw)
-        have h1 : (2 ^ (k + 1) - (1 + z0 * 2)) * 2 = 2 := by rw [pow2_succ]; omega
+        have h1 : (2 ^ (k + 1) - (1 + zv0 * 2)) * 2 = 2 := by rw [pow2_succ]; omega
         have h2 : (1 + x0 * 4) * 2 = 2 + x0 * 8 := by omega
         have h3 : y * 2 * 4 ^ (k + 1) = y * 4 ^ k * 2 * 4 := by rw [pow4_succ]; ring
         rw [h1, h2, h3]
         exact hp
       · obtain ⟨u, hu, hhu⟩ := field_inc hf0 (by omega)
         have hp := steps_trans (pair_two hhu) (steps_four (ih hu (by omega) hw))
-        have h1 : (2 ^ (k + 1) - (1 + z0 * 2)) * 2 = 2 + (2 ^ k - (1 + z0)) * 2 * 2 := by
+        have h1 : (2 ^ (k + 1) - (1 + zv0 * 2)) * 2 = 2 + (2 ^ k - (1 + zv0)) * 2 * 2 := by
           rw [pow2_succ]; omega
         have h2 : (1 + x0 * 4) * 2 = 2 + x0 * 8 := by omega
         have h3 : y * 2 * 4 ^ (k + 1) = y * 2 * 4 ^ k * 4 := by rw [pow4_succ]; ring
         rw [h1, h2, h3]
         exact hp
 
-lemma packed_positive {k z w x y n q r y' : Nat}
+theorem packed_positive {k z w x y n q r y' : Nat}
     (hf : Field k z w x) (hz : 0 < z) (hw : H w y) (hq : Steps q (y * 2) y')
     (hn : n = (2 ^ k - z) * 2 + q * 2 ^ k + r) (hr : r < 2 ^ k) :
     ∃ x', Field k r y' x' ∧ Steps n (x * 2) x' := by
@@ -518,7 +505,7 @@ lemma packed_positive {k z w x y n q r y' : Nat}
   subst hn
   exact steps_trans (steps_trans (normalize k hf hz hw) (steps_zeros k hq)) (field_fill hfx')
 
-lemma packed_short {w k z x a h : Nat}
+theorem packed_short {w k z x a h : Nat}
     (hf : Field k z w x) (hz : 0 < z) (hw : H w h)
     (hb : 2 * 2 ^ k ≤ a + z * 2) (hc : a + z * 2 < 4 * 2 ^ k) :
     ∃ q r u, q ≤ 1 ∧ r < 2 ^ k ∧ a + z * 2 = (2 + q) * 2 ^ k + r ∧
@@ -536,8 +523,9 @@ lemma packed_short {w k z x a h : Nat}
     refine ⟨0, a + z * 2 - 2 * 2 ^ k, u, by omega, by omega, by omega, ?_, hsu⟩
     simpa only [Nat.add_zero] using hfu
 
-lemma field_low {k z w x : Nat} (hf : Field k z w x) (hz : 0 < z) :
-    ∃ t j v y, k = t + 1 + j ∧ z = (1 + v * 2) * 2 ^ t ∧ x = (1 + y * 4) * 4 ^ t ∧ Field j v w y := by
+theorem field_low {k z w x : Nat} (hf : Field k z w x) (hz : 0 < z) :
+    ∃ t j v y, k = t + 1 + j ∧ z = (1 + v * 2) * 2 ^ t ∧ x = (1 + y * 4) * 4 ^ t ∧ Field j v w y :=
+        by
   induction hf with
   | nil w => omega
   | @zero k' z' w' x' hf' ih =>
@@ -555,7 +543,7 @@ inductive Normal : Bool → Nat → Nat → Prop where
   | zero {e : Bool} {n x : Nat} : Normal e n x → Normal e (n * 2) (x * 4)
   | one {e : Bool} {n x : Nat} : Normal e n x → Normal e (1 + n * 2) (1 + x * 4)
 
-lemma normal_step {e : Bool} {n x : Nat} (hn : Normal e n x) :
+theorem normal_step {e : Bool} {n x : Nat} (hn : Normal e n x) :
     ∃ y, Normal e (1 + n) y ∧ H x y := by
   induction hn with
   | D => exact ⟨1, Normal.one Normal.D, H.even 0⟩
@@ -573,7 +561,7 @@ lemma normal_step {e : Bool} {n x : Nat} (hn : Normal e n x) :
     rw [heq] at hz
     exact hz
 
-lemma normal_steps {e : Bool} {n x : Nat} (a : Nat) (hn : Normal e n x) :
+theorem normal_steps {e : Bool} {n x : Nat} (a : Nat) (hn : Normal e n x) :
     ∃ y, Normal e (n + a) y ∧ Steps a x y := by
   induction a generalizing n x with
   | zero =>
@@ -589,7 +577,7 @@ lemma normal_steps {e : Bool} {n x : Nat} (a : Nat) (hn : Normal e n x) :
       rw [← heq]
       exact Steps.next hhy hsz
 
-lemma field_normal {k z w x : Nat} (hf : Field k z w x) {e : Bool} {n : Nat}
+theorem field_normal {k z w x : Nat} (hf : Field k z w x) {e : Bool} {n : Nat}
     (hn : Normal e n w) : Normal e (n * 2 ^ k + z) x := by
   induction hf with
   | nil w =>
@@ -607,7 +595,7 @@ lemma field_normal {k z w x : Nat} (hf : Field k z w x) {e : Bool} {n : Nat}
     rw [heq] at ho
     exact ho
 
-lemma packed_normal {k z w x y j u : Nat} {e : Bool} {v a : Nat}
+theorem packed_normal {k z w x y j u : Nat} {e : Bool} {v a : Nat}
     (hf : Field k z w x) (hz : 0 < z) (hw : H w y) (hj : Steps j (y * 2) u)
     (hn : Normal e v u) (hb : (2 ^ k - z) * 2 + j * 2 ^ k ≤ a) :
     ∃ x', Normal e (v * 2 ^ k + (a - ((2 ^ k - z) * 2 + j * 2 ^ k))) x' ∧ Steps a (x * 2) x' := by
@@ -620,7 +608,7 @@ lemma packed_normal {k z w x y j u : Nat} {e : Bool} {v a : Nat}
     rw [heq] at htr
     exact htr
 
-lemma packed_zero {k w j u : Nat} {e : Bool} {v a : Nat}
+theorem packed_zero {k w j u : Nat} {e : Bool} {v a : Nat}
     (hj : Steps j (w * 2) u) (hn : Normal e v u) (hb : j * 2 ^ k ≤ a) :
     ∃ x', Normal e (v * 2 ^ k + (a - j * 2 ^ k)) x' ∧ Steps a (w * 4 ^ k * 2) x' := by
   obtain ⟨x', hnx', hsx'⟩ := normal_steps (a - j * 2 ^ k) (field_normal (field_zeros k u) hn)
@@ -632,7 +620,7 @@ lemma packed_zero {k w j u : Nat} {e : Bool} {v a : Nat}
     rw [h1, h2] at htr
     exact htr
 
-lemma packed_zero_affine {k w j u : Nat} {e : Bool} {v a : Nat}
+theorem packed_zero_affine {k w j u : Nat} {e : Bool} {v a : Nat}
     (hj : Steps j (w * 2) u) (hn : Normal e (v + j) u) (hb : j * 2 ^ k ≤ a) :
     ∃ x', Normal e (a + v * 2 ^ k) x' ∧ Steps a (w * 4 ^ k * 2) x' := by
   obtain ⟨x', hnx', hsx'⟩ := packed_zero hj hn hb
@@ -643,7 +631,7 @@ lemma packed_zero_affine {k w j u : Nat} {e : Bool} {v a : Nat}
   rw [heq] at hnx'
   exact hnx'
 
-lemma packed_positive_affine {k z w x y j u : Nat} {e : Bool} {v a : Nat}
+theorem packed_positive_affine {k z w x y j u : Nat} {e : Bool} {v a : Nat}
     (hf : Field k z w x) (hz : 0 < z) (hw : H w y) (hj : Steps j (y * 2) u)
     (hn : Normal e (v + j + 2) u) (hb : (j + 2) * 2 ^ k ≤ a + z * 2) :
     ∃ x', Normal e (a + z * 2 + v * 2 ^ k) x' ∧ Steps a (x * 2) x' := by
@@ -657,7 +645,8 @@ lemma packed_positive_affine {k z w x y j u : Nat} {e : Bool} {v a : Nat}
   rw [heq] at hnx'
   exact hnx'
 
-lemma normal_zero_value_aux {e : Bool} {m x : Nat} (hn : Normal e m x) (hm : m = 0) : e = false ∧ x = 0 := by
+theorem normal_zero_value_aux {e : Bool} {m x : Nat} (hn : Normal e m x) (hm : m = 0) : e = false ∧
+    x = 0 := by
   induction hn with
   | D => exact ⟨rfl, rfl⟩
   | E2 => omega
@@ -667,10 +656,10 @@ lemma normal_zero_value_aux {e : Bool} {m x : Nat} (hn : Normal e m x) (hm : m =
     exact ⟨he, by omega⟩
   | one => omega
 
-lemma normal_zero_value {e : Bool} {x : Nat} (hn : Normal e 0 x) : e = false ∧ x = 0 :=
+theorem normal_zero_value {e : Bool} {x : Nat} (hn : Normal e 0 x) : e = false ∧ x = 0 :=
   normal_zero_value_aux hn rfl
 
-lemma normal_top {e : Bool} {n x : Nat} (hn : Normal e n x) (hp : 0 < n) :
+theorem normal_top {e : Bool} {n x : Nat} (hn : Normal e n x) (hp : 0 < n) :
     ∃ k z w, Field k z w x ∧ n = w * 2 ^ k + z ∧
       ((e = false ∧ w = 1) ∨ (e = true ∧ (w = 2 ∨ w = 3))) := by
   induction hn with
@@ -696,7 +685,7 @@ inductive View : Bool → Nat → Nat → Prop where
   | two (t : Nat) : View true (2 * 2 ^ t) (2 * 4 ^ t)
   | three (t : Nat) : View true (3 * 2 ^ t) (3 * 4 ^ t)
 
-lemma normal_view {e : Bool} {n x : Nat} (hn : Normal e n x) (hp : 0 < n) : View e n x := by
+theorem normal_view {e : Bool} {n x : Nat} (hn : Normal e n x) (hp : 0 < n) : View e n x := by
   induction hn with
   | D => omega
   | E2 => simpa using View.two 0
@@ -725,7 +714,7 @@ inductive Return : Nat → Nat → Nat → Nat → Nat → Prop where
   | odd (t : Nat) {x y : Nat} (a : Nat) : H x y → Return ((1 + x * 2) * 4 ^ t) a y (a + t) 0
   | power (t a : Nat) : Return (2 * 4 ^ t) a 1 1 (a + t)
 
-lemma field_return {k z w x : Nat} (a : Nat) (hf : Field k z w x) (hz : 0 < z) :
+theorem field_return {k z w x : Nat} (a : Nat) (hf : Field k z w x) (hz : 0 < z) :
     ∃ t j v y, Field j v w y ∧ k = t + 1 + j ∧ z = (1 + v * 2) * 2 ^ t ∧
       Return x a (1 + y * 2) (a + t) 0 := by
   obtain ⟨t, j, v, y, hk, hze, hxe, hfj⟩ := field_low hf hz
@@ -744,16 +733,18 @@ def Budget (a v : Nat) : Prop :=
 
 inductive Safe : Nat → Nat → Nat → Prop where
   | main {e : Bool} {v x a : Nat} : Normal e v x → Budget a v → Safe (1 + x * 2) a 0
-  | high {w k z x a : Nat} : (w = 6 ∨ w = 7) → Field k z w x → Budget a (w * 2 ^ k + z) → Safe (1 + x * 2) a 0
+  | high {w k z x a : Nat} : (w = 6 ∨
+      w = 7) → Field k z w x → Budget a (w * 2 ^ k + z) → Safe (1 + x * 2) a 0
   | raw {x a : Nat} : (x = 4 ∨ x = 8 ∨ x = 16) → 0 < a → Safe x a 0
   | weak {e : Bool} {v x : Nat} : Normal e v x → 0 < v → Safe (1 + x * 2) (v * 2 - 1) 0
-  | near {w k z x a : Nat} : (w = 10 ∨ w = 11) → Field k z w x → 8 * 2 ^ k ≤ a → Safe (1 + x * 2) a 0
+  | near {w k z x a : Nat} : (w = 10 ∨
+      w = 11) → Field k z w x → 8 * 2 ^ k ≤ a → Safe (1 + x * 2) a 0
   | reset {a b : Nat} : 0 < a → 0 < b → Safe 1 a b
 
-lemma budget_strong {a v : Nat} (h : v * 2 < a) : Budget a v :=
+theorem budget_strong {a v : Nat} (h : v * 2 < a) : Budget a v :=
   ⟨by omega, fun _ => h⟩
 
-lemma safe_positive {x a b : Nat} (hs : Safe x a b) : 0 < a := by
+theorem safe_positive {x a b : Nat} (hs : Safe x a b) : 0 < a := by
   cases hs with
   | main _ hb => exact Nat.lt_of_le_of_lt (Nat.zero_le _) hb.1
   | high _ _ hb => exact Nat.lt_of_le_of_lt (Nat.zero_le _) hb.1
@@ -764,7 +755,7 @@ lemma safe_positive {x a b : Nat} (hs : Safe x a b) : 0 < a := by
     omega
   | reset ha _ => exact ha
 
-lemma budget_return {a n t v : Nat} (hn : n = (1 + v * 2) * 2 ^ t)
+theorem budget_return {a n t v : Nat} (hn : n = (1 + v * 2) * 2 ^ t)
     (hcases : (a % 2 = 1 ∧ n % 2 = 1 ∧ n ≤ a * 2 + 1) ∨
               (a % 2 = 0 ∧ n % 2 = 0 ∧ n ≤ a * 3 - 2)) :
     Budget (a + 1 + t) v := by
@@ -792,7 +783,7 @@ lemma budget_return {a n t v : Nat} (hn : n = (1 + v * 2) * 2 ^ t)
       rw [hpow] at hle
       exact ⟨by omega, fun _ => by omega⟩
 
-lemma normal_return {e : Bool} {n x : Nat} (a : Nat) (hn : Normal e n x) (hp : 0 < n)
+theorem normal_return {e : Bool} {n x : Nat} (a : Nat) (hn : Normal e n x) (hp : 0 < n)
     (hb : ∀ t v, n = (1 + v * 2) * 2 ^ t → Budget (a + 1 + t) v) :
     ∃ y b c, Return x (a + 1) y b c ∧ Safe y b c := by
   rcases normal_view hn hp with ⟨v0, u0, t, hnv⟩ | ⟨t⟩ | ⟨t⟩
@@ -806,7 +797,7 @@ lemma normal_return {e : Bool} {n x : Nat} (a : Nat) (hn : Normal e n x) (hp : 0
     have hr := Return.odd t (a + 1) (H_four (H.even 0))
     simpa using hr
 
-lemma normal_return_strong {e : Bool} {n x a : Nat}
+theorem normal_return_strong {e : Bool} {n x a : Nat}
     (hn : Normal e n x) (hp : 0 < n) (hle : n ≤ a + 1) :
     ∃ y b c, Return x (a + 1) y b c ∧ Safe y b c := by
   refine normal_return a hn hp (fun t v heq => budget_strong ?_)
@@ -814,13 +805,13 @@ lemma normal_return_strong {e : Bool} {n x a : Nat}
   have hge : (1 + v * 2) * 1 ≤ (1 + v * 2) * 2 ^ t := Nat.mul_le_mul_left (1 + v * 2) hp2
   omega
 
-lemma reset_closed {a b : Nat} (ha : 0 < a) (hb : 0 < b) :
+theorem reset_closed {a b : Nat} (ha : 0 < a) (hb : 0 < b) :
     ∃ y a' b', Round 1 a b y a' b' ∧ Safe y a' b' := by
   obtain ⟨u, hnu, hsu⟩ := normal_steps (a - 1) (Normal.one Normal.D)
   obtain ⟨y, a', b', hr, hs⟩ := normal_return_strong (a := a + b) hnu (by omega) (by omega)
   exact ⟨y, a', b', ⟨u, hsu, hr⟩, hs⟩
 
-lemma normal_raw_return {e : Bool} {n x a : Nat}
+theorem normal_raw_return {e : Bool} {n x a : Nat}
     (hn : Normal e n x) (he : n = a + 3) (ha : 0 < a) :
     ∃ y b c, Return x (a + 1) y b c ∧ Safe y b c := by
   rcases normal_view hn (by omega) with ⟨v0, u0, t, hnv⟩ | ⟨t⟩ | ⟨t⟩
@@ -849,7 +840,7 @@ lemma normal_raw_return {e : Bool} {n x a : Nat}
     have hr := Return.odd t (a + 1) (H_four (H.even 0))
     simpa using hr
 
-lemma raw_closed {x a : Nat} (hx : x = 4 ∨ x = 8 ∨ x = 16) (ha : 0 < a) :
+theorem raw_closed {x a : Nat} (hx : x = 4 ∨ x = 8 ∨ x = 16) (ha : 0 < a) :
     ∃ y a' b', Round x a 0 y a' b' ∧ Safe y a' b' := by
   rcases hx with rfl | rfl | rfl
   · obtain ⟨u, hnu, hsu⟩ := normal_steps (a - 1) (Normal.zero (Normal.one Normal.D))
@@ -862,19 +853,19 @@ lemma raw_closed {x a : Nat} (hx : x = 4 ∨ x = 8 ∨ x = 16) (ha : 0 < a) :
     obtain ⟨y, a', b', hr, hs⟩ := normal_raw_return (a := a) hnu (by omega) ha
     exact ⟨y, a', b', ⟨u, hsu, hr⟩, hs⟩
 
-lemma two22 : Steps 2 22 64 := by
+theorem two22 : Steps 2 22 64 := by
   refine Steps.next (H.even 11) (steps_one ?_)
   simpa using H.carry 2 (H_four (H.even 0))
 
-lemma two6 : Steps 2 6 16 := by
+theorem two6 : Steps 2 6 16 := by
   refine Steps.next (H.even 3) (steps_one ?_)
   simpa using H.carry 2 (H.even 0)
 
-lemma two14 : Steps 2 14 32 := by
+theorem two14 : Steps 2 14 32 := by
   refine Steps.next (H.even 7) (steps_one ?_)
   simpa using H.carry 3 (H.even 0)
 
-lemma weak_count {e : Bool} {v x : Nat} (hn : Normal e v x) (hv : 0 < v) :
+theorem weak_count {e : Bool} {v x : Nat} (hn : Normal e v x) (hv : 0 < v) :
     ∃ n y, Normal (!e) n y ∧ Steps (v * 2 - 1) (x * 2) y ∧
       0 < n ∧ n ≤ v * 4 - 1 ∧ n % 2 = 1 := by
   obtain ⟨k, z, w, hf, hve, htop⟩ := normal_top hn hv
@@ -915,14 +906,14 @@ lemma weak_count {e : Bool} {v x : Nat} (hn : Normal e v x) (hv : 0 < v) :
         hf (by omega) (H_eight (H.even 0)) (Steps.zero 16) hN4 (by omega)
       exact ⟨v * 2 - 1 + z * 2 + 2 * 2 ^ k, y, hny, hsy, by omega, by omega, by omega⟩
 
-lemma weak_closed {e : Bool} {v x : Nat} (hn : Normal e v x) (hv : 0 < v) :
+theorem weak_closed {e : Bool} {v x : Nat} (hn : Normal e v x) (hv : 0 < v) :
     ∃ y a' b', Round (1 + x * 2) (v * 2 - 1) 0 y a' b' ∧ Safe y a' b' := by
   obtain ⟨n, u, hnu, hsu, hnp, hnb, hno⟩ := weak_count hn hv
   obtain ⟨y, a', b', hr, hs⟩ := normal_return (v * 2 - 1) hnu hnp (fun t w heq =>
     budget_return heq (Or.inl ⟨by omega, hno, by omega⟩))
   refine ⟨y, a', b', ⟨u, steps_drop_even (by omega) hsu, hr⟩, hs⟩
 
-lemma normal_count_closed {v x a : Nat} {e : Bool} {n u : Nat}
+theorem normal_count_closed {v x a : Nat} {e : Bool} {n u : Nat}
     (hb : Budget a v) (hn : Normal e n u) (hs : Steps a (x * 2) u)
     (hp : 0 < n) (hu : n ≤ a + v * 2) (ho : n % 2 = a % 2) :
     ∃ y a' b', Round (1 + x * 2) a 0 y a' b' ∧ Safe y a' b' := by
@@ -935,7 +926,7 @@ lemma normal_count_closed {v x a : Nat} {e : Bool} {n u : Nat}
       exact Or.inl ⟨ha1, by omega, by omega⟩)
   exact ⟨y, a', b', ⟨u, steps_drop_even (by omega) hs, hr⟩, hsafe⟩
 
-lemma main_regular_count {w k z x a : Nat}
+theorem main_regular_count {w k z x a : Nat}
     (hw : w = 1 ∨ w = 2 ∨ w = 3 ∨ w = 6 ∨ w = 7)
     (hf : Field k z w x) (hb : Budget a (w * 2 ^ k + z))
     (hp1 : w = 1 → 0 < z → 2 * 2 ^ k ≤ a + z * 2)
@@ -992,7 +983,7 @@ lemma main_regular_count {w k z x a : Nat}
         hf (by omega) hj7 (Steps.zero 32) hE8 (by omega)
       exact ⟨true, a + z * 2 + 6 * 2 ^ k, y, hny, hsy, by omega, by omega, by omega⟩
 
-lemma main_regular_closed {w k z x a : Nat}
+theorem main_regular_closed {w k z x a : Nat}
     (hw : w = 1 ∨ w = 2 ∨ w = 3 ∨ w = 6 ∨ w = 7)
     (hf : Field k z w x) (hb : Budget a (w * 2 ^ k + z))
     (hp1 : w = 1 → 0 < z → 2 * 2 ^ k ≤ a + z * 2)
@@ -1002,7 +993,7 @@ lemma main_regular_closed {w k z x a : Nat}
   have ha : 0 < a := Nat.lt_of_le_of_lt (Nat.zero_le _) hb.1
   exact normal_count_closed hb hnu hsu (by omega) hub hmod
 
-lemma high_return {w k z u a v : Nat}
+theorem high_return {w k z u a v : Nat}
     (hw : w = 6 ∨ w = 7) (hf : Field k z w u) (hz : 0 < z)
     (hb : Budget a v) (hu : w * 2 ^ k + z ≤ a + v * 2) (hp : (w * 2 ^ k + z) % 2 = a % 2) :
     ∃ y b c, Return u (a + 1) y b c ∧ Safe y b c := by
@@ -1019,7 +1010,7 @@ lemma high_return {w k z u a v : Nat}
     · have hlt := hb2 ha1
       exact Or.inl ⟨ha1, by omega, by omega⟩
 
-lemma main_short2 {k z x a : Nat}
+theorem main_short2 {k z x a : Nat}
     (hf : Field k z 2 x) (hz : 0 < z) (hb : Budget a (2 * 2 ^ k + z))
     (hp : a + z * 2 < 4 * 2 ^ k) :
     ∃ y a' b', Round (1 + x * 2) a 0 y a' b' ∧ Safe y a' b' := by
@@ -1051,7 +1042,7 @@ lemma main_short2 {k z x a : Nat}
       (by omega) (by omega)
     exact ⟨y, a', b', ⟨u, steps_drop_even (by omega) hsu, hret⟩, hsafe⟩
 
-lemma near_return {w k z u a : Nat}
+theorem near_return {w k z u a : Nat}
     (hw : w = 10 ∨ w = 11) (hf : Field k z w u) (hz : 0 < z)
     (hp : z % 2 = 0) (hb : 2 * 2 ^ k < a) :
     ∃ y b c, Return u (a + 1) y b c ∧ Safe y b c := by
@@ -1069,7 +1060,7 @@ lemma near_return {w k z u a : Nat}
     rw [hpow] at hb
     omega
 
-lemma main_short1 {k z x a : Nat}
+theorem main_short1 {k z x a : Nat}
     (hf : Field k z 1 x) (hz : 0 < z) (hb : Budget a (2 ^ k + z))
     (hp : a + z * 2 < 2 * 2 ^ k) :
     ∃ y a' b', Round (1 + x * 2) a 0 y a' b' ∧ Safe y a' b' := by
@@ -1122,7 +1113,7 @@ lemma main_short1 {k z x a : Nat}
       obtain ⟨y, a', b', hret, hsafe⟩ := near_return hw hfu (by omega) hr_even ha_gt
       exact ⟨y, a', b', ⟨u, steps_drop_even (by omega) hsu, hret⟩, hsafe⟩
 
-lemma near_count {w k z x a : Nat}
+theorem near_count {w k z x a : Nat}
     (hw : w = 10 ∨ w = 11) (hf : Field k z w x) (hb : 8 * 2 ^ k ≤ a) :
     ∃ n y, Normal false n y ∧ Steps a (x * 2) y ∧
       a ≤ n ∧ n < a + 8 * 2 ^ k ∧ n % 2 = a % 2 := by
@@ -1150,7 +1141,7 @@ lemma near_count {w k z x a : Nat}
         hf (by omega) hj11 (Steps.zero 64) hN8 (by omega)
       exact ⟨a + z * 2 + 6 * 2 ^ k, y, hny, hsy, by omega, by omega, by omega⟩
 
-lemma near_closed {w k z x a : Nat}
+theorem near_closed {w k z x a : Nat}
     (hw : w = 10 ∨ w = 11) (hf : Field k z w x) (hb : 8 * 2 ^ k ≤ a) :
     ∃ y a' b', Round (1 + x * 2) a 0 y a' b' ∧ Safe y a' b' := by
   obtain ⟨n, u, hnu, hsu, hle, hub, hmod⟩ := near_count hw hf hb
@@ -1162,7 +1153,7 @@ lemma near_closed {w k z x a : Nat}
     · exact Or.inl ⟨ha1, by omega, by omega⟩)
   exact ⟨y, a', b', ⟨u, steps_drop_even (by omega) hsu, hr⟩, hsafe⟩
 
-lemma main_closed {w k z x a : Nat}
+theorem main_closed {w k z x a : Nat}
     (hw : w = 1 ∨ w = 2 ∨ w = 3 ∨ w = 6 ∨ w = 7)
     (hf : Field k z w x) (hb : Budget a (w * 2 ^ k + z)) :
     ∃ y a' b', Round (1 + x * 2) a 0 y a' b' ∧ Safe y a' b' := by
@@ -1179,11 +1170,13 @@ lemma main_closed {w k z x a : Nat}
     · rcases (by omega : w = 2 ∨ w ≠ 2) with hw2 | hw2
       · subst hw2
         rcases (by omega : 4 * 2 ^ k ≤ a + z * 2 ∨ ¬ (4 * 2 ^ k ≤ a + z * 2)) with hle | hle
-        · exact main_regular_closed (Or.inr (Or.inl rfl)) hf hb (fun h _ => by omega) (fun _ _ => hle)
+        · exact main_regular_closed (Or.inr (Or.inl rfl)) hf hb (fun h _ => by omega) (fun _ _ =>
+            hle)
         · exact main_short2 hf (by omega) hb (by omega)
-      · exact main_regular_closed hw hf hb (fun h _ => False.elim (hw1 h)) (fun h _ => False.elim (hw2 h))
+      · exact main_regular_closed hw hf hb (fun h _ => False.elim (hw1 h)) (fun h _ =>
+          False.elim (hw2 h))
 
-lemma closed {x a b : Nat} (hs : Safe x a b) :
+theorem closed {x a b : Nat} (hs : Safe x a b) :
     ∃ y a' b', Round x a b y a' b' ∧ Safe y a' b' := by
   cases hs with
   | @main e v x a hnv hb =>
@@ -1214,10 +1207,10 @@ inductive Num : Nat → ListBlank (Fin 2) → Prop where
   | zero {n : Nat} {l : ListBlank (Fin 2)} : Num n l → Num (n * 2) (l <+ ([0] : List (Fin 2)))
   | one {n : Nat} {l : ListBlank (Fin 2)} : Num n l → Num (1 + n * 2) (l <+ ([1] : List (Fin 2)))
 
-lemma default_append_zero : (default : ListBlank (Fin 2)) <+ ([0] : List (Fin 2)) = default :=
+theorem default_append_zero : (default : ListBlank (Fin 2)) <+ ([0] : List (Fin 2)) = default :=
   zero_cons_default
 
-lemma Num_even_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) :
+theorem Num_even_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) :
     ∀ n, m = n * 2 → ∃ s, l = s <+ ([0] : List (Fin 2)) ∧ Num n s := by
   cases h with
   | nil =>
@@ -1233,11 +1226,11 @@ lemma Num_even_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) :
   | one =>
     intro n hm; omega
 
-lemma Num_even {n : Nat} {l : ListBlank (Fin 2)} (h : Num (n * 2) l) :
+theorem Num_even {n : Nat} {l : ListBlank (Fin 2)} (h : Num (n * 2) l) :
     ∃ s, l = s <+ ([0] : List (Fin 2)) ∧ Num n s :=
   Num_even_aux h n rfl
 
-lemma Num_odd_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) :
+theorem Num_odd_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) :
     ∀ n, m = 1 + n * 2 → ∃ s, l = s <+ ([1] : List (Fin 2)) ∧ Num n s := by
   cases h with
   | nil => intro n hm; omega
@@ -1248,11 +1241,11 @@ lemma Num_odd_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) :
     subst hn
     exact ⟨s, rfl, hn'⟩
 
-lemma Num_odd {n : Nat} {l : ListBlank (Fin 2)} (h : Num (1 + n * 2) l) :
+theorem Num_odd {n : Nat} {l : ListBlank (Fin 2)} (h : Num (1 + n * 2) l) :
     ∃ s, l = s <+ ([1] : List (Fin 2)) ∧ Num n s :=
   Num_odd_aux h n rfl
 
-lemma Num_zeros (k : Nat) {n : Nat} {l : ListBlank (Fin 2)} (h : Num n l) :
+theorem Num_zeros (k : Nat) {n : Nat} {l : ListBlank (Fin 2)} (h : Num n l) :
     Num (n * 2 ^ k) (l <+ (([0] : List (Fin 2)) ^ k)) := by
   induction k with
   | zero =>
@@ -1263,17 +1256,18 @@ lemma Num_zeros (k : Nat) {n : Nat} {l : ListBlank (Fin 2)} (h : Num n l) :
     rw [h1, pow_succ_append_left] at hz
     exact hz
 
-lemma Num_zero_inv_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) (hm : m = 0) : l = default := by
+theorem Num_zero_inv_aux {m : Nat} {l : ListBlank (Fin 2)} (h : Num m l) (hm : m = 0) : l =
+    default := by
   induction h with
   | nil => rfl
   | @zero n' s _ ih =>
     rw [ih (by omega), default_append_zero]
   | one => omega
 
-lemma Num_zero_inv {l : ListBlank (Fin 2)} (h : Num 0 l) : l = default :=
+theorem Num_zero_inv {l : ListBlank (Fin 2)} (h : Num 0 l) : l = default :=
   Num_zero_inv_aux h rfl
 
-lemma Num_unique {n : Nat} {l s : ListBlank (Fin 2)} (h1 : Num n l) (h2 : Num n s) : l = s := by
+theorem Num_unique {n : Nat} {l s : ListBlank (Fin 2)} (h1 : Num n l) (h2 : Num n s) : l = s := by
   induction h1 generalizing s with
   | nil => exact (Num_zero_inv h2).symm
   | @zero n' l' _ ih =>
@@ -1283,7 +1277,7 @@ lemma Num_unique {n : Nat} {l s : ListBlank (Fin 2)} (h1 : Num n l) (h2 : Num n 
     obtain ⟨s', rfl, hs'⟩ := Num_odd h2
     rw [ih hs']
 
-lemma Num_pairs (k : Nat) : ∀ {n : Nat} {l : ListBlank (Fin 2)},
+theorem Num_pairs (k : Nat) : ∀ {n : Nat} {l : ListBlank (Fin 2)},
     Num (n * 4 ^ k) l → ∃ s, Num n s ∧ l = s <+ (([0, 0] : List (Fin 2)) ^ k) := by
   induction k with
   | zero =>
@@ -1303,7 +1297,7 @@ lemma Num_pairs (k : Nat) : ∀ {n : Nat} {l : ListBlank (Fin 2)},
       s <+ (([0, 0] : List (Fin 2)) ^ (k + 1))
     exact pow_succ_append_left s ([0, 0] : List (Fin 2)) k
 
-lemma Num_run (j : Nat) : ∀ {n : Nat} {l : ListBlank (Fin 2)},
+theorem Num_run (j : Nat) : ∀ {n : Nat} {l : ListBlank (Fin 2)},
     Num (n * 2 ^ (1 + j) + (2 ^ j - 1)) l →
     ∃ s, l = (s <+ ([0] : List (Fin 2))) <+ (([1] : List (Fin 2)) ^ j) ∧ Num n s := by
   induction j with
@@ -1338,8 +1332,10 @@ structure Rules (tm : Machine (Fin 2) (Fin 6)) (q h g : Fin 6) : Prop where
     (l {{q}}> ((([1] : List (Fin 2)) ^ j) +> r)) [tm]⊢*
     ((l <+ (([0] : List (Fin 2)) ^ j)) {{q}}> r)
   right_inc : ∀ (l r : ListBlank (Fin 2)) (n : Nat),
-    (l {{q}}> (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (2 + n)) +> (([0] : List (Fin 2)) +> r)))) [tm]⊢*
-    (l <{{h}} (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (1 + n)) +> (([0, 1, 0] : List (Fin 2)) +> r))))
+    (l {{q}}> (([1] : List (Fin 2)) +> ((([1,
+        0] : List (Fin 2)) ^ (2 + n)) +> (([0] : List (Fin 2)) +> r)))) [tm]⊢*
+    (l <{{h}} (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (1 + n)) +> (([0, 1,
+        0] : List (Fin 2)) +> r))))
   right_overflow : ∀ (l r : ListBlank (Fin 2)),
     (l {{q}}> (([1, 1, 0, 0] : List (Fin 2)) +> r)) [tm]⊢⁺
     (l <{{g}} (([1, 0, 1, 0] : List (Fin 2)) +> r))
@@ -1356,7 +1352,7 @@ structure Rules (tm : Machine (Fin 2) (Fin 6)) (q h g : Fin 6) : Prop where
     (l {{q}}> (([0, 0, 0] : List (Fin 2)) +> r)) [tm]⊢*
     (l <{{g}} (([1, 0, 0] : List (Fin 2)) +> r))
 
-lemma H_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem H_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     {x y : Nat} (hxy : H x y) :
     ∀ {l : ListBlank (Fin 2)}, Num x l →
       ∃ l', Num y l' ∧ ∀ r, (l <{{h}} r) [tm]⊢* (l' {{q}}> r) := by
@@ -1378,9 +1374,10 @@ lemma H_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q 
           (rules.scan_right s' r (2 + j)))
 
 def right_tape (a b : Nat) : ListBlank (Fin 2) :=
-  ([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ a) +> (([0] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ b) +> default)))
+  ([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ a) +> (([0] : List (Fin 2)) +> ((([1,
+      0] : List (Fin 2)) ^ b) +> default)))
 
-lemma count_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem count_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     {n x y : Nat} (hsteps : Steps n x y) :
     ∀ {l : ListBlank (Fin 2)}, Num x l →
       ∃ l', Num y l' ∧ ∀ a b,
@@ -1418,17 +1415,19 @@ lemma count_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules t
     rw [h4] at h3
     exact stepStar_trans hinc' (stepStar_trans h2 h3)
 
-lemma overflow_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem overflow_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     {n x y : Nat} (hsteps : Steps n x y) {l : ListBlank (Fin 2)} (hn : Num x l) :
     ∃ l', Num y l' ∧ ∀ b,
-      (l {{q}}> right_tape (1 + n) b) [tm]⊢⁺ (l' <{{g}} ((([1, 0] : List (Fin 2)) ^ (2 + n + b)) +> default)) := by
+      (l {{q}}> right_tape (1 + n) b) [tm]⊢⁺ (l' <{{g}} ((([1,
+          0] : List (Fin 2)) ^ (2 + n + b)) +> default)) := by
   obtain ⟨l', hl', hcount⟩ := count_spec rules hsteps hn
   refine ⟨l', hl', fun b => ?_⟩
   have hc := hcount 0 b
   have h1 : 1 + n + 0 = 1 + n := by omega
   rw [h1] at hc
   have hov := rules.right_overflow l' ((([1, 0] : List (Fin 2)) ^ (n + b)) +> default)
-  have hrt : right_tape 1 (n + b) = (([1, 1, 0, 0] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (n + b)) +> default)) := rfl
+  have hrt : right_tape 1 (n + b) = (([1, 1, 0, 0] : List (Fin 2)) +> ((([1,
+      0] : List (Fin 2)) ^ (n + b)) +> default)) := rfl
   have hpow : (([1, 0, 1, 0] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (n + b)) +> default)) =
       ((([1, 0] : List (Fin 2)) ^ (2 + n + b)) +> default) := by
     have : 2 + n + b = (n + b) + 1 + 1 := by omega
@@ -1437,24 +1436,30 @@ lemma overflow_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rule
   rw [← hrt, hpow] at hov
   exact stepStar_stepPlus_stepPlus hc hov
 
-lemma right_tape_zero (m : Nat) :
+theorem right_tape_zero (m : Nat) :
     (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ m) +> default)) = right_tape m 0 := by
   unfold right_tape
   simp only [pow_zero_list, listblank_append_nil]
   have h0 : (([0] : List (Fin 2)) +> default) = default := zero_cons_default
   rw [h0]
 
-lemma return_odd {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem return_odd {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     (t : Nat) {x y : Nat} (hxy : H x y) {l : ListBlank (Fin 2)} (hn : Num ((1 + x * 2) * 4 ^ t) l) :
     ∃ l', Num y l' ∧ ∀ a,
-      (l <{{g}} ((([1, 0] : List (Fin 2)) ^ a) +> default)) [tm]⊢* (l' {{q}}> right_tape (a + t) 0) := by
+      (l <{{g}} ((([1,
+          0] : List (Fin 2)) ^ a) +> default)) [tm]⊢* (l' {{q}}> right_tape (a + t) 0) := by
   obtain ⟨s, hs, rfl⟩ := Num_pairs t hn
   obtain ⟨s', rfl, hs'⟩ := Num_odd hs
   obtain ⟨s'', hs'', hstep⟩ := H_spec rules hxy hs'
   refine ⟨s'', hs'', fun a => ?_⟩
-  have h1 := rules.scan_overflow (s' <+ ([1] : List (Fin 2))) ((([1, 0] : List (Fin 2)) ^ a) +> default) t
-  have h2 := rules.overflow_one s' ((([1, 0] : List (Fin 2)) ^ t) +> ((([1, 0] : List (Fin 2)) ^ a) +> default))
-  have h3 := hstep (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ t) +> ((([1, 0] : List (Fin 2)) ^ a) +> default)))
+  have h1 :=
+      rules.scan_overflow (s' <+ ([1] : List (Fin 2))) ((([1, 0] : List (Fin 2)) ^ a) +> default) t
+  have h2 :=
+      rules.overflow_one s' ((([1, 0] : List (Fin 2)) ^ t) +> ((([1,
+      0] : List (Fin 2)) ^ a) +> default))
+  have h3 :=
+      hstep (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ t) +> ((([1,
+      0] : List (Fin 2)) ^ a) +> default)))
   have h123 := stepStar_trans h1 (stepStar_trans h2 h3)
   have hmerge : ((([1, 0] : List (Fin 2)) ^ t) +> ((([1, 0] : List (Fin 2)) ^ a) +> default)) =
       ((([1, 0] : List (Fin 2)) ^ (a + t)) +> default) := by
@@ -1462,7 +1467,7 @@ lemma return_odd {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules t
   rw [hmerge, right_tape_zero] at h123
   exact h123
 
-lemma return_power {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem return_power {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     (t a : Nat) {l : ListBlank (Fin 2)} (hn : Num (2 * 4 ^ t) l) :
     (l <{{g}} ((([1, 0] : List (Fin 2)) ^ a) +> default)) [tm]⊢*
       ((default <+ ([1] : List (Fin 2))) {{q}}> right_tape 1 (a + t)) := by
@@ -1475,7 +1480,8 @@ lemma return_power {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules
     ((([1, 0] : List (Fin 2)) ^ a) +> default) t
   have hs_pal : ((default <+ ([1] : List (Fin 2))) <+ ([0] : List (Fin 2))) =
       default <+ ([0, 1, 0] : List (Fin 2)) := by
-    change (0 : Fin 2) >> (1 : Fin 2) >> default = (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> default
+    change (0 : Fin 2) >> (1 : Fin 2) >> default = (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >>
+        default
     rw [zero_cons_default]
   have h2 := rules.overflow_two default R
   rw [← hs_pal] at h2
@@ -1485,15 +1491,18 @@ lemma return_power {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules
   have h5 := rules.overflow_one default (([1, 0, 0] : List (Fin 2)) +> R)
   have h6 := rules.left_zero default (([1] : List (Fin 2)) +> (([1, 0, 0] : List (Fin 2)) +> R))
   rw [default_append_zero] at h6
-  have h123456 := stepStar_trans h1 (stepStar_trans h2 (stepStar_trans h3 (stepStar_trans h4 (stepStar_trans h5 h6))))
-  have hR_eq : (([1] : List (Fin 2)) +> (([1, 0, 0] : List (Fin 2)) +> R)) = right_tape 1 (a + t) := by
+  have h123456 :=
+      stepStar_trans h1 (stepStar_trans h2 (stepStar_trans h3 (stepStar_trans h4 (stepStar_trans h5
+      h6))))
+  have hR_eq : (([1] : List (Fin 2)) +> (([1, 0, 0] : List (Fin 2)) +> R)) = right_tape 1 (a + t) :=
+      by
     unfold R right_tape
     rw [Nat.add_comm a t, pow_add_append_right]
     rfl
   rw [hR_eq] at h123456
   exact h123456
 
-lemma Return_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem Return_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     {x a y b c : Nat} (hret : Return x a y b c) {l : ListBlank (Fin 2)} (hn : Num x l) :
     ∃ l', Num y l' ∧
       (l <{{g}} ((([1, 0] : List (Fin 2)) ^ a) +> default)) [tm]⊢* (l' {{q}}> right_tape b c) := by
@@ -1504,7 +1513,7 @@ lemma Return_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules 
   | power t a =>
     exact ⟨default <+ ([1] : List (Fin 2)), Num.one Num.nil, return_power rules t a hn⟩
 
-lemma Round_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
+theorem Round_spec {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rules tm q h g)
     {x a b y a' b' : Nat} (hrnd : Round x a b y a' b') (ha : 0 < a)
     {l : ListBlank (Fin 2)} (hn : Num x l) :
     ∃ l', Num y l' ∧
@@ -1536,7 +1545,8 @@ theorem nonhalt_from {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rul
       obtain ⟨y, a', b', hrnd, hs'⟩ := closed hs0
       obtain ⟨l', hn', ⟨d, hd_pos, hd⟩⟩ := Round_spec rules hrnd (safe_positive hs0) hn0
       refine ⟨l', y, a', b', hn', hs', m + d, by omega, ?_⟩
-      exact multiStep_trans tm (init []) (l0 {{q}}> right_tape a0 b0) (l' {{q}}> right_tape a' b') m d hm hd
+      exact multiStep_trans tm (init []) (l0 {{q}}> right_tape a0 b0) (l' {{q}}> right_tape a' b') m
+          d hm hd
   intro cfg ⟨n, hn⟩
   rw [Option.isSome_iff_ne_none]
   intro hnone
@@ -1548,15 +1558,179 @@ theorem nonhalt_from {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6} (rules : Rul
   simp only [Option.bind] at hm
   cases hm
 
+
+theorem mk_scan_right {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+    (h_step : ∀ l r, (l {{q}}> (([1] : List (Fin 2)) +> r)) [tm]⊢*
+      ((l <+ ([0] : List (Fin 2))) {{q}}> r))
+    (l r : ListBlank (Fin 2)) (j : Nat) :
+    (l {{q}}> ((([1] : List (Fin 2)) ^ j) +> r)) [tm]⊢*
+    ((l <+ (([0] : List (Fin 2)) ^ j)) {{q}}> r) := by
+  induction j generalizing l r with
+  | zero => exact ⟨0, rfl⟩
+  | succ j ih =>
+    rw [pow_succ_append_right]
+    have h1 := h_step l ((([1] : List (Fin 2)) ^ j) +> r)
+    have h2 := ih (l <+ ([0] : List (Fin 2))) r
+    have hrew : ((l <+ ([0] : List (Fin 2))) <+ (([0] : List (Fin 2)) ^ j)) =
+        (l <+ (([0] : List (Fin 2)) ^ (j + 1))) := by
+      rw [listblank_append_append, list_pow_append_one]
+    rw [hrew] at h2
+    exact stepStar_trans h1 h2
+
+theorem mk_scan_overflow {tm : Machine (Fin 2) (Fin 6)} {g : Fin 6}
+    (h_step : ∀ l r, ((l <+ ([0, 0] : List (Fin 2))) <{{g}} r) [tm]⊢*
+      (l <{{g}} (([1, 0] : List (Fin 2)) +> r)))
+    (l r : ListBlank (Fin 2)) (j : Nat) :
+    ((l <+ (([0, 0] : List (Fin 2)) ^ j)) <{{g}} r) [tm]⊢*
+    (l <{{g}} ((([1, 0] : List (Fin 2)) ^ j) +> r)) := by
+  induction j generalizing l r with
+  | zero => exact ⟨0, rfl⟩
+  | succ j ih =>
+    rw [pow_succ_list, ← listblank_append_append]
+    have h1 := h_step (l <+ (([0, 0] : List (Fin 2)) ^ j)) r
+    have h2 := ih l (([1, 0] : List (Fin 2)) +> r)
+    have hrew : ((([1, 0] : List (Fin 2)) ^ j) +> (([1, 0] : List (Fin 2)) +> r)) =
+        ((([1, 0] : List (Fin 2)) ^ (j + 1)) +> r) := by
+      rw [listblank_append_append, list_pow_append_one]
+    rw [hrew] at h2
+    exact stepStar_trans h1 h2
+
+theorem mk_shift_inc_right {tm : Machine (Fin 2) (Fin 6)} {g : Fin 6}
+    (h_step : ∀ l r, ((l <+ ([0, 0] : List (Fin 2))) {{g}}> (([1, 0] : List (Fin 2)) +> r)) [tm]⊢*
+      (((l <+ ([1, 0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{g}}> r))
+    (j : Nat) (l r : ListBlank (Fin 2)) :
+    ((l <+ ([0, 0] : List (Fin 2))) {{g}}> ((([1, 0] : List (Fin 2)) ^ j) +> r)) [tm]⊢*
+    (((l <+ (([1, 0] : List (Fin 2)) ^ j)) <+ ([0, 0] : List (Fin 2))) {{g}}> r) := by
+  induction j generalizing l r with
+  | zero => exact ⟨0, rfl⟩
+  | succ j ih =>
+    rw [pow_succ_append_right]
+    have h1 := h_step l ((([1, 0] : List (Fin 2)) ^ j) +> r)
+    have h2 := ih (l <+ ([1, 0] : List (Fin 2))) r
+    have hrew : ((l <+ ([1, 0] : List (Fin 2))) <+ (([1, 0] : List (Fin 2)) ^ j)) =
+        (l <+ (([1, 0] : List (Fin 2)) ^ (j + 1))) := by
+      rw [listblank_append_append, list_pow_append_one]
+    rw [hrew] at h2
+    exact stepStar_trans h1 h2
+
+theorem mk_shift_inc_left {tm : Machine (Fin 2) (Fin 6)} {h : Fin 6}
+    (h_step : ∀ l r, ((l <+ ([1, 0] : List (Fin 2))) <{{h}} r) [tm]⊢*
+      (l <{{h}} (([1, 1] : List (Fin 2)) +> r)))
+    (j : Nat) (l r : ListBlank (Fin 2)) :
+    ((l <+ (([1, 0] : List (Fin 2)) ^ j)) <{{h}} r) [tm]⊢*
+    (l <{{h}} ((([1, 1] : List (Fin 2)) ^ j) +> r)) := by
+  induction j generalizing l r with
+  | zero => exact ⟨0, rfl⟩
+  | succ j ih =>
+    rw [pow_succ_list, ← listblank_append_append]
+    have h1 := h_step (l <+ (([1, 0] : List (Fin 2)) ^ j)) r
+    have h2 := ih l (([1, 1] : List (Fin 2)) +> r)
+    have hrew : ((([1, 1] : List (Fin 2)) ^ j) +> (([1, 1] : List (Fin 2)) +> r)) =
+        ((([1, 1] : List (Fin 2)) ^ (j + 1)) +> r) := by
+      rw [listblank_append_append, list_pow_append_one]
+    rw [hrew] at h2
+    exact stepStar_trans h1 h2
+
+theorem mk_scan_right_pair {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
+    (h_step : ∀ l r, (l {{q}}> (([1, 1] : List (Fin 2)) +> r)) [tm]⊢*
+      ((l <+ ([0, 0] : List (Fin 2))) {{q}}> r))
+    (j : Nat) (l r : ListBlank (Fin 2)) :
+    (l {{q}}> ((([1, 1] : List (Fin 2)) ^ j) +> r)) [tm]⊢*
+    ((l <+ (([0, 0] : List (Fin 2)) ^ j)) {{q}}> r) := by
+  induction j generalizing l r with
+  | zero => exact ⟨0, rfl⟩
+  | succ j ih =>
+    rw [pow_succ_append_right]
+    have h1 := h_step l ((([1, 1] : List (Fin 2)) ^ j) +> r)
+    have h2 := ih (l <+ ([0, 0] : List (Fin 2))) r
+    have hrew : ((l <+ ([0, 0] : List (Fin 2))) <+ (([0, 0] : List (Fin 2)) ^ j)) =
+        (l <+ (([0, 0] : List (Fin 2)) ^ (j + 1))) := by
+      rw [listblank_append_append, list_pow_append_one]
+    rw [hrew] at h2
+    exact stepStar_trans h1 h2
+
+theorem mkRules {tm : Machine (Fin 2) (Fin 6)} {q h g : Fin 6}
+    (h_left_zero : ∀ l r, ((l <+ ([0] : List (Fin 2))) <{{h}} r) [tm]⊢*
+      ((l <+ ([1] : List (Fin 2))) {{q}}> r))
+    (h_left_carry : ∀ l r j,
+      (((l <+ ([0] : List (Fin 2))) <+ (([1] : List (Fin 2)) ^ (1 + j))) <{{h}} r) [tm]⊢*
+      (l <{{h}} ((([1] : List (Fin 2)) ^ (2 + j)) +> r)))
+    (h_scan_r1 : ∀ l r, (l {{q}}> (([1] : List (Fin 2)) +> r)) [tm]⊢*
+      ((l <+ ([0] : List (Fin 2))) {{q}}> r))
+    (h_scan_ov1 : ∀ l r, ((l <+ ([0, 0] : List (Fin 2))) <{{g}} r) [tm]⊢*
+      (l <{{g}} (([1, 0] : List (Fin 2)) +> r)))
+    (h_shift_r1 : ∀ l r,
+      ((l <+ ([0, 0] : List (Fin 2))) {{g}}> (([1, 0] : List (Fin 2)) +> r)) [tm]⊢*
+      (((l <+ ([1, 0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{g}}> r))
+    (h_shift_l1 : ∀ l r, ((l <+ ([1, 0] : List (Fin 2))) <{{h}} r) [tm]⊢*
+      (l <{{h}} (([1, 1] : List (Fin 2)) +> r)))
+    (h_scan_pair1 : ∀ l r, (l {{q}}> (([1, 1] : List (Fin 2)) +> r)) [tm]⊢*
+      ((l <+ ([0, 0] : List (Fin 2))) {{q}}> r))
+    (h_inc1 : ∀ l r,
+      (l {{q}}> (([1] : List (Fin 2)) +> (([1, 0] : List (Fin 2)) +> r))) [tm]⊢*
+      (((l <+ ([0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{g}}> r))
+    (h_inc3 : ∀ l r,
+      (((l <+ ([1, 0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{g}}>
+        (([0] : List (Fin 2)) +> r)) [tm]⊢*
+      (l <{{h}} (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)))
+    (h_inc7 : ∀ l r,
+      (l {{q}}> (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)) [tm]⊢*
+      (l <{{g}} (([1, 0, 0, 1, 0] : List (Fin 2)) +> r)))
+    (h_right_overflow : ∀ l r,
+      (l {{q}}> (([1, 1, 0, 0] : List (Fin 2)) +> r)) [tm]⊢⁺
+      (l <{{g}} (([1, 0, 1, 0] : List (Fin 2)) +> r)))
+    (h_overflow_one : ∀ l r,
+      ((l <+ ([1] : List (Fin 2))) <{{g}} r) [tm]⊢*
+      (l <{{h}} (([1] : List (Fin 2)) +> r)))
+    (h_overflow_two : ∀ l r,
+      ((l <+ ([0, 1, 0] : List (Fin 2))) <{{g}} r) [tm]⊢*
+      (l <{{h}} (([0, 0, 0] : List (Fin 2)) +> r)))
+    (h_overflow_resume : ∀ l r,
+      (l {{q}}> (([0, 0, 0] : List (Fin 2)) +> r)) [tm]⊢*
+      (l <{{g}} (([1, 0, 0] : List (Fin 2)) +> r))) :
+    Rules tm q h g where
+  left_zero := h_left_zero
+  left_carry := h_left_carry
+  scan_right := mk_scan_right h_scan_r1
+  right_inc := by
+    intro l r n
+    have h2n : 2 + n = (n + 1) + 1 := by omega
+    rw [h2n, pow_succ_append_right]
+    have s1 := h_inc1 l ((([1, 0] : List (Fin 2)) ^ (n + 1)) +> (([0] : List (Fin 2)) +> r))
+    have s2 := mk_shift_inc_right h_shift_r1 (n + 1)
+      (l <+ ([0] : List (Fin 2))) (([0] : List (Fin 2)) +> r)
+    rw [pow_succ_list, ← listblank_append_append] at s2
+    have s3 := h_inc3 ((l <+ ([0] : List (Fin 2))) <+ (([1, 0] : List (Fin 2)) ^ n)) r
+    have s4 := mk_shift_inc_left h_shift_l1 n
+      (l <+ ([0] : List (Fin 2))) (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)
+    have s5 :=
+        h_left_zero l ((([1, 1] : List (Fin 2)) ^ n) +> (([0, 0, 0, 1, 0] : List (Fin 2)) +> r))
+    have s6 := mk_scan_right_pair h_scan_pair1 n
+      (l <+ ([1] : List (Fin 2))) (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)
+    have s7 := h_inc7 ((l <+ ([1] : List (Fin 2))) <+ (([0, 0] : List (Fin 2)) ^ n)) r
+    have s8 := mk_scan_overflow h_scan_ov1
+      (l <+ ([1] : List (Fin 2))) (([1, 0, 0, 1, 0] : List (Fin 2)) +> r) n
+    have s9 :=
+        h_overflow_one l ((([1, 0] : List (Fin 2)) ^ n) +> (([1, 0, 0, 1, 0] : List (Fin 2)) +> r))
+    have hrew : ((([1, 0] : List (Fin 2)) ^ n) +> (([1, 0, 0, 1, 0] : List (Fin 2)) +> r)) =
+        ((([1, 0] : List (Fin 2)) ^ (1 + n)) +> (([0, 1, 0] : List (Fin 2)) +> r)) := by
+      have h1n : 1 + n = n + 1 := by omega
+      have hsplit : (([1, 0, 0, 1, 0] : List (Fin 2)) +> r) =
+        (([1, 0] : List (Fin 2)) +> (([0, 1, 0] : List (Fin 2)) +> r)) := rfl
+      rw [hsplit, listblank_append_append, list_pow_append_one, h1n]
+    rw [hrew] at s8 s9
+    exact stepStar_trans s1 (stepStar_trans s2 (stepStar_trans s3
+      (stepStar_trans s4 (stepStar_trans s5 (stepStar_trans s6
+        (stepStar_trans s7 (stepStar_trans s8 s9)))))))
+  right_overflow := h_right_overflow
+  scan_overflow := mk_scan_overflow h_scan_ov1
+  overflow_one := h_overflow_one
+  overflow_two := h_overflow_two
+  overflow_resume := h_overflow_resume
+
 end PairCounter
 
--- ============================================================================
--- Section 8: Mirror Bridge & Specific Rules for Holdout #380 (`TM11`)
--- Target: `1RB1LD_1LC1RA_0LD0LC_0RE1RB_1RD0RF_0RB---`
--- Coq TM: `1LB1RD_1RC1LA_0RD0RC_0LE1LB_1LD0LF_0LB---` (left/right mirror)
--- ============================================================================
-
-def tm_coq : Machine (Fin 2) (Fin 6)
+private def tm_coq : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.left)
   | 0, 1 => some (some 3, Stmt.write 1 Dir.right)
   | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
@@ -1570,12 +1744,12 @@ def tm_coq : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 1, Stmt.write 0 Dir.left)
   | 5, 1 => none
 
-def mirrorTape (T : Tape (Fin 2)) : Tape (Fin 2) := ⟨T.head, T.right, T.left⟩
+private def mirrorTape (T : Tape (Fin 2)) : Tape (Fin 2) := ⟨T.head, T.right, T.left⟩
 
-def mirrorCfg (c : Cfg (Fin 2) (Fin 6)) : Cfg (Fin 2) (Fin 6) :=
+private def mirrorCfg (c : Cfg (Fin 2) (Fin 6)) : Cfg (Fin 2) (Fin 6) :=
   ⟨c.q, mirrorTape c.tape⟩
 
-lemma step_mirror (c : Cfg (Fin 2) (Fin 6)) :
+private theorem step_mirror (c : Cfg (Fin 2) (Fin 6)) :
     step tm_coq (mirrorCfg c) = (step target_tm c).map mirrorCfg := by
   rcases c with ⟨_ | q, ⟨hd, l, r⟩⟩
   · rfl
@@ -1583,7 +1757,7 @@ lemma step_mirror (c : Cfg (Fin 2) (Fin 6)) :
     | 0, 0 | 0, 1 | 1, 0 | 1, 1 | 2, 0 | 2, 1
     | 3, 0 | 3, 1 | 4, 0 | 4, 1 | 5, 0 | 5, 1 => rfl
 
-lemma multiStep_mirror (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
+private theorem multiStep_mirror (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     multiStep tm_coq (mirrorCfg c) n = (multiStep target_tm c n).map mirrorCfg := by
   induction n generalizing c with
   | zero => rfl
@@ -1595,7 +1769,7 @@ lemma multiStep_mirror (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     | none => rfl
     | some c' => exact ih c'
 
-lemma nonhalt_mirror (h : IsDoesNotHalt tm_coq) : IsDoesNotHalt target_tm := by
+private theorem nonhalt_mirror (h : IsDoesNotHalt tm_coq) : IsDoesNotHalt target_tm := by
   intro cfg ⟨n, hn⟩
   have hinit_mir : mirrorCfg (init ([] : List (Fin 2))) = init ([] : List (Fin 2)) := rfl
   have hm := multiStep_mirror (init ([] : List (Fin 2))) n
@@ -1606,18 +1780,22 @@ lemma nonhalt_mirror (h : IsDoesNotHalt tm_coq) : IsDoesNotHalt target_tm := by
   | none => rw [hq] at hstep; cases hstep
   | some c' => rfl
 
-lemma shift_B_left (j : Nat) (l r : ListBlank (Fin 2)) :
+private theorem shift_B_left (j : Nat) (l r : ListBlank (Fin 2)) :
     (((l <+ ([1] : List (Fin 2))) <+ (([1] : List (Fin 2)) ^ j)) <{{B}} r) [tm_coq]⊢*
     ((l <+ ([1] : List (Fin 2))) <{{B}} ((([1] : List (Fin 2)) ^ j) +> r)) := by
   induction j generalizing l r with
-  | zero => try exact ⟨0, rfl⟩
+  | zero => exact ⟨0, rfl⟩
   | succ j ih =>
     rw [← list_pow_append_one, ← listblank_append_append]
-    have h1 : ((((l <+ ([1] : List (Fin 2))) <+ ([1] : List (Fin 2))) <+ (([1] : List (Fin 2)) ^ j)) <{{B}} r) [tm_coq]⊢*
-        (((l <+ ([1] : List (Fin 2))) <+ ([1] : List (Fin 2))) <{{B}} ((([1] : List (Fin 2)) ^ j) +> r)) :=
+    have h1 : ((((l <+ ([1] : List (Fin 2))) <+ ([1] : List (Fin 2))) <+
+        (([1] : List (Fin 2)) ^ j)) <{{B}} r) [tm_coq]⊢*
+        (((l <+ ([1] : List (Fin 2))) <+ ([1] : List (Fin 2))) <{{B}}
+          ((([1] : List (Fin 2)) ^ j) +> r)) :=
       ih (l <+ ([1] : List (Fin 2))) r
-    have h2 : (((l <+ ([1] : List (Fin 2))) <+ ([1] : List (Fin 2))) <{{B}} ((([1] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
-        ((l <+ ([1] : List (Fin 2))) <{{B}} (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r))) := by execute
+    have h2 : (((l <+ ([1] : List (Fin 2))) <+ ([1] : List (Fin 2))) <{{B}}
+        ((([1] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
+        ((l <+ ([1] : List (Fin 2))) <{{B}}
+          (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r))) := by execute
     have hrew : (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r)) =
         ((([1] : List (Fin 2)) ^ (j + 1)) +> r) := by
       rw [← pow_succ_append_right]
@@ -1625,162 +1803,53 @@ lemma shift_B_left (j : Nat) (l r : ListBlank (Fin 2)) :
     rw [list_pow_append_one]
     exact stepStar_trans h1 h2
 
-lemma rule_left_carry (l r : ListBlank (Fin 2)) (j : Nat) :
+private theorem rule_left_carry (l r : ListBlank (Fin 2)) (j : Nat) :
     (((l <+ ([0] : List (Fin 2))) <+ (([1] : List (Fin 2)) ^ (1 + j))) <{{B}} r) [tm_coq]⊢*
     (l <{{B}} ((([1] : List (Fin 2)) ^ (2 + j)) +> r)) := by
   have hj : 1 + j = j + 1 := by omega
   rw [hj, ← list_pow_append_one, ← listblank_append_append]
   have h1 := shift_B_left j (l <+ ([0] : List (Fin 2))) r
-  have h2 : (((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2))) <{{B}} ((([1] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
-      (l <{{B}} (([1] : List (Fin 2)) +> (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r)))) := by execute
-  have hrew : (([1] : List (Fin 2)) +> (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r))) =
+  have h2 : (((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2))) <{{B}}
+      ((([1] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
+      (l <{{B}} (([1] : List (Fin 2)) +>
+        (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r)))) := by execute
+  have hrew : (([1] : List (Fin 2)) +> (([1] : List (Fin 2)) +>
+      ((([1] : List (Fin 2)) ^ j) +> r))) =
       ((([1] : List (Fin 2)) ^ (2 + j)) +> r) := by
     have : 2 + j = (j + 1) + 1 := by omega
     rw [this, pow_succ_append_right, pow_succ_append_right]
   rw [hrew] at h2
   exact stepStar_trans h1 h2
 
-lemma rule_scan_right (l r : ListBlank (Fin 2)) (j : Nat) :
-    (l {{C}}> ((([1] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
-    ((l <+ (([0] : List (Fin 2)) ^ j)) {{C}}> r) := by
-  induction j generalizing l r with
-  | zero => try exact ⟨0, rfl⟩
-  | succ j ih =>
-    rw [pow_succ_append_right]
-    have h1 : (l {{C}}> (([1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ j) +> r))) [tm_coq]⊢*
-        ((l <+ ([0] : List (Fin 2))) {{C}}> ((([1] : List (Fin 2)) ^ j) +> r)) := by execute
-    have h2 := ih (l <+ ([0] : List (Fin 2))) r
-    have hrew : ((l <+ ([0] : List (Fin 2))) <+ (([0] : List (Fin 2)) ^ j)) =
-        (l <+ (([0] : List (Fin 2)) ^ (j + 1))) := by
-      rw [listblank_append_append, list_pow_append_one]
-    rw [hrew] at h2
-    exact stepStar_trans h1 h2
+private theorem tm380_rules : PairCounter.Rules tm_coq C B D :=
+  PairCounter.mkRules
+    (fun _ _ => by execute)
+    rule_left_carry
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
+    (fun _ _ => by execute)
 
-lemma rule_scan_overflow (l r : ListBlank (Fin 2)) (j : Nat) :
-    ((l <+ (([0, 0] : List (Fin 2)) ^ j)) <{{D}} r) [tm_coq]⊢*
-    (l <{{D}} ((([1, 0] : List (Fin 2)) ^ j) +> r)) := by
-  induction j generalizing l r with
-  | zero => try exact ⟨0, rfl⟩
-  | succ j ih =>
-    rw [pow_succ_list, ← listblank_append_append]
-    have h1 : (((l <+ (([0, 0] : List (Fin 2)) ^ j)) <+ ([0, 0] : List (Fin 2))) <{{D}} r) [tm_coq]⊢*
-        ((l <+ (([0, 0] : List (Fin 2)) ^ j)) <{{D}} (([1, 0] : List (Fin 2)) +> r)) := by execute
-    have h2 := ih l (([1, 0] : List (Fin 2)) +> r)
-    have hrew : ((([1, 0] : List (Fin 2)) ^ j) +> (([1, 0] : List (Fin 2)) +> r)) =
-        ((([1, 0] : List (Fin 2)) ^ (j + 1)) +> r) := by
-      rw [listblank_append_append, list_pow_append_one]
-    rw [hrew] at h2
-    exact stepStar_trans h1 h2
-
-lemma shift_inc_right_380 (j : Nat) (l r : ListBlank (Fin 2)) :
-    ((l <+ ([0, 0] : List (Fin 2))) {{D}}> ((([1, 0] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
-    (((l <+ (([1, 0] : List (Fin 2)) ^ j)) <+ ([0, 0] : List (Fin 2))) {{D}}> r) := by
-  induction j generalizing l r with
-  | zero => try exact ⟨0, rfl⟩
-  | succ j ih =>
-    rw [pow_succ_append_right]
-    have h1 : ((l <+ ([0, 0] : List (Fin 2))) {{D}}> (([1, 0] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ j) +> r))) [tm_coq]⊢*
-        (((l <+ ([1, 0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{D}}> ((([1, 0] : List (Fin 2)) ^ j) +> r)) := by execute
-    have h2 := ih (l <+ ([1, 0] : List (Fin 2))) r
-    have hrew : ((l <+ ([1, 0] : List (Fin 2))) <+ (([1, 0] : List (Fin 2)) ^ j)) =
-        (l <+ (([1, 0] : List (Fin 2)) ^ (j + 1))) := by
-      rw [listblank_append_append, list_pow_append_one]
-    rw [hrew] at h2
-    exact stepStar_trans h1 h2
-
-lemma shift_inc_left_380 (j : Nat) (l r : ListBlank (Fin 2)) :
-    ((l <+ (([1, 0] : List (Fin 2)) ^ j)) <{{B}} r) [tm_coq]⊢*
-    (l <{{B}} ((([1, 1] : List (Fin 2)) ^ j) +> r)) := by
-  induction j generalizing l r with
-  | zero => try exact ⟨0, rfl⟩
-  | succ j ih =>
-    rw [pow_succ_list, ← listblank_append_append]
-    have h1 : (((l <+ (([1, 0] : List (Fin 2)) ^ j)) <+ ([1, 0] : List (Fin 2))) <{{B}} r) [tm_coq]⊢*
-        ((l <+ (([1, 0] : List (Fin 2)) ^ j)) <{{B}} (([1, 1] : List (Fin 2)) +> r)) := by execute
-    have h2 := ih l (([1, 1] : List (Fin 2)) +> r)
-    have hrew : ((([1, 1] : List (Fin 2)) ^ j) +> (([1, 1] : List (Fin 2)) +> r)) =
-        ((([1, 1] : List (Fin 2)) ^ (j + 1)) +> r) := by
-      rw [listblank_append_append, list_pow_append_one]
-    rw [hrew] at h2
-    exact stepStar_trans h1 h2
-
-lemma scan_right_pair_380 (j : Nat) (l r : ListBlank (Fin 2)) :
-    (l {{C}}> ((([1, 1] : List (Fin 2)) ^ j) +> r)) [tm_coq]⊢*
-    ((l <+ (([0, 0] : List (Fin 2)) ^ j)) {{C}}> r) := by
-  induction j generalizing l r with
-  | zero => try exact ⟨0, rfl⟩
-  | succ j ih =>
-    rw [pow_succ_append_right]
-    have h1 : (l {{C}}> (([1, 1] : List (Fin 2)) +> ((([1, 1] : List (Fin 2)) ^ j) +> r))) [tm_coq]⊢*
-        ((l <+ ([0, 0] : List (Fin 2))) {{C}}> ((([1, 1] : List (Fin 2)) ^ j) +> r)) := by execute
-    have h2 := ih (l <+ ([0, 0] : List (Fin 2))) r
-    have hrew : ((l <+ ([0, 0] : List (Fin 2))) <+ (([0, 0] : List (Fin 2)) ^ j)) =
-        (l <+ (([0, 0] : List (Fin 2)) ^ (j + 1))) := by
-      rw [listblank_append_append, list_pow_append_one]
-    rw [hrew] at h2
-    exact stepStar_trans h1 h2
-
-lemma rule_right_inc (l r : ListBlank (Fin 2)) (n : Nat) :
-    (l {{C}}> (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (2 + n)) +> (([0] : List (Fin 2)) +> r)))) [tm_coq]⊢*
-    (l <{{B}} (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (1 + n)) +> (([0, 1, 0] : List (Fin 2)) +> r)))) := by
-  have h2n : 2 + n = (n + 1) + 1 := by omega
-  rw [h2n, pow_succ_append_right]
-  have h1 : (l {{C}}> (([1] : List (Fin 2)) +> (([1, 0] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ (n + 1)) +> (([0] : List (Fin 2)) +> r))))) [tm_coq]⊢*
-      (((l <+ ([0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{D}}> ((([1, 0] : List (Fin 2)) ^ (n + 1)) +> (([0] : List (Fin 2)) +> r))) := by execute
-  have h2 := shift_inc_right_380 (n + 1) (l <+ ([0] : List (Fin 2))) (([0] : List (Fin 2)) +> r)
-  rw [pow_succ_list, ← listblank_append_append] at h2
-  have h3 : (((((l <+ ([0] : List (Fin 2))) <+ (([1, 0] : List (Fin 2)) ^ n)) <+ ([1, 0] : List (Fin 2))) <+ ([0, 0] : List (Fin 2))) {{D}}> (([0] : List (Fin 2)) +> r)) [tm_coq]⊢*
-      (((l <+ ([0] : List (Fin 2))) <+ (([1, 0] : List (Fin 2)) ^ n)) <{{B}} (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)) := by execute
-  have h4 := shift_inc_left_380 n (l <+ ([0] : List (Fin 2))) (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)
-  have h5 : ((l <+ ([0] : List (Fin 2))) <{{B}} ((([1, 1] : List (Fin 2)) ^ n) +> (([0, 0, 0, 1, 0] : List (Fin 2)) +> r))) [tm_coq]⊢*
-      ((l <+ ([1] : List (Fin 2))) {{C}}> ((([1, 1] : List (Fin 2)) ^ n) +> (([0, 0, 0, 1, 0] : List (Fin 2)) +> r))) := by execute
-  have h6 := scan_right_pair_380 n (l <+ ([1] : List (Fin 2))) (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)
-  have h7 : (((l <+ ([1] : List (Fin 2))) <+ (([0, 0] : List (Fin 2)) ^ n)) {{C}}> (([0, 0, 0, 1, 0] : List (Fin 2)) +> r)) [tm_coq]⊢*
-      (((l <+ ([1] : List (Fin 2))) <+ (([0, 0] : List (Fin 2)) ^ n)) <{{D}} (([1, 0, 0, 1, 0] : List (Fin 2)) +> r)) := by execute
-  have h8 := rule_scan_overflow (l <+ ([1] : List (Fin 2))) (([1, 0, 0, 1, 0] : List (Fin 2)) +> r) n
-  have h9 : ((l <+ ([1] : List (Fin 2))) <{{D}} ((([1, 0] : List (Fin 2)) ^ n) +> (([1, 0, 0, 1, 0] : List (Fin 2)) +> r))) [tm_coq]⊢*
-      (l <{{B}} (([1] : List (Fin 2)) +> ((([1, 0] : List (Fin 2)) ^ n) +> (([1, 0, 0, 1, 0] : List (Fin 2)) +> r)))) := by execute
-  have hrew : ((([1, 0] : List (Fin 2)) ^ n) +> (([1, 0, 0, 1, 0] : List (Fin 2)) +> r)) =
-      ((([1, 0] : List (Fin 2)) ^ (1 + n)) +> (([0, 1, 0] : List (Fin 2)) +> r)) := by
-    have h1n : 1 + n = n + 1 := by omega
-    have hsplit : (([1, 0, 0, 1, 0] : List (Fin 2)) +> r) = (([1, 0] : List (Fin 2)) +> (([0, 1, 0] : List (Fin 2)) +> r)) := rfl
-    rw [hsplit, listblank_append_append, list_pow_append_one, h1n]
-  rw [hrew] at h8 h9
-  exact stepStar_trans h1 (stepStar_trans h2 (stepStar_trans h3 (stepStar_trans h4 (stepStar_trans h5 (stepStar_trans h6 (stepStar_trans h7 (stepStar_trans h8 h9)))))))
-
-lemma tm380_rules : PairCounter.Rules tm_coq C B D where
-  left_zero := fun l r => by execute
-  left_carry := rule_left_carry
-  scan_right := rule_scan_right
-  right_inc := rule_right_inc
-  right_overflow := fun l r => by execute
-  scan_overflow := rule_scan_overflow
-  overflow_one := fun l r => by execute
-  overflow_two := fun l r => by execute
-  overflow_resume := fun l r => by execute
-
-lemma tm380_init :
+private theorem tm380_init :
     (init []) [tm_coq]⊢* ((default <+ ([1] : List (Fin 2))) {{C}}> PairCounter.right_tape 1 1) := by
   unfold PairCounter.right_tape
   execute
 
 end Solution
 
-
-
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
-set_option linter.deprecated false
-set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
-set_option quotPrecheck false
-set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
-theorem is_does_not_halt : IsNotHalt target_tm := by
+private theorem is_does_not_halt : IsNotHalt target_tm := by
   apply nonhalt_mirror
-  refine PairCounter.nonhalt_from tm380_rules tm380_init ?_ (PairCounter.Num.one PairCounter.Num.nil)
+  refine PairCounter.nonhalt_from tm380_rules tm380_init ?_ (PairCounter.Num.one
+      PairCounter.Num.nil)
   exact PairCounter.Safe.reset (by decide) (by decide)
 
 theorem is_not_halt : IsNotHalt target := is_does_not_halt

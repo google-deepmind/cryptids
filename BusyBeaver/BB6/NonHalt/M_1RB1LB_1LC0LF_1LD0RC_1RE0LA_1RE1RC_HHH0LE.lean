@@ -23,12 +23,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -55,26 +51,25 @@ abbrev F : Fin 6 := 5
 -- Section 6: Proof of holdout_0203_nonhalt
 -- ============================================================================
 
-set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 8000000
 
-@[simp] lemma zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma tape_mk1_nil : Tape.mk₁ ([] : List (Fin 2)) = ⟨0, default, default⟩ := rfl
-@[simp] lemma zPz (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma zPsl (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
-@[simp] lemma zCal (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma zLan (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma zLac (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zZcd : (0 : Fin 2) >> default = default := by
+@[simp] theorem tape_mk1_nil : Tape.mk₁ ([] : List (Fin 2)) = ⟨0, default, default⟩ := rfl
+@[simp] theorem zPz (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem zPsl (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
+@[simp] theorem zCal (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+@[simp] theorem zLan (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem zLac (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
+@[simp] theorem zZcd : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma zDt : (default : ListBlank (Fin 2)).tail = default := rfl
-@[simp] lemma zAnl (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma zNal (l : List (Fin 2)) : [] ++ l = l := rfl
+@[simp] theorem zDh : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem zDt : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem zAnl (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem zNal (l : List (Fin 2)) : [] ++ l = l := rfl
 
 omit [Inhabited Γ] in
 @[simp]
@@ -87,7 +82,7 @@ omit [Inhabited Γ] in
 theorem zLpc (l : List Γ) (n m : Nat) : l^n ++ l^m = l^m ++ l^n := by
   rw [<- zLpa, add_comm, zLpa]
 
-lemma zLaa (s : ListBlank Γ) (l₁ l₂ : List Γ) :
+theorem zLaa (s : ListBlank Γ) (l₁ l₂ : List Γ) :
     (s <+ l₁) <+ l₂ = s <+ (l₂ ++ l₁) := by
   unfold ListBlank.append
   split
@@ -98,22 +93,22 @@ lemma zLaa (s : ListBlank Γ) (l₁ l₂ : List Γ) :
     refine (congr_arg _ ?_).symm
     exact ListBlank.append_assoc l₁ _ s
 
-lemma zLp1 (u : List (Fin 2)) (k : Nat) :
+theorem zLp1 (u : List (Fin 2)) (k : Nat) :
     u^k ++ u = u^(k + 1) := by
   have h := zLpc u k 1
   dsimp [HPow.hPow] at h ⊢
   rw [List.append_nil] at h
   exact h
 
-lemma zSm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂ := by simp [h]
 
-lemma zSp2 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSp2 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, zSm tm c₁ c₂ h⟩
 
-lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -122,40 +117,40 @@ lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
 
-lemma zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [zMa, h₁]; simp [h₂]
 
-lemma zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma zMst {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMst {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, zMt tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma zPsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zPsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma zSsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSsp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   zPsp (zSp2 tm c₁ c₂ h₁) h₂
 
-lemma zSpp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zSpp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n), zMt tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma zPpp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zPpp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   zPsp h₁ (zPs h₂)
@@ -173,7 +168,7 @@ macro "execute" : tactic =>
 def NonHaltFrom (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∀ n : Nat, (multiStep target_tm c n).isSome
 
-lemma zIm_some {c : Cfg (Fin 2) (Fin 6)} {j d : Nat}
+theorem zIm_some {c : Cfg (Fin 2) (Fin 6)} {j d : Nat}
     (h : (multiStep target_tm c (j + d)).isSome) :
     (multiStep target_tm c j).isSome := by
   rw [zMa] at h
@@ -181,7 +176,7 @@ lemma zIm_some {c : Cfg (Fin 2) (Fin 6)} {j d : Nat}
   | none => rw [h_j] at h; contradiction
   | some _ => rfl
 
-lemma multistep_nonhalt {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem multistep_nonhalt {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [target_tm]⊢* c₂) (h₂ : NonHaltFrom c₂) :
     NonHaltFrom c₁ := by
   rcases h₁ with ⟨k, hk⟩
@@ -222,13 +217,13 @@ def segRR (v w' : List (Fin 2)) : Prop :=
 def Result (h : Head0) (l : ListBlank (Fin 2)) (P : ListBlank (Fin 2) → Prop) : Prop :=
   (∃ l', sideLR h l l' ∧ P l') ∨ (∀ r, NonHaltFrom (cfgL h l r))
 
-lemma result_mono {h : Head0} {l : ListBlank (Fin 2)} {P Q : ListBlank (Fin 2) → Prop}
+theorem result_mono {h : Head0} {l : ListBlank (Fin 2)} {P Q : ListBlank (Fin 2) → Prop}
     (hr : Result h l P) (hPQ : ∀ l', P l' → Q l') : Result h l Q := by
   rcases hr with ⟨l', hstep, hP⟩ | hnh
   · exact Or.inl ⟨l', hstep, hPQ l' hP⟩
   · exact Or.inr hnh
 
-lemma result_return {h : Head0} {w w' : List (Fin 2)} {l : ListBlank (Fin 2)}
+theorem result_return {h : Head0} {w w' : List (Fin 2)} {l : ListBlank (Fin 2)}
     {P : ListBlank (Fin 2) → Prop}
     (hseg : segLR h w w') (hP : P (w' +> l)) : Result h (w +> l) P :=
   Or.inl ⟨w' +> l, fun r => hseg l r, hP⟩
@@ -236,7 +231,7 @@ lemma result_return {h : Head0} {w w' : List (Fin 2)} {l : ListBlank (Fin 2)}
 def Calls (h h' : Head0) (w w' : List (Fin 2)) : Prop :=
   ∃ v, segLL h h' w v ∧ segRR v w'
 
-lemma result_call {h h' : Head0} {w w' : List (Fin 2)} {l : ListBlank (Fin 2)}
+theorem result_call {h h' : Head0} {w w' : List (Fin 2)} {l : ListBlank (Fin 2)}
     {P Q : ListBlank (Fin 2) → Prop}
     (hc : Calls h h' w w') (hr : Result h' l P)
     (hPQ : ∀ l', P l' → Q (w' +> l')) : Result h (w +> l) Q := by
@@ -247,7 +242,7 @@ lemma result_call {h h' : Head0} {w w' : List (Fin 2)} {l : ListBlank (Fin 2)}
   · refine Or.inr (fun r => ?_)
     exact multistep_nonhalt (hLL l r) (hnh (v +> r))
 
-lemma calls_app {h1 h2 h3 : Head0} {w1 w2 w3 w4 : List (Fin 2)}
+theorem calls_app {h1 h2 h3 : Head0} {w1 w2 w3 w4 : List (Fin 2)}
     (hc1 : Calls h1 h2 w1 w2) (hc2 : Calls h2 h3 w3 w4) :
     Calls h1 h3 (w1 ++ w3) (w2 ++ w4) := by
   rcases hc1 with ⟨v1, h1, h2⟩
@@ -265,34 +260,34 @@ lemma calls_app {h1 h2 h3 : Head0} {w1 w2 w3 w4 : List (Fin 2)}
     exact zMst step1 step2
 
 -- Base return segments
-lemma f_zero : segLR hf [0] [0, 0] := by
+theorem f_zero : segLR hf [0] [0, 0] := by
   intro l r; unfold cfgL cfgR hf; simp only [zCal, zLac, zLan]; execute
 
-lemma h_zero : segLR hh [0, 0, 0] [1, 1, 0, 1, 1] := by
+theorem h_zero : segLR hh [0, 0, 0] [1, 1, 0, 1, 1] := by
   intro l r; unfold cfgL cfgR hh; simp only [zCal, zLac, zLan]; execute
 
-lemma h_one : segLR hh [0, 1] [1, 1, 0, 0] := by
+theorem h_one : segLR hh [0, 1] [1, 1, 0, 0] := by
   intro l r; unfold cfgL cfgR hh; simp only [zCal, zLac, zLan]; execute
 
 -- Base and inductive call segments
-lemma t_zeros_step : Calls ht ht [0] [0] := by
+theorem t_zeros_step : Calls ht ht [0] [0] := by
   refine ⟨[1], fun l r => ?_, fun l r => ?_⟩
   · refine zPs ?_; unfold cfgL ht; simp only [zCal, zLac, zLan]; execute
   · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
 
-lemma t_zeros (n : Nat) : Calls ht ht (([0] : List (Fin 2))^n) (([0] : List (Fin 2))^n) := by
+theorem t_zeros (n : Nat) : Calls ht ht (([0] : List (Fin 2))^n) (([0] : List (Fin 2))^n) := by
   induction n with
   | zero =>
     refine ⟨[], fun l r => ⟨0, by simp⟩, fun l r => ⟨0, by simp⟩⟩
   | succ n ih =>
     simpa only [zPsl] using calls_app t_zeros_step ih
 
-lemma t_four_step : Calls ht ht [1, 1, 1, 1] [1, 1, 1, 1] := by
+theorem t_four_step : Calls ht ht [1, 1, 1, 1] [1, 1, 1, 1] := by
   refine ⟨[1, 0, 1, 0], fun l r => ?_, fun l r => ?_⟩
   · refine zPs ?_; unfold cfgL ht; simp only [zCal, zLac, zLan]; execute
   · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
 
-lemma t_four_pow (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(q * 4)) (([1] : List (Fin 2))^(q * 4)) := by
+theorem t_four_pow (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(q * 4)) (([1] : List (Fin 2))^(q * 4)) := by
   induction q with
   | zero =>
     refine ⟨[], fun l r => ⟨0, by simp⟩, fun l r => ⟨0, by simp⟩⟩
@@ -303,18 +298,18 @@ lemma t_four_pow (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(q * 4)) (([1] : 
     rw [h_eq]
     exact calls_app ih t_four_step
 
-lemma t_four (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(4 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
+theorem t_four (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(4 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
   have h_eq : ([1] : List (Fin 2))^(4 + q * 4) = [1, 1, 1, 1] ++ ([1] : List (Fin 2))^(q * 4) := by
     rw [zLpa]; rfl
   rw [h_eq]
   exact calls_app t_four_step (t_four_pow q)
 
-lemma t_one_base : Calls ht hf [1] [1, 1, 1, 1] := by
+theorem t_one_base : Calls ht hf [1] [1, 1, 1, 1] := by
   refine ⟨[1, 0, 1, 0], fun l r => ?_, ?_⟩
   · refine zPs ?_; unfold cfgL ht hf; simp only [zCal, zLac, zLan]; execute
   · intro l r; unfold cfgR; refine zPs ?_; simp only [zCal, zLac, zLan]; execute
 
-lemma t_one (q : Nat) : Calls ht hf (([1] : List (Fin 2))^(1 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
+theorem t_one (q : Nat) : Calls ht hf (([1] : List (Fin 2))^(1 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
   have h1 : ([1] : List (Fin 2))^(1 + q * 4) = ([1] : List (Fin 2))^(q * 4) ++ [1] := by
     have h_add : 1 + q * 4 = q * 4 + 1 := by omega
     rw [h_add, zLpa]; rfl
@@ -324,12 +319,12 @@ lemma t_one (q : Nat) : Calls ht hf (([1] : List (Fin 2))^(1 + q * 4)) (([1] : L
   rw [h1, h2]
   exact calls_app (t_four_pow q) t_one_base
 
-lemma t_two_base : Calls ht hh [1, 1] [1, 1, 1, 1] := by
+theorem t_two_base : Calls ht hh [1, 1] [1, 1, 1, 1] := by
   refine ⟨[1, 0, 1, 0], fun l r => ?_, ?_⟩
   · refine zPs ?_; unfold cfgL ht hh; simp only [zCal, zLac, zLan]; execute
   · intro l r; unfold cfgR; refine zPs ?_; simp only [zCal, zLac, zLan]; execute
 
-lemma t_two (q : Nat) : Calls ht hh (([1] : List (Fin 2))^(2 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
+theorem t_two (q : Nat) : Calls ht hh (([1] : List (Fin 2))^(2 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
   have h1 : ([1] : List (Fin 2))^(2 + q * 4) = ([1] : List (Fin 2))^(q * 4) ++ [1, 1] := by
     have h_add : 2 + q * 4 = q * 4 + 2 := by omega
     rw [h_add, zLpa]; rfl
@@ -339,23 +334,23 @@ lemma t_two (q : Nat) : Calls ht hh (([1] : List (Fin 2))^(2 + q * 4)) (([1] : L
   rw [h1, h2]
   exact calls_app (t_four_pow q) t_two_base
 
-lemma h_two_four_base : Calls hh ht [0, 0, 1, 1, 1, 1] [1, 1, 0, 0] := by
+theorem h_two_four_base : Calls hh ht [0, 0, 1, 1, 1, 1] [1, 1, 0, 0] := by
   refine ⟨[1, 1, 1, 0], fun l r => ?_, fun l r => ?_⟩
   · refine zPs ?_; unfold cfgL hh ht; simp only [zCal, zLac, zLan]; execute
   · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
 
-lemma h_two_four (q : Nat) : Calls hh ht ([0, 0] ++ ([1] : List (Fin 2))^(4 + q * 4)) ([1, 1, 0, 0] ++ ([1] : List (Fin 2))^(q * 4)) := by
+theorem h_two_four (q : Nat) : Calls hh ht ([0, 0] ++ ([1] : List (Fin 2))^(4 + q * 4)) ([1, 1, 0, 0] ++ ([1] : List (Fin 2))^(q * 4)) := by
   have h1 : ([0, 0] ++ ([1] : List (Fin 2))^(4 + q * 4)) = [0, 0, 1, 1, 1, 1] ++ ([1] : List (Fin 2))^(q * 4) := by
     rw [zLpa]; rfl
   rw [h1]
   exact calls_app h_two_four_base (t_four_pow q)
 
-lemma h_two_one_base : Calls hh hf [0, 0, 1] [1, 1, 0, 0] := by
+theorem h_two_one_base : Calls hh hf [0, 0, 1] [1, 1, 0, 0] := by
   refine ⟨[1, 1, 1, 0], fun l r => ?_, fun l r => ?_⟩
   · refine zPs ?_; unfold cfgL hh hf; simp only [zCal, zLac, zLan]; execute
   · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
 
-lemma h_two_one (q : Nat) : Calls hh hf ([0, 0] ++ ([1] : List (Fin 2))^(1 + q * 4)) ([1, 1, 0, 0] ++ ([1] : List (Fin 2))^(q * 4)) := by
+theorem h_two_one (q : Nat) : Calls hh hf ([0, 0] ++ ([1] : List (Fin 2))^(1 + q * 4)) ([1, 1, 0, 0] ++ ([1] : List (Fin 2))^(q * 4)) := by
   cases q with
   | zero =>
     exact h_two_one_base
@@ -371,16 +366,16 @@ lemma h_two_one (q : Nat) : Calls hh hf ([0, 0] ++ ([1] : List (Fin 2))^(1 + q *
     rw [h1, h2]
     exact calls_app h_two_four_base (t_one q')
 
-lemma h_two : Calls hh ht [1, 1] [] := by
+theorem h_two : Calls hh ht [1, 1] [] := by
   refine ⟨[], fun l r => ?_, fun l r => ⟨0, by simp⟩⟩
   refine zPs ?_; unfold cfgL hh ht; simp only [zCal, zLac, zLan]; execute
 
 -- Blank divergence for ht
-lemma t_blank_step (r : ListBlank (Fin 2)) :
+theorem t_blank_step (r : ListBlank (Fin 2)) :
     (cfgL ht default r) [target_tm]⊢⁺ (cfgL ht default ((1 : Fin 2) >> r)) := by
   unfold cfgL ht; simp only [zCal, zLac, zLan]; execute
 
-lemma t_blank_reach (n : Nat) (r : ListBlank (Fin 2)) :
+theorem t_blank_reach (n : Nat) (r : ListBlank (Fin 2)) :
     ∃ N ≥ n, (multiStep target_tm (cfgL ht default r) N).isSome := by
   induction n generalizing r with
   | zero => exact ⟨0, Nat.le_refl 0, rfl⟩
@@ -391,7 +386,7 @@ lemma t_blank_reach (n : Nat) (r : ListBlank (Fin 2)) :
     rw [zMa, hk]
     exact hsome
 
-lemma t_blank (r : ListBlank (Fin 2)) : NonHaltFrom (cfgL ht default r) := by
+theorem t_blank (r : ListBlank (Fin 2)) : NonHaltFrom (cfgL ht default r) := by
   intro n
   rcases t_blank_reach n r with ⟨N, hN, hsome⟩
   have h_eq : n + (N - n) = N := Nat.add_sub_of_le hN
@@ -414,19 +409,19 @@ inductive G : Bool → ListBlank (Fin 2) → Prop where
       G p ((([0] : List (Fin 2))^((if p then 1 else 2) + n * 3)) +>
            ((([1] : List (Fin 2))^(2 + q * 4)) +> l))
 
-lemma zero_cons_pow (k : Nat) (s : ListBlank (Fin 2)) :
+theorem zero_cons_pow (k : Nat) (s : ListBlank (Fin 2)) :
     (0 : Fin 2) >> ((([0] : List (Fin 2))^k) +> s) = (([0] : List (Fin 2))^(1 + k)) +> s := by
   have h : ([0] : List (Fin 2))^(1 + k) = [0] ++ ([0] : List (Fin 2))^k := by
     rw [zLpa]; rfl
   rw [h, <- zLaa]; rfl
 
-lemma twozeros_append_pow (k : Nat) (s : ListBlank (Fin 2)) :
+theorem twozeros_append_pow (k : Nat) (s : ListBlank (Fin 2)) :
     ([0, 0] : List (Fin 2)) +> ((([0] : List (Fin 2))^k) +> s) = (([0] : List (Fin 2))^(2 + k)) +> s := by
   have h : ([0] : List (Fin 2))^(2 + k) = [0, 0] ++ ([0] : List (Fin 2))^k := by
     rw [zLpa]; rfl
   rw [h, <- zLaa]
 
-lemma G_zero (l : ListBlank (Fin 2)) (h : G true l) : G false ((0 : Fin 2) >> l) := by
+theorem G_zero (l : ListBlank (Fin 2)) (h : G true l) : G false ((0 : Fin 2) >> l) := by
   cases h with
   | blank =>
     rw [zZcd]; exact G.blank false
@@ -446,7 +441,7 @@ lemma G_zero (l : ListBlank (Fin 2)) (h : G true l) : G false ((0 : Fin 2) >> l)
     rw [h_exp]
     exact G.two false n q l₀ h₀
 
-lemma G_twozeros (l : ListBlank (Fin 2)) (h : G false l) : G true (([0, 0] : List (Fin 2)) +> l) := by
+theorem G_twozeros (l : ListBlank (Fin 2)) (h : G false l) : G true (([0, 0] : List (Fin 2)) +> l) := by
   cases h with
   | blank =>
     have h_def : ([0, 0] : List (Fin 2)) +> (default : ListBlank (Fin 2)) = default := by
@@ -468,7 +463,7 @@ lemma G_twozeros (l : ListBlank (Fin 2)) (h : G false l) : G true (([0, 0] : Lis
     rw [h_exp]
     exact G.two true (1 + n) q l₀ h₀
 
-lemma G_twoblocks (q : Nat) (l : ListBlank (Fin 2)) (h : G false l) :
+theorem G_twoblocks (q : Nat) (l : ListBlank (Fin 2)) (h : G false l) :
     G true (([0, 0] : List (Fin 2)) +> ((([1] : List (Fin 2))^(q * 4)) +> l)) := by
   cases q with
   | zero =>
@@ -479,7 +474,7 @@ lemma G_twoblocks (q : Nat) (l : ListBlank (Fin 2)) (h : G false l) :
     rw [h_0, h_1]
     exact G.four true 0 q' l h
 
-lemma G_mark (l : ListBlank (Fin 2)) (h : G true l) :
+theorem G_mark (l : ListBlank (Fin 2)) (h : G true l) :
     G true (([0, 1, 1] : List (Fin 2)) +> l) := by
   have h_eq : ([0, 1, 1] : List (Fin 2)) +> l =
       (([0] : List (Fin 2))^((if true then 1 else 2) + 0 * 3)) +>
@@ -487,7 +482,7 @@ lemma G_mark (l : ListBlank (Fin 2)) (h : G true l) :
   rw [h_eq]
   exact G.two true 0 0 l h
 
-lemma G_true_has_zero (l : ListBlank (Fin 2)) (h : G true l) :
+theorem G_true_has_zero (l : ListBlank (Fin 2)) (h : G true l) :
     ∃ u, l = ([0] : List (Fin 2)) +> u := by
   cases h with
   | blank =>
@@ -515,7 +510,7 @@ lemma G_true_has_zero (l : ListBlank (Fin 2)) (h : G true l) :
       rw [h_add, zLpa]; rfl
     rw [h_exp, <- zLaa]
 
-lemma f_G (l : ListBlank (Fin 2)) (h : G true l) : Result hf l (G false) := by
+theorem f_G (l : ListBlank (Fin 2)) (h : G true l) : Result hf l (G false) := by
   rcases G_true_has_zero l h with ⟨u, hlu⟩
   rw [hlu]
   refine result_return f_zero ?_
@@ -526,12 +521,12 @@ lemma f_G (l : ListBlank (Fin 2)) (h : G true l) : Result hf l (G false) := by
 def Mark (l : ListBlank (Fin 2)) : Prop :=
   ∃ u, G true u ∧ l = ([1, 1] : List (Fin 2)) +> u
 
-lemma h_big (l : ListBlank (Fin 2)) (h : G true l) :
+theorem h_big (l : ListBlank (Fin 2)) (h : G true l) :
     Result hh (([0, 0, 0] : List (Fin 2)) +> l) Mark := by
   refine result_return h_zero ?_
   exact ⟨([0, 1, 1] : List (Fin 2)) +> l, G_mark l h, rfl⟩
 
-lemma G_calls (p : Bool) (l : ListBlank (Fin 2)) (h : G p l) :
+theorem G_calls (p : Bool) (l : ListBlank (Fin 2)) (h : G p l) :
     Result ht l (G p) ∧ (p = true → Result hh l Mark) := by
   induction h with
   | blank p =>
@@ -653,7 +648,7 @@ lemma G_calls (p : Bool) (l : ListBlank (Fin 2)) (h : G p l) :
 def Safe (l : ListBlank (Fin 2)) : Prop :=
   G true l ∨ Mark l
 
-lemma safe_step (l : ListBlank (Fin 2)) (hs : Safe l) : Result hh l Safe := by
+theorem safe_step (l : ListBlank (Fin 2)) (hs : Safe l) : Result hh l Safe := by
   rcases hs with hG | ⟨u, hG, rfl⟩
   · exact result_mono ((G_calls true l hG).2 rfl) (fun u hu => Or.inr hu)
   · refine result_call h_two (G_calls true u hG).1 ?_
@@ -663,11 +658,11 @@ lemma safe_step (l : ListBlank (Fin 2)) (hs : Safe l) : Result hh l Safe := by
 def cfg (l : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   cfgL hh l ((1 : Fin 2) >> default)
 
-lemma left_return (l : ListBlank (Fin 2)) :
+theorem left_return (l : ListBlank (Fin 2)) :
     (cfgR l ((1 : Fin 2) >> default)) [target_tm]⊢⁺ (cfg l) := by
   unfold cfg cfgL cfgR hh; simp only [zCal, zLac, zLan]; execute
 
-lemma safe_reach (m : Nat) (l : ListBlank (Fin 2)) (hs : Safe l) :
+theorem safe_reach (m : Nat) (l : ListBlank (Fin 2)) (hs : Safe l) :
     ∃ N ≥ m, (multiStep target_tm (cfg l) N).isSome := by
   induction m generalizing l with
   | zero => exact ⟨0, Nat.le_refl 0, rfl⟩
@@ -682,14 +677,14 @@ lemma safe_reach (m : Nat) (l : ListBlank (Fin 2)) (hs : Safe l) :
       exact hsome
     · exact ⟨m + 1, Nat.le_refl (m + 1), hnh ((1 : Fin 2) >> default) (m + 1)⟩
 
-lemma safe_nonhalt (l : ListBlank (Fin 2)) (hs : Safe l) : NonHaltFrom (cfg l) := by
+theorem safe_nonhalt (l : ListBlank (Fin 2)) (hs : Safe l) : NonHaltFrom (cfg l) := by
   intro m
   rcases safe_reach m l hs with ⟨N, hN, hsome⟩
   have h_eq : m + (N - m) = N := Nat.add_sub_of_le hN
   rw [<- h_eq] at hsome
   exact zIm_some hsome
 
-lemma init_to_cfg : (init []) [target_tm]⊢* (cfg default) := by
+theorem init_to_cfg : (init []) [target_tm]⊢* (cfg default) := by
   refine zPs ?_
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
@@ -701,12 +696,8 @@ end Solution
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

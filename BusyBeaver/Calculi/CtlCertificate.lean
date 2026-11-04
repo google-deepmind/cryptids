@@ -43,8 +43,6 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver
 
--- BEGIN CTL CERTIFICATE DEVELOPMENT
-
 namespace CtlCert
 
 /-- Run a binary DFA over a half-tape representative `l` (head-adjacent cell
@@ -92,7 +90,8 @@ theorem readBlank_cons {n : ℕ} [NeZero n] (d : Fin n → Fin 2 → Fin n) (h0 
 
 /-- Closure check for a single accepted tuple `(p, s, a, q)`: the transition
 must be defined and non-halting, and every abstract successor must be accepted. -/
-@[expose] def closureOk {Λ : Type*} [Inhabited Λ] [DecidableEq Λ] {nL nR : ℕ} [NeZero nL] [NeZero nR]
+@[expose] def closureOk {Λ : Type*} [Inhabited Λ] [DecidableEq Λ] {nL nR : ℕ}
+    [NeZero nL] [NeZero nR]
     (M : Machine (Fin 2) Λ)
     (dL : Fin nL → Fin 2 → Fin nL) (dR : Fin nR → Fin 2 → Fin nR)
     (acc : List (Fin nL × Λ × Fin 2 × Fin nR)) : Fin nL × Λ × Fin 2 × Fin nR → Bool
@@ -167,7 +166,9 @@ theorem ctlInv_step {Λ : Type*} [Inhabited Λ] [DecidableEq Λ] {nL nR : ℕ} [
         · refine ⟨s', rfl, ?_⟩
           have h1 := List.all_eq_true.mp hrow R.head (List.mem_finRange _)
           have h2 := List.all_eq_true.mp h1 (readBlank dR hR R.tail) (List.mem_finRange _)
-          rw [if_pos (by rw [← readBlank_cons dR hR, ListBlank.cons_head_tail])] at h2
+          have hcondR : dR (readBlank dR hR R.tail) R.head = readBlank dR hR R := by
+            rw [← readBlank_cons dR hR, ListBlank.cons_head_tail]
+          simp only [hcondR, ↓reduceIte] at h2
           have h3 := of_decide_eq_true h2
           simpa only [readBlank_cons] using h3
       | left =>
@@ -178,7 +179,9 @@ theorem ctlInv_step {Λ : Type*} [Inhabited Λ] [DecidableEq Λ] {nL nR : ℕ} [
         · refine ⟨s', rfl, ?_⟩
           have h1 := List.all_eq_true.mp hrow L.head (List.mem_finRange _)
           have h2 := List.all_eq_true.mp h1 (readBlank dL hL L.tail) (List.mem_finRange _)
-          rw [if_pos (by rw [← readBlank_cons dL hL, ListBlank.cons_head_tail])] at h2
+          have hcondL : dL (readBlank dL hL L.tail) L.head = readBlank dL hL L := by
+            rw [← readBlank_cons dL hL, ListBlank.cons_head_tail]
+          simp only [hcondL, ↓reduceIte] at h2
           have h3 := of_decide_eq_true h2
           simpa only [readBlank_cons] using h3
 
@@ -230,7 +233,5 @@ theorem ctl_certificate_implies_is_does_not_halt {Λ : Type*} [Inhabited Λ] [De
   rfl
 
 end CtlCert
-
--- END CTL CERTIFICATE DEVELOPMENT
 
 end BusyBeaver

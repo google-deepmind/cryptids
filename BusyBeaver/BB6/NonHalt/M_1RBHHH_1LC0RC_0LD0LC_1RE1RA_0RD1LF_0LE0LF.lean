@@ -21,24 +21,23 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 2000000
 set_option maxRecDepth 2000
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -47,29 +46,29 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, _, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
@@ -92,52 +91,52 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-lemma rule_E_b (l r : ListBlank (Fin 2)) :
+theorem rule_E_b (l r : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> l) {{E}}> ([0, 1, 0, 0, 0, 1] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> l) {{C}}> ([0, 0, 0, 1, 0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_aa (l r : ListBlank (Fin 2)) :
+theorem rule_E_aa (l r : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> l) {{E}}> ([0, 1, 0, 1, 0, 1] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> ([1, 1, 0, 1] +> l)) {{E}}> ([0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_ab (l r : ListBlank (Fin 2)) :
+theorem rule_E_ab (l r : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> l) {{E}}> ([0, 1, 0, 1, 0, 0, 0, 1] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> ([0, 1, 1, 1, 0, 1] +> l)) {{E}}> ([0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_C_a (l r : ListBlank (Fin 2)) :
+theorem rule_C_a (l r : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> ([0, 1] +> l)) {{C}}> ([0, 0] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> l) {{C}}> ([0, 0, 0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_C_b (l r : ListBlank (Fin 2)) :
+theorem rule_C_b (l r : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> ([1, 1, 0, 1] +> l)) {{C}}> ([0, 0] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> l) {{C}}> ([0, 0, 0, 0, 0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_C_nil (r : ListBlank (Fin 2)) :
+theorem rule_C_nil (r : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> default) {{C}}> ([0, 0] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> ([0, 1] +> default)) {{E}}> ([0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_E_end (l : ListBlank (Fin 2)) :
+theorem rule_E_end (l : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> l) {{E}}> ([0, 1, 0, 1, 0, 0, 1] +> default)) [target_tm]⊢⁺
     (l {{E}}> ([1, 0, 0, 0, 1, 0, 0, 1] +> default)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_EL_a (l r : ListBlank (Fin 2)) :
+theorem rule_EL_a (l r : ListBlank (Fin 2)) :
     (([0, 1] +> l) {{E}}> ((1 : Fin 2) >> r)) [target_tm]⊢⁺
     (l {{E}}> ([1, 0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_EL_b (l r : ListBlank (Fin 2)) :
+theorem rule_EL_b (l r : ListBlank (Fin 2)) :
     (([1, 1, 0, 1] +> l) {{E}}> ((1 : Fin 2) >> r)) [target_tm]⊢⁺
     (l {{E}}> ([1, 0, 0, 0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma rule_EL_nil (r : ListBlank (Fin 2)) :
+theorem rule_EL_nil (r : ListBlank (Fin 2)) :
     (default {{E}}> ((1 : Fin 2) >> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> default) {{E}}> ([0, 1] +> r)) := by
   dsimp [ListBlank.append]; execute
@@ -156,31 +155,31 @@ abbrev RoundA (r r_out : ListBlank (Fin 2)) : Prop :=
     (((1 : Fin 2) >> ([0, 1] +> l)) {{E}}> ([0, 1] +> r)) [target_tm]⊢⁺
     (((1 : Fin 2) >> l) {{C}}> ([0, 0] +> r_out))
 
-lemma roundC_to_roundA {r r' : ListBlank (Fin 2)} (h : RoundC r r') :
+theorem roundC_to_roundA {r r' : ListBlank (Fin 2)} (h : RoundC r r') :
     RoundA r ([0, 1] +> r') :=
   fun l => stepPlus_trans (h ([0, 1] +> l)) (rule_C_a l r')
 
-lemma roundC_T0 (u : ListBlank (Fin 2)) :
+theorem roundC_T0 (u : ListBlank (Fin 2)) :
     RoundC (T0 +> u) (T1 +> u) :=
   fun l => rule_E_b l u
 
-lemma roundA_T0 (u : ListBlank (Fin 2)) :
+theorem roundA_T0 (u : ListBlank (Fin 2)) :
     RoundA (T0 +> u) (T1 +> ([0, 1] +> u)) :=
   roundC_to_roundA (roundC_T0 u)
 
-lemma roundC_T1 {u u' : ListBlank (Fin 2)} (h : RoundC u u') :
+theorem roundC_T1 {u u' : ListBlank (Fin 2)} (h : RoundC u u') :
     RoundC (T1 +> u) (T0 +> u') :=
   fun l => stepPlus_trans (rule_E_aa l u) (stepPlus_trans (h ([1, 1, 0, 1] +> l)) (rule_C_b l u'))
 
-lemma roundA_T1 {u u' : ListBlank (Fin 2)} (h : RoundC u u') :
+theorem roundA_T1 {u u' : ListBlank (Fin 2)} (h : RoundC u u') :
     RoundA (T1 +> u) (T2 +> u') :=
   roundC_to_roundA (roundC_T1 h)
 
-lemma roundC_T2 {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
+theorem roundC_T2 {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
     RoundC (T2 +> u) (T0 +> u') :=
   fun l => stepPlus_trans (rule_E_ab l u) (stepPlus_trans (h ([1, 1, 0, 1] +> l)) (rule_C_b l u'))
 
-lemma roundA_T2 {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
+theorem roundA_T2 {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
     RoundA (T2 +> u) (T2 +> u') :=
   roundC_to_roundA (roundC_T2 h)
 
@@ -194,38 +193,38 @@ abbrev RoundEA (r r_out : ListBlank (Fin 2)) : Prop :=
     (((1 : Fin 2) >> ([0, 1] +> l)) {{E}}> ([0, 1] +> r)) [target_tm]⊢⁺
     (l {{E}}> ((1 : Fin 2) >> r_out))
 
-lemma roundE_to_roundEA {r r' : ListBlank (Fin 2)} (h : RoundE r r') :
+theorem roundE_to_roundEA {r r' : ListBlank (Fin 2)} (h : RoundE r r') :
     RoundEA r ([0, 1] +> r') :=
   fun l => stepPlus_trans (h ([0, 1] +> l)) (rule_EL_a l r')
 
-lemma roundE_end :
+theorem roundE_end :
     RoundE ([0, 1, 0, 0, 1] +> default) ([0, 0, 0, 1, 0, 0, 1] +> default) :=
   fun l => rule_E_end l
 
-lemma roundE_T1 {u u' : ListBlank (Fin 2)} (h : RoundE u u') :
+theorem roundE_T1 {u u' : ListBlank (Fin 2)} (h : RoundE u u') :
     RoundE (T1 +> u) (T0 +> u') :=
   fun l => stepPlus_trans (rule_E_aa l u) (stepPlus_trans (h ([1, 1, 0, 1] +> l)) (rule_EL_b l u'))
 
-lemma roundEA_T1 {u u' : ListBlank (Fin 2)} (h : RoundE u u') :
+theorem roundEA_T1 {u u' : ListBlank (Fin 2)} (h : RoundE u u') :
     RoundEA (T1 +> u) (T2 +> u') :=
   roundE_to_roundEA (roundE_T1 h)
 
-lemma roundE_T2 {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
+theorem roundE_T2 {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
     RoundE (T2 +> u) (T0 +> u') :=
   fun l => stepPlus_trans (rule_E_ab l u) (stepPlus_trans (h ([1, 1, 0, 1] +> l)) (rule_EL_b l u'))
 
-lemma roundEA_T2 {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
+theorem roundEA_T2 {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
     RoundEA (T2 +> u) (T2 +> u') :=
   roundE_to_roundEA (roundE_T2 h)
 
 abbrev cfgE0 (r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ((1 : Fin 2) >> ([0, 1] +> default)) {{E}}> ([0, 1] +> r)
 
-lemma sweep_step {r r_out : ListBlank (Fin 2)} (h : RoundA r r_out) :
+theorem sweep_step {r r_out : ListBlank (Fin 2)} (h : RoundA r r_out) :
     (cfgE0 r) [target_tm]⊢⁺ (cfgE0 r_out) :=
   stepPlus_trans (h default) (rule_C_nil r_out)
 
-lemma era_end_step {r r_era r_next : ListBlank (Fin 2)}
+theorem era_end_step {r r_era r_next : ListBlank (Fin 2)}
     (h₁ : RoundEA r r_era) (h₂ : RoundC r_era r_next) :
     (cfgE0 r) [target_tm]⊢⁺ (cfgE0 r_next) :=
   stepPlus_trans (h₁ default)
@@ -236,10 +235,10 @@ abbrev bot : ListBlank (Fin 2) := [0, 0, 1] +> default
 abbrev bota : ListBlank (Fin 2) := [0, 1, 0, 0, 1] +> default
 abbrev botc : ListBlank (Fin 2) := [0, 1, 1] +> default
 
-lemma roundC_bot : RoundC bot botc := by
+theorem roundC_bot : RoundC bot botc := by
   intro l; dsimp [bot, botc, ListBlank.append]; execute
 
-lemma roundC_botc : RoundC botc bot := by
+theorem roundC_botc : RoundC botc bot := by
   intro l; dsimp [bot, botc, ListBlank.append]; execute
 
 inductive StepsA : ℕ → ListBlank (Fin 2) → ListBlank (Fin 2) → Prop where
@@ -247,13 +246,13 @@ inductive StepsA : ℕ → ListBlank (Fin 2) → ListBlank (Fin 2) → Prop wher
   | succ {n : ℕ} {u v w : ListBlank (Fin 2)} :
       RoundA u v → StepsA n v w → StepsA (n + 1) u w
 
-lemma stepsA_trans {a b : ℕ} {u v w : ListBlank (Fin 2)}
+theorem stepsA_trans {a b : ℕ} {u v w : ListBlank (Fin 2)}
     (h1 : StepsA a u v) (h2 : StepsA b v w) : StepsA (a + b) u w := by
   induction h1 with
   | zero => rw [Nat.zero_add]; exact h2
   | succ h _ ih => rw [Nat.succ_add]; exact StepsA.succ h (ih h2)
 
-lemma stepsA_T2 {n : ℕ} {u w : ListBlank (Fin 2)} (h : StepsA n u w) :
+theorem stepsA_T2 {n : ℕ} {u w : ListBlank (Fin 2)} (h : StepsA n u w) :
     StepsA n (T2 +> u) (T2 +> w) := by
   induction h with
   | zero u => exact StepsA.zero (T2 +> u)
@@ -266,49 +265,49 @@ def powB3 : ℕ → ListBlank (Fin 2) → ListBlank (Fin 2)
   | 0, r => r
   | m + 1, r => B3 (powB3 m r)
 
-lemma powB3_B3 (m : ℕ) (r : ListBlank (Fin 2)) :
+theorem powB3_B3 (m : ℕ) (r : ListBlank (Fin 2)) :
     powB3 m (B3 r) = B3 (powB3 m r) := by
   induction m with
   | zero => rfl
   | succ m ih => exact congrArg B3 ih
 
-lemma powB3_T2 (m : ℕ) (r : ListBlank (Fin 2)) :
+theorem powB3_T2 (m : ℕ) (r : ListBlank (Fin 2)) :
     powB3 m (T2 +> r) = T2 +> powB3 m r := by
   induction m with
   | zero => rfl
   | succ m ih => exact congrArg B3 ih
 
-lemma roundA_B3 {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
+theorem roundA_B3 {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
     RoundA (B3 u) (B3 u') :=
   roundA_T2 (roundA_T2 (roundA_T2 h))
 
-lemma roundA_powB3 (m : ℕ) {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
+theorem roundA_powB3 (m : ℕ) {u u' : ListBlank (Fin 2)} (h : RoundA u u') :
     RoundA (powB3 m u) (powB3 m u') := by
   induction m with
   | zero => exact h
   | succ m ih => exact roundA_B3 ih
 
-lemma roundEA_B3 {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
+theorem roundEA_B3 {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
     RoundEA (B3 u) (B3 u') :=
   roundEA_T2 (roundEA_T2 (roundEA_T2 h))
 
-lemma roundEA_powB3 (m : ℕ) {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
+theorem roundEA_powB3 (m : ℕ) {u u' : ListBlank (Fin 2)} (h : RoundEA u u') :
     RoundEA (powB3 m u) (powB3 m u') := by
   induction m with
   | zero => exact h
   | succ m ih => exact roundEA_B3 ih
 
-lemma stepsA_B3 {n : ℕ} {u w : ListBlank (Fin 2)} (h : StepsA n u w) :
+theorem stepsA_B3 {n : ℕ} {u w : ListBlank (Fin 2)} (h : StepsA n u w) :
     StepsA n (B3 u) (B3 w) :=
   stepsA_T2 (stepsA_T2 (stepsA_T2 h))
 
-lemma stepsA_powB3 (m : ℕ) {n : ℕ} {u w : ListBlank (Fin 2)} (h : StepsA n u w) :
+theorem stepsA_powB3 (m : ℕ) {n : ℕ} {u w : ListBlank (Fin 2)} (h : StepsA n u w) :
     StepsA n (powB3 m u) (powB3 m w) := by
   induction m with
   | zero => exact h
   | succ m ih => exact stepsA_B3 ih
 
-lemma step6_022 {v v_C : ListBlank (Fin 2)} (hC : RoundC v v_C) :
+theorem step6_022 {v v_C : ListBlank (Fin 2)} (hC : RoundC v v_C) :
     StepsA 6 (T0 +> (T2 +> (T2 +> v))) (B3 (T0 +> (T2 +> v_C))) := by
   refine StepsA.succ (roundA_T0 (T2 +> (T2 +> v))) ?_
   refine StepsA.succ (roundA_T1 (roundC_T1 (roundC_T0 (T2 +> v)))) ?_
@@ -318,7 +317,7 @@ lemma step6_022 {v v_C : ListBlank (Fin 2)} (hC : RoundC v v_C) :
   refine StepsA.succ (roundA_T2 (roundA_T2 (roundA_T1 (roundC_T2 (roundA_T1 hC))))) ?_
   exact StepsA.zero _
 
-lemma finish8_22 {v v_C : ListBlank (Fin 2)} (hC : RoundC v v_C) :
+theorem finish8_22 {v v_C : ListBlank (Fin 2)} (hC : RoundC v v_C) :
     StepsA 8 (T0 +> (T2 +> (T2 +> v))) (B3 (T2 +> (T0 +> (T1 +> v_C)))) := by
   have h2 : StepsA 2 (T0 +> (T2 +> v_C)) (T2 +> (T0 +> (T1 +> v_C))) := by
     refine StepsA.succ (roundA_T0 (T2 +> v_C)) ?_
@@ -326,7 +325,7 @@ lemma finish8_22 {v v_C : ListBlank (Fin 2)} (hC : RoundC v v_C) :
     exact StepsA.zero _
   exact stepsA_trans (step6_022 hC) (stepsA_B3 h2)
 
-lemma cross_B3 {u u1 u2 u3 : ListBlank (Fin 2)}
+theorem cross_B3 {u u1 u2 u3 : ListBlank (Fin 2)}
     (h1 : RoundA u u1) (h2 : RoundA u1 u2) (h3 : RoundA u2 u3) :
     StepsA 12 (T0 +> B3 u) (B3 (B3 (T0 +> u3))) := by
   have h4 : StepsA 4 (T0 +> (T1 +> (T0 +> u1))) (T2 +> (T2 +> (T0 +> u3))) := by
@@ -337,7 +336,7 @@ lemma cross_B3 {u u1 u2 u3 : ListBlank (Fin 2)}
     exact StepsA.zero _
   exact stepsA_trans (finish8_22 (roundC_T2 h1)) (stepsA_B3 (stepsA_T2 h4))
 
-lemma cross_powB3 (m : ℕ) {u w : ListBlank (Fin 2)} (h : StepsA (3 * m) u w) :
+theorem cross_powB3 (m : ℕ) {u w : ListBlank (Fin 2)} (h : StepsA (3 * m) u w) :
     StepsA (12 * m) (T0 +> powB3 m u) (powB3 (2 * m) (T0 +> w)) := by
   induction m generalizing u with
   | zero =>
@@ -367,7 +366,7 @@ inductive StepEra (k : ℕ) (u w : ListBlank (Fin 2)) : Prop where
       (hClast : RoundC w_last v_C)
       (hw : w = [0, 1] +> v_C) : StepEra k u w
 
-lemma stepEra_next {k : ℕ} {u w : ListBlank (Fin 2)} (h : StepEra k u w) :
+theorem stepEra_next {k : ℕ} {u w : ListBlank (Fin 2)} (h : StepEra k u w) :
     StepEra (2 * (2 * k + 2) + 2) (fEra k u) (fEra (2 * k + 2) w) := by
   rcases h with ⟨u_E, w_0, w_last, v_C, hE, hC0, hA, hClast, hw⟩
   refine StepEra.mk
@@ -403,7 +402,7 @@ abbrev u_m2 : ListBlank (Fin 2) :=
 abbrev u_m1 : ListBlank (Fin 2) :=
   T2 +> (T2 +> (T2 +> (T2 +> (T1 +> (T2 +> (T1 +> (T2 +> (T2 +> (T1 +> bota)))))))))
 
-lemma stepEra_m2 : StepEra 2 u_m2 u_m1 := by
+theorem stepEra_m2 : StepEra 2 u_m2 u_m1 := by
   refine StepEra.mk
     (T0 +> (T2 +> (T0 +> (T2 +> (T2 +> (T2 +> (T0 +> bot)))))))
     (T0 +> (T2 +> (T1 +> (T1 +> (T0 +> (T2 +> (T2 +> (T0 +> bot))))))))
@@ -424,7 +423,7 @@ lemma stepEra_m2 : StepEra 2 u_m2 u_m1 := by
   refine StepsA.succ (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T1 (roundC_T1 (roundC_T1 (roundC_T0 (T2 +> (T2 +> (T1 +> bota)))))))))) ?_
   exact StepsA.zero _
 
-lemma stepEra_m1 : StepEra 6 u_m1 (fEra 2 u_m2) := by
+theorem stepEra_m1 : StepEra 6 u_m1 (fEra 2 u_m2) := by
   refine StepEra.mk
     (T0 +> (T2 +> (T2 +> (T2 +> (T2 +> (T0 +> (T2 +> (T0 +> (T2 +> (T2 +> (T0 +> bot)))))))))))
     (T0 +> (T2 +> (T2 +> (T2 +> (T2 +> (T1 +> (T1 +> (T0 +> (T0 +> (T2 +> (T2 +> (T0 +> bot))))))))))))
@@ -443,14 +442,14 @@ lemma stepEra_m1 : StepEra 6 u_m1 (fEra 2 u_m2) := by
   have htot := stepsA_trans hc12 hf8
   exact htot
 
-lemma stepsA_run {n : ℕ} {u v w : ListBlank (Fin 2)}
+theorem stepsA_run {n : ℕ} {u v w : ListBlank (Fin 2)}
     (h1 : (cfgE0 u) [target_tm]⊢⁺ (cfgE0 v)) (h2 : StepsA n v w) :
     (cfgE0 u) [target_tm]⊢⁺ (cfgE0 w) := by
   induction h2 generalizing u with
   | zero => exact h1
   | succ ha _ ih => exact ih (stepPlus_trans h1 (sweep_step ha))
 
-lemma stepEra_run {k : ℕ} {u w : ListBlank (Fin 2)} (h : StepEra k u w) :
+theorem stepEra_run {k : ℕ} {u w : ListBlank (Fin 2)} (h : StepEra k u w) :
     (cfgE0 u) [target_tm]⊢⁺ (cfgE0 w) := by
   rcases h with ⟨u_E, w_0, w_last, v_C, hE, hC0, hA, hClast, hw⟩
   rw [hw]
@@ -460,13 +459,13 @@ lemma stepEra_run {k : ℕ} {u w : ListBlank (Fin 2)} (h : StepEra k u w) :
     stepsA_run h0 hA
   exact stepPlus_trans h1 (sweep_step (roundC_to_roundA hClast))
 
-lemma init_to_botc : (init []) [target_tm]⊢⁺ (cfgE0 botc) := by
+theorem init_to_botc : (init []) [target_tm]⊢⁺ (cfgE0 botc) := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
   dsimp [cfgE0, botc, ListBlank.append]
   execute; exists 0
 
-lemma botc_to_u0 : (cfgE0 botc) [target_tm]⊢⁺ (cfgE0 (fEra 2 u_m2)) := by
+theorem botc_to_u0 : (cfgE0 botc) [target_tm]⊢⁺ (cfgE0 (fEra 2 u_m2)) := by
   refine stepPlus_trans (sweep_step (roundC_to_roundA roundC_botc)) ?_
   refine stepPlus_trans (era_end_step (roundE_to_roundEA roundE_end) (roundC_T2 (roundC_to_roundA roundC_bot))) ?_
   refine stepPlus_trans (sweep_step (roundA_T0 ([0, 1] +> botc))) ?_
@@ -515,7 +514,7 @@ lemma botc_to_u0 : (cfgE0 botc) [target_tm]⊢⁺ (cfgE0 (fEra 2 u_m2)) := by
   refine stepPlus_trans (sweep_step (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T1 (roundC_T1 (roundC_T0 (T0 +> (T1 +> (T2 +> (T2 +> (T2 +> (T1 +> bota))))))))))))))))))) ?_
   exact (sweep_step (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T2 (roundA_T0 (T1 +> (T0 +> (T1 +> (T2 +> (T2 +> (T2 +> (T1 +> bota)))))))))))))))))))
 
-lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (c₀ cfg cfg' : Cfg Γ Λ) (n m : Nat)
     (hn : multiStep M c₀ n = some cfg)
     (hnm : multiStep M c₀ (n + (1 + m)) = some cfg') :
@@ -529,7 +528,7 @@ lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     nomatch hnm
   | some c₁ => rfl
 
-lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
     (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg')

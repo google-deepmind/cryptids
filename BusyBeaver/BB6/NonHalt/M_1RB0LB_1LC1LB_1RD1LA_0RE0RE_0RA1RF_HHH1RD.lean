@@ -4,23 +4,31 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import BusyBeaver.Basic
+import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
-namespace BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
+@[expose] public section
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+namespace BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
+end BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
+
+end
+
+namespace BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD
+
+variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
+
+namespace Solution
 -- ============================================================================
 -- Section 1: Execution Helpers, Closed-Invariant Criterion & Stack Rules
 -- ============================================================================
@@ -32,14 +40,14 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
 
-lemma multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
+theorem multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
     multiStep M c (n + 1) = (multiStep M c n).bind (step M) := by
   simp only [multiStep, Function.iterate_succ_apply']
 
-lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
+theorem multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     multiStep M c₁ (n + m) = (multiStep M c₁ n).bind (fun c₂ => multiStep M c₂ m) := by
   induction m with
   | zero => simp
@@ -47,12 +55,12 @@ lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
+theorem multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
     (h₁ : c₁ [M]⊢^{n} c₂) (h₂ : c₂ [M]⊢^{m} c₃) :
     c₁ [M]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (c₀ cfg cfg' : Cfg Γ Λ) (n m : Nat)
     (hn : multiStep M c₀ n = some cfg)
     (hnm : multiStep M c₀ (n + (1 + m)) = some cfg') :
@@ -64,12 +72,12 @@ lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
   | none => rw [hs] at hnm; nomatch hnm
   | some _ => rfl
 
-lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
+theorem inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+    (M : Machine Γ Λ) {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ cfg₀, (c_init [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg')
     (N : Nat) :
-    ∃ (m : Nat) (cfg' : Cfg Γ Λ), multiStep M (init []) (N + m) = some cfg' ∧ Inv cfg' := by
+    ∃ (m : Nat) (cfg' : Cfg Γ Λ), multiStep M c_init (N + m) = some cfg' ∧ Inv cfg' := by
   induction N with
   | zero =>
     obtain ⟨cfg₀, ⟨n₀, hn₀⟩, h_inv₀⟩ := h_init
@@ -84,7 +92,7 @@ lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
       | zero => omega
       | succ k' =>
         refine ⟨k', cfg₂, ?_, h_inv₂⟩
-        have h_trans := multiStep_trans M (init []) cfg₁ cfg₂ N (k' + 1) hm hk
+        have h_trans := multiStep_trans M c_init cfg₁ cfg₂ N (k' + 1) hm hk
         have h_eq : (N + 1) + k' = N + (k' + 1) := by omega
         rwa [h_eq]
     | succ m' =>
@@ -93,40 +101,39 @@ lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
       rwa [h_eq]
 
 theorem closed_inv_does_not_halt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
+    (M : Machine Γ Λ) {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ cfg₀, (c_init [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg') :
-    IsNotHalt M := by
+    ∀ cfg : Cfg Γ Λ, (c_init [M]⊢* cfg) → (step M cfg).isSome := by
   intro cfg ⟨n, hn⟩
   obtain ⟨m, cfg', hnm, _⟩ := inv_reaches_beyond M Inv h_init h_step (n + 1)
   have h_eq : (n + 1) + m = n + (1 + m) := by omega
   rw [h_eq] at hnm
-  exact multiStep_step_isSome M (init []) cfg cfg' n m hn hnm
+  exact multiStep_step_isSome M c_init cfg cfg' n m hn hnm
 
-@[simp] lemma pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
-@[simp] lemma nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
+@[simp] theorem pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
+@[simp] theorem nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++
+    ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
     (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
-@[simp] lemma init_nil : (init ([] : List (Fin 2))) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem init_nil : (init ([] : List (Fin 2))) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 omit [Inhabited Γ] in
 @[simp]
-
-
-lemma listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
+theorem listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
     s <+ (([1] : List (Fin 2)) ^ (n + m)) := by
   rw [listblank_append_append, list_pow_add_comm, ← list_pow_add]
 
-lemma listblank_right_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
+theorem listblank_right_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (([1] : List (Fin 2)) ^ n) +> ((([1] : List (Fin 2)) ^ m) +> s) =
     (([1] : List (Fin 2)) ^ (n + m)) +> s := by
   rw [← listblank_append_right_assoc, ← list_pow_add]
@@ -139,24 +146,24 @@ def encRight1 : List ℕ → ListBlank (Fin 2)
   | [] => default
   | d :: R => (([1] : List (Fin 2)) ^ (d + 1)) +> ((encRight1 R).cons 0)
 
-@[simp] lemma encLeft_nil : encLeft1 [] = default := rfl
-@[simp] lemma encLeft_cons (a : ℕ) (L : List ℕ) :
+@[simp] theorem encLeft_nil : encLeft1 [] = default := rfl
+@[simp] theorem encLeft_cons (a : ℕ) (L : List ℕ) :
     encLeft1 (a :: L) = ((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1)) := rfl
-@[simp] lemma encRight_nil : encRight1 [] = default := rfl
-@[simp] lemma encRight_cons (d : ℕ) (R : List ℕ) :
+@[simp] theorem encRight_nil : encRight1 [] = default := rfl
+@[simp] theorem encRight_cons (d : ℕ) (R : List ℕ) :
     encRight1 (d :: R) = (([1] : List (Fin 2)) ^ (d + 1)) +> ((encRight1 R).cons 0) := rfl
 
 def bumpHead : List ℕ → List ℕ
   | [] => [0]
   | b :: L => (b + 1) :: L
 
-@[simp] lemma encLeft_cons_one (L : List ℕ) :
+@[simp] theorem encLeft_cons_one (L : List ℕ) :
     (1 : Fin 2) >> encLeft1 L = encLeft1 (bumpHead L) := by
   cases L with
   | nil => simp [bumpHead, encLeft1]
   | cons b L' => rfl
 
-@[simp] lemma encRight_cons_one (R : List ℕ) :
+@[simp] theorem encRight_cons_one (R : List ℕ) :
     (1 : Fin 2) >> encRight1 R = encRight1 (bumpHead R) := by
   cases R with
   | nil => simp [bumpHead, encRight1]
@@ -170,34 +177,42 @@ def headWeight : List ℕ → ℕ
   | [] => 0
   | a :: _ => a + 1
 
-@[simp] lemma encRight_tail_cons_one (R : List ℕ) :
+@[simp] theorem encRight_tail_cons_one (R : List ℕ) :
     (1 : Fin 2) >> (encRight1 R).tail = encRight1 (tailWeight R :: R.tail) := by
   cases R with
   | nil => simp [tailWeight, encRight1]
   | cons d R' => dsimp [tailWeight, List.tail]; simp
 
-@[simp] lemma encRight_bumpHead_tail (R : List ℕ) :
+@[simp] theorem encRight_bumpHead_tail (R : List ℕ) :
     (encRight1 (bumpHead R)).tail = encRight1 R := by
   cases R with
   | nil => simp [bumpHead, encRight1]
   | cons d R' => dsimp [bumpHead, encRight1]; simp
 
-lemma encRight_tail_decomp (R : List ℕ) :
-    (encRight1 R).tail = (([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0) := by
+theorem encRight_tail_decomp (R : List ℕ) :
+    (encRight1 R).tail = (([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0) :=
+        by
   cases R with
   | nil => simp [tailWeight, encRight1]
   | cons d R' => dsimp [tailWeight, List.tail, encRight1]; simp
 
-lemma encLeft_decomp (L : List ℕ) :
+theorem encLeft_decomp (L : List ℕ) :
     encLeft1 L = ((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L)) := by
   cases L <;> simp [headWeight, encLeft1]
 
-macro "finish" : tactic => `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one, encRight_tail_cons_one, encRight_bumpHead_tail, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
+macro "finish" : tactic =>
+    `(tactic| (refine ⟨0, ?_⟩; simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft,
+    zero_cons_default, encLeft_nil, encRight_nil, encLeft_cons_one, encRight_cons_one,
+    encRight_tail_cons_one, encRight_bumpHead_tail, Turing.ListBlank.head_cons,
+    Turing.ListBlank.tail_cons, multiStep_zero]; try rfl))
 macro "step" : tactic => `(tactic| (
   try refine stepPlus_stepStar ?_
-  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, listblank_append_cons, listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head, default_tail]
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, listblank_append_cons,
+      listblank_append_nil, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head,
+      default_tail]
   apply step_stepStar_stepPlus (by rfl)
-  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, listblank_append_cons, listblank_append_nil,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,
+      listblank_append_cons, listblank_append_nil,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
     zero_cons_default, default_head, default_tail]))
 macro "execute" n:num : tactic => `(tactic| (
@@ -213,7 +228,7 @@ def cfg_ER (L R : List ℕ) : Cfg (Fin 2) (Fin 6) :=
 def cfg_E00 (L R : List ℕ) : Cfg (Fin 2) (Fin 6) :=
   cfg_ER L (0 :: R)
 
-lemma b_walk_left (k : ℕ) (l r : ListBlank (Fin 2)) :
+theorem b_walk_left (k : ℕ) (l r : ListBlank (Fin 2)) :
     ((l <+ (([1] : List (Fin 2)) ^ k)) <{{B}} r) [target_tm]⊢*
     (l <{{B}} ((([1] : List (Fin 2)) ^ k) +> r)) := by
   induction k generalizing l r with
@@ -245,13 +260,20 @@ theorem rule_BR_zero (L R : List ℕ) :
     (cfg_BR L.tail ((tailWeight R + headWeight L + 3) :: R.tail)) := by
   unfold cfg_BR
   rw [encLeft_cons 0 L, encLeft_decomp L, encRight_tail_decomp R]
-  have h_pre : (⟨some B, ⟨0, ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L))).cons 0) <+ (([1] : List (Fin 2)) ^ (0 + 1)), (([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)⟩⟩ : Cfg (Fin 2) (Fin 6))
+  have h_pre : (⟨some B, ⟨0,
+      ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L))).cons 0) <+ (([1] :
+      List (Fin 2)) ^ (0 + 1)),
+      (([1] : List (Fin 2)) ^ (tailWeight R)) +>
+      ((encRight1 R.tail).cons 0)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
-      ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L))) <{{B}} ((([1] : List (Fin 2)) ^ 3) +> ((([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)))) := by
+      ((((encLeft1 L.tail).cons 0) <+ (([1] : List (Fin 2)) ^ (headWeight L))) <{{B}} ((([1] : List
+          (Fin 2)) ^ 3) +> ((([1] : List (Fin 2)) ^ (tailWeight R)) +>
+          ((encRight1 R.tail).cons 0)))) := by
     dsimp [HPow.hPow]
     execute 5
   refine stepPlus_stepStar_stepPlus h_pre ?_
-  refine stepStar_trans (b_walk_left (headWeight L) ((encLeft1 L.tail).cons 0) ((([1] : List (Fin 2)) ^ 3) +> ((([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)))) ?_
+  refine stepStar_trans (b_walk_left (headWeight L) ((encLeft1 L.tail).cons 0) ((([1] : List (Fin
+      2)) ^ 3) +> ((([1] : List (Fin 2)) ^ (tailWeight R)) +> ((encRight1 R.tail).cons 0)))) ?_
   rw [listblank_right_pow_add, listblank_right_pow_add]
   have h_eq : headWeight L + 3 + tailWeight R = tailWeight R + headWeight L + 3 := by omega
   rw [h_eq, encRight_tail_decomp ((tailWeight R + headWeight L + 3) :: R.tail)]
@@ -272,13 +294,17 @@ theorem rule_BR_ge2 (a : ℕ) (L R : List ℕ) :
   rw [encLeft_cons (a + 2) L]
   have h_split : a + 2 + 1 = 2 + (a + 1) := by omega
   rw [h_split, list_pow_add, listblank_append_right_assoc]
-  have h_pre : (⟨some B, ⟨0, (((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1))) <+ (([1] : List (Fin 2)) ^ 2), (encRight1 R).tail⟩⟩ : Cfg (Fin 2) (Fin 6))
+  have h_pre : (⟨some B, ⟨0,
+      (((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1))) <+ (([1] : List (Fin 2)) ^ 2),
+      (encRight1 R).tail⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
-      ((((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1))) <{{B}} ((encRight1 ((tailWeight R + 1) :: R.tail)).cons 0)) := by
+      ((((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1))) <{{B}} ((encRight1 ((tailWeight R
+          + 1) :: R.tail)).cons 0)) := by
     dsimp [HPow.hPow]
     execute 3
   refine stepPlus_stepStar_stepPlus h_pre ?_
-  refine stepStar_trans (b_walk_left (a + 1) ((encLeft1 L).cons 0) ((encRight1 ((tailWeight R + 1) :: R.tail)).cons 0)) ?_
+  refine stepStar_trans (b_walk_left (a + 1) ((encLeft1 L).cons 0) ((encRight1 ((tailWeight R + 1)
+      :: R.tail)).cons 0)) ?_
   rw [encRight_tail_decomp ((a + 1) :: (tailWeight R + 1) :: R.tail)]
   dsimp [tailWeight, List.tail]
   finish
@@ -301,14 +327,16 @@ theorem rule_ER_zero_zero_cons (e : ℕ) (L R' : List ℕ) :
     (cfg_ER L (0 :: 0 :: e :: R')) [target_tm]⊢⁺
     (cfg_ER (bumpHead (bumpHead L)) ((e + 2) :: R')) := by
   unfold cfg_ER
-  rw [encRight_cons 0 (0 :: e :: R'), encRight_cons 0 (e :: R'), encRight_cons e R', encRight_cons (e + 2) R']
+  rw [encRight_cons 0 (0 :: e :: R'), encRight_cons 0 (e :: R'), encRight_cons e R',
+      encRight_cons (e + 2) R']
   dsimp [HPow.hPow]
   execute 12
 
 theorem rule_ER_zero_succ (d : ℕ) (L R' : List ℕ) :
     (cfg_ER L (0 :: (d + 1) :: R')) [target_tm]⊢⁺ (cfg_ER (bumpHead L) (0 :: d :: R')) := by
   unfold cfg_ER
-  rw [encRight_cons 0 ((d + 1) :: R'), encRight_cons (d + 1) R', encRight_cons 0 (d :: R'), encRight_cons d R']
+  rw [encRight_cons 0 ((d + 1) :: R'), encRight_cons (d + 1) R', encRight_cons 0 (d :: R'),
+      encRight_cons d R']
   dsimp [HPow.hPow]
   execute 5
 
@@ -375,13 +403,13 @@ theorem init_to_cfg_BR :
 
 def incList (B : List ℕ) : List ℕ := B.map (· + 1)
 
-@[simp] lemma incList_nil : incList [] = [] := rfl
-@[simp] lemma incList_cons (b : ℕ) (B : List ℕ) : incList (b :: B) = (b + 1) :: incList B := rfl
+@[simp] theorem incList_nil : incList [] = [] := rfl
+@[simp] theorem incList_cons (b : ℕ) (B : List ℕ) : incList (b :: B) = (b + 1) :: incList B := rfl
 
-lemma incList_append (X Y : List ℕ) : incList (X ++ Y) = incList X ++ incList Y :=
+theorem incList_append (X Y : List ℕ) : incList (X ++ Y) = incList X ++ incList Y :=
   List.map_append
 
-lemma incList_replicate_zero (n : ℕ) : incList (List.replicate n 0) = List.replicate n 1 := by
+theorem incList_replicate_zero (n : ℕ) : incList (List.replicate n 0) = List.replicate n 1 := by
   induction n <;> simp [incList, *]
 
 def midR : List ℕ → List ℕ
@@ -397,13 +425,13 @@ def evalB (B : List ℕ) : Cfg (Fin 2) (Fin 6) :=
 
 def fromQ (u : List ℕ) : List ℕ := u.map (3 * ·)
 
-@[simp] lemma fromQ_nil : fromQ [] = [] := rfl
-@[simp] lemma fromQ_cons (q : ℕ) (u : List ℕ) : fromQ (q :: u) = (3 * q) :: fromQ u := rfl
+@[simp] theorem fromQ_nil : fromQ [] = [] := rfl
+@[simp] theorem fromQ_cons (q : ℕ) (u : List ℕ) : fromQ (q :: u) = (3 * q) :: fromQ u := rfl
 
-lemma fromQ_append (u v : List ℕ) : fromQ (u ++ v) = fromQ u ++ fromQ v :=
+theorem fromQ_append (u v : List ℕ) : fromQ (u ++ v) = fromQ u ++ fromQ v :=
   List.map_append
 
-lemma fromQ_replicate_zero (n : ℕ) : fromQ (List.replicate n 0) = List.replicate n 0 := by
+theorem fromQ_replicate_zero (n : ℕ) : fromQ (List.replicate n 0) = List.replicate n 0 := by
   induction n <;> simp [fromQ, *]
 
 def stepBlock : List ℕ → List ℕ
@@ -424,7 +452,7 @@ def weightB : List ℕ → ℕ
   | [] => 0
   | b :: rest => weightDigit b + weightB rest
 
-lemma rule_BR_midR (a : ℕ) (L B : List ℕ) (hB : B ≠ []) :
+theorem rule_BR_midR (a : ℕ) (L B : List ℕ) (hB : B ≠ []) :
     (cfg_BR ((a + 1) :: L) (midR B)) [target_tm]⊢⁺ (cfg_BR L (midR (a :: B))) := by
   cases B with
   | nil => contradiction
@@ -439,7 +467,7 @@ lemma rule_BR_midR (a : ℕ) (L B : List ℕ) (hB : B ≠ []) :
       dsimp [tailWeight, List.tail, midR] at h ⊢
       exact h
 
-lemma br_sweep_midR (A B : List ℕ) (hB : B ≠ []) :
+theorem br_sweep_midR (A B : List ℕ) (hB : B ≠ []) :
     (cfg_BR (incList A ++ [0]) (midR B)) [target_tm]⊢* (cfg_BR [0] (midR (A.reverse ++ B))) := by
   induction A generalizing B with
   | nil =>
@@ -450,7 +478,7 @@ lemma br_sweep_midR (A B : List ℕ) (hB : B ≠ []) :
     refine stepStar_trans (stepPlus_stepStar (rule_BR_midR a (incList A' ++ [0]) B hB)) ?_
     exact ih (a :: B) (List.cons_ne_nil a B)
 
-lemma br_sweep (A : List ℕ) :
+theorem br_sweep (A : List ℕ) :
     (cfg_BR (incList A.reverse ++ [0]) [3]) [target_tm]⊢⁺ evalB (A ++ [3]) := by
   have h1 : (cfg_BR (incList A.reverse ++ [0]) (midR [3])) [target_tm]⊢*
       (cfg_BR [0] (midR (A.reverse.reverse ++ [3]))) :=
@@ -490,7 +518,7 @@ inductive SweepSteps : ℕ → List ℕ → List ℕ → Prop
   | succ {t : ℕ} {X Y Z : List ℕ} (h1 : SweepRel X Y) (h2 : SweepSteps t Y Z) :
       SweepSteps (t + 1) X Z
 
-lemma SweepSteps_trans {s t : ℕ} {X Y Z : List ℕ}
+theorem SweepSteps_trans {s t : ℕ} {X Y Z : List ℕ}
     (h1 : SweepSteps s X Y) (h2 : SweepSteps t Y Z) : SweepSteps (s + t) X Z := by
   induction h1 with
   | zero _ =>
@@ -500,20 +528,20 @@ lemma SweepSteps_trans {s t : ℕ} {X Y Z : List ℕ}
     rw [Nat.succ_add]
     exact SweepSteps.succ hrel (ih h2)
 
-lemma SweepRel_nonempty {X Y : List ℕ} (h : SweepRel X Y) : X ≠ [] := by
+theorem SweepRel_nonempty {X Y : List ℕ} (h : SweepRel X Y) : X ≠ [] := by
   cases h <;> simp [fromQ]
 
-lemma incList_rev_append_zeros (A : List ℕ) (m : ℕ) :
+theorem incList_rev_append_zeros (A : List ℕ) (m : ℕ) :
     List.replicate m 1 ++ (incList A.reverse ++ [0]) =
     incList (A ++ List.replicate m 0).reverse ++ [0] := by
   simp [incList, List.map_replicate, List.append_assoc]
 
-lemma incList_rev_append_zeros_cons (A : List ℕ) (q z : ℕ) :
+theorem incList_rev_append_zeros_cons (A : List ℕ) (q z : ℕ) :
     (z + 1) :: (List.replicate q 1 ++ (incList A.reverse ++ [0])) =
     incList (A ++ List.replicate q 0 ++ [z]).reverse ++ [0] := by
   simp [incList, List.map_replicate, List.append_assoc]
 
-lemma er_pair_step (q y : ℕ) (A rest : List ℕ) (hrest : rest ≠ []) :
+theorem er_pair_step (q y : ℕ) (A rest : List ℕ) (hrest : rest ≠ []) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B (3 * q :: 3 * y :: rest))) [target_tm]⊢⁺
     (cfg_ER (incList (A ++ List.replicate q 0 ++ [3 * (y + 1)]).reverse ++ [0]) (toR_B rest)) := by
   cases rest with
@@ -540,7 +568,7 @@ lemma er_pair_step (q y : ℕ) (A rest : List ℕ) (hrest : rest ≠ []) :
     rw [h_l, h_r, incList_rev_append_zeros_cons A q (3 * (y + 1))] at h3
     exact h3
 
-lemma er_even_prefix : ∀ (P : List ℕ), P.length % 2 = 0 → ∀ (A rest : List ℕ), rest ≠ [] →
+theorem er_even_prefix : ∀ (P : List ℕ), P.length % 2 = 0 → ∀ (A rest : List ℕ), rest ≠ [] →
     (cfg_ER (incList A.reverse ++ [0]) (toR_B (fromQ P ++ rest))) [target_tm]⊢*
     (cfg_ER (incList (A ++ fromQ (stepBlock P)).reverse ++ [0]) (toR_B rest))
   | [], _, A, rest, _ => by
@@ -561,7 +589,7 @@ lemma er_even_prefix : ∀ (P : List ℕ), P.length % 2 = 0 → ∀ (A rest : Li
     rw [h_eq] at h2
     exact h2
 
-lemma er_single_end_base (A : List ℕ) :
+theorem er_single_end_base (A : List ℕ) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B (fromQ [1]))) [target_tm]⊢⁺
     evalB (A ++ fromQ [0, 0, 1]) := by
   have h_toR : toR_B (fromQ [1]) = [0 + 3 * 2] := rfl
@@ -577,7 +605,7 @@ lemma er_single_end_base (A : List ℕ) :
   have h_eq : A ++ [0, 0] ++ [3] = A ++ fromQ [0, 0, 1] := by simp [fromQ, List.append_assoc]
   rwa [h_eq] at h_br
 
-lemma er_pair_end_base (q : ℕ) (A : List ℕ) :
+theorem er_pair_end_base (q : ℕ) (A : List ℕ) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B (fromQ [q, 1]))) [target_tm]⊢⁺
     evalB (A ++ fromQ (stepBlock [q]) ++ [5, 3]) := by
   have h_toR : toR_B (fromQ [q, 1]) = (0 + 3 * (q + 1)) :: [4] := by
@@ -600,9 +628,10 @@ lemma er_pair_end_base (q : ℕ) (A : List ℕ) :
     simp [stepBlock, fromQ, List.map_replicate, List.append_assoc]
   rwa [h_eq] at h_br
 
-lemma er_odd_cons_base (q k : ℕ) (A Q : List ℕ) (hQ : Q ≠ []) :
+theorem er_odd_cons_base (q k : ℕ) (A Q : List ℕ) (hQ : Q ≠ []) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B (3 * q :: (3 * k + 2) :: Q))) [target_tm]⊢⁺
-    (cfg_ER (incList (A ++ fromQ (stepBlock [q]) ++ [3 * (k + 1) + 2]).reverse ++ [0]) (toR_B Q)) := by
+    (cfg_ER (incList (A ++ fromQ (stepBlock [q]) ++ [3 * (k + 1) + 2]).reverse ++ [0]) (toR_B Q)) :=
+        by
   cases Q with
   | nil => contradiction
   | cons r₀ Q' =>
@@ -630,7 +659,7 @@ lemma er_odd_cons_base (q k : ℕ) (A Q : List ℕ) (hQ : Q ≠ []) :
       simp [stepBlock, fromQ, List.map_replicate, List.append_assoc]
     rwa [h_eq] at h3
 
-lemma er_peel_two_chain (C : List ℕ) (L : List ℕ) :
+theorem er_peel_two_chain (C : List ℕ) (L : List ℕ) :
     (cfg_ER L (bumpHead (incList (fromQ (C ++ [1]))))) [target_tm]⊢*
     (cfg_ER (List.replicate (sumQ1 (C ++ [1])) 1 ++ L) [0]) := by
   induction C generalizing L with
@@ -659,7 +688,7 @@ lemma er_peel_two_chain (C : List ℕ) (L : List ℕ) :
     rw [h_rep]
     try exact ⟨0, rfl⟩
 
-lemma er_two_end_base (k : ℕ) (C A : List ℕ) :
+theorem er_two_end_base (k : ℕ) (C A : List ℕ) :
     (cfg_ER (incList A.reverse ++ [0]) (toR_B ((3 * k + 2) :: fromQ (C ++ [1])))) [target_tm]⊢⁺
     evalB (A ++ fromQ (List.replicate (k + 2 + sumQ1 (C ++ [1])) 0 ++ [1])) := by
   have h_toR : toR_B ((3 * k + 2) :: fromQ (C ++ [1])) =
@@ -699,29 +728,29 @@ lemma er_two_end_base (k : ℕ) (C A : List ℕ) :
 -- Section 3: Graded Homomorphism Laws for `stepBlock` & `SweepRel_sound`
 -- ============================================================================
 
-@[simp] lemma stepBlock_nil : stepBlock [] = [] := rfl
-@[simp] lemma sb₁_nil : sb₁ [] = [] := rfl
-lemma sb₁_cons (x : ℕ) (rest : List ℕ) : sb₁ (x :: rest) = (x + 1) :: stepBlock rest := rfl
+@[simp] theorem stepBlock_nil : stepBlock [] = [] := rfl
+@[simp] theorem sb₁_nil : sb₁ [] = [] := rfl
+theorem sb₁_cons (x : ℕ) (rest : List ℕ) : sb₁ (x :: rest) = (x + 1) :: stepBlock rest := rfl
 
-lemma stepBlock_iterate_nil (s : ℕ) : stepBlock^[s] [] = [] := by
+theorem stepBlock_iterate_nil (s : ℕ) : stepBlock^[s] [] = [] := by
   induction s <;> simp [*]
 
-lemma length_append_even {u v : List ℕ} (hu : u.length % 2 = 0) (hv : v.length % 2 = 0) :
+theorem length_append_even {u v : List ℕ} (hu : u.length % 2 = 0) (hv : v.length % 2 = 0) :
     (u ++ v).length % 2 = 0 := by
   rw [List.length_append]; omega
 
-lemma length_append_odd_odd {u v : List ℕ} (hu : u.length % 2 = 1) (hv : v.length % 2 = 1) :
+theorem length_append_odd_odd {u v : List ℕ} (hu : u.length % 2 = 1) (hv : v.length % 2 = 1) :
     (u ++ v).length % 2 = 0 := by
   rw [List.length_append]; omega
 
-lemma length_append_odd_even {u v : List ℕ} (hu : u.length % 2 = 1) (hv : v.length % 2 = 0) :
+theorem length_append_odd_even {u v : List ℕ} (hu : u.length % 2 = 1) (hv : v.length % 2 = 0) :
     (u ++ v).length % 2 = 1 := by
   rw [List.length_append]; omega
 
-lemma pow_two_succ (n : ℕ) : 2 ^ (n + 1) = 2 ^ n + 2 ^ n := by
+theorem pow_two_succ (n : ℕ) : 2 ^ (n + 1) = 2 ^ n + 2 ^ n := by
   rw [Nat.pow_succ]; omega
 
-lemma stepBlock_append_even : ∀ (P Q : List ℕ), P.length % 2 = 0 →
+theorem stepBlock_append_even : ∀ (P Q : List ℕ), P.length % 2 = 0 →
     stepBlock (P ++ Q) = stepBlock P ++ stepBlock Q
   | [], Q, _ => rfl
   | [q], _, hP => by simp at hP
@@ -729,7 +758,7 @@ lemma stepBlock_append_even : ∀ (P Q : List ℕ), P.length % 2 = 0 →
     have hP' : P'.length % 2 = 0 := by simp only [List.length_cons] at hP; omega
     simp only [List.cons_append, stepBlock, stepBlock_append_even P' Q hP', List.append_assoc]
 
-lemma stepBlock_append_odd : ∀ (P Q : List ℕ), P.length % 2 = 1 →
+theorem stepBlock_append_odd : ∀ (P Q : List ℕ), P.length % 2 = 1 →
     stepBlock (P ++ Q) = stepBlock P ++ sb₁ Q
   | [], _, hP => by simp at hP
   | [q], Q, _ => by
@@ -740,7 +769,7 @@ lemma stepBlock_append_odd : ∀ (P Q : List ℕ), P.length % 2 = 1 →
     have hP' : P'.length % 2 = 1 := by simp only [List.length_cons] at hP; omega
     simp only [List.cons_append, stepBlock, stepBlock_append_odd P' Q hP', List.append_assoc]
 
-lemma sb₁_append_even (P Q : List ℕ) (hP : P.length % 2 = 0) :
+theorem sb₁_append_even (P Q : List ℕ) (hP : P.length % 2 = 0) :
     sb₁ (P ++ Q) = sb₁ P ++ sb₁ Q := by
   cases P with
   | nil => rfl
@@ -748,7 +777,7 @@ lemma sb₁_append_even (P Q : List ℕ) (hP : P.length % 2 = 0) :
     have hP' : P'.length % 2 = 1 := by simp only [List.length_cons] at hP; omega
     simp only [List.cons_append, sb₁_cons, stepBlock_append_odd P' Q hP']
 
-lemma sb₁_append_odd (P Q : List ℕ) (hP : P.length % 2 = 1) :
+theorem sb₁_append_odd (P Q : List ℕ) (hP : P.length % 2 = 1) :
     sb₁ (P ++ Q) = sb₁ P ++ stepBlock Q := by
   cases P with
   | nil => simp at hP
@@ -756,7 +785,7 @@ lemma sb₁_append_odd (P Q : List ℕ) (hP : P.length % 2 = 1) :
     have hP' : P'.length % 2 = 0 := by simp only [List.length_cons] at hP; omega
     simp only [List.cons_append, sb₁_cons, stepBlock_append_even P' Q hP']
 
-lemma odd_split_even_last : ∀ (P : List ℕ), P.length % 2 = 1 →
+theorem odd_split_even_last : ∀ (P : List ℕ), P.length % 2 = 1 →
     ∃ P₀ q, P = P₀ ++ [q] ∧ P₀.length % 2 = 0 ∧ stepBlock P = stepBlock P₀ ++ stepBlock [q]
   | [], hP => by simp at hP
   | [q], _ => ⟨[], q, rfl, rfl, rfl⟩
@@ -837,42 +866,44 @@ theorem SweepSteps_sound_plus {t : ℕ} {X Y : List ℕ} (h : SweepSteps (t + 1)
 -- Section 4: Additive Weight Conservation & Even-Prefix Prepend
 -- ============================================================================
 
-@[simp] lemma sumQ1_nil : sumQ1 [] = 0 := rfl
-@[simp] lemma sumQ1_cons (q : ℕ) (rest : List ℕ) : sumQ1 (q :: rest) = (q + 1) + sumQ1 rest := rfl
-@[simp] lemma weightB_nil : weightB [] = 0 := rfl
-@[simp] lemma weightB_cons (b : ℕ) (rest : List ℕ) : weightB (b :: rest) = weightDigit b + weightB rest := rfl
+@[simp] theorem sumQ1_nil : sumQ1 [] = 0 := rfl
+@[simp] theorem sumQ1_cons (q : ℕ) (rest : List ℕ) : sumQ1 (q :: rest) = (q + 1) + sumQ1 rest := rfl
+@[simp] theorem weightB_nil : weightB [] = 0 := rfl
+@[simp] theorem weightB_cons (b : ℕ) (rest : List ℕ) : weightB (b :: rest) =
+    weightDigit b + weightB rest := rfl
 
-lemma weightDigit_mul_three (q : ℕ) : weightDigit (3 * q) = 3 * (q + 1) := by
+theorem weightDigit_mul_three (q : ℕ) : weightDigit (3 * q) = 3 * (q + 1) := by
   unfold weightDigit
   have h : (3 * q) % 3 = 0 := Nat.mul_mod_right 3 q
   simp [h]; omega
 
-lemma weightDigit_two_mod_three (k : ℕ) : weightDigit (3 * k + 2) = 3 * k + 6 := by
+theorem weightDigit_two_mod_three (k : ℕ) : weightDigit (3 * k + 2) = 3 * k + 6 := by
   unfold weightDigit
   have h : (3 * k + 2) % 3 = 2 := by omega
   simp [h]
 
-lemma sumQ1_append (u v : List ℕ) : sumQ1 (u ++ v) = sumQ1 u + sumQ1 v := by
+theorem sumQ1_append (u v : List ℕ) : sumQ1 (u ++ v) = sumQ1 u + sumQ1 v := by
   induction u with
   | nil => simp
   | cons q u' ih => simp only [List.cons_append, sumQ1_cons, ih]; omega
 
-lemma sumQ1_replicate_zero (n : ℕ) : sumQ1 (List.replicate n 0) = n := by
+theorem sumQ1_replicate_zero (n : ℕ) : sumQ1 (List.replicate n 0) = n := by
   induction n with
   | zero => rfl
   | succ n ih => simp only [List.replicate_succ, sumQ1_cons, ih]; omega
 
-lemma weightB_append (X Y : List ℕ) : weightB (X ++ Y) = weightB X + weightB Y := by
+theorem weightB_append (X Y : List ℕ) : weightB (X ++ Y) = weightB X + weightB Y := by
   induction X with
   | nil => simp
   | cons b X' ih => simp only [List.cons_append, weightB_cons, ih]; omega
 
-lemma weightB_fromQ (u : List ℕ) : weightB (fromQ u) = 3 * sumQ1 u := by
+theorem weightB_fromQ (u : List ℕ) : weightB (fromQ u) = 3 * sumQ1 u := by
   induction u with
   | nil => rfl
-  | cons q u' ih => simp only [fromQ_cons, weightB_cons, weightDigit_mul_three, sumQ1_cons, ih]; omega
+  | cons q u' ih =>
+      simp only [fromQ_cons, weightB_cons, weightDigit_mul_three, sumQ1_cons, ih]; omega
 
-lemma sumQ1_stepBlock_even : ∀ (P : List ℕ), P.length % 2 = 0 →
+theorem sumQ1_stepBlock_even : ∀ (P : List ℕ), P.length % 2 = 0 →
     sumQ1 (stepBlock P) = sumQ1 P
   | [], _ => rfl
   | [q], hP => by simp at hP
@@ -882,7 +913,7 @@ lemma sumQ1_stepBlock_even : ∀ (P : List ℕ), P.length % 2 = 0 →
       sumQ1_stepBlock_even P' hP']
     omega
 
-lemma sumQ1_stepBlock_odd : ∀ (P : List ℕ), P.length % 2 = 1 →
+theorem sumQ1_stepBlock_odd : ∀ (P : List ℕ), P.length % 2 = 1 →
     sumQ1 P = sumQ1 (stepBlock P) + 1
   | [], hP => by simp at hP
   | [q], _ => by simp [stepBlock, sumQ1_replicate_zero]
@@ -892,7 +923,7 @@ lemma sumQ1_stepBlock_odd : ∀ (P : List ℕ), P.length % 2 = 1 →
     simp only [stepBlock, sumQ1_append, sumQ1_replicate_zero, sumQ1_cons]
     omega
 
-lemma SweepRel_weightB {X Y : List ℕ} (h : SweepRel X Y) : weightB Y = weightB X + 6 := by
+theorem SweepRel_weightB {X Y : List ℕ} (h : SweepRel X Y) : weightB Y = weightB X + 6 := by
   induction h with
   | single_end P hP =>
     have h_ev := sumQ1_stepBlock_even P hP
@@ -915,7 +946,7 @@ lemma SweepRel_weightB {X Y : List ℕ} (h : SweepRel X Y) : weightB Y = weightB
     simp only [sumQ1_cons, sumQ1_nil]
     omega
 
-lemma SweepSteps_weightB {t : ℕ} {X Y : List ℕ} (h : SweepSteps t X Y) :
+theorem SweepSteps_weightB {t : ℕ} {X Y : List ℕ} (h : SweepSteps t X Y) :
     weightB Y = weightB X + 6 * t := by
   induction h with
   | zero _ => simp
@@ -923,7 +954,7 @@ lemma SweepSteps_weightB {t : ℕ} {X Y : List ℕ} (h : SweepSteps t X Y) :
     have hw := SweepRel_weightB h1
     omega
 
-lemma SweepSteps_sumQ1 {t : ℕ} {C : List ℕ}
+theorem SweepSteps_sumQ1 {t : ℕ} {C : List ℕ}
     (h : SweepSteps t (fromQ [1]) (fromQ (C ++ [1]))) :
     sumQ1 (C ++ [1]) = 2 * t + 2 := by
   have hw := SweepSteps_weightB h
@@ -931,7 +962,7 @@ lemma SweepSteps_sumQ1 {t : ℕ} {C : List ℕ}
   dsimp [sumQ1] at hw
   omega
 
-lemma SweepRel_prepend_even (P : List ℕ) (hP : P.length % 2 = 0) {Q Q' : List ℕ}
+theorem SweepRel_prepend_even (P : List ℕ) (hP : P.length % 2 = 0) {Q Q' : List ℕ}
     (hQ : SweepRel Q Q') :
     SweepRel (fromQ P ++ Q) (fromQ (stepBlock P) ++ Q') := by
   cases hQ with
@@ -956,7 +987,7 @@ lemma SweepRel_prepend_even (P : List ℕ) (hP : P.length % 2 = 0) {Q Q' : List 
     rw [stepBlock_append_even P P₂ hP] at h_step
     simpa [fromQ_append, List.append_assoc] using h_step
 
-lemma SweepSteps_prepend_even {t : ℕ} (P : List ℕ) {Q Q' : List ℕ}
+theorem SweepSteps_prepend_even {t : ℕ} (P : List ℕ) {Q Q' : List ℕ}
     (hQ : SweepSteps t Q Q')
     (hEven : ∀ s < t, (stepBlock^[s] P).length % 2 = 0) :
     SweepSteps t (fromQ P ++ Q) (fromQ (stepBlock^[t] P) ++ Q') := by
@@ -974,10 +1005,10 @@ lemma SweepSteps_prepend_even {t : ℕ} (P : List ℕ) {Q Q' : List ℕ}
     rwa [← Function.iterate_succ_apply stepBlock t' P] at h_rec
 
 -- ============================================================================
--- Section 5: Iterated `stepBlock` Lemmas, `zBlock`, and `psi` / `phi` Lifts
+-- Section 5: Iterated `stepBlock` Lemmas, `zeroBlock`, and `psi` / `phi` Lifts
 -- ============================================================================
 
-lemma stepBlock_iterate_append_even (t : ℕ) (P Q : List ℕ)
+theorem stepBlock_iterate_append_even (t : ℕ) (P Q : List ℕ)
     (hEven : ∀ s < t, (stepBlock^[s] P).length % 2 = 0) :
     stepBlock^[t] (P ++ Q) = stepBlock^[t] P ++ stepBlock^[t] Q := by
   induction t generalizing P Q with
@@ -991,7 +1022,7 @@ lemma stepBlock_iterate_append_even (t : ℕ) (P Q : List ℕ)
     rwa [← Function.iterate_succ_apply stepBlock t' P,
       ← Function.iterate_succ_apply stepBlock t' Q] at h_rec
 
-lemma stepBlock_iterate_append_singleton (j : ℕ) (u : List ℕ) (d : ℕ)
+theorem stepBlock_iterate_append_singleton (j : ℕ) (u : List ℕ) (d : ℕ)
     (hEven : ∀ s < j, (stepBlock^[s] (u ++ [d])).length % 2 = 0) :
     stepBlock^[j] (u ++ [d]) = stepBlock^[j] u ++ [d + j] := by
   induction j generalizing u d with
@@ -1010,22 +1041,22 @@ lemma stepBlock_iterate_append_singleton (j : ℕ) (u : List ℕ) (d : ℕ)
     have h_add : d + 1 + j' = d + (j' + 1) := by omega
     rw [h_add]
 
-def zBlock (k d : ℕ) : List ℕ :=
+def zeroBlock (k d : ℕ) : List ℕ :=
   List.replicate (2 ^ k - 1) 0 ++ [d]
 
-lemma zBlock_zero (d : ℕ) : zBlock 0 d = [d] := rfl
+theorem zeroBlock_zero (d : ℕ) : zeroBlock 0 d = [d] := rfl
 
-lemma zBlock_succ (k d : ℕ) : zBlock (k + 1) d = zBlock k 0 ++ zBlock k d := by
-  unfold zBlock
+theorem zeroBlock_succ (k d : ℕ) : zeroBlock (k + 1) d = zeroBlock k 0 ++ zeroBlock k d := by
+  unfold zeroBlock
   have h_pos : 1 ≤ 2 ^ k := Nat.one_le_pow k 2 (by decide)
   have h_pow : 2 ^ (k + 1) - 1 = (2 ^ k - 1) + 1 + (2 ^ k - 1) := by
     rw [pow_two_succ k]; omega
   rw [h_pow, List.replicate_add, List.replicate_add, List.replicate_one]
   simp [List.append_assoc]
 
-lemma zBlock_props (k : ℕ) :
-    (∀ d, ∀ s < 2 ^ k - 1, (stepBlock^[s] (zBlock k d)).length % 2 = 0) ∧
-    (∀ d, stepBlock^[2 ^ k - 1] (zBlock k d) = [d + (2 ^ k - 1)]) := by
+theorem zeroBlock_props (k : ℕ) :
+    (∀ d, ∀ s < 2 ^ k - 1, (stepBlock^[s] (zeroBlock k d)).length % 2 = 0) ∧
+    (∀ d, stepBlock^[2 ^ k - 1] (zeroBlock k d) = [d + (2 ^ k - 1)]) := by
   induction k with
   | zero =>
     refine ⟨?_, ?_⟩
@@ -1034,29 +1065,29 @@ lemma zBlock_props (k : ℕ) :
   | succ k ih =>
     obtain ⟨ih_even, ih_end⟩ := ih
     have h_pos : 1 ≤ 2 ^ k := Nat.one_le_pow k 2 (by decide)
-    have h_mid : ∀ d, stepBlock^[2 ^ k - 1] (zBlock (k + 1) d) =
+    have h_mid : ∀ d, stepBlock^[2 ^ k - 1] (zeroBlock (k + 1) d) =
         [2 ^ k - 1, d + (2 ^ k - 1)] := by
       intro d
-      rw [zBlock_succ]
-      rw [stepBlock_iterate_append_even (2 ^ k - 1) (zBlock k 0) (zBlock k d) (ih_even 0)]
+      rw [zeroBlock_succ]
+      rw [stepBlock_iterate_append_even (2 ^ k - 1) (zeroBlock k 0) (zeroBlock k d) (ih_even 0)]
       rw [ih_end 0, ih_end d, Nat.zero_add]
       rfl
-    have h_mid_next : ∀ d, stepBlock^[2 ^ k] (zBlock (k + 1) d) = zBlock k (d + 2 ^ k) := by
+    have h_mid_next : ∀ d, stepBlock^[2 ^ k] (zeroBlock (k + 1) d) = zeroBlock k (d + 2 ^ k) := by
       intro d
       have h_split : 2 ^ k = (2 ^ k - 1) + 1 := by omega
-      have h_step : stepBlock^[2 ^ k] (zBlock (k + 1) d) =
-          stepBlock (stepBlock^[2 ^ k - 1] (zBlock (k + 1) d)) := by
+      have h_step : stepBlock^[2 ^ k] (zeroBlock (k + 1) d) =
+          stepBlock (stepBlock^[2 ^ k - 1] (zeroBlock (k + 1) d)) := by
         rw [h_split]
-        exact Function.iterate_succ_apply' stepBlock (2 ^ k - 1) (zBlock (k + 1) d)
+        exact Function.iterate_succ_apply' stepBlock (2 ^ k - 1) (zeroBlock (k + 1) d)
       rw [h_step, h_mid d]
-      dsimp [stepBlock, zBlock]
+      dsimp [stepBlock, zeroBlock]
       have h_add : d + (2 ^ k - 1) + 1 = d + 2 ^ k := by omega
       rw [h_add]
     refine ⟨?_, ?_⟩
     · intro d s hs
       rcases (by omega : s < 2 ^ k - 1 ∨ s = 2 ^ k - 1 ∨ 2 ^ k ≤ s) with hlt | rfl | hge
-      · rw [zBlock_succ]
-        rw [stepBlock_iterate_append_even s (zBlock k 0) (zBlock k d)
+      · rw [zeroBlock_succ]
+        rw [stepBlock_iterate_append_even s (zeroBlock k 0) (zeroBlock k d)
           (fun s' hs' => ih_even 0 s' (Nat.lt_trans hs' hlt))]
         exact length_append_even (ih_even 0 s hlt) (ih_even d s hlt)
       · rw [h_mid d]; simp
@@ -1068,32 +1099,32 @@ lemma zBlock_props (k : ℕ) :
     · intro d
       have h_split : 2 ^ (k + 1) - 1 = (2 ^ k - 1) + 2 ^ k := by
         rw [pow_two_succ k]; omega
-      have h_step : stepBlock^[2 ^ (k + 1) - 1] (zBlock (k + 1) d) =
-          stepBlock^[2 ^ k - 1] (stepBlock^[2 ^ k] (zBlock (k + 1) d)) := by
+      have h_step : stepBlock^[2 ^ (k + 1) - 1] (zeroBlock (k + 1) d) =
+          stepBlock^[2 ^ k - 1] (stepBlock^[2 ^ k] (zeroBlock (k + 1) d)) := by
         rw [← Function.iterate_add_apply, h_split]
       rw [h_step, h_mid_next d, ih_end (d + 2 ^ k)]
       have h_add : d + 2 ^ k + (2 ^ k - 1) = d + (2 ^ (k + 1) - 1) := by
         rw [pow_two_succ k]; omega
       rw [h_add]
 
-lemma zBlock_double_props (k d : ℕ) :
-    (∀ s ≤ 2 ^ (k + 1) - 1, (stepBlock^[s] (zBlock (k + 2) d)).length % 2 = 0) ∧
-    stepBlock^[2 ^ (k + 1) - 1] (zBlock (k + 2) d) =
+theorem zeroBlock_double_props (k d : ℕ) :
+    (∀ s ≤ 2 ^ (k + 1) - 1, (stepBlock^[s] (zeroBlock (k + 2) d)).length % 2 = 0) ∧
+    stepBlock^[2 ^ (k + 1) - 1] (zeroBlock (k + 2) d) =
       [2 ^ (k + 1) - 1, d + (2 ^ (k + 1) - 1)] := by
   have h_pos : 1 ≤ 2 ^ (k + 1) := Nat.one_le_pow (k + 1) 2 (by decide)
   have h_lt : ∀ s ≤ 2 ^ (k + 1) - 1, s < 2 ^ (k + 2) - 1 := by
     intro s hs; rw [pow_two_succ (k + 1)]; omega
-  refine ⟨fun s hs => (zBlock_props (k + 2)).1 d s (h_lt s hs), ?_⟩
-  rw [zBlock_succ (k + 1) d]
-  rw [stepBlock_iterate_append_even (2 ^ (k + 1) - 1) (zBlock (k + 1) 0) (zBlock (k + 1) d)
-    ((zBlock_props (k + 1)).1 0)]
-  rw [(zBlock_props (k + 1)).2 0, (zBlock_props (k + 1)).2 d, Nat.zero_add]
+  refine ⟨fun s hs => (zeroBlock_props (k + 2)).1 d s (h_lt s hs), ?_⟩
+  rw [zeroBlock_succ (k + 1) d]
+  rw [stepBlock_iterate_append_even (2 ^ (k + 1) - 1) (zeroBlock (k + 1) 0) (zeroBlock (k + 1) d)
+    ((zeroBlock_props (k + 1)).1 0)]
+  rw [(zeroBlock_props (k + 1)).2 0, (zeroBlock_props (k + 1)).2 d, Nat.zero_add]
   rfl
 
-lemma zBlock_shift_sb1 (k d : ℕ) (rest : List ℕ) :
+theorem zeroBlock_shift_sb1 (k d : ℕ) (rest : List ℕ) :
     List.replicate (2 ^ (k + 1) - 1) 0 ++
       sb₁ ((2 ^ (k + 1) - 1) :: (d + (2 ^ (k + 1) - 1)) :: rest) =
-    zBlock (k + 1) (2 ^ (k + 1)) ++
+    zeroBlock (k + 1) (2 ^ (k + 1)) ++
       (List.replicate (d + (2 ^ (k + 1) - 1)) 0 ++ sb₁ rest) := by
   change List.replicate (2 ^ (k + 1) - 1) 0 ++
     sb₁ ([2 ^ (k + 1) - 1, d + (2 ^ (k + 1) - 1)] ++ rest) = _
@@ -1104,14 +1135,14 @@ lemma zBlock_shift_sb1 (k d : ℕ) (rest : List ℕ) :
       [2 ^ (k + 1)] ++ List.replicate (d + (2 ^ (k + 1) - 1)) 0 := by
     simp [sb₁, stepBlock, h_pos]
   rw [h_sb1]
-  simp [zBlock, List.append_assoc]
+  simp [zeroBlock, List.append_assoc]
 
-lemma zBlock_shift_sb1_zero (k : ℕ) (rest : List ℕ) :
+theorem zeroBlock_shift_sb1_zero (k : ℕ) (rest : List ℕ) :
     List.replicate (2 ^ (k + 1) - 1) 0 ++
       sb₁ ((2 ^ (k + 1) - 1) :: (2 ^ (k + 1) - 1) :: rest) =
-    zBlock (k + 1) (2 ^ (k + 1)) ++
+    zeroBlock (k + 1) (2 ^ (k + 1)) ++
       (List.replicate (2 ^ (k + 1) - 1) 0 ++ sb₁ rest) := by
-  simpa using zBlock_shift_sb1 k 0 rest
+  simpa using zeroBlock_shift_sb1 k 0 rest
 
 def psi : List ℕ → List ℕ
   | [] => []
@@ -1124,15 +1155,15 @@ def oddMap : List ℕ → List ℕ
   | [] => []
   | x :: u => (2 * x + 1) :: oddMap u
 
-lemma psi_append (u v : List ℕ) : psi (u ++ v) = psi u ++ psi v := by
+theorem psi_append (u v : List ℕ) : psi (u ++ v) = psi u ++ psi v := by
   induction u with
   | nil => rfl
   | cons x u' ih => simp [psi, ih]
 
-lemma phi_append (u v : List ℕ) : phi (u ++ v) = psi u ++ phi v := by
+theorem phi_append (u v : List ℕ) : phi (u ++ v) = psi u ++ phi v := by
   simp [phi, psi_append, List.append_assoc]
 
-lemma psi_replicate_zero (n : ℕ) : psi (List.replicate n 0) = List.replicate (2 * n) 0 := by
+theorem psi_replicate_zero (n : ℕ) : psi (List.replicate n 0) = List.replicate (2 * n) 0 := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -1141,36 +1172,36 @@ lemma psi_replicate_zero (n : ℕ) : psi (List.replicate n 0) = List.replicate (
     rw [h_eq, List.replicate_add]
     rfl
 
-lemma phi_replicate_zero (n : ℕ) : phi (List.replicate n 0) = List.replicate (2 * n + 1) 0 := by
+theorem phi_replicate_zero (n : ℕ) : phi (List.replicate n 0) = List.replicate (2 * n + 1) 0 := by
   unfold phi
   rw [psi_replicate_zero, ← List.replicate_succ']
 
-lemma psi_length_even (u : List ℕ) : (psi u).length % 2 = 0 := by
+theorem psi_length_even (u : List ℕ) : (psi u).length % 2 = 0 := by
   induction u with
   | nil => rfl
   | cons x u' ih => simp [psi]; omega
 
-lemma phi_length_odd (u : List ℕ) : (phi u).length % 2 = 1 := by
+theorem phi_length_odd (u : List ℕ) : (phi u).length % 2 = 1 := by
   unfold phi
   have h := psi_length_even u
   simp [List.length_append]; omega
 
-lemma oddMap_length (u : List ℕ) : (oddMap u).length = u.length := by
+theorem oddMap_length (u : List ℕ) : (oddMap u).length = u.length := by
   induction u with
   | nil => rfl
   | cons x u' ih => simp [oddMap, ih]
 
-lemma stepBlock_psi (u : List ℕ) : stepBlock (psi u) = oddMap u := by
+theorem stepBlock_psi (u : List ℕ) : stepBlock (psi u) = oddMap u := by
   induction u with
   | nil => rfl
   | cons x u' ih => simp [psi, stepBlock, oddMap, ih]
 
-lemma stepBlock_phi (u : List ℕ) : stepBlock (phi u) = oddMap u := by
+theorem stepBlock_phi (u : List ℕ) : stepBlock (phi u) = oddMap u := by
   unfold phi
   rw [stepBlock_append_even (psi u) [0] (psi_length_even u), stepBlock_psi]
   simp [stepBlock]
 
-lemma stepBlock_oddMap_even : ∀ (u : List ℕ), u.length % 2 = 0 →
+theorem stepBlock_oddMap_even : ∀ (u : List ℕ), u.length % 2 = 0 →
     stepBlock (oddMap u) = psi (stepBlock u)
   | [], _ => rfl
   | [q], hu => by simp at hu
@@ -1183,7 +1214,7 @@ lemma stepBlock_oddMap_even : ∀ (u : List ℕ), u.length % 2 = 0 →
     have h_y : 2 * y + 1 + 1 = 2 * (y + 1) := by omega
     rw [h_y]
 
-lemma stepBlock_oddMap_odd : ∀ (u : List ℕ), u.length % 2 = 1 →
+theorem stepBlock_oddMap_odd : ∀ (u : List ℕ), u.length % 2 = 1 →
     stepBlock (oddMap u) = phi (stepBlock u)
   | [], hu => by simp at hu
   | [q], _ => by
@@ -1199,7 +1230,7 @@ lemma stepBlock_oddMap_odd : ∀ (u : List ℕ), u.length % 2 = 1 →
     rw [h_y]
     simp [phi, psi]
 
-lemma stepBlock_iterate_psi (j : ℕ) (u : List ℕ)
+theorem stepBlock_iterate_psi (j : ℕ) (u : List ℕ)
     (hEven : ∀ s < j, (stepBlock^[s] u).length % 2 = 0) :
     (∀ s < 2 * j, (stepBlock^[s] (psi u)).length % 2 = 0) ∧
     stepBlock^[2 * j] (psi u) = psi (stepBlock^[j] u) := by
@@ -1227,7 +1258,7 @@ lemma stepBlock_iterate_psi (j : ℕ) (u : List ℕ)
       rw [h_mul, Function.iterate_add_apply, h2, h_rec.2,
         ← Function.iterate_succ_apply stepBlock j' u]
 
-lemma stepBlock_iterate_phi (j : ℕ) (u : List ℕ)
+theorem stepBlock_iterate_phi (j : ℕ) (u : List ℕ)
     (hOdd : ∀ s < j, (stepBlock^[s] u).length % 2 = 1)
     (hEnd : (stepBlock^[j] u).length % 2 = 0) :
     (∀ s < 2 * j + 1, (stepBlock^[s] (phi u)).length % 2 = 1) ∧
@@ -1283,10 +1314,10 @@ def PSc : Bool → ℕ → ℕ → List ℕ
 def Pc (k c : ℕ) : List ℕ := PSc true k c
 def Sc (k c : ℕ) : List ℕ := PSc false k c
 
-@[simp] lemma Pc_zero (c : ℕ) : Pc 0 c = [1 + c] := rfl
-@[simp] lemma Sc_zero (c : ℕ) : Sc 0 c = [c] := rfl
-lemma Pc_succ (k c : ℕ) : Pc (k + 1) c = Pc k 1 ++ Sc k c := rfl
-lemma Sc_succ (k c : ℕ) : Sc (k + 1) c = Sc k 0 ++ Pc k c := rfl
+@[simp] theorem Pc_zero (c : ℕ) : Pc 0 c = [1 + c] := rfl
+@[simp] theorem Sc_zero (c : ℕ) : Sc 0 c = [c] := rfl
+theorem Pc_succ (k c : ℕ) : Pc (k + 1) c = Pc k 1 ++ Sc k c := rfl
+theorem Sc_succ (k c : ℕ) : Sc (k + 1) c = Sc k 0 ++ Pc k c := rfl
 
 def nextMid : List Bool → List Bool
   | [] => []
@@ -1300,7 +1331,7 @@ def bsSeq : ℕ → List Bool
   | 0 => []
   | k + 1 => stepBs (bsSeq k)
 
-lemma stepBs_iterate_eq (k : ℕ) : stepBs^[k] [] = bsSeq k := by
+theorem stepBs_iterate_eq (k : ℕ) : stepBs^[k] [] = bsSeq k := by
   induction k with
   | zero => rfl
   | succ k' ih => rw [Function.iterate_succ_apply', ih]; rfl
@@ -1322,23 +1353,24 @@ def rawP' (m d : ℕ) : List ℕ :=
 def rawS (m d : ℕ) : List ℕ :=
   MSeq1 m ++ tailRaw ((m + 1) % 2 == 0) d
 
-lemma nextMid_append (xs ys : List Bool) : nextMid (xs ++ ys) = nextMid xs ++ nextMid ys := by
+theorem nextMid_append (xs ys : List Bool) : nextMid (xs ++ ys) = nextMid xs ++ nextMid ys := by
   induction xs with
   | nil => rfl
   | cons b xs' ih => cases b <;> simp [nextMid, ih]
 
-lemma evalW_append (xs ys : List Bool) : evalW (xs ++ ys) = evalW xs ++ evalW ys := by
+theorem evalW_append (xs ys : List Bool) : evalW (xs ++ ys) = evalW xs ++ evalW ys := by
   induction xs with
   | nil => rfl
   | cons b xs' ih => cases b <;> simp [evalW, ih]
 
-lemma bsSeq_succ_eq (m : ℕ) :
+theorem bsSeq_succ_eq (m : ℕ) :
     bsSeq (m + 1) = bsSeq m ++ (if (m + 1) % 2 = 1 then [true] else [false, false]) ++ bsSeq m := by
   induction m with
   | zero => rfl
   | succ m' ih =>
     have h_lhs : bsSeq (m' + 2) =
-        nextMid (bsSeq m' ++ (if (m' + 1) % 2 = 1 then [true] else [false, false]) ++ bsSeq m') ++ [true] := by
+        nextMid (bsSeq m' ++ (if (m' + 1) % 2 = 1 then [true] else [false,
+            false]) ++ bsSeq m') ++ [true] := by
       change nextMid (bsSeq (m' + 1)) ++ [true] = _
       rw [ih]
     rw [h_lhs, nextMid_append, nextMid_append]
@@ -1351,7 +1383,7 @@ lemma bsSeq_succ_eq (m : ℕ) :
     · have h_next : (m' + 1 + 1) % 2 = 1 := by omega
       simp [hev, h_next, nextMid, List.append_assoc]
 
-lemma MSeq1_succ_eq (m : ℕ) :
+theorem MSeq1_succ_eq (m : ℕ) :
     MSeq1 (m + 1) = rawS m 0 ++ MSeq1 m := by
   unfold rawS MSeq1
   rw [bsSeq_succ_eq m, evalW_append, evalW_append]
@@ -1359,7 +1391,7 @@ lemma MSeq1_succ_eq (m : ℕ) :
   · simp [hod, evalW, tailRaw, List.append_assoc]
   · simp [hev, evalW, tailRaw, List.append_assoc]
 
-lemma rawP'_succ (m d : ℕ) : rawP' (m + 1) d = rawS m 0 ++ rawS m d := by
+theorem rawP'_succ (m d : ℕ) : rawP' (m + 1) d = rawS m 0 ++ rawS m d := by
   unfold rawP'
   rw [MSeq1_succ_eq m, List.append_assoc]
   have h_b : ((m + 1 + 1) % 2 == 1) = ((m + 1) % 2 == 0) := by
@@ -1371,7 +1403,7 @@ lemma rawP'_succ (m d : ℕ) : rawP' (m + 1) d = rawS m 0 ++ rawS m d := by
   rw [h_b]
   rfl
 
-lemma rawS_succ (m d : ℕ) : rawS (m + 1) d = rawS m 0 ++ rawP' m d := by
+theorem rawS_succ (m d : ℕ) : rawS (m + 1) d = rawS m 0 ++ rawP' m d := by
   unfold rawS
   rw [MSeq1_succ_eq m, List.append_assoc]
   have h_b : ((m + 1 + 1) % 2 == 0) = ((m + 1) % 2 == 1) := by
@@ -1383,7 +1415,7 @@ lemma rawS_succ (m d : ℕ) : rawS (m + 1) d = rawS m 0 ++ rawP' m d := by
   rw [h_b]
   rfl
 
-lemma rawP'_rawS_len (m : ℕ) :
+theorem rawP'_rawS_len (m : ℕ) :
     (∀ d, (rawP' m d).length % 2 = 0) ∧ (∀ d, (rawS m d).length % 2 = 1) := by
   induction m with
   | zero =>
@@ -1394,7 +1426,7 @@ lemma rawP'_rawS_len (m : ℕ) :
     · rw [rawP'_succ]; exact length_append_odd_odd (ih.2 0) (ih.2 d)
     · rw [rawS_succ]; exact length_append_odd_even (ih.2 0) (ih.1 d)
 
-lemma rawP'_rawS_eval (m : ℕ) :
+theorem rawP'_rawS_eval (m : ℕ) :
     (∀ d, sb₁ (rawP' m d) = Pc (m + 1) 0 ++ List.replicate d 0) ∧
     (∀ d, stepBlock (rawS m d) = Sc (m + 1) 0 ++ List.replicate d 0) ∧
     (∀ d, stepBlock (rawP' m d) = Sc (m + 1) (d + 1)) ∧
@@ -1402,7 +1434,8 @@ lemma rawP'_rawS_eval (m : ℕ) :
   induction m with
   | zero =>
     refine ⟨?_, ?_, ?_, ?_⟩
-    · intro d; simp [rawP', MSeq1, bsSeq, evalW, tailRaw, sb₁, stepBlock, Pc, PSc, List.replicate_succ]
+    · intro d; simp [rawP', MSeq1, bsSeq, evalW, tailRaw, sb₁, stepBlock, Pc, PSc,
+        List.replicate_succ]
     · intro d; simp [rawS, MSeq1, bsSeq, evalW, tailRaw, stepBlock, Sc, PSc, List.replicate_succ]
     · intro d
       dsimp [rawP', MSeq1, bsSeq, evalW, tailRaw, stepBlock, Sc, PSc]
@@ -1433,7 +1466,7 @@ def endS : ℕ → ℕ → List ℕ
   | 0, c => [2 + c]
   | m + 1, c => rawS m (2 ^ (m + 2) - 1 + c)
 
-lemma endP_len_odd (k c : ℕ) : (endP k c).length % 2 = 1 := by
+theorem endP_len_odd (k c : ℕ) : (endP k c).length % 2 = 1 := by
   cases k with
   | zero => simp [endP]
   | succ m =>
@@ -1441,18 +1474,18 @@ lemma endP_len_odd (k c : ℕ) : (endP k c).length % 2 = 1 := by
     have h := (rawP'_rawS_len m).1 (2 ^ (m + 2) - 1 + c)
     omega
 
-lemma endS_len_odd (k c : ℕ) : (endS k c).length % 2 = 1 := by
+theorem endS_len_odd (k c : ℕ) : (endS k c).length % 2 = 1 := by
   cases k with
   | zero => simp [endS]
   | succ m => exact (rawP'_rawS_len m).2 (2 ^ (m + 2) - 1 + c)
 
-lemma stepBlock_endP (k c : ℕ) :
+theorem stepBlock_endP (k c : ℕ) :
     stepBlock (endP k c) = Pc k 0 ++ List.replicate (2 ^ (k + 1) - 1 + c) 0 := by
   cases k with
   | zero => rfl
   | succ m => exact (rawP'_rawS_eval m).1 (2 ^ (m + 2) - 1 + c)
 
-lemma stepBlock_endS (k c : ℕ) :
+theorem stepBlock_endS (k c : ℕ) :
     stepBlock (endS k c) = Sc k 0 ++ List.replicate (2 ^ (k + 1) - 1 + c) 0 := by
   cases k with
   | zero =>
@@ -1460,7 +1493,7 @@ lemma stepBlock_endS (k c : ℕ) :
     rw [show 2 + c = (1 + c) + 1 by omega, List.replicate_succ]
   | succ m => exact (rawP'_rawS_eval m).2.1 (2 ^ (m + 2) - 1 + c)
 
-lemma sb₁_endP (k c : ℕ) :
+theorem sb₁_endP (k c : ℕ) :
     sb₁ (endP k c) = [1] ++ Sc k (2 ^ (k + 1) + c) := by
   cases k with
   | zero =>
@@ -1474,7 +1507,7 @@ lemma sb₁_endP (k c : ℕ) :
     rw [h_add]
     rfl
 
-lemma sb₁_endS (k c : ℕ) :
+theorem sb₁_endS (k c : ℕ) :
     sb₁ (endS k c) = Pc k (2 ^ (k + 1) + c) := by
   cases k with
   | zero =>
@@ -1489,44 +1522,44 @@ lemma sb₁_endS (k c : ℕ) :
 
 def evalMid (k : ℕ) : List Bool → List ℕ
   | [] => []
-  | false :: bs => zBlock (k + 1) 0 ++ evalMid k bs
-  | true :: bs => zBlock (k + 1) (2 ^ (k + 1)) ++ evalMid k bs
+  | false :: bs => zeroBlock (k + 1) 0 ++ evalMid k bs
+  | true :: bs => zeroBlock (k + 1) (2 ^ (k + 1)) ++ evalMid k bs
 
 def tailStage (k : ℕ) (rkind : Bool) (c : ℕ) : List ℕ :=
   if rkind then
-    zBlock (k + 1) 0 ++ Pc k c
+    zeroBlock (k + 1) 0 ++ Pc k c
   else
-    zBlock (k + 1) 1 ++ Sc k c
+    zeroBlock (k + 1) 1 ++ Sc k c
 
 def stage (k : ℕ) (lkind rkind : Bool) (bs : List Bool) (c : ℕ) : List ℕ :=
   PSc lkind k 0 ++ evalMid k bs ++ tailStage k rkind c
 
-lemma evalMid_append (k : ℕ) (xs ys : List Bool) :
+theorem evalMid_append (k : ℕ) (xs ys : List Bool) :
     evalMid k (xs ++ ys) = evalMid k xs ++ evalMid k ys := by
   induction xs with
   | nil => rfl
   | cons b xs' ih => cases b <;> simp [evalMid, ih, List.append_assoc]
 
-lemma evalMid_zero_props (bs : List Bool) :
+theorem evalMid_zero_props (bs : List Bool) :
     (evalMid 0 bs).length % 2 = 0 ∧ sb₁ (evalMid 0 bs) = evalW bs := by
   induction bs with
   | nil => exact ⟨rfl, rfl⟩
   | cons b bs' ih =>
     cases b
-    · have h_zb : zBlock 1 0 = [0, 0] := rfl
+    · have h_zb : zeroBlock 1 0 = [0, 0] := rfl
       dsimp [evalMid, evalW]
       rw [h_zb]
       refine ⟨length_append_even (by simp) ih.1, ?_⟩
       rw [sb₁_append_even [0, 0] (evalMid 0 bs') (by simp), ih.2]
       rfl
-    · have h_zb : zBlock 1 2 = [0, 2] := rfl
+    · have h_zb : zeroBlock 1 2 = [0, 2] := rfl
       dsimp [evalMid, evalW]
       rw [h_zb]
       refine ⟨length_append_even (by simp) ih.1, ?_⟩
       rw [sb₁_append_even [0, 2] (evalMid 0 bs') (by simp), ih.2]
       rfl
 
-lemma stage_zero_props (lkind rkind : Bool) (bs : List Bool) (c : ℕ) :
+theorem stage_zero_props (lkind rkind : Bool) (bs : List Bool) (c : ℕ) :
     (stage 0 lkind rkind bs c).length % 2 = 0 ∧
     stepBlock (stage 0 lkind rkind bs c) =
       (if lkind then [0] else []) ++ evalW bs ++ [1] ++ tailRaw rkind (1 + c) := by
@@ -1538,10 +1571,10 @@ lemma stage_zero_props (lkind rkind : Bool) (bs : List Bool) (c : ℕ) :
   have h_tail : (tailStage 0 rkind c).length % 2 = 1 ∧
       sb₁ (tailStage 0 rkind c) = [1] ++ tailRaw rkind (1 + c) := by
     cases rkind
-    · refine ⟨by simp [tailStage, zBlock, Sc_zero], ?_⟩
-      dsimp [tailStage, zBlock, Sc_zero, tailRaw, sb₁, stepBlock]
+    · refine ⟨by simp [tailStage, zeroBlock, Sc_zero], ?_⟩
+      dsimp [tailStage, zeroBlock, Sc_zero, tailRaw, sb₁, stepBlock]
       rw [Nat.add_comm c 1]
-    · refine ⟨by simp [tailStage, zBlock, Pc_zero], ?_⟩
+    · refine ⟨by simp [tailStage, zeroBlock, Pc_zero], ?_⟩
       rfl
   refine ⟨length_append_odd_odd (length_append_odd_even h_left.1 h_mid.1) h_tail.1, ?_⟩
   rw [List.append_assoc, stepBlock_append_odd _ _ h_left.1, h_left.2]
@@ -1559,7 +1592,7 @@ def tailStage1 (k : ℕ) (rkind : Bool) (c : ℕ) : List ℕ :=
   else
     [2 ^ (k + 1) - 1, 1 + (2 ^ (k + 1) - 1)] ++ endS k c
 
-lemma evalMid_succ_step (k : ℕ) (bs : List Bool) :
+theorem evalMid_succ_step (k : ℕ) (bs : List Bool) :
     (∀ s ≤ 2 ^ (k + 1) - 1, (stepBlock^[s] (evalMid (k + 1) bs)).length % 2 = 0) ∧
     stepBlock^[2 ^ (k + 1) - 1] (evalMid (k + 1) bs) = evalMid1 k bs := by
   induction bs with
@@ -1568,23 +1601,27 @@ lemma evalMid_succ_step (k : ℕ) (bs : List Bool) :
   | cons b bs' ih =>
     cases b
     · dsimp [evalMid, evalMid1]
-      have hz := zBlock_double_props k 0
+      have hz := zeroBlock_double_props k 0
       refine ⟨fun s hs => ?_, ?_⟩
-      · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt (Nat.lt_of_lt_of_le hs' hs)))]
+      · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' =>
+          hz.1 s' (Nat.le_of_lt (Nat.lt_of_lt_of_le hs' hs)))]
         exact length_append_even (hz.1 s hs) (ih.1 s hs)
-      · rw [stepBlock_iterate_append_even (2 ^ (k + 1) - 1) _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt hs'))]
+      · rw [stepBlock_iterate_append_even (2 ^ (k + 1) - 1) _ _ (fun s' hs' =>
+          hz.1 s' (Nat.le_of_lt hs'))]
         rw [hz.2, ih.2, Nat.zero_add]
         rfl
     · dsimp [evalMid, evalMid1]
-      have hz := zBlock_double_props k (2 ^ (k + 2))
+      have hz := zeroBlock_double_props k (2 ^ (k + 2))
       refine ⟨fun s hs => ?_, ?_⟩
-      · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt (Nat.lt_of_lt_of_le hs' hs)))]
+      · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' =>
+          hz.1 s' (Nat.le_of_lt (Nat.lt_of_lt_of_le hs' hs)))]
         exact length_append_even (hz.1 s hs) (ih.1 s hs)
-      · rw [stepBlock_iterate_append_even (2 ^ (k + 1) - 1) _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt hs'))]
+      · rw [stepBlock_iterate_append_even (2 ^ (k + 1) - 1) _ _ (fun s' hs' =>
+          hz.1 s' (Nat.le_of_lt hs'))]
         rw [hz.2, ih.2]
         rfl
 
-lemma evalMid1_shift_sb1 (k : ℕ) (bs : List Bool) (rest : List ℕ) :
+theorem evalMid1_shift_sb1 (k : ℕ) (bs : List Bool) (rest : List ℕ) :
     List.replicate (2 ^ (k + 1) - 1) 0 ++ sb₁ (evalMid1 k bs ++ rest) =
     evalMid k (nextMid bs) ++ (List.replicate (2 ^ (k + 1) - 1) 0 ++ sb₁ rest) := by
   induction bs with
@@ -1592,15 +1629,15 @@ lemma evalMid1_shift_sb1 (k : ℕ) (bs : List Bool) (rest : List ℕ) :
   | cons b bs' ih =>
     cases b
     · dsimp [evalMid1, nextMid, evalMid]
-      rw [zBlock_shift_sb1_zero k (evalMid1 k bs' ++ rest), ih]
+      rw [zeroBlock_shift_sb1_zero k (evalMid1 k bs' ++ rest), ih]
       simp [List.append_assoc]
     · dsimp [evalMid1, nextMid, evalMid]
-      rw [zBlock_shift_sb1 k (2 ^ (k + 2)) (evalMid1 k bs' ++ rest)]
+      rw [zeroBlock_shift_sb1 k (2 ^ (k + 2)) (evalMid1 k bs' ++ rest)]
       have h_split : 2 ^ (k + 2) + (2 ^ (k + 1) - 1) =
           2 ^ (k + 1) + 2 ^ (k + 1) + (2 ^ (k + 1) - 1) := by
         rw [pow_two_succ (k + 1)]
-      have h_z0 : zBlock (k + 1) 0 = List.replicate (2 ^ (k + 1)) 0 := by
-        unfold zBlock
+      have h_z0 : zeroBlock (k + 1) 0 = List.replicate (2 ^ (k + 1)) 0 := by
+        unfold zeroBlock
         have h_pos : 2 ^ (k + 1) - 1 + 1 = 2 ^ (k + 1) :=
           Nat.sub_add_cancel (Nat.one_le_pow (k + 1) 2 (by decide))
         rw [← List.replicate_succ', h_pos]
@@ -1608,24 +1645,24 @@ lemma evalMid1_shift_sb1 (k : ℕ) (bs : List Bool) (rest : List ℕ) :
         List.append_assoc, ih]
       simp [List.append_assoc]
 
-lemma tailStage1_shift_sb1 (k : ℕ) (rkind : Bool) (c : ℕ) :
+theorem tailStage1_shift_sb1 (k : ℕ) (rkind : Bool) (c : ℕ) :
     List.replicate (2 ^ (k + 1) - 1) 0 ++ sb₁ (tailStage1 k rkind c) =
     evalMid k [true] ++ tailStage k (!rkind) (2 ^ (k + 1) + c) := by
   have h_pos : 2 ^ (k + 1) - 1 + 1 = 2 ^ (k + 1) :=
     Nat.sub_add_cancel (Nat.one_le_pow (k + 1) 2 (by decide))
   cases rkind
   · dsimp [tailStage1, evalMid, tailStage]
-    rw [zBlock_shift_sb1 k 1 (endS k c), Nat.add_comm 1 (2 ^ (k + 1) - 1), h_pos, sb₁_endS k c]
-    have h_z0 : zBlock (k + 1) 0 = List.replicate (2 ^ (k + 1)) 0 := by
-      unfold zBlock; rw [← List.replicate_succ', h_pos]
+    rw [zeroBlock_shift_sb1 k 1 (endS k c), Nat.add_comm 1 (2 ^ (k + 1) - 1), h_pos, sb₁_endS k c]
+    have h_z0 : zeroBlock (k + 1) 0 = List.replicate (2 ^ (k + 1)) 0 := by
+      unfold zeroBlock; rw [← List.replicate_succ', h_pos]
     rw [h_z0]
     simp
   · dsimp [tailStage1, evalMid, tailStage]
-    rw [zBlock_shift_sb1_zero k (endP k c), sb₁_endP k c]
-    unfold zBlock
+    rw [zeroBlock_shift_sb1_zero k (endP k c), sb₁_endP k c]
+    unfold zeroBlock
     simp [List.append_assoc]
 
-lemma flip_iterate_eq (k : ℕ) :
+theorem flip_iterate_eq (k : ℕ) :
     (! ·)^[k] true = ((k + 1) % 2 == 1) ∧ (! ·)^[k] false = ((k + 1) % 2 == 0) := by
   induction k with
   | zero => exact ⟨rfl, rfl⟩
@@ -1637,7 +1674,7 @@ lemma flip_iterate_eq (k : ℕ) :
     · have h2 : (k' + 1 + 1) % 2 = 0 := by omega
       simp [h, h2]
 
-lemma Pc_Sc_cascade (k : ℕ) :
+theorem Pc_Sc_cascade (k : ℕ) :
     (∀ b c, ∀ s < 2 ^ (k + 1) - 1, (stepBlock^[s] (PSc b (k + 1) c)).length % 2 = 0) ∧
     (∀ c, stepBlock^[2 ^ (k + 1) - 1] (Pc (k + 1) c) = endP k c) ∧
     (∀ c, stepBlock^[2 ^ (k + 1) - 1] (Sc (k + 1) c) = endS k c) ∧
@@ -1677,7 +1714,8 @@ lemma Pc_Sc_cascade (k : ℕ) :
       intro b c; cases b
       · exact ih_endS c
       · exact ih_endP c
-    have h_PSc_end_odd : ∀ (b : Bool) (c : ℕ), (if b then endP k' c else endS k' c).length % 2 = 1 := by
+    have h_PSc_end_odd : ∀ (b : Bool) (c : ℕ),
+        (if b then endP k' c else endS k' c).length % 2 = 1 := by
       intro b c; cases b
       · exact endS_len_odd k' c
       · exact endP_len_odd k' c
@@ -1692,29 +1730,36 @@ lemma Pc_Sc_cascade (k : ℕ) :
             (stepBlock^[s] (tailStage (k' + 1) rkind c)).length % 2 = 0) ∧
           stepBlock^[2 ^ (k' + 1) - 1] (tailStage (k' + 1) rkind c) = tailStage1 k' rkind c := by
         cases rkind
-        · change (∀ s < 2 ^ (k' + 1) - 1, (stepBlock^[s] (zBlock (k' + 2) 1 ++ Sc (k' + 1) c)).length % 2 = 0) ∧
-            stepBlock^[2 ^ (k' + 1) - 1] (zBlock (k' + 2) 1 ++ Sc (k' + 1) c) =
+        · change (∀ s < 2 ^ (k' + 1) - 1,
+            (stepBlock^[s] (zeroBlock (k' + 2) 1 ++ Sc (k' + 1) c)).length % 2 = 0) ∧
+            stepBlock^[2 ^ (k' + 1) - 1] (zeroBlock (k' + 2) 1 ++ Sc (k' + 1) c) =
               [2 ^ (k' + 1) - 1, 1 + (2 ^ (k' + 1) - 1)] ++ endS k' c
-          have hz := zBlock_double_props k' 1
+          have hz := zeroBlock_double_props k' 1
           refine ⟨fun s hs => ?_, ?_⟩
-          · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt (Nat.lt_trans hs' hs)))]
+          · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' =>
+              hz.1 s' (Nat.le_of_lt (Nat.lt_trans hs' hs)))]
             exact length_append_even (hz.1 s (Nat.le_of_lt hs)) (ih_even false c s hs)
-          · rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt hs'))]
+          · rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) _ _ (fun s' hs' =>
+              hz.1 s' (Nat.le_of_lt hs'))]
             rw [hz.2, ih_endS c]
-        · change (∀ s < 2 ^ (k' + 1) - 1, (stepBlock^[s] (zBlock (k' + 2) 0 ++ Pc (k' + 1) c)).length % 2 = 0) ∧
-            stepBlock^[2 ^ (k' + 1) - 1] (zBlock (k' + 2) 0 ++ Pc (k' + 1) c) =
+        · change (∀ s < 2 ^ (k' + 1) - 1,
+            (stepBlock^[s] (zeroBlock (k' + 2) 0 ++ Pc (k' + 1) c)).length % 2 = 0) ∧
+            stepBlock^[2 ^ (k' + 1) - 1] (zeroBlock (k' + 2) 0 ++ Pc (k' + 1) c) =
               [2 ^ (k' + 1) - 1, 2 ^ (k' + 1) - 1] ++ endP k' c
-          have hz := zBlock_double_props k' 0
+          have hz := zeroBlock_double_props k' 0
           refine ⟨fun s hs => ?_, ?_⟩
-          · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt (Nat.lt_trans hs' hs)))]
+          · rw [stepBlock_iterate_append_even s _ _ (fun s' hs' =>
+              hz.1 s' (Nat.le_of_lt (Nat.lt_trans hs' hs)))]
             exact length_append_even (hz.1 s (Nat.le_of_lt hs)) (ih_even true c s hs)
-          · rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) _ _ (fun s' hs' => hz.1 s' (Nat.le_of_lt hs'))]
+          · rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) _ _ (fun s' hs' =>
+              hz.1 s' (Nat.le_of_lt hs'))]
             rw [hz.2, ih_endP c, Nat.zero_add]
       have h_at_mid : stepBlock^[2 ^ (k' + 1) - 1] (stage (k' + 1) lkind rkind bs c) =
           (if lkind then endP k' 0 else endS k' 0) ++ evalMid1 k' bs ++ tailStage1 k' rkind c := by
         unfold stage
         rw [List.append_assoc]
-        rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) (PSc lkind (k' + 1) 0) _ (ih_even lkind 0)]
+        rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) (PSc lkind (k' + 1) 0) _ (ih_even lkind
+            0)]
         rw [stepBlock_iterate_append_even (2 ^ (k' + 1) - 1) (evalMid (k' + 1) bs) _
           (fun s' hs' => h_mid.1 s' (Nat.le_of_lt hs'))]
         rw [h_PSc_end lkind 0, h_mid.2, h_tail.2, List.append_assoc]
@@ -1741,7 +1786,8 @@ lemma Pc_Sc_cascade (k : ℕ) :
       have h_sub := ih_stage lkind (!rkind) (stepBs bs) (2 ^ (k' + 1) + c)
       refine ⟨?_, ?_⟩
       · intro s hs
-        rcases (by omega : s < 2 ^ (k' + 1) - 1 ∨ s = 2 ^ (k' + 1) - 1 ∨ 2 ^ (k' + 1) ≤ s) with hlt | rfl | hge
+        rcases (by omega : s < 2 ^ (k' + 1) - 1 ∨ s = 2 ^ (k' + 1) - 1 ∨
+            2 ^ (k' + 1) ≤ s) with hlt | rfl | hge
         · unfold stage
           rw [List.append_assoc]
           rw [stepBlock_iterate_append_even s (PSc lkind (k' + 1) 0) _
@@ -1767,7 +1813,8 @@ lemma Pc_Sc_cascade (k : ℕ) :
       · have h_split : 2 ^ (k' + 2) - 1 = (2 ^ (k' + 1) - 1) + 2 ^ (k' + 1) := by
           rw [pow_two_succ (k' + 1)]; omega
         have h_step : stepBlock^[2 ^ (k' + 2) - 1] (stage (k' + 1) lkind rkind bs c) =
-            stepBlock^[2 ^ (k' + 1) - 1] (stepBlock^[2 ^ (k' + 1)] (stage (k' + 1) lkind rkind bs c)) := by
+            stepBlock^[2 ^ (k' + 1) - 1] (stepBlock^[2 ^ (k' + 1)] (stage (k' + 1) lkind rkind bs
+                c)) := by
           rw [← Function.iterate_add_apply, h_split]
         rw [h_step, h_at_next, h_sub.2]
         have h_add : 2 ^ (k' + 1) - 1 + (2 ^ (k' + 1) + c) = 2 ^ (k' + 2) - 1 + c := by
@@ -1793,7 +1840,7 @@ lemma Pc_Sc_cascade (k : ℕ) :
       rw [stepBlock_append_odd (endP k' 1) (endS k' c) (endP_len_odd k' 1),
         stepBlock_endP k' 1, sb₁_endS k' c]
       rw [List.replicate_succ']
-      unfold stage evalMid tailStage zBlock Pc
+      unfold stage evalMid tailStage zeroBlock Pc
       simp only [List.append_assoc, List.nil_append, ↓reduceIte]
     have h_Sc_mid : ∀ c, stepBlock^[2 ^ (k' + 1) - 1] (Sc (k' + 2) c) =
         endS k' 0 ++ endP k' c := by
@@ -1813,13 +1860,14 @@ lemma Pc_Sc_cascade (k : ℕ) :
       rw [h_step, h_Sc_mid c]
       rw [stepBlock_append_odd (endS k' 0) (endP k' c) (endS_len_odd k' 0),
         stepBlock_endS k' 0, sb₁_endP k' c]
-      unfold stage evalMid tailStage zBlock Sc
+      unfold stage evalMid tailStage zeroBlock Sc
       simp only [Nat.add_zero, List.append_assoc, List.nil_append, Bool.false_eq_true, ↓reduceIte]
     refine ⟨?_, ?_, ?_, h_stage_succ⟩
     · intro b c s hs
       cases b
       · change (stepBlock^[s] (Sc (k' + 2) c)).length % 2 = 0
-        rcases (by omega : s < 2 ^ (k' + 1) - 1 ∨ s = 2 ^ (k' + 1) - 1 ∨ 2 ^ (k' + 1) ≤ s) with hlt | rfl | hge
+        rcases (by omega : s < 2 ^ (k' + 1) - 1 ∨ s = 2 ^ (k' + 1) - 1 ∨
+            2 ^ (k' + 1) ≤ s) with hlt | rfl | hge
         · rw [Sc_succ, stepBlock_iterate_append_even s (Sc (k' + 1) 0) (Pc (k' + 1) c)
             (fun s' hs' => ih_even false 0 s' (Nat.lt_trans hs' hlt))]
           exact length_append_even (ih_even false 0 s hlt) (ih_even true c s hlt)
@@ -1830,7 +1878,8 @@ lemma Pc_Sc_cascade (k : ℕ) :
           rw [Function.iterate_add_apply, h_Sc_next c]
           exact (ih_stage false false [] (2 ^ (k' + 1) + c)).1 s' hs'
       · change (stepBlock^[s] (Pc (k' + 2) c)).length % 2 = 0
-        rcases (by omega : s < 2 ^ (k' + 1) - 1 ∨ s = 2 ^ (k' + 1) - 1 ∨ 2 ^ (k' + 1) ≤ s) with hlt | rfl | hge
+        rcases (by omega : s < 2 ^ (k' + 1) - 1 ∨ s = 2 ^ (k' + 1) - 1 ∨
+            2 ^ (k' + 1) ≤ s) with hlt | rfl | hge
         · rw [Pc_succ, stepBlock_iterate_append_even s (Pc (k' + 1) 1) (Sc (k' + 1) c)
             (fun s' hs' => ih_even true 1 s' (Nat.lt_trans hs' hlt))]
           exact length_append_even (ih_even true 1 s hlt) (ih_even false c s hlt)
@@ -1882,7 +1931,7 @@ def ESeq : ℕ → List ℕ
   | 1 => stepBlock (BSeq 1) ++ [0, 0]
   | k + 2 => stepBlock^[mSteps (k + 2)] (BSeq (k + 2)) ++ ESeq k
 
-lemma mSteps_sum (k : ℕ) : mSteps k + mSteps (k + 1) = 2 ^ (k + 1) - 1 := by
+theorem mSteps_sum (k : ℕ) : mSteps k + mSteps (k + 1) = 2 ^ (k + 1) - 1 := by
   induction k with
   | zero => rfl
   | succ k' ih =>
@@ -1891,7 +1940,7 @@ lemma mSteps_sum (k : ℕ) : mSteps k + mSteps (k + 1) = 2 ^ (k + 1) - 1 := by
     rw [pow_two_succ (k' + 1)]
     omega
 
-lemma mSteps_pos (k : ℕ) : 1 ≤ mSteps (k + 1) := by
+theorem mSteps_pos (k : ℕ) : 1 ≤ mSteps (k + 1) := by
   cases k with
   | zero => rfl
   | succ k' =>
@@ -1899,7 +1948,7 @@ lemma mSteps_pos (k : ℕ) : 1 ≤ mSteps (k + 1) := by
     have h_pos : 1 ≤ 2 ^ (k' + 1) := Nat.one_le_pow (k' + 1) 2 (by decide)
     omega
 
-lemma mSteps_lt_pow (k : ℕ) : mSteps k < 2 ^ k := by
+theorem mSteps_lt_pow (k : ℕ) : mSteps k < 2 ^ k := by
   induction k using Nat.strongRecOn with
   | ind k ih =>
     rcases k with _ | _ | k'
@@ -1911,7 +1960,7 @@ lemma mSteps_lt_pow (k : ℕ) : mSteps k < 2 ^ k := by
         rw [pow_two_succ (k' + 1), pow_two_succ k']; omega
       omega
 
-lemma two_mul_mSteps (k : ℕ) :
+theorem two_mul_mSteps (k : ℕ) :
     2 * mSteps (k + 1) = if k % 2 = 0 then mSteps (k + 2) else mSteps (k + 2) - 1 := by
   induction k using Nat.strongRecOn with
   | ind k ih =>
@@ -1929,7 +1978,7 @@ lemma two_mul_mSteps (k : ℕ) :
       · simp only [hev, ↓reduceIte]; omega
       · simp only [hod, ↓reduceIte]; omega
 
-lemma Pc_step_pow (k c : ℕ) :
+theorem Pc_step_pow (k c : ℕ) :
     stepBlock^[2 ^ (k + 1)] (Pc (k + 2) c) = BSeq k ++ Pc k (2 ^ (k + 1) + c) := by
   have h_pos : 1 ≤ 2 ^ (k + 1) := Nat.one_le_pow (k + 1) 2 (by decide)
   have h_split : 2 ^ (k + 1) = (2 ^ (k + 1) - 1) + 1 := by omega
@@ -1947,21 +1996,21 @@ lemma Pc_step_pow (k c : ℕ) :
   rw [h_sub]
   simp [BSeq, List.append_assoc]
 
-lemma BSeq_even_succ (k : ℕ) :
+theorem BSeq_even_succ (k : ℕ) :
     ∀ s < 2 ^ (k + 1) - 1, (stepBlock^[s] (BSeq (k + 1))).length % 2 = 0 := by
   intro s hs
   have h_pos : 1 ≤ 2 ^ (k + 2) := Nat.one_le_pow (k + 2) 2 (by decide)
-  have h_B : BSeq (k + 1) = Pc (k + 1) 0 ++ zBlock (k + 2) 0 := by
-    unfold BSeq zBlock
+  have h_B : BSeq (k + 1) = Pc (k + 1) 0 ++ zeroBlock (k + 2) 0 := by
+    unfold BSeq zeroBlock
     have h_sub : 2 ^ (k + 2) - 1 + 1 = 2 ^ (k + 2) := by omega
     rw [← List.replicate_succ', h_sub]
   rw [h_B]
-  rw [stepBlock_iterate_append_even s (Pc (k + 1) 0) (zBlock (k + 2) 0)
+  rw [stepBlock_iterate_append_even s (Pc (k + 1) 0) (zeroBlock (k + 2) 0)
     (fun s' hs' => (Pc_Sc_cascade k).1 true 0 s' (Nat.lt_trans hs' hs))]
   exact length_append_even ((Pc_Sc_cascade k).1 true 0 s hs)
-    ((zBlock_double_props k 0).1 s (Nat.le_of_lt hs))
+    ((zeroBlock_double_props k 0).1 s (Nat.le_of_lt hs))
 
-lemma BSeq_even_mSteps (k : ℕ) :
+theorem BSeq_even_mSteps (k : ℕ) :
     ∀ s < mSteps k, (stepBlock^[s] (BSeq k)).length % 2 = 0 := by
   rcases k with _ | _ | k'
   · intro s hs; change s < 0 at hs; omega
@@ -1973,7 +2022,7 @@ lemma BSeq_even_mSteps (k : ℕ) :
       have := mSteps_lt_pow (k' + 2); omega
     exact BSeq_even_succ (k' + 1) s (Nat.lt_of_lt_of_le hs h_lt)
 
-lemma Pc_to_ESeq (k : ℕ) :
+theorem Pc_to_ESeq (k : ℕ) :
     ∀ c, stepBlock^[2 ^ (k + 1) + mSteps k] (Pc (k + 2) c) =
       ESeq k ++ [2 * mSteps (k + 1) + 1 + c] := by
   induction k using Nat.strongRecOn with
@@ -2013,7 +2062,7 @@ lemma Pc_to_ESeq (k : ℕ) :
         rw [pow_two_succ (k' + 2)]; omega
       rw [h_arith, List.append_assoc]
 
-lemma ESeq_append_singleton_even (k : ℕ) :
+theorem ESeq_append_singleton_even (k : ℕ) :
     ∀ s < mSteps (k + 1),
       (stepBlock^[s] (ESeq k ++ [2 * mSteps (k + 1) + 1])).length % 2 = 0 := by
   intro s hs
@@ -2026,7 +2075,7 @@ lemma ESeq_append_singleton_even (k : ℕ) :
     rw [pow_two_succ (k + 1)]; omega
   exact (Pc_Sc_cascade (k + 1)).1 true 0 _ h_lt
 
-lemma ESeq_odd_lt (k : ℕ) :
+theorem ESeq_odd_lt (k : ℕ) :
     ∀ j < mSteps (k + 1), (stepBlock^[j] (ESeq k)).length % 2 = 1 := by
   intro j hj
   have h_ev := ESeq_append_singleton_even k j hj
@@ -2036,7 +2085,7 @@ lemma ESeq_odd_lt (k : ℕ) :
   dsimp at h_ev
   omega
 
-lemma ESeq_at_mSteps_eq (k : ℕ) :
+theorem ESeq_at_mSteps_eq (k : ℕ) :
     stepBlock^[mSteps (k + 1)] (ESeq k) ++ [3 * mSteps (k + 1) + 1] = endP (k + 1) 0 := by
   have h_iter := stepBlock_iterate_append_singleton (mSteps (k + 1)) (ESeq k)
     (2 * mSteps (k + 1) + 1) (ESeq_append_singleton_even k)
@@ -2053,7 +2102,7 @@ lemma ESeq_at_mSteps_eq (k : ℕ) :
   rw [h_idx]
   exact (Pc_Sc_cascade (k + 1)).2.1 0
 
-lemma ESeq_even_at (k : ℕ) :
+theorem ESeq_even_at (k : ℕ) :
     (stepBlock^[mSteps (k + 1)] (ESeq k)).length % 2 = 0 := by
   have h_eq := congrArg List.length (ESeq_at_mSteps_eq k)
   have h_odd := endP_len_odd (k + 1) 0
@@ -2061,7 +2110,7 @@ lemma ESeq_even_at (k : ℕ) :
   dsimp at h_eq
   omega
 
-lemma ESeq_to_next_BSeq (k : ℕ) :
+theorem ESeq_to_next_BSeq (k : ℕ) :
     stepBlock^[mSteps (k + 1) + 1] (ESeq k) ++ List.replicate (3 * mSteps (k + 1) + 2) 0 =
     BSeq (k + 1) := by
   have h_sb := congrArg stepBlock (ESeq_at_mSteps_eq k)
@@ -2076,7 +2125,7 @@ lemma ESeq_to_next_BSeq (k : ℕ) :
   rw [h_pos] at h_app
   exact h_app
 
-lemma SweepSteps_append_odd_iter {t : ℕ} (P : List ℕ) (k : ℕ) {Q Q' : List ℕ}
+theorem SweepSteps_append_odd_iter {t : ℕ} (P : List ℕ) (k : ℕ) {Q Q' : List ℕ}
     (hk : 1 ≤ k) (hQ : SweepSteps t Q Q')
     (hOdd : ∀ s < t, (stepBlock^[s] P).length % 2 = 1) :
     SweepSteps t (fromQ P ++ (3 * k + 2) :: Q)
@@ -2172,18 +2221,18 @@ theorem tail_era_induction (k : ℕ) :
           exact h_tr
       exact ⟨hB_curr, hE_curr, h_df⟩
 
-lemma reach_tail_two_mul_mSteps (k : ℕ) :
+theorem reach_tail_two_mul_mSteps (k : ℕ) :
     ∃ C, SweepSteps (2 * mSteps (k + 1)) (fromQ [1]) (fromQ (C ++ [1])) := by
   have h_eq := two_mul_mSteps k
   rcases (by omega : k % 2 = 0 ∨ ¬(k % 2 = 0)) with hev | hod
-  · rw [hev, if_pos rfl] at h_eq
+  · rw [hev, ite_eq_left rfl] at h_eq
     rw [h_eq]
     exact ⟨ESeq k, (tail_era_induction k).2.1⟩
-  · rw [if_neg hod] at h_eq
+  · rw [ite_eq_right hod] at h_eq
     rw [h_eq]
     exact (tail_era_induction (k + 1)).2.2
 
-lemma top_ESeq_to_next_BSeq (k : ℕ) :
+theorem top_ESeq_to_next_BSeq (k : ℕ) :
     SweepSteps (2 * mSteps (k + 1) + 2)
       (fromQ (phi (ESeq k) ++ [1])) (fromQ (phi (BSeq (k + 1)) ++ [1])) := by
   set L := mSteps (k + 1)
@@ -2204,7 +2253,7 @@ lemma top_ESeq_to_next_BSeq (k : ℕ) :
   have h_tail := SweepSteps_trans h_iter (SweepSteps.succ h_two (SweepSteps.zero _))
   exact SweepSteps.succ h_pair h_tail
 
-lemma top_zero_to_phi_00 :
+theorem top_zero_to_phi_00 :
     SweepSteps 2 (fromQ [0, 1]) (fromQ (phi [0, 0] ++ [1])) := by
   have h1 : SweepRel (fromQ ([0] ++ [1])) (fromQ (stepBlock [0]) ++ [5, 3]) :=
     SweepRel.pair_end [0] rfl
@@ -2213,7 +2262,7 @@ lemma top_zero_to_phi_00 :
     SweepRel.two_end [] 1 [] rfl
   exact SweepSteps.succ h1 (SweepSteps.succ h2 (SweepSteps.zero _))
 
-lemma top_phi_00_to_ESeq0 :
+theorem top_phi_00_to_ESeq0 :
     SweepSteps 2 (fromQ (phi [0, 0] ++ [1])) (fromQ (phi (ESeq 0) ++ [1])) := by
   have h1 : SweepRel (fromQ (phi [0, 0] ++ [1])) (fromQ (stepBlock (phi [0, 0])) ++ [5, 3]) :=
     SweepRel.pair_end (phi [0, 0]) rfl
@@ -2222,11 +2271,13 @@ lemma top_phi_00_to_ESeq0 :
     SweepRel.two_end [1, 1] 1 [] rfl
   exact SweepSteps.succ h1 (SweepSteps.succ h2 (SweepSteps.zero _))
 
-lemma top_BSeq_to_ESeq (k : ℕ)
-    (h_prev : ∀ k' < k, SweepSteps (2 * mSteps (k' + 2)) (fromQ [0, 1]) (fromQ (phi (ESeq k') ++ [1]))) :
+theorem top_BSeq_to_ESeq (k : ℕ)
+    (h_prev : ∀ k' < k, SweepSteps (2 * mSteps (k' + 2)) (fromQ [0,
+        1]) (fromQ (phi (ESeq k') ++ [1]))) :
     SweepSteps (2 * mSteps (k + 1))
       (fromQ (phi (BSeq (k + 1)) ++ [1])) (fromQ (phi (ESeq (k + 1)) ++ [1])) := by
-  have h_start : fromQ (phi (BSeq (k + 1)) ++ [1]) = fromQ (psi (BSeq (k + 1))) ++ fromQ [0, 1] := by
+  have h_start : fromQ (phi (BSeq (k + 1)) ++ [1]) = fromQ (psi (BSeq (k + 1))) ++ fromQ [0, 1] :=
+      by
     unfold phi
     simp [fromQ_append, List.append_assoc]
   rw [h_start]
@@ -2238,7 +2289,8 @@ lemma top_BSeq_to_ESeq (k : ℕ)
       ← phi_append] at h_prep
     exact h_prep
   | succ k' =>
-    have h_psi := stepBlock_iterate_psi (mSteps (k' + 2)) (BSeq (k' + 2)) (BSeq_even_mSteps (k' + 2))
+    have h_psi :=
+        stepBlock_iterate_psi (mSteps (k' + 2)) (BSeq (k' + 2)) (BSeq_even_mSteps (k' + 2))
     have h_sub := h_prev k' (Nat.lt_succ_self k')
     have h_prep := SweepSteps_prepend_even (psi (BSeq (k' + 2))) h_sub h_psi.1
     rw [h_psi.2, ← fromQ_append (psi (stepBlock^[mSteps (k' + 2)] (BSeq (k' + 2)))),
@@ -2255,7 +2307,8 @@ theorem top_era_reach (k : ℕ) :
     | succ k₀ =>
       have h_prev := ih k₀ (Nat.lt_succ_self k₀)
       have h_to_B := top_ESeq_to_next_BSeq k₀
-      have h_to_E := top_BSeq_to_ESeq k₀ (fun k' hk' => ih k' (Nat.lt_trans hk' (Nat.lt_succ_self k₀)))
+      have h_to_E :=
+          top_BSeq_to_ESeq k₀ (fun k' hk' => ih k' (Nat.lt_trans hk' (Nat.lt_succ_self k₀)))
       have h_tr := SweepSteps_trans h_prev (SweepSteps_trans h_to_B h_to_E)
       have h_sum := mSteps_sum k₀
       have h_cnt : 2 * mSteps (k₀ + 2) + ((2 * mSteps (k₀ + 1) + 2) + 2 * mSteps (k₀ + 1)) =
@@ -2267,7 +2320,8 @@ theorem top_era_reach (k : ℕ) :
       rwa [h_cnt] at h_tr
 
 theorem top_era_step (k : ℕ) :
-    (evalB (fromQ (phi (ESeq k) ++ [1]))) [target_tm]⊢⁺ (evalB (fromQ (phi (ESeq (k + 1)) ++ [1]))) := by
+    (evalB (fromQ (phi (ESeq k) ++ [1]))) [target_tm]⊢⁺ (evalB (fromQ (phi (ESeq (k + 1)) ++
+        [1]))) := by
   have h_to_B := top_ESeq_to_next_BSeq k
   have h_to_E := top_BSeq_to_ESeq k (fun k' _ => top_era_reach k')
   have h_tr := SweepSteps_trans h_to_B h_to_E
@@ -2292,21 +2346,113 @@ theorem init_reaches_fromQ_01 :
 def EraInv (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ k : ℕ, cfg = evalB (fromQ (phi (ESeq k) ++ [1]))
 
-lemma era_inv_init : ∃ cfg₀, ((init []) [target_tm]⊢* cfg₀) ∧ EraInv cfg₀ := by
+theorem era_inv_init : ∃ cfg₀, ((init []) [target_tm]⊢* cfg₀) ∧ EraInv cfg₀ := by
   have h1 := init_reaches_fromQ_01
   have h2 := SweepSteps_sound_plus (top_era_reach 0)
   exact ⟨_, stepPlus_stepStar (stepPlus_trans h1 h2), ⟨0, rfl⟩⟩
 
-lemma era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
+theorem era_inv_step (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv cfg) :
     ∃ cfg', (cfg [target_tm]⊢⁺ cfg') ∧ EraInv cfg' := by
   obtain ⟨k, rfl⟩ := hinv
   exact ⟨_, top_era_step k, ⟨k + 1, rfl⟩⟩
 
 
 
+
+theorem tail_era_step (k₀ : ℕ) :
+    (evalB (fromQ (ESeq k₀ ++ [1]))) [target_tm]⊢⁺ (evalB (fromQ (ESeq (k₀ + 1) ++ [1]))) := by
+  obtain ⟨_, _, ⟨C, hC⟩⟩ := tail_era_induction k₀
+  have h_pos : 1 ≤ mSteps (k₀ + 1) := mSteps_pos k₀
+  have h_pair := SweepRel.pair_end (ESeq k₀) (ESeq_odd_lt k₀ 0 h_pos)
+  have h_iter := SweepSteps_append_odd_iter (stepBlock (ESeq k₀)) 1 (le_refl 1) hC
+    (fun s hs => by
+      have h_lt : s + 1 < mSteps (k₀ + 1) := by omega
+      have h_od := ESeq_odd_lt k₀ (s + 1) h_lt
+      rwa [Function.iterate_succ_apply] at h_od)
+  have h_idx1 : 1 + (mSteps (k₀ + 1) - 1) = mSteps (k₀ + 1) := by omega
+  have h_idx2 : (mSteps (k₀ + 1) - 1).succ = mSteps (k₀ + 1) := by omega
+  rw [← Function.iterate_succ_apply stepBlock (mSteps (k₀ + 1) - 1) (ESeq k₀),
+    h_idx1, h_idx2] at h_iter
+  have h_two := SweepRel.two_end (stepBlock^[mSteps (k₀ + 1)] (ESeq k₀))
+    (mSteps (k₀ + 1)) C (ESeq_even_at k₀)
+  have h_sumQ := SweepSteps_sumQ1 hC
+  have h_zeros : mSteps (k₀ + 1) + 2 + sumQ1 (C ++ [1]) = 3 * mSteps (k₀ + 1) + 2 := by omega
+  rw [h_zeros, ← Function.iterate_succ_apply' stepBlock (mSteps (k₀ + 1)) (ESeq k₀),
+    ESeq_to_next_BSeq k₀] at h_two
+  have h_phase2 : SweepSteps (mSteps (k₀ + 1) + 1)
+      (fromQ (ESeq k₀ ++ [1])) (fromQ (BSeq (k₀ + 1) ++ [1])) := by
+    have h_tail := SweepSteps_trans h_iter (SweepSteps.succ h_two (SweepSteps.zero _))
+    have h_full := SweepSteps.succ h_pair h_tail
+    have h_cnt : (mSteps (k₀ + 1) - 1) + 1 + 1 = mSteps (k₀ + 1) + 1 := by omega
+    rwa [h_cnt] at h_full
+  have h_phase1 : SweepSteps (mSteps (k₀ + 1))
+      (fromQ (BSeq (k₀ + 1) ++ [1])) (fromQ (ESeq (k₀ + 1) ++ [1])) := by
+    cases k₀ with
+    | zero =>
+      have h_step1 := SweepRel.single_end (BSeq 1) rfl
+      simpa [ESeq, mSteps, List.append_assoc] using SweepSteps.succ h_step1 (SweepSteps.zero _)
+    | succ k' =>
+      obtain ⟨_, hE_k', _⟩ := tail_era_induction k'
+      have h_prep := SweepSteps_prepend_even (BSeq (k' + 2)) hE_k' (BSeq_even_mSteps (k' + 2))
+      rw [← fromQ_append, ← fromQ_append, ← List.append_assoc] at h_prep
+      exact h_prep
+  have h_tr := SweepSteps_trans h_phase2 h_phase1
+  have h_cnt : (mSteps (k₀ + 1) + 1) + mSteps (k₀ + 1) = (2 * mSteps (k₀ + 1)) + 1 := by omega
+  rw [h_cnt] at h_tr
+  exact SweepSteps_sound_plus h_tr
+
+theorem init_B_to_cfg_ER :
+    (((default : ListBlank (Fin 2)) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢⁺
+      (cfg_ER [0] []) := by
+  unfold cfg_ER
+  rw [encLeft_cons, encLeft_nil, encRight_nil]
+  dsimp [HPow.hPow]
+  execute 3
+
+theorem init_B_reaches_fromQ_1 :
+    (((default : ListBlank (Fin 2)) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢⁺
+      (evalB (fromQ [1])) := by
+  refine stepPlus_trans init_B_to_cfg_ER ?_
+  refine stepPlus_trans (rule_ER_nil [0]) ?_
+  have h1 := rule_BR_zero [] [3]
+  dsimp [tailWeight, headWeight, List.tail] at h1
+  refine stepPlus_trans h1 ?_
+  exact rule_BR_nil [6]
+
+def EraInv_0608 (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
+  ∃ k : ℕ, cfg = evalB (fromQ (ESeq k ++ [1]))
+
+theorem era_inv_init_0608 :
+    ∃ cfg₀,
+        ((((default : ListBlank (Fin 2)) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢* cfg₀)
+        ∧
+      EraInv_0608 cfg₀ := by
+  have h1 := init_B_reaches_fromQ_1
+  have h2 := SweepSteps_sound_plus (tail_era_induction 0).2.1
+  exact ⟨_, stepPlus_stepStar (stepPlus_trans h1 h2), ⟨0, rfl⟩⟩
+
+theorem era_inv_step_0608 (cfg : Cfg (Fin 2) (Fin 6)) (hinv : EraInv_0608 cfg) :
+    ∃ cfg', (cfg [target_tm]⊢⁺ cfg') ∧ EraInv_0608 cfg' := by
+  obtain ⟨k, rfl⟩ := hinv
+  exact ⟨_, tail_era_step k, ⟨k + 1, rfl⟩⟩
+
 theorem is_does_not_halt : IsNotHalt target_tm :=
   closed_inv_does_not_halt target_tm EraInv era_inv_init era_inv_step
 
+end Solution
+
+public section
+
+open Solution in
+theorem is_not_halt_from_0608 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{1}}> default) [target]⊢* cfg) →
+      (step target cfg).isSome :=
+  closed_inv_does_not_halt target_tm EraInv_0608 era_inv_init_0608 era_inv_step_0608
+
+open Solution in
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0LB_1LC1LB_1RD1LA_0RE0RE_0RA1RF_HHH1RD

@@ -27,24 +27,24 @@ def iterOpt {α : Type*} (f : α → Option α) : ℕ → α → Option α
   | n + 1, x => (f x).bind (iterOpt f n)
 
 
-@[simp] lemma iterOpt_zero {α : Type*} (f : α → Option α) (x : α) :
+@[simp] theorem iterOpt_zero {α : Type*} (f : α → Option α) (x : α) :
     iterOpt f 0 x = some x := rfl
 
 
-@[simp] lemma iterOpt_succ {α : Type*} (f : α → Option α) (n : ℕ) (x : α) :
+@[simp] theorem iterOpt_succ {α : Type*} (f : α → Option α) (n : ℕ) (x : α) :
     iterOpt f (n + 1) x = (f x).bind (iterOpt f n) := rfl
 
 
-@[simp] lemma option_some_bind {α β : Type*} (x : α) (f : α → Option β) :
+@[simp] theorem option_some_bind {α β : Type*} (x : α) (f : α → Option β) :
     (some x).bind f = f x := rfl
 
 
-@[simp] lemma option_bind_some_fun {α : Type*} (o : Option α) :
+@[simp] theorem option_bind_some_fun {α : Type*} (o : Option α) :
     o.bind (fun a => some a) = o := by
   cases o <;> rfl
 
 
-lemma iterOpt_add {α : Type*} (f : α → Option α) (m n : ℕ) (x : α) :
+theorem iterOpt_add {α : Type*} (f : α → Option α) (m n : ℕ) (x : α) :
     iterOpt f (m + n) x = (iterOpt f m x).bind (iterOpt f n) := by
   induction m generalizing x with
   | zero => simp
@@ -53,83 +53,83 @@ lemma iterOpt_add {α : Type*} (f : α → Option α) (m n : ℕ) (x : α) :
     cases f x <;> simp [ih]
 
 
-lemma iterOpt_trans {α : Type*} {f : α → Option α} {m n : ℕ} {x y z : α}
+theorem iterOpt_trans {α : Type*} {f : α → Option α} {m n : ℕ} {x y z : α}
     (h1 : iterOpt f m x = some y) (h2 : iterOpt f n y = some z) :
     iterOpt f (m + n) x = some z := by
   rw [iterOpt_add, h1, option_some_bind, h2]
 
-@[simp] lemma dirL_cons (q : Fin 6) (a : Fin 2) (l r : ListBlank (Fin 2)) :
+@[simp] theorem dirL_cons (q : Fin 6) (a : Fin 2) (l r : ListBlank (Fin 2)) :
     ((ListBlank.cons a l) <{{q}} r) = ⟨some q, ⟨a, l, r⟩⟩ := by simp
 
 
-@[simp] lemma dirR_cons (q : Fin 6) (a : Fin 2) (l r : ListBlank (Fin 2)) :
+@[simp] theorem dirR_cons (q : Fin 6) (a : Fin 2) (l r : ListBlank (Fin 2)) :
     (l {{q}}> (ListBlank.cons a r)) = ⟨some q, ⟨a, l, r⟩⟩ := by simp
 
 
-@[simp] lemma dirL_default (q : Fin 6) (r : ListBlank (Fin 2)) :
+@[simp] theorem dirL_default (q : Fin 6) (r : ListBlank (Fin 2)) :
     ((default : ListBlank (Fin 2)) <{{q}} r) = ⟨some q, ⟨0, default, r⟩⟩ := rfl
 
 
-@[simp] lemma dirR_default (q : Fin 6) (l : ListBlank (Fin 2)) :
+@[simp] theorem dirR_default (q : Fin 6) (l : ListBlank (Fin 2)) :
     (l {{q}}> (default : ListBlank (Fin 2))) = ⟨some q, ⟨0, l, default⟩⟩ := rfl
 
 
-@[simp] lemma listBlank_append_nil (s : ListBlank (Fin 2)) :
+@[simp] theorem listBlank_append_nil (s : ListBlank (Fin 2)) :
     ([] : List (Fin 2)) +> s = s := rfl
 
 
-@[simp] lemma listBlank_append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 2)) :
+@[simp] theorem listBlank_append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 2)) :
     (a :: l) +> s = ListBlank.cons a (l +> s) := rfl
 
 
-@[simp] lemma listBlank_cons_zero_default :
+@[simp] theorem listBlank_cons_zero_default :
     ListBlank.cons (0 : Fin 2) (default : ListBlank (Fin 2)) = default := by
   apply ListBlank.ext
   intro i
   cases i <;> rfl
 
 
-@[simp] lemma step_0135_0_0 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_0_0 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 0, ⟨0, l, r⟩⟩ = some ((ListBlank.cons 1 l) {{1}}> r) := rfl
 
 
-@[simp] lemma step_0135_0_1 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_0_1 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 0, ⟨1, l, r⟩⟩ = some (l <{{2}} (ListBlank.cons 0 r)) := rfl
 
 
-@[simp] lemma step_0135_1_0 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_1_0 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 1, ⟨0, l, r⟩⟩ = some (l <{{2}} (ListBlank.cons 1 r)) := rfl
 
 
-@[simp] lemma step_0135_1_1 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_1_1 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 1, ⟨1, l, r⟩⟩ = some ((ListBlank.cons 0 l) {{1}}> r) := rfl
 
 
-@[simp] lemma step_0135_2_0 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_2_0 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 2, ⟨0, l, r⟩⟩ = some (l <{{4}} (ListBlank.cons 0 r)) := rfl
 
 
-@[simp] lemma step_0135_2_1 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_2_1 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 2, ⟨1, l, r⟩⟩ = some (l <{{3}} (ListBlank.cons 0 r)) := rfl
 
 
-@[simp] lemma step_0135_3_0 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_3_0 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 3, ⟨0, l, r⟩⟩ = some (l <{{2}} (ListBlank.cons 1 r)) := rfl
 
 
-@[simp] lemma step_0135_4_0 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_4_0 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 4, ⟨0, l, r⟩⟩ = some ((ListBlank.cons 0 l) {{0}}> r) := rfl
 
 
-@[simp] lemma step_0135_4_1 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_4_1 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 4, ⟨1, l, r⟩⟩ = some (l <{{5}} (ListBlank.cons 1 r)) := rfl
 
 
-@[simp] lemma step_0135_5_0 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_5_0 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 5, ⟨0, l, r⟩⟩ = some (l <{{0}} (ListBlank.cons 1 r)) := rfl
 
 
-@[simp] lemma step_0135_5_1 (l r : ListBlank (Fin 2)) :
+@[simp] theorem step_0135_5_1 (l r : ListBlank (Fin 2)) :
     step target_tm ⟨some 5, ⟨1, l, r⟩⟩ = some (l <{{5}} (ListBlank.cons 1 r)) := rfl
 
 -- ----------------------------------------------------------------------------
@@ -149,12 +149,12 @@ def toLC : List LToken → ListBlank (Fin 2)
   | .L00 :: l => ListBlank.cons 0 (ListBlank.cons 0 (toLC l))
 
 
-@[simp] lemma toLC_nil : toLC [] = default := rfl
-@[simp] lemma toLC_L1 (l : List LToken) : toLC (.L1 :: l) = ListBlank.cons 1 (toLC l) := rfl
-@[simp] lemma toLC_L10 (l : List LToken) :
+@[simp] theorem toLC_nil : toLC [] = default := rfl
+@[simp] theorem toLC_L1 (l : List LToken) : toLC (.L1 :: l) = ListBlank.cons 1 (toLC l) := rfl
+@[simp] theorem toLC_L10 (l : List LToken) :
     toLC (.L10 :: l) = ListBlank.cons 0 (ListBlank.cons 1 (toLC l)) := rfl
 
-@[simp] lemma toLC_L00 (l : List LToken) :
+@[simp] theorem toLC_L00 (l : List LToken) :
     toLC (.L00 :: l) = ListBlank.cons 0 (ListBlank.cons 0 (toLC l)) := rfl
 
 
@@ -164,11 +164,11 @@ def toRBlank : List ℕ → ListBlank (Fin 2)
   | (a + 1) :: B => ListBlank.cons 0 (toRBlank (a :: B))
 
 
-@[simp] lemma toRBlank_nil : toRBlank [] = default := by rw [toRBlank]
-@[simp] lemma toRBlank_zero (B : List ℕ) :
+@[simp] theorem toRBlank_nil : toRBlank [] = default := by rw [toRBlank]
+@[simp] theorem toRBlank_zero (B : List ℕ) :
     toRBlank (0 :: B) = ListBlank.cons 1 (toRBlank B) := by rw [toRBlank]
 
-@[simp] lemma toRBlank_succ (a : ℕ) (B : List ℕ) :
+@[simp] theorem toRBlank_succ (a : ℕ) (B : List ℕ) :
     toRBlank ((a + 1) :: B) = ListBlank.cons 0 (toRBlank (a :: B)) := by rw [toRBlank]
 
 
@@ -189,7 +189,7 @@ def decode_blk : BlkCfg → Cfg (Fin 2) (Fin 6)
   | (.hL, l, B) => ([0, 0] +> toRBlank B) {{1}}> (toLC l)
 
 
-lemma init_reaches_blk0 :
+theorem init_reaches_blk0 :
     (init []) [target_tm]⊢^{12} (decode_blk (.h11D, [.L10, .L1], [])) := by
   change multiStep target_tm ⟨some 0, ⟨0, default, default⟩⟩ 12 =
     some (decode_blk (.h11D, [.L10, .L1], []))
@@ -321,11 +321,11 @@ def evalSB : List SBlock → List LToken
   | .B k :: ls => List.replicate k .L1 ++ (.L00 :: evalSB ls)
 
 
-@[simp] lemma evalSB_nil : evalSB [] = [] := rfl
-@[simp] lemma evalSB_A (k : ℕ) (ls : List SBlock) :
+@[simp] theorem evalSB_nil : evalSB [] = [] := rfl
+@[simp] theorem evalSB_A (k : ℕ) (ls : List SBlock) :
     evalSB (.A k :: ls) = List.replicate k .L1 ++ (.L10 :: evalSB ls) := rfl
 
-@[simp] lemma evalSB_B (k : ℕ) (ls : List SBlock) :
+@[simp] theorem evalSB_B (k : ℕ) (ls : List SBlock) :
     evalSB (.B k :: ls) = List.replicate k .L1 ++ (.L00 :: evalSB ls) := rfl
 
 
@@ -335,15 +335,15 @@ def incTop : List SBlock → ℕ → List SBlock
   | .B k :: ls, d => .B (k + d) :: ls
 
 
-@[simp] lemma incTop_nil (d : ℕ) : incTop [] d = [.A d] := rfl
-@[simp] lemma incTop_A (k : ℕ) (ls : List SBlock) (d : ℕ) :
+@[simp] theorem incTop_nil (d : ℕ) : incTop [] d = [.A d] := rfl
+@[simp] theorem incTop_A (k : ℕ) (ls : List SBlock) (d : ℕ) :
     incTop (.A k :: ls) d = .A (k + d) :: ls := rfl
 
-@[simp] lemma incTop_B (k : ℕ) (ls : List SBlock) (d : ℕ) :
+@[simp] theorem incTop_B (k : ℕ) (ls : List SBlock) (d : ℕ) :
     incTop (.B k :: ls) d = .B (k + d) :: ls := rfl
 
 
-lemma evalSB_incTop {ls : List SBlock} (hls : ls ≠ []) (d : ℕ) :
+theorem evalSB_incTop {ls : List SBlock} (hls : ls ≠ []) (d : ℕ) :
     evalSB (incTop ls d) = List.replicate d .L1 ++ evalSB ls := by
   rcases ls with _ | ⟨sb, lsp⟩
   · contradiction
@@ -369,7 +369,7 @@ def Phi : Cfg5 → BlkCfg
   | (.h10F, ls, rs) => (.h10F, evalSB ls, rs)
 
 
-lemma pop_L1_run (r a : ℕ) (l' : List LToken) (rs : List ℕ) :
+theorem pop_L1_run (r a : ℕ) (l' : List LToken) (rs : List ℕ) :
     iterOpt step_blk r (.hL, List.replicate r .L1 ++ l', a :: rs) =
       some (.hL, l', (a + r) :: rs) := by
   induction r generalizing a with
@@ -382,7 +382,7 @@ lemma pop_L1_run (r a : ℕ) (l' : List LToken) (rs : List ℕ) :
     rw [ih (a + 1), show a + 1 + r = a + (1 + r) by omega]
 
 
-lemma pop_L1_run_zero (r : ℕ) (l' : List LToken) (rs : List ℕ) :
+theorem pop_L1_run_zero (r : ℕ) (l' : List LToken) (rs : List ℕ) :
     iterOpt step_blk r (.hL, List.replicate r .L1 ++ l', 0 :: rs) =
       some (.hL, l', r :: rs) := by
   simpa [Nat.zero_add] using pop_L1_run r 0 l' rs
@@ -516,7 +516,7 @@ def Spine : ℕ → List SBlock
   | n + 1 => .A 0 :: .A 2 :: Spine n
 
 
-lemma spine_nonempty (n : ℕ) : Spine n ≠ [] := by
+theorem spine_nonempty (n : ℕ) : Spine n ≠ [] := by
   cases n <;> simp [Spine, W_5]
 
 
@@ -525,7 +525,7 @@ def rep31 : ℕ → List ℕ
   | n + 1 => rep31 n ++ [3, 1]
 
 
-lemma spine_left_drain (n : ℕ) (L₀ : List SBlock) (R : List ℕ) :
+theorem spine_left_drain (n : ℕ) (L₀ : List SBlock) (R : List ℕ) :
     iterOpt step_5mode (2 * n) (.hL, (List.replicate n [.A 0, .A 2]).flatten ++ L₀, R) =
       some (.hL, L₀, rep31 n ++ R) := by
   induction n generalizing R with
@@ -541,18 +541,18 @@ lemma spine_left_drain (n : ℕ) (L₀ : List SBlock) (R : List ℕ) :
     simp [rep31, List.append_assoc]
 
 
-lemma spine_eq_flatten (n : ℕ) :
+theorem spine_eq_flatten (n : ℕ) :
     Spine n = (List.replicate n [.A 0, .A 2]).flatten ++ W_5 := by
   induction n with
   | zero => rfl
   | succ n ih => simp [Spine, List.replicate_succ, ih]
 
 
-lemma w5_bottom_bounce (R' : List ℕ) :
+theorem w5_bottom_bounce (R' : List ℕ) :
     iterOpt step_5mode 11 (.hL, W_5, R') = some (.h10B, .A 1 :: W_5, R') := rfl
 
 
-lemma spine_right_climb (n : ℕ) (L₀ : List SBlock) (R : List ℕ) :
+theorem spine_right_climb (n : ℕ) (L₀ : List SBlock) (R : List ℕ) :
     iterOpt step_5mode (2 * n) (.h10B, .A 1 :: L₀, rep31 n ++ R) =
       some (.h10B, .A 1 :: ((List.replicate n [.A 0, .A 2]).flatten ++ L₀), R) := by
   induction n generalizing L₀ R with
@@ -626,20 +626,20 @@ def step_sq : CfgSq → Option CfgSq
   | (.h1E, ls, (a + 2) :: rsp) => some (.hL, ls, a :: rsp)
 
 
-lemma incTop_nonempty (ls : List SBlock) (d : ℕ) : incTop ls d ≠ [] := by
+theorem incTop_nonempty (ls : List SBlock) (d : ℕ) : incTop ls d ≠ [] := by
   cases ls with
   | nil => simp
   | cons sb lsp => cases sb <;> simp
 
 
-lemma incTop_append {ls : List SBlock} (hls : ls ≠ []) (S : List SBlock) (d : ℕ) :
+theorem incTop_append {ls : List SBlock} (hls : ls ≠ []) (S : List SBlock) (d : ℕ) :
     incTop (ls ++ S) d = incTop ls d ++ S := by
   rcases ls with _ | ⟨sb, lsp⟩
   · contradiction
   · cases sb <;> rfl
 
 
-lemma step_sq_preserves_guard (c c' : CfgSq)
+theorem step_sq_preserves_guard (c c' : CfgSq)
     (hguard : c.1 ≠ .hL → c.2.1 ≠ [])
     (h : step_sq c = some c') :
     c'.1 ≠ .hL → c'.2.1 ≠ [] := by
@@ -705,7 +705,7 @@ def decode_sq (n : ℕ) (c : CfgSq) : Cfg (Fin 2) (Fin 6) :=
   decode_blk (Phi (Psi_sq n c))
 
 
-lemma psi_sq_guard (n : ℕ) (c : CfgSq) :
+theorem psi_sq_guard (n : ℕ) (c : CfgSq) :
     (Psi_sq n c).1 ≠ .hL → (Psi_sq n c).2.1 ≠ [] := by
   rcases c with ⟨m, ls, rs⟩
   intro _
@@ -821,17 +821,17 @@ def SqReachesStar (R₁ R₂ : List ℕ) : Prop :=
   ∃ k, iterOpt step_sq k (.h10B, [.A 1], R₁) = some (.h10B, [.A 1], R₂)
 
 
-lemma sqReachesStar_refl (R : List ℕ) : SqReachesStar R R :=
+theorem sqReachesStar_refl (R : List ℕ) : SqReachesStar R R :=
   ⟨0, rfl⟩
 
 
-lemma sqReachesStar_of_plus {R₁ R₂ : List ℕ} (h : SqReachesPlus R₁ R₂) :
+theorem sqReachesStar_of_plus {R₁ R₂ : List ℕ} (h : SqReachesPlus R₁ R₂) :
     SqReachesStar R₁ R₂ := by
   rcases h with ⟨k, _, hk⟩
   exact ⟨k, hk⟩
 
 
-lemma sqReachesPlus_trans {R₁ R₂ R₃ : List ℕ}
+theorem sqReachesPlus_trans {R₁ R₂ R₃ : List ℕ}
     (h₁ : SqReachesPlus R₁ R₂) (h₂ : SqReachesPlus R₂ R₃) :
     SqReachesPlus R₁ R₃ := by
   rcases h₁ with ⟨k₁, hk₁, hstep₁⟩
@@ -839,7 +839,7 @@ lemma sqReachesPlus_trans {R₁ R₂ R₃ : List ℕ}
   exact ⟨k₁ + k₂, by omega, iterOpt_trans hstep₁ hstep₂⟩
 
 
-lemma sqReachesPlus_star_trans {R₁ R₂ R₃ : List ℕ}
+theorem sqReachesPlus_star_trans {R₁ R₂ R₃ : List ℕ}
     (h₁ : SqReachesPlus R₁ R₂) (h₂ : SqReachesStar R₂ R₃) :
     SqReachesPlus R₁ R₃ := by
   rcases h₁ with ⟨k₁, hk₁, hstep₁⟩
@@ -847,7 +847,7 @@ lemma sqReachesPlus_star_trans {R₁ R₂ R₃ : List ℕ}
   exact ⟨k₁ + k₂, by omega, iterOpt_trans hstep₁ hstep₂⟩
 
 
-lemma sqReachesStar_trans {R₁ R₂ R₃ : List ℕ}
+theorem sqReachesStar_trans {R₁ R₂ R₃ : List ℕ}
     (h₁ : SqReachesStar R₁ R₂) (h₂ : SqReachesStar R₂ R₃) :
     SqReachesStar R₁ R₃ := by
   rcases h₁ with ⟨k₁, hstep₁⟩
@@ -855,27 +855,27 @@ lemma sqReachesStar_trans {R₁ R₂ R₃ : List ℕ}
   exact ⟨k₁ + k₂, iterOpt_trans hstep₁ hstep₂⟩
 
 
-lemma replicate_append_cons_same {α : Type*} (k : ℕ) (x : α) (L : List α) :
+theorem replicate_append_cons_same {α : Type*} (k : ℕ) (x : α) (L : List α) :
     List.replicate k x ++ (x :: L) = List.replicate (k + 1) x ++ L := by
   induction k with
   | zero => rfl
   | succ k ih => simp [List.replicate_succ, ih]
 
 
-lemma replicate_two_mul_append_two {α : Type*} (k : ℕ) (x : α) (R : List α) :
+theorem replicate_two_mul_append_two {α : Type*} (k : ℕ) (x : α) (R : List α) :
     List.replicate (2 * (k + 1)) x ++ R = List.replicate (2 * k) x ++ (x :: x :: R) := by
   rw [Nat.mul_succ, List.replicate_add, List.append_assoc]
   rfl
 
 
-lemma incTop_incTop (ls : List SBlock) (d1 d2 : ℕ) :
+theorem incTop_incTop (ls : List SBlock) (d1 d2 : ℕ) :
     incTop (incTop ls d1) d2 = incTop ls (d1 + d2) := by
   cases ls with
   | nil => rfl
   | cons sb lsp => cases sb <;> simp [incTop, Nat.add_assoc]
 
 
-lemma scan_ones_h10B (k : ℕ) (ls : List SBlock) (R : List ℕ) :
+theorem scan_ones_h10B (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     iterOpt step_sq (2 * (k + 1)) (.h10B, ls, List.replicate (2 * (k + 1)) 1 ++ R) =
       some (.h10B, .B 1 :: (List.replicate k (.B 2) ++ incTop ls 1), R) := by
   induction k generalizing R with
@@ -889,7 +889,7 @@ lemma scan_ones_h10B (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     simpa [List.replicate_succ] using h2
 
 
-lemma scan_ones_h1E (k : ℕ) (ls : List SBlock) (R : List ℕ) :
+theorem scan_ones_h1E (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     iterOpt step_sq (2 * (k + 1)) (.h1E, ls, List.replicate (2 * (k + 1)) 1 ++ R) =
       some (.h1E, .B 0 :: (List.replicate k (.B 2) ++ incTop ls 2), R) := by
   induction k generalizing R with
@@ -904,7 +904,7 @@ lemma scan_ones_h1E (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     simpa [List.replicate_succ] using h2
 
 
-lemma scan_ones_h10F (k : ℕ) (ls : List SBlock) (R : List ℕ) :
+theorem scan_ones_h10F (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     iterOpt step_sq k (.h10F, ls, List.replicate k 1 ++ R) =
       some (.h10F, List.replicate k (.A 0) ++ ls, R) := by
   induction k generalizing ls with
@@ -918,7 +918,7 @@ lemma scan_ones_h10F (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     rw [ih (.A 0 :: ls), replicate_append_cons_same]
 
 
-lemma step_sq_hL_A0 (lsp : List SBlock) (h : lsp ≠ [.A 2]) (rs : List ℕ) :
+theorem step_sq_hL_A0 (lsp : List SBlock) (h : lsp ≠ [.A 2]) (rs : List ℕ) :
     step_sq (.hL, .A 0 :: lsp, rs) = some (.hL, lsp, 1 :: rs) := by
   rcases lsp with _ | ⟨sb, lsp2⟩
   · rfl
@@ -934,7 +934,7 @@ lemma step_sq_hL_A0 (lsp : List SBlock) (h : lsp ≠ [.A 2]) (rs : List ℕ) :
     | B k => rfl
 
 
-lemma replicate_A0_append_ne_A2 (k : ℕ) {ls : List SBlock} (h : ls ≠ [.A 2]) :
+theorem replicate_A0_append_ne_A2 (k : ℕ) {ls : List SBlock} (h : ls ≠ [.A 2]) :
     List.replicate k (.A 0) ++ ls ≠ [.A 2] := by
   cases k with
   | zero => exact h
@@ -943,7 +943,7 @@ lemma replicate_A0_append_ne_A2 (k : ℕ) {ls : List SBlock} (h : ls ≠ [.A 2])
     intro hc; injection hc with h1 _; cases h1
 
 
-lemma pop_B2_run_hL (k : ℕ) (ls : List SBlock) (R : List ℕ) :
+theorem pop_B2_run_hL (k : ℕ) (ls : List SBlock) (R : List ℕ) :
     iterOpt step_sq k (.hL, List.replicate k (.B 2) ++ ls, R) =
       some (.hL, ls, List.replicate (2 * k) 1 ++ R) := by
   induction k generalizing R with
@@ -963,7 +963,7 @@ def stackAfterOnes (k : ℕ) (L : List SBlock) : List SBlock :=
   | k' + 1 => .B 1 :: (List.replicate k' (.B 2) ++ (.A 2 :: L))
 
 
-lemma scan_ones_h10B_any (k : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem scan_ones_h10B_any (k : ℕ) (L : List SBlock) (R : List ℕ) :
     iterOpt step_sq (2 * k) (.h10B, .A 1 :: L, List.replicate (2 * k) 1 ++ R) =
       some (.h10B, stackAfterOnes k L, R) := by
   cases k with
@@ -971,19 +971,19 @@ lemma scan_ones_h10B_any (k : ℕ) (L : List SBlock) (R : List ℕ) :
   | succ k' => exact scan_ones_h10B k' (.A 1 :: L) R
 
 
-@[simp] lemma incTop_stackAfterOnes (k : ℕ) (L : List SBlock) :
+@[simp] theorem incTop_stackAfterOnes (k : ℕ) (L : List SBlock) :
     incTop (stackAfterOnes k L) 1 = List.replicate k (.B 2) ++ (.A 2 :: L) := by
   cases k <;> rfl
 
 
-lemma pop_B2_A2_hL (k : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem pop_B2_A2_hL (k : ℕ) (L : List SBlock) (R : List ℕ) :
     iterOpt step_sq (k + 1) (.hL, List.replicate k (.B 2) ++ (.A 2 :: L), R) =
       some (.hL, L, 3 :: (List.replicate (2 * k) 1 ++ R)) := by
   refine iterOpt_trans (pop_B2_run_hL k (.A 2 :: L) R) ?_
   rfl
 
 
-lemma rep_B2_A2_ne_A2 (k : ℕ) (L : List SBlock) (h : k ≥ 1 ∨ L ≠ []) :
+theorem rep_B2_A2_ne_A2 (k : ℕ) (L : List SBlock) (h : k ≥ 1 ∨ L ≠ []) :
     List.replicate k (.B 2) ++ (.A 2 :: L) ≠ [.A 2] := by
   rcases k with _ | k
   · simp only [List.replicate_zero, List.nil_append, ne_eq, List.cons.injEq, true_and]
@@ -994,7 +994,7 @@ lemma rep_B2_A2_ne_A2 (k : ℕ) (L : List SBlock) (h : k ≥ 1 ∨ L ≠ []) :
     intro hc; injection hc with h1 _; cases h1
 
 
-lemma pop_B1_B2_A2_hL (k : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem pop_B1_B2_A2_hL (k : ℕ) (L : List SBlock) (R : List ℕ) :
     iterOpt step_sq (k + 2) (.hL, .B 1 :: (List.replicate k (.B 2) ++ (.A 2 :: L)), R) =
       some (.hL, L, 3 :: (List.replicate (2 * k + 1) 1 ++ (0 :: R))) := by
   rw [show k + 2 = 1 + (k + 1) by omega]
@@ -1004,12 +1004,12 @@ lemma pop_B1_B2_A2_hL (k : ℕ) (L : List SBlock) (R : List ℕ) :
   rw [pop_B2_A2_hL k L (1 :: 0 :: R), replicate_append_cons_same]
 
 
-lemma bounce_hL_suffix (S : List SBlock) (hS : S = [] ∨ S = [.A 0, .A 2]) (R : List ℕ) :
+theorem bounce_hL_suffix (S : List SBlock) (hS : S = [] ∨ S = [.A 0, .A 2]) (R : List ℕ) :
     iterOpt step_sq 1 (.hL, S, R) = some (.h10B, [.A 1], R) := by
   rcases hS with rfl | rfl <;> rfl
 
 
-lemma double3_reduction (R : List ℕ) :
+theorem double3_reduction (R : List ℕ) :
     SqReachesPlus (3 :: 3 :: R) (1 :: 1 :: R) :=
   ⟨4, by decide, rfl⟩
 
@@ -1026,17 +1026,17 @@ def CfgSqReachesStar (c₁ c₂ : CfgSq) : Prop :=
   ∃ k, iterOpt step_sq k c₁ = some c₂
 
 
-lemma cfgSqReachesStar_of_iterOpt {k : ℕ} {c₁ c₂ : CfgSq}
+theorem cfgSqReachesStar_of_iterOpt {k : ℕ} {c₁ c₂ : CfgSq}
     (h : iterOpt step_sq k c₁ = some c₂) : CfgSqReachesStar c₁ c₂ :=
   ⟨k, h⟩
 
 
-lemma cfgSqReachesPlus_of_iterOpt {k : ℕ} {c₁ c₂ : CfgSq}
+theorem cfgSqReachesPlus_of_iterOpt {k : ℕ} {c₁ c₂ : CfgSq}
     (hk : k > 0) (h : iterOpt step_sq k c₁ = some c₂) : CfgSqReachesPlus c₁ c₂ :=
   ⟨k, hk, h⟩
 
 
-lemma cfgSqReachesPlus_trans {c₁ c₂ c₃ : CfgSq}
+theorem cfgSqReachesPlus_trans {c₁ c₂ c₃ : CfgSq}
     (h₁ : CfgSqReachesPlus c₁ c₂) (h₂ : CfgSqReachesPlus c₂ c₃) :
     CfgSqReachesPlus c₁ c₃ := by
   rcases h₁ with ⟨k₁, hk₁, hs₁⟩
@@ -1044,7 +1044,7 @@ lemma cfgSqReachesPlus_trans {c₁ c₂ c₃ : CfgSq}
   exact ⟨k₁ + k₂, by omega, iterOpt_trans hs₁ hs₂⟩
 
 
-lemma cfgSqReachesStar_plus_trans {c₁ c₂ c₃ : CfgSq}
+theorem cfgSqReachesStar_plus_trans {c₁ c₂ c₃ : CfgSq}
     (h₁ : CfgSqReachesStar c₁ c₂) (h₂ : CfgSqReachesPlus c₂ c₃) :
     CfgSqReachesPlus c₁ c₃ := by
   rcases h₁ with ⟨k₁, hs₁⟩
@@ -1091,7 +1091,7 @@ def psiShift (w z : ℕ) : ℕ × ℕ :=
 -- Multi-Step Lift Lemmas (step_sq -> step_5mode -> step_blk -> target_tm)
 -- ----------------------------------------------------------------------------
 
-lemma iterOpt_step_blk_plus {j : ℕ} (hj : j > 0) {b₁ b₂ : BlkCfg}
+theorem iterOpt_step_blk_plus {j : ℕ} (hj : j > 0) {b₁ b₂ : BlkCfg}
     (h : iterOpt step_blk j b₁ = some b₂) :
     (decode_blk b₁) [target_tm]⊢⁺ (decode_blk b₂) := by
   induction j generalizing b₁ with
@@ -1105,7 +1105,7 @@ lemma iterOpt_step_blk_plus {j : ℕ} (hj : j > 0) {b₁ b₂ : BlkCfg}
       · simp only [iterOpt_succ, hs, option_some_bind] at h
         exact stepPlus_trans (step_blk_correct b₁ bm hs) (ih (by omega) h)
 
-lemma step_5mode_preserves_guard (c c' : Cfg5)
+theorem step_5mode_preserves_guard (c c' : Cfg5)
     (hguard : c.1 ≠ .hL → c.2.1 ≠ [])
     (h : step_5mode c = some c') :
     c'.1 ≠ .hL → c'.2.1 ≠ [] := by
@@ -1150,7 +1150,7 @@ lemma step_5mode_preserves_guard (c c' : Cfg5)
       · simp [step_5mode] at h; subst h; intro _; exact incTop_nonempty _ _
       · simp [step_5mode] at h; subst h; simp
 
-lemma iterOpt_step_5mode_lift {k : ℕ} (hk : k > 0) {c₁ c₂ : Cfg5}
+theorem iterOpt_step_5mode_lift {k : ℕ} (hk : k > 0) {c₁ c₂ : Cfg5}
     (hguard : c₁.1 ≠ .hL → c₁.2.1 ≠ [])
     (h : iterOpt step_5mode k c₁ = some c₂) :
     (decode_blk (Phi c₁)) [target_tm]⊢⁺ (decode_blk (Phi c₂)) := by
@@ -1167,7 +1167,7 @@ lemma iterOpt_step_5mode_lift {k : ℕ} (hk : k > 0) {c₁ c₂ : Cfg5}
         have hg' := step_5mode_preserves_guard c₁ cm hguard hs
         exact stepPlus_trans hp1 (ih (by omega) hg' h)
 
-lemma iterOpt_step_sq_lift {k : ℕ} (hk : k > 0) (n : ℕ) {c₁ c₂ : CfgSq}
+theorem iterOpt_step_sq_lift {k : ℕ} (hk : k > 0) (n : ℕ) {c₁ c₂ : CfgSq}
     (hguard : c₁.1 ≠ .hL → c₁.2.1 ≠ [])
     (h : iterOpt step_sq k c₁ = some c₂) :
     ∃ n', (decode_sq n c₁) [target_tm]⊢⁺ (decode_sq n' c₂) := by
@@ -1186,7 +1186,7 @@ lemma iterOpt_step_sq_lift {k : ℕ} (hk : k > 0) (n : ℕ) {c₁ c₂ : CfgSq}
         obtain ⟨n', hp2⟩ := ih (by omega) n_mid hg' h
         exact ⟨n', stepPlus_trans hp1 hp2⟩
 
-lemma sqReachesPlus_to_tm {R₁ R₂ : List ℕ} (h : SqReachesPlus R₁ R₂) (n : ℕ) :
+theorem sqReachesPlus_to_tm {R₁ R₂ : List ℕ} (h : SqReachesPlus R₁ R₂) (n : ℕ) :
     ∃ n', (decode_sq n (.h10B, [.A 1], R₁)) [target_tm]⊢⁺ (decode_sq n' (.h10B, [.A 1], R₂)) := by
   rcases h with ⟨k, hk, hiter⟩
   exact iterOpt_step_sq_lift hk n (by simp) hiter
@@ -1198,7 +1198,7 @@ def c200_sq : CfgSq := (.h10B, [.A 1, .A 1, .B 2, .A 2, .A 0, .A 2], [1, 1, 2, 1
 def c250_sq : CfgSq := (.h10B, [.A 1, .A 2, .A 0, .B 3, .A 2], [1, 1, 0, 1])
 def c300_sq : CfgSq := (.hL, [.A 0, .B 1, .B 2, .B 2, .A 2, .A 2, .A 1, .A 2, .A 0, .A 2], [])
 
-lemma init_reaches_c319 :
+theorem init_reaches_c319 :
     ∃ n₀, (init []) [target_tm]⊢* (decode_sq n₀ c319_sq) := by
   have h1 : (init []) [target_tm]⊢* (decode_blk (.h11D, [.L10, .L1], [])) :=
     ReachesIn.to_star init_reaches_blk0
@@ -1218,7 +1218,7 @@ lemma init_reaches_c319 :
   obtain ⟨n₀, h3⟩ := iterOpt_step_sq_lift (by decide) 0 (by intro hc; exact absurd rfl hc) h3_iter
   exact ⟨n₀, stepStar_trans h1 (stepStar_trans (stepPlus_stepStar h2) (stepPlus_stepStar h3))⟩
 
-lemma psiTilde_psiTilde (w z : ℕ) :
+theorem psiTilde_psiTilde (w z : ℕ) :
     psiTilde (psiTilde w z).1 (psiTilde w z).2 = (w, z + 2) := by
   rcases Nat.mod_two_eq_zero_or_one w with hw | hw
   · have h1 : psiTilde w z = (w + 1, z) := by simp [psiTilde, hw]
@@ -1227,23 +1227,23 @@ lemma psiTilde_psiTilde (w z : ℕ) :
     rw [h1]; simp [psiTilde, show (w - 1) % 2 = 0 by omega]; omega
 
 
-lemma psiTilde_snd_odd (w z : ℕ) (hz : z % 2 = 1) :
+theorem psiTilde_snd_odd (w z : ℕ) (hz : z % 2 = 1) :
     (psiTilde w z).2 % 2 = 1 := by
   try dsimp [psiTilde]
   split_ifs <;> omega
 
 
-lemma psiTilde_add_two (w z : ℕ) :
+theorem psiTilde_add_two (w z : ℕ) :
     psiTilde w (z + 2) = psiShift w z := rfl
 
 
-lemma psiShift_eq_psiTilde_step (w z : ℕ) :
+theorem psiShift_eq_psiTilde_step (w z : ℕ) :
     psiShift w z = ((psiTilde w z).1, (psiTilde w z).2 + 2) := by
   try dsimp [psiTilde, psiShift]
   split_ifs <;> rfl
 
 
-lemma replicate_succ_append {α : Type*} (k : ℕ) (x : α) (R : List α) :
+theorem replicate_succ_append {α : Type*} (k : ℕ) (x : α) (R : List α) :
     List.replicate (k + 1) x ++ R = List.replicate k x ++ (x :: R) := by
   rw [← replicate_append_cons_same]
 
@@ -1252,7 +1252,7 @@ def stackP1 (u : ℕ) (L : List SBlock) : List SBlock :=
   List.replicate u (.B 2) ++ (.A 2 :: .A 0 :: .A 2 :: L)
 
 
-lemma prefix_P1_scan (u : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem prefix_P1_scan (u : ℕ) (L : List SBlock) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, 3 :: (List.replicate (2 * (u + 1)) 1 ++ (3 :: R)))
       (.h10B, .A 1 :: stackP1 u L, 1 :: R) := by
@@ -1269,7 +1269,7 @@ lemma prefix_P1_scan (u : ℕ) (L : List SBlock) (R : List ℕ) :
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
 
 
-lemma prefix_P1_pop (u : ℕ) (L : List SBlock) (R' : List ℕ) :
+theorem prefix_P1_pop (u : ℕ) (L : List SBlock) (R' : List ℕ) :
     CfgSqReachesPlus
       (.hL, stackP1 u L, R')
       (.hL, .A 0 :: .A 2 :: L, 3 :: (List.replicate (2 * u) 1 ++ R')) :=
@@ -1280,7 +1280,7 @@ def stackP2 (m : ℕ) (L : List SBlock) : List SBlock :=
   List.replicate m (.B 2) ++ (.A 2 :: L)
 
 
-lemma prefix_P2_scan (m : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem prefix_P2_scan (m : ℕ) (L : List SBlock) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, 1 :: (List.replicate (2 * m) 1 ++ (3 :: R)))
       (.h10B, .A 1 :: stackP2 m L, 1 :: R) := by
@@ -1294,7 +1294,7 @@ lemma prefix_P2_scan (m : ℕ) (L : List SBlock) (R : List ℕ) :
   exact cfgSqReachesStar_plus_trans h1 h2
 
 
-lemma prefix_P2_pop (m : ℕ) (L : List SBlock) (R' : List ℕ) :
+theorem prefix_P2_pop (m : ℕ) (L : List SBlock) (R' : List ℕ) :
     CfgSqReachesPlus
       (.hL, stackP2 m L, R')
       (.hL, L, 3 :: (List.replicate (2 * m) 1 ++ R')) :=
@@ -1305,7 +1305,7 @@ def stackP3 (m : ℕ) (S : List SBlock) : List SBlock :=
   .A 0 :: (List.replicate m (.B 2) ++ (.A 2 :: S))
 
 
-lemma prefix_P3_scan_from_S (m : ℕ) (S : List SBlock) (R : List ℕ) :
+theorem prefix_P3_scan_from_S (m : ℕ) (S : List SBlock) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: S, List.replicate (2 * m) 1 ++ (3 :: 1 :: R))
       (.h10B, .A 1 :: stackP3 m S, R) := by
@@ -1317,7 +1317,7 @@ lemma prefix_P3_scan_from_S (m : ℕ) (S : List SBlock) (R : List ℕ) :
   exact cfgSqReachesStar_plus_trans h1 h2
 
 
-lemma prefix_P3_scan (m : ℕ) (R : List ℕ) :
+theorem prefix_P3_scan (m : ℕ) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, [.A 1], 3 :: (List.replicate (2 * m + 1) 1 ++ (3 :: 1 :: R)))
       (.h10B, .A 1 :: stackP3 m [.A 0, .A 2], R) := by
@@ -1329,17 +1329,17 @@ lemma prefix_P3_scan (m : ℕ) (R : List ℕ) :
   exact cfgSqReachesPlus_trans h0 (prefix_P3_scan_from_S m [.A 0, .A 2] R)
 
 
-lemma cons_replicate_append {α : Type*} (k : ℕ) (x : α) (R : List α) :
+theorem cons_replicate_append {α : Type*} (k : ℕ) (x : α) (R : List α) :
     x :: (List.replicate k x ++ R) = List.replicate (k + 1) x ++ R := by
   rw [List.replicate_succ, List.cons_append]
 
 
-lemma cons_replicate_odd_append {α : Type*} (j : ℕ) (x : α) (R : List α) :
+theorem cons_replicate_odd_append {α : Type*} (j : ℕ) (x : α) (R : List α) :
     x :: (List.replicate (2 * j + 1) x ++ R) = List.replicate (2 * (j + 1)) x ++ R :=
   cons_replicate_append (2 * j + 1) x R
 
 
-lemma prefix_M2_scan (u : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem prefix_M2_scan (u : ℕ) (L : List SBlock) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, 3 :: (List.replicate (2 * (u + 1)) 1 ++ (2 :: R)))
       (.h10B, .A 1 :: stackP1 u L, 0 :: R) := by
@@ -1369,7 +1369,7 @@ def R_mid (c d : ℕ) : List ℕ :=
   else R_tail (c - 1) 1 0
 
 
-lemma pass1_turnaround_d0 (r : ℕ) (L : List SBlock) :
+theorem pass1_turnaround_d0 (r : ℕ) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * r + 1) 1 ++ [0, 1])
       (.hL, L, 3 :: (List.replicate (2 * r + 1) 1 ++ [3, 1])) := by
@@ -1385,7 +1385,7 @@ lemma pass1_turnaround_d0 (r : ℕ) (L : List SBlock) :
   exact cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3
 
 
-lemma pass1_turnaround_d2 (r : ℕ) (L : List SBlock) :
+theorem pass1_turnaround_d2 (r : ℕ) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * r + 1) 1 ++ [2, 1])
       (.hL, L, R_tail (2 * r) 1 0) := by
@@ -1400,7 +1400,7 @@ lemma pass1_turnaround_d2 (r : ℕ) (L : List SBlock) :
   exact cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3
 
 
-lemma pass1_turnaround (r d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
+theorem pass1_turnaround (r d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * r + 1) 1 ++ [d, 1])
       (.hL, L, R_mid (2 * r + 1) d) := by
@@ -1409,7 +1409,7 @@ lemma pass1_turnaround (r d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
   · simpa [R_mid] using pass1_turnaround_d2 r L
 
 
-lemma pass2_turnaround (r : ℕ) (L : List SBlock) :
+theorem pass2_turnaround (r : ℕ) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * r + 1) 1 ++ [3, 1])
       (.hL, L, R_tail (2 * r) 1 2) := by
@@ -1424,7 +1424,7 @@ lemma pass2_turnaround (r : ℕ) (L : List SBlock) :
   exact cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3
 
 
-lemma prefix_P2_scan_2 (m : ℕ) (L : List SBlock) (R : List ℕ) :
+theorem prefix_P2_scan_2 (m : ℕ) (L : List SBlock) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, 1 :: (List.replicate (2 * m) 1 ++ (2 :: R)))
       (.h10B, .A 1 :: stackP2 m L, 0 :: R) := by
@@ -1438,7 +1438,7 @@ lemma prefix_P2_scan_2 (m : ℕ) (L : List SBlock) (R : List ℕ) :
   exact cfgSqReachesStar_plus_trans h1 h2
 
 
-lemma psiShift_psiTilde_add (w z k : ℕ) :
+theorem psiShift_psiTilde_add (w z k : ℕ) :
     psiShift (psiTilde w z).1 ((psiTilde w z).2 + 2 * k) = (w, z + 2 * k + 4) := by
   rcases Nat.mod_two_eq_zero_or_one w with hw | hw
   · have h1 : psiTilde w z = (w + 1, z) := by simp [psiTilde, hw]
@@ -1447,12 +1447,12 @@ lemma psiShift_psiTilde_add (w z k : ℕ) :
     rw [h1]; dsimp [psiShift]; rw [if_pos (by omega)]; exact Prod.ext (by omega) (by omega)
 
 
-lemma exit_3_2 (R : List ℕ) :
+theorem exit_3_2 (R : List ℕ) :
     SqReachesPlus (3 :: 2 :: R) (1 :: 0 :: R) :=
   ⟨4, by decide, rfl⟩
 
 
-lemma exit_odd_0_3 (r : ℕ) (R : List ℕ) :
+theorem exit_odd_0_3 (r : ℕ) (R : List ℕ) :
     SqReachesPlus
       (List.replicate (2 * r + 1) 1 ++ (0 :: 3 :: R))
       (3 :: (List.replicate (2 * r + 1) 1 ++ (0 :: 1 :: R))) := by
@@ -1483,7 +1483,7 @@ def splitTwoAux : ℕ → ℕ → ℕ × ℕ
 def splitTwo (m : ℕ) : ℕ × ℕ := splitTwoAux m m
 
 
-lemma splitTwoAux_eq (f1 f2 m : ℕ) (hm : m ≥ 1) (hf1 : m ≤ f1) (hf2 : m ≤ f2) :
+theorem splitTwoAux_eq (f1 f2 m : ℕ) (hm : m ≥ 1) (hf1 : m ≤ f1) (hf2 : m ≤ f2) :
     splitTwoAux f1 m = splitTwoAux f2 m := by
   induction f1 generalizing f2 m with
   | zero => omega
@@ -1496,14 +1496,14 @@ lemma splitTwoAux_eq (f1 f2 m : ℕ) (hm : m ≥ 1) (hf1 : m ≤ f1) (hf2 : m �
       · rfl
 
 
-lemma splitTwo_odd (m : ℕ) (hm : m % 2 = 1) : splitTwo m = (0, m) := by
+theorem splitTwo_odd (m : ℕ) (hm : m % 2 = 1) : splitTwo m = (0, m) := by
   rcases m with _ | m
   · omega
   · dsimp [splitTwo, splitTwoAux]
     rw [if_neg (by omega)]
 
 
-lemma splitTwo_two_mul (m : ℕ) (hm : m ≥ 1) :
+theorem splitTwo_two_mul (m : ℕ) (hm : m ≥ 1) :
     splitTwo (2 * m) = ((splitTwo m).1 + 1, (splitTwo m).2) := by
   have h2m : 2 * m = (2 * m - 1) + 1 := by omega
   unfold splitTwo
@@ -1513,13 +1513,13 @@ lemma splitTwo_two_mul (m : ℕ) (hm : m ≥ 1) :
   rw [splitTwoAux_eq (2 * m - 1) m m hm (by omega) (le_refl m)]
 
 
-lemma mul_pos_of_pos_of_odd {x a : ℕ} (hx : x ≥ 1) (ha : a % 2 = 1) : x * a ≥ 1 := by
+theorem mul_pos_of_pos_of_odd {x a : ℕ} (hx : x ≥ 1) (ha : a % 2 = 1) : x * a ≥ 1 := by
   have ha1 : a ≥ 1 := by omega
   calc x * a ≥ 1 * 1 := Nat.mul_le_mul hx ha1
     _ = 1 := rfl
 
 
-lemma splitTwo_pow_mul_odd (ν a : ℕ) (ha : a % 2 = 1) :
+theorem splitTwo_pow_mul_odd (ν a : ℕ) (ha : a % 2 = 1) :
     splitTwo (2 ^ ν * a) = (ν, a) := by
   induction ν with
   | zero => simp [splitTwo_odd a ha]
@@ -1531,7 +1531,7 @@ lemma splitTwo_pow_mul_odd (ν a : ℕ) (ha : a % 2 = 1) :
 -- Stage 4A: Even-Run Turnarounds, Tail Reflection & Separators
 -- ----------------------------------------------------------------------------
 
-lemma turnaround_even_ones_d0 (r : ℕ) (L' : List SBlock) :
+theorem turnaround_even_ones_d0 (r : ℕ) (L' : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L', List.replicate (2 * r) 1 ++ [0, 1])
       (.hL, L', 3 :: (List.replicate (2 * r + 1) 1 ++ [0, 1])) := by
@@ -1543,7 +1543,7 @@ lemma turnaround_even_ones_d0 (r : ℕ) (L' : List SBlock) :
   have h3 := cfgSqReachesPlus_of_iterOpt (by omega) (pop_B1_B2_A2_hL r L' [1])
   exact cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3
 
-lemma turnaround_even_ones_d2 (r : ℕ) (L' : List SBlock) (hL' : L' ≠ []) :
+theorem turnaround_even_ones_d2 (r : ℕ) (L' : List SBlock) (hL' : L' ≠ []) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L', List.replicate (2 * r) 1 ++ [2, 1])
       (.hL, L', 3 :: (List.replicate (2 * r + 1) 1 ++ [2, 1])) := by
@@ -1561,7 +1561,7 @@ lemma turnaround_even_ones_d2 (r : ℕ) (L' : List SBlock) (hL' : L' ≠ []) :
   rw [replicate_append_cons_same (2 * r)] at h4
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3) h4
 
-lemma turnaround_even_ones (r d : ℕ) (hd : d = 0 ∨ d = 2) (L' : List SBlock) (hL' : L' ≠ []) :
+theorem turnaround_even_ones (r d : ℕ) (hd : d = 0 ∨ d = 2) (L' : List SBlock) (hL' : L' ≠ []) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L', List.replicate (2 * r) 1 ++ [d, 1])
       (.hL, L', 3 :: (List.replicate (2 * r + 1) 1 ++ [d, 1])) := by
@@ -1569,7 +1569,7 @@ lemma turnaround_even_ones (r d : ℕ) (hd : d = 0 ∨ d = 2) (L' : List SBlock)
   · exact turnaround_even_ones_d0 r L'
   · exact turnaround_even_ones_d2 r L' hL'
 
-lemma tail_reflect (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2)
+theorem tail_reflect (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2)
     (L : List SBlock) (hL : L ≠ []) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, TailWord w z d)
@@ -1612,7 +1612,7 @@ lemma tail_reflect (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2)
     have h3 := prefix_P2_pop k L (3 :: (List.replicate (2 * (s + 1) + 1) 1 ++ [d, 1]))
     simpa [R_tail, TailWord] using cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
 
-lemma sep_0 (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
+theorem sep_0 (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, 0 :: R_tail w z d)
       (.hL, L, 2 :: 1 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d) := by
@@ -1627,7 +1627,7 @@ lemma sep_0 (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) (L : List SBlo
     ⟨2, by decide, rfl⟩
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
 
-lemma sep_even_0 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem sep_even_0 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * (k + 1)) 1 ++ (0 :: R_tail w z d))
       (.hL, L, 3 :: (List.replicate (2 * k + 1) 1 ++ (0 :: 1 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d))) := by
@@ -1645,7 +1645,7 @@ lemma sep_even_0 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd 
     (pop_B1_B2_A2_hL k L (1 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d))
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3) h4) h5
 
-lemma sep_even_01 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem sep_even_01 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * k) 1 ++ (0 :: 1 :: R_tail w z d))
       (.hL, L, 3 :: (List.replicate (2 * k + 1) 1 ++ (0 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d))) := by
@@ -1659,7 +1659,7 @@ lemma sep_even_01 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd
     (pop_B1_B2_A2_hL k L (R_tail (psiTilde w z).1 (psiTilde w z).2 d))
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3) h4
 
-lemma sep_even_2 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem sep_even_2 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * k) 1 ++ (2 :: R_tail w z d))
       (.hL, L, 3 :: (List.replicate (2 * k) 1 ++ (2 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d))) := by
@@ -1677,7 +1677,7 @@ lemma sep_even_2 (k : ℕ) (L : List SBlock) (w z d : ℕ) (hz : z % 2 = 1) (hd 
     (pop_B2_A2_hL k L (2 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d))
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3) h4) h5
 
-lemma sep_even_21 (k : ℕ) (L : List SBlock) (hkL : k ≥ 1 ∨ L ≠ [])
+theorem sep_even_21 (k : ℕ) (L : List SBlock) (hkL : k ≥ 1 ∨ L ≠ [])
     (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * k) 1 ++ (2 :: 1 :: R_tail w z d))
@@ -1705,7 +1705,7 @@ lemma sep_even_21 (k : ℕ) (L : List SBlock) (hkL : k ≥ 1 ∨ L ≠ [])
   rw [replicate_append_cons_same (2 * k)] at h5
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3) h4) h5
 
-lemma sep_21_nil (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem sep_21_nil (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (2 :: 1 :: R_tail w z d) (2 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d) := by
   have h1 : CfgSqReachesPlus
       (.h10B, [.A 1], 2 :: 1 :: 3 :: TailWord w z d)
@@ -1722,31 +1722,31 @@ lemma sep_21_nil (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
 -- Stage 4B: Contraction Loops, Bridges, Phase 1, Phase 2 & Even Cascade
 -- ----------------------------------------------------------------------------
 
-lemma bounce_from_A0A2 {R₁ R₂ : List ℕ}
+theorem bounce_from_A0A2 {R₁ R₂ : List ℕ}
     (h : CfgSqReachesPlus (.h10B, [.A 1], R₁) (.hL, [.A 0, .A 2], R₂)) :
     SqReachesPlus R₁ R₂ :=
   cfgSqReachesPlus_trans h (cfgSqReachesPlus_of_iterOpt (by decide) (bounce_hL_suffix [.A 0, .A 2] (Or.inr rfl) R₂))
 
-lemma bounce_from_nil {R₁ R₂ : List ℕ}
+theorem bounce_from_nil {R₁ R₂ : List ℕ}
     (h : CfgSqReachesPlus (.h10B, [.A 1], R₁) (.hL, [], R₂)) :
     SqReachesPlus R₁ R₂ :=
   cfgSqReachesPlus_trans h (cfgSqReachesPlus_of_iterOpt (by decide) (bounce_hL_suffix [] (Or.inl rfl) R₂))
 
-lemma prefix_odd_3 (m : ℕ) (R : List ℕ) :
+theorem prefix_odd_3 (m : ℕ) (R : List ℕ) :
     CfgSqReachesPlus
       (.h10B, [.A 1], 3 :: (List.replicate (2 * m + 1) 1 ++ R))
       (.h10B, .A 1 :: [.A 0, .A 2], List.replicate (2 * m) 1 ++ R) := by
   rw [Nat.add_comm (2 * m) 1, List.replicate_add]
   exact ⟨2, by decide, rfl⟩
 
-lemma M2_sq_odd_step (m w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem M2_sq_odd_step (m w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (M2_sq (2 * m + 1) w Z d) (M2_sq (2 * m) (psiTilde w Z).1 (psiTilde w Z).2 d) := by
   apply bounce_from_A0A2
   exact cfgSqReachesPlus_trans
     (prefix_odd_3 m (2 :: R_tail w Z d))
     (sep_even_2 m [.A 0, .A 2] w Z d hZ hd)
 
-lemma M_sq_odd_to_M2 (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem M_sq_odd_to_M2 (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (M_sq (2 * m + 1) w z d) (M2_sq (2 * m) w (z + 2) d) := by
   have hb1 : SqReachesPlus (M_sq (2 * m + 1) w z d)
       (M2_sq (2 * m + 1) (psiTilde w z).1 (psiTilde w z).2 d) := by
@@ -1758,7 +1758,7 @@ lemma M_sq_odd_to_M2 (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
   rw [psiTilde_psiTilde] at hb2
   exact sqReachesPlus_trans hb1 hb2
 
-lemma loop_L1F (u v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem loop_L1F (u v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (F_sq (2 * u + 4) (2 * v) (2 * j + 1) w z d)
       (F_sq (2 * u) (2 * v) (2 * j + 3) w (z + 2) d) := by
@@ -1802,7 +1802,7 @@ lemma loop_L1F (u v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4) h5
   exact sqReachesPlus_trans hb1 hb2
 
-lemma bridge_F2 (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem bridge_F2 (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (F_sq 2 (2 * v) (2 * j + 1) w z d)
       (G_sq (2 * v + 3) (2 * j + 1) w (z + 2) d) := by
@@ -1847,7 +1847,7 @@ lemma bridge_F2 (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     simpa [G_sq] using cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4
   exact sqReachesPlus_trans (sqReachesPlus_trans hb1 hb2) hb3
 
-lemma bridge_F0_ge3 (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem bridge_F0_ge3 (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (F_sq 0 (2 * v) (2 * j + 3) w z d)
       (G_sq (2 * v + 3) (2 * j + 1) w (z + 2) d) := by
@@ -1900,7 +1900,7 @@ lemma bridge_F0_ge3 (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4
   exact sqReachesPlus_trans (sqReachesPlus_trans hb1 hb2) hb3
 
-lemma bridge_F0_1 (v w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem bridge_F0_1 (v w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (F_sq 0 (2 * v) 1 w z d)
       (M_sq (2 * v + 3) (psiTilde w z).1 (psiTilde w z).2 d) := by
@@ -1932,7 +1932,7 @@ lemma bridge_F0_1 (v w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4
   exact sqReachesPlus_trans hb1 hb2
 
-lemma loop_L2G (m j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem loop_L2G (m j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (G_sq (2 * m + 1) (2 * j + 3) w z d)
       (G_sq (2 * m + 1) (2 * j + 1) w (z + 2) d) := by
@@ -1979,7 +1979,7 @@ lemma loop_L2G (m j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     simpa [G_sq] using cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4
   exact sqReachesPlus_trans hb1 hb2
 
-lemma G_odd_1_to_M (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem G_odd_1_to_M (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (G_sq (2 * m + 1) 1 w z d)
       (M_sq (2 * m + 1) (psiTilde w z).1 (psiTilde w z).2 d) := by
@@ -1996,7 +1996,7 @@ lemma G_odd_1_to_M (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
   rw [replicate_append_cons_same (2 * m)] at h4
   simpa [G_sq, M_sq] using cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4
 
-lemma G_odd_drain (m j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem G_odd_drain (m j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (G_sq (2 * m + 1) (2 * j + 1) w z d)
       (M2_sq (2 * m) (psiTilde w z).1 ((psiTilde w z).2 + 2 * j + 2) d) := by
@@ -2015,7 +2015,7 @@ lemma G_odd_drain (m j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     have htot := sqReachesPlus_trans h1 h2
     rwa [show (psiTilde w z).2 + 2 + 2 * j + 2 = (psiTilde w z).2 + 2 * (j + 1) + 2 by omega] at htot
 
-lemma F_universal_drain (u v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem F_universal_drain (u v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (F_sq (2 * u) (2 * v) (2 * j + 1) w z d)
       (M2_sq (2 * v + 2) (psiTilde w z).1 ((psiTilde w z).2 + 2 * (u + j + 1)) d) := by
@@ -2065,7 +2065,7 @@ lemma F_universal_drain (u v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d =
   have hmain := h_even_odd (u / 2) (u % 2) hmod j z hz
   rwa [← hu_split] at hmain
 
-lemma loop_LH (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem loop_LH (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (H_sq (2 * m + 3) w z d)
       (H_sq (2 * m + 1) w (z + 2) d) := by
@@ -2089,7 +2089,7 @@ lemma loop_LH (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact cfgSqReachesPlus_trans h1 h2
   exact sqReachesPlus_trans hb1 hb2
 
-lemma H_base_to_M2 (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem H_base_to_M2 (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (H_sq 1 w z d)
       (M2_sq 0 (psiTilde w z).1 ((psiTilde w z).2 + 2) d) := by
@@ -2109,7 +2109,7 @@ lemma H_base_to_M2 (w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact h
   exact sqReachesPlus_trans (sqReachesPlus_trans hb1 hb2) hb3
 
-lemma H_drain (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem H_drain (m w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (H_sq (2 * m + 1) w z d)
       (M2_sq 0 (psiTilde w z).1 ((psiTilde w z).2 + 2 * m + 2) d) := by
@@ -2133,7 +2133,7 @@ def J_even (m r w z d : ℕ) : List ℕ :=
 def J_odd (m r w z d : ℕ) : List ℕ :=
   3 :: (List.replicate (2 * m) 1 ++ (3 :: (List.replicate (2 * r) 1 ++ (2 :: 1 :: R_tail w z d))))
 
-lemma pop_A0_run_hL (k : ℕ) (L : List SBlock) (hL : L ≠ [.A 2]) (R : List ℕ) :
+theorem pop_A0_run_hL (k : ℕ) (L : List SBlock) (hL : L ≠ [.A 2]) (R : List ℕ) :
     iterOpt step_sq k (.hL, List.replicate k (.A 0) ++ L, R) =
       some (.hL, L, List.replicate k 1 ++ R) := by
   induction k generalizing R with
@@ -2150,7 +2150,7 @@ lemma pop_A0_run_hL (k : ℕ) (L : List SBlock) (hL : L ≠ [.A 2]) (R : List �
     refine iterOpt_trans h1 ?_
     rw [ih (1 :: R), replicate_append_cons_same]
 
-lemma enc_odd_b1_step1 (m s d : ℕ) (hd : d = 0 ∨ d = 2) :
+theorem enc_odd_b1_step1 (m s d : ℕ) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_odd (2 * m + 1) 1 (2 * s + 1) d)
       (3 :: (List.replicate (2 * m + 1) 1 ++ (0 :: R_mid (2 * s + 1) d))) := by
@@ -2170,7 +2170,7 @@ lemma enc_odd_b1_step1 (m s d : ℕ) (hd : d = 0 ∨ d = 2) :
     (pop_B1_B2_A2_hL m [.A 0, .A 2] (R_mid (2 * s + 1) d))
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 (cfgSqReachesStar_plus_trans h2 h3)) h4) h5
 
-lemma enc_odd_ge2_mid (m k s d : ℕ) (hd : d = 0 ∨ d = 2) :
+theorem enc_odd_ge2_mid (m k s d : ℕ) (hd : d = 0 ∨ d = 2) :
     CfgSqReachesPlus
       (.h10B, [.A 1], enc_odd (2 * m + 1) (k + 2) (2 * s + 1) d)
       (.h10B, .A 1 :: (List.replicate m (.B 2) ++ [.A 2, .A 0, .A 2]),
@@ -2216,7 +2216,7 @@ lemma enc_odd_ge2_mid (m k s d : ℕ) (hd : d = 0 ∨ d = 2) :
       h7)
     (cfgSqReachesStar_plus_trans h8 h9)
 
-lemma rmid_even_2 (r s d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
+theorem rmid_even_2 (r s d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * r) 1 ++ (2 :: R_mid (2 * s + 1) d))
       (.hL, L, 3 :: (List.replicate (2 * r) 1 ++ (2 :: R_tail (if d = 0 then 2 * s else 2 * s + 1) 1 (2 - d)))) := by
@@ -2239,7 +2239,7 @@ lemma rmid_even_2 (r s d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
     have h := sep_even_2 r L (2 * s) 1 0 (by decide) (Or.inl rfl)
     simpa [psiTilde] using h
 
-lemma rmid_odd_2 (r s d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
+theorem rmid_odd_2 (r s d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
     CfgSqReachesPlus
       (.h10B, .A 1 :: L, List.replicate (2 * r + 1) 1 ++ (2 :: R_mid (2 * s + 1) d))
       (.hL, L, 3 :: (List.replicate (2 * r) 1 ++ (2 :: 1 :: R_tail (if d = 0 then 2 * s else 2 * s + 1) 1 (2 - d)))) := by
@@ -2269,7 +2269,7 @@ lemma rmid_odd_2 (r s d : ℕ) (hd : d = 0 ∨ d = 2) (L : List SBlock) :
     have h3 := prefix_P2_pop r L (2 :: 1 :: R_tail (2 * s + 1) 1 0)
     exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans hp h2) h3
 
-lemma enc_odd_even_b_step1 (m r s d : ℕ) (hd : d = 0 ∨ d = 2) :
+theorem enc_odd_even_b_step1 (m r s d : ℕ) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_odd (2 * m + 1) (2 * r + 2) (2 * s + 1) d)
       (J_even m r (if d = 0 then 2 * s else 2 * s + 1) 1 (2 - d)) := by
@@ -2280,7 +2280,7 @@ lemma enc_odd_even_b_step1 (m r s d : ℕ) (hd : d = 0 ∨ d = 2) :
     (pop_B2_A2_hL m [.A 0, .A 2] (3 :: (List.replicate (2 * r) 1 ++ (2 :: R_tail (if d = 0 then 2 * s else 2 * s + 1) 1 (2 - d)))))
   simpa [J_even] using cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
 
-lemma enc_odd_odd_b_step1 (m r s d : ℕ) (hd : d = 0 ∨ d = 2) :
+theorem enc_odd_odd_b_step1 (m r s d : ℕ) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_odd (2 * m + 1) (2 * r + 3) (2 * s + 1) d)
       (J_odd m r (if d = 0 then 2 * s else 2 * s + 1) 1 (2 - d)) := by
@@ -2291,7 +2291,7 @@ lemma enc_odd_odd_b_step1 (m r s d : ℕ) (hd : d = 0 ∨ d = 2) :
     (pop_B2_A2_hL m [.A 0, .A 2] (3 :: (List.replicate (2 * r) 1 ++ (2 :: 1 :: R_tail (if d = 0 then 2 * s else 2 * s + 1) 1 (2 - d)))))
   simpa [J_odd] using cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
 
-lemma J_even_zero_to_M2 (r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem J_even_zero_to_M2 (r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (J_even 0 r w z d) (M2_sq (2 * r + 2) (psiTilde w z).1 (psiTilde w z).2 d) := by
   have hb1 : SqReachesPlus (J_even 0 r w z d)
       (List.replicate (2 * (r + 1)) 1 ++ (2 :: R_tail w z d)) := by
@@ -2310,7 +2310,7 @@ lemma J_even_zero_to_M2 (r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) 
   rw [show 2 * (r + 1) = 2 * r + 2 by omega] at hb2
   exact sqReachesPlus_trans hb1 hb2
 
-lemma J_even_succ_to_J_odd (m r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem J_even_succ_to_J_odd (m r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (J_even (m + 1) r w z d) (J_odd m r (psiTilde w z).1 (psiTilde w z).2 d) := by
   apply bounce_from_A0A2
   have h1 := prefix_P1_scan m [] (List.replicate (2 * r) 1 ++ (2 :: R_tail w z d))
@@ -2320,7 +2320,7 @@ lemma J_even_succ_to_J_odd (m r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d 
   have h5 := prefix_P1_pop m [] (3 :: (List.replicate (2 * r) 1 ++ (2 :: 1 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d)))
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4) h5
 
-lemma J_odd_zero_to_M2 (r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem J_odd_zero_to_M2 (r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (J_odd 0 r w z d) (M2_sq (2 * r + 2) w (z + 2) d) := by
   have hb1 : SqReachesPlus (J_odd 0 r w z d)
       (List.replicate (2 * (r + 1)) 1 ++ (2 :: 1 :: R_tail w z d)) := by
@@ -2340,7 +2340,7 @@ lemma J_odd_zero_to_M2 (r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
   rw [psiTilde_psiTilde, show 2 * (r + 1) = 2 * r + 2 by omega] at hb3
   exact sqReachesPlus_trans (sqReachesPlus_trans hb1 hb2) hb3
 
-lemma J_odd_succ_to_F (m r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem J_odd_succ_to_F (m r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (J_odd (m + 1) r w z d) (F_sq (2 * m) (2 * r) 1 (psiTilde w z).1 (psiTilde w z).2 d) := by
   apply bounce_from_A0A2
   have h1 := prefix_P1_scan m [] (List.replicate (2 * r) 1 ++ (2 :: 1 :: R_tail w z d))
@@ -2350,7 +2350,7 @@ lemma J_odd_succ_to_F (m r w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) 
   have h5 := prefix_P1_pop m [] (3 :: (List.replicate (2 * r) 1 ++ (3 :: [1] ++ (0 :: R_tail (psiTilde w z).1 (psiTilde w z).2 d))))
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3) h4) h5
 
-lemma phase1_b1_d0 (m s : ℕ) :
+theorem phase1_b1_d0 (m s : ℕ) :
     SqReachesPlus (enc_odd (2 * m + 1) 1 (2 * s + 1) 0) (M2_sq 0 (2 * s) (2 * m + 3) 2) := by
   have h1 := enc_odd_b1_step1 m s 0 (Or.inl rfl)
   simp only [R_mid, ↓reduceIte] at h1
@@ -2421,7 +2421,7 @@ structure OddState where
 def InSodd (s : OddState) : Prop :=
   s.a % 2 = 1 ∧ s.b ≥ 1 ∧ s.c ≥ 3 ∧ s.c % 2 = 1 ∧ (s.d = 0 ∨ s.d = 2)
 
-lemma phase1_to_M2 (s : OddState) (hs : InSodd s) :
+theorem phase1_to_M2 (s : OddState) (hs : InSodd s) :
     SqReachesPlus
       (enc_odd s.a s.b s.c s.d)
       (M2_sq (2 * (s.b / 2))
@@ -2527,7 +2527,7 @@ lemma phase1_to_M2 (s : OddState) (hs : InSodd s) :
 
 -- Phase 2: M2_sq (2 * (k - 1)) w Z d -> enc_odd / enc_even
 
-lemma M2_ge4_to_G (m w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem M2_ge4_to_G (m w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (M2_sq (2 * m + 4) w Z d) (G_sq (2 * m) 1 w (Z + 2) d) := by
   set wt := (psiTilde w Z).1
   set Zt := (psiTilde w Z).2
@@ -2549,7 +2549,7 @@ lemma M2_ge4_to_G (m w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
   exact sqReachesPlus_trans hb1 hb2
 
-lemma loop_L1G (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem loop_L1G (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (G_sq (2 * v + 4) (2 * j + 1) w z d)
       (G_sq (2 * v) (2 * j + 3) w (z + 2) d) := by
@@ -2576,7 +2576,7 @@ lemma loop_L1G (v j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans h1 h2) h3
   exact sqReachesPlus_trans hb1 hb2
 
-lemma G_even_0_exit (j w z d : ℕ) :
+theorem G_even_0_exit (j w z d : ℕ) :
     SqReachesPlus (G_sq 0 (2 * j + 1) w z d) (enc_odd (2 * j + 3) (w + 1) z d) := by
   have hb1 : SqReachesPlus (G_sq 0 (2 * j + 1) w z d)
       (List.replicate (2 * (j + 1) + 1) 1 ++ (0 :: 3 :: TailWord w z d)) := by
@@ -2596,7 +2596,7 @@ lemma G_even_0_exit (j w z d : ℕ) :
   rw [heq] at hb2
   exact sqReachesPlus_trans hb1 hb2
 
-lemma G_even_2_exit (j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem G_even_2_exit (j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (G_sq 2 (2 * j + 1) w z d)
       (enc_even (2 * j + 4) (psiTilde w z).1 (psiTilde w z).2 d) := by
@@ -2618,7 +2618,7 @@ lemma G_even_2_exit (j w z d : ℕ) (hz : z % 2 = 1) (hd : d = 0 ∨ d = 2) :
   rw [heq] at hb2
   exact sqReachesPlus_trans hb1 hb2
 
-lemma M2_0_exit (w Z d : ℕ) :
+theorem M2_0_exit (w Z d : ℕ) :
     SqReachesPlus (M2_sq 0 w Z d) (enc_odd 1 (w + 1) Z d) := by
   have hb1 : SqReachesPlus (M2_sq 0 w Z d) (1 :: 0 :: 3 :: TailWord w Z d) :=
     exit_3_2 (3 :: TailWord w Z d)
@@ -2630,7 +2630,7 @@ lemma M2_0_exit (w Z d : ℕ) :
   rw [heq] at hb2
   exact sqReachesPlus_trans hb1 hb2
 
-lemma M2_2_exit (w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem M2_2_exit (w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (M2_sq 2 w Z d) (enc_even 2 (psiTilde w Z).1 (psiTilde w Z).2 d) := by
   set wt := (psiTilde w Z).1
   set Zt := (psiTilde w Z).2
@@ -2643,7 +2643,7 @@ lemma M2_2_exit (w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
   have hb2 := exit_3_2 (1 :: R_tail wt Zt d)
   exact sqReachesPlus_trans hb1 hb2
 
-lemma G_even_drain_0 (r j w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem G_even_drain_0 (r j w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (G_sq (4 * r) (2 * j + 1) w Z d) (enc_odd (2 * (j + r) + 3) (w + 1) (Z + 2 * r) d) := by
   induction r generalizing j Z with
   | zero => exact G_even_0_exit j w Z d
@@ -2656,7 +2656,7 @@ lemma G_even_drain_0 (r j w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     rwa [show 2 * (j + 1 + r) + 3 = 2 * (j + (r + 1)) + 3 by omega,
          show Z + 2 + 2 * r = Z + 2 * (r + 1) by omega] at htot
 
-lemma G_even_drain_2 (r j w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem G_even_drain_2 (r j w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (G_sq (4 * r + 2) (2 * j + 1) w Z d)
       (enc_even (2 * (j + r) + 4) (psiTilde w Z).1 ((psiTilde w Z).2 + 2 * r) d) := by
@@ -2674,7 +2674,7 @@ lemma G_even_drain_2 (r j w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     rwa [show 2 * (j + 1 + r) + 4 = 2 * (j + (r + 1)) + 4 by omega,
          show (psiTilde w Z).2 + 2 + 2 * r = (psiTilde w Z).2 + 2 * (r + 1) by omega] at htot
 
-lemma phase2_odd (r w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem phase2_odd (r w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus (M2_sq (4 * r) w Z d) (enc_odd (2 * r + 1) (w + 1) (Z + 2 * r) d) := by
   rcases r with _ | r'
   · exact M2_0_exit w Z d
@@ -2686,7 +2686,7 @@ lemma phase2_odd (r w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     rwa [show 2 * (0 + r') + 3 = 2 * (r' + 1) + 1 by omega,
          show Z + 2 + 2 * r' = Z + 2 * (r' + 1) by omega] at htot
 
-lemma phase2_even (r w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem phase2_even (r w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (M2_sq (4 * r + 2) w Z d)
       (enc_even (2 * r + 2) (psiTilde w Z).1 ((psiTilde w Z).2 + 2 * r) d) := by
@@ -2705,7 +2705,7 @@ lemma phase2_even (r w Z d : ℕ) (hZ : Z % 2 = 1) (hd : d = 0 ∨ d = 2) :
 
 -- Even Halving Cascade & R_odd_sound
 
-lemma enc_even_step1 (k' B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem enc_even_step1 (k' B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_even (2 * (k' + 1)) B C d)
       (M_sq (2 * k' + 1) (psiTilde (B - 1) C).1 (psiTilde (B - 1) C).2 d) := by
@@ -2737,7 +2737,7 @@ lemma enc_even_step1 (k' B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 
   rw [replicate_append_cons_same (2 * k')] at h5
   exact cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesPlus_trans (cfgSqReachesStar_plus_trans h1 h2) h3) h4) h5
 
-lemma enc_even_to_M2 (k' B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem enc_even_to_M2 (k' B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_even (2 * (k' + 1)) B C d)
       (M2_sq (2 * k') (psiTilde (B - 1) C).1 ((psiTilde (B - 1) C).2 + 2) d) :=
@@ -2746,7 +2746,7 @@ lemma enc_even_to_M2 (k' B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 
     (M_sq_odd_to_M2 k' (psiTilde (B - 1) C).1 (psiTilde (B - 1) C).2 d
       (psiTilde_snd_odd (B - 1) C hC) hd)
 
-lemma step_even_halve (r B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem step_even_halve (r B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_even (2 * (2 * r + 2)) B C d)
       (enc_even (2 * r + 2) (B - 1) (C + (2 * r + 2) + 2) d) := by
@@ -2766,7 +2766,7 @@ lemma step_even_halve (r B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 
   have htot := sqReachesPlus_trans h1 h2
   rwa [show C + 4 + 2 * r = C + (2 * r + 2) + 2 by omega] at htot
 
-lemma step_even_exit (r B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
+theorem step_even_exit (r B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesPlus
       (enc_even (2 * (2 * r + 1)) B C d)
       (enc_odd (2 * r + 1) ((psiTilde (B - 1) C).1 + 1) ((psiTilde (B - 1) C).2 + 2 + 2 * r) d) := by
@@ -2780,7 +2780,7 @@ lemma step_even_exit (r B C d : ℕ) (hB : B ≥ 1) (hC : C % 2 = 1) (hd : d = 0
   exact sqReachesPlus_trans h1
     (phase2_odd r (psiTilde (B - 1) C).1 ((psiTilde (B - 1) C).2 + 2) d hCt_odd hd)
 
-lemma even_cascade (t a' B C d : ℕ) (ha' : a' % 2 = 1) (hB : B ≥ t)
+theorem even_cascade (t a' B C d : ℕ) (ha' : a' % 2 = 1) (hB : B ≥ t)
     (hC : C % 2 = 1) (hd : d = 0 ∨ d = 2) :
     SqReachesStar
       (enc_even (2 ^ (t + 1) * a') B C d)
@@ -2823,7 +2823,7 @@ lemma even_cascade (t a' B C d : ℕ) (ha' : a' % 2 = 1) (hB : B ≥ t)
 -- Stage 5A: OddState, R_odd, Soundness & Sandwich Bounds
 -- ----------------------------------------------------------------------------
 
-lemma splitTwoAux_spec (fuel m : ℕ) (hm : m ≥ 1) (hfuel : m ≤ fuel) :
+theorem splitTwoAux_spec (fuel m : ℕ) (hm : m ≥ 1) (hfuel : m ≤ fuel) :
     2 ^ (splitTwoAux fuel m).1 * (splitTwoAux fuel m).2 = m ∧
       (splitTwoAux fuel m).2 % 2 = 1 := by
   induction fuel generalizing m with
@@ -2837,7 +2837,7 @@ lemma splitTwoAux_spec (fuel m : ℕ) (hm : m ≥ 1) (hfuel : m ≤ fuel) :
       omega
     · exact ⟨by simp, by omega⟩
 
-lemma splitTwo_spec (m : ℕ) (hm : m ≥ 1) :
+theorem splitTwo_spec (m : ℕ) (hm : m ≥ 1) :
     2 ^ (splitTwo m).1 * (splitTwo m).2 = m ∧ (splitTwo m).2 % 2 = 1 :=
   splitTwoAux_spec m m hm (le_refl m)
 
@@ -2848,7 +2848,7 @@ def bInSdom (s : OddState) : Bool :=
   (s.a % 2 == 1) && (1 ≤ s.b) && (3 ≤ s.c) && (s.c % 2 == 1) &&
   ((s.d == 0) || (s.d == 2)) && (s.a ≤ s.c)
 
-lemma bInSdom_iff (s : OddState) : bInSdom s = true ↔ InSdom s := by
+theorem bInSdom_iff (s : OddState) : bInSdom s = true ↔ InSdom s := by
   simp only [bInSdom, InSdom, InSodd, Bool.and_eq_true, Bool.or_eq_true, beq_iff_eq, decide_eq_true_eq]
   omega
 
@@ -2858,7 +2858,7 @@ def sigma_true (b d : ℕ) : ℕ :=
   else if b % 4 = 2 then (if d = 0 then 1 else 0)
   else (if d = 2 then 1 else 0)
 
-lemma sigma_true_le_one (b d : ℕ) : sigma_true b d ≤ 1 := by
+theorem sigma_true_le_one (b d : ℕ) : sigma_true b d ≤ 1 := by
   unfold sigma_true; split_ifs <;> omega
 
 def nu_of (s : OddState) : ℕ := (splitTwo (s.b / 2 + 1)).1
@@ -2885,7 +2885,7 @@ def R_odd (s : OddState) : Option OddState :=
         (if M % 2 = 0 then 0 else 2) - 1
       some ⟨a', b', c', d'⟩
 
-lemma R_odd_halt_iff (s : OddState) :
+theorem R_odd_halt_iff (s : OddState) :
     R_odd s = none ↔ s.c < sigma_true s.b s.d + nu_of s := by
   unfold R_odd
   by_cases h1 : s.c < sigma_true s.b s.d + nu_of s
@@ -3006,7 +3006,7 @@ theorem R_odd_sound (s s' : OddState) (hs : InSodd s) (hr : R_odd s = some s') :
       rw [hb_final, hc_final] at htot
       exact htot
 
-lemma R_odd_props (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
+theorem R_odd_props (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
     InSdom s' ∧
     s'.a = a_next_of s ∧
     2 ^ (nu_of s + 1) * s'.a = 2 * (s.b / 2 + 1) ∧
@@ -3087,12 +3087,12 @@ lemma R_odd_props (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
 -- Stage 5B: Two-Step 2-Adic Collapse Bounds (halt_3 & halt_5)
 -- ----------------------------------------------------------------------------
 
-lemma pow_two_ge_succ (n : ℕ) : 2 ^ n ≥ n + 1 := by
+theorem pow_two_ge_succ (n : ℕ) : 2 ^ n ≥ n + 1 := by
   induction n with
   | zero => decide
   | succ n ih => rw [Nat.pow_succ']; omega
 
-lemma pow_two_ge_8 (E : ℕ) (hE : E ≥ 3) : 2 ^ (E + 1) ≥ 8 * E - 8 := by
+theorem pow_two_ge_8 (E : ℕ) (hE : E ≥ 3) : 2 ^ (E + 1) ≥ 8 * E - 8 := by
   induction E with
   | zero => omega
   | succ E ih =>
@@ -3100,7 +3100,7 @@ lemma pow_two_ge_8 (E : ℕ) (hE : E ≥ 3) : 2 ^ (E + 1) ≥ 8 * E - 8 := by
     · decide
     · have := ih hge; rw [Nat.pow_succ']; omega
 
-lemma pow_two_ge_14 (E : ℕ) (hE : E ≥ 3) : 2 ^ (E + 1) ≥ 14 * E - 26 := by
+theorem pow_two_ge_14 (E : ℕ) (hE : E ≥ 3) : 2 ^ (E + 1) ≥ 14 * E - 26 := by
   induction E with
   | zero => omega
   | succ E ih =>
@@ -3108,7 +3108,7 @@ lemma pow_two_ge_14 (E : ℕ) (hE : E ≥ 3) : 2 ^ (E + 1) ≥ 14 * E - 26 := by
     · decide
     · have := ih hge; rw [Nat.pow_succ']; omega
 
-lemma pow_two_ge_16 (n : ℕ) (hn : n ≥ 5) : 2 ^ (n + 1) ≥ 16 * n - 16 := by
+theorem pow_two_ge_16 (n : ℕ) (hn : n ≥ 5) : 2 ^ (n + 1) ≥ 16 * n - 16 := by
   induction n with
   | zero => omega
   | succ n ih =>
@@ -3116,7 +3116,7 @@ lemma pow_two_ge_16 (n : ℕ) (hn : n ≥ 5) : 2 ^ (n + 1) ≥ 16 * n - 16 := by
     · decide
     · have := ih hge; rw [Nat.pow_succ']; omega
 
-lemma sq_lt_pow2_succ (E : ℕ) (hE : E ≥ 3) : E * E < 2 ^ (E + 1) := by
+theorem sq_lt_pow2_succ (E : ℕ) (hE : E ≥ 3) : E * E < 2 ^ (E + 1) := by
   induction E with
   | zero => omega
   | succ E ih =>
@@ -3127,7 +3127,7 @@ lemma sq_lt_pow2_succ (E : ℕ) (hE : E ≥ 3) : E * E < 2 ^ (E + 1) := by
       have hexp : (E + 1) * (E + 1) = E * E + 2 * E + 1 := by ring
       rw [Nat.pow_succ', hexp]; omega
 
-lemma quad_step1_lt (E : ℕ) (hE : E ≥ 8) : (5 * E + 5) * E < 2 ^ (E + 1) := by
+theorem quad_step1_lt (E : ℕ) (hE : E ≥ 8) : (5 * E + 5) * E < 2 ^ (E + 1) := by
   induction E with
   | zero => omega
   | succ E ih =>
@@ -3139,7 +3139,7 @@ lemma quad_step1_lt (E : ℕ) (hE : E ≥ 8) : (5 * E + 5) * E < 2 ^ (E + 1) := 
       have hexp : (5 * (E + 1) + 5) * (E + 1) = (5 * E + 5) * E + 10 * E + 10 := by ring
       rw [Nat.pow_succ', hexp]; omega
 
-lemma quad_step2a_lt (ν : ℕ) (hν : ν ≥ 10) : (3 * ν + 6) * (3 * ν + 7) < 2 ^ (ν + 1) := by
+theorem quad_step2a_lt (ν : ℕ) (hν : ν ≥ 10) : (3 * ν + 6) * (3 * ν + 7) < 2 ^ (ν + 1) := by
   induction ν with
   | zero => omega
   | succ ν ih =>
@@ -3159,7 +3159,7 @@ lemma quad_step2a_lt (ν : ℕ) (hν : ν ≥ 10) : (3 * ν + 6) * (3 * ν + 7) 
           omega
       rw [Nat.pow_succ', hexp]; omega
 
-lemma quad_step2b_lt (ν : ℕ) (hν : ν ≥ 11) : (6 * ν + 11) * (3 * ν + 8) < 2 ^ (ν + 1) := by
+theorem quad_step2b_lt (ν : ℕ) (hν : ν ≥ 11) : (6 * ν + 11) * (3 * ν + 8) < 2 ^ (ν + 1) := by
   have hlin : ∀ n, n ≥ 11 → 2 ^ (n + 1) > 36 * n + 99 := by
     intro n
     induction n with
@@ -3180,7 +3180,7 @@ lemma quad_step2b_lt (ν : ℕ) (hν : ν ≥ 11) : (6 * ν + 11) * (3 * ν + 8)
           (6 * ν + 11) * (3 * ν + 8) + 36 * ν + 99 := by ring
       rw [Nat.pow_succ', hexp]; omega
 
-lemma pow2_dvd_diff_ge {u w₁ w₂ x₁ x₂ : ℕ} (hu1 : u ≤ w₁) (hu2 : u ≤ w₂)
+theorem pow2_dvd_diff_ge {u w₁ w₂ x₁ x₂ : ℕ} (hu1 : u ≤ w₁) (hu2 : u ≤ w₂)
     (hlt : 2 ^ w₁ * x₁ < 2 ^ w₂ * x₂) :
     2 ^ u ≤ 2 ^ w₂ * x₂ - 2 ^ w₁ * x₁ := by
   have hw1 : 2 ^ w₁ * x₁ = 2 ^ u * (2 ^ (w₁ - u) * x₁) := by
@@ -3197,18 +3197,18 @@ lemma pow2_dvd_diff_ge {u w₁ w₂ x₁ x₂ : ℕ} (hu1 : u ≤ w₁) (hu2 : u
   calc 2 ^ u = 2 ^ u * 1 := (Nat.mul_one _).symm
     _ ≤ 2 ^ u * (2 ^ (w₂ - u) * x₂ - 2 ^ (w₁ - u) * x₁) := Nat.mul_le_mul_left _ hq
 
-lemma pow2_odd_inj {u₁ u₂ x₁ x₂ : ℕ} (hx1 : x₁ % 2 = 1) (hx2 : x₂ % 2 = 1)
+theorem pow2_odd_inj {u₁ u₂ x₁ x₂ : ℕ} (hx1 : x₁ % 2 = 1) (hx2 : x₂ % 2 = 1)
     (heq : 2 ^ u₁ * x₁ = 2 ^ u₂ * x₂) : u₁ = u₂ ∧ x₁ = x₂ := by
   have h := congrArg splitTwo heq
   rw [splitTwo_pow_mul_odd u₁ x₁ hx1, splitTwo_pow_mul_odd u₂ x₂ hx2] at h
   exact Prod.mk.inj h
 
-lemma mul_pred_add_self (A n : ℕ) (hn : n ≥ 1) : A * (n - 1) + A = A * n := by
+theorem mul_pred_add_self (A n : ℕ) (hn : n ≥ 1) : A * (n - 1) + A = A * n := by
   rcases n with _ | n'
   · omega
   · simp [Nat.mul_succ]
 
-lemma halt3_step1_bounds (s2 s1 s0 : OddState)
+theorem halt3_step1_bounds (s2 s1 s0 : OddState)
     (hs2 : InSdom s2) (hr2 : R_odd s2 = some s1)
     (hr1 : R_odd s1 = some s0) (hr0 : R_odd s0 = none) :
     nu_of s2 ≥ 1 ∧ s2.c ≤ s1.b + nu_of s2 + 1 ∧
@@ -3399,7 +3399,7 @@ lemma halt3_step1_bounds (s2 s1 s0 : OddState)
       have hp14 := pow_two_ge_14 E hE_ge3
       omega
 
-lemma halt5_nu2_le_7 (s4 s3 s2 s1 s0 : OddState)
+theorem halt5_nu2_le_7 (s4 s3 s2 s1 s0 : OddState)
     (hs4 : InSdom s4) (hr4 : R_odd s4 = some s3) (hr3 : R_odd s3 = some s2)
     (hr2 : R_odd s2 = some s1) (hr1 : R_odd s1 = some s0) (hr0 : R_odd s0 = none) :
     nu_of s2 ≤ 7 := by
@@ -3574,7 +3574,7 @@ def candPreimage (s' : OddState) (ν β : ℕ) : OddState :=
         (if b % 2 = 1 ∧ d = 2 then 2 else 0) - (if M % 2 = 0 then 0 else 2)
   ⟨a, b, c, d⟩
 
-lemma candPreimage_eq (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
+theorem candPreimage_eq (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
     candPreimage s' (nu_of s) (s.b % 2) = s := by
   have hp := R_odd_props s s' hs hr
   have h2m : 2 ^ (nu_of s + 1) * a_next_of s = 2 * (s.b / 2 + 1) := by
@@ -3634,7 +3634,7 @@ lemma candPreimage_eq (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s')
         split_ifs <;> omega
       rw [ha_rec]
 
-lemma nu_le_of_R_odd (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
+theorem nu_le_of_R_odd (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
     (s'.c ≤ 15 → nu_of s ≤ 4) ∧ (s'.c ≤ 125 → nu_of s ≤ 7) := by
   have hp := R_odd_props s s' hs hr
   have h2m := hp.2.2.1
@@ -3681,7 +3681,7 @@ def validPreimages (s' : OddState) (max_nu : ℕ) : List OddState :=
     [0, 1].map fun β => candPreimage s' ν β).filter fun s =>
       bInSdom s && (R_odd s == some s')
 
-lemma validPreimages_complete (s s' : OddState) (max_nu : ℕ)
+theorem validPreimages_complete (s s' : OddState) (max_nu : ℕ)
     (hs : InSdom s) (hr : R_odd s = some s') (hnu : nu_of s ≤ max_nu) :
     s ∈ validPreimages s' max_nu := by
   unfold validPreimages
@@ -3716,7 +3716,7 @@ def w3_list : List OddState :=
   [⟨3, 6, 3, 2⟩, ⟨1, 7, 3, 0⟩, ⟨5, 31, 5, 0⟩, ⟨3, 62, 7, 0⟩,
    ⟨3, 63, 7, 2⟩, ⟨3, 126, 7, 2⟩, ⟨1, 127, 7, 0⟩]
 
-lemma halt3_window_eq : halt3_window = w3_list := by decide
+theorem halt3_window_eq : halt3_window = w3_list := by decide
 
 def halt4_window : List OddState :=
   w3_list.flatMap fun s2 => validPreimages s2 4
@@ -3724,7 +3724,7 @@ def halt4_window : List OddState :=
 def w4_list : List OddState :=
   [⟨1, 4, 5, 0⟩, ⟨3, 5, 61, 2⟩, ⟨3, 5, 63, 0⟩, ⟨5, 4, 125, 0⟩]
 
-lemma halt4_window_eq : halt4_window = w4_list := by decide
+theorem halt4_window_eq : halt4_window = w4_list := by decide
 
 def halt5_window : List OddState :=
   w4_list.flatMap fun s3 => validPreimages s3 7
@@ -3732,30 +3732,30 @@ def halt5_window : List OddState :=
 def w5_list : List OddState :=
   [⟨3, 1, 3, 2⟩, ⟨1, 2, 3, 2⟩, ⟨9, 46, 9, 0⟩, ⟨9, 47, 9, 2⟩]
 
-lemma halt5_window_eq : halt5_window = w5_list := by decide
+theorem halt5_window_eq : halt5_window = w5_list := by decide
 
 def halt6_window : List OddState :=
   w5_list.flatMap fun s4 => validPreimages s4 4
 
-lemma w3_list_c_le : ∀ s ∈ w3_list, s.c ≤ 15 := by decide
+theorem w3_list_c_le : ∀ s ∈ w3_list, s.c ≤ 15 := by decide
 
-lemma w4_list_c_le : ∀ s ∈ w4_list, s.c ≤ 125 := by decide
+theorem w4_list_c_le : ∀ s ∈ w4_list, s.c ≤ 125 := by decide
 
-lemma w5_list_c_le : ∀ s ∈ w5_list, s.c ≤ 15 := by decide
+theorem w5_list_c_le : ∀ s ∈ w5_list, s.c ≤ 15 := by decide
 
-lemma halt6_window_eq_nil : halt6_window = [] := by decide
+theorem halt6_window_eq_nil : halt6_window = [] := by decide
 
-lemma odd_mem_13 {x : ℕ} (hodd : x % 2 = 1) (hlo : x ≥ 1) (hhi : x ≤ 13) :
+theorem odd_mem_13 {x : ℕ} (hodd : x % 2 = 1) (hlo : x ≥ 1) (hhi : x ≤ 13) :
     x ∈ ([1, 3, 5, 7, 9, 11, 13] : List ℕ) := by
   rcases (show x = 1 ∨ x = 3 ∨ x = 5 ∨ x = 7 ∨ x = 9 ∨ x = 11 ∨ x = 13 by omega) with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp
 
-lemma odd_mem_3_13 {x : ℕ} (hodd : x % 2 = 1) (hlo : x ≥ 3) (hhi : x ≤ 13) :
+theorem odd_mem_3_13 {x : ℕ} (hodd : x % 2 = 1) (hlo : x ≥ 3) (hhi : x ≤ 13) :
     x ∈ ([3, 5, 7, 9, 11, 13] : List ℕ) := by
   rcases (show x = 3 ∨ x = 5 ∨ x = 7 ∨ x = 9 ∨ x = 11 ∨ x = 13 by omega) with
     rfl | rfl | rfl | rfl | rfl | rfl <;> simp
 
-lemma halt5_s2_in_halt3_window (s4 s3 s2 s1 s0 : OddState)
+theorem halt5_s2_in_halt3_window (s4 s3 s2 s1 s0 : OddState)
     (hs4 : InSdom s4) (hr4 : R_odd s4 = some s3) (hr3 : R_odd s3 = some s2)
     (hr2 : R_odd s2 = some s1) (hr1 : R_odd s1 = some s0) (hr0 : R_odd s0 = none) :
     s2 ∈ halt3_window := by
@@ -3842,7 +3842,7 @@ def P5 (s : OddState) : Prop :=
     R_odd s = some s1 ∧ R_odd s1 = some s2 ∧ R_odd s2 = some s3 ∧
     R_odd s3 = some s4 ∧ R_odd s4 = some s5
 
-lemma P5_step (s : OddState) (h : P5 s) :
+theorem P5_step (s : OddState) (h : P5 s) :
     ∃ s1, R_odd s = some s1 ∧ P5 s1 := by
   rcases h with ⟨hs, s1, s2, s3, s4, s5, hr0, hr1, hr2, hr3, hr4⟩
   refine ⟨s1, hr0, (R_odd_props s s1 hs hr0).1, ?_⟩
@@ -3852,12 +3852,12 @@ lemma P5_step (s : OddState) (h : P5 s) :
 
 def s0_odd : OddState := ⟨1, 1, 5, 0⟩
 
-lemma P5_s0_odd : P5 s0_odd := by
+theorem P5_s0_odd : P5 s0_odd := by
   refine ⟨(bInSdom_iff s0_odd).mp (by decide),
     ⟨1, 5, 3, 2⟩, ⟨3, 4, 5, 0⟩, ⟨3, 6, 5, 2⟩, ⟨1, 3, 15, 0⟩, ⟨1, 16, 5, 2⟩,
     by decide, by decide, by decide, by decide, by decide⟩
 
-lemma c319_eq_s0_odd :
+theorem c319_eq_s0_odd :
     c319_sq = (.h10B, [.A 1], enc_odd s0_odd.a s0_odd.b s0_odd.c s0_odd.d) := rfl
 
 

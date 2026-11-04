@@ -21,14 +21,9 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
-
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -45,62 +40,62 @@ def F : Fin 6 := 5
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
-@[simp] lemma zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma z0i : (0 : Fin 2) >> default = default := by
+@[simp] theorem z0i : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : zB).head = 0 := rfl
+@[simp] theorem zDt : (default : zB).tail = default := rfl
+@[simp] theorem append_nil (s : zB) : ([] : zF) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : zF) (s : zB) :
     (a :: l) +> s = a >> (l +> s) := rfl
-@[simp] lemma append_assoc (l₁ l₂ : zF) (s : zB) :
+@[simp] theorem append_assoc (l₁ l₂ : zF) (s : zB) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   induction l₁ with
   | nil => rfl
   | cons a l₁ ih => simp [ih]
-@[simp] lemma zPz {α : Type} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma z0j {α : Type} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-lemma z0k {α : Type} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
+@[simp] theorem zPz {α : Type} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem z0j {α : Type} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+theorem z0k {α : Type} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
   | zero => simp
   | succ m ih => simp [z0j, Nat.succ_add, ih, List.append_assoc]
-lemma z0l {α : Type} (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
+theorem z0l {α : Type} (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
   | zero => simp [z0j]
   | succ n ih => simp [z0j, List.append_assoc, ih]
 
-lemma zSm (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem zSm (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂ := by simp [h]
-lemma z0P (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem z0P (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢* c₂ := ⟨1, zSm tm c₁ c₂ h⟩
-lemma z0Q (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem z0Q (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, zSm tm c₁ c₂ h⟩
-lemma zMa (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+theorem zMa (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+theorem zMt (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [zMa, h₁]; simp [h₂]
-lemma zSt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem zSt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma zPs {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
+theorem zPs {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma z0R {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem z0R {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma z0T {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem z0T {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   z0R (z0Q tm c₁ c₂ h₁) h₂
 
@@ -118,7 +113,7 @@ macro "execute" : tactic =>
 def IsHaltFrom (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ cfg, (c [target_tm]⊢* cfg) ∧ (step target_tm cfg).isNone
 
-lemma halt_from_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem halt_from_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [target_tm]⊢* c₂) (h₂ : IsHaltFrom c₂) : IsHaltFrom c₁ := by
   rcases h₂ with ⟨cfg, h₂, h₃⟩
   exact ⟨cfg, zSt h₁ h₂, h₃⟩
@@ -126,7 +121,7 @@ lemma halt_from_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
 abbrev W0 : zF := [0]
 abbrev W1 : zF := [1]
 
-lemma shift_C (n : Nat) (l r : zB) :
+theorem shift_C (n : Nat) (l r : zB) :
     (l {{C}}> ((W1 ^ n) +> r)) [target_tm]⊢* (((W1 ^ n) +> l) {{C}}> r) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -141,7 +136,7 @@ lemma shift_C (n : Nat) (l r : zB) :
     rw [heq] at h2
     exact zSt h1 h2
 
-lemma shift_E (n : Nat) (l r : zB) :
+theorem shift_E (n : Nat) (l r : zB) :
     (((W1 ^ n) +> l) <{{E}} r) [target_tm]⊢* (l <{{E}} ((W1 ^ n) +> r)) := by
   induction n generalizing l r with
   | zero => exact ⟨0, rfl⟩
@@ -156,7 +151,7 @@ lemma shift_E (n : Nat) (l r : zB) :
     rw [heq] at h2
     exact zSt h1 h2
 
-lemma bounce_C (n : Nat) (l r : zB) :
+theorem bounce_C (n : Nat) (l r : zB) :
     ((W1 +> l) {{C}}> ((W1 ^ n) +> (([0] : zF) +> r))) [target_tm]⊢*
     (l <{{E}} ((W1 ^ n) +> (([0, 1] : zF) +> r))) := by
   have h1 := shift_C n (W1 +> l) (([0] : zF) +> r)
@@ -181,17 +176,17 @@ def RC : List Nat → zB
 def S (l : List Nat) (a b : Nat) (r : List Nat) : Cfg (Fin 2) (Fin 6) :=
   (([0, 0] : zF) +> ((W1 ^ b) +> RC r)) {{B}}> ((W1 ^ a) +> LC l)
 
-lemma Spos (a b : Nat) (l r : List Nat) :
+theorem Spos (a b : Nat) (l r : List Nat) :
     (S l (a + 2) b r) [target_tm]⊢* (S (a :: l) 0 (b + 1) r) := by
   dsimp only [S, LC, W1, zPz, z0j, List.cons_append, List.nil_append]
   execute
 
-lemma S12 (a b : Nat) (l r : List Nat) :
+theorem S12 (a b : Nat) (l r : List Nat) :
     (S ((a + 2) :: l) 1 b r) [target_tm]⊢* (S l a 1 (b :: r)) := by
   dsimp only [S, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]
   execute
 
-lemma HS10 (b : Nat) (l r : List Nat) :
+theorem HS10 (b : Nat) (l r : List Nat) :
     IsHaltFrom (S (0 :: l) 1 b r) := by
   cases l with
   | nil =>
@@ -203,12 +198,12 @@ lemma HS10 (b : Nat) (l r : List Nat) :
     refine ⟨(([1, 0, 0, 0] : zF) +> ((W1 ^ b) +> RC r)) {{F}}> (([0] : zF) +> ((W1 ^ x0) +> LC l1)), ?_, by (simp [step, target_tm, F]; rfl)⟩
     execute
 
-lemma S112 (a b : Nat) (l r : List Nat) :
+theorem S112 (a b : Nat) (l r : List Nat) :
     (S (1 :: (a + 2) :: l) 1 b r) [target_tm]⊢* (S ((a + 2) :: l) 2 (b + 1) r) := by
   dsimp only [S, LC, W1, zPz, z0j, List.cons_append, List.nil_append]
   execute
 
-lemma S110 (a b c : Nat) (l r : List Nat) :
+theorem S110 (a b c : Nat) (l r : List Nat) :
     (S (1 :: 0 :: a :: b :: l) 1 c r) [target_tm]⊢* (S ((b + 2) :: l) (a + 2) (c + 1) r) := by
   dsimp only [S, LC]
   have h1 : ((([0, 0] : zF) +> ((W1 ^ c) +> RC r)) {{B}}>
@@ -231,7 +226,7 @@ lemma S110 (a b c : Nat) (l r : List Nat) :
     dsimp [W1]; execute
   exact zSt h1 (zSt h2 (zSt h3 (zSt h4 h5)))
 
-lemma start_S0 (a b m : Nat) (l : List Nat) (r : zB) :
+theorem start_S0 (a b m : Nat) (l : List Nat) (r : zB) :
     ((([0, 0] : zF) +> ((W1 ^ m) +> r)) {{B}}> (([0] : zF) +> ((W1 ^ a) +> (([0] : zF) +> ((W1 ^ b) +> LC l))))) [target_tm]⊢*
     (((W1 ^ m) +> r) <{{D}} ((W1 ^ (a + 2)) +> (([0] : zF) +> ((W1 ^ (b + 1)) +> LC l)))) := by
   have h1 : ((([0, 0] : zF) +> ((W1 ^ m) +> r)) {{B}}> (([0] : zF) +> ((W1 ^ a) +> (([0] : zF) +> ((W1 ^ b) +> LC l))))) [target_tm]⊢*
@@ -243,21 +238,21 @@ lemma start_S0 (a b m : Nat) (l : List Nat) (r : zB) :
     dsimp [W1]; execute
   exact zSt h1 (zSt h2 h3)
 
-lemma S01 (a b c : Nat) (l r : List Nat) :
+theorem S01 (a b c : Nat) (l r : List Nat) :
     (S (a :: b :: l) 0 1 (c :: r)) [target_tm]⊢* (S ((a + 2) :: (b + 1) :: l) 0 (c + 1) r) := by
   dsimp only [S, LC, RC]
   refine zSt (start_S0 a b 1 l (([0, 0, 0] : zF) +> ((W1 ^ c) +> RC r))) ?_
   dsimp only [W1, zPz, z0j, List.cons_append, List.nil_append]
   execute
 
-lemma S02 (a b c : Nat) (l r : List Nat) :
+theorem S02 (a b c : Nat) (l r : List Nat) :
     (S (a :: b :: l) 0 2 (c :: r)) [target_tm]⊢* (S ((b + 1) :: l) a 1 ((c + 1) :: r)) := by
   dsimp only [S, LC, RC]
   refine zSt (start_S0 a b 2 l (([0, 0, 0] : zF) +> ((W1 ^ c) +> RC r))) ?_
   dsimp only [W1, zPz, z0j, List.cons_append, List.nil_append]
   execute
 
-lemma S03 (a b c d : Nat) (l r : List Nat) :
+theorem S03 (a b c d : Nat) (l r : List Nat) :
     (S (a :: b :: l) 0 (c + 3) (d :: r)) [target_tm]⊢* (S (c :: (a + 2) :: (b + 1) :: l) 0 (d + 2) r) := by
   have h_mid : (S (a :: b :: l) 0 (c + 3) (d :: r)) [target_tm]⊢*
       (S ((a + 2) :: (b + 1) :: l) (c + 2) (d + 1) r) := by
@@ -275,11 +270,11 @@ lemma S03 (a b c d : Nat) (l r : List Nat) :
     execute
   exact zSt h_mid (Spos c (d + 1) ((a + 2) :: (b + 1) :: l) r)
 
-lemma Inc (a b c : Nat) (l r : List Nat) :
+theorem Inc (a b c : Nat) (l r : List Nat) :
     (S ((a + 2) :: b :: l) 0 2 (c :: r)) [target_tm]⊢* (S (a :: (b + 1) :: l) 0 2 ((c + 1) :: r)) :=
   zSt (S02 (a + 2) b c l r) (Spos a 1 ((b + 1) :: l) ((c + 1) :: r))
 
-lemma Incs (n a b c : Nat) (l r : List Nat) :
+theorem Incs (n a b c : Nat) (l r : List Nat) :
     (S ((a + n * 2) :: b :: l) 0 2 (c :: r)) [target_tm]⊢* (S (a :: (b + n) :: l) 0 2 ((c + n) :: r)) := by
   induction n generalizing a b c with
   | zero => exact ⟨0, rfl⟩
@@ -293,7 +288,7 @@ lemma Incs (n a b c : Nat) (l r : List Nat) :
     rw [heq2, heq3] at h2
     exact zSt h1 h2
 
-lemma Incs_S02 (x0 x1 c : Nat) (l r : List Nat) :
+theorem Incs_S02 (x0 x1 c : Nat) (l r : List Nat) :
     (S (x0 :: x1 :: l) 0 2 (c :: r)) [target_tm]⊢*
     (S (((x1 + x0 / 2) + 1) :: l) (x0 % 2) 1 (((c + x0 / 2) + 1) :: r)) := by
   have h1 := Incs (x0 / 2) (x0 % 2) x1 c l r
@@ -301,7 +296,7 @@ lemma Incs_S02 (x0 x1 c : Nat) (l r : List Nat) :
   rw [hx0] at h1
   exact zSt h1 (S02 (x0 % 2) (x1 + x0 / 2) (c + x0 / 2) l r)
 
-lemma Even_S02_S01 (x0 x1 x2 c : Nat) (l r : List Nat)
+theorem Even_S02_S01 (x0 x1 x2 c : Nat) (l r : List Nat)
     (h_even : Nat.beq (x0 % 2) 0 = true) :
     (S (x0 :: x1 :: x2 :: l) 0 2 (c :: r)) [target_tm]⊢*
     (S (((x1 + x0 / 2) + 3) :: (x2 + 1) :: l) 0 ((c + x0 / 2) + 2) r) := by
@@ -310,7 +305,7 @@ lemma Even_S02_S01 (x0 x1 x2 c : Nat) (l r : List Nat)
   rw [hrem] at h1
   exact zSt h1 (S01 ((x1 + x0 / 2) + 1) x2 ((c + x0 / 2) + 1) l r)
 
-lemma Odd_Incs_S02 (x0 x1 c : Nat) (l r : List Nat)
+theorem Odd_Incs_S02 (x0 x1 c : Nat) (l r : List Nat)
     (h_odd : Nat.beq (x0 % 2) 0 = false) :
     (S (x0 :: x1 :: l) 0 2 (c :: r)) [target_tm]⊢*
     (S (((x1 + x0 / 2) + 1) :: l) 1 1 (((c + x0 / 2) + 1) :: r)) := by
@@ -320,7 +315,7 @@ lemma Odd_Incs_S02 (x0 x1 c : Nat) (l r : List Nat)
   rw [hrem] at h1
   exact h1
 
-lemma Odd_S02_S12_Spos (x0 x1 c : Nat) (l r : List Nat)
+theorem Odd_S02_S12_Spos (x0 x1 c : Nat) (l r : List Nat)
     (h_odd : Nat.beq (x0 % 2) 0 = false)
     (h_ge3 : Nat.ble 3 (x1 + x0 / 2) = true) :
     (S (x0 :: x1 :: l) 0 2 (c :: r)) [target_tm]⊢*
@@ -333,7 +328,7 @@ lemma Odd_S02_S12_Spos (x0 x1 c : Nat) (l r : List Nat)
   have h3 := Spos (x1 + x0 / 2 - 3) 1 l (1 :: ((c + x0 / 2) + 1) :: r)
   exact zSt h1 (zSt h2 h3)
 
-lemma init_to_S :
+theorem init_to_S :
     (init []) [target_tm]⊢* (S [1] 1 1 []) := by
   dsimp only [init, Tape.mk₁, S, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]
   execute
@@ -542,32 +537,32 @@ def run_pow (k : Nat) (l : NList) (a b : Nat) (r : NList) : StepRes :=
 -- ============================================================================
 
 @[simp]
-lemma bindNat_eq {α : Type} (n : Nat) (k : Nat → α) :
+theorem bindNat_eq {α : Type} (n : Nat) (k : Nat → α) :
     bindNat n k = k n := by
   unfold bindNat
   rw [show Nat.add 1 n = n + 1 from Nat.add_comm 1 n]
 
 @[simp]
-lemma forceNList_eq (rest : NList) (k : NList → NList) :
+theorem forceNList_eq (rest : NList) (k : NList → NList) :
     forceNList rest k = k rest := by
   cases rest <;> rfl
 
 @[simp]
-lemma mkCons_eq (n : Nat) (rest : NList) :
+theorem mkCons_eq (n : Nat) (rest : NList) :
     mkCons n rest = NList.cons n rest := by
   rw [mkCons, bindNat_eq, forceNList_eq]
 
 @[simp]
-lemma forceNListS_eq (xs : NList) (k : NList → StepRes) :
+theorem forceNListS_eq (xs : NList) (k : NList → StepRes) :
     forceNListS xs k = k xs := by
   cases xs <;> rfl
 
 @[simp]
-lemma mkRunning_eq (l : NList) (a b : Nat) (r : NList) :
+theorem mkRunning_eq (l : NList) (a b : Nat) (r : NList) :
     mkRunning l a b r = StepRes.running l a b r := by
   rw [mkRunning, forceNListS_eq, forceNListS_eq, bindNat_eq, bindNat_eq]
 
-lemma nat_not_le_of_ble_eq_false {a b : Nat} (h : Nat.ble a b = false) : ¬ (a ≤ b) := by
+theorem nat_not_le_of_ble_eq_false {a b : Nat} (h : Nat.ble a b = false) : ¬ (a ≤ b) := by
   intro hle
   have h1 : Nat.ble a b = true := Nat.ble_eq_true_of_le hle
   rw [h] at h1
@@ -582,34 +577,34 @@ def StepSpec (c : Cfg (Fin 2) (Fin 6)) : StepRes → Prop
   | .halted => IsHaltFrom c
   | .running l a b r => c [target_tm]⊢* S (denote_list l) a b (denote_list r)
 
-lemma step_spec_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
+theorem step_spec_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
     (h₁₂ : c₁ [target_tm]⊢* c₂) (h₂ : StepSpec c₂ res) :
     StepSpec c₁ res := by
   cases res with
   | halted => exact halt_from_trans h₁₂ h₂
   | running l a b r => exact zSt h₁₂ h₂
 
-lemma S_nil_l (a b : Nat) (r : List Nat) :
+theorem S_nil_l (a b : Nat) (r : List Nat) :
     S [] a b r = S [0] a b r := by
   simp [S, LC, W1, z0i]
 
-lemma S_nil_l1 (x0 a b : Nat) (r : List Nat) :
+theorem S_nil_l1 (x0 a b : Nat) (r : List Nat) :
     S [x0] a b r = S [x0, 0] a b r := by
   simp [S, LC, W1, z0i]
 
-lemma S_nil_l2 (x0 x1 a b : Nat) (r : List Nat) :
+theorem S_nil_l2 (x0 x1 a b : Nat) (r : List Nat) :
     S [x0, x1] a b r = S [x0, x1, 0] a b r := by
   simp [S, LC, W1, z0i]
 
-lemma S_nil_l3 (x0 x1 x2 a b : Nat) (r : List Nat) :
+theorem S_nil_l3 (x0 x1 x2 a b : Nat) (r : List Nat) :
     S [x0, x1, x2] a b r = S [x0, x1, x2, 0] a b r := by
   simp [S, LC, W1, z0i]
 
-lemma S_nil_r (l : List Nat) (a b : Nat) :
+theorem S_nil_r (l : List Nat) (a b : Nat) :
     S l a b [] = S l a b [0] := by
   simp [S, RC, W1, z0i]
 
-lemma pop_l_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (l : NList)
+theorem pop_l_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (l : NList)
     (hk : ∀ x0 l1, StepSpec (S (x0 :: denote_list l1) a b r) (k x0 l1)) :
     StepSpec (S (denote_list l) a b r) (popNList l k) := by
   cases l with
@@ -620,7 +615,7 @@ lemma pop_l_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (l :
   | cons x0 l1 =>
     exact hk x0 l1
 
-lemma pop_l1_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0 : Nat) (l1 : NList)
+theorem pop_l1_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0 : Nat) (l1 : NList)
     (hk : ∀ x1 l2, StepSpec (S (x0 :: x1 :: denote_list l2) a b r) (k x1 l2)) :
     StepSpec (S (x0 :: denote_list l1) a b r) (popNList l1 k) := by
   cases l1 with
@@ -631,7 +626,7 @@ lemma pop_l1_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0
   | cons x1 l2 =>
     exact hk x1 l2
 
-lemma pop_l2_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0 x1 : Nat) (l2 : NList)
+theorem pop_l2_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0 x1 : Nat) (l2 : NList)
     (hk : ∀ x2 l3, StepSpec (S (x0 :: x1 :: x2 :: denote_list l3) a b r) (k x2 l3)) :
     StepSpec (S (x0 :: x1 :: denote_list l2) a b r) (popNList l2 k) := by
   cases l2 with
@@ -642,7 +637,7 @@ lemma pop_l2_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0
   | cons x2 l3 =>
     exact hk x2 l3
 
-lemma pop_l3_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0 x1 x2 : Nat) (l3 : NList)
+theorem pop_l3_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0 x1 x2 : Nat) (l3 : NList)
     (hk : ∀ x3 l4, StepSpec (S (x0 :: x1 :: x2 :: x3 :: denote_list l4) a b r) (k x3 l4)) :
     StepSpec (S (x0 :: x1 :: x2 :: denote_list l3) a b r) (popNList l3 k) := by
   cases l3 with
@@ -653,7 +648,7 @@ lemma pop_l3_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (x0
   | cons x3 l4 =>
     exact hk x3 l4
 
-lemma pop_r_spec {l : List Nat} {a b : Nat} {k : Nat → NList → StepRes} (r : NList)
+theorem pop_r_spec {l : List Nat} {a b : Nat} {k : Nat → NList → StepRes} (r : NList)
     (hk : ∀ c r1, StepSpec (S l a b (c :: denote_list r1)) (k c r1)) :
     StepSpec (S l a b (denote_list r)) (popNList r k) := by
   cases r with
@@ -664,7 +659,7 @@ lemma pop_r_spec {l : List Nat} {a b : Nat} {k : Nat → NList → StepRes} (r :
   | cons c r1 =>
     exact hk c r1
 
-lemma sweep_r_spec (r l : NList) (c : Nat) :
+theorem sweep_r_spec (r l : NList) (c : Nat) :
     StepSpec (S (denote_list l) 0 (c + 3) (denote_list r)) (sweep_r r l c) := by
   induction r generalizing l c with
   | nil =>
@@ -702,7 +697,7 @@ lemma sweep_r_spec (r l : NList) (c : Nat) :
       rw [h_b, ← h_lnext] at hstep
       exact step_spec_trans hstep (ih l_next (d - 1))
 
-lemma finish_even_spec (l_new : NList) (cn : Nat) (r1 : NList) :
+theorem finish_even_spec (l_new : NList) (cn : Nat) (r1 : NList) :
     StepSpec (S (denote_list l_new) 0 (cn + 2) (denote_list r1)) (finish_even l_new cn r1) := by
   unfold finish_even
   rw [forceNListS_eq]
@@ -721,7 +716,7 @@ lemma finish_even_spec (l_new : NList) (cn : Nat) (r1 : NList) :
     rw [hb]
     exact sweep_r_spec r1 l_new (cn - 1)
 
-lemma sweep_l_spec (l1 : NList) (x0 : Nat) (r : NList) :
+theorem sweep_l_spec (l1 : NList) (x0 : Nat) (r : NList) :
     StepSpec (S (x0 :: denote_list l1) 0 2 (denote_list r)) (sweep_l l1 x0 r) := by
   induction l1 generalizing x0 r with
   | nil =>
@@ -782,7 +777,7 @@ lemma sweep_l_spec (l1 : NList) (x0 : Nat) (r : NList) :
         simp only [mkRunning_eq, mkCons_eq, StepSpec, denote_list]
         exact h1
 
-lemma step_cfg_spec (l : NList) (a b : Nat) (r : NList) :
+theorem step_cfg_spec (l : NList) (a b : Nat) (r : NList) :
     StepSpec (S (denote_list l) a b (denote_list r)) (step_cfg l a b r) := by
   unfold step_cfg
   cases ha2 : Nat.ble 2 a with
@@ -887,18 +882,18 @@ lemma step_cfg_spec (l : NList) (a b : Nat) (r : NList) :
             exact ⟨0, rfl⟩
 
 @[simp]
-lemma forceListCPS_eq {α : Type} (xs : NList) (k : NList → α) : forceListCPS xs k = k xs := by
+theorem forceListCPS_eq {α : Type} (xs : NList) (k : NList → α) : forceListCPS xs k = k xs := by
   induction xs generalizing k with
   | nil => rfl
   | cons h t ih => simp only [forceListCPS, bindNat_eq, ih]
 
 @[simp]
-lemma forceRes_eq (s : StepRes) : forceRes s = s := by
+theorem forceRes_eq (s : StepRes) : forceRes s = s := by
   cases s with
   | halted => rfl
   | running l a b r => simp only [forceRes, forceListCPS_eq, bindNat_eq]
 
-lemma run_pow_spec (k : Nat) (l : NList) (a b : Nat) (r : NList) :
+theorem run_pow_spec (k : Nat) (l : NList) (a b : Nat) (r : NList) :
     StepSpec (S (denote_list l) a b (denote_list r)) (run_pow k l a b r) := by
   induction k generalizing l a b r with
   | zero => exact step_cfg_spec l a b r
@@ -914,7 +909,7 @@ lemma run_pow_spec (k : Nat) (l : NList) (a b : Nat) (r : NList) :
       rw [hc] at h1
       exact step_spec_trans h1 (ih l' a' b' r')
 
-lemma chain_pow (k : Nat) {l l' : NList} {a a' b b' : Nat} {r r' : NList}
+theorem chain_pow (k : Nat) {l l' : NList} {a a' b b' : Nat} {r r' : NList}
     (h_step : run_pow k l a b r = StepRes.running l' a' b' r')
     (h_next : IsHaltFrom (S (denote_list l') a' b' (denote_list r'))) :
     IsHaltFrom (S (denote_list l) a b (denote_list r)) := by
@@ -922,7 +917,7 @@ lemma chain_pow (k : Nat) {l l' : NList} {a a' b b' : Nat} {r r' : NList}
   rw [h_step] at h1
   exact halt_from_trans h1 h_next
 
-lemma finish_pow (k : Nat) {l : NList} {a b : Nat} {r : NList}
+theorem finish_pow (k : Nat) {l : NList} {a b : Nat} {r : NList}
     (h_halt : run_pow k l a b r = StepRes.halted) :
     IsHaltFrom (S (denote_list l) a b (denote_list r)) := by
   have h1 := run_pow_spec k l a b r
@@ -944,7 +939,7 @@ def strictNat {α : Type} (n : Nat) (k : Nat → α) : α :=
   (Nat.rec (fun _ => k 0) (fun m _ k => k m) (n + 1) : (Nat → α) → α) k
 
 @[simp]
-lemma strictNat_eq {α : Type} (n : Nat) (k : Nat → α) :
+theorem strictNat_eq {α : Type} (n : Nat) (k : Nat → α) :
     strictNat n k = k n := rfl
 
 def rec_zero (_ _ : Nat) (_ : NList) : StateL := StateL.bad
@@ -1001,12 +996,12 @@ def do_odd_step (x0 x1 x2 : Nat) (rest1 : NList) : StateL :=
        (Nat.beq (Nat.land u 1) 0))
     (Nat.ble 3 x1n)
 
-lemma shr1_eq_div2 (x : Nat) : Nat.shiftRight x 1 = x / 2 := rfl
+theorem shr1_eq_div2 (x : Nat) : Nat.shiftRight x 1 = x / 2 := rfl
 
-lemma land1_eq_mod2 (x : Nat) : Nat.land x 1 = x % 2 :=
+theorem land1_eq_mod2 (x : Nat) : Nat.land x 1 = x % 2 :=
   Nat.and_one_is_mod x
 
-lemma S_pad_rest (x0 x1 a b : Nat) (rest : NList) (r : List Nat) :
+theorem S_pad_rest (x0 x1 a b : Nat) (rest : NList) (r : List Nat) :
     S (x0 :: x1 :: denote_list rest) a b r =
       S (x0 :: x1 :: (popNList rest (fun x2 _ => x2)) :: denote_list (popNList rest (fun _ rest1 => rest1))) a b r := by
   cases rest with
@@ -1015,7 +1010,7 @@ lemma S_pad_rest (x0 x1 a b : Nat) (rest : NList) (r : List Nat) :
     exact S_nil_l2 x0 x1 a b r
   | cons x2 rest1 => rfl
 
-lemma rec_step_fuel_sound (fuel : Nat) :
+theorem rec_step_fuel_sound (fuel : Nat) :
     ∀ (x0 x1 : Nat) (rest : NList) (y0 y1 : Nat) (rest' : NList) (d : Nat) (r_tail : List Nat),
       step_rec_fuel fuel x0 x1 rest = StateL.ok y0 y1 rest' →
       (S (x0 :: x1 :: denote_list rest) 0 2 (1 :: d :: r_tail)) [target_tm]⊢*
@@ -1091,7 +1086,7 @@ lemma rec_step_fuel_sound (fuel : Nat) :
             have h3 := S03 z0 z1 (x0 / 2 + 1) d (denote_list zrest) r_tail
             exact zSt (by simpa [Nat.add_comm 1 (x0 / 2), Nat.add_assoc] using! h1) (zSt h2 h3)
 
-lemma even_step_pos (k x1 x2 : Nat) (rest1 : List Nat) :
+theorem even_step_pos (k x1 x2 : Nat) (rest1 : List Nat) :
     (S ((2 * k + 2) :: x1 :: x2 :: rest1) 0 2 []) [target_tm]⊢*
       (S (k :: (x1 + k + 6) :: (x2 + 2) :: rest1) 0 2 []) := by
   have hev : Nat.beq ((2 * k + 2) % 2) 0 = true := by
@@ -1108,7 +1103,7 @@ lemma even_step_pos (k x1 x2 : Nat) (rest1 : List Nat) :
     rw [this]
   exact zSt h1 (by rw [h2]; exact S03 (x1 + k + 4) (x2 + 1) k 0 rest1 [])
 
-lemma even_pow_steps (t q x1 x2 : Nat) (rest1 : List Nat) (hq : 1 ≤ q) :
+theorem even_pow_steps (t q x1 x2 : Nat) (rest1 : List Nat) (hq : 1 ≤ q) :
     (S ((q * 2 ^ (t + 1) - 2) :: x1 :: x2 :: rest1) 0 2 []) [target_tm]⊢*
       (if q = 1 then
         S ((x1 + 2 ^ (t + 1) + 4 * (t + 1) - 3) :: (x2 + 2 * (t + 1) - 1) :: rest1) 0 2 []
@@ -1157,7 +1152,7 @@ lemma even_pow_steps (t q x1 x2 : Nat) (rest1 : List Nat) (hq : 1 ≤ q) :
       have e2 : x2 + 2 + 2 * (t + 1) = x2 + 2 * (t + 2) := by omega
       rw [e1, e2] at h2; exact h2
 
-lemma do_odd_step_sound (x0 x1 x2 : Nat) (rest1 : NList) (y0 y1 : Nat) (rest' : NList)
+theorem do_odd_step_sound (x0 x1 x2 : Nat) (rest1 : NList) (y0 y1 : Nat) (rest' : NList)
     (hodd : Nat.beq (x0 % 2) 0 = false)
     (h : do_odd_step x0 x1 x2 rest1 = StateL.ok y0 y1 rest') :
     (S (x0 :: x1 :: x2 :: denote_list rest1) 0 2 []) [target_tm]⊢*
@@ -1223,7 +1218,7 @@ def normNListCPS : NList → (NList → StateL) → StateL :=
     (fun h _ ih k =>
       @Nat.rec (fun _ => StateL) StateL.bad (fun vh _ => ih (fun t' => k (NList.cons vh t'))) (Nat.add 1 h))
 
-lemma normNListCPS_eq (xs : NList) (k : NList → StateL) : normNListCPS xs k = k xs := by
+theorem normNListCPS_eq (xs : NList) (k : NList → StateL) : normNListCPS xs k = k xs := by
   induction xs generalizing k with
   | nil => rfl
   | cons h t ih =>
@@ -1241,7 +1236,7 @@ def normStateL (s : StateL) : StateL :=
         (Nat.add 1 h1))
       (Nat.add 1 h0)) s
 
-lemma normStateL_eq (s : StateL) : normStateL s = s := by
+theorem normStateL_eq (s : StateL) : normStateL s = s := by
   cases s with
   | bad => rfl
   | ok h0 h1 tail =>
@@ -1254,13 +1249,13 @@ lemma normStateL_eq (s : StateL) : normStateL s = s := by
     exact normNListCPS_eq tail (fun tail' => StateL.ok h0 h1 tail')
 
 
-@[simp] lemma nat_add_eq (x y : Nat) : x.add y = x + y := rfl
-@[simp] lemma nat_sub_eq (x y : Nat) : x.sub y = x - y := rfl
+@[simp] theorem nat_add_eq (x y : Nat) : x.add y = x + y := rfl
+@[simp] theorem nat_sub_eq (x y : Nat) : x.sub y = x - y := rfl
 
 noncomputable def popNList_fast : NList → (Nat → NList → StateL) → StateL :=
   fun xs f => (NList.rec (fun f => f 0 NList.nil) (fun h t _ f => f h t) xs : (Nat → NList → StateL) → StateL) f
 
-lemma popNList_fast_eq : popNList_fast = popNList := by
+theorem popNList_fast_eq : popNList_fast = popNList := by
   funext xs f
   cases xs <;> rfl
 
@@ -1283,12 +1278,12 @@ noncomputable def rec_step_f (_ : Nat) (ih : Nat → Nat → NList → StateL) (
 noncomputable def step_rec_f_fuel (fuel : Nat) : Nat → Nat → NList → StateL :=
   @Nat.rec (fun _ => Nat → Nat → NList → StateL) (fun _ _ _ => StateL.bad) rec_step_f fuel
 
-lemma rec_step_f_eq (f : Nat) (ih : Nat → Nat → NList → StateL) (x0 x1 : Nat) (rest : NList) :
+theorem rec_step_f_eq (f : Nat) (ih : Nat → Nat → NList → StateL) (x0 x1 : Nat) (rest : NList) :
     rec_step_f f ih x0 x1 rest = rec_step f ih x0 x1 rest := by
   unfold rec_step_f rec_step rec_even
   simp only [popNList_fast_eq, nat_add_eq, nat_sub_eq, strictNat_eq]
 
-lemma step_rec_f_fuel_eq (fuel : Nat) : step_rec_f_fuel fuel = step_rec_fuel fuel := by
+theorem step_rec_f_fuel_eq (fuel : Nat) : step_rec_f_fuel fuel = step_rec_fuel fuel := by
   induction fuel with
   | zero => rfl
   | succ fuel ih =>
@@ -1302,7 +1297,7 @@ noncomputable def ctz_run (fuel : Nat) (k : Nat → Nat → StateL) : Nat → Na
     (fun _ ih_c t q => @Bool.rec (fun _ => StateL) (ih_c (Nat.add t 1) (Nat.shiftRight q 1)) (k t q) (Nat.beq (Nat.land q 1) 1))
     fuel
 
-lemma nat_rec_ctz_exists (fuel : Nat) (k : Nat → Nat → StateL) (t0 q0 : Nat) :
+theorem nat_rec_ctz_exists (fuel : Nat) (k : Nat → Nat → StateL) (t0 q0 : Nat) :
     ∃ t q, ctz_run fuel k t0 q0 = k t q := by
   unfold ctz_run
   induction fuel generalizing t0 q0 with
@@ -1313,9 +1308,7 @@ lemma nat_rec_ctz_exists (fuel : Nat) (k : Nat → Nat → StateL) (t0 q0 : Nat)
     · exact ih (Nat.add t0 1) (Nat.shiftRight q0 1)
     · exact ⟨t0, q0, rfl⟩
 
-set_option linter.unusedSimpArgs false
-
-lemma shiftLeft_eq_mul_pow : ∀ (q t : Nat), Nat.shiftLeft q t = q * 2 ^ t
+theorem shiftLeft_eq_mul_pow : ∀ (q t : Nat), Nat.shiftLeft q t = q * 2 ^ t
   | q, 0 => by simp [Nat.shiftLeft]
   | q, t + 1 => by
     change Nat.shiftLeft (2 * q) t = q * 2 ^ (t + 1)
@@ -1337,11 +1330,11 @@ def CPS_Sound (F : ContL → ContL) : Prop :=
 noncomputable def compCPS (F G : ContL → ContL) : ContL → ContL := fun k => F (G k)
 noncomputable def apply2 (F : ContL → ContL) : ContL → ContL := fun k => F (F k)
 
-lemma cps_comp {F G : ContL → ContL} (hF : CPS_Sound F) (hG : CPS_Sound G) :
+theorem cps_comp {F G : ContL → ContL} (hF : CPS_Sound F) (hG : CPS_Sound G) :
     CPS_Sound (compCPS F G) :=
   fun cont y0 y1 rest' hcont => hF (G cont) y0 y1 rest' (hG cont y0 y1 rest' hcont)
 
-lemma cps_apply2 {F : ContL → ContL} (hF : CPS_Sound F) : CPS_Sound (apply2 F) :=
+theorem cps_apply2 {F : ContL → ContL} (hF : CPS_Sound F) : CPS_Sound (apply2 F) :=
   cps_comp hF hF
 
 noncomputable def do_odd_k_def
@@ -1365,7 +1358,7 @@ noncomputable def do_odd_k_def
        (Nat.beq (Nat.land u 1) 0))
     (Nat.ble 3 x1n)
 
-lemma do_odd_k_sound
+theorem do_odd_k_sound
     {popNList_f : NList → (Nat → NList → StateL) → StateL}
     (hpop : popNList_f = popNList)
     {step_rec_f : Nat → Nat → NList → StateL}
@@ -1458,7 +1451,7 @@ noncomputable def step1_k_def
     (do_odd_k : ContL → ContL) : ContL → ContL :=
   step1_k_fuel 13 popNList_f do_odd_k
 
-lemma step1_k_sound
+theorem step1_k_sound
     {popNList_f : NList → (Nat → NList → StateL) → StateL}
     (hpop : popNList_f = popNList)
     {do_odd_k : ContL → ContL}
@@ -1578,7 +1571,7 @@ noncomputable def run_tree_16
       (@Bool.rec (fun _ => StateL → StateL) (fun s => s) normState_f (Nat.beq j 0))
       (StateL.rec StateL.bad ih (ih x0 x1 rest)))
 
-lemma run_tree_16_sound
+theorem run_tree_16_sound
     {normState_f : StateL → StateL}
     (hnorm : normState_f = normStateL)
     {leaf : Nat → Nat → NList → StateL}
@@ -1670,7 +1663,7 @@ noncomputable def run_tail13_fuel (fuel_rec fuel : Nat) : Nat → Nat → NList 
 noncomputable def run_tail13 : Nat → Nat → NList → StateL :=
   run_tail13_fuel 20 13
 
-lemma plain_finish_sound (v0 v1 v2 : Nat) (tail : NList) (y0 y1 : Nat) (rest' : NList)
+theorem plain_finish_sound (v0 v1 v2 : Nat) (tail : NList) (y0 y1 : Nat) (rest' : NList)
     (h : plain_finish_def v0 v1 v2 tail = StateL.ok y0 y1 rest') :
     (S (v0 :: v1 :: v2 :: denote_list tail) 0 2 []) [target_tm]⊢*
       (S (y0 :: y1 :: denote_list rest') 0 2 []) := by
@@ -1680,9 +1673,9 @@ lemma plain_finish_sound (v0 v1 v2 : Nat) (tail : NList) (y0 y1 : Nat) (rest' : 
   dsimp only [denote_list]
   exact ⟨0, rfl⟩
 
-lemma step_rec_f_17_plus_3 : step_rec_f_fuel 20 = step_rec_fuel 20 := step_rec_f_fuel_eq 20
+theorem step_rec_f_17_plus_3 : step_rec_f_fuel 20 = step_rec_fuel 20 := step_rec_f_fuel_eq 20
 
-lemma run_leaf_cps_sound
+theorem run_leaf_cps_sound
     {popNList_f : NList → (Nat → NList → StateL) → StateL}
     (hpop : popNList_f = popNList)
     {F : ContL → ContL}
@@ -1700,7 +1693,7 @@ lemma run_leaf_cps_sound
   rw [hpop1] at h
   exact hF plain_finish_def y0 y1 rest' (fun v0 v1 v2 tail => plain_finish_sound v0 v1 v2 tail y0 y1 rest') x0 x1 x2 rest1 h
 
-lemma run_C_fast_sound (k : Nat) :
+theorem run_C_fast_sound (k : Nat) :
     ∀ (x0 x1 : Nat) (rest : NList) (y0 y1 : Nat) (rest' : NList),
       run_C_fast k x0 x1 rest = StateL.ok y0 y1 rest' →
       (S (x0 :: x1 :: denote_list rest) 0 2 []) [target_tm]⊢*
@@ -1709,7 +1702,7 @@ lemma run_C_fast_sound (k : Nat) :
   have hs16 := cps_apply2 (cps_apply2 (cps_apply2 (cps_apply2 hs1)))
   run_tree_16_sound rfl (run_leaf_cps_sound popNList_fast_eq hs16) k
 
-lemma run_tail13_sound :
+theorem run_tail13_sound :
     ∀ (x0 x1 : Nat) (rest : NList) (y0 y1 : Nat) (rest' : NList),
       run_tail13 x0 x1 rest = StateL.ok y0 y1 rest' →
       (S (x0 :: x1 :: denote_list rest) 0 2 []) [target_tm]⊢*
@@ -1725,7 +1718,7 @@ noncomputable def beqNList : NList → NList → Bool :=
     (fun h1 _ ih b =>
       NList.rec false (fun h2 t2 _ => @Bool.rec (fun _ => Bool) false (ih t2) (Nat.beq h1 h2)) b)
 
-lemma beqNList_sound : ∀ (a b : NList), beqNList a b = true → a = b
+theorem beqNList_sound : ∀ (a b : NList), beqNList a b = true → a = b
   | .nil, .nil, _ => rfl
   | .cons _ _, .nil, h => by simp [beqNList] at h
   | .nil, .cons _ _, h => by simp [beqNList] at h
@@ -1744,7 +1737,7 @@ noncomputable def checkStateL (s : StateL) (e0 e1 : Nat) (erest : NList) : Bool 
         (Nat.beq h0 e0))
     s
 
-lemma checkStateL_sound {s : StateL} {e0 e1 : Nat} {erest : NList}
+theorem checkStateL_sound {s : StateL} {e0 e1 : Nat} {erest : NList}
     (h : checkStateL s e0 e1 erest = true) :
     s = StateL.ok e0 e1 erest := by
   cases s with
@@ -1759,7 +1752,7 @@ lemma checkStateL_sound {s : StateL} {e0 e1 : Nat} {erest : NList}
       · rw [h1_eq] at h; dsimp at h
         rw [Nat.eq_of_beq_eq_true h0_eq, Nat.eq_of_beq_eq_true h1_eq, beqNList_sound tail erest h]
 
-lemma chain_C_fast {x0 x1 y0 y1 : Nat} {rest rest' : NList}
+theorem chain_C_fast {x0 x1 y0 y1 : Nat} {rest rest' : NList}
     (h_step : checkStateL (run_C_fast 12 x0 x1 rest) y0 y1 rest' = true)
     (h_next : IsHaltFrom (S (y0 :: y1 :: denote_list rest') 0 2 [])) :
     IsHaltFrom (S (x0 :: x1 :: denote_list rest) 0 2 []) :=
@@ -1776,7 +1769,7 @@ noncomputable def run_rem_fast (x0 x1 : Nat) (rest : NList) : StateL :=
   let s := StateL.rec StateL.bad (run_C_fast 0) s
   StateL.rec StateL.bad run_tail13 s
 
-lemma stepL_fast_step (k : Nat) {s : StateL} {y0 y1 : Nat} {rest' : NList}
+theorem stepL_fast_step (k : Nat) {s : StateL} {y0 y1 : Nat} {rest' : NList}
     (h : StateL.rec StateL.bad (run_C_fast k) s = StateL.ok y0 y1 rest') :
     ∃ x0 x1 rest, s = StateL.ok x0 x1 rest ∧
       ((S (x0 :: x1 :: denote_list rest) 0 2 []) [target_tm]⊢*
@@ -1785,7 +1778,7 @@ lemma stepL_fast_step (k : Nat) {s : StateL} {y0 y1 : Nat} {rest' : NList}
   | bad => contradiction
   | ok x0 x1 rest => exact ⟨x0, x1, rest, rfl, run_C_fast_sound k x0 x1 rest y0 y1 rest' h⟩
 
-lemma stepL_tail13_step {s : StateL} {y0 y1 : Nat} {rest' : NList}
+theorem stepL_tail13_step {s : StateL} {y0 y1 : Nat} {rest' : NList}
     (h : StateL.rec StateL.bad run_tail13 s = StateL.ok y0 y1 rest') :
     ∃ x0 x1 rest, s = StateL.ok x0 x1 rest ∧
       ((S (x0 :: x1 :: denote_list rest) 0 2 []) [target_tm]⊢*
@@ -1794,7 +1787,7 @@ lemma stepL_tail13_step {s : StateL} {y0 y1 : Nat} {rest' : NList}
   | bad => contradiction
   | ok x0 x1 rest => exact ⟨x0, x1, rest, rfl, run_tail13_sound x0 x1 rest y0 y1 rest' h⟩
 
-lemma run_rem_fast_sound {x0 x1 y0 y1 : Nat} {rest rest' : NList}
+theorem run_rem_fast_sound {x0 x1 y0 y1 : Nat} {rest rest' : NList}
     (h_step : checkStateL (run_rem_fast x0 x1 rest) y0 y1 rest' = true) :
     (S (x0 :: x1 :: denote_list rest) 0 2 []) [target_tm]⊢*
       (S (y0 :: y1 :: denote_list rest') 0 2 []) := by
@@ -1811,7 +1804,7 @@ lemma run_rem_fast_sound {x0 x1 y0 y1 : Nat} {rest rest' : NList}
   have s9 := run_C_fast_sound 11 x0 x1 rest a8 b8 r8 h8
   exact zSt s9 (zSt s8 (zSt s7 (zSt s6 (zSt s5 (zSt s4 (zSt s3 (zSt s2 s1)))))))
 
-lemma chain_rem_fast {x0 x1 y0 y1 : Nat} {rest rest' : NList}
+theorem chain_rem_fast {x0 x1 y0 y1 : Nat} {rest rest' : NList}
     (h_step : checkStateL (run_rem_fast x0 x1 rest) y0 y1 rest' = true)
     (h_next : IsHaltFrom (S (y0 :: y1 :: denote_list rest') 0 2 [])) :
     IsHaltFrom (S (x0 :: x1 :: denote_list rest) 0 2 []) :=
@@ -1836,7 +1829,7 @@ noncomputable def rec_step_comb (ih : Nat → Nat → NList → StateL) (x0 x1 :
     (Nat.beq (Nat.land x0 1) 0)
     n x1n rest
 
-lemma rec_step_comb_eq (ih : Nat → Nat → NList → StateL) :
+theorem rec_step_comb_eq (ih : Nat → Nat → NList → StateL) :
     rec_step_comb ih = rec_step_f 0 ih := by
   funext x0 x1 rest
   unfold rec_step_comb rec_step_f
@@ -1847,7 +1840,7 @@ noncomputable def step_rec_comb_fuel : Nat → Nat → Nat → NList → StateL 
     (fun _ _ _ => StateL.bad)
     (fun _ ih => rec_step_comb ih)
 
-lemma step_rec_comb_eq (fuel : Nat) :
+theorem step_rec_comb_eq (fuel : Nat) :
     step_rec_comb_fuel fuel = step_rec_f_fuel fuel := by
   induction fuel with
   | zero => rfl
@@ -1876,7 +1869,7 @@ noncomputable def do_odd_comb (step_rec_f : Nat → Nat → NList → StateL) : 
          cont n u x2 rest1)
       (Nat.ble 3 x1n)
 
-lemma do_odd_comb_eq (step_rec_f : Nat → Nat → NList → StateL) :
+theorem do_odd_comb_eq (step_rec_f : Nat → Nat → NList → StateL) :
     do_odd_comb step_rec_f = do_odd_k_def popNList_fast step_rec_f := by
   funext cont x0 x1 x2 rest1
   unfold do_odd_comb do_odd_k_def
@@ -1919,7 +1912,7 @@ noncomputable def step1_comb_fuel (fuel : Nat) (do_odd_k : ContL → ContL) : Co
           cont h x1 x2 rest1)
       (Nat.beq (Nat.land x0 1) 0)
 
-lemma step1_comb_fuel_eq (fuel : Nat) (do_odd_k : ContL → ContL) :
+theorem step1_comb_fuel_eq (fuel : Nat) (do_odd_k : ContL → ContL) :
     step1_comb_fuel fuel do_odd_k = step1_k_fuel fuel popNList_fast do_odd_k := by
   funext cont x0 x1 x2 rest1
   unfold step1_comb_fuel step1_k_fuel
@@ -1931,7 +1924,7 @@ lemma step1_comb_fuel_eq (fuel : Nat) (do_odd_k : ContL → ContL) :
     | false => rfl
     | true => cases Nat.beq (Nat.add (Nat.shiftRight x0 1) 1) 1 <;> rfl
 
-lemma step1_comb_eq (do_odd_k : ContL → ContL) :
+theorem step1_comb_eq (do_odd_k : ContL → ContL) :
     step1_comb_fuel 13 do_odd_k = step1_k_def popNList_fast do_odd_k :=
   step1_comb_fuel_eq 13 do_odd_k
 
@@ -2175,7 +2168,7 @@ noncomputable def run_comb_wrap (step_rec_f : Nat → Nat → NList → StateL)
       (StateL.rec StateL.bad ih (ih x0 x1 rest)))
     k
 
-lemma run_C_fast_comb_fuel_eq (fuel_rec fuel k : Nat) :
+theorem run_C_fast_comb_fuel_eq (fuel_rec fuel k : Nat) :
     run_C_fast_comb_fuel fuel_rec fuel k = run_C_fast_fuel fuel_rec fuel k := by
   have h1 : run_C_fast_comb_fuel fuel_rec fuel k = run_comb_wrap (step_rec_comb_fuel fuel_rec) do_odd_comb (step1_comb_fuel fuel) (fun F cont => F (F cont)) k := rfl
   have h2 : run_C_fast_fuel fuel_rec fuel k = run_comb_wrap (step_rec_f_fuel fuel_rec) (do_odd_k_def popNList_fast) (step1_k_fuel fuel popNList_fast) apply2 k := rfl
@@ -2185,7 +2178,7 @@ lemma run_C_fast_comb_fuel_eq (fuel_rec fuel k : Nat) :
   have ha : (fun (F : ContL → ContL) cont => F (F cont)) = apply2 := rfl
   rw [hd, hs, ha]
 
-lemma run_C_fast_comb_eq (k : Nat) : run_C_fast_comb k = run_C_fast k :=
+theorem run_C_fast_comb_eq (k : Nat) : run_C_fast_comb k = run_C_fast k :=
   run_C_fast_comb_fuel_eq 20 13 k
 
 noncomputable def run_tail13_wrap (step_rec_f : Nat → Nat → NList → StateL)
@@ -2200,7 +2193,7 @@ noncomputable def run_tail13_wrap (step_rec_f : Nat → Nat → NList → StateL
   let s8 : ContL → ContL := s2_f s4
   fun x0 x1 rest => popNList_fast rest (fun x2 rest1 => comp_f s8 (comp_f s4 step1_k) plain_finish_def x0 x1 x2 rest1)
 
-lemma run_tail13_comb_fuel_eq (fuel_rec fuel : Nat) :
+theorem run_tail13_comb_fuel_eq (fuel_rec fuel : Nat) :
     run_tail13_comb_fuel fuel_rec fuel = run_tail13_fuel fuel_rec fuel := by
   have h1 : run_tail13_comb_fuel fuel_rec fuel = run_tail13_wrap (step_rec_comb_fuel fuel_rec) do_odd_comb (step1_comb_fuel fuel) (fun F cont => F (F cont)) (fun F G cont => F (G cont)) := rfl
   have h2 : run_tail13_fuel fuel_rec fuel = run_tail13_wrap (step_rec_f_fuel fuel_rec) (do_odd_k_def popNList_fast) (step1_k_fuel fuel popNList_fast) apply2 compCPS := rfl
@@ -2211,7 +2204,7 @@ lemma run_tail13_comb_fuel_eq (fuel_rec fuel : Nat) :
   have hc : (fun (F G : ContL → ContL) cont => F (G cont)) = compCPS := rfl
   rw [hd, hs, ha, hc]
 
-lemma run_tail13_comb_eq : run_tail13_comb = run_tail13 :=
+theorem run_tail13_comb_eq : run_tail13_comb = run_tail13 :=
   run_tail13_comb_fuel_eq 20 13
 
 noncomputable def run_rem_fast_comb (x0 x1 : Nat) (rest : NList) : StateL :=
@@ -2225,19 +2218,19 @@ noncomputable def run_rem_fast_comb (x0 x1 : Nat) (rest : NList) : StateL :=
   let s := StateL.rec StateL.bad (run_C_fast_comb 0) s
   StateL.rec StateL.bad run_tail13_comb s
 
-lemma run_rem_fast_comb_eq : run_rem_fast_comb = run_rem_fast := by
+theorem run_rem_fast_comb_eq : run_rem_fast_comb = run_rem_fast := by
   funext x0 x1 rest
   unfold run_rem_fast_comb run_rem_fast
   simp only [run_C_fast_comb_eq, run_tail13_comb_eq]
 
-lemma chain_C_comb {x0 x1 y0 y1 : Nat} {rest rest' : NList}
+theorem chain_C_comb {x0 x1 y0 y1 : Nat} {rest rest' : NList}
     (h_step : checkStateL (run_C_fast_comb 12 x0 x1 rest) y0 y1 rest' = true)
     (h_next : IsHaltFrom (S (y0 :: y1 :: denote_list rest') 0 2 [])) :
     IsHaltFrom (S (x0 :: x1 :: denote_list rest) 0 2 []) := by
   rw [run_C_fast_comb_eq 12] at h_step
   exact chain_C_fast h_step h_next
 
-lemma chain_rem_comb {x0 x1 y0 y1 : Nat} {rest rest' : NList}
+theorem chain_rem_comb {x0 x1 y0 y1 : Nat} {rest rest' : NList}
     (h_step : checkStateL (run_rem_fast_comb x0 x1 rest) y0 y1 rest' = true)
     (h_next : IsHaltFrom (S (y0 :: y1 :: denote_list rest') 0 2 [])) :
     IsHaltFrom (S (x0 :: x1 :: denote_list rest) 0 2 []) := by
@@ -2312,21 +2305,21 @@ theorem step_c9 : checkStateL (run_C_fast_comb 12 c9_x0 c9_x1 c9_rest) c10_x0 c1
 theorem step_c10 : checkStateL (run_rem_fast_comb c10_x0 c10_x1 c10_rest) c11_x0 c11_x1 c11_rest = true := by fast_rfl
 theorem step_exit : run_pow 5 c11_l 0 2 NList.nil = StepRes.halted := by fast_rfl
 
-lemma halt_c11 : IsHaltFrom (S (c11_x0 :: c11_x1 :: denote_list c11_rest) 0 2 []) := by
+theorem halt_c11 : IsHaltFrom (S (c11_x0 :: c11_x1 :: denote_list c11_rest) 0 2 []) := by
   simpa [c11_l, denote_list] using! finish_pow 5 step_exit
-lemma halt_c10 : IsHaltFrom (S (c10_x0 :: c10_x1 :: denote_list c10_rest) 0 2 []) := chain_rem_comb step_c10 halt_c11
-lemma halt_c9 : IsHaltFrom (S (c9_x0 :: c9_x1 :: denote_list c9_rest) 0 2 []) := chain_C_comb step_c9 halt_c10
-lemma halt_c8 : IsHaltFrom (S (c8_x0 :: c8_x1 :: denote_list c8_rest) 0 2 []) := chain_C_comb step_c8 halt_c9
-lemma halt_c7 : IsHaltFrom (S (c7_x0 :: c7_x1 :: denote_list c7_rest) 0 2 []) := chain_C_comb step_c7 halt_c8
-lemma halt_c6 : IsHaltFrom (S (c6_x0 :: c6_x1 :: denote_list c6_rest) 0 2 []) := chain_C_comb step_c6 halt_c7
-lemma halt_c5 : IsHaltFrom (S (c5_x0 :: c5_x1 :: denote_list c5_rest) 0 2 []) := chain_C_comb step_c5 halt_c6
-lemma halt_c4 : IsHaltFrom (S (c4_x0 :: c4_x1 :: denote_list c4_rest) 0 2 []) := chain_C_comb step_c4 halt_c5
-lemma halt_c3 : IsHaltFrom (S (c3_x0 :: c3_x1 :: denote_list c3_rest) 0 2 []) := chain_C_comb step_c3 halt_c4
-lemma halt_c2 : IsHaltFrom (S (c2_x0 :: c2_x1 :: denote_list c2_rest) 0 2 []) := chain_C_comb step_c2 halt_c3
-lemma halt_c1 : IsHaltFrom (S (c1_x0 :: c1_x1 :: denote_list c1_rest) 0 2 []) := chain_C_comb step_c1 halt_c2
-lemma halt_c0 : IsHaltFrom (S (c0_x0 :: c0_x1 :: denote_list c0_rest) 0 2 []) := chain_C_comb step_c0 halt_c1
+theorem halt_c10 : IsHaltFrom (S (c10_x0 :: c10_x1 :: denote_list c10_rest) 0 2 []) := chain_rem_comb step_c10 halt_c11
+theorem halt_c9 : IsHaltFrom (S (c9_x0 :: c9_x1 :: denote_list c9_rest) 0 2 []) := chain_C_comb step_c9 halt_c10
+theorem halt_c8 : IsHaltFrom (S (c8_x0 :: c8_x1 :: denote_list c8_rest) 0 2 []) := chain_C_comb step_c8 halt_c9
+theorem halt_c7 : IsHaltFrom (S (c7_x0 :: c7_x1 :: denote_list c7_rest) 0 2 []) := chain_C_comb step_c7 halt_c8
+theorem halt_c6 : IsHaltFrom (S (c6_x0 :: c6_x1 :: denote_list c6_rest) 0 2 []) := chain_C_comb step_c6 halt_c7
+theorem halt_c5 : IsHaltFrom (S (c5_x0 :: c5_x1 :: denote_list c5_rest) 0 2 []) := chain_C_comb step_c5 halt_c6
+theorem halt_c4 : IsHaltFrom (S (c4_x0 :: c4_x1 :: denote_list c4_rest) 0 2 []) := chain_C_comb step_c4 halt_c5
+theorem halt_c3 : IsHaltFrom (S (c3_x0 :: c3_x1 :: denote_list c3_rest) 0 2 []) := chain_C_comb step_c3 halt_c4
+theorem halt_c2 : IsHaltFrom (S (c2_x0 :: c2_x1 :: denote_list c2_rest) 0 2 []) := chain_C_comb step_c2 halt_c3
+theorem halt_c1 : IsHaltFrom (S (c1_x0 :: c1_x1 :: denote_list c1_rest) 0 2 []) := chain_C_comb step_c1 halt_c2
+theorem halt_c0 : IsHaltFrom (S (c0_x0 :: c0_x1 :: denote_list c0_rest) 0 2 []) := chain_C_comb step_c0 halt_c1
 
-lemma halt_0 : IsHaltFrom (S (denote_list st0_l) 1 1 (denote_list NList.nil)) := by
+theorem halt_0 : IsHaltFrom (S (denote_list st0_l) 1 1 (denote_list NList.nil)) := by
   refine chain_pow 3 step_init ?_
   simpa [c0_l, denote_list] using! halt_c0
 

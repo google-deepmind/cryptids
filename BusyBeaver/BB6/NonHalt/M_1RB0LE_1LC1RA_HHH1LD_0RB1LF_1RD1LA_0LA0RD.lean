@@ -35,14 +35,14 @@ abbrev b1 : Fin 2 := 1
 def cfg (q : Fin 6) (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ⟨some q, ⟨r.head, l, r.tail⟩⟩
 
-@[simp] lemma zero_cons_default : ListBlank.cons (0 : Fin 2) default = default := by
+@[simp] theorem zero_cons_default : ListBlank.cons (0 : Fin 2) default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = b0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = b0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma init_eq_cfg : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = cfg A default default := rfl
+theorem init_eq_cfg : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = cfg A default default := rfl
 
-lemma multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
+theorem multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
     (h : step target_tm c = some c') :
     multiStep target_tm c (n + 1) = multiStep target_tm c' n := by
   unfold multiStep
@@ -50,11 +50,11 @@ lemma multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
   change (Option.bind · (step target_tm))^[n] (step target_tm c) = _
   rw [h]
 
-@[simp] lemma multiStep_succ_end (c : Cfg (Fin 2) (Fin 6)) (n : ℕ) :
+@[simp] theorem multiStep_succ_end (c : Cfg (Fin 2) (Fin 6)) (n : ℕ) :
     multiStep target_tm c (n + 1) = Option.bind (multiStep target_tm c n) (step target_tm) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma multiStep_add (c₁ : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
+theorem multiStep_add (c₁ : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
     multiStep target_tm c₁ (n + m) = (multiStep target_tm c₁ n).bind (fun c₂ => multiStep target_tm c₂ m) := by
   induction m with
   | zero => simp [multiStep]
@@ -62,12 +62,12 @@ lemma multiStep_add (c₁ : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
     rw [Nat.add_succ, multiStep_succ_end, ih, Option.bind_assoc]
     simp_rw [multiStep_succ_end]
 
-lemma multiStep_trans (c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)) (n m : Nat)
+theorem multiStep_trans (c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)) (n m : Nat)
     (h₁ : multiStep target_tm c₁ n = some c₂) (h₂ : multiStep target_tm c₂ m = some c₃) :
     multiStep target_tm c₁ (n + m) = some c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
+theorem multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
     (h : multiStep target_tm c k = none) (d : Nat) :
     multiStep target_tm c (k + d) = none := by
   rw [multiStep_add, h]; rfl
@@ -79,13 +79,13 @@ inductive StepsStar : Cfg (Fin 2) (Fin 6) → Cfg (Fin 2) (Fin 6) → Prop
 def StepsPlus (c₁ c₂ : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ c', step target_tm c₁ = some c' ∧ StepsStar c' c₂
 
-lemma StepsStar.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
+theorem StepsStar.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     (h₁ : StepsStar c₁ c₂) (h₂ : StepsStar c₂ c₃) : StepsStar c₁ c₃ := by
   induction h₁ with
   | refl => exact h₂
   | next hs _ ih => exact StepsStar.next hs (ih h₂)
 
-lemma StepsStar.to_multiStep {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem StepsStar.to_multiStep {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h : StepsStar c₁ c₂) : ∃ n, multiStep target_tm c₁ n = some c₂ := by
   induction h with
   | refl => exact ⟨0, rfl⟩
@@ -93,12 +93,12 @@ lemma StepsStar.to_multiStep {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     rcases ih with ⟨n, hn⟩
     exact ⟨n + 1, by rw [multiStep_succ_of_step n hs, hn]⟩
 
-lemma StepsPlus.trans_star {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
+theorem StepsPlus.trans_star {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     (h₁ : StepsPlus c₁ c₂) (h₂ : StepsStar c₂ c₃) : StepsPlus c₁ c₃ := by
   rcases h₁ with ⟨c', hs, hstar⟩
   exact ⟨c', hs, StepsStar.trans hstar h₂⟩
 
-lemma StepsStar.trans_plus {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
+theorem StepsStar.trans_plus {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     (h₁ : StepsStar c₁ c₂) (h₂ : StepsPlus c₂ c₃) : StepsPlus c₁ c₃ := by
   induction h₁ with
   | refl => exact h₂
@@ -106,12 +106,12 @@ lemma StepsStar.trans_plus {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     rcases ih h₂ with ⟨c', hs', hstar'⟩
     exact ⟨_, hs, StepsStar.next hs' hstar'⟩
 
-lemma StepsPlus.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
+theorem StepsPlus.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)}
     (h₁ : StepsPlus c₁ c₂) (h₂ : StepsPlus c₂ c₃) : StepsPlus c₁ c₃ := by
   rcases h₁ with ⟨c', hs, hstar⟩
   exact ⟨c', hs, StepsPlus.trans_star (StepsStar.trans_plus hstar h₂) (StepsStar.refl _) |> fun ⟨c'', hs'', hst⟩ => StepsStar.next hs'' hst⟩
 
-lemma StepsPlus.to_multiStep {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem StepsPlus.to_multiStep {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h : StepsPlus c₁ c₂) : ∃ n > 0, multiStep target_tm c₁ n = some c₂ := by
   rcases h with ⟨c', hs, hstar⟩
   rcases hstar.to_multiStep with ⟨n, hn⟩
@@ -133,88 +133,88 @@ def R01 : Nat → ListBlank (Fin 2) → ListBlank (Fin 2)
   | 0, r => r
   | n + 1, r => c0 (c1 (R01 n r))
 
-lemma step_cfg_right {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     (l r : ListBlank (Fin 2)) :
     step target_tm (cfg q l (ListBlank.cons b r)) = some (cfg q' (ListBlank.cons a l) r) := by
   simp [cfg, step, h, Turing.Tape.write, Turing.Tape.move]
 
-lemma step_cfg_left {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_left {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     (c : Fin 2) (l r : ListBlank (Fin 2)) :
     step target_tm (cfg q (ListBlank.cons c l) (ListBlank.cons b r)) =
       some (cfg q' l (ListBlank.cons c (ListBlank.cons a r))) := by
   simp [cfg, step, h, Turing.Tape.write, Turing.Tape.move]
 
-lemma step_cfg_right_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_right_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q (0 : Fin 2) = some (some q', Stmt.write a Dir.right))
     (l : ListBlank (Fin 2)) :
     step target_tm (cfg q l default) = some (cfg q' (ListBlank.cons a l) default) := by
   simpa using step_cfg_right h l default
 
-lemma step_cfg_left_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_left_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q (0 : Fin 2) = some (some q', Stmt.write a Dir.left))
     (c : Fin 2) (l : ListBlank (Fin 2)) :
     step target_tm (cfg q (ListBlank.cons c l) default) =
       some (cfg q' l (ListBlank.cons c (ListBlank.cons a default))) := by
   simpa using step_cfg_left h c l default
 
-lemma step_cfg_left_lnil {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_left_lnil {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     (r : ListBlank (Fin 2)) :
     step target_tm (cfg q default (ListBlank.cons b r)) =
       some (cfg q' default (ListBlank.cons (0 : Fin 2) (ListBlank.cons a r))) := by
   simpa using step_cfg_left h (0 : Fin 2) default r
 
-lemma step_cfg_left_both_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_left_both_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q (0 : Fin 2) = some (some q', Stmt.write a Dir.left)) :
     step target_tm (cfg q default default) =
       some (cfg q' default (ListBlank.cons (0 : Fin 2) (ListBlank.cons a default))) := by
   simpa using step_cfg_left h (0 : Fin 2) default default
 
-lemma star_right {q q' : Fin 6} {b a : Fin 2}
+theorem star_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' (ListBlank.cons a l) r) target) :
     StepsStar (cfg q l (ListBlank.cons b r)) target :=
   StepsStar.next (step_cfg_right h l r) hr
 
-lemma star_left {q q' : Fin 6} {b a : Fin 2}
+theorem star_left {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     {c : Fin 2} {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' l (ListBlank.cons c (ListBlank.cons a r))) target) :
     StepsStar (cfg q (ListBlank.cons c l) (ListBlank.cons b r)) target :=
   StepsStar.next (step_cfg_left h c l r) hr
 
-lemma star_right_nil {q q' : Fin 6} {a : Fin 2}
+theorem star_right_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q (0 : Fin 2) = some (some q', Stmt.write a Dir.right))
     {l : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' (ListBlank.cons a l) default) target) :
     StepsStar (cfg q l default) target :=
   StepsStar.next (step_cfg_right_nil h l) hr
 
-lemma star_left_nil {q q' : Fin 6} {a : Fin 2}
+theorem star_left_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q (0 : Fin 2) = some (some q', Stmt.write a Dir.left))
     {c : Fin 2} {l : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' l (ListBlank.cons c (ListBlank.cons a default))) target) :
     StepsStar (cfg q (ListBlank.cons c l) default) target :=
   StepsStar.next (step_cfg_left_nil h c l) hr
 
-lemma star_left_lnil {q q' : Fin 6} {b a : Fin 2}
+theorem star_left_lnil {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     {r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' default (ListBlank.cons (0 : Fin 2) (ListBlank.cons a r))) target) :
     StepsStar (cfg q default (ListBlank.cons b r)) target :=
   StepsStar.next (step_cfg_left_lnil h r) hr
 
-lemma star_left_both_nil {q q' : Fin 6} {a : Fin 2}
+theorem star_left_both_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q (0 : Fin 2) = some (some q', Stmt.write a Dir.left))
     {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' default (ListBlank.cons (0 : Fin 2) (ListBlank.cons a default))) target) :
     StepsStar (cfg q default default) target :=
   StepsStar.next (step_cfg_left_both_nil h) hr
 
-lemma plus_right {q q' : Fin 6} {b a : Fin 2}
+theorem plus_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : StepsStar (cfg q' (ListBlank.cons a l) r) target) :
@@ -243,29 +243,29 @@ macro "exec_tm" n:num : tactic => `(tactic| (
   try simp only [zero_cons_default]
   exact StepsStar.refl _))
 
-lemma L1_add (m n : Nat) (l : ListBlank (Fin 2)) : L1 (m + n) l = L1 m (L1 n l) := by
+theorem L1_add (m n : Nat) (l : ListBlank (Fin 2)) : L1 (m + n) l = L1 m (L1 n l) := by
   induction m with
   | zero => simp [L1]
   | succ m ih => simp [L1, Nat.succ_add, ih]
 
-lemma R1_add (m n : Nat) (r : ListBlank (Fin 2)) : R1 (m + n) r = R1 m (R1 n r) := by
+theorem R1_add (m n : Nat) (r : ListBlank (Fin 2)) : R1 (m + n) r = R1 m (R1 n r) := by
   induction m with
   | zero => simp [R1]
   | succ m ih => simp [R1, Nat.succ_add, ih]
 
-lemma R01_add (m n : Nat) (r : ListBlank (Fin 2)) : R01 (m + n) r = R01 m (R01 n r) := by
+theorem R01_add (m n : Nat) (r : ListBlank (Fin 2)) : R01 (m + n) r = R01 m (R01 n r) := by
   induction m with
   | zero => simp [R01]
   | succ m ih => simp [R01, Nat.succ_add, ih]
 
-lemma R01_snoc : ∀ (c : Nat) (r : ListBlank (Fin 2)), R01 c (c0 (c1 r)) = c0 (c1 (R01 c r))
+theorem R01_snoc : ∀ (c : Nat) (r : ListBlank (Fin 2)), R01 c (c0 (c1 r)) = c0 (c1 (R01 c r))
   | 0, _ => rfl
   | c + 1, r => by simp [R01, R01_snoc c r]
 
 def Hub (c : Nat) : Cfg (Fin 2) (Fin 6) :=
   cfg A default (c0 (c0 (R1 c default)))
 
-lemma init_to_Hub3 : StepsStar (cfg A default default) (Hub 3) := by
+theorem init_to_Hub3 : StepsStar (cfg A default default) (Hub 3) := by
   dsimp -failIfUnchanged only [Hub, R1]
   exec_tm 16
 
@@ -273,7 +273,7 @@ lemma init_to_Hub3 : StepsStar (cfg A default default) (Hub 3) := by
 -- The Only Two Primitive 2-Step Loops in the Entire Machine!
 -- ============================================================================
 
-lemma scan_right_01 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
+theorem scan_right_01 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
     StepsStar (cfg A l (R01 k r)) (cfg A (L1 (2 * k) l) r)
   | 0, l, r => StepsStar.refl _
   | k + 1, l, r => by
@@ -285,7 +285,7 @@ lemma scan_right_01 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
     rw [h2]
     exact scan_right_01 k (c1 (c1 l)) r
 
-lemma scan_left_E11 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
+theorem scan_left_E11 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
     StepsStar (cfg E (L1 (2 * k) l) (c1 r)) (cfg E l (c1 (R01 k r)))
   | 0, l, r => StepsStar.refl _
   | k + 1, l, r => by
@@ -302,14 +302,14 @@ lemma scan_left_E11 : ∀ (k : Nat) (l r : ListBlank (Fin 2)),
 -- Right-End Drain Rules (`even_step`, `drain_even`, `odd_step`, `drain_odd`)
 -- ============================================================================
 
-lemma step_A4_00 (l r : ListBlank (Fin 2)) :
+theorem step_A4_00 (l r : ListBlank (Fin 2)) :
     StepsPlus (cfg A (c1 (c1 (c1 (c1 l)))) (c0 (c0 r)))
               (cfg E l (c1 (c0 (c0 (R1 3 r))))) := by
   dsimp -failIfUnchanged only [R1]
   plus_right_tm
   exec_tm 7
 
-lemma even_step (k : Nat) (v r : ListBlank (Fin 2)) :
+theorem even_step (k : Nat) (v r : ListBlank (Fin 2)) :
     StepsPlus (cfg A (L1 (2 * k + 4) (c0 v)) (c0 (c0 r)))
               (cfg A (L1 (2 * k + 2) v) (c0 (c0 (R1 3 r)))) := by
   have hl : L1 (2 * k + 4) (c0 v) = c1 (c1 (c1 (c1 (L1 (2 * k) (c0 v))))) := by
@@ -322,14 +322,14 @@ lemma even_step (k : Nat) (v r : ListBlank (Fin 2)) :
   rw [hl2]
   exact scan_right_01 (k + 1) v (c0 (c0 (R1 3 r)))
 
-lemma even_base (r : ListBlank (Fin 2)) :
+theorem even_base (r : ListBlank (Fin 2)) :
     StepsPlus (cfg A (L1 2 default) (c0 (c0 r)))
               (cfg A default (c0 (c0 (R1 3 r)))) := by
   dsimp -failIfUnchanged only [L1, R1]
   plus_right_tm
   exec_tm 6
 
-lemma drain_even : ∀ (k c : Nat),
+theorem drain_even : ∀ (k c : Nat),
     StepsPlus (cfg A (L1 (2 * k + 2) default) (c0 (c0 (R1 c default))))
               (Hub (c + 3 * k + 3))
   | 0, c => by
@@ -349,7 +349,7 @@ lemma drain_even : ∀ (k c : Nat),
     refine StepsPlus.trans hs ?_
     simpa [show (c + 3) + 3 * k + 3 = c + 3 * (k + 1) + 3 by omega] using drain_even k (c + 3)
 
-lemma odd_step (k : Nat) (v r : ListBlank (Fin 2)) :
+theorem odd_step (k : Nat) (v r : ListBlank (Fin 2)) :
     StepsPlus (cfg A (L1 (2 * k + 5) (c0 v)) (c0 (c0 r)))
               (cfg A (L1 (2 * k + 1) (c0 (c1 v))) (c0 (c0 (R1 3 r)))) := by
   have hl : L1 (2 * k + 5) (c0 v) = c1 (c1 (c1 (c1 (L1 (2 * k) (c1 (c0 v)))))) := by
@@ -365,7 +365,7 @@ lemma odd_step (k : Nat) (v r : ListBlank (Fin 2)) :
   rw [hl2]
   exact scan_right_01 k (c1 (c0 (c1 v))) (c0 (c0 (R1 3 r)))
 
-lemma odd_base (k : Nat) (r : ListBlank (Fin 2)) :
+theorem odd_base (k : Nat) (r : ListBlank (Fin 2)) :
     StepsPlus (cfg A (L1 1 (c0 (L1 (2 * k + 2) default))) (c0 (c0 r)))
               (cfg A (L1 (2 * k + 2) default) (c0 (c0 (R1 3 r)))) := by
   have hstart : L1 1 (c0 (L1 (2 * k + 2) default)) =
@@ -381,7 +381,7 @@ lemma odd_base (k : Nat) (r : ListBlank (Fin 2)) :
   rw [heq]
   exact scan_right_01 (k + 1) default (c0 (c0 (R1 3 r)))
 
-lemma drain_odd_steps : ∀ (m e c : Nat),
+theorem drain_odd_steps : ∀ (m e c : Nat),
     StepsStar (cfg A (L1 (4 * m + 1) (c0 (L1 e default))) (c0 (c0 (R1 c default))))
               (cfg A (L1 1 (c0 (L1 (e + m) default))) (c0 (c0 (R1 (c + 3 * m) default))))
   | 0, e, c => by simpa using StepsStar.refl _
@@ -404,7 +404,7 @@ lemma drain_odd_steps : ∀ (m e c : Nat),
 -- Main Pumping Phase (`P_step6`, `P_drain6`, `branch_mod6_0`, `branch_mod6_3`)
 -- ============================================================================
 
-lemma P_step6 (k : Nat) (r : ListBlank (Fin 2)) :
+theorem P_step6 (k : Nat) (r : ListBlank (Fin 2)) :
     StepsStar (cfg A default (R01 (k + 1) (R1 6 r)))
               (cfg A default (R01 (k + 5) r)) := by
   refine StepsStar.trans (scan_right_01 (k + 1) default (R1 6 r)) ?_
@@ -442,7 +442,7 @@ lemma P_step6 (k : Nat) (r : ListBlank (Fin 2)) :
   rw [hfin]
   exact StepsStar.refl _
 
-lemma P_drain6 : ∀ (j k : Nat) (r : ListBlank (Fin 2)),
+theorem P_drain6 : ∀ (j k : Nat) (r : ListBlank (Fin 2)),
     StepsStar (cfg A default (R01 (k + 1) (R1 (6 * j) r)))
               (cfg A default (R01 (4 * j + k + 1) r))
   | 0, k, r => by simpa [R1] using StepsStar.refl _
@@ -453,7 +453,7 @@ lemma P_drain6 : ∀ (j k : Nat) (r : ListBlank (Fin 2)),
     refine StepsStar.trans (P_step6 k (R1 (6 * j) r)) ?_
     simpa [show 4 * j + (k + 4) + 1 = 4 * (j + 1) + k + 1 by omega] using P_drain6 j (k + 4) r
 
-lemma Hub_enter_P (c : Nat) :
+theorem Hub_enter_P (c : Nat) :
     StepsStar (Hub (c + 1)) (cfg A default (R01 2 (R1 c default))) := by
   unfold Hub
   have hr : R1 (c + 1) default = c1 (R1 c default) := rfl
@@ -461,7 +461,7 @@ lemma Hub_enter_P (c : Nat) :
   dsimp -failIfUnchanged only [R01]
   exec_tm 7
 
-lemma branch_mod6_0 (j : Nat) :
+theorem branch_mod6_0 (j : Nat) :
     StepsPlus (Hub (6 * j + 6)) (Hub (12 * j + 15)) := by
   have hs0 : StepsStar (Hub (6 * j + 6)) (cfg A default (R01 (4 * j + 2) (R1 5 default))) := by
     refine StepsStar.trans (by simpa [show 6 * j + 6 = (6 * j + 5) + 1 by omega] using Hub_enter_P (6 * j + 5)) ?_
@@ -507,7 +507,7 @@ lemma branch_mod6_0 (j : Nat) :
   have hd := drain_even (4 * j + 4) 0
   rwa [show 0 + 3 * (4 * j + 4) + 3 = 12 * j + 15 by omega] at hd
 
-lemma branch_mod6_3 (j : Nat) :
+theorem branch_mod6_3 (j : Nat) :
     StepsPlus (Hub (6 * j + 3)) (Hub (9 * j + 9)) := by
   have hs0 : StepsStar (Hub (6 * j + 3)) (cfg A default (R01 (4 * j + 2) (R1 2 default))) := by
     refine StepsStar.trans (by simpa [show 6 * j + 3 = (6 * j + 2) + 1 by omega] using Hub_enter_P (6 * j + 2)) ?_
@@ -556,7 +556,7 @@ lemma branch_mod6_3 (j : Nat) :
 def Inv (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ m : Nat, c = Hub (3 * m + 3)
 
-lemma Inv_step {c : Cfg (Fin 2) (Fin 6)} (h : Inv c) :
+theorem Inv_step {c : Cfg (Fin 2) (Fin 6)} (h : Inv c) :
     ∃ c', Inv c' ∧ StepsPlus c c' := by
   rcases h with ⟨m, rfl⟩
   have hm := Nat.div_add_mod m 2

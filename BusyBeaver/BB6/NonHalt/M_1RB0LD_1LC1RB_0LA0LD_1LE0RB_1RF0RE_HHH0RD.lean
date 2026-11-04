@@ -22,12 +22,10 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 200000
 set_option maxHeartbeats 20000000
-set_option linter.unusedSimpArgs false
-
 open BusyBeaver.Longitudinal.BoundedConfig (BCfg toCfg step_r0inf step_r0inf_spec
   steps_spec steps1_spec_true all0_spec eqAppR0inf eqAppR0inf_spec)
 
-lemma neverHaltsFrom_of_reachesStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem neverHaltsFrom_of_reachesStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [target_tm]⊢* c₂) (h₂ : NeverHaltsFrom target_tm c₂) :
     NeverHaltsFrom target_tm c₁ := by
   obtain ⟨k₀, hk₀⟩ := h₁
@@ -46,7 +44,7 @@ lemma neverHaltsFrom_of_reachesStar {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     rw [hsplit, multiStep_add, hk₀, Option.bind_some] at hk
     exact h₂ cfg ⟨k - k₀, hk⟩
 
-lemma B_ones (M : ℕ) (l r : ListBlank (Fin 2)) :
+theorem B_ones (M : ℕ) (l r : ListBlank (Fin 2)) :
     (l {{B}}> (([1] : List (Fin 2)) ^ M +> r)) [target_tm]⊢*
       ((([1] : List (Fin 2)) ^ M +> l) {{B}}> r) := by
   induction M generalizing l with
@@ -60,7 +58,7 @@ lemma B_ones (M : ℕ) (l r : ListBlank (Fin 2)) :
     have h₂ := ih ([1] +> l)
     rwa [ListBlank.append_pow_comm ([1] : List (Fin 2)) M l] at h₂
 
-lemma back_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
+theorem back_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
     ((([1, 1] : List (Fin 2)) ^ M +> l) <{{D}} ([0] +> r)) [target_tm]⊢*
       (l <{{D}} ([0] +> (([0, 1] : List (Fin 2)) ^ M +> r))) := by
   induction M generalizing r with
@@ -80,7 +78,7 @@ lemma back_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
     have h₂ := ih ([0, 1] +> r)
     rwa [ListBlank.append_pow_succ' ([0, 1] : List (Fin 2)) M r] at h₂
 
-lemma cross_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
+theorem cross_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
     (([1, 0, 0, 1] +> l) {{B}}> (([0, 1] : List (Fin 2)) ^ M +> r)) [target_tm]⊢*
       (([1, 0, 0, 1] +> (([1, 1] : List (Fin 2)) ^ M +> l)) {{B}}> r) := by
   induction M generalizing l with
@@ -98,7 +96,7 @@ lemma cross_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
     have h₂ := ih ([1, 1] +> l)
     rwa [ListBlank.append_pow_comm ([1, 1] : List (Fin 2)) M l] at h₂
 
-lemma recharge_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
+theorem recharge_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
     (([1, 1, 0, 0, 1] +> l) {{B}}> (([0, 1] : List (Fin 2)) ^ M +> r)) [target_tm]⊢*
       (([1, 1, 0, 0, 1] +> (([0, 0] : List (Fin 2)) ^ M +> l)) {{B}}> r) := by
   induction M generalizing l with
@@ -116,7 +114,7 @@ lemma recharge_pairs (M : ℕ) (l r : ListBlank (Fin 2)) :
     have h₂ := ih ([0, 0] +> l)
     rwa [ListBlank.append_pow_comm ([0, 0] : List (Fin 2)) M l] at h₂
 
-lemma cross_raw (N : ℕ) (l r : ListBlank (Fin 2)) :
+theorem cross_raw (N : ℕ) (l r : ListBlank (Fin 2)) :
     (([0, 0] +> l) <{{D}} ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> r))) [target_tm]⊢*
       (([1, 0, 0, 1] +> (([1, 1] : List (Fin 2)) ^ N +> ([1] +> l))) {{B}}> r) := by
   have h₁ := steps_spec target_tm 20 ⟨[0, 1, 1], [0, 0], D, .left⟩
@@ -127,7 +125,7 @@ lemma cross_raw (N : ℕ) (l r : ListBlank (Fin 2)) :
   rw [h_mid] at h₁
   exact stepStar_trans h₁ (cross_pairs N ([1] +> l) r)
 
-lemma back_raw (N : ℕ) (l r : ListBlank (Fin 2)) :
+theorem back_raw (N : ℕ) (l r : ListBlank (Fin 2)) :
     ((([1, 1] : List (Fin 2)) ^ N +> ([1, 0, 0] +> l)) <{{D}} ([0, 0, 1] +> r)) [target_tm]⊢*
       (([0] +> l) <{{D}} ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ (N + 1) +> r))) := by
   have h_lhs : ([0, 0, 1] : List (Fin 2)) +> r = [0] +> ([0, 1] +> r) := rfl
@@ -149,7 +147,7 @@ lemma back_raw (N : ℕ) (l r : ListBlank (Fin 2)) :
   rw [h_l, h_rhs] at h₂
   rwa [h_mid]
 
-lemma bounce_pairs (k : ℕ) (L r : ListBlank (Fin 2)) :
+theorem bounce_pairs (k : ℕ) (L r : ListBlank (Fin 2)) :
     (([1] +> L) {{B}}> (([1, 1] : List (Fin 2)) ^ k +> ([0] +> r))) [target_tm]⊢*
       (L <{{D}} ([0] +> (([0, 1] : List (Fin 2)) ^ k +> ([1] +> r)))) := by
   have h₁ := B_ones (2 * k) ([1] +> L) ([0] +> r)
@@ -163,7 +161,7 @@ lemma bounce_pairs (k : ℕ) (L r : ListBlank (Fin 2)) :
   rw [h_mid] at h₂
   exact stepStar_trans h₁ (stepStar_trans h₂ (back_pairs k L ([1] +> r)))
 
-lemma R1_raw (l r : ListBlank (Fin 2)) (N a : ℕ) :
+theorem R1_raw (l r : ListBlank (Fin 2)) (N a : ℕ) :
     (([0, 0, 0, 0] +> l) <{{D}}
       ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +>
         ([0, 1, 1, 1, 1, 1, 1, 1] +> (([1, 1] : List (Fin 2)) ^ a +> ([0] +> r))))))
@@ -211,7 +209,7 @@ lemma R1_raw (l r : ListBlank (Fin 2)) (N a : ℕ) :
   rw [h₅_rhs] at h₅
   exact stepStar_trans h₁ (stepStar_trans h₂ (stepStar_trans h₃ (stepStar_trans h₄ h₅)))
 
-lemma R2_raw (l r : ListBlank (Fin 2)) (N : ℕ) :
+theorem R2_raw (l r : ListBlank (Fin 2)) (N : ℕ) :
     (([0, 0, 0, 0] +> l) <{{D}}
       ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> ([0, 1, 1, 1, 1, 0, 1, 0] +> r))))
       [target_tm]⊢*
@@ -232,7 +230,7 @@ lemma R2_raw (l r : ListBlank (Fin 2)) (N : ℕ) :
   have h₃ := back_raw N l ([0, 1, 1, 1, 1, 1, 1, 1, 1] +> r)
   exact stepStar_trans h₁ (stepStar_trans h₂ h₃)
 
-lemma RB_raw (l r : ListBlank (Fin 2)) (N b : ℕ) :
+theorem RB_raw (l r : ListBlank (Fin 2)) (N b : ℕ) :
     (([0, 0, 0, 0] +> l) <{{D}}
       ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +>
         ([0, 1, 1, 1, 1, 0, 1, 1, 1] +> (([1, 1] : List (Fin 2)) ^ b +> ([0] +> r))))))
@@ -281,7 +279,7 @@ def reg : List ℕ → List (Fin 2)
 def recCfg (N : ℕ) (zs : List ℕ) : Cfg (Fin 2) (Fin 6) :=
   default <{{D}} ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> (reg zs +> default)))
 
-lemma reg_ones (a : ℕ) (zs : List ℕ) :
+theorem reg_ones (a : ℕ) (zs : List ℕ) :
     reg (List.replicate a 1 ++ zs) = ([0, 1] : List (Fin 2)) ^ a ++ reg zs := by
   induction a with
   | zero => rfl
@@ -289,33 +287,33 @@ lemma reg_ones (a : ℕ) (zs : List ℕ) :
     simp only [List.replicate_succ, List.cons_append, reg, pow_succ_list, pow_zero_list,
       List.nil_append, ih]
 
-lemma pow_one_add_7 (a : ℕ) :
+theorem pow_one_add_7 (a : ℕ) :
     ([1] : List (Fin 2)) ^ (a * 2 + 7) =
       [1, 1, 1, 1, 1, 1, 1] ++ ([1, 1] : List (Fin 2)) ^ a := by
   have h : a * 2 + 7 = 7 + 2 * a := by omega
   rw [h, list_pow_add, ← one_pow_two_mul]
   rfl
 
-lemma pow_one_add_3 (b : ℕ) :
+theorem pow_one_add_3 (b : ℕ) :
     ([1] : List (Fin 2)) ^ (b * 2 + 3) =
       [1, 1, 1] ++ ([1, 1] : List (Fin 2)) ^ b := by
   have h : b * 2 + 3 = 3 + 2 * b := by omega
   rw [h, list_pow_add, ← one_pow_two_mul]
   rfl
 
-lemma pow_one_add_2 (e : ℕ) :
+theorem pow_one_add_2 (e : ℕ) :
     ([1] : List (Fin 2)) ^ (e + 2) = [1, 1] ++ ([1] : List (Fin 2)) ^ e := by
   have h : e + 2 = 2 + e := by omega
   rw [h, list_pow_add]
   rfl
 
-lemma pow_one_add_8 (y : ℕ) :
+theorem pow_one_add_8 (y : ℕ) :
     ([1] : List (Fin 2)) ^ (y + 8) = [1, 1, 1, 1, 1, 1, 1, 1] ++ ([1] : List (Fin 2)) ^ y := by
   have h : y + 8 = 8 + y := by omega
   rw [h, list_pow_add]
   rfl
 
-lemma R1 (N a e : ℕ) (zs : List ℕ) :
+theorem R1 (N a e : ℕ) (zs : List ℕ) :
     (recCfg (N + 8) ((a * 2 + 7) :: e :: zs)) [target_tm]⊢*
       (recCfg (N + 2 + 8) (4 :: (List.replicate a 1 ++ (e + 2) :: zs))) := by
   have h := R1_raw default ((([1] : List (Fin 2)) ^ e ++ reg zs) +> default) (N + 8) a
@@ -342,7 +340,7 @@ lemma R1 (N a e : ℕ) (zs : List ℕ) :
   rw [h_r1, h_r2, ← hN]
   rwa [h_l4, h_l1] at h
 
-lemma R2 (N y : ℕ) (zs : List ℕ) :
+theorem R2 (N y : ℕ) (zs : List ℕ) :
     (recCfg (N + 8) (4 :: 1 :: y :: zs)) [target_tm]⊢*
       (recCfg (N + 1 + 8) ((y + 8) :: zs)) := by
   have h := R2_raw default ((([1] : List (Fin 2)) ^ y ++ reg zs) +> default) (N + 8)
@@ -361,7 +359,7 @@ lemma R2 (N y : ℕ) (zs : List ℕ) :
   rw [h_r1, h_r2, ← hN]
   rwa [h_l4, h_l1] at h
 
-lemma RB (N b y : ℕ) (zs : List ℕ) :
+theorem RB (N b y : ℕ) (zs : List ℕ) :
     (recCfg (N + 8) (4 :: (b * 2 + 3) :: y :: zs)) [target_tm]⊢*
       (recCfg (N + 1 + 8) (7 :: (List.replicate b 1 ++ (y + 2) :: zs))) := by
   have h := RB_raw default ((([1] : List (Fin 2)) ^ y ++ reg zs) +> default) (N + 8) b
@@ -391,7 +389,7 @@ lemma RB (N b y : ℕ) (zs : List ℕ) :
 def NH (zs : List ℕ) : Prop :=
   ∀ N : ℕ, NeverHaltsFrom target_tm (recCfg (N + 8) zs)
 
-lemma NH_rule {zs zs' : List ℕ} (k : ℕ)
+theorem NH_rule {zs zs' : List ℕ} (k : ℕ)
     (h : ∀ N, (recCfg (N + 8) zs) [target_tm]⊢* (recCfg (N + k + 8) zs'))
     (h' : NH zs') : NH zs := by
   intro N
@@ -403,7 +401,7 @@ def PI (a : ℕ) : Prop :=
 def QI (a : ℕ) : Prop :=
   ∀ y zs, NH ((a * 2 + 10 + y) :: zs) → NH (9 :: (List.replicate a 1 ++ y :: zs))
 
-lemma PI_zero : PI 0 := by
+theorem PI_zero : PI 0 := by
   intro y zs h
   have h₁ : 0 * 2 + 9 = 1 * 2 + 7 := rfl
   rw [h₁]
@@ -413,7 +411,7 @@ lemma PI_zero : PI 0 := by
   have h₂ : y + 2 + 8 = 0 * 2 + 10 + y := by omega
   rwa [h₂]
 
-lemma PI_succ (a : ℕ) (hQ : QI a) : PI (a + 1) := by
+theorem PI_succ (a : ℕ) (hQ : QI a) : PI (a + 1) := by
   intro y zs h
   have h₁ : (a + 1) * 2 + 9 = (a + 2) * 2 + 7 := by omega
   rw [h₁]
@@ -424,7 +422,7 @@ lemma PI_succ (a : ℕ) (hQ : QI a) : PI (a + 1) := by
   have h₂ : a * 2 + 10 + (y + 2) = (a + 1) * 2 + 10 + y := by omega
   rwa [h₂]
 
-lemma classI_QI (a : ℕ) : QI a ∧ PI a := by
+theorem classI_QI (a : ℕ) : QI a ∧ PI a := by
   induction a with
   | zero => exact ⟨PI_zero, PI_zero⟩
   | succ a ih =>
@@ -437,7 +435,7 @@ lemma classI_QI (a : ℕ) : QI a ∧ PI a := by
     rw [h₁]
     exact hPI y zs h
 
-lemma classI (a : ℕ) : PI a := (classI_QI a).2
+theorem classI (a : ℕ) : PI a := (classI_QI a).2
 
 def PII (b : ℕ) : Prop :=
   ∀ y zs, NH (7 :: (b * 2 + 2 + y) :: zs) → NH (7 :: (b * 2 + 1) :: y :: zs)
@@ -445,7 +443,7 @@ def PII (b : ℕ) : Prop :=
 def QII (b : ℕ) : Prop :=
   ∀ y zs, NH (7 :: (b * 2 + 2 + y) :: zs) → NH (7 :: 1 :: (List.replicate b 1 ++ y :: zs))
 
-lemma PII_zero : PII 0 := by
+theorem PII_zero : PII 0 := by
   intro y zs h
   have h₁ : (7 : ℕ) = 0 * 2 + 7 := rfl
   rw [h₁]
@@ -456,7 +454,7 @@ lemma PII_zero : PII 0 := by
   have h₂ : y + 2 = 0 * 2 + 2 + y := by omega
   rwa [h₂]
 
-lemma PII_succ (b : ℕ) (hQ : QII b) : PII (b + 1) := by
+theorem PII_succ (b : ℕ) (hQ : QII b) : PII (b + 1) := by
   intro y zs h
   have h₁ : (7 : ℕ) = 0 * 2 + 7 := rfl
   rw [h₁]
@@ -468,7 +466,7 @@ lemma PII_succ (b : ℕ) (hQ : QII b) : PII (b + 1) := by
   have h₃ : b * 2 + 2 + (y + 2) = (b + 1) * 2 + 2 + y := by omega
   rwa [h₃]
 
-lemma classII_QII (b : ℕ) : QII b ∧ PII b := by
+theorem classII_QII (b : ℕ) : QII b ∧ PII b := by
   induction b with
   | zero => exact ⟨PII_zero, PII_zero⟩
   | succ b ih =>
@@ -481,9 +479,9 @@ lemma classII_QII (b : ℕ) : QII b ∧ PII b := by
     rw [h₁]
     exact hPII y zs h
 
-lemma classII (b : ℕ) : PII b := (classII_QII b).2
+theorem classII (b : ℕ) : PII b := (classII_QII b).2
 
-lemma RB_QII (b y : ℕ) (zs : List ℕ) (h : NH (7 :: (b * 2 + 2 + y) :: zs)) :
+theorem RB_QII (b y : ℕ) (zs : List ℕ) (h : NH (7 :: (b * 2 + 2 + y) :: zs)) :
     NH (4 :: (b * 2 + 3) :: y :: zs) := by
   rcases b with _ | b
   · refine NH_rule 1 (fun N => RB N 0 y zs) ?_
@@ -504,7 +502,7 @@ def dropLead1 : List ℕ → List ℕ
   | [] => []
   | x :: t => if x == 1 then dropLead1 t else x :: t
 
-lemma classI_run (t : List ℕ) (a : ℕ) :
+theorem classI_run (t : List ℕ) (a : ℕ) :
     match dropLead1 t with
     | y :: zs => NH ((countLead1 t a * 2 + 10 + y) :: zs) → NH ((a * 2 + 9) :: t)
     | [] => True := by
@@ -556,7 +554,7 @@ def mstep (zs : List ℕ) : Option (List ℕ) :=
       none
   | [] => none
 
-lemma mstep_spec (zs zs' : List ℕ) (h : mstep zs = some zs') (h' : NH zs') : NH zs := by
+theorem mstep_spec (zs zs' : List ℕ) (h : mstep zs = some zs') (h' : NH zs') : NH zs := by
   rcases zs with _ | ⟨X, t⟩
   · cases h
   · dsimp only [mstep] at h
@@ -608,7 +606,7 @@ def stripPfx : List (Fin 2) → List (Fin 2) → Option (List (Fin 2))
   | x :: xs, y :: ys => if x == y then stripPfx xs ys else none
   | _ :: _, [] => none
 
-lemma stripPfx_spec {p ys r : List (Fin 2)} (h : stripPfx p ys = some r) :
+theorem stripPfx_spec {p ys r : List (Fin 2)} (h : stripPfx p ys = some r) :
     ys = p ++ r := by
   induction p generalizing ys with
   | nil => cases h; rfl
@@ -624,7 +622,7 @@ def tailAfter0 : List (Fin 2) → Option (List (Fin 2))
   | [] => some []
   | x :: t => if x == 0 then some t else none
 
-lemma tailAfter0_spec {r r' : List (Fin 2)} (h : tailAfter0 r = some r') :
+theorem tailAfter0_spec {r r' : List (Fin 2)} (h : tailAfter0 r = some r') :
     r +> (default : ListBlank (Fin 2)) = [0] +> (r' +> default) := by
   rcases r with _ | ⟨x, t⟩
   · cases h
@@ -646,7 +644,7 @@ def split1 : ℕ → List (Fin 2) → SplitRes
     | some t => SplitRes.casesOn (split1 fuel t) (fun n r => .mk (n + 1) r)
     | none => .mk 0 xs
 
-lemma split1_spec (fuel : ℕ) (xs : List (Fin 2)) :
+theorem split1_spec (fuel : ℕ) (xs : List (Fin 2)) :
     SplitRes.casesOn (split1 fuel xs) (fun n r => xs = ([1] : List (Fin 2)) ^ n ++ r) := by
   induction fuel generalizing xs with
   | zero => rfl
@@ -668,7 +666,7 @@ def split11 : ℕ → List (Fin 2) → SplitRes
     | some t => SplitRes.casesOn (split11 fuel t) (fun n r => .mk (n + 1) r)
     | none => .mk 0 xs
 
-lemma split11_spec (fuel : ℕ) (xs : List (Fin 2)) :
+theorem split11_spec (fuel : ℕ) (xs : List (Fin 2)) :
     SplitRes.casesOn (split11 fuel xs) (fun n r => xs = ([1, 1] : List (Fin 2)) ^ n ++ r) := by
   induction fuel generalizing xs with
   | zero => rfl
@@ -690,7 +688,7 @@ def split01Any : ℕ → List (Fin 2) → SplitRes
     | some t => SplitRes.casesOn (split01Any fuel t) (fun n r => .mk (n + 1) r)
     | none => .mk 0 xs
 
-lemma split01Any_spec (fuel : ℕ) (xs : List (Fin 2)) :
+theorem split01Any_spec (fuel : ℕ) (xs : List (Fin 2)) :
     SplitRes.casesOn (split01Any fuel xs) (fun n r => xs = ([0, 1] : List (Fin 2)) ^ n ++ r) := by
   induction fuel generalizing xs with
   | zero => rfl
@@ -712,7 +710,7 @@ def split01 : ℕ → List (Fin 2) → SplitRes
     | some t => SplitRes.casesOn (split01 fuel (0 :: t)) (fun n r => .mk (n + 1) r)
     | none => .mk 0 xs
 
-lemma split01_spec (fuel : ℕ) (xs : List (Fin 2)) :
+theorem split01_spec (fuel : ℕ) (xs : List (Fin 2)) :
     SplitRes.casesOn (split01 fuel xs) (fun n r => xs = ([0, 1] : List (Fin 2)) ^ n ++ r) := by
   induction fuel generalizing xs with
   | zero => rfl
@@ -757,7 +755,7 @@ def rStep (N : ℕ) (r₂ : List (Fin 2)) : Option RStepRes :=
         | none => none
       | none => none
 
-lemma rStep_spec (N : ℕ) (r₂ : List (Fin 2)) {N' : ℕ} {r₂' : List (Fin 2)}
+theorem rStep_spec (N : ℕ) (r₂ : List (Fin 2)) {N' : ℕ} {r₂' : List (Fin 2)}
     (h : rStep N r₂ = some (.mk N' r₂')) (l : ListBlank (Fin 2)) :
     (([0, 0, 0, 0] +> l) <{{D}} ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> (r₂ +> default))))
       [target_tm]⊢*
@@ -824,7 +822,7 @@ def rBurst : ℕ → List (Fin 2) → ℕ → List (Fin 2) → BurstRes
       | none => .mk ahd N r₂
     | none => .mk ahd N r₂
 
-lemma rBurst_spec (fuel : ℕ) (ahd : List (Fin 2)) (N : ℕ) (r₂ : List (Fin 2))
+theorem rBurst_spec (fuel : ℕ) (ahd : List (Fin 2)) (N : ℕ) (r₂ : List (Fin 2))
     (l₀ : ListBlank (Fin 2)) :
     BurstRes.casesOn (rBurst fuel ahd N r₂) (fun ahd' N' r₂' =>
       ((ahd +> l₀) <{{D}} ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> (r₂ +> default))))
@@ -870,7 +868,7 @@ def stepFastB (bhd ahd : List (Fin 2)) : Option (BCfg (Fin 2) (Fin 6)) :=
         some ⟨([1] : List (Fin 2)) ^ (m + 1) ++ bhd, rem, B, .right⟩)
     | none => step_r0inf target_tm ⟨bhd, ahd, B, .right⟩
 
-lemma stepFastB_spec (bhd ahd : List (Fin 2)) {y : BCfg (Fin 2) (Fin 6)}
+theorem stepFastB_spec (bhd ahd : List (Fin 2)) {y : BCfg (Fin 2) (Fin 6)}
     (h : stepFastB bhd ahd = some y) (l₀ : ListBlank (Fin 2)) :
     (toCfg ⟨bhd, ahd, B, .right⟩ l₀ default) [target_tm]⊢* (toCfg y l₀ default) := by
   dsimp only [stepFastB] at h
@@ -946,7 +944,7 @@ def stepFastD (bhd ahd : List (Fin 2)) : Option (BCfg (Fin 2) (Fin 6)) :=
       | none => step_r0inf target_tm ⟨bhd, ahd, D, .left⟩
     | none => step_r0inf target_tm ⟨bhd, ahd, D, .left⟩
 
-lemma stepFastD_spec (bhd ahd : List (Fin 2)) {y : BCfg (Fin 2) (Fin 6)}
+theorem stepFastD_spec (bhd ahd : List (Fin 2)) {y : BCfg (Fin 2) (Fin 6)}
     (h : stepFastD bhd ahd = some y) (l₀ : ListBlank (Fin 2)) :
     (toCfg ⟨bhd, ahd, D, .left⟩ l₀ default) [target_tm]⊢* (toCfg y l₀ default) := by
   dsimp only [stepFastD] at h
@@ -1004,7 +1002,7 @@ def stepFast (x : BCfg (Fin 2) (Fin 6)) : Option (BCfg (Fin 2) (Fin 6)) :=
     else
       step_r0inf target_tm ⟨bhd, ahd, s, sgn⟩)
 
-lemma stepFast_spec (x : BCfg (Fin 2) (Fin 6)) {y : BCfg (Fin 2) (Fin 6)}
+theorem stepFast_spec (x : BCfg (Fin 2) (Fin 6)) {y : BCfg (Fin 2) (Fin 6)}
     (h : stepFast x = some y) (l₀ : ListBlank (Fin 2)) :
     (toCfg x l₀ default) [target_tm]⊢* (toCfg y l₀ default) := by
   rcases x with ⟨bhd, ahd, s, sgn⟩
@@ -1025,7 +1023,7 @@ def run : ℕ → BCfg (Fin 2) (Fin 6) → BCfg (Fin 2) (Fin 6)
     | some y => run n y
     | none => x
 
-lemma run_spec (n : ℕ) (x : BCfg (Fin 2) (Fin 6)) (l₀ : ListBlank (Fin 2)) :
+theorem run_spec (n : ℕ) (x : BCfg (Fin 2) (Fin 6)) (l₀ : ListBlank (Fin 2)) :
     (toCfg x l₀ default) [target_tm]⊢* (toCfg (run n x) l₀ default) := by
   induction n generalizing x with
   | zero => exact ⟨0, rfl⟩
@@ -1038,7 +1036,7 @@ lemma run_spec (n : ℕ) (x : BCfg (Fin 2) (Fin 6)) (l₀ : ListBlank (Fin 2)) :
 def frame (zs : List ℕ) : BCfg (Fin 2) (Fin 6) :=
   ⟨[1, 0, 0, 1], ([0, 1] : List (Fin 2)) ^ 8 ++ reg zs, B, .right⟩
 
-lemma to_frame (M : ℕ) (zs : List ℕ) :
+theorem to_frame (M : ℕ) (zs : List ℕ) :
     (recCfg (M + 8) zs) [target_tm]⊢*
       (toCfg (frame zs) (([1, 1] : List (Fin 2)) ^ M +> ([1] +> default)) default) := by
   have h := cross_raw M default (([0, 1] : List (Fin 2)) ^ 8 +> (reg zs +> default))
@@ -1079,7 +1077,7 @@ def special (zs : List ℕ) : Option SpecialRes :=
     else
       none)
 
-lemma special_spec (zs : List ℕ) (k : ℕ) (zs' : List ℕ)
+theorem special_spec (zs : List ℕ) (k : ℕ) (zs' : List ℕ)
     (h : special zs = some (.mk k zs')) (h' : NH zs') : NH zs := by
   intro M
   dsimp only [special] at h
@@ -1124,7 +1122,7 @@ lemma special_spec (zs : List ℕ) (k : ℕ) (zs' : List ℕ)
 
 def cyc : List (Fin 2) := [1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0]
 
-lemma cycle (l : ListBlank (Fin 2)) :
+theorem cycle (l : ListBlank (Fin 2)) :
     ((cyc +> l) {{B}}> default) [target_tm]⊢⁺ ((cyc +> ([0] +> l)) {{B}}> default) := by
   have h := steps1_spec_true target_tm 100 ⟨cyc, [0], B, .right⟩
     (x' := ⟨cyc ++ [0], [], B, .right⟩) (by decide) l default
@@ -1140,7 +1138,7 @@ def final (zs : List ℕ) : Bool :=
     else
       false)
 
-lemma final_spec (zs : List ℕ) (h : final zs = true) : NH zs := by
+theorem final_spec (zs : List ℕ) (h : final zs = true) : NH zs := by
   intro M
   dsimp only [final] at h
   have h₁ := stepStar_trans (to_frame M zs)
@@ -1174,7 +1172,7 @@ def driveSteps : ℕ → List ℕ → Option (List ℕ)
       | some res => SpecialRes.casesOn res (fun _ zs₁ => driveSteps k zs₁)
       | none => none
 
-lemma driveSteps_spec (k : ℕ) (zs zs' : List ℕ) (h : driveSteps k zs = some zs') (h' : NH zs') :
+theorem driveSteps_spec (k : ℕ) (zs zs' : List ℕ) (h : driveSteps k zs = some zs') (h' : NH zs') :
     NH zs := by
   induction k generalizing zs with
   | zero => cases h; exact h'
@@ -1191,7 +1189,7 @@ def driveEnd (k : ℕ) (zs : List ℕ) : Bool :=
   | some zs' => final zs'
   | none => false
 
-lemma driveEnd_spec (k : ℕ) (zs : List ℕ) (h : driveEnd k zs = true) : NH zs := by
+theorem driveEnd_spec (k : ℕ) (zs : List ℕ) (h : driveEnd k zs = true) : NH zs := by
   dsimp only [driveEnd] at h
   rcases hd : driveSteps k zs with _ | zs' <;> rw [hd] at h <;> dsimp only at h
   · cases h
@@ -1205,7 +1203,7 @@ def checkOpen (x : BCfg (Fin 2) (Fin 6)) : Bool :=
     r == [] && s == D && sgn == .left &&
       eqAppR0inf l ([0, 1, 1] ++ (([0, 1] : List (Fin 2)) ^ 10 ++ reg Z1)))
 
-lemma checkOpen_spec (x : BCfg (Fin 2) (Fin 6)) (h : checkOpen x = true)
+theorem checkOpen_spec (x : BCfg (Fin 2) (Fin 6)) (h : checkOpen x = true)
     (h₁ : (init []) [target_tm]⊢* (toCfg x default default)) :
     (init []) [target_tm]⊢* (recCfg 10 Z1) := by
   rcases x with ⟨l', r', s', sgn'⟩
@@ -1227,7 +1225,7 @@ def initBCfg : BCfg (Fin 2) (Fin 6) :=
 def open_ok : Bool :=
   checkOpen (run 1189 initBCfg)
 
-lemma opening (h : open_ok = true) : (init []) [target_tm]⊢* (recCfg 10 Z1) := by
+theorem opening (h : open_ok = true) : (init []) [target_tm]⊢* (recCfg 10 Z1) := by
   have h₁ := run_spec 1189 initBCfg default
   have h_init : toCfg initBCfg default default = init [] := by
     dsimp only [initBCfg, toCfg, ListBlank.append_nil]
@@ -1236,23 +1234,23 @@ lemma opening (h : open_ok = true) : (init []) [target_tm]⊢* (recCfg 10 Z1) :=
   rw [h_init] at h₁
   exact checkOpen_spec (run 1189 initBCfg) h h₁
 
-lemma open_ok_true : open_ok = true := by rfl
+theorem open_ok_true : open_ok = true := by rfl
 
 def C9 : List ℕ := [2480, 1, 3, 1, 1, 7, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2]
 def C24 : List ℕ := [2558, 1, 1, 1, 3, 1, 1, 5, 1, 6]
 
-lemma seg1 : driveSteps 3 Z1 = some [2432] := by rfl
-lemma seg2 : driveSteps 6 [2432] = some [2454] := by rfl
-lemma seg3 : driveSteps 13 [2454] = some [2480] := by rfl
-lemma seg4 : driveSteps 6 [2480] = some [2502] := by rfl
-lemma seg5 : driveSteps 4 [2502] = some C9 := by rfl
-lemma seg6 : driveSteps 19 C9 = some [2532] := by rfl
-lemma seg7 : driveSteps 15 [2532] = some [2560] := by rfl
-lemma seg8 : driveSteps 13 [2560] = some C24 := by rfl
-lemma seg9 : driveSteps 13 C24 = some [2596] := by rfl
-lemma seg10 : driveEnd 9 [2596] = true := by rfl
+theorem seg1 : driveSteps 3 Z1 = some [2432] := by rfl
+theorem seg2 : driveSteps 6 [2432] = some [2454] := by rfl
+theorem seg3 : driveSteps 13 [2454] = some [2480] := by rfl
+theorem seg4 : driveSteps 6 [2480] = some [2502] := by rfl
+theorem seg5 : driveSteps 4 [2502] = some C9 := by rfl
+theorem seg6 : driveSteps 19 C9 = some [2532] := by rfl
+theorem seg7 : driveSteps 15 [2532] = some [2560] := by rfl
+theorem seg8 : driveSteps 13 [2560] = some C24 := by rfl
+theorem seg9 : driveSteps 13 C24 = some [2596] := by rfl
+theorem seg10 : driveEnd 9 [2596] = true := by rfl
 
-lemma nh_Z1 : NH Z1 :=
+theorem nh_Z1 : NH Z1 :=
   driveSteps_spec 3 Z1 [2432] seg1 <|
   driveSteps_spec 6 [2432] [2454] seg2 <|
   driveSteps_spec 13 [2454] [2480] seg3 <|

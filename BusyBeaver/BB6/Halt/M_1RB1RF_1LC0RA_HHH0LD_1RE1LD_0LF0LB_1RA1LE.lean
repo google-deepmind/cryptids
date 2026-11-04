@@ -41,13 +41,13 @@ inductive ReachHalt : Cfg (Fin 2) (Fin 6) → Prop
 def Reaches (c c' : Cfg (Fin 2) (Fin 6)) : Prop :=
   ReachHalt c' → ReachHalt c
 
-lemma Reaches.refl (c : Cfg (Fin 2) (Fin 6)) : Reaches c c := id
+theorem Reaches.refl (c : Cfg (Fin 2) (Fin 6)) : Reaches c c := id
 
-lemma Reaches.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)} (h₁ : Reaches c₁ c₂) (h₂ : Reaches c₂ c₃) :
+theorem Reaches.trans {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)} (h₁ : Reaches c₁ c₂) (h₂ : Reaches c₂ c₃) :
     Reaches c₁ c₃ :=
   fun h => h₁ (h₂ h)
 
-lemma multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
+theorem multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
     (h : step target_tm c = some c') :
     multiStep target_tm c (n + 1) = multiStep target_tm c' n := by
   unfold multiStep
@@ -55,7 +55,7 @@ lemma multiStep_succ_of_step {c c' : Cfg (Fin 2) (Fin 6)} (n : ℕ)
   change (Option.bind · (step target_tm))^[n] (step target_tm c) = _
   rw [h]
 
-lemma ReachHalt.to_isHalt {c : Cfg (Fin 2) (Fin 6)} (h : ReachHalt c) :
+theorem ReachHalt.to_isHalt {c : Cfg (Fin 2) (Fin 6)} (h : ReachHalt c) :
     ∃ cfg, (c [target_tm]⊢* cfg) ∧ (step target_tm cfg).isNone := by
   induction h with
   | done hnone => exact ⟨_, ⟨0, rfl⟩, hnone⟩
@@ -66,72 +66,72 @@ lemma ReachHalt.to_isHalt {c : Cfg (Fin 2) (Fin 6)} (h : ReachHalt c) :
 def cfg (q : Fin 6) (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ⟨some q, ⟨r.head, l, r.tail⟩⟩
 
-@[simp] lemma zero_cons_default : b0 >> default = default := by
+@[simp] theorem zero_cons_default : b0 >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = b0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = b0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma init_eq_cfg : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = cfg A default default := rfl
+theorem init_eq_cfg : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = cfg A default default := rfl
 
-lemma step_cfg_right {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     (l r : ListBlank (Fin 2)) :
     step target_tm (cfg q l (b >> r)) = some (cfg q' (a >> l) r) := by
   simp [cfg, step, h, Turing.Tape.write, Turing.Tape.move]
 
-lemma step_cfg_left {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_left {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     (c : Fin 2) (l r : ListBlank (Fin 2)) :
     step target_tm (cfg q (c >> l) (b >> r)) = some (cfg q' l (c >> a >> r)) := by
   simp [cfg, step, h, Turing.Tape.write, Turing.Tape.move]
 
-lemma step_cfg_right_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_right_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.right))
     (l : ListBlank (Fin 2)) :
     step target_tm (cfg q l default) = some (cfg q' (a >> l) default) := by
   simpa using step_cfg_right h l default
 
-lemma step_cfg_left_nil {q q' : Fin 6} {a : Fin 2}
+theorem step_cfg_left_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.left))
     (c : Fin 2) (l : ListBlank (Fin 2)) :
     step target_tm (cfg q (c >> l) default) = some (cfg q' l (c >> a >> default)) := by
   simpa using step_cfg_left h c l default
 
-lemma step_cfg_left_lnil {q q' : Fin 6} {b a : Fin 2}
+theorem step_cfg_left_lnil {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     (r : ListBlank (Fin 2)) :
     step target_tm (cfg q default (b >> r)) = some (cfg q' default (b0 >> a >> r)) := by
   simpa using step_cfg_left h b0 default r
 
-lemma reach_right {q q' : Fin 6} {b a : Fin 2}
+theorem reach_right {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.right))
     {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' (a >> l) r) target) :
     Reaches (cfg q l (b >> r)) target :=
   fun ht => ReachHalt.next (step_cfg_right h l r) (hr ht)
 
-lemma reach_left {q q' : Fin 6} {b a : Fin 2}
+theorem reach_left {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     {c : Fin 2} {l r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' l (c >> a >> r)) target) :
     Reaches (cfg q (c >> l) (b >> r)) target :=
   fun ht => ReachHalt.next (step_cfg_left h c l r) (hr ht)
 
-lemma reach_right_nil {q q' : Fin 6} {a : Fin 2}
+theorem reach_right_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.right))
     {l : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' (a >> l) default) target) :
     Reaches (cfg q l default) target :=
   fun ht => ReachHalt.next (step_cfg_right_nil h l) (hr ht)
 
-lemma reach_left_nil {q q' : Fin 6} {a : Fin 2}
+theorem reach_left_nil {q q' : Fin 6} {a : Fin 2}
     (h : target_tm q b0 = some (some q', Stmt.write a Dir.left))
     {c : Fin 2} {l : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' l (c >> a >> default)) target) :
     Reaches (cfg q (c >> l) default) target :=
   fun ht => ReachHalt.next (step_cfg_left_nil h c l) (hr ht)
 
-lemma reach_left_lnil {q q' : Fin 6} {b a : Fin 2}
+theorem reach_left_lnil {q q' : Fin 6} {b a : Fin 2}
     (h : target_tm q b = some (some q', Stmt.write a Dir.left))
     {r : ListBlank (Fin 2)} {target : Cfg (Fin 2) (Fin 6)}
     (hr : Reaches (cfg q' default (b0 >> a >> r)) target) :
@@ -173,36 +173,36 @@ def R01 : Nat → ListBlank (Fin 2) → ListBlank (Fin 2)
 
 def L0 : ListBlank (Fin 2) := b0 >> b1 >> b0 >> b1 >> b1 >> default
 
-@[simp] lemma L01_zero (l : ListBlank (Fin 2)) : L01 0 l = l := rfl
-@[simp] lemma L01_succ (k : Nat) (l : ListBlank (Fin 2)) : L01 (k + 1) l = b0 >> b1 >> L01 k l := rfl
-@[simp] lemma L11_zero (l : ListBlank (Fin 2)) : L11 0 l = l := rfl
-@[simp] lemma L11_succ (n : Nat) (l : ListBlank (Fin 2)) : L11 (n + 1) l = b1 >> b1 >> L11 n l := rfl
-@[simp] lemma R1_zero (r : ListBlank (Fin 2)) : R1 0 r = r := rfl
-@[simp] lemma R1_succ (c : Nat) (r : ListBlank (Fin 2)) : R1 (c + 1) r = b1 >> R1 c r := rfl
-@[simp] lemma R01_zero (r : ListBlank (Fin 2)) : R01 0 r = r := rfl
-@[simp] lemma R01_succ (d : Nat) (r : ListBlank (Fin 2)) : R01 (d + 1) r = b0 >> b1 >> R01 d r := rfl
+@[simp] theorem L01_zero (l : ListBlank (Fin 2)) : L01 0 l = l := rfl
+@[simp] theorem L01_succ (k : Nat) (l : ListBlank (Fin 2)) : L01 (k + 1) l = b0 >> b1 >> L01 k l := rfl
+@[simp] theorem L11_zero (l : ListBlank (Fin 2)) : L11 0 l = l := rfl
+@[simp] theorem L11_succ (n : Nat) (l : ListBlank (Fin 2)) : L11 (n + 1) l = b1 >> b1 >> L11 n l := rfl
+@[simp] theorem R1_zero (r : ListBlank (Fin 2)) : R1 0 r = r := rfl
+@[simp] theorem R1_succ (c : Nat) (r : ListBlank (Fin 2)) : R1 (c + 1) r = b1 >> R1 c r := rfl
+@[simp] theorem R01_zero (r : ListBlank (Fin 2)) : R01 0 r = r := rfl
+@[simp] theorem R01_succ (d : Nat) (r : ListBlank (Fin 2)) : R01 (d + 1) r = b0 >> b1 >> R01 d r := rfl
 
-lemma L01_add (a b : Nat) (l : ListBlank (Fin 2)) : L01 (a + b) l = L01 a (L01 b l) := by
+theorem L01_add (a b : Nat) (l : ListBlank (Fin 2)) : L01 (a + b) l = L01 a (L01 b l) := by
   induction a with
   | zero => simp
   | succ a ih => simp [Nat.succ_add, ih]
 
-lemma L11_add (a b : Nat) (l : ListBlank (Fin 2)) : L11 (a + b) l = L11 a (L11 b l) := by
+theorem L11_add (a b : Nat) (l : ListBlank (Fin 2)) : L11 (a + b) l = L11 a (L11 b l) := by
   induction a with
   | zero => simp
   | succ a ih => simp [Nat.succ_add, ih]
 
-lemma R1_add (a b : Nat) (r : ListBlank (Fin 2)) : R1 (a + b) r = R1 a (R1 b r) := by
+theorem R1_add (a b : Nat) (r : ListBlank (Fin 2)) : R1 (a + b) r = R1 a (R1 b r) := by
   induction a with
   | zero => simp
   | succ a ih => simp [Nat.succ_add, ih]
 
-lemma R01_add (a b : Nat) (r : ListBlank (Fin 2)) : R01 (a + b) r = R01 a (R01 b r) := by
+theorem R01_add (a b : Nat) (r : ListBlank (Fin 2)) : R01 (a + b) r = R01 a (R01 b r) := by
   induction a with
   | zero => simp
   | succ a ih => simp [Nat.succ_add, ih]
 
-lemma L11_eq_R1 (n : Nat) (l : ListBlank (Fin 2)) : L11 n l = R1 (2 * n) l := by
+theorem L11_eq_R1 (n : Nat) (l : ListBlank (Fin 2)) : L11 n l = R1 (2 * n) l := by
   induction n with
   | zero => rfl
   | succ n ih =>
@@ -210,15 +210,15 @@ lemma L11_eq_R1 (n : Nat) (l : ListBlank (Fin 2)) : L11 n l = R1 (2 * n) l := by
     rw [h, R1_add]
     simp [ih]
 
-lemma cons1_L11_cons1 (m : Nat) (l : ListBlank (Fin 2)) :
+theorem cons1_L11_cons1 (m : Nat) (l : ListBlank (Fin 2)) :
     b1 >> L11 m (b1 >> l) = L11 (m + 1) l := by
   induction m with
   | zero => rfl
   | succ m ih => simp [ih]
 
-lemma L0_eq_L01 : L0 = L01 2 (b1 >> default) := rfl
+theorem L0_eq_L01 : L0 = L01 2 (b1 >> default) := rfl
 
-lemma shift_A_01 (d : Nat) (l r : ListBlank (Fin 2)) :
+theorem shift_A_01 (d : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg A l (R01 d r)) (cfg A (L01 d l) r) := by
   induction d generalizing l with
   | zero => exact Reaches.refl _
@@ -232,7 +232,7 @@ lemma shift_A_01 (d : Nat) (l r : ListBlank (Fin 2)) :
       rw [← L01_add]
     rwa [h_eq] at h2
 
-lemma shift_F_01 (d : Nat) (l r : ListBlank (Fin 2)) :
+theorem shift_F_01 (d : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg F l (R01 d r)) (cfg F (L11 d l) r) := by
   induction d generalizing l with
   | zero => exact Reaches.refl _
@@ -246,7 +246,7 @@ lemma shift_F_01 (d : Nat) (l r : ListBlank (Fin 2)) :
       rw [← L11_add]
     rwa [h_eq] at h2
 
-lemma shift_A_1_01 (d : Nat) (l r : ListBlank (Fin 2)) :
+theorem shift_A_1_01 (d : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg A l (b1 >> R01 d r)) (cfg A (L11 d l) (b1 >> r)) := by
   induction d generalizing l with
   | zero => exact Reaches.refl _
@@ -260,7 +260,7 @@ lemma shift_A_1_01 (d : Nat) (l r : ListBlank (Fin 2)) :
       rw [← L11_add]
     rwa [h_eq] at h2
 
-lemma shift_D_1 (m : Nat) (l r : ListBlank (Fin 2)) :
+theorem shift_D_1 (m : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg D (R1 m l) (b1 >> r)) (cfg D l (R1 (m + 1) r)) := by
   induction m generalizing r with
   | zero => exact Reaches.refl _
@@ -274,7 +274,7 @@ lemma shift_D_1 (m : Nat) (l r : ListBlank (Fin 2)) :
       rw [← R1_add]
     rwa [h_eq] at h2
 
-lemma shift_E_01_pair (j : Nat) (l r : ListBlank (Fin 2)) :
+theorem shift_E_01_pair (j : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg E (L01 (2 * j) l) (b1 >> b1 >> r)) (cfg E l (b1 >> b1 >> R01 (2 * j) r)) := by
   induction j generalizing r with
   | zero => exact Reaches.refl _
@@ -291,7 +291,7 @@ lemma shift_E_01_pair (j : Nat) (l r : ListBlank (Fin 2)) :
       rw [← R01_add, Nat.add_comm]
     rwa [h_eq] at h2
 
-lemma reach_C_from_even (j : Nat) (l : ListBlank (Fin 2)) :
+theorem reach_C_from_even (j : Nat) (l : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j) l) default) (cfg C l (b1 >> b1 >> R01 (2 * j) default)) := by
   cases j with
   | zero =>
@@ -314,7 +314,7 @@ lemma reach_C_from_even (j : Nat) (l : ListBlank (Fin 2)) :
     rw [h_r]
     exec_tm 2
 
-lemma restore_L0 (m : Nat) :
+theorem restore_L0 (m : Nat) :
     Reaches (cfg A (L01 (2 * (m + 1)) default) default) (cfg A (L01 (2 * (m + 1)) L0) default) := by
   have h1 := reach_C_from_even (m + 1) default
   refine h1.trans ?_
@@ -327,20 +327,20 @@ lemma restore_L0 (m : Nat) :
     rw [L01_add]; rfl
   rwa [h_eq] at h3
 
-lemma c_b1_bounce (r : ListBlank (Fin 2)) :
+theorem c_b1_bounce (r : ListBlank (Fin 2)) :
     Reaches (cfg C (b1 >> default) (b1 >> b1 >> r)) (cfg A L0 (b1 >> r)) := by
   exec_tm 17
 
-lemma d_L0_bounce (r : ListBlank (Fin 2)) :
+theorem d_L0_bounce (r : ListBlank (Fin 2)) :
     Reaches (cfg D L0 (b1 >> b1 >> r)) (cfg A (L01 1 L0) r) := by
   exec_tm 6
 
-lemma d_b01_shift (l' r' : ListBlank (Fin 2)) :
+theorem d_b01_shift (l' r' : ListBlank (Fin 2)) :
     Reaches (cfg D (b0 >> b1 >> l') (b1 >> b1 >> r'))
             (cfg A (b0 >> b1 >> b0 >> b1 >> l') r') := by
   exec_tm 6
 
-lemma drain_C_L11 (m : Nat) (l r : ListBlank (Fin 2)) :
+theorem drain_C_L11 (m : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg C (L11 (m + 1) l) (b1 >> b1 >> r))
             (cfg D l (R1 (2 * m + 2) (b0 >> b1 >> r))) := by
   rw [L11_succ, L11_eq_R1]
@@ -367,14 +367,14 @@ def evalRBlocks : RBlocks → ListBlank (Fin 2)
   | .nil => default
   | .cons c d rest => R1 c (R01 d (evalRBlocks rest))
 
-@[simp] lemma evalRBlocks_nil : evalRBlocks .nil = default := rfl
-@[simp] lemma evalRBlocks_cons (c d : Nat) (rest : RBlocks) :
+@[simp] theorem evalRBlocks_nil : evalRBlocks .nil = default := rfl
+@[simp] theorem evalRBlocks_cons (c d : Nat) (rest : RBlocks) :
     evalRBlocks (.cons c d rest) = R1 c (R01 d (evalRBlocks rest)) := rfl
 
 def toCfg (k n : Nat) (blks : RBlocks) : Cfg (Fin 2) (Fin 6) :=
   cfg A (L01 k (L11 n L0)) (evalRBlocks blks)
 
-lemma rule_c0 (k n d : Nat) (rest : RBlocks) :
+theorem rule_c0 (k n d : Nat) (rest : RBlocks) :
     Reaches (toCfg k n (.cons 0 d rest)) (toCfg (k + d) n rest) := by
   unfold toCfg
   rw [evalRBlocks_cons, R1_zero]
@@ -383,7 +383,7 @@ lemma rule_c0 (k n d : Nat) (rest : RBlocks) :
     rw [← L01_add, Nat.add_comm]
   rwa [h_eq] at h
 
-lemma step_even_nge1_one (j : Nat) (l r : ListBlank (Fin 2)) :
+theorem step_even_nge1_one (j : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j) (b1 >> b1 >> l)) (b1 >> b1 >> r))
             (cfg A (L01 (2 * (j + 1)) l) r) := by
   have h1 : Reaches (cfg A (L01 (2 * j) (b1 >> b1 >> l)) (b1 >> b1 >> r))
@@ -403,7 +403,7 @@ lemma step_even_nge1_one (j : Nat) (l r : ListBlank (Fin 2)) :
     congr 1
   rwa [h_eq] at h3
 
-lemma step_even_nge1 (m j : Nat) (l r : ListBlank (Fin 2)) :
+theorem step_even_nge1 (m j : Nat) (l r : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j) (L11 m l)) (R1 (2 * m) r))
             (cfg A (L01 (2 * (j + m)) l) r) := by
   induction m generalizing j with
@@ -419,7 +419,7 @@ lemma step_even_nge1 (m j : Nat) (l r : ListBlank (Fin 2)) :
     have h_eq : 2 * (j + 1 + m) = 2 * (j + (m + 1)) := by omega
     rwa [h_eq] at h2
 
-lemma rule_even_nge1 (m j n c d : Nat) (rest : RBlocks) :
+theorem rule_even_nge1 (m j n c d : Nat) (rest : RBlocks) :
     Reaches (toCfg (2 * j) (m + n) (.cons (2 * m + c) d rest))
             (toCfg (2 * j + 2 * m) n (.cons c d rest)) := by
   unfold toCfg
@@ -428,7 +428,7 @@ lemma rule_even_nge1 (m j n c d : Nat) (rest : RBlocks) :
   have h_eq : 2 * (j + m) = 2 * j + 2 * m := by omega
   rwa [h_eq] at h
 
-lemma step_odd_n0 (j : Nat) (r : ListBlank (Fin 2)) :
+theorem step_odd_n0 (j : Nat) (r : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j + 1) L0) (b1 >> b1 >> r))
             (cfg A (L11 (2 * j + 3) L0) (b1 >> r)) := by
   have h_l : L01 (2 * j + 1) L0 = L01 (2 * (j + 1)) (b0 >> b1 >> b1 >> default) := by
@@ -450,7 +450,7 @@ lemma step_odd_n0 (j : Nat) (r : ListBlank (Fin 2)) :
   refine (c_b1_bounce (R01 (2 * j + 3) r)).trans ?_
   exact shift_A_1_01 (2 * j + 3) L0 r
 
-lemma rule_odd_n0 (j c d : Nat) (rest : RBlocks) :
+theorem rule_odd_n0 (j c d : Nat) (rest : RBlocks) :
     Reaches (toCfg (2 * j + 1) 0 (.cons (c + 2) d rest))
             (toCfg 0 (3 + 2 * j) (.cons (c + 1) d rest)) := by
   unfold toCfg
@@ -461,7 +461,7 @@ lemma rule_odd_n0 (j c d : Nat) (rest : RBlocks) :
   have h_n : 2 * j + 3 = 3 + 2 * j := by omega
   rwa [h_n] at h
 
-lemma step_k1_to_k6 (c0 d : Nat) (rest : RBlocks) :
+theorem step_k1_to_k6 (c0 d : Nat) (rest : RBlocks) :
     Reaches (toCfg 1 0 (.cons (c0 + 7) d rest)) (toCfg 6 0 (.cons c0 d rest)) := by
   have h1 : toCfg 1 0 (.cons (c0 + 7) d rest) = toCfg (2 * 0 + 1) 0 (.cons ((c0 + 5) + 2) d rest) := by
     simp [Nat.add_assoc]
@@ -473,7 +473,7 @@ lemma step_k1_to_k6 (c0 d : Nat) (rest : RBlocks) :
   rw [h2]
   exact rule_even_nge1 3 0 0 c0 d rest
 
-lemma step_odd_nge1 (j m : Nat) (r : ListBlank (Fin 2)) :
+theorem step_odd_nge1 (j m : Nat) (r : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j + 1) (L11 (m + 1) L0)) (b1 >> b1 >> r))
             (cfg A (L01 1 L0) (R1 (2 * m) (R01 (2 * j + 2) r))) := by
   have h_l : L01 (2 * j + 1) (L11 (m + 1) L0) = L01 (2 * j) (b0 >> b1 >> L11 (m + 1) L0) := by
@@ -498,7 +498,7 @@ lemma step_odd_nge1 (j m : Nat) (r : ListBlank (Fin 2)) :
   rw [h_r2]
   exact d_L0_bounce (R1 (2 * m) (R01 (2 * j + 2) r))
 
-lemma rule_odd_nge1 (j m c d : Nat) (rest : RBlocks) :
+theorem rule_odd_nge1 (j m c d : Nat) (rest : RBlocks) :
     Reaches (toCfg (2 * j + 1) (m + 1) (.cons (c + 2) d rest))
             (toCfg 1 0 (.cons (2 * m) (2 + 2 * j) (.cons c d rest))) := by
   unfold toCfg
@@ -507,7 +507,7 @@ lemma rule_odd_nge1 (j m c d : Nat) (rest : RBlocks) :
   rw [evalRBlocks_cons, evalRBlocks_cons, evalRBlocks_cons, L11_zero, h_c, R1_add, h_j]
   exact step_odd_nge1 j m (R1 c (R01 d (evalRBlocks rest)))
 
-lemma even_n0_boundary (j : Nat) (r : ListBlank (Fin 2)) :
+theorem even_n0_boundary (j : Nat) (r : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j) L0) (b1 >> b1 >> r))
             (cfg A (L01 (2 * j + 3) default) r) := by
   have h1 : Reaches (cfg A (L01 (2 * j) L0) (b1 >> b1 >> r))
@@ -525,7 +525,7 @@ lemma even_n0_boundary (j : Nat) (r : ListBlank (Fin 2)) :
   refine h2.trans ?_
   exact shift_A_01 (2 * j + 3) default r
 
-lemma step_even_n0_c4 (j : Nat) (r_rem : ListBlank (Fin 2)) :
+theorem step_even_n0_c4 (j : Nat) (r_rem : ListBlank (Fin 2)) :
     Reaches (cfg A (L01 (2 * j) L0) (b1 >> b1 >> b1 >> b1 >> r_rem))
             (cfg A (L01 (2 * j + 3) L0) r_rem) := by
   refine (even_n0_boundary j (b1 >> b1 >> r_rem)).trans ?_
@@ -552,7 +552,7 @@ lemma step_even_n0_c4 (j : Nat) (r_rem : ListBlank (Fin 2)) :
     rw [h_idx, L01_add]; rfl
   rwa [h_eq] at h3
 
-lemma rule_even_n0_c4 (j d : Nat) (rest : RBlocks) :
+theorem rule_even_n0_c4 (j d : Nat) (rest : RBlocks) :
     Reaches (toCfg (2 * j) 0 (.cons 4 d rest))
             (toCfg (3 + 2 * j + d) 0 rest) := by
   unfold toCfg
@@ -564,7 +564,7 @@ lemma rule_even_n0_c4 (j d : Nat) (rest : RBlocks) :
     rw [← L01_add]; congr 1; omega
   rwa [h_eq] at h
 
-lemma rule_even_n0_cge6 (j c d : Nat) (rest : RBlocks) :
+theorem rule_even_n0_cge6 (j c d : Nat) (rest : RBlocks) :
     Reaches (toCfg (2 * j) 0 (.cons (c + 6) d rest))
             (toCfg 0 (5 + 2 * j) (.cons (c + 1) d rest)) := by
   have h_c : c + 6 = 4 + (c + 2) := by omega
@@ -582,13 +582,13 @@ lemma rule_even_n0_cge6 (j c d : Nat) (rest : RBlocks) :
   have h_n : 3 + 2 * (j + 1) = 5 + 2 * j := by omega
   rwa [h_n] at h2
 
-lemma cons1_R1 (c : Nat) (r : ListBlank (Fin 2)) :
+theorem cons1_R1 (c : Nat) (r : ListBlank (Fin 2)) :
     b1 >> R1 c r = R1 c (b1 >> r) := by
   induction c with
   | zero => rfl
   | succ c ih => simp [ih]
 
-lemma bounce_A_1_01_end (d : Nat) (l : ListBlank (Fin 2)) :
+theorem bounce_A_1_01_end (d : Nat) (l : ListBlank (Fin 2)) :
     Reaches (cfg A l (b1 >> R01 d default))
             (cfg D l (b1 >> b1 >> R1 (2 * d) (R01 1 default))) := by
   have h1 : Reaches (cfg A l (b1 >> R01 d default)) (cfg F (b1 >> l) (R01 d default)) := by
@@ -606,7 +606,7 @@ lemma bounce_A_1_01_end (d : Nat) (l : ListBlank (Fin 2)) :
     rw [h_split, R1_add]; rfl
   rwa [h_r] at h3
 
-lemma rule_c1_end (k n d : Nat) :
+theorem rule_c1_end (k n d : Nat) :
     Reaches (toCfg (k + 1) n (.cons 1 d .nil))
             (toCfg (1 + (k + 1)) n (.cons (2 * d) 1 .nil)) := by
   unfold toCfg
@@ -619,7 +619,7 @@ lemma rule_c1_end (k n d : Nat) :
     rw [h_idx]; rfl
   rwa [h_l] at h
 
-lemma rule_c1_large_c2 (k n d c1 d2 : Nat) (rest2 : RBlocks) :
+theorem rule_c1_large_c2 (k n d c1 d2 : Nat) (rest2 : RBlocks) :
     Reaches (toCfg k n (.cons 1 (d + 1) (.cons (2 * (d + 1) + c1 - 1) d2 rest2)))
             (toCfg (k + 2 * (d + 1)) n (.cons c1 d2 rest2)) := by
   unfold toCfg
@@ -636,13 +636,13 @@ lemma rule_c1_large_c2 (k n d c1 d2 : Nat) (rest2 : RBlocks) :
     rw [← L01_add, Nat.add_comm]
   rwa [h_l] at h2
 
-lemma L01_cons01 (k : Nat) (l : ListBlank (Fin 2)) :
+theorem L01_cons01 (k : Nat) (l : ListBlank (Fin 2)) :
     b0 >> b1 >> L01 k l = L01 k (b0 >> b1 >> l) := by
   induction k with
   | zero => rfl
   | succ k ih => simp [ih]
 
-lemma step_c1_small_c2_core (r m' d2' : Nat) (l : ListBlank (Fin 2)) :
+theorem step_c1_small_c2_core (r m' d2' : Nat) (l : ListBlank (Fin 2)) :
     Reaches (cfg A l (b1 >> R01 ((m' + 1) + (r + 1)) (R1 (2 * (m' + 1)) (R01 (d2' + 1) default))))
             (cfg D l (b1 >> b1 >> R1 (2 * r) (R01 (2 + 2 * (m' + 1)) (R1 (2 * d2') (R01 1 default))))) := by
   refine (shift_A_1_01 ((m' + 1) + (r + 1)) l (R1 (2 * (m' + 1)) (R01 (d2' + 1) default))).trans ?_
@@ -684,7 +684,7 @@ lemma step_c1_small_c2_core (r m' d2' : Nat) (l : ListBlank (Fin 2)) :
   rw [h_r4]
   exact Reaches.refl _
 
-lemma step_c1_small_c2 (k n r' m' d2' : Nat) :
+theorem step_c1_small_c2 (k n r' m' d2' : Nat) :
     Reaches (toCfg (k + 1) n (.cons 1 ((m' + 1) + (r' + 1)) (.cons (2 * (m' + 1)) (d2' + 1) .nil)))
             (cfg A (L01 (k + 2) (L11 n L0))
               (R1 (2 * r') (R01 (2 + 2 * (m' + 1)) (R1 (2 * d2') (R01 1 default))))) := by
@@ -693,7 +693,7 @@ lemma step_c1_small_c2 (k n r' m' d2' : Nat) :
   refine (step_c1_small_c2_core r' m' d2' (L01 (k + 1) (L11 n L0))).trans ?_
   exact d_b01_shift (L01 k (L11 n L0)) (R1 (2 * r') (R01 (2 + 2 * (m' + 1)) (R1 (2 * d2') (R01 1 default))))
 
-lemma rule_nil_even_nge2 (j m' : Nat) :
+theorem rule_nil_even_nge2 (j m' : Nat) :
     Reaches (toCfg (2 * j) (m' + 2) .nil)
             (toCfg 1 0 (.cons (2 * m' + 2) (1 + 2 * j) .nil)) := by
   unfold toCfg
@@ -710,7 +710,7 @@ lemma rule_nil_even_nge2 (j m' : Nat) :
 
 abbrev lb0 : ListBlank (Fin 2) := default
 
-lemma rule_nil_even_n0 (j : Nat) :
+theorem rule_nil_even_n0 (j : Nat) :
     Reaches (toCfg (2 * j) 0 .nil)
             (toCfg 1 0 (.cons (4 + 4 * j) 1 .nil)) := by
   have h_start : toCfg (2 * j) 0 .nil = cfg A (L01 (2 * (j + 1)) (b1 >> lb0)) default := by
@@ -732,7 +732,7 @@ lemma rule_nil_even_n0 (j : Nat) :
   have h_c : 2 * (2 * j + 1) + 2 = 4 + 4 * j := by omega
   rwa [h_c] at h2
 
-lemma step_nil_odd_ind (n j : Nat) :
+theorem step_nil_odd_ind (n j : Nat) :
     Reaches (toCfg (2 * j + 1) n .nil)
             (toCfg (2 * (j + n) + 1) 0 .nil) := by
   induction n generalizing j with
@@ -765,7 +765,7 @@ lemma step_nil_odd_ind (n j : Nat) :
     have h_idx : j + 1 + n = j + (n + 1) := by omega
     rwa [h_idx] at h2
 
-lemma rule_nil_odd (j n : Nat) :
+theorem rule_nil_odd (j n : Nat) :
     Reaches (toCfg (2 * j + 1) n .nil)
             (toCfg 1 0 (.cons (12 + 4 * j + 4 * n) 1 .nil)) := by
   refine (step_nil_odd_ind n j).trans ?_
@@ -791,13 +791,13 @@ lemma rule_nil_odd (j n : Nat) :
   have h_c : 4 + 4 * (J + 2) = 12 + 4 * j + 4 * n := by omega
   rwa [h_c] at h2
 
-lemma halt_from_E_default (r : ListBlank (Fin 2)) :
+theorem halt_from_E_default (r : ListBlank (Fin 2)) :
     ReachHalt (cfg E default (b1 >> b1 >> r)) := by
   refine ReachHalt.next (step_cfg_left_lnil rfl (b1 >> r)) ?_
   refine ReachHalt.next (step_cfg_left_lnil rfl (b0 >> b1 >> r)) ?_
   exact ReachHalt.done (by simp [cfg, step, target_tm]; rfl)
 
-lemma rule_even_n0_c2 (j m : Nat) :
+theorem rule_even_n0_c2 (j m : Nat) :
     Reaches (toCfg (2 * j) 0 (.cons 2 (2 * m + 1) .nil))
             (toCfg (3 + 2 * j + (2 * m + 1)) 0 .nil) := by
   unfold toCfg
@@ -812,7 +812,7 @@ lemma rule_even_n0_c2 (j m : Nat) :
   rw [← h_eq2]
   exact h2
 
-lemma rule_halt_c3 (j r' m' : Nat) :
+theorem rule_halt_c3 (j r' m' : Nat) :
     ReachHalt (toCfg (2 * j) 0 (.cons 3 ((m' + 1) + (r' + 2)) (.cons (2 * (m' + 1)) 1 .nil))) := by
   unfold toCfg
   rw [evalRBlocks_cons, evalRBlocks_cons, evalRBlocks_nil, L11_zero]
@@ -839,7 +839,7 @@ lemma rule_halt_c3 (j r' m' : Nat) :
 -- Accelerated Era Loops: `step_withR_iter` and `step_outer_era_iter`
 -- ============================================================================
 
-lemma five_mul_le_pow2 (r : Nat) : 5 * r ≤ 20 * (2 ^ r - 1) := by
+theorem five_mul_le_pow2 (r : Nat) : 5 * r ≤ 20 * (2 ^ r - 1) := by
   induction r with
   | zero => simp
   | succ r ih =>
@@ -847,14 +847,14 @@ lemma five_mul_le_pow2 (r : Nat) : 5 * r ≤ 20 * (2 ^ r - 1) := by
     have h_pos : 1 ≤ 2 ^ r := Nat.one_le_pow r 2 (by decide)
     omega
 
-lemma mul_pow2_sub_one_succ (m p : Nat) (hp : 1 ≤ p) :
+theorem mul_pow2_sub_one_succ (m p : Nat) (hp : 1 ≤ p) :
     4 * (m + 5) * (2 * p - 1) = (4 * m + 20) + 4 * ((2 * m + 5) + 5) * (p - 1) := by
   have h_sub : 2 * p - 1 = 1 + 2 * (p - 1) := by omega
   have h_m : 4 * (m + 5) * 2 = 4 * ((2 * m + 5) + 5) := by omega
   have h_m1 : 4 * (m + 5) * 1 = 4 * m + 20 := by omega
   rw [h_sub, Nat.mul_add, h_m1, ← Nat.mul_assoc, h_m]
 
-lemma step_withR_one (m c d : Nat) (rest : RBlocks) :
+theorem step_withR_one (m c d : Nat) (rest : RBlocks) :
     Reaches (toCfg (2 * m) 0 (.cons (c + 1 + (4 * m + 15)) d rest))
             (toCfg (2 * (2 * m + 5)) 0 (.cons (c + 1) d rest)) := by
   have h1 : c + 1 + (4 * m + 15) = (c + (4 * m + 10)) + 6 := by omega
@@ -866,7 +866,7 @@ lemma step_withR_one (m c d : Nat) (rest : RBlocks) :
   have h4 : 2 * 0 + 2 * (5 + 2 * m) = 2 * (2 * m + 5) := by omega
   rwa [h4] at h3
 
-lemma step_withR_iter (r m c_start c_end d : Nat) (rest : RBlocks)
+theorem step_withR_iter (r m c_start c_end d : Nat) (rest : RBlocks)
     (h_c : 1 ≤ c_end)
     (h_eq : c_start + 5 * r = c_end + 4 * (m + 5) * (2 ^ r - 1)) :
     Reaches (toCfg (2 * m) 0 (.cons c_start d rest))
@@ -899,12 +899,12 @@ lemma step_withR_iter (r m c_start c_end d : Nat) (rest : RBlocks)
       rw [h_pow, h_2m, Nat.mul_assoc]
     rwa [h_k] at h_ih
 
-lemma toCfg_cons_zero (k n c1 d1 d2 : Nat) (rest : RBlocks) :
+theorem toCfg_cons_zero (k n c1 d1 d2 : Nat) (rest : RBlocks) :
     toCfg k n (.cons c1 d1 (.cons 0 d2 rest)) = toCfg k n (.cons c1 (d1 + d2) rest) := by
   unfold toCfg
   simp [R01_add]
 
-lemma step_outer_era_pair (jc jr p jr2 p2 D_half limit h : Nat)
+theorem step_outer_era_pair (jc jr p jr2 p2 D_half limit h : Nat)
     (hp : p = 2 ^ (2 * jr + 1))
     (hp2 : p2 = 2 ^ (2 * jr2))
     (h_jc : 4 ≤ jc)
@@ -976,7 +976,7 @@ lemma step_outer_era_pair (jc jr p jr2 p2 D_half limit h : Nat)
   have h_final : 12 + 4 * (m2 + m1 + 1) + 4 * n_rem2 = 2 * jc + 2 * D_half + 4 * h := by omega
   rwa [h_final] at h_end
 
-lemma step_outer_era_iter (i : Nat) (jc jr p jr2 p2 D_half limit : Nat)
+theorem step_outer_era_iter (i : Nat) (jc jr p jr2 p2 D_half limit : Nat)
     (hp : p = 2 ^ (2 * jr + 1))
     (hp2 : p2 = 2 ^ (2 * jr2))
     (h_jc : 4 ≤ jc)
@@ -1042,17 +1042,17 @@ def bindBool {α : Type} (b : Bool) (k : Bool → α) : α :=
   | true => k true
   | false => k false
 
-@[simp] lemma bindNat_eq {α : Type} (n : Nat) (k : Nat → α) : bindNat n k = k n := by
+@[simp] theorem bindNat_eq {α : Type} (n : Nat) (k : Nat → α) : bindNat n k = k n := by
   unfold bindNat
   rw [show Nat.add 1 n = n + 1 from Nat.add_comm 1 n]
 
-@[simp] lemma bindBool_eq {α : Type} (b : Bool) (k : Bool → α) : bindBool b k = k b := by
+@[simp] theorem bindBool_eq {α : Type} (b : Bool) (k : Bool → α) : bindBool b k = k b := by
   cases b <;> rfl
 
-@[simp] lemma nat_ble_eq_true (a b : Nat) : (Nat.ble a b = true) ↔ a ≤ b :=
+@[simp] theorem nat_ble_eq_true (a b : Nat) : (Nat.ble a b = true) ↔ a ≤ b :=
   ⟨Nat.le_of_ble_eq_true, Nat.ble_eq_true_of_le⟩
 
-@[simp] lemma nat_beq_eq_true (a b : Nat) : (Nat.beq a b = true) ↔ a = b := by
+@[simp] theorem nat_beq_eq_true (a b : Nat) : (Nat.beq a b = true) ↔ a = b := by
   simp [Nat.beq_eq]
 
 def bindState (s : HState) (f : HState → HState) : HState :=
@@ -1067,34 +1067,34 @@ inductive ValidState : HState → Prop
 @[irreducible] def ValidFrom (k n : Nat) (blks : RBlocks) (s : HState) : Prop :=
   ValidState s → ReachHalt (toCfg k n blks)
 
-lemma ValidFrom.self (k n : Nat) (blks : RBlocks) :
+theorem ValidFrom.self (k n : Nat) (blks : RBlocks) :
     ValidFrom k n blks (.active k n blks) := by
   unfold ValidFrom
   intro hs; cases hs with | active h => exact h
 
-lemma ValidFrom.halted {k n : Nat} {blks : RBlocks} (h : ReachHalt (toCfg k n blks)) :
+theorem ValidFrom.halted {k n : Nat} {blks : RBlocks} (h : ReachHalt (toCfg k n blks)) :
     ValidFrom k n blks .halted := by
   unfold ValidFrom
   exact fun _ => h
 
-lemma ValidFrom.of_reaches {k n k' n' : Nat} {blks blks' : RBlocks} {s : HState}
+theorem ValidFrom.of_reaches {k n k' n' : Nat} {blks blks' : RBlocks} {s : HState}
     (h1 : Reaches (toCfg k n blks) (toCfg k' n' blks'))
     (h2 : ValidFrom k' n' blks' s) :
     ValidFrom k n blks s := by
   unfold ValidFrom at *
   exact fun hs => h1 (h2 hs)
 
-lemma ValidState.of_validFrom {k n : Nat} {blks : RBlocks} {s : HState}
+theorem ValidState.of_validFrom {k n : Nat} {blks : RBlocks} {s : HState}
     (h : ValidFrom k n blks s) (hs : ValidState s) :
     ValidState (.active k n blks) := by
   unfold ValidFrom at h
   exact ValidState.active (h hs)
 
-lemma min_le_left_sub (n c : Nat) : Nat.min n (c / 2) + (n - Nat.min n (c / 2)) = n := by
+theorem min_le_left_sub (n c : Nat) : Nat.min n (c / 2) + (n - Nat.min n (c / 2)) = n := by
   change min n (c / 2) + (n - min n (c / 2)) = n
   omega
 
-lemma min_le_right_sub (n c : Nat) : 2 * Nat.min n (c / 2) + (c - 2 * Nat.min n (c / 2)) = c := by
+theorem min_le_right_sub (n c : Nat) : 2 * Nat.min n (c / 2) + (c - 2 * Nat.min n (c / 2)) = c := by
   change 2 * min n (c / 2) + (c - 2 * min n (c / 2)) = c
   omega
 
@@ -1131,7 +1131,7 @@ def mkActiveRest0 (k n : Nat) : HState :=
   else
     mkActive0 k' n'
 
-lemma mkActiveRest0_sound (k n : Nat) :
+theorem mkActiveRest0_sound (k n : Nat) :
     ValidFrom k n .nil (mkActiveRest0 k n) := by
   unfold mkActiveRest0 mkActiveRaw1 mkActive0
   simp only [bindNat_eq]
@@ -1155,7 +1155,7 @@ lemma mkActiveRest0_sound (k n : Nat) :
       exact ValidFrom.of_reaches h_step (ValidFrom.self _ _ _)
     · exact ValidFrom.self _ _ _
 
-lemma step_mk10_c1 (j m d : Nat) (hj : 1 ≤ j) (hd : 1 ≤ d) :
+theorem step_mk10_c1 (j m d : Nat) (hj : 1 ≤ j) (hd : 1 ≤ d) :
     Reaches (toCfg (2 * j) (m + 1) (.cons 1 d .nil))
             (toCfg 1 0 (.cons (2 * m) (2 + 2 * j) (.cons (2 * d - 2) 1 .nil))) := by
   have h1 := rule_c1_end (2 * j - 1) (m + 1) d
@@ -1194,7 +1194,7 @@ def mkActive10 (k n c d : Nat) (rest : RBlocks) : HState :=
     else
       mkActiveRaw1 k' n' c' d' rest
 
-lemma mkActive10_sound (k n c d : Nat) (rest : RBlocks) :
+theorem mkActive10_sound (k n c d : Nat) (rest : RBlocks) :
     ValidFrom k n (.cons c d rest) (mkActive10 k n c d rest) := by
   cases rest with
   | cons c2 d2 rest2 =>
@@ -1267,7 +1267,7 @@ def mkActiveRest (k n : Nat) (rest : RBlocks) : HState :=
     else
       HState.active k' n' rest
 
-lemma mkActiveRest_sound (k n : Nat) (rest : RBlocks) :
+theorem mkActiveRest_sound (k n : Nat) (rest : RBlocks) :
     ValidFrom k n rest (mkActiveRest k n rest) := by
   cases rest with
   | nil =>
@@ -1294,7 +1294,7 @@ def mkActive1 (k n c d : Nat) (rest : RBlocks) : HState :=
   else
     mkActive10 k' n' c' d' rest
 
-lemma mkActive1_sound (k n c d : Nat) (rest : RBlocks) :
+theorem mkActive1_sound (k n c d : Nat) (rest : RBlocks) :
     ValidFrom k n (.cons c d rest) (mkActive1 k n c d rest) := by
   unfold mkActive1
   simp only [bindNat_eq]
@@ -1315,7 +1315,7 @@ def mkActive1Drain (k1 n c1 d2 : Nat) (rest2 : RBlocks) : HState :=
   else
     mkActive1 k1' n' c1' d2 rest2
 
-lemma mkActive1Drain_sound (k1 n c1 d2 : Nat) (rest2 : RBlocks) :
+theorem mkActive1Drain_sound (k1 n c1 d2 : Nat) (rest2 : RBlocks) :
     ValidFrom k1 n (.cons c1 d2 rest2) (mkActive1Drain k1 n c1 d2 rest2) := by
   unfold mkActive1Drain
   simp only [bindNat_eq]
@@ -1340,7 +1340,7 @@ def mkActive2 (k n c1 d1 c2 d2 : Nat) (rest : RBlocks) : HState :=
   else
     HState.active k' n' (.cons c1' d1' (.cons c2' d2' rest))
 
-lemma mkActive2_sound (k n c1 d1 c2 d2 : Nat) (rest : RBlocks) :
+theorem mkActive2_sound (k n c1 d1 c2 d2 : Nat) (rest : RBlocks) :
     ValidFrom k n (.cons c1 d1 (.cons c2 d2 rest)) (mkActive2 k n c1 d1 c2 d2 rest) := by
   unfold mkActive2
   simp only [bindNat_eq]
@@ -1376,7 +1376,7 @@ def withR (K c : Nat) (cont : Nat → Nat → HState) : HState :=
   stepBSearch K c 2   4        r p fun r p =>
   stepBSearch K c 1   2        r p cont
 
-lemma stepBSearch_spec (K c bit powBit r p : Nat) (cont : Nat → Nat → HState)
+theorem stepBSearch_spec (K c bit powBit r p : Nat) (cont : Nat → Nat → HState)
     (P : HState → Prop)
     (h_pow : powBit = 2 ^ bit)
     (h_p : p = 2 ^ r)
@@ -1389,7 +1389,7 @@ lemma stepBSearch_spec (K c bit powBit r p : Nat) (cont : Nat → Nat → HState
     rw [h_p, h_pow, Nat.add_comm bit r, Nat.pow_add]
   · exact h_cont r p h_p
 
-lemma withR_spec (K c : Nat) (cont : Nat → Nat → HState) (P : HState → Prop)
+theorem withR_spec (K c : Nat) (cont : Nat → Nat → HState) (P : HState → Prop)
     (h_cont : ∀ r p, p = 2 ^ r → P (cont r p)) :
     P (withR K c cont) := by
   unfold withR
@@ -1425,7 +1425,7 @@ def withS (D limit : Nat) (cont : Nat → Nat → HState) : HState :=
   bindNat (2 * pq) fun ps =>
   cont s_era ps
 
-lemma stepSSearch_spec (D limit bit powBit q pq : Nat) (cont : Nat → Nat → HState)
+theorem stepSSearch_spec (D limit bit powBit q pq : Nat) (cont : Nat → Nat → HState)
     (P : HState → Prop)
     (h_pow : powBit = 2 ^ bit)
     (h_pq : pq = 2 ^ q)
@@ -1441,7 +1441,7 @@ lemma stepSSearch_spec (D limit bit powBit q pq : Nat) (cont : Nat → Nat → H
     · exact Nat.le_of_ble_eq_true h_ok
   · exact h_cont q pq h_pq h_le
 
-lemma withS_spec (D limit : Nat) (cont : Nat → Nat → HState) (P : HState → Prop)
+theorem withS_spec (D limit : Nat) (cont : Nat → Nat → HState) (P : HState → Prop)
     (h_D : D ≤ limit)
     (h_cont : ∀ s_era ps, ps = 2 ^ s_era → D * ps ≤ 2 * limit → P (cont s_era ps)) :
     P (withS D limit cont) := by
@@ -1467,7 +1467,7 @@ def stepEvenN0Cge6 (k_even c_in d : Nat) (rest : RBlocks) : HState :=
   bindNat (Nat.min n_mid (c_mid / 2)) fun m =>
   mkActive1 (2 * m) (n_mid - m) (c_mid - 2 * m) d rest
 
-lemma stepEvenN0Cge6_sound (k_even c_in d : Nat) (rest : RBlocks)
+theorem stepEvenN0Cge6_sound (k_even c_in d : Nat) (rest : RBlocks)
     (hk : k_even % 2 = 0) (hc : 6 ≤ c_in) :
     ValidFrom k_even 0 (.cons c_in d rest) (stepEvenN0Cge6 k_even c_in d rest) := by
   unfold stepEvenN0Cge6
@@ -1491,7 +1491,7 @@ def stepOddWithRDefault (c0 r p d : Nat) (rest : RBlocks) : HState :=
   else
     mkActive1 k_new 0 c_new d rest
 
-lemma stepOddWithRDefault_sound (c c0 r p d : Nat) (rest : RBlocks)
+theorem stepOddWithRDefault_sound (c c0 r p d : Nat) (rest : RBlocks)
     (hc : c0 + 7 = c) (hp : p = 2 ^ r) (hr : 1 ≤ r)
     (h_le : 1 + 16 * (2 * p - 2) ≤ c0 + 5 * r) :
     ValidFrom 1 0 (.cons c d rest) (stepOddWithRDefault c0 r p d rest) := by
@@ -1518,7 +1518,7 @@ lemma stepOddWithRDefault_sound (c c0 r p d : Nat) (rest : RBlocks)
     exact ValidFrom.of_reaches h12 (stepEvenN0Cge6_sound k_new c_new d rest (by omega) hc_ge)
   · exact ValidFrom.of_reaches h12 (mkActive1_sound k_new 0 c_new d rest)
 
-lemma rule_c1_small_c2 (k n r' m' d2' : Nat) :
+theorem rule_c1_small_c2 (k n r' m' d2' : Nat) :
     Reaches (toCfg (k + 1) n (.cons 1 ((m' + 1) + (r' + 1)) (.cons (2 * (m' + 1)) (d2' + 1) .nil)))
             (toCfg (1 + (k + 1)) n (.cons (2 * r') (2 + 2 * (m' + 1)) (.cons (2 * d2') 1 .nil))) := by
   have h := step_c1_small_c2 k n r' m' d2'
@@ -1548,7 +1548,7 @@ def stepHC1 (k n d : Nat) (rest : RBlocks) : HState :=
         | .cons _ _ _ => .active k n (.cons 1 d (.cons c2 d2 rest2))
   else .active k n (.cons 1 d rest)
 
-lemma stepHC1_sound (k n d : Nat) (rest : RBlocks) :
+theorem stepHC1_sound (k n d : Nat) (rest : RBlocks) :
     ValidFrom k n (.cons 1 d rest) (stepHC1 k n d rest) := by
   unfold stepHC1
   split
@@ -1628,7 +1628,7 @@ def stepHEvenSmall (k c d : Nat) (rest : RBlocks) : HState :=
     stepEvenN0Cge6 k c d rest
   else .active k 0 (.cons c d rest)
 
-lemma stepHEvenSmall_sound (k c d : Nat) (rest : RBlocks) (hk_mod : k % 2 = 0) :
+theorem stepHEvenSmall_sound (k c d : Nat) (rest : RBlocks) (hk_mod : k % 2 = 0) :
     ValidFrom k 0 (.cons c d rest) (stepHEvenSmall k c d rest) := by
   unfold stepHEvenSmall
   simp only [bindNat_eq]
@@ -1714,7 +1714,7 @@ def stepHEven (k n c d : Nat) (rest : RBlocks) : HState :=
     bindNat (Nat.min n (c / 2)) fun m =>
     mkActive1 (k + 2 * m) (n - m) (c - 2 * m) d rest
 
-lemma stepHEven_sound (k n c d : Nat) (rest : RBlocks) (hk_mod : k % 2 = 0) :
+theorem stepHEven_sound (k n c d : Nat) (rest : RBlocks) (hk_mod : k % 2 = 0) :
     ValidFrom k n (.cons c d rest) (stepHEven k n c d rest) := by
   unfold stepHEven
   split
@@ -1800,7 +1800,7 @@ def stepHOddK1 (c d : Nat) (rest : RBlocks) : HState :=
   else
     mkActive1 6 0 c0 d rest
 
-lemma stepHOddK1_sound (c d : Nat) (rest : RBlocks) (hc_ge : 7 ≤ c) :
+theorem stepHOddK1_sound (c d : Nat) (rest : RBlocks) (hc_ge : 7 ≤ c) :
     ValidFrom 1 0 (.cons c d rest) (stepHOddK1 c d rest) := by
   unfold stepHOddK1
   simp only [bindNat_eq]
@@ -1900,7 +1900,7 @@ def stepHOdd (k n c d : Nat) (rest : RBlocks) : HState :=
       mkActive2 1 0 (2 * n - 2) (2 + 2 * j) (c - 2) d rest
     else .active k n (.cons c d rest)
 
-lemma stepHOdd_sound (k n c d : Nat) (rest : RBlocks) (hk_odd : ¬ k % 2 = 0) :
+theorem stepHOdd_sound (k n c d : Nat) (rest : RBlocks) (hk_odd : ¬ k % 2 = 0) :
     ValidFrom k n (.cons c d rest) (stepHOdd k n c d rest) := by
   unfold stepHOdd
   simp only [bindNat_eq]
@@ -1964,7 +1964,7 @@ def stepH (s : HState) : HState :=
       else
         stepHOdd k n c d rest
 
-lemma stepH_sound_aux (k n : Nat) (blks : RBlocks) :
+theorem stepH_sound_aux (k n : Nat) (blks : RBlocks) :
     ValidFrom k n blks (stepH (.active k n blks)) := by
   cases blks with
   | nil =>
@@ -1992,7 +1992,7 @@ lemma stepH_sound_aux (k n : Nat) (blks : RBlocks) :
           simp only [nat_beq_eq_true] at hk_odd
           exact stepHOdd_sound k n c d rest hk_odd
 
-lemma stepH_sound (s : HState) : ValidState (stepH s) → ValidState s := by
+theorem stepH_sound (s : HState) : ValidState (stepH s) → ValidState s := by
   cases s with
   | halted => exact id
   | active k n blks => exact ValidState.of_validFrom (stepH_sound_aux k n blks)
@@ -2001,14 +2001,14 @@ def runPow : Nat → HState → HState
   | 0, s => stepH s
   | k + 1, s => bindState (runPow k s) (runPow k)
 
-lemma bindState_sound (s : HState) (f : HState → HState)
+theorem bindState_sound (s : HState) (f : HState → HState)
     (hf : ∀ x, ValidState (f x) → ValidState x) :
     ValidState (bindState s f) → ValidState s := by
   cases s with
   | halted => exact id
   | active k n blks => exact hf (.active k n blks)
 
-lemma runPow_sound (k : Nat) : ∀ s, ValidState (runPow k s) → ValidState s := by
+theorem runPow_sound (k : Nat) : ∀ s, ValidState (runPow k s) → ValidState s := by
   induction k with
   | zero => exact stepH_sound
   | succ k ih =>
@@ -2017,7 +2017,7 @@ lemma runPow_sound (k : Nat) : ∀ s, ValidState (runPow k s) → ValidState s :
 
 def s0 : HState := HState.active 1 0 (RBlocks.cons 16 1 RBlocks.nil)
 
-lemma reach_init_s0 : Reaches (init []) (toCfg 1 0 (.cons 16 1 .nil)) := by
+theorem reach_init_s0 : Reaches (init []) (toCfg 1 0 (.cons 16 1 .nil)) := by
   have h1 : Reaches (init []) (toCfg 0 0 .nil) := by
     unfold toCfg; rw [evalRBlocks_nil, L11_zero, L01_zero]; exec_tm 12
   refine h1.trans ?_
@@ -2044,7 +2044,7 @@ lemma reach_init_s0 : Reaches (init []) (toCfg 1 0 (.cons 16 1 .nil)) := by
   refine h8.trans ?_
   exact rule_nil_even_nge2 0 7
 
-lemma holdout_halt_of_runPow (h_halt : runPow 13 s0 = HState.halted) : IsHalt target_tm := by
+theorem holdout_halt_of_runPow (h_halt : runPow 13 s0 = HState.halted) : IsHalt target_tm := by
   have h_valid : ValidState (runPow 13 s0) := by
     rw [h_halt]; exact ValidState.halted
   have h_s0_valid : ValidState s0 :=

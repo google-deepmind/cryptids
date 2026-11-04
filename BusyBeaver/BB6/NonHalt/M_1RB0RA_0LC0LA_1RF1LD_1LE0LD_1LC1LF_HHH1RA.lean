@@ -21,12 +21,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -1758,7 +1754,7 @@ def toSt : M8.St -> Option (Fin 6)
   | .H => none
 def toCfg (c : M8.Cfg) : Cfg (Fin 2) (Fin 6) :=
   ⟨toSt c.st, ⟨b2fin c.h, ListBlank.mk (c.L.map b2fin), ListBlank.mk (c.R.map b2fin)⟩⟩
-lemma step_toCfg (c : M8.Cfg) (hne : (M8.step c).st ≠ .H) :
+theorem step_toCfg (c : M8.Cfg) (hne : (M8.step c).st ≠ .H) :
     step target_tm (toCfg c) = some (toCfg (M8.step c)) := by
   rcases c with ⟨st, L, h, R⟩
   cases st <;> cases h
@@ -1776,7 +1772,7 @@ lemma step_toCfg (c : M8.Cfg) (hne : (M8.step c).st ≠ .H) :
   · cases R <;> rfl
   · exfalso; apply hne; rfl
   · exfalso; apply hne; rfl
-lemma multiStep_toCfg (n : Nat) :
+theorem multiStep_toCfg (n : Nat) :
     multiStep target_tm (init []) n = some (toCfg (M8.run n M8.init)) := by
   induction n with
   | zero =>
@@ -1793,12 +1789,8 @@ end Solution
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

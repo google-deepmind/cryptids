@@ -35,17 +35,17 @@ def F : Fin 6 := 5
 
 namespace Solution
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 0 = some config := rfl
 
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 1 = step M config := rfl
 
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+theorem multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
@@ -53,41 +53,41 @@ lemma multiStep_add (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+theorem multiStep_trans (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma stepStar_refl (tm : Machine Γ Λ) (c : Cfg Γ Λ) : c [tm]⊢* c :=
+theorem stepStar_refl (tm : Machine Γ Λ) (c : Cfg Γ Λ) : c [tm]⊢* c :=
   ⟨0, rfl⟩
 
-lemma step_to_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢ c₂) :
+theorem step_to_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢* c₂ :=
   ⟨1, h⟩
 
-lemma step_to_stepPlus {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢ c₂) :
+theorem step_to_stepPlus {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂ :=
   ⟨1, Nat.succ_pos 0, h⟩
 
-lemma stepPlus_to_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
+theorem stepPlus_to_stepStar {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by
   rcases h with ⟨n, _, hn⟩; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepPlus_stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, hn_pos, hn⟩; rcases h₂ with ⟨m, hm⟩
   exact ⟨n + m, Nat.add_pos_left hn_pos m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepStar_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   rcases h₁ with ⟨n, hn⟩; rcases h₂ with ⟨m, hm_pos, hm⟩
   exact ⟨n + m, Nat.add_pos_right n hm_pos, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma step_stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem step_stepStar_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_trans (step_to_stepPlus h₁) h₂
 
-lemma step_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem step_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_trans (step_to_stepPlus h₁) h₂
 
@@ -95,16 +95,16 @@ lemma step_stepPlus_trans {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
 -- Tape & List Algebra Lemmas
 -- ============================================================================
 
-lemma multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
+theorem multiStep_step {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ} {n : Nat}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢^{n} c₃) : c₁ [tm]⊢^{n + 1} c₃ := by
   have := multiStep_trans tm c₁ c₂ c₃ 1 n h₁ h₂
   rwa [Nat.add_comm 1 n] at this
 
 omit [Inhabited Γ] in
-@[simp] lemma pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_zero_list (l : List Γ) : l ^ (0 : Nat) = [] := rfl
 
 omit [Inhabited Γ] in
-lemma pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+theorem pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 
 omit [Inhabited Γ] in
 @[simp] theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
@@ -114,26 +114,26 @@ omit [Inhabited Γ] in
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
-lemma pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
+theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
   rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
 
-@[simp] lemma listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
+@[simp] theorem listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
-@[simp] lemma listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
+@[simp] theorem listblank_append_cons (a : Γ) (l : List Γ) (s : ListBlank Γ) :
     (a :: l) +> s = a >> (l +> s) := rfl
 
-@[simp] lemma listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
+@[simp] theorem listblank_append_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   exact Turing.ListBlank.append_assoc l₁ l₂ s
 
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
   change ListBlank.cons default default = default
   exact ListBlank.cons_head_tail default
 
-@[simp] lemma init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
+@[simp] theorem init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
     ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 macro "step1" : tactic => `(tactic| (
@@ -157,26 +157,26 @@ macro "run_steps" n:num : tactic => `(tactic| (
     zero_cons_default, default_head, default_tail, multiStep_zero]
   rfl))
 
-@[simp] lemma zeros_append_default (n : Nat) :
+@[simp] theorem zeros_append_default (n : Nat) :
     ([0] : List (Fin 2)) ^ n +> (default : ListBlank (Fin 2)) = default := by
   induction n with
   | zero => rfl
   | succ n ih =>
     rw [pow_succ_list, List.singleton_append, listblank_append_cons, ih, zero_cons_default]
 
-lemma one_pow_comm_cons (k : Nat) (s : ListBlank (Fin 2)) :
+theorem one_pow_comm_cons (k : Nat) (s : ListBlank (Fin 2)) :
     ([1] : List (Fin 2)) ^ k +> ((1 : Fin 2) >> s) =
     (1 : Fin 2) >> (([1] : List (Fin 2)) ^ k +> s) := by
   change ([1] : List (Fin 2)) ^ k +> (([1] : List (Fin 2)) ^ 1 +> s) = _
   rw [← listblank_append_assoc, ← list_pow_add, Nat.add_comm k 1, list_pow_add, listblank_append_assoc]
   rfl
 
-lemma append_pow_split (l : List (Fin 2)) (a b : Nat) (s : ListBlank (Fin 2)) :
+theorem append_pow_split (l : List (Fin 2)) (a b : Nat) (s : ListBlank (Fin 2)) :
     l ^ (a + b) +> s = l ^ a +> (l ^ b +> s) := by
   rw [list_pow_add, listblank_append_assoc]
 
 /-- Key pattern shift identity: `[1, 1, 1] ++ [0, 1, 1, 1]^b ++ [0] = [1, 1, 1, 0]^(b+1)`. -/
-lemma shift_0111_to_1110 (b : Nat) (s : ListBlank (Fin 2)) :
+theorem shift_0111_to_1110 (b : Nat) (s : ListBlank (Fin 2)) :
     (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
       (([0, 1, 1, 1] : List (Fin 2)) ^ b +> ((0 : Fin 2) >> s)) =
     ([1, 1, 1, 0] : List (Fin 2)) ^ (b + 1) +> s := by
@@ -190,7 +190,7 @@ lemma shift_0111_to_1110 (b : Nat) (s : ListBlank (Fin 2)) :
     rw [ih]
     rfl
 
-lemma shift_00111_to_0001110 (b : Nat) (s : ListBlank (Fin 2)) :
+theorem shift_00111_to_0001110 (b : Nat) (s : ListBlank (Fin 2)) :
     (0 : Fin 2) >> (0 : Fin 2) >> (([0, 1, 1, 1] : List (Fin 2)) ^ b +> ((0 : Fin 2) >> s)) =
     (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (([1, 1, 1, 0] : List (Fin 2)) ^ b +> s) := by
   cases b with
@@ -202,7 +202,7 @@ lemma shift_00111_to_0001110 (b : Nat) (s : ListBlank (Fin 2)) :
       rw [pow_succ_list]; rfl
     rw [h1, shift_0111_to_1110 b s]
 
-lemma shift_1110_111_0111 (b : Nat) (s : ListBlank (Fin 2)) :
+theorem shift_1110_111_0111 (b : Nat) (s : ListBlank (Fin 2)) :
     (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >>
       (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
       (([0, 1, 1, 1] : List (Fin 2)) ^ b +> ((0 : Fin 2) >> s)) =
@@ -215,7 +215,7 @@ lemma shift_1110_111_0111 (b : Nat) (s : ListBlank (Fin 2)) :
 -- ============================================================================
 
 /-- `F` sweeps right across `1^m`, turning `1`s into `0`s on the left tape. -/
-lemma F_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem F_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some F, ⟨((([1] : List (Fin 2)) ^ m +> R)).head, L,
                ((([1] : List (Fin 2)) ^ m +> R)).tail⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢*
@@ -238,7 +238,7 @@ lemma F_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     exact h2
 
 /-- `D` sweeps right across `1^m` and lands on `0`. -/
-lemma D_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem D_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some D, ⟨1, L, ([1] : List (Fin 2)) ^ m +> ((0 : Fin 2) >> R)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
     ⟨some D, ⟨0, ([1] : List (Fin 2)) ^ (m + 1) +> L, R⟩⟩ := by
@@ -258,7 +258,7 @@ lemma D_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     exact h2
 
 /-- `C` sweeps left across `1^m` and lands on `0`. -/
-lemma C_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem C_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨1, ([1] : List (Fin 2)) ^ m +> ((0 : Fin 2) >> L), R⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, L, ([1] : List (Fin 2)) ^ (m + 1) +> R⟩⟩ := by
@@ -278,7 +278,7 @@ lemma C_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     exact h2
 
 /-- Forward sweep across `1^m 0 1`: turns `1^m` into `0^m` on the left tape and consumes `0 1`. -/
-lemma forward_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem forward_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> L,
                ([1] : List (Fin 2)) ^ m +> ((0 : Fin 2) >> (1 : Fin 2) >> R)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -302,7 +302,7 @@ lemma forward_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
   exact stepPlus_trans (stepPlus_stepStar_trans ⟨5, by decide, h5⟩ hF) ⟨2, by decide, h2⟩
 
 /-- Return sweep across `1^m 0`: consumes `1 1 1 0` on the left and produces `1^(m+3) 0 1` on the right. -/
-lemma return_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem return_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> L,
                ([1] : List (Fin 2)) ^ m +> ((0 : Fin 2) >> R)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -327,7 +327,7 @@ lemma return_sweep (m : Nat) (L R : ListBlank (Fin 2)) :
   exact step_stepPlus_trans h1 (stepPlus_trans hD (stepPlus_trans ⟨2, by decide, h2⟩ hC))
 
 /-- Return sweep with 6 ones on the left: consumes `1^6 0` and produces `1^(m+6) 0 1` on the right. -/
-lemma return_sweep_6 (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem return_sweep_6 (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
                   (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> L,
                ([1] : List (Fin 2)) ^ m +> ((0 : Fin 2) >> R)⟩⟩ : Cfg (Fin 2) (Fin 6))
@@ -361,7 +361,7 @@ lemma return_sweep_6 (m : Nat) (L R : ListBlank (Fin 2)) :
   exact step_stepPlus_trans h1 (stepPlus_trans hD (stepPlus_trans ⟨2, by decide, h2⟩ hC))
 
 /-- 5-step turnaround: consumes `0 1 1 1 0` on the left and prepends `1^2 0 1^2` on the right. -/
-lemma turnaround_5step (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem turnaround_5step (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> L,
                ([1] : List (Fin 2)) ^ m +> R⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -374,7 +374,7 @@ lemma turnaround_5step (m : Nat) (L R : ListBlank (Fin 2)) :
   run_steps 5
 
 /-- 9-step turnaround on empty right tape (`default`). -/
-lemma turnaround_empty (L : ListBlank (Fin 2)) :
+theorem turnaround_empty (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> L, default⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> L,
@@ -382,7 +382,7 @@ lemma turnaround_empty (L : ListBlank (Fin 2)) :
   ⟨9, by decide, by run_steps 9⟩
 
 /-- 10-step initial expansion on `[1] +> default`. -/
-lemma start_10step (L : ListBlank (Fin 2)) :
+theorem start_10step (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> L,
                ([1] : List (Fin 2)) ^ 1 +> default⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -391,7 +391,7 @@ lemma start_10step (L : ListBlank (Fin 2)) :
   ⟨10, by decide, by run_steps 10⟩
 
 /-- Bounce across `0 0 1^(m+2)` at the right end of the tape (`default`). -/
-lemma bounce_right_F (m : Nat) (L : ListBlank (Fin 2)) :
+theorem bounce_right_F (m : Nat) (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> L,
                (0 : Fin 2) >> (0 : Fin 2) >> (([1] : List (Fin 2)) ^ (m + 2) +> default)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -428,7 +428,7 @@ lemma bounce_right_F (m : Nat) (L : ListBlank (Fin 2)) :
   exact stepPlus_trans (stepPlus_stepStar_trans ⟨9, by decide, h9⟩ hF) ⟨4, by decide, h4⟩
 
 /-- Bounce across `0 0 1^(m+2) 0 1` when another block follows on the right. -/
-lemma bounce_right_F_block (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem bounce_right_F_block (m : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> L,
                (0 : Fin 2) >> (0 : Fin 2) >>
                (([1] : List (Fin 2)) ^ (m + 2) +> ((0 : Fin 2) >> (1 : Fin 2) >> R))⟩⟩ : Cfg (Fin 2) (Fin 6))
@@ -472,7 +472,7 @@ lemma bounce_right_F_block (m : Nat) (L R : ListBlank (Fin 2)) :
 
 /-- Exponential $O(2^k)$ Hanoi chain: turns `0^(3k)` on the left and `0 1^k` on the right
     into `1^(3k) 0 1^k` on the right. -/
-lemma hanoi_chain (k : Nat) (L R : ListBlank (Fin 2)) :
+theorem hanoi_chain (k : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ (3 * k) +> L,
                (0 : Fin 2) >> (([1] : List (Fin 2)) ^ k +> R)⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢*
@@ -510,7 +510,7 @@ lemma hanoi_chain (k : Nat) (L R : ListBlank (Fin 2)) :
       (stepStar_stepPlus_trans s1 (stepPlus_trans s2 (stepStar_stepPlus_trans s3 s4)))
 
 /-- Single exponential increment step: `1^(3k) 0 1^(k+1) -> 1^(3k+3) 0 1^(k+1)` consuming `0^3`. -/
-lemma hanoi_inc (k : Nat) (L R : ListBlank (Fin 2)) :
+theorem hanoi_inc (k : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 3 +> L,
                ([1] : List (Fin 2)) ^ (3 * k) +> ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ (k + 1) +> R))⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -525,7 +525,7 @@ lemma hanoi_inc (k : Nat) (L R : ListBlank (Fin 2)) :
   exact stepPlus_trans s1 (stepStar_stepPlus_trans s2 s3)
 
 /-- Iterated exponential increment: `n` rounds of `hanoi_inc`. -/
-lemma hanoi_inc_iter (n k d : Nat) (L R : ListBlank (Fin 2)) :
+theorem hanoi_inc_iter (n k d : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ (3 * n) +> L,
                ([1] : List (Fin 2)) ^ (3 * k) +>
                ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ (k + n + d) +> R))⟩⟩ : Cfg (Fin 2) (Fin 6))
@@ -554,7 +554,7 @@ lemma hanoi_inc_iter (n k d : Nat) (L R : ListBlank (Fin 2)) :
     exact stepStar_trans (stepPlus_to_stepStar s1) s2
 
 /-- Rule R2: `1^(3k+2) 0 1^(k+2+d) -> 1^(3k+6) 0 1^(k+1+d)` consuming `0^3`. -/
-lemma rule_r2 (k d : Nat) (L R : ListBlank (Fin 2)) :
+theorem rule_r2 (k d : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 3 +> L,
                ([1] : List (Fin 2)) ^ (3 * k + 2) +>
                ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ (k + 2 + d) +> R))⟩⟩ : Cfg (Fin 2) (Fin 6))
@@ -607,7 +607,7 @@ lemma rule_r2 (k d : Nat) (L R : ListBlank (Fin 2)) :
   exact stepPlus_trans s1 (stepStar_stepPlus_trans s2 (stepPlus_trans s3 (stepStar_stepPlus_trans s4 s5)))
 
 /-- Combined R2 + iterated increment: `[3*k + 2, k + 3 + d] -> [3*(k + 2 + d), k + 2 + d]` consuming `0^(3*d + 3)`. -/
-lemma stage_from_r2 (k d : Nat) (L R : ListBlank (Fin 2)) :
+theorem stage_from_r2 (k d : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ (3 * d + 3) +> L,
                ([1] : List (Fin 2)) ^ (3 * k + 2) +>
                ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ (k + 3 + d) +> R))⟩⟩ : Cfg (Fin 2) (Fin 6))
@@ -632,7 +632,7 @@ def Stair (d : Nat) (L R : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
              ([1] : List (Fin 2)) ^ (3 * d) +> ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ d +> R))⟩⟩
 
 /-- Single step of the descending overflow staircase: `Stair (d+1) -> Stair d`. -/
-lemma stair_step (d : Nat) (L R : ListBlank (Fin 2)) :
+theorem stair_step (d : Nat) (L R : ListBlank (Fin 2)) :
     (Stair (d + 1) L R) [target_tm]⊢⁺ (Stair d (([0, 1, 1, 1] : List (Fin 2)) +> L) R) := by
   unfold Stair
   have hR : ([1] : List (Fin 2)) ^ (d + 1) +> R = (1 : Fin 2) >> (([1] : List (Fin 2)) ^ d +> R) := by
@@ -648,7 +648,7 @@ lemma stair_step (d : Nat) (L R : ListBlank (Fin 2)) :
   exact stepPlus_stepStar_trans s1 s2
 
 /-- Iterated descending staircase: `Stair b L R ⊢* Stair 0 ([0, 1, 1, 1]^b +> L) R`. -/
-lemma stair_iter (b : Nat) (L R : ListBlank (Fin 2)) :
+theorem stair_iter (b : Nat) (L R : ListBlank (Fin 2)) :
     (Stair b L R) [target_tm]⊢* (Stair 0 (([0, 1, 1, 1] : List (Fin 2)) ^ b +> L) R) := by
   induction b generalizing L with
   | zero => exact stepStar_refl _ _
@@ -662,7 +662,7 @@ lemma stair_iter (b : Nat) (L R : ListBlank (Fin 2)) :
     exact stepStar_trans (stepPlus_to_stepStar s1) s2
 
 /-- Iterated return sweep across `[1, 1, 1, 0]^n` on the left tape. -/
-lemma return_sweep_iter (n a b : Nat) (L R : ListBlank (Fin 2)) :
+theorem return_sweep_iter (n a b : Nat) (L R : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([1, 1, 1, 0] : List (Fin 2)) ^ n +> L,
                ([1] : List (Fin 2)) ^ a +> ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ b +> R))⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢*
@@ -699,7 +699,7 @@ def Hub (a b c : Nat) (L : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
                    ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ c +> default))))⟩⟩
 
 /-- Collapse from `[3*(k+1) + 1, k + 1]` to `[2, 3*k + 6, k + 1]` consuming `0^3`. -/
-lemma collapse_to_2 (k : Nat) (L : ListBlank (Fin 2)) :
+theorem collapse_to_2 (k : Nat) (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 3 +> L,
                ([1] : List (Fin 2)) ^ (3 * (k + 1) + 1) +>
                ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ (k + 1) +> default))⟩⟩ : Cfg (Fin 2) (Fin 6))
@@ -762,7 +762,7 @@ lemma collapse_to_2 (k : Nat) (L : ListBlank (Fin 2)) :
           (stepStar_stepPlus_trans s5 s6))))
 
 /-- Final stage of a drain: from `[3*m, m]` (for `m >= 1`) with `0^15` on the left to `Hub 12 (3*m + 5) (m + 1)`. -/
-lemma stage_final (m : Nat) (L : ListBlank (Fin 2)) :
+theorem stage_final (m : Nat) (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 15 +> L,
                ([1] : List (Fin 2)) ^ (3 * m) +> ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ m +> default))⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
@@ -816,7 +816,7 @@ lemma stage_final (m : Nat) (L : ListBlank (Fin 2)) :
           (stepPlus_stepStar_trans s5a s5b))))
 
 /-- 19-step bounce on `0 0 1^3`: from `Stair 0 L (0 >> 1^3)` to `[2, 3]` with `1 1 1 >> L`. -/
-lemma bounce_3 (L : ListBlank (Fin 2)) :
+theorem bounce_3 (L : ListBlank (Fin 2)) :
     (Stair 0 L ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ 3 +> default)))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> L,
@@ -828,7 +828,7 @@ lemma bounce_3 (L : ListBlank (Fin 2)) :
   exact stepPlus_trans s1 s2
 
 /-- Stage from `Hub (3*m) m 3` (consuming `0^21`) to `Hub 12 (3*m + 14) (m + 4)`. -/
-lemma stage_from_3 (m : Nat) (L : ListBlank (Fin 2)) :
+theorem stage_from_3 (m : Nat) (L : ListBlank (Fin 2)) :
     (Hub (3 * m) m 3 (([0] : List (Fin 2)) ^ 21 +> L))
       [target_tm]⊢⁺
     (Hub 12 (3 * m + 14) (m + 4) L) := by
@@ -858,7 +858,7 @@ lemma stage_from_3 (m : Nat) (L : ListBlank (Fin 2)) :
         (stepPlus_trans s4 s5)))
 
 /-- Stage from `[3*k + 2, k + 12, 3]` (consuming `0^51`) to `Hub 12 (3*k + 47) (k + 15)`. -/
-lemma stage_from_2_m_3 (k : Nat) (L : ListBlank (Fin 2)) :
+theorem stage_from_2_m_3 (k : Nat) (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 51 +> L,
                ([1] : List (Fin 2)) ^ (3 * k + 2) +>
                ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ (k + 12) +>
@@ -879,7 +879,7 @@ lemma stage_from_2_m_3 (k : Nat) (L : ListBlank (Fin 2)) :
   exact stepPlus_trans s1 s2
 
 /-- 308-step macro-transition from `Start(0^12 +> L)` to `[2, 12, 3]`. -/
-lemma start_12_to_2_12_3 (L : ListBlank (Fin 2)) :
+theorem start_12_to_2_12_3 (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 12 +> L, ([1] : List (Fin 2)) ^ 1 +> default⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, L, ([1] : List (Fin 2)) ^ 2 +>
@@ -926,7 +926,7 @@ lemma start_12_to_2_12_3 (L : ListBlank (Fin 2)) :
             (stepStar_stepPlus_trans s6 s7)))))
 
 /-- Base Era 0 reachability: `Start(0^63 +> L) ⊢⁺ Hub 12 47 15 L`. -/
-lemma era_reach_0 (L : ListBlank (Fin 2)) :
+theorem era_reach_0 (L : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, ([0] : List (Fin 2)) ^ 63 +> L, ([1] : List (Fin 2)) ^ 1 +> default⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺
     (Hub 12 47 15 L) := by
@@ -937,7 +937,7 @@ lemma era_reach_0 (L : ListBlank (Fin 2)) :
   exact stepPlus_trans (start_12_to_2_12_3 (([0] : List (Fin 2)) ^ 51 +> L)) (stage_from_2_m_3 0 L)
 
 /-- 175-step bounce across `0 0 1^12 0 1^3`: from `Stair 0 L (0 >> 1^12 0 1^3)` to `[2, 12, 3]` with `1 1 1 >> L`. -/
-lemma bounce_12_3 (L : ListBlank (Fin 2)) :
+theorem bounce_12_3 (L : ListBlank (Fin 2)) :
     (Stair 0 L ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ 12 +> ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ 3 +> default)))))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> L,
@@ -1004,7 +1004,7 @@ lemma bounce_12_3 (L : ListBlank (Fin 2)) :
           (stepStar_stepPlus_trans s5 s6))))
 
 /-- 339-step bounce across `0 0 1^15`: from `Stair 0 L (0 >> 1^15)` to `[2, 4, 12, 3]` with `1 1 1 >> L`. -/
-lemma bounce_15 (L : ListBlank (Fin 2)) :
+theorem bounce_15 (L : ListBlank (Fin 2)) :
     (Stair 0 L ((0 : Fin 2) >> (([1] : List (Fin 2)) ^ 15 +> default)))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, (1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> L,
@@ -1032,7 +1032,7 @@ lemma bounce_15 (L : ListBlank (Fin 2)) :
 
 /-- First 12-zero stage of Era 0 drain (`c_0 = 15`):
     `Hub (3*b) b 15 (0^12 +> L) ⊢⁺ [3*(b+5) + 2, (b+5) + 12, 3]`. -/
-lemma drain_0_first_12 (b : Nat) (L : ListBlank (Fin 2)) :
+theorem drain_0_first_12 (b : Nat) (L : ListBlank (Fin 2)) :
     (Hub (3 * b) b 15 (([0] : List (Fin 2)) ^ 12 +> L))
       [target_tm]⊢⁺
     ⟨some C, ⟨0, L, ([1] : List (Fin 2)) ^ (3 * (b + 5) + 2) +>
@@ -1078,18 +1078,18 @@ lemma drain_0_first_12 (b : Nat) (L : ListBlank (Fin 2)) :
           (stepStar_stepPlus_trans s5
             (stepPlus_stepStar_trans s6 s7)))))
 
-lemma stepPlus_Hub_congr {c : Cfg (Fin 2) (Fin 6)} {a b₁ b₂ c₁ c₂ : Nat} {L : ListBlank (Fin 2)}
+theorem stepPlus_Hub_congr {c : Cfg (Fin 2) (Fin 6)} {a b₁ b₂ c₁ c₂ : Nat} {L : ListBlank (Fin 2)}
     (h : c [target_tm]⊢⁺ (Hub a b₁ c₁ L)) (hb : b₁ = b₂) (hc : c₁ = c₂) :
     c [target_tm]⊢⁺ (Hub a b₂ c₂ L) := by
   subst hb hc; exact h
 
-lemma Hub_stepPlus_congr {c : Cfg (Fin 2) (Fin 6)} {a b c_m : Nat} {L₁ L₂ : ListBlank (Fin 2)}
+theorem Hub_stepPlus_congr {c : Cfg (Fin 2) (Fin 6)} {a b c_m : Nat} {L₁ L₂ : ListBlank (Fin 2)}
     (h : (Hub a b c_m L₁) [target_tm]⊢⁺ c) (hL : L₂ = L₁) :
     (Hub a b c_m L₂) [target_tm]⊢⁺ c := by
   subst hL; exact h
 
 /-- Base Era 0 drain (`c_0 = 15`): `Hub (3*b) b 15 (0^63 +> L) ⊢⁺ Hub 12 (3*b + 62) (b + 20) L`. -/
-lemma drain_0 (b : Nat) (L : ListBlank (Fin 2)) :
+theorem drain_0 (b : Nat) (L : ListBlank (Fin 2)) :
     (Hub (3 * b) b 15 (([0] : List (Fin 2)) ^ 63 +> L))
       [target_tm]⊢⁺
     (Hub 12 (3 * b + 62) (b + 20) L) := by
@@ -1129,7 +1129,7 @@ def E_seq : Nat → Nat
   | 0 => 63
   | m + 1 => E_seq m + 3 * (b_seq m - a_seq m) + W_seq m + 3 * (a_seq (m + 1) - 4)
 
-lemma era_params_spec (m : Nat) :
+theorem era_params_spec (m : Nat) :
     b_seq m = 3 * c_seq m + 2 ∧
     (m = 0 ∨ S_seq m + 19 = c_seq m) ∧
     (m = 0 ∨ W_seq m + 3 * a_seq m = 3 * c_seq m + 12) ∧
@@ -1154,7 +1154,7 @@ lemma era_params_spec (m : Nat) :
 
 /-- Mid-era hub transition: from `Hub (3*a) b_m c_m (0 >> 0 >> ([1, 1, 1, 0]^(b+2) +> L))`
     to `Hub (3*(b + a + 3)) (b + b_m + 1) c_m L`. -/
-lemma hub_absorb_1110 (a b b_m c_m : Nat) (hb : b_m ≥ a + 1) (L : ListBlank (Fin 2)) :
+theorem hub_absorb_1110 (a b b_m c_m : Nat) (hb : b_m ≥ a + 1) (L : ListBlank (Fin 2)) :
     (Hub (3 * a) b_m c_m
       ((0 : Fin 2) >> (0 : Fin 2) >> (([1, 1, 1, 0] : List (Fin 2)) ^ (b + 2) +> L)))
       [target_tm]⊢⁺
@@ -1351,7 +1351,7 @@ theorem hub_step (m : Nat) :
   rw [zeros_append_default (W_seq m)] at s2
   exact stepStar_stepPlus_trans s1 s2
 
-lemma multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
+theorem multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
     (h : multiStep target_tm c k = none) (d : Nat) :
     multiStep target_tm c (k + d) = none := by
   rw [multiStep_add, h]; rfl

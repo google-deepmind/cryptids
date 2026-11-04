@@ -21,12 +21,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -38,18 +34,13 @@ def C : Fin 6 := 2
 def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000000
 namespace Prefix
 def mass (xs : List ℕ) : ℕ:=xs.foldr (· + ·) 0
-@[simp] lemma mass_nil : mass []=0:=rfl
-@[simp] lemma mass_cons (x : ℕ) (xs : List ℕ) : mass (x :: xs)=x + mass xs:=rfl
-lemma mass_append (xs ys : List ℕ) : mass (xs ++ ys)=mass xs + mass ys:= by
+@[simp] theorem mass_nil : mass []=0:=rfl
+@[simp] theorem mass_cons (x : ℕ) (xs : List ℕ) : mass (x :: xs)=x + mass xs:=rfl
+theorem mass_append (xs ys : List ℕ) : mass (xs ++ ys)=mass xs + mass ys:= by
   induction xs with
   | nil => simp
   | cons x xs ih => simp [ih,Nat.add_assoc]
@@ -60,50 +51,50 @@ inductive Step : ℕ → List ℕ → List ℕ → Prop where
 inductive Run : ℕ → List ℕ → List ℕ → Prop where
   | refl (xs : List ℕ) : Run 0 xs xs
   | cons {e f : ℕ} {xs ys zs : List ℕ} : Step e xs ys → Run f ys zs → Run (e + f) xs zs
-lemma one {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) : Run e xs ys:= by
+theorem one {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) : Run e xs ys:= by
   simpa using! Run.cons h (Run.refl ys)
-lemma trans {e f : ℕ} {xs ys zs : List ℕ} (h1 : Run e xs ys) (h2 : Run f ys zs) :
+theorem trans {e f : ℕ} {xs ys zs : List ℕ} (h1 : Run e xs ys) (h2 : Run f ys zs) :
     Run (e + f) xs zs:= by
   induction h1 with
   | refl _ => simpa using! h2
   | cons hs _ ih =>
     rw [Nat.add_assoc]
     exact Run.cons hs (ih h2)
-lemma step_app {e : ℕ} {xs ys : List ℕ} (r : List ℕ) (h : Step e xs ys) :
+theorem step_app {e : ℕ} {xs ys : List ℕ} (r : List ℕ) (h : Step e xs ys) :
     Step e (xs ++ r) (ys ++ r):= by
   cases h with
   | E n v w r0 => exact Step.E n v w (r0 ++ r)
   | O n v w r0 hle => exact Step.O n v w (r0 ++ r) hle
-lemma app {e : ℕ} {xs ys : List ℕ} (r : List ℕ) (h : Run e xs ys) :
+theorem app {e : ℕ} {xs ys : List ℕ} (r : List ℕ) (h : Run e xs ys) :
     Run e (xs ++ r) (ys ++ r):= by
   induction h with
   | refl _ => exact Run.refl _
   | cons hs _ ih => exact Run.cons (step_app r hs) ih
-lemma step_mass {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
+theorem step_mass {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
     mass ys=mass xs + 3 * e:= by
   cases h <;> simp [mass] <;> omega
-lemma step_length {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
+theorem step_length {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
     xs.length ≤ ys.length + 2 * e:= by
   cases h <;> simp <;> omega
-lemma run_length {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) :
+theorem run_length {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) :
     xs.length ≤ ys.length + 2 * e:= by
   induction h with
   | refl _ => omega
   | cons hs _ ih =>
     have hl:=step_length hs
     omega
-lemma qaS {α : Type*} : ∀ (l : List α),l ≠ [] → ∃ p z,l=p ++ [z]
+theorem qaS {α : Type*} : ∀ (l : List α),l ≠ [] → ∃ p z,l=p ++ [z]
   | [],h => absurd rfl h
   | [x],_ => ⟨[],x,rfl⟩
   | x :: y :: r,_ => by
     rcases qaS (y :: r) (by simp) with ⟨p,z,hp⟩
     exact ⟨x :: p,z,by simp [hp]⟩
-lemma qN {α : Type*} {p1 p2 : List α} {z1 z2 : α}
+theorem qN {α : Type*} {p1 p2 : List α} {z1 z2 : α}
     (h : p1 ++ [z1]=p2 ++ [z2]) : p1=p2 ∧ z1=z2:= by
   have h1:=List.append_inj_left' h rfl
   have h2:=List.append_inj_right' h rfl
   exact ⟨h1,by simpa using! h2⟩
-lemma step_last {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
+theorem step_last {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
     ∀ p z,xs=p ++ [z] →
       ∃ q d,ys=q ++ [z + d] ∧ ∀ z',Step e (p ++ [z']) (q ++ [z' + d]):= by
   cases h with
@@ -149,7 +140,7 @@ lemma step_last {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
       · simp
       · intro z'
         simpa using! Step.O n v w (p0 ++ [z']) hsafe
-lemma run_last {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) :
+theorem run_last {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) :
     ∀ p z,xs=p ++ [z] →
       ∃ q d,ys=q ++ [z + d] ∧ ∀ z',Run e (p ++ [z']) (q ++ [z' + d]):= by
   induction h with
@@ -171,7 +162,7 @@ def G (k q : ℕ) : List ℕ :=
   match k with
   | 0 => [q]
   | k + 1 => F k q ++ [2 ^ k * q - 1]
-lemma qY (k q : ℕ) : geometric (k + 1) q=geometric k q ++ [2 ^ k * q]:= by
+theorem qY (k q : ℕ) : geometric (k + 1) q=geometric k q ++ [2 ^ k * q]:= by
   induction k generalizing q with
   | zero => simp [geometric]
   | succ k ih =>
@@ -181,15 +172,15 @@ lemma qY (k q : ℕ) : geometric (k + 1) q=geometric k q ++ [2 ^ k * q]:= by
     congr 2
     rw [Nat.pow_succ]
     ring
-lemma qY' (k q : ℕ) : geometric (1 + k) q=geometric k q ++ [2 ^ k * q]:= by
+theorem qY' (k q : ℕ) : geometric (1 + k) q=geometric k q ++ [2 ^ k * q]:= by
   rw [Nat.add_comm 1 k,qY]
-lemma geometric_length (k q : ℕ) : (geometric k q).length=k:= by
+theorem geometric_length (k q : ℕ) : (geometric k q).length=k:= by
   induction k generalizing q with
   | zero => rfl
   | succ k ih => simp [geometric,ih]
-lemma F_snoc (k q : ℕ) : F (1 + k) q=F k q ++ [2 ^ k * q]:= by
+theorem F_snoc (k q : ℕ) : F (1 + k) q=F k q ++ [2 ^ k * q]:= by
   simp [F,qY']
-lemma F_to_G {e k q : ℕ} {ys : List ℕ} {a : ℕ} (hq : 0 < q)
+theorem F_to_G {e k q : ℕ} {ys : List ℕ} {a : ℕ} (hq : 0 < q)
     (h : Run e (F (1 + k) q) (ys ++ [1 + a])) :
     Run e (G (1 + k) q) (ys ++ [a]):= by
   rcases run_last h (F k q) (2 ^ k * q) (F_snoc k q) with ⟨p,d,he,hr⟩
@@ -202,7 +193,7 @@ lemma F_to_G {e k q : ℕ} {ys : List ℕ} {a : ℕ} (hq : 0 < q)
     rw [Nat.add_comm 1 k]; rfl
   rw [hg,← heq]
   exact h1
-lemma odd_descent (k t w : ℕ) (r : List ℕ) :
+theorem odd_descent (k t w : ℕ) (r : List ℕ) :
     Run 1 ((2 ^ k * (3 + 2 * t) - 3) :: 0 :: 1 :: w :: r)
       ((4 + 2 * t) :: geometric k (3 + 2 * t) ++ w :: r):= by
   induction k generalizing w r with
@@ -228,7 +219,7 @@ lemma odd_descent (k t w : ℕ) (r : List ℕ) :
       exact ho
     have h1:=ih (2 ^ k * (3 + 2 * t)) (w :: r)
     simpa [List.append_assoc] using! Run.cons h0 h1
-lemma qcn {k t n v : ℕ} (w : ℕ) (r : List ℕ) (h : n + v + 2=2 ^ k * (3 + 2 * t)) :
+theorem qcn {k t n v : ℕ} (w : ℕ) (r : List ℕ) (h : n + v + 2=2 ^ k * (3 + 2 * t)) :
     Run 1 ((2 * n + 1) :: v :: w :: r)
       ((4 + 2 * t) :: geometric k (3 + 2 * t) ++ (w + n + 1) :: r):= by
   have hpow : 1 ≤ 2 ^ k:=Nat.one_le_pow k 2 (by decide)
@@ -240,7 +231,7 @@ lemma qcn {k t n v : ℕ} (w : ℕ) (r : List ℕ) (h : n + v + 2=2 ^ k * (3 + 2
     rw [ha] at ho
     exact ho
   exact Run.cons h0 (odd_descent k t (w + n + 1) r)
-lemma odd_lookup {k t n v : ℕ} (w : ℕ) (r : List ℕ) {e : ℕ} {ys : List ℕ} {a : ℕ}
+theorem odd_lookup {k t n v : ℕ} (w : ℕ) (r : List ℕ) {e : ℕ} {ys : List ℕ} {a : ℕ}
     (hn : n + v + 2=2 ^ k * (3 + 2 * t))
     (hr : Run e (F (1 + k) (3 + 2 * t)) (ys ++ [a])) :
     Run (1 + e) ((2 * n + 1) :: v :: w :: r) ((ys ++ [a + w - v - 1]) ++ r):= by
@@ -263,11 +254,11 @@ inductive Exec : ℕ → List ℕ → List ℕ → Prop where
   | stop (xs : List ℕ) : Exec 0 xs xs
   | take {e f : ℕ} {xs ys zs : List ℕ} : Step e xs ys → Exec f ys zs → Exec (e + f) xs zs
   | zero {e : ℕ} {xs ys : List ℕ} : Exec e (xs ++ [0]) ys → Exec e xs ys
-lemma run_exec {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) : Exec e xs ys:= by
+theorem run_exec {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) : Exec e xs ys:= by
   induction h with
   | refl _ => exact Exec.stop _
   | cons hs _ ih => exact Exec.take hs ih
-lemma exec_trans {e f : ℕ} {xs ys zs : List ℕ} (h1 : Exec e xs ys) (h2 : Exec f ys zs) :
+theorem exec_trans {e f : ℕ} {xs ys zs : List ℕ} (h1 : Exec e xs ys) (h2 : Exec f ys zs) :
     Exec (e + f) xs zs:= by
   induction h1 with
   | stop _ => simpa using! h2
@@ -275,9 +266,9 @@ lemma exec_trans {e f : ℕ} {xs ys zs : List ℕ} (h1 : Exec e xs ys) (h2 : Exe
     rw [Nat.add_assoc]
     exact Exec.take hs (ih h2)
   | zero _ ih => exact Exec.zero (ih h2)
-lemma mass_zero (xs : List ℕ) : mass (xs ++ [0])=mass xs:= by
+theorem mass_zero (xs : List ℕ) : mass (xs ++ [0])=mass xs:= by
   simp [mass_append]
-lemma exec_mass {e : ℕ} {xs ys : List ℕ} (h : Exec e xs ys) :
+theorem exec_mass {e : ℕ} {xs ys : List ℕ} (h : Exec e xs ys) :
     mass ys=mass xs + 3 * e:= by
   induction h with
   | stop _ => omega
@@ -287,7 +278,7 @@ lemma exec_mass {e : ℕ} {xs ys : List ℕ} (h : Exec e xs ys) :
   | zero _ ih =>
     rw [mass_zero] at ih
     exact ih
-lemma split2 (n : ℕ) (hn : 0 < n) : ∃ k t,n=2 ^ k * (1 + 2 * t):= by
+theorem split2 (n : ℕ) (hn : 0 < n) : ∃ k t,n=2 ^ k * (1 + 2 * t):= by
   induction n using Nat.strongRecOn with
   | ind n ih =>
     rcases Nat.even_or_odd' n with ⟨a,rfl | rfl⟩
@@ -298,13 +289,13 @@ lemma split2 (n : ℕ) (hn : 0 < n) : ∃ k t,n=2 ^ k * (1 + 2 * t):= by
       rw [Nat.pow_succ]
       linarith
     · exact ⟨0,a,by simp [Nat.add_comm]⟩
-lemma pow2_mod3 (n : ℕ) : 2 ^ n % 3=1 ∨ 2 ^ n % 3=2:= by
+theorem pow2_mod3 (n : ℕ) : 2 ^ n % 3=1 ∨ 2 ^ n % 3=2:= by
   induction n with
   | zero => left; rfl
   | succ n ih =>
     rw [Nat.pow_succ,Nat.mul_mod]
     rcases ih with h | h <;> rw [h] <;> decide
-lemma single_returns
+theorem single_returns
     (hG : ∀ k t,∃ e m,Exec e (G (1 + k) (1 + 2 * t)) [m])
     (j : ℕ) : ∃ e m,Exec (1 + e) [3 * j] [m]:= by
   rcases Nat.even_or_odd' (3 * j) with ⟨n,hn | hn⟩
@@ -352,29 +343,29 @@ def ZEven (x : ℤ) : Prop:=∃ k : ℤ,x=2 * k
 def qW (x : ℤ) : Prop:=∃ k : ℤ,x=2 * k + 1
 def qb6 (x : ℤ) : Bool:=decide (x % 2=0)
 def zodd (x : ℤ) : Bool:=decide (x % 2=1)
-lemma qe {k : ℤ} (hk : 0 ≤ k) : q0 k=(2 : ℤ) ^ k.toNat:= by
+theorem qe {k : ℤ} (hk : 0 ≤ k) : q0 k=(2 : ℤ) ^ k.toNat:= by
   cases k with
   | ofNat n =>
     change ((2 ^ n : ℕ) : ℤ) = (2 : ℤ) ^ n
     exact Nat.cast_pow 2 n
   | negSucc n => omega
-@[simp] lemma pow2_zero : q0 0=1:=rfl
-@[simp] lemma pow2_one : q0 1=2:=rfl
-lemma qc {k : ℤ} (hk : 0 ≤ k) : 0 < q0 k:= by
+@[simp] theorem pow2_zero : q0 0=1:=rfl
+@[simp] theorem pow2_one : q0 1=2:=rfl
+theorem qc {k : ℤ} (hk : 0 ≤ k) : 0 < q0 k:= by
   rw [qe hk]; positivity
-lemma qs (k : ℤ) : 0 ≤ q0 k:= by
+theorem qs (k : ℤ) : 0 ≤ q0 k:= by
   cases k with
   | ofNat n => exact Int.natCast_nonneg (2 ^ n)
   | negSucc n => exact le_refl 0
-lemma q5 {a b : ℤ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
+theorem q5 {a b : ℤ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     q0 (a + b)=q0 a * q0 b:= by
   rw [qe (by omega),qe ha,qe hb,
     Int.toNat_add ha hb,pow_add]
-lemma qcl {k d : ℤ} (hd : 0 ≤ d) (hdk : d ≤ k) :
+theorem qcl {k d : ℤ} (hd : 0 ≤ d) (hdk : d ≤ k) :
     q0 k=q0 d * q0 (k - d):= by
   have h:=q5 hd (sub_nonneg.mpr hdk)
   rwa [add_sub_cancel] at h
-lemma qd {a b : ℤ} (ha : 0 ≤ a) (hab : a ≤ b) :
+theorem qd {a b : ℤ} (ha : 0 ≤ a) (hab : a ≤ b) :
     q0 a ≤ q0 b:= by
   rw [qcl ha hab]
   have hpos : 1 ≤ q0 (b - a):= by
@@ -382,14 +373,14 @@ lemma qd {a b : ℤ} (ha : 0 ≤ a) (hab : a ≤ b) :
     omega
   have ha_pos:=qc ha
   nlinarith
-lemma qbm {a b : ℤ} (ha : 0 ≤ a) (hab : a < b) :
+theorem qbm {a b : ℤ} (ha : 0 ≤ a) (hab : a < b) :
     q0 a < q0 b:= by
   have hle : a + 1 ≤ b:= by omega
   have h1 : q0 (a + 1) ≤ q0 b:=qd (by omega) hle
   rw [q5 ha (by omega),pow2_one] at h1
   have ha_pos:=qc ha
   omega
-lemma qv {a b : ℤ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
+theorem qv {a b : ℤ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     q0 a < q0 b ↔ a < b:= by
   constructor
   · intro hlt
@@ -397,17 +388,17 @@ lemma qv {a b : ℤ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     have hle : q0 b ≤ q0 a:=qd hb (by omega)
     omega
   · exact qbm ha
-lemma qah (x : ℤ) : qb6 x=true ↔ ZEven x:= by
+theorem qah (x : ℤ) : qb6 x=true ↔ ZEven x:= by
   simp only [qb6,decide_eq_true_iff,ZEven]
   constructor
   · intro h; exact ⟨x / 2,by omega⟩
   · rintro ⟨k,rfl⟩; omega
-lemma zodd_iff (x : ℤ) : zodd x=true ↔ qW x:= by
+theorem zodd_iff (x : ℤ) : zodd x=true ↔ qW x:= by
   simp only [zodd,decide_eq_true_iff,qW]
   constructor
   · intro h; exact ⟨x / 2,by omega⟩
   · rintro ⟨k,rfl⟩; omega
-lemma qa9 (x : ℤ) : qb6 x=false ↔ qW x:= by
+theorem qa9 (x : ℤ) : qb6 x=false ↔ qW x:= by
   simp only [qb6,decide_eq_false_iff_not,qW]
   constructor
   · intro h; exact ⟨x / 2,by omega⟩
@@ -415,7 +406,7 @@ lemma qa9 (x : ℤ) : qb6 x=false ↔ qW x:= by
 def qS : ℕ → ℕ → ℕ
   | 0,_ => 0
   | fuel + 1,n => if n < 2 then 0 else qS fuel (n / 2) + 1
-lemma qcb {fuel n : ℕ} (hn : 0 < n) (hle : n ≤ fuel) :
+theorem qcb {fuel n : ℕ} (hn : 0 < n) (hle : n ≤ fuel) :
     2 ^ qS fuel n ≤ n ∧ n < 2 ^ (qS fuel n + 1):= by
   induction fuel generalizing n with
   | zero => omega
@@ -429,9 +420,9 @@ lemma qcb {fuel n : ℕ} (hn : 0 < n) (hle : n ≤ fuel) :
       omega
 def qH (x : ℤ) : ℤ :=
   if x ≤ 0 then 0 else (qS x.toNat x.toNat : ℤ)
-lemma qM (x : ℤ) : 0 ≤ qH x:= by
+theorem qM (x : ℤ) : 0 ≤ qH x:= by
   unfold qH; split_ifs <;> positivity
-lemma qag {x : ℤ} (hx : 0 < x) :
+theorem qag {x : ℤ} (hx : 0 < x) :
     q0 (qH x) ≤ x ∧ x < q0 (qH x + 1):= by
   have hle : ¬ x ≤ 0:= by omega
   unfold qH
@@ -445,7 +436,7 @@ lemma qag {x : ℤ} (hx : 0 < x) :
   push_cast at hlo' hhi'
   rw [Int.toNat_of_nonneg (by omega)] at hlo' hhi'
   exact ⟨hlo',hhi'⟩
-lemma qas {x y : ℤ} (hxy : x ≤ y) : qH x ≤ qH y:= by
+theorem qas {x y : ℤ} (hxy : x ≤ y) : qH x ≤ qH y:= by
   by_cases hx : x ≤ 0
   · have : qH x=0:= by unfold qH; rw [if_pos hx]
     have:=qM y
@@ -457,7 +448,7 @@ lemma qas {x y : ℤ} (hxy : x ≤ y) : qH x ≤ qH y:= by
     have hlt : q0 (qH x) < q0 (qH y + 1):= by omega
     have hlt':=(qv (qM x) (by have:=qM y; omega)).mp hlt
     omega
-lemma qck {a : ℤ} (ha : 0 ≤ a) : qH (q0 a)=a:= by
+theorem qck {a : ℤ} (ha : 0 ≤ a) : qH (q0 a)=a:= by
   have hp : 0 < q0 a:=qc ha
   rcases qag hp with ⟨h1,h2⟩
   have hlt1:=(qv ha (by have:=qM (q0 a); omega)).mp h2
@@ -468,12 +459,12 @@ lemma qck {a : ℤ} (ha : 0 ≤ a) : qH (q0 a)=a:= by
   omega
 def q1 (x : ℤ) : ℤ :=
   if x ≤ 1 then 0 else qH (x - 1) + 1
-lemma qh (x : ℤ) : 0 ≤ q1 x:= by
+theorem qh (x : ℤ) : 0 ≤ q1 x:= by
   unfold q1
   split_ifs
   · omega
   · have:=qM (x - 1); omega
-lemma qy {x : ℤ} (hx : 1 < x) :
+theorem qy {x : ℤ} (hx : 1 < x) :
     q0 (q1 x - 1) < x ∧ x ≤ q0 (q1 x):= by
   unfold q1
   rw [if_neg (by omega)]
@@ -481,14 +472,14 @@ lemma qy {x : ℤ} (hx : 1 < x) :
   rw [hsub]
   rcases qag (by omega : 0 < x - 1) with ⟨h1,h2⟩
   omega
-lemma qt {x y : ℤ} (hxy : x ≤ y) : q1 x ≤ q1 y:= by
+theorem qt {x y : ℤ} (hxy : x ≤ y) : q1 x ≤ q1 y:= by
   unfold q1
   split_ifs with hx hy
   · omega
   · have:=qM (y - 1); omega
   · omega
   · have:=qas (by omega : x - 1 ≤ y - 1); omega
-lemma qar {a : ℤ} (ha : 0 ≤ a) : q1 (q0 a)=a:= by
+theorem qar {a : ℤ} (ha : 0 ≤ a) : q1 (q0 a)=a:= by
   by_cases ha0 : a=0
   · subst ha0; simp [q1,q0]
   · have ha1 : 1 ≤ a:= by omega
@@ -509,7 +500,7 @@ lemma qar {a : ℤ} (ha : 0 ≤ a) : q1 (q0 a)=a:= by
     rw [q5 hzu (by omega),pow2_one] at hle
     have hp0:=qc hzu
     omega
-lemma qm {x a : ℤ} (hx : 0 < x) (ha : 0 ≤ a) :
+theorem qm {x a : ℤ} (hx : 0 < x) (ha : 0 ≤ a) :
     x ≤ q0 a ↔ q1 x ≤ a:= by
   constructor
   · intro hle
@@ -524,11 +515,11 @@ lemma qm {x a : ℤ} (hx : 0 < x) (ha : 0 ≤ a) :
       omega
 def sNat {α : Type*} (n : ℕ) (f : ℕ → α) : α :=
   Nat.casesOn n (f 0) (fun m => f (Nat.succ m))
-@[simp] lemma sNat_eq {α : Type*} (n : ℕ) (f : ℕ → α) : sNat n f = f n := by
+@[simp] theorem sNat_eq {α : Type*} (n : ℕ) (f : ℕ → α) : sNat n f = f n := by
   cases n <;> rfl
 def q2 {α : Type*} (x : ℤ) (f : ℤ → α) : α :=
   Int.casesOn x (fun n => sNat n (fun n' => f (Int.ofNat n'))) (fun n => sNat n (fun n' => f (Int.negSucc n')))
-@[simp] lemma strictInt_eq {α : Type*} (x : ℤ) (f : ℤ → α) : q2 x f=f x:= by
+@[simp] theorem strictInt_eq {α : Type*} (x : ℤ) (f : ℤ → α) : q2 x f=f x:= by
   cases x with
   | ofNat n => cases n <;> rfl
   | negSucc n => cases n <;> rfl
@@ -540,7 +531,7 @@ def q4 : ℕ → ℤ → ℤ × ℤ
       (p.1 + 1,p.2)
     else
       (0,x)
-lemma qaw (fuel : ℕ) (x : ℤ) :
+theorem qaw (fuel : ℕ) (x : ℤ) :
     0 ≤ (q4 fuel x).1 ∧
     (q4 fuel x).1 ≤ (fuel : ℤ) ∧
     x=q0 (q4 fuel x).1 * (q4 fuel x).2 ∧
@@ -564,7 +555,7 @@ lemma qaw (fuel : ℕ) (x : ℤ) :
       refine ⟨by omega,by omega,by simp [pow2_zero],?_⟩
       intro _
       exact ⟨x / 2,by omega⟩
-lemma qbP (n : ℕ) : (n : ℤ) < q0 (n : ℤ):= by
+theorem qbP (n : ℕ) : (n : ℤ) < q0 (n : ℤ):= by
   induction n with
   | zero => simp [q0]
   | succ n ih =>
@@ -572,7 +563,7 @@ lemma qbP (n : ℕ) : (n : ℤ) < q0 (n : ℤ):= by
     rw [q5 (by positivity) (by omega),pow2_one]
     have hp:=qc (k:=(n : ℤ)) (by positivity)
     omega
-lemma qbH {x : ℤ} (hx : 0 < x) :
+theorem qbH {x : ℤ} (hx : 0 < x) :
     0 ≤ (q4 x.toNat x).1 ∧
     x=q0 (q4 x.toNat x).1 * (q4 x.toNat x).2 ∧
     qW (q4 x.toNat x).2:= by
@@ -617,9 +608,9 @@ def denotes (z : summary) (S H S' H' : ℤ) : Prop :=
 def bounded (z : summary) : Prop :=
   0 < z.scale ∧ 0 ≤ z.sc ∧ z.sc ≤ 2 * z.scale ∧
   0 ≤ z.added ∧ 0 ≤ z.offset ∧ z.offset ≤ z.scale * (2 * z.added + 2)
-lemma identity_bounded : bounded identity:= by
+theorem identity_bounded : bounded identity:= by
   unfold bounded identity; simp
-lemma push_bounded (k : kernel) (z : summary) (hk : good k) (hz : bounded z) :
+theorem push_bounded (k : kernel) (z : summary) (hk : good k) (hz : bounded z) :
     bounded (push k z) ∧ (push k z).scale ≤ (push k z).sc ∧ 0 < (push k z).offset:= by
   rcases k with ⟨q,p,b,lam⟩
   rcases z with ⟨Q,A,B,C,M⟩
@@ -638,7 +629,7 @@ lemma push_bounded (k : kernel) (z : summary) (hk : good k) (hz : bounded z) :
   have hM0 : 0 ≤ (q * Q) * M:= by nlinarith
   refine ⟨⟨by nlinarith,by nlinarith,by nlinarith,by linarith,by linarith,by linarith⟩,
     by nlinarith,by linarith⟩
-lemma push_sound (k : kernel) (z : summary) (S H S1 H1 S2 H2 : ℤ)
+theorem push_sound (k : kernel) (z : summary) (S H S1 H1 S2 H2 : ℤ)
     (hz : denotes z S H S1 H1) (hk : call k S1 H1 S2 H2) :
     denotes (push k z) S H S2 H2:= by
   rcases k with ⟨q,p,b,lam⟩
@@ -657,7 +648,7 @@ inductive calls : List kernel → ℤ → ℤ → ℤ → ℤ → Prop where
   | no_calls (S H : ℤ) : calls [] S H S H
   | more_calls {k : kernel} {ks : List kernel} {S H S1 H1 S2 H2 : ℤ} :
       call k S H S1 H1 → calls ks S1 H1 S2 H2 → calls (k :: ks) S H S2 H2
-lemma fold_sound {ks : List kernel} {S H S' H' : ℤ} (hrun : calls ks S H S' H') :
+theorem fold_sound {ks : List kernel} {S H S' H' : ℤ} (hrun : calls ks S H S' H') :
     ∀ z S0 H0,denotes z S0 H0 S H →
       denotes (ks.foldl (fun z k => push k z) z) S0 H0 S' H':= by
   induction hrun with
@@ -675,9 +666,9 @@ def qA (z : summary) : Prop :=
   0 < z.scale ∧ 0 ≤ z.sc ∧ z.sc ≤ z.scale ∧
   -z.scale ≤ z.hc ∧ z.hc ≤ z.scale ∧
   0 ≤ z.added ∧ 0 ≤ z.offset ∧ z.offset ≤ z.scale * z.added
-lemma qa5 : qA identity:= by
+theorem qa5 : qA identity:= by
   unfold qA identity; simp
-lemma qax (k : kernel) (z : summary) (hk : good k) (hz : qA z) :
+theorem qax (k : kernel) (z : summary) (hk : good k) (hz : qA z) :
     qA (low_push k z) ∧
     -(low_push k z).scale ≤ 2 * (low_push k z).hc ∧
     2 * (low_push k z).hc ≤ (low_push k z).scale:= by
@@ -700,7 +691,7 @@ lemma qax (k : kernel) (z : summary) (hk : good k) (hz : qA z) :
   have hbias : 3 * (p * Q) + (q * Q) * b ≤ (q * Q) * lam:= by linarith
   refine ⟨⟨by nlinarith,by nlinarith,by nlinarith,by nlinarith,by nlinarith,
     by linarith,by linarith,by linarith⟩,by nlinarith,by nlinarith⟩
-lemma qbx (ks : List kernel) (z : summary)
+theorem qbx (ks : List kernel) (z : summary)
     (hks : ∀ k ∈ ks,good k) (hz : qA z) :
     qA (ks.foldl (fun z k => low_push k z) z):= by
   induction ks generalizing z with
@@ -714,24 +705,24 @@ def qX (k : kernel) (z : summary) : summary :=
    -k.num * z.hc,
    k.den * ((2 * z.scale - z.sc) * k.gain + 2 * z.scale * z.added - z.offset + 3 * z.scale - z.hc * k.bias),
    k.gain + z.added⟩
-lemma qbe (k : kernel) : qX k identity=push k identity:= by
+theorem qbe (k : kernel) : qX k identity=push k identity:= by
   cases k; unfold qX push identity; dsimp -failIfUnchanged; congr 1 <;> ring
-lemma high_low_push (h k : kernel) (z : summary) :
+theorem high_low_push (h k : kernel) (z : summary) :
     push k (qX h z)=qX h (low_push k z):= by
   cases h; cases k; cases z
   unfold qX push low_push; dsimp -failIfUnchanged; congr 1 <;> ring
-lemma high_low_fold (h : kernel) (ks : List kernel) (z : summary) :
+theorem high_low_fold (h : kernel) (ks : List kernel) (z : summary) :
     ks.foldl (fun z k => push k z) (qX h z) =
     qX h (ks.foldl (fun z k => low_push k z) z):= by
   induction ks generalizing z with
   | nil => rfl
   | cons k ks ih =>
     simp only [List.foldl_cons,high_low_push,ih]
-lemma high_low_word (h : kernel) (ks : List kernel) :
+theorem high_low_word (h : kernel) (ks : List kernel) :
     (h :: ks).foldl (fun z k => push k z) identity =
     qX h (ks.foldl (fun z k => low_push k z) identity):= by
   simp only [List.foldl_cons,← qbe,high_low_fold]
-lemma low_fold_half (ks : List kernel) (z : summary)
+theorem low_fold_half (ks : List kernel) (z : summary)
     (hks : ∀ k ∈ ks,good k) (hz : qA z) (hne : ks ≠ []) :
     -(ks.foldl (fun z k => low_push k z) z).scale ≤ 2 * (ks.foldl (fun z k => low_push k z) z).hc ∧
     2 * (ks.foldl (fun z k => low_push k z) z).hc ≤ (ks.foldl (fun z k => low_push k z) z).scale:= by
@@ -744,12 +735,12 @@ lemma low_fold_half (ks : List kernel) (z : summary)
     | nil => exact hstep.2
     | cons k2 ks2 =>
       exact ih (low_push k z) (fun x hx => hks x (List.mem_cons_of_mem k hx)) hstep.1 (by simp)
-lemma qbT {m z : ℤ} (hm : 0 < m) (hdvd : m ∣ z) (hlt : |z| < m) : z=0:= by
+theorem qbT {m z : ℤ} (hm : 0 < m) (hdvd : m ∣ z) (hlt : |z| < m) : z=0:= by
   rcases hdvd with ⟨k,rfl⟩
   rw [abs_lt] at hlt
   have hk : k=0:= by nlinarith
   subst hk; ring
-lemma exact_descent (m S H0 H1 H2 Q0 Q1 A0 A1 B0 B1 C0 C1 mass : ℤ)
+theorem exact_descent (m S H0 H1 H2 Q0 Q1 A0 A1 B0 B1 C0 C1 mass : ℤ)
     (hm : 0 < m) (hd0 : m ∣ H0) (hd1 : m ∣ H1) (hd2 : m ∣ H2)
     (E0 : Q0 * H1=A0 * S + B0 * H0 + C0)
     (E1 : Q1 * H2=A1 * (S + mass) + B1 * H1 + C1)
@@ -769,7 +760,7 @@ lemma exact_descent (m S H0 H1 H2 Q0 Q1 A0 A1 B0 B1 C0 C1 mass : ℤ)
     exact ⟨A0 * Q1 * k2 - (A1 * Q0 + A0 * B1) * k1 + A1 * B0 * k0,by ring⟩
   have hz:=qbT hm hd hbound
   linarith
-lemma cross_bound (Q0 Q1 A0 A1 C0 C1 mass M : ℤ)
+theorem cross_bound (Q0 Q1 A0 A1 C0 C1 mass M : ℤ)
     (hQ0 : 0 < Q0) (hQ1 : 0 < Q1) (hm0 : 0 ≤ mass) (hm1 : mass ≤ M)
     (hA00 : 0 ≤ A0) (hA01 : A0 ≤ 2 * Q0)
     (hA10 : 0 ≤ A1) (hA11 : A1 ≤ 2 * Q1)
@@ -793,7 +784,7 @@ lemma cross_bound (Q0 Q1 A0 A1 C0 C1 mass M : ℤ)
   have h6 : 0 ≤ A0 * C1:= by positivity
   have h7 : 0 ≤ A1 * C0:= by positivity
   constructor <;> linarith
-lemma qci (m D d0 d1 S H0 H1 H2 A0 A1 B0 B1 C0 C1 mass M : ℤ)
+theorem qci (m D d0 d1 S H0 H1 H2 A0 A1 B0 B1 C0 C1 mass M : ℤ)
     (hm : 0 ≤ m) (hd00 : 0 ≤ d0) (hd01 : d0 ≤ D) (hd10 : 0 ≤ d1) (hd11 : d1 ≤ D)
     (hm0 : 0 ≤ mass) (hm1 : mass ≤ M)
     (hA00 : 0 ≤ A0) (hA01 : A0 ≤ 2 * q0 d0)
@@ -816,7 +807,7 @@ lemma qci (m D d0 d1 S H0 H1 H2 A0 A1 B0 B1 C0 C1 mass M : ℤ)
     A0 A1 B0 B1 C0 C1 mass (qc (by omega)) hH0 hH1 hH2 E0 E1
   have hle : q0 d0 * q0 d1 * (12 * M + 8) ≤ q0 (2 * D) * (12 * M + 8):= by nlinarith
   linarith
-lemma qaN (Q A T V K b lam C : ℤ)
+theorem qaN (Q A T V K b lam C : ℤ)
     (hQ0 : 0 < Q) (hQA : Q ≤ A) (hT0 : -Q ≤ 2 * T) (hT1 : 2 * T ≤ Q)
     (hV : 0 ≤ V) (hK : 0 ≤ K) (hb0 : 0 ≤ b) (hbl : b ≤ lam)
     (hC : C=A * lam + 2 * Q * K - V + 3 * Q - T * b) :
@@ -826,7 +817,7 @@ lemma qaN (Q A T V K b lam C : ℤ)
   have h3 : Q * K ≤ A * K:= by nlinarith
   have hAK : 0 ≤ A * K:= by nlinarith
   linarith
-lemma word_contraction (h : kernel) (ks : List kernel)
+theorem word_contraction (h : kernel) (ks : List kernel)
     (hh : good h) (hks : ∀ k ∈ ks,good k) :
     let z:=ks.foldl (fun z k => low_push k z) identity
     let r:=(h :: ks).foldl (fun z k => push k z) identity
@@ -853,7 +844,7 @@ lemma word_contraction (h : kernel) (ks : List kernel)
     rw [hr]
     simp only [qX]
     nlinarith
-lemma qc6 (A C A0 C0 A1 C1 T mass : ℤ)
+theorem qc6 (A C A0 C0 A1 C1 T mass : ℤ)
     (hA0 : 0 < A0) (h0 : A * C0=A0 * (C - A * T))
     (h1 : A0 * C1=A1 * (C0 - A0 * mass)) :
     A * C1=A1 * (C - A * (T + mass)):= by
@@ -865,7 +856,7 @@ lemma qc6 (A C A0 C0 A1 C1 T mass : ℤ)
   rcases mul_eq_zero.mp h with hzero | hzero
   · omega
   · linarith
-lemma shrink_bound (f : ℕ → ℤ) (C : ℤ) (n : ℕ)
+theorem shrink_bound (f : ℕ → ℤ) (C : ℤ) (n : ℕ)
     (h : ∀ i < n,3 * f (i + 1) ≤ f i + 2 * C) :
     (3 : ℤ) ^ n * f n ≤ f 0 + ((3 : ℤ) ^ n - 1) * C:= by
   induction n with
@@ -877,7 +868,7 @@ lemma shrink_bound (f : ℕ → ℤ) (C : ℤ) (n : ℕ)
     have hpow : (3 : ℤ) ^ (n + 1)=3 * (3 : ℤ) ^ n:= by ring
     rw [hpow]
     nlinarith
-lemma qcd (f : ℕ → ℤ) (gap : ℤ) (n : ℕ)
+theorem qcd (f : ℕ → ℤ) (gap : ℤ) (n : ℕ)
     (h : ∀ i < n,f (i + 1) < f i - gap) :
     f n ≤ f 0 - (n : ℤ) * (gap + 1):= by
   induction n with
@@ -887,7 +878,7 @@ lemma qcd (f : ℕ → ℤ) (gap : ℤ) (n : ℕ)
     have hstep:=h n (by omega)
     push_cast
     linarith
-lemma high_count (f : ℕ → ℤ) (A B V m : ℤ) (t q n : ℕ)
+theorem high_count (f : ℕ → ℤ) (A B V m : ℤ) (t q n : ℕ)
     (hA : 0 < A) (hB : 0 ≤ B) (hm : 0 < m) (hV : 0 ≤ V)
     (hpow : V ≤ (3 : ℤ) ^ t) (hq : B + 4 ≤ (q : ℤ) * m)
     (hstart : f 0 ≤ A * V) (hend : 0 < f n)
@@ -920,10 +911,10 @@ def F (k q : ℤ) : List ℕ:=Prefix.F k.toNat q.toNat
 def G (k q : ℤ) : List ℕ:=Prefix.G k.toNat q.toNat
 def run (e : ℕ) (xs ys : List ℤ) : Prop:=Prefix.Run e (qbn xs) (qbn ys)
 def exec (e : ℕ) (xs ys : List ℤ) : Prop:=Prefix.Exec e (qbn xs) (qbn ys)
-lemma pow_split {k d : ℤ} (hd : 0 ≤ d) (hdk : d ≤ k) :
+theorem pow_split {k d : ℤ} (hd : 0 ≤ d) (hdk : d ≤ k) :
     q0 k=q0 d * q0 (k - d):=qcl hd hdk
-lemma pow_pos {k : ℤ} (hk : 0 ≤ k) : 0 < q0 k:=qc hk
-lemma run_even {u v w : ℤ} (r : List ℤ) (hu : 0 ≤ u) (hv : 0 ≤ v) (hw : 0 ≤ w)
+theorem pow_pos {k : ℤ} (hk : 0 ≤ k) : 0 < q0 k:=qc hk
+theorem run_even {u v w : ℤ} (r : List ℤ) (hu : 0 ≤ u) (hv : 0 ≤ v) (hw : 0 ≤ w)
     (heven : ZEven u) :
     run 1 (u :: v :: w :: r) ((u + v + w + 3) :: r):= by
   rcases heven with ⟨n,rfl⟩
@@ -934,7 +925,7 @@ lemma run_even {u v w : ℤ} (r : List ℤ) (hu : 0 ≤ u) (hv : 0 ≤ v) (hw : 
   have h1 : (2 * n).toNat=2 * n.toNat:= by omega
   have h2 : (2 * n + v + w + 3).toNat=2 * n.toNat + v.toNat + w.toNat + 3:= by omega
   rwa [h1,h2]
-lemma odd_lookup {u v w s q : ℤ} (r : List ℤ) {e : ℕ} {ys : List ℤ} {z : ℤ}
+theorem odd_lookup {u v w s q : ℤ} (r : List ℤ) {e : ℕ} {ys : List ℤ} {z : ℤ}
     (hu : 0 ≤ u) (hv : 0 ≤ v) (hw : 0 ≤ w) (hodd : qW u)
     (hs : 1 ≤ s) (hq : 3 ≤ q) (hqo : qW q)
     (hH : u + 2 * v + 3=q0 s * q)
@@ -984,14 +975,14 @@ def qaB (k : ℤ) (x : pair) : Prop :=
   0 ≤ x.d ∧ x.d ≤ k ∧ 0 < x.p ∧ x.p < q0 x.d ∧ qW x.p ∧ 1 ≤ x.b ∧ -1 ≤ x.c
 def qo (k : ℤ) (x : pair) : Prop :=
   qaB k x ∧ 2 * x.p ≤ q0 x.d ∧ 0 ≤ x.c
-lemma qac {k : ℤ} {x : pair} (hx : qaB k x) :
+theorem qac {k : ℤ} {x : pair} (hx : qaB k x) :
     0 < ql k x ∧ ql k x < q0 k:= by
   rcases hx with ⟨hd0,hdk,hp0,hpd,_,_,_⟩
   unfold ql
   rw [pow_split hd0 hdk]
   have hp : 0 < q0 (k - x.d):=pow_pos (by omega)
   exact ⟨by nlinarith,by nlinarith⟩
-lemma qn {k q : ℤ} {x : pair} (hx : qaB k x) (hq : 1 ≤ q) :
+theorem qn {k q : ℤ} {x : pair} (hx : qaB k x) (hq : 1 ≤ q) :
     1 ≤ left k q x ∧ 0 ≤ right k q x:= by
   have hc:=qac hx
   rcases hx with ⟨_,_,_,_,_,hb,hc0⟩
@@ -1001,7 +992,7 @@ def qa (k : ℤ) (x : pair) (s r : ℤ) : Prop :=
   1 ≤ s ∧ s < k - x.d ∧ h x=q0 s * r ∧ qW r
 def qg (k q : ℤ) (x : pair) (s r : ℤ) : ℤ :=
   (q0 (x.d + 1) - x.p) * q0 (k - x.d - s) * q + r
-lemma qz {k q : ℤ} {x : pair} {s r : ℤ}
+theorem qz {k q : ℤ} {x : pair} {s r : ℤ}
     (hx : qaB k x) (hq : 1 ≤ q) (hqo : qW q) (hs : qa k x s r) :
     3 ≤ qg k q x s r ∧ qW (qg k q x s r) ∧
     left k q x + 2 * right k q x + 3=q0 s * qg k q x s r:= by
@@ -1031,10 +1022,10 @@ lemma qz {k q : ℤ} {x : pair} {s r : ℤ}
     unfold h at hh
     rw [h1,h2,hD]
     nlinarith
-lemma qu (k q : ℤ) (x : pair) :
+theorem qu (k q : ℤ) (x : pair) :
     left k q x + right k q x=q0 k * q + x.b + x.c:= by
   unfold left right; ring
-lemma left_odd {k q : ℤ} {x : pair} (hx : qaB k x) (hd : x.d < k) (hb : qW x.b) :
+theorem left_odd {k q : ℤ} {x : pair} (hx : qaB k x) (hd : x.d < k) (hb : qW x.b) :
     qW (left k q x):= by
   rcases hb with ⟨t,hb⟩
   unfold left ql
@@ -1049,10 +1040,10 @@ def qQ (x : pair) (s r : ℤ) (y : pair) : pair :=
    delta s r y + y.b,
    h x - delta s r y + y.c - x.c - 1⟩
 def qbu (x : pair) : pair:=⟨x.p,x.d + 1,x.b,x.c⟩
-lemma qI (x : pair) (s r : ℤ) (y : pair) :
+theorem qI (x : pair) (s r : ℤ) (y : pair) :
     (qQ x s r y).b + (qQ x s r y).c=x.b + x.c + y.b + y.c + 2:= by
   unfold qQ h; dsimp -failIfUnchanged; ring
-lemma qbU {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
+theorem qbU {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
     (hs : qa k x s r) (hy : qo s y) :
     q0 y.d * delta s r y=y.p * h x:= by
   rcases hs with ⟨_,_,hh,_⟩
@@ -1060,7 +1051,7 @@ lemma qbU {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
   unfold delta
   rw [hh,pow_split hyd0 hyds]
   ring
-lemma qan {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
+theorem qan {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
     (hx : qaB k x) (hs : qa k x s r) (hy : qo s y) :
     qaB k (qQ x s r y) ∧ 1 ≤ (qQ x s r y).c:= by
   have he:=qbU hs hy
@@ -1092,7 +1083,7 @@ lemma qan {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
   rcases hoy with ⟨v,hv⟩
   refine ⟨(2 * v + 1) * (q0 x.d - a) - v - 1,?_⟩
   rw [hD,ha,hv]; ring
-lemma widen_table {k : ℤ} {x : pair} (hx : qaB k x) (hc : 0 ≤ x.c) :
+theorem widen_table {k : ℤ} {x : pair} (hx : qaB k x) (hc : 0 ≤ x.c) :
     qo (k + 1) (qbu x):= by
   rcases hx with ⟨hd0,hdk,hp0,hpd,ho,hb,hc0⟩
   unfold qo qaB qbu
@@ -1100,7 +1091,7 @@ lemma widen_table {k : ℤ} {x : pair} (hx : qaB k x) (hc : 0 ≤ x.c) :
   have hD : q0 (x.d + 1)=2 * q0 x.d:= by
     rw [q5 hd0 (by omega),pow2_one]; ring
   refine ⟨⟨by omega,by omega,hp0,by rw [hD]; omega,ho,hb,hc0⟩,by rw [hD]; omega,hc⟩
-lemma widen_values {k : ℤ} (q : ℤ) (x : pair) (hk : 0 ≤ k) :
+theorem widen_values {k : ℤ} (q : ℤ) (x : pair) (hk : 0 ≤ k) :
     qai (k + 1) q (qbu x)=[left k q x,right k q x + q0 k * q]:= by
   unfold qai qbu left right ql
   dsimp -failIfUnchanged
@@ -1109,7 +1100,7 @@ lemma widen_values {k : ℤ} (q : ℤ) (x : pair) (hk : 0 ≤ k) :
     rw [q5 hk (by omega),pow2_one]; ring
   rw [hsub,hD]
   congr 1; congr 1; ring
-lemma qaF {k : ℤ} (q : ℤ) {x : pair} {s r : ℤ} {y : pair}
+theorem qaF {k : ℤ} (q : ℤ) {x : pair} {s r : ℤ} {y : pair}
     (hx : qaB k x) (hs : qa k x s r) (hy : qo s y) :
     left s (qg k q x s r) y=left k q (qQ x s r y):= by
   rcases hx with ⟨hdx0,hdxk,_⟩
@@ -1123,7 +1114,7 @@ lemma qaF {k : ℤ} (q : ℤ) {x : pair} {s r : ℤ} {y : pair}
   have hP' := congr_arg (fun z => y.p * (q0 (x.d + 1) - x.p) * q * z) hP
   dsimp -failIfUnchanged only at hP'
   linarith
-lemma next_right {k q : ℤ} {x : pair} {s r : ℤ} {y : pair}
+theorem next_right {k q : ℤ} {x : pair} {s r : ℤ} {y : pair}
     (hx : qaB k x) (hq : 1 ≤ q) (ho : qW q)
     (hs : qa k x s r) (hy : qo s y) :
     right s (qg k q x s r) y - right k q x - 1=right k q (qQ x s r y):= by
@@ -1138,7 +1129,7 @@ def qk (k : ℤ) (x : pair) : ℤ :=
   if x.d < k then x.b else x.p + x.b
 def q3 (k : ℤ) (x : pair) : Bool :=
   qb6 (qk k x)
-lemma qbS {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
+theorem qbS {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
     ∃ a,left k q x=qk k x + 2 * a:= by
   rcases hq with ⟨t,rfl⟩
   unfold qk
@@ -1152,13 +1143,13 @@ lemma qbS {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
     refine ⟨x.p * t,?_⟩
     unfold left ql
     rw [hd,sub_self,pow2_zero]; ring
-lemma qaO {k q : ℤ} {x : pair}
+theorem qaO {k q : ℤ} {x : pair}
     (hx : qaB k x) (hq : qW q) (he : q3 k x=true) :
     ZEven (left k q x):= by
   rcases qbS hx hq with ⟨a,ha⟩
   rcases (qah _).mp he with ⟨v,hv⟩
   exact ⟨v + a,by linarith⟩
-lemma qb0 {k : ℤ} {x : pair} {s r : ℤ}
+theorem qb0 {k : ℤ} {x : pair} {s r : ℤ}
     (hs : qa k x s r) (he : q3 k x=false) :
     qW x.b:= by
   rcases hs with ⟨hs1,hsk,_⟩
@@ -1185,7 +1176,7 @@ def realizes (k : ℤ) (f : entry) : Prop :=
   ∀ q,1 ≤ q → qW q → Prefix.Run (qad f).toNat (F k q) (qbn (eval k q f))
 def qZ (k : ℤ) (f : entry) : Prop :=
   qU k f ∧ realizes k f
-lemma qcp {k q : ℤ} {x : pair} {s r : ℤ} {y : pair} {e w : ℤ}
+theorem qcp {k q : ℤ} {x : pair} {s r : ℤ} {y : pair} {e w : ℤ}
     (hx : qaB k x) (hq : 1 ≤ q) (ho : qW q)
     (hs : qa k x s r) (he : q3 k x=false)
     (hval : qZ s (.Two y e)) (hw : 0 ≤ w) :
@@ -1210,7 +1201,7 @@ lemma qcp {k q : ℤ} {x : pair} {s r : ℤ} {y : pair} {e w : ℤ}
   have heq : right s (qg k q x s r) y + w - right k q x - 1 =
       right k q (qQ x s r y) + w:= by linarith
   rwa [heq] at hrun
-lemma qcq {k q : ℤ} {x : pair} {s r v e w : ℤ}
+theorem qcq {k q : ℤ} {x : pair} {s r v e w : ℤ}
     (hx : qaB k x) (hq : 1 ≤ q) (ho : qW q)
     (hs : qa k x s r) (he : q3 k x=false)
     (hval : qZ s (.One v e)) (hw : 0 ≤ w) :
@@ -1233,7 +1224,7 @@ lemma qcq {k q : ℤ} {x : pair} {s r v e w : ℤ}
   have heq : q0 s * qg k q x s r + v + w - right k q x - 1 =
       q0 k * q + x.b + x.c + v + 2 + w:= by linarith
   simpa [heq] using! hrun
-lemma snoc {k q : ℤ} (hk : 0 ≤ k) (hq : 0 ≤ q) :
+theorem snoc {k q : ℤ} (hk : 0 ≤ k) (hq : 0 ≤ q) :
     F (k + 1) q=F k q ++ qbn [q0 k * q]:= by
   unfold F qbn
   have h1 : (k + 1).toNat=1 + k.toNat:= by omega
@@ -1248,14 +1239,14 @@ lemma snoc {k q : ℤ} (hk : 0 ≤ k) (hq : 0 ≤ q) :
       rw [Int.toNat_of_nonneg hq]
     rwa [heq] at hcast
   rw [h2]
-lemma qP {k : ℤ} {f : entry} {q : ℤ}
+theorem qP {k : ℤ} {f : entry} {q : ℤ}
     (hr : realizes k f) (hk : 0 ≤ k) (hq : 1 ≤ q) (ho : qW q) :
     Prefix.Run (qad f).toNat (F (k + 1) q) (qbn (eval k q f ++ [q0 k * q])):= by
   rw [snoc hk (by omega)]
   unfold qbn
   rw [List.map_append]
   exact Prefix.app _ (hr q hq ho)
-lemma valid_root : qZ 0 (.One 1 0):= by
+theorem valid_root : qZ 0 (.One 1 0):= by
   unfold qZ qU qad
   dsimp -failIfUnchanged
   refine ⟨⟨by omega,by omega,rfl⟩,?_⟩
@@ -1265,7 +1256,7 @@ lemma valid_root : qZ 0 (.One 1 0):= by
   have h1 : q.toNat + 1=(q + 1).toNat:= by omega
   rw [h1]
   exact Prefix.Run.refl _
-lemma valid_add_one {k v e : ℤ} (h : qZ k (.One v e)) :
+theorem valid_add_one {k v e : ℤ} (h : qZ k (.One v e)) :
     qZ (k + 1) (.Two ⟨1,1,v,0⟩ e):= by
   rcases h with ⟨⟨hk,he,hv⟩,hreal⟩
   change 0 ≤ e at he
@@ -1288,7 +1279,7 @@ lemma valid_add_one {k v e : ℤ} (h : qZ k (.One v e)) :
     congr 1; · ring
     congr 1; ring
   rwa [heq]
-lemma qc1 {k : ℤ} {x : pair} {e : ℤ}
+theorem qc1 {k : ℤ} {x : pair} {e : ℤ}
     (h : qZ k (.Two x e)) (heven : q3 k x=true) :
     qZ (k + 1) (.One (x.b + x.c + 3) (e + 1)):= by
   rcases h with ⟨⟨hk,he,hx,hmass⟩,hreal⟩
@@ -1313,7 +1304,7 @@ lemma qc1 {k : ℤ} {x : pair} {e : ℤ}
       rw [q5 hk (by omega),pow2_one]; ring
     rw [hD]; linarith
   rwa [heq]
-lemma qaM {k : ℤ} {x : pair} {e s r v f : ℤ}
+theorem qaM {k : ℤ} {x : pair} {e s r v f : ℤ}
     (h : qZ k (.Two x e)) (hs : qa k x s r)
     (ho : q3 k x=false) (hsmall : qZ s (.One v f)) :
     qZ (k + 1) (.One (x.b + x.c + v + 2) (e + 1 + f)):= by
@@ -1340,7 +1331,7 @@ lemma qaM {k : ℤ} {x : pair} {e s r v f : ℤ}
       rw [q5 hk (by omega),pow2_one]; ring
     rw [hD]; ring
   rwa [heq]
-lemma qaL {k : ℤ} {x : pair} {e s r : ℤ} {y : pair} {f : ℤ}
+theorem qaL {k : ℤ} {x : pair} {e s r : ℤ} {y : pair} {f : ℤ}
     (h : qZ k (.Two x e)) (hs : qa k x s r)
     (ho : q3 k x=false) (hsmall : qZ s (.Two y f)) :
     qZ (k + 1) (.Two (qbu (qQ x s r y)) (e + 1 + f)):= by
@@ -1391,17 +1382,17 @@ inductive Boundary (lib : ℤ → entry → Prop) (k : ℤ) : pair → ℤ → �
   | boundary_two (x : pair) (s r : ℤ) (y : pair) (e f : ℤ) (n : ℕ) :
       qa k x s r → q3 k x=false → lib s (.Two y e) →
       Boundary lib k (qQ x s r y) f n → Boundary lib k x (1 + e + f) (1 + n)
-lemma qcm {k : ℤ} {x : pair} (hx : qaB k x) : 1 ≤ x.d:= by
+theorem qcm {k : ℤ} {x : pair} (hx : qaB k x) : 1 ≤ x.d:= by
   rcases hx with ⟨hd0,_,hp0,hpd,_⟩
   by_contra hlt
   have hd : x.d=0:= by omega
   rw [hd,pow2_zero] at hpd
   omega
-lemma run_zero {e : ℕ} {xs ys : List ℤ} (h : run e (xs ++ [0]) ys) : exec e xs ys:= by
+theorem run_zero {e : ℕ} {xs ys : List ℤ} (h : run e (xs ++ [0]) ys) : exec e xs ys:= by
   unfold run exec qbn at *
   rw [List.map_append] at h
   exact Prefix.Exec.zero (Prefix.run_exec h)
-lemma qb5 {lib : ℤ → entry → Prop} {k : ℤ} {x : pair} {e : ℤ} {n : ℕ}
+theorem qb5 {lib : ℤ → entry → Prop} {k : ℤ} {x : pair} {e : ℤ} {n : ℕ}
     (hlib : ∀ s f,lib s f → qZ s f)
     (hb : Boundary lib k x e n) (hx : qaB k x) :
     0 ≤ e ∧ (n : ℤ) + x.d ≤ k + 1 ∧
@@ -1454,14 +1445,14 @@ lemma qb5 {lib : ℤ → entry → Prop} {k : ℤ} {x : pair} {e : ℤ} {n : ℕ
       rw [hadd,heq]
       exact hrun
 def qba (x : pair) : pair:=⟨x.p,x.d,x.b,x.c - 1⟩
-lemma qb9 {k : ℤ} {x : pair} (hx : qo k x) : qaB k (qba x):= by
+theorem qb9 {k : ℤ} {x : pair} (hx : qo k x) : qaB k (qba x):= by
   rcases hx with ⟨⟨hd0,hdk,hp0,hpd,ho,hb,hc⟩,hhalf,hc0⟩
   exact ⟨hd0,hdk,hp0,hpd,ho,hb,by unfold qba; dsimp -failIfUnchanged; omega⟩
-lemma lower_values (k q : ℤ) (x : pair) :
+theorem lower_values (k q : ℤ) (x : pair) :
     qai k q (qba x)=[left k q x,right k q x - 1]:= by
   unfold qai qba left right ql
   dsimp -failIfUnchanged; congr 1; congr 1; ring
-lemma qcs {e : ℕ} {k q : ℤ} (ys : List ℤ) {z : ℤ}
+theorem qcs {e : ℕ} {k q : ℤ} (ys : List ℤ) {z : ℤ}
     (hk : 1 ≤ k) (hq : 1 ≤ q) (hz : 1 ≤ z)
     (h : Prefix.Run e (F k q) (qbn (ys ++ [z]))) :
     Prefix.Run e (G k q) (qbn (ys ++ [z - 1])):= by
@@ -1474,7 +1465,7 @@ lemma qcs {e : ℕ} {k q : ℤ} (ys : List ℤ) {z : ℤ}
   have hres:=Prefix.F_to_G (k:=(k - 1).toNat) (q:=q.toNat) (by omega) h
   rw [hk1]
   exact hres
-lemma G_single {k v e : ℤ} (h : qZ k (.One v e)) (hk1 : 1 ≤ k) :
+theorem G_single {k v e : ℤ} (h : qZ k (.One v e)) (hk1 : 1 ≤ k) :
     ∀ q,1 ≤ q → qW q → Prefix.Run e.toNat (G k q) (qbn [q0 k * q + v - 1]):= by
   rcases h with ⟨⟨hk,he,hv⟩,hr⟩
   change 0 ≤ e at he
@@ -1482,7 +1473,7 @@ lemma G_single {k v e : ℤ} (h : qZ k (.One v e)) (hk1 : 1 ≤ k) :
   have hP:=pow_pos hk
   intro q hq ho
   exact qcs [] hk1 hq (by nlinarith) (hr q hq ho)
-lemma G_pair {k : ℤ} {x : pair} {e : ℤ} (h : qZ k (.Two x e)) (hk1 : 1 ≤ k) :
+theorem G_pair {k : ℤ} {x : pair} {e : ℤ} (h : qZ k (.Two x e)) (hk1 : 1 ≤ k) :
     ∀ q,1 ≤ q → qW q → Prefix.Run e.toNat (G k q) (qbn (qai k q (qba x))):= by
   rcases h with ⟨⟨hk,he,hx,hmass⟩,hr⟩
   intro q hq ho
@@ -1497,7 +1488,7 @@ def qaf (lib : ℤ → entry → Prop) (k : ℤ) (f : entry) : Prop :=
   match f with
   | .One _ _ => True
   | .Two x _ => ∃ e n,Boundary lib k (qba x) e n
-lemma G_returns {lib : ℤ → entry → Prop} {k : ℤ} {f : entry}
+theorem G_returns {lib : ℤ → entry → Prop} {k : ℤ} {f : entry}
     (hlib : ∀ s g,lib s g → qZ s g)
     (hvalid : qZ k f) (hr : qaf lib k f) (hk : 1 ≤ k) :
     ∀ q,1 ≤ q → qW q → ∃ e m,Prefix.Exec e (G k q) [m]:= by
@@ -1513,7 +1504,7 @@ lemma G_returns {lib : ℤ → entry → Prop} {k : ℤ} {f : entry}
 end Table
 namespace UniqueTable
 open Table
-lemma qaR {s r t u : ℤ}
+theorem qaR {s r t u : ℤ}
     (hs : 0 ≤ s) (ht : 0 ≤ t) (hr : qW r) (hu : qW u)
     (he : q0 s * r=q0 t * u) : s=t ∧ r=u:= by
   have hlt : ∀ a b x y,0 ≤ a → a < b → qW x → q0 a * x=q0 b * y → False:= by
@@ -1537,12 +1528,12 @@ lemma qaR {s r t u : ℤ}
   subst hst
   have hp:=pow_pos hs
   exact ⟨rfl,mul_left_cancel₀ (by omega) he⟩
-lemma qK {k : ℤ} {x : pair} {s r t u : ℤ}
+theorem qK {k : ℤ} {x : pair} {s r t u : ℤ}
     (h1 : qa k x s r) (h2 : qa k x t u) : s=t ∧ r=u:= by
   rcases h1 with ⟨hs1,_,he1,hr⟩
   rcases h2 with ⟨ht1,_,he2,hu⟩
   exact qaR (by omega) (by omega) hr hu (by linarith)
-lemma built_nonnegative {k : ℤ} {f : entry} (h : Built k f) : 0 ≤ k :=
+theorem built_nonnegative {k : ℤ} {f : entry} (h : Built k f) : 0 ≤ k :=
   (built_valid h).1.1
 theorem qbC {k1 : ℤ} {f : entry} (h : Built k1 f) :
     ∀ k2 g,k1=k2 → Built k2 g → f=g:= by
@@ -1677,7 +1668,7 @@ def qb7 (p : pair) (f : pair → Option entry) : Option entry :=
   q2 p.b fun b =>
   q2 p.c fun c =>
   f ⟨pp,d,b,c⟩
-@[simp] lemma strictPair_eq (p : pair) (f : pair → Option entry) :
+@[simp] theorem strictPair_eq (p : pair) (f : pair → Option entry) :
     qb7 p f=f p:= by
   cases p; simp [qb7]
 def qaK (k : ℤ) (x : pair) : Option (ℤ × ℤ) :=
@@ -1692,7 +1683,7 @@ def qaK (k : ℤ) (x : pair) : Option (ℤ × ℤ) :=
       none
   else
     none
-lemma qaY {k : ℤ} {x : pair} {s r : ℤ} (hsep : qaK k x=some (s,r)) :
+theorem qaY {k : ℤ} {x : pair} {s r : ℤ} (hsep : qaK k x=some (s,r)) :
     qa k x s r:= by
   unfold qaK at hsep
   simp only [strictInt_eq] at hsep
@@ -1729,7 +1720,7 @@ def advance (lookup : ℤ → Option entry) (k : ℤ) (f : entry) : Option entry
           some (.Two p' e')
         | none => none
       | none => none
-lemma advance_spec {lookup : ℤ → Option entry} {k : ℤ} {f g : entry}
+theorem advance_spec {lookup : ℤ → Option entry} {k : ℤ} {f g : entry}
     (hlib : ∀ s x,lookup s=some x → Built s x)
     (hf : Built k f) (hadv : advance lookup k f=some g) :
     Built (k + 1) g:= by
@@ -1787,7 +1778,7 @@ def nth_entry : List entry → ℕ → Option entry
   | [],_ => none
   | x :: _,0 => some x
   | _ :: xs,n + 1 => nth_entry xs n
-lemma qc7 (xs : List entry) (f : entry) (i : ℕ) :
+theorem qc7 (xs : List entry) (f : entry) (i : ℕ) :
     nth_entry (xs ++ [f]) i =
       if i < xs.length then nth_entry xs i
       else if i=xs.length then some f
@@ -1805,14 +1796,14 @@ def lookup (bank : List entry) (s : ℤ) : Option entry :=
   if 0 ≤ s then nth_entry bank s.toNat else none
 def bank_ok (bank : List entry) : Prop :=
   ∀ (i : ℕ) (f : entry),nth_entry bank i=some f → Built (i : ℤ) f
-lemma lookup_spec {bank : List entry} (hb : bank_ok bank) :
+theorem lookup_spec {bank : List entry} (hb : bank_ok bank) :
     ∀ s f,lookup bank s=some f → Built s f:= by
   intro s f hl
   unfold lookup at hl
   split_ifs at hl with hs
   have h:=hb s.toNat f hl
   rwa [Int.toNat_of_nonneg hs] at h
-lemma bank_snoc {bank : List entry} {f : entry} (hbank : bank_ok bank)
+theorem bank_snoc {bank : List entry} {f : entry} (hbank : bank_ok bank)
     (hf : Built (bank.length : ℤ) f) :
     bank_ok (bank ++ [f]):= by
   intro i g hget
@@ -1832,7 +1823,7 @@ def qa8 : ℕ → Option (List entry)
         | none => none
       | none => none
     | none => none
-lemma qc0 (n : ℕ) (bank : List entry) (hb : qa8 n=some bank) :
+theorem qc0 (n : ℕ) (bank : List entry) (hb : qa8 n=some bank) :
     bank.length=1 + n ∧ bank_ok bank:= by
   induction n generalizing bank with
   | zero =>
@@ -1897,18 +1888,18 @@ def bank : List entry:=[
   .One 37 12,
   .Two ⟨1,1,37,0⟩ 12
 ]
-lemma qaJ : qa8 17=some bank:= by decide +kernel
-lemma checked_bank : bank_ok bank:=(qc0 17 bank qaJ).2
-lemma first : Built 1 (.Two ⟨1,1,1,0⟩ 0) :=
+theorem qaJ : qa8 17=some bank:= by decide +kernel
+theorem checked_bank : bank_ok bank:=(qc0 17 bank qaJ).2
+theorem first : Built 1 (.Two ⟨1,1,1,0⟩ 0) :=
   Built.built_one Built.built_root
-lemma pair.ext {x y : pair} (hp : x.p = y.p) (hd : x.d = y.d) (hb : x.b = y.b) (hc : x.c = y.c) : x = y := by
+theorem pair.ext {x y : pair} (hp : x.p = y.p) (hd : x.d = y.d) (hb : x.b = y.b) (hc : x.c = y.c) : x = y := by
   cases x; cases y; dsimp -failIfUnchanged at *; subst hp hd hb hc; rfl
 
-lemma nat_add_eq (a b : ℕ) : Nat.add a b = a + b := rfl
-lemma nat_sub_eq (a b : ℕ) : Nat.sub a b = a - b := rfl
-lemma nat_mul_eq (a b : ℕ) : Nat.mul a b = a * b := rfl
-lemma nat_pow_eq (a b : ℕ) : Nat.pow a b = a ^ b := rfl
-lemma nat_mod_eq (a b : ℕ) : Nat.mod a b = a % b := rfl
+theorem nat_add_eq (a b : ℕ) : Nat.add a b = a + b := rfl
+theorem nat_sub_eq (a b : ℕ) : Nat.sub a b = a - b := rfl
+theorem nat_mul_eq (a b : ℕ) : Nat.mul a b = a * b := rfl
+theorem nat_pow_eq (a b : ℕ) : Nat.pow a b = a ^ b := rfl
+theorem nat_mod_eq (a b : ℕ) : Nat.mod a b = a % b := rfl
 
 inductive entry_nat where
   | One (v e : ℕ)
@@ -2000,7 +1991,7 @@ def bank_nat (s : ℕ) : Option entry_nat :=
         else if Nat.beq s 17 then some (.Two 1 1 37 0 12)
         else none
 
-lemma bank_nat_lt18 (s : ℕ) (f : entry_nat) (h : bank_nat s = some f) : s < 18 := by
+theorem bank_nat_lt18 (s : ℕ) (f : entry_nat) (h : bank_nat s = some f) : s < 18 := by
   by_contra hge
   have h1 : Nat.ble s 8 = false := by rw [Bool.eq_false_iff, ne_eq, Nat.ble_eq]; omega
   have h2 : Nat.ble s 13 = false := by rw [Bool.eq_false_iff, ne_eq, Nat.ble_eq]; omega
@@ -2011,7 +2002,7 @@ lemma bank_nat_lt18 (s : ℕ) (f : entry_nat) (h : bank_nat s = some f) : s < 18
   rw [h1, h2, h3, h4, h5] at h
   contradiction
 
-lemma bank_nat_spec (s : ℕ) (f : entry_nat) (h : bank_nat s = some f) :
+theorem bank_nat_spec (s : ℕ) (f : entry_nat) (h : bank_nat s = some f) :
     Built (s : ℤ) (to_entry f) := by
   apply lookup_spec checked_bank (s : ℤ) (to_entry f)
   have hs : s < 18 := bank_nat_lt18 s f h
@@ -2028,7 +2019,7 @@ def q3_nat (k p d b : ℕ) : Bool :=
   let qk := if Nat.ble (Nat.add d 1) k then b else Nat.add p b
   Nat.beq (Nat.mod qk 2) 0
 
-lemma q3_nat_eq (k p d b : ℕ) (c : ℤ) :
+theorem q3_nat_eq (k p d b : ℕ) (c : ℤ) :
     q3_nat k p d b = q3 (k : ℤ) ⟨(p : ℤ), (d : ℤ), (b : ℤ), c⟩ := by
   unfold q3_nat q3 qk qb6
   dsimp -failIfUnchanged only
@@ -2065,7 +2056,7 @@ def qaK_nat (k d hx : ℕ) : Option (ℕ × ℕ) :=
       else none
   else none
 
-lemma qaK_nat_spec {k p d b : ℕ} {c : ℤ} {hx s r : ℕ}
+theorem qaK_nat_spec {k p d b : ℕ} {c : ℤ} {hx s r : ℕ}
     (hhx : (hx : ℤ) = h ⟨(p : ℤ), (d : ℤ), (b : ℤ), c⟩)
     (hsep : qaK_nat k d hx = some (s, r)) :
     qa (k : ℤ) ⟨(p : ℤ), (d : ℤ), (b : ℤ), c⟩ (s : ℤ) (r : ℤ) := by
@@ -2118,7 +2109,7 @@ def qbq_nat : ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → Bool
         | none => false
       | none => false
 
-lemma qbq_nat_spec {fuel k p d b c1 : ℕ}
+theorem qbq_nat_spec {fuel k p d b c1 : ℕ}
     (hfin : qbq_nat fuel k p d b c1 = true) :
     ∃ e n, Boundary Built (k : ℤ) (to_pair_c1 p d b c1) e n := by
   induction fuel generalizing p d b c1 with
@@ -2231,7 +2222,7 @@ def step1_nat (k : ℕ) (f : entry_nat) : Option entry_nat :=
       else none
     else none
 
-lemma step1_nat_spec {k : ℕ} {f g : entry_nat}
+theorem step1_nat_spec {k : ℕ} {f g : entry_nat}
     (hf : Built (k : ℤ) (to_entry f))
     (hstep : step1_nat k f = some g) :
     Built ((k : ℤ) + 1) (to_entry g) ∧
@@ -2366,7 +2357,7 @@ def qb_nat : ℕ → ℕ → entry_nat → Option entry_nat
     | some g => sNat (Nat.add k (Nat.pow 2 n)) fun k' => qb_nat n k' g
     | none => none
 
-lemma qc2_nat {n k : ℕ} {f f_end : entry_nat}
+theorem qc2_nat {n k : ℕ} {f f_end : entry_nat}
     (hf : Built (k : ℤ) (to_entry f))
     (hcheck : qb_nat n k f = some f_end) :
     Built (((k + 2 ^ n : ℕ) : ℤ)) (to_entry f_end) ∧
@@ -2401,24 +2392,24 @@ lemma qc2_nat {n k : ℕ} {f f_end : entry_nat}
       · exact hrange1 j ⟨hj.1, hjlt⟩
       · exact hrange2 j ⟨by omega, by omega⟩
 
-lemma chunk_0 : qb_nat 12 1 (.Two 1 1 1 0 0) = some (.Two 1 1 10951 0 3650) := by decide +kernel
-lemma chunk_1 : qb_nat 12 4097 (.Two 1 1 10951 0 3650) = some (.Two 1 1 21925 0 7308) := by decide +kernel
-lemma chunk_2 : qb_nat 12 8193 (.Two 1 1 21925 0 7308) = some (.One 32881 10960) := by decide +kernel
-lemma chunk_3 : qb_nat 12 12289 (.One 32881 10960) = some (.One 43852 14617) := by decide +kernel
-lemma chunk_4 : qb_nat 12 16385 (.One 43852 14617) = some (.One 54817 18272) := by decide +kernel
-lemma chunk_5 : qb_nat 12 20481 (.One 54817 18272) = some (.Two 1 1 65782 0 21927) := by decide +kernel
-lemma chunk_6 : qb_nat 12 24577 (.Two 1 1 65782 0 21927) = some (.Two 1 1 76735 0 25578) := by decide +kernel
-lemma chunk_7 : qb_nat 12 28673 (.Two 1 1 76735 0 25578) = some (.Two 3 3 43848 43843 29230) := by decide +kernel
-lemma chunk_8 : qb_nat 12 32769 (.Two 3 3 43848 43843 29230) = some (.Two 1 1 98653 0 32884) := by decide +kernel
-lemma chunk_9 : qb_nat 12 36865 (.Two 1 1 98653 0 32884) = some (.Two 1 1 109615 0 36538) := by decide +kernel
-lemma chunk_10 : qb_nat 12 40961 (.Two 1 1 109615 0 36538) = some (.Two 3 3 60294 60292 40195) := by decide +kernel
-lemma chunk_11 : qb_nat 12 45057 (.Two 3 3 60294 60292 40195) = some (.Two 1 1 131542 0 43847) := by decide +kernel
-lemma chunk_12 : qb_nat 12 49153 (.Two 1 1 131542 0 43847) = some (.Two 1 1 142513 0 47504) := by decide +kernel
-lemma chunk_13 : qb_nat 12 53249 (.Two 1 1 142513 0 47504) = some (.Two 1 1 153469 0 51156) := by decide +kernel
-lemma chunk_14 : qb_nat 12 57345 (.Two 1 1 153469 0 51156) = some (.Two 1 1 164437 0 54812) := by decide +kernel
-lemma chunk_15 : qb_nat 12 61441 (.Two 1 1 164437 0 54812) = some (.Two 1 1 175393 0 58464) := by decide +kernel
+theorem chunk_0 : qb_nat 12 1 (.Two 1 1 1 0 0) = some (.Two 1 1 10951 0 3650) := by decide +kernel
+theorem chunk_1 : qb_nat 12 4097 (.Two 1 1 10951 0 3650) = some (.Two 1 1 21925 0 7308) := by decide +kernel
+theorem chunk_2 : qb_nat 12 8193 (.Two 1 1 21925 0 7308) = some (.One 32881 10960) := by decide +kernel
+theorem chunk_3 : qb_nat 12 12289 (.One 32881 10960) = some (.One 43852 14617) := by decide +kernel
+theorem chunk_4 : qb_nat 12 16385 (.One 43852 14617) = some (.One 54817 18272) := by decide +kernel
+theorem chunk_5 : qb_nat 12 20481 (.One 54817 18272) = some (.Two 1 1 65782 0 21927) := by decide +kernel
+theorem chunk_6 : qb_nat 12 24577 (.Two 1 1 65782 0 21927) = some (.Two 1 1 76735 0 25578) := by decide +kernel
+theorem chunk_7 : qb_nat 12 28673 (.Two 1 1 76735 0 25578) = some (.Two 3 3 43848 43843 29230) := by decide +kernel
+theorem chunk_8 : qb_nat 12 32769 (.Two 3 3 43848 43843 29230) = some (.Two 1 1 98653 0 32884) := by decide +kernel
+theorem chunk_9 : qb_nat 12 36865 (.Two 1 1 98653 0 32884) = some (.Two 1 1 109615 0 36538) := by decide +kernel
+theorem chunk_10 : qb_nat 12 40961 (.Two 1 1 109615 0 36538) = some (.Two 3 3 60294 60292 40195) := by decide +kernel
+theorem chunk_11 : qb_nat 12 45057 (.Two 3 3 60294 60292 40195) = some (.Two 1 1 131542 0 43847) := by decide +kernel
+theorem chunk_12 : qb_nat 12 49153 (.Two 1 1 131542 0 43847) = some (.Two 1 1 142513 0 47504) := by decide +kernel
+theorem chunk_13 : qb_nat 12 53249 (.Two 1 1 142513 0 47504) = some (.Two 1 1 153469 0 51156) := by decide +kernel
+theorem chunk_14 : qb_nat 12 57345 (.Two 1 1 153469 0 51156) = some (.Two 1 1 164437 0 54812) := by decide +kernel
+theorem chunk_15 : qb_nat 12 61441 (.Two 1 1 164437 0 54812) = some (.Two 1 1 175393 0 58464) := by decide +kernel
 
-lemma q8_nat {n k k' : ℕ} {f g h : entry_nat}
+theorem q8_nat {n k k' : ℕ} {f g h : entry_nat}
     (h1 : qb_nat n k f = some g) (h2 : qb_nat n k' g = some h)
     (hk : Nat.add k (Nat.pow 2 n) = k' := by decide) :
     qb_nat (n + 1) k f = some h := by
@@ -2427,7 +2418,7 @@ lemma q8_nat {n k k' : ℕ} {f g h : entry_nat}
   simp only [sNat_eq, hk]
   exact h2
 
-lemma qaH_nat : qb_nat 16 1 (.Two 1 1 1 0 0) = some (.Two 1 1 175393 0 58464) := by
+theorem qaH_nat : qb_nat 16 1 (.Two 1 1 1 0 0) = some (.Two 1 1 175393 0 58464) := by
   have h13_0 := q8_nat chunk_0 chunk_1
   have h13_1 := q8_nat chunk_2 chunk_3
   have h13_2 := q8_nat chunk_4 chunk_5
@@ -2447,7 +2438,7 @@ lemma qaH_nat : qb_nat 16 1 (.Two 1 1 1 0 0) = some (.Two 1 1 175393 0 58464) :=
 theorem base_structured (k : ℤ) (hk : 1 ≤ k ∧ k ≤ 65536) :
     ∃ f, Built k f ∧ bounded k f ∧ qaf Built k f := by
   exact (qc2_nat first qaH_nat).2 k (by omega)
-lemma bank16 : lookup bank 16=some (.One 37 12):= by decide +kernel
+theorem bank16 : lookup bank 16=some (.One 37 12):= by decide +kernel
 theorem P16 : Built 16 (.One 37 12) :=
   lookup_spec checked_bank 16 (.One 37 12) bank16
 end CheckTable
@@ -2455,13 +2446,13 @@ namespace Bridge
 open Table
 def kernel (x : pair) : Block.kernel :=
   ⟨q0 x.d,x.p,x.b,x.b + x.c + 2⟩
-lemma kernel_good {s : ℤ} {x : pair} (hx : qo s x) : Block.good (kernel x):= by
+theorem kernel_good {s : ℤ} {x : pair} (hx : qo s x) : Block.good (kernel x):= by
   rcases hx with ⟨⟨hd0,hdk,hp0,hpd,ho,hb,hc⟩,hhalf,hc0⟩
   unfold Block.good kernel
   dsimp -failIfUnchanged
   have hP:=pow_pos hd0
   refine ⟨hP,hp0,hhalf,hb,by omega⟩
-lemma gain_large {k : ℤ} {f : entry} (h : qZ k f) : k < 3 * (qad f + 1):= by
+theorem gain_large {k : ℤ} {f : entry} (h : qZ k f) : k < 3 * (qad f + 1):= by
   rcases h with ⟨⟨hk,he,hwf⟩,hr⟩
   have hr1:=hr 1 (by omega) ⟨0,rfl⟩
   have hl:=Prefix.run_length hr1
@@ -2470,14 +2461,14 @@ lemma gain_large {k : ℤ} {f : entry} (h : qZ k f) : k < 3 * (qad f + 1):= by
   have hlen : (Table.eval k 1 f).length ≤ 2:= by
     cases f <;> simp [Table.eval,qai]
   omega
-lemma kernel_gain {s : ℤ} {x : pair} {e : ℤ} (h : qZ s (.Two x e)) :
+theorem kernel_gain {s : ℤ} {x : pair} {e : ℤ} (h : qZ s (.Two x e)) :
     s < (kernel x).gain:= by
   have hg:=gain_large h
   rcases h.1 with ⟨hs,he,hx,hmass⟩
   unfold kernel qad at *
   dsimp -failIfUnchanged at *
   omega
-lemma head_value {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
+theorem head_value {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
     qb6 (left k q x)=q3 k x:= by
   rcases qbS hx hq with ⟨a,ha⟩
   unfold q3
@@ -2495,7 +2486,7 @@ lemma head_value {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
     have:=(qah _).mpr hev
     rw [h2] at this; contradiction
   · rfl
-lemma lookup_parity {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
+theorem lookup_parity {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
     (hx : qaB k x) (hs : qa k x s r) (hy : qo s y) :
     q3 k (qQ x s r y)=q3 s y:= by
   rcases qan hx hs hy with ⟨hnext,_⟩
@@ -2505,7 +2496,7 @@ lemma lookup_parity {k : ℤ} {x : pair} {s r : ℤ} {y : pair}
 end Bridge
 namespace Finite
 open Table
-lemma all_base {k : ℤ} {f : entry} (hk : 1 ≤ k ∧ k ≤ 65536) (hf : Built k f) :
+theorem all_base {k : ℤ} {f : entry} (hk : 1 ≤ k ∧ k ≤ 65536) (hf : Built k f) :
     CheckTable.bounded k f ∧ qaf Built k f:= by
   rcases CheckTable.base_structured k hk with ⟨g,hg,hb,hr⟩
   have heq:=UniqueTable.built_unique hf g hg
@@ -2514,32 +2505,32 @@ lemma all_base {k : ℤ} {f : entry} (hk : 1 ≤ k ∧ k ≤ 65536) (hf : Built 
 end Finite
 namespace WordArith
 def qa3 (n x : ℤ) : Prop:=∃ q : ℤ,x=q0 n * q
-lemma div2_zero (n : ℤ) : qa3 n 0:=⟨0,by ring⟩
-lemma div2_refl (x : ℤ) : qa3 0 x:=⟨x,by simp [pow2_zero]⟩
-lemma div2_add {n x y : ℤ} (hx : qa3 n x) (hy : qa3 n y) : qa3 n (x + y):= by
+theorem div2_zero (n : ℤ) : qa3 n 0:=⟨0,by ring⟩
+theorem div2_refl (x : ℤ) : qa3 0 x:=⟨x,by simp [pow2_zero]⟩
+theorem div2_add {n x y : ℤ} (hx : qa3 n x) (hy : qa3 n y) : qa3 n (x + y):= by
   rcases hx with ⟨a,rfl⟩
   rcases hy with ⟨b,rfl⟩
   exact ⟨a + b,by ring⟩
-lemma qb4 {n x y : ℤ} (hx : qa3 n x) (hy : qa3 n y) : qa3 n (x - y):= by
+theorem qb4 {n x y : ℤ} (hx : qa3 n x) (hy : qa3 n y) : qa3 n (x - y):= by
   rcases hx with ⟨a,rfl⟩
   rcases hy with ⟨b,rfl⟩
   exact ⟨a - b,by ring⟩
-lemma qa7 {n x : ℤ} (a : ℤ) (hx : qa3 n x) : qa3 n (a * x):= by
+theorem qa7 {n x : ℤ} (a : ℤ) (hx : qa3 n x) : qa3 n (a * x):= by
   rcases hx with ⟨b,rfl⟩
   exact ⟨a * b,by ring⟩
-lemma qp {n m x : ℤ} (hm : 0 ≤ m) (hmn : m ≤ n) (hx : qa3 n x) : qa3 m x:= by
+theorem qp {n m x : ℤ} (hm : 0 ≤ m) (hmn : m ≤ n) (hx : qa3 n x) : qa3 m x:= by
   rcases hx with ⟨a,rfl⟩
   refine ⟨q0 (n - m) * a,?_⟩
   rw [Table.pow_split hm hmn]
   ring
-lemma div2_product {n m x y : ℤ} (hn : 0 ≤ n) (hm : 0 ≤ m)
+theorem div2_product {n m x y : ℤ} (hn : 0 ≤ n) (hm : 0 ≤ m)
     (hx : qa3 n x) (hy : qa3 m y) : qa3 (n + m) (x * y):= by
   rcases hx with ⟨a,rfl⟩
   rcases hy with ⟨b,rfl⟩
   refine ⟨a * b,?_⟩
   rw [q5 hn hm]
   ring
-lemma qaa {n m x : ℤ} (hm : 0 ≤ m) (hmn : m ≤ n)
+theorem qaa {n m x : ℤ} (hm : 0 ≤ m) (hmn : m ≤ n)
     (h : qa3 n (q0 m * x)) : qa3 (n - m) x:= by
   rcases h with ⟨a,ha⟩
   refine ⟨a,?_⟩
@@ -2547,12 +2538,12 @@ lemma qaa {n m x : ℤ} (hm : 0 ≤ m) (hmn : m ≤ n)
   have hp:=Table.pow_pos hm
   nlinarith
 def qab (x n : ℤ) : ℤ:=x / q0 n
-lemma qbh {n x : ℤ} (hn : 0 ≤ n) (hx : qa3 n x) : x=q0 n * qab x n:= by
+theorem qbh {n x : ℤ} (hn : 0 ≤ n) (hx : qa3 n x) : x=q0 n * qab x n:= by
   rcases hx with ⟨a,rfl⟩
   unfold qab
   have hp:=Table.pow_pos hn
   rw [Int.mul_ediv_cancel_left _ (by omega)]
-lemma qat {n x : ℤ} (hn : 1 ≤ n) (ho : qW x) : ¬ qa3 n x:= by
+theorem qat {n x : ℤ} (hn : 1 ≤ n) (ho : qW x) : ¬ qa3 n x:= by
   intro hd
   rcases ho with ⟨a,ha⟩
   rcases qp (by omega : 0 ≤ (1 : ℤ)) hn hd with ⟨b,hb⟩
@@ -2562,7 +2553,7 @@ def ctz_nat : ℕ → ℕ → ℕ
   | 0, _ => 0
   | fuel + 1, x =>
     if x % 2 = 0 then ctz_nat fuel (x / 2) + 1 else 0
-lemma ctz_nat_eq_q4 (fuel : ℕ) (x : ℤ) :
+theorem ctz_nat_eq_q4 (fuel : ℕ) (x : ℤ) :
     ((ctz_nat fuel x.natAbs : ℕ) : ℤ) = (q4 fuel x).1 := by
   induction fuel generalizing x with
   | zero => rfl
@@ -2577,11 +2568,11 @@ lemma ctz_nat_eq_q4 (fuel : ℕ) (x : ℤ) :
     · have hnat : x.natAbs % 2 ≠ 0 := by omega
       rw [if_neg hmod, if_neg hnat]
       rfl
-lemma mod_two_mul_mod_two (x m : ℕ) : (x % (2 * m)) % 2 = x % 2 := by
+theorem mod_two_mul_mod_two (x m : ℕ) : (x % (2 * m)) % 2 = x % 2 := by
   have h := Nat.div_add_mod x (2 * m)
   have h2 : 2 * m * (x / (2 * m)) = 2 * (m * (x / (2 * m))) := by ring
   omega
-lemma mod_two_mul_div_two (x m : ℕ) : (x % (2 * m)) / 2 = (x / 2) % m := by
+theorem mod_two_mul_div_two (x m : ℕ) : (x % (2 * m)) / 2 = (x / 2) % m := by
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · simp
   · have h1 := Nat.div_add_mod x (2 * m)
@@ -2591,12 +2582,12 @@ lemma mod_two_mul_div_two (x m : ℕ) : (x % (2 * m)) / 2 = (x / 2) % m := by
       omega
     have hlt : (x % (2 * m)) / 2 < m := by omega
     rw [h3, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt]
-lemma div_two_mod_eq_zero (x m : ℕ) (hx : x % 2 = 0) :
+theorem div_two_mod_eq_zero (x m : ℕ) (hx : x % 2 = 0) :
     (x / 2) % m = 0 ↔ x % (2 * m) = 0 := by
   have hm2 := mod_two_mul_mod_two x m
   rw [← mod_two_mul_div_two]
   omega
-lemma ctz_nat_step_k (k : ℕ) :
+theorem ctz_nat_step_k (k : ℕ) :
     ∀ (fuel x : ℕ),
       ctz_nat (k + fuel) x =
         if x % (2 ^ k) = 0 then ctz_nat fuel (x / (2 ^ k)) + k
@@ -2638,7 +2629,7 @@ def ctz_0 : ℕ → ℕ → ℕ
   | 0, _ => 0
   | fuel + 1, x =>
     if Nat.beq (Nat.mod x 2) 0 then Nat.add (ctz_0 fuel (Nat.div x 2)) 1 else 0
-lemma ctz_0_eq : ∀ fuel x, ctz_0 fuel x = ctz_nat fuel x
+theorem ctz_0_eq : ∀ fuel x, ctz_0 fuel x = ctz_nat fuel x
   | 0, _ => rfl
   | fuel + 1, x => by
     unfold ctz_0 ctz_nat
@@ -2657,7 +2648,7 @@ def ctz_split (k pk : ℕ) (f_low f_high : ℕ → ℕ → ℕ) (fuel x : ℕ) :
     match Nat.beq r 0 with
     | true => Nat.add (f_high (Nat.sub fuel k) (Nat.div x pk)) k
     | false => f_low k r
-lemma ctz_split_eq (k pk : ℕ) (f_low f_high : ℕ → ℕ → ℕ) (hpk : pk = 2 ^ k)
+theorem ctz_split_eq (k pk : ℕ) (f_low f_high : ℕ → ℕ → ℕ) (hpk : pk = 2 ^ k)
     (hlow : ∀ fuel x, f_low fuel x = ctz_nat fuel x)
     (hhigh : ∀ fuel x, f_high fuel x = ctz_nat fuel x) (fuel x : ℕ) :
     ctz_split k pk f_low f_high fuel x = ctz_nat fuel x := by
@@ -2686,35 +2677,35 @@ lemma ctz_split_eq (k pk : ℕ) (f_low f_high : ℕ → ℕ → ℕ) (hpk : pk =
   · try dsimp -failIfUnchanged only
     rw [hlow]
 def ctz_1 : ℕ → ℕ → ℕ := ctz_split 1 2 ctz_0 ctz_0
-lemma ctz_1_eq : ∀ fuel x, ctz_1 fuel x = ctz_nat fuel x :=
+theorem ctz_1_eq : ∀ fuel x, ctz_1 fuel x = ctz_nat fuel x :=
   ctz_split_eq 1 2 ctz_0 ctz_0 rfl ctz_0_eq ctz_0_eq
 def ctz_2 : ℕ → ℕ → ℕ := ctz_split 2 4 ctz_1 ctz_1
-lemma ctz_2_eq : ∀ fuel x, ctz_2 fuel x = ctz_nat fuel x :=
+theorem ctz_2_eq : ∀ fuel x, ctz_2 fuel x = ctz_nat fuel x :=
   ctz_split_eq 2 4 ctz_1 ctz_1 rfl ctz_1_eq ctz_1_eq
 def ctz_4 : ℕ → ℕ → ℕ := ctz_split 4 16 ctz_2 ctz_2
-lemma ctz_4_eq : ∀ fuel x, ctz_4 fuel x = ctz_nat fuel x :=
+theorem ctz_4_eq : ∀ fuel x, ctz_4 fuel x = ctz_nat fuel x :=
   ctz_split_eq 4 16 ctz_2 ctz_2 rfl ctz_2_eq ctz_2_eq
 def ctz_8 : ℕ → ℕ → ℕ := ctz_split 8 256 ctz_4 ctz_4
-lemma ctz_8_eq : ∀ fuel x, ctz_8 fuel x = ctz_nat fuel x :=
+theorem ctz_8_eq : ∀ fuel x, ctz_8 fuel x = ctz_nat fuel x :=
   ctz_split_eq 8 256 ctz_4 ctz_4 rfl ctz_4_eq ctz_4_eq
 def ctz_16 : ℕ → ℕ → ℕ := ctz_split 16 65536 ctz_8 ctz_8
-lemma ctz_16_eq : ∀ fuel x, ctz_16 fuel x = ctz_nat fuel x :=
+theorem ctz_16_eq : ∀ fuel x, ctz_16 fuel x = ctz_nat fuel x :=
   ctz_split_eq 16 65536 ctz_8 ctz_8 rfl ctz_8_eq ctz_8_eq
 def ctz_top_256 : ℕ → ℕ → ℕ := ctz_split 256 (Nat.pow 2 256) ctz_16 ctz_16
-lemma ctz_top_256_eq : ∀ fuel x, ctz_top_256 fuel x = ctz_nat fuel x :=
+theorem ctz_top_256_eq : ∀ fuel x, ctz_top_256 fuel x = ctz_nat fuel x :=
   ctz_split_eq 256 (Nat.pow 2 256) ctz_16 ctz_16 rfl ctz_16_eq ctz_16_eq
 def ctz_top_64 : ℕ → ℕ → ℕ := ctz_split 64 (Nat.pow 2 64) ctz_16 ctz_top_256
-lemma ctz_top_64_eq : ∀ fuel x, ctz_top_64 fuel x = ctz_nat fuel x :=
+theorem ctz_top_64_eq : ∀ fuel x, ctz_top_64 fuel x = ctz_nat fuel x :=
   ctz_split_eq 64 (Nat.pow 2 64) ctz_16 ctz_top_256 rfl ctz_16_eq ctz_top_256_eq
 def ctz_top_12 : ℕ → ℕ → ℕ := ctz_split 12 4096 ctz_4 ctz_top_64
-lemma ctz_top_12_eq : ∀ fuel x, ctz_top_12 fuel x = ctz_nat fuel x :=
+theorem ctz_top_12_eq : ∀ fuel x, ctz_top_12 fuel x = ctz_nat fuel x :=
   ctz_split_eq 12 4096 ctz_4 ctz_top_64 rfl ctz_4_eq ctz_top_64_eq
 def ctz_fast : ℕ → ℕ → ℕ := ctz_split 4 16 ctz_2 ctz_top_12
-lemma ctz_fast_eq (fuel x : ℕ) : ctz_fast fuel x = ctz_nat fuel x :=
+theorem ctz_fast_eq (fuel x : ℕ) : ctz_fast fuel x = ctz_nat fuel x :=
   ctz_split_eq 4 16 ctz_2 ctz_top_12 rfl ctz_2_eq ctz_top_12_eq fuel x
 def qq (n x : ℤ) : ℤ :=
   if Nat.beq x.natAbs 0 then n else Int.ofNat (ctz_fast n.toNat x.natAbs)
-lemma qq_eq_orig (n x : ℤ) :
+theorem qq_eq_orig (n x : ℤ) :
     qq n x = (if x = 0 then n else (q4 n.toNat x).1) := by
   unfold qq
   by_cases hx : x = 0
@@ -2724,7 +2715,7 @@ lemma qq_eq_orig (n x : ℤ) :
     rw [hna, if_neg Bool.false_ne_true, if_neg hx]
     change ((ctz_fast n.toNat x.natAbs : ℕ) : ℤ) = (q4 n.toNat x).1
     rw [ctz_fast_eq, ctz_nat_eq_q4]
-lemma qal {n : ℤ} (x : ℤ) (hn : 0 ≤ n) :
+theorem qal {n : ℤ} (x : ℤ) (hn : 0 ≤ n) :
     (0 ≤ qq n x ∧ qq n x ≤ n) ∧
     ∃ q,x=q0 (qq n x) * q ∧ (qq n x < n → qW q):= by
   rw [qq_eq_orig]
@@ -2734,12 +2725,12 @@ lemma qal {n : ℤ} (x : ℤ) (hn : 0 ≤ n) :
   · rcases qaw n.toNat x with ⟨h0,h1,heq,hodd⟩
     rw [Int.toNat_of_nonneg hn] at h1 hodd
     exact ⟨⟨h0,h1⟩,(q4 n.toNat x).2,heq,hodd⟩
-lemma qam {n : ℤ} (x : ℤ) (hn : 0 ≤ n) : qa3 (qq n x) x:= by
+theorem qam {n : ℤ} (x : ℤ) (hn : 0 ≤ n) : qa3 (qq n x) x:= by
   rcases (qal x hn).2 with ⟨q,hq,_⟩
   exact ⟨q,hq⟩
-lemma qL {n : ℤ} (x : ℤ) (hn : 0 ≤ n) : 0 ≤ qq n x ∧ qq n x ≤ n :=
+theorem qL {n : ℤ} (x : ℤ) (hn : 0 ≤ n) : 0 ≤ qq n x ∧ qq n x ≤ n :=
   (qal x hn).1
-lemma qbO {n x : ℤ} (hn : 0 ≤ n) (hlt : qq n x < n) :
+theorem qbO {n x : ℤ} (hn : 0 ≤ n) (hlt : qq n x < n) :
     qW (qab x (qq n x)):= by
   rcases qal x hn with ⟨⟨h0,_⟩,q,hx,hodd⟩
   have he:=qbh h0 (qam x hn)
@@ -2747,7 +2738,7 @@ lemma qbO {n x : ℤ} (hn : 0 ≤ n) (hlt : qq n x < n) :
   have hq : qab x (qq n x)=q:= by nlinarith
   rw [hq]
   exact hodd hlt
-lemma div2_order {n x : ℤ} (hn : 0 ≤ n) : qa3 n x ↔ qq n x=n:= by
+theorem div2_order {n x : ℤ} (hn : 0 ≤ n) : qa3 n x ↔ qq n x=n:= by
   rcases qal x hn with ⟨⟨h0,h1⟩,q,hx,hodd⟩
   constructor
   · intro h
@@ -2764,7 +2755,7 @@ def qbg (n x : ℤ) : Bool :=
   | Int.ofNat 0 => true
   | Int.ofNat (m + 1) => Nat.beq (x.natAbs % (2 ^ (m + 1))) 0
   | Int.negSucc _ => false
-lemma qbs {n x : ℤ} (hn : 0 ≤ n) : qbg n x=true ↔ qa3 n x:= by
+theorem qbs {n x : ℤ} (hn : 0 ≤ n) : qbg n x=true ↔ qa3 n x:= by
   cases n with
   | negSucc m => omega
   | ofNat m =>
@@ -2778,7 +2769,7 @@ lemma qbs {n x : ℤ} (hn : 0 ≤ n) : qbg n x=true ↔ qa3 n x:= by
     unfold qa3
     rw [hq0]
     rfl
-lemma qbw {n x m q : ℤ} (hn : 0 ≤ n) (hm : 0 ≤ m) (hq : qW q)
+theorem qbw {n x m q : ℤ} (hn : 0 ≤ n) (hm : 0 ≤ m) (hq : qW q)
     (h : qa3 n (x - q0 m * q)) :
     (qq n x < n → m=qq n x) ∧ (qq n x=n → n ≤ m):= by
   rcases qal x hn with ⟨⟨hv0,hvn⟩,a,ha,ho⟩
@@ -2834,7 +2825,7 @@ def qbd (z : relation) (S U : ℤ) : Prop :=
 def choose (z : relation) (A Q C N a0 b0 p0 : ℤ) : relation :=
   if decide (z.n < N) then ⟨A,Q,C,N,a0,b0,p0⟩
   else ⟨z.a,z.q,z.c,z.n,a0,b0,p0⟩
-lemma qaU (z : relation) (A Q C N a0 b0 p0 S U : ℤ)
+theorem qaU (z : relation) (A Q C N a0 b0 p0 S U : ℤ)
     (hz : qbd z S U) (hN : 0 ≤ N) (hQ : qW Q)
     (hR : qa3 N (Q * U - A * S - C)) (hp0 : 0 ≤ p0) (ha0 : qW a0)
     (hS : qa3 p0 (a0 * S - b0)) :
@@ -2842,7 +2833,7 @@ lemma qaU (z : relation) (A Q C N a0 b0 p0 S U : ℤ)
   rcases hz with ⟨hn,hp,hq,ha,hr,hs⟩
   unfold choose
   split_ifs <;> exact ⟨by assumption,hp0,by assumption,ha0,by assumption,hS⟩
-lemma eliminate (z : relation) (A Q C N S U : ℤ)
+theorem eliminate (z : relation) (A Q C N S U : ℤ)
     (hz : qbd z S U) (hN : 0 ≤ N) (hnew : qa3 N (Q * U - A * S - C)) :
     qa3 (min N z.n) ((Q * z.a - z.q * A) * S - (z.q * C - Q * z.c)):= by
   rcases hz with ⟨hn,hp,hq,ha,hr,hs⟩
@@ -2854,7 +2845,7 @@ lemma eliminate (z : relation) (A Q C N S U : ℤ)
   have heq : z.q * (Q * U - A * S - C) - Q * (z.q * U - z.a * S - z.c) =
       (Q * z.a - z.q * A) * S - (z.q * C - Q * z.c):= by ring
   rwa [heq] at h
-lemma qaP (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
+theorem qaP (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
     qa3 (qq m A) B:= by
   have hv:=qL A hm
   have hA:=qa7 S (qam A hm)
@@ -2862,7 +2853,7 @@ lemma qaP (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
   have hsub:=qb4 hA hB
   have heq : S * A - (A * S - B)=B:= by ring
   rwa [heq] at hsub
-lemma qb3 (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
+theorem qb3 (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
     qa3 (m - qq m A) (qab A (qq m A) * S - qab B (qq m A)):= by
   have hv:=qL A hm
   have hA:=qbh hv.1 (qam A hm)
@@ -2873,7 +2864,7 @@ lemma qb3 (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
     dsimp -failIfUnchanged only at hA'
     linarith
   rwa [heq]
-lemma compatible (m a0 b0 p0 a1 b1 S : ℤ) (hm : 0 ≤ m) (hp : 0 ≤ p0)
+theorem compatible (m a0 b0 p0 a1 b1 S : ℤ) (hm : 0 ≤ m) (hp : 0 ≤ p0)
     (h0 : qa3 m (a0 * S - b0)) (h1 : qa3 p0 (a1 * S - b1)) :
     qa3 (min m p0) (a0 * b1 - a1 * b0):= by
   have h0':=qp (by omega) (by omega : min m p0 ≤ m) h0
@@ -2890,7 +2881,7 @@ def qaC (r : relation) (f : relation → Option relation) : Option relation :=
   q2 r.sb fun sb =>
   q2 r.sn fun sn =>
   f ⟨a,q,c,n,sa,sb,sn⟩
-@[simp] lemma strictRel_eq (r : relation) (f : relation → Option relation) :
+@[simp] theorem strictRel_eq (r : relation) (f : relation → Option relation) :
     qaC r f=f r:= by
   cases r; simp [qaC]
 def qbR (z : relation) (A Q C N : ℤ) : Option relation :=
@@ -2909,7 +2900,7 @@ def qbR (z : relation) (A Q C N : ℤ) : Option relation :=
       else none
     else qaC (choose z A Q C N z.sa z.sb z.sn) some
   else none
-lemma qce (z : relation) (A Q C N S U : ℤ)
+theorem qce (z : relation) (A Q C N S U : ℤ)
     (hz : qbd z S U) (hN : 0 ≤ N) (hQ : qW Q)
     (hnew : qa3 N (Q * U - A * S - C)) :
     ∃ z',qbR z A Q C N=some z' ∧ qbd z' S U:= by
@@ -2951,7 +2942,7 @@ def add (z : Option relation) (A Q C N : ℤ) : Option relation :=
   match z with
   | none => some ⟨A,Q,C,N,1,0,0⟩
   | some z => qbR z A Q C N
-lemma add_spec (z : Option relation) (A Q C N S U : ℤ)
+theorem add_spec (z : Option relation) (A Q C N S U : ℤ)
     (hz : optional z S U) (hN : 0 ≤ N) (hQ : qW Q)
     (hnew : qa3 N (Q * U - A * S - C)) :
     ∃ z',add z A Q C N=some z' ∧ qbd z' S U:= by
@@ -2968,7 +2959,7 @@ def qb2 (z : relation) (A Q : ℤ) : ℤ:=Q * z.a - z.q * A
 def elim_b (z : relation) (B Q : ℤ) : ℤ:=z.q * B - Q * z.c
 def qa2 (z : relation) (A Q : ℤ) : ℤ:=min z.n (z.sn + qq z.n (qb2 z A Q))
 def qa6 (z : relation) (A B Q : ℤ) : ℤ:=z.sa * elim_b z B Q - qb2 z A Q * z.sb
-lemma qaZ (z : relation) (A B Q S U H : ℤ)
+theorem qaZ (z : relation) (A B Q S U H : ℤ)
     (hz : qbd z S U) (hH : H=A * S - Q * U + B) :
     qa3 (qa2 z A Q) (qa6 z A B Q - z.sa * z.q * H):= by
   rcases hz with ⟨hn,hp,hq,ha,hU,hS⟩
@@ -2986,7 +2977,7 @@ lemma qaZ (z : relation) (A B Q S U H : ℤ)
     rw [hH]
     ring
   rwa [heq] at hsum
-lemma pruning_spec (z : relation) (A B Q S U D s t : ℤ)
+theorem pruning_spec (z : relation) (A B Q S U D s t : ℤ)
     (hz : qbd z S U) (hD : 0 ≤ D) (hs : 0 ≤ s)
     (hH : A * S - Q * U + B=q0 (D + s) * (2 * t + 1)) :
     let bound:=qa2 z A Q
@@ -3026,7 +3017,7 @@ def qV : ℕ → ℤ → entry → Option (List entry)
       | some xs => some (f :: xs)
       | none => none
     | none => none
-lemma qbY (n : ℕ) (k : ℤ) (f : entry) (xs : List entry)
+theorem qbY (n : ℕ) (k : ℤ) (f : entry) (xs : List entry)
     (hf : Built k f) (hb : qV n k f=some xs) :
     xs.length=n + 1 ∧
     ∀ (i : ℕ) (g : entry),CheckTable.nth_entry xs i=some g → Built (k + (i : ℤ)) g:= by
@@ -3073,23 +3064,23 @@ lemma qbY (n : ℕ) (k : ℤ) (f : entry) (xs : List entry)
           rwa [heq] at hi
 def bank_opt : Option (List entry):=qV 2048 0 (.One 1 0)
 def bank : List entry:=bank_opt.getD []
-lemma bank_opt_some : bank_opt.isSome=true:= by decide +kernel
-lemma qaA {α : Type*} {o : Option α} (d : α) (h : o.isSome=true) :
+theorem bank_opt_some : bank_opt.isSome=true:= by decide +kernel
+theorem qaA {α : Type*} {o : Option α} (d : α) (h : o.isSome=true) :
     o=some (o.getD d):= by
   cases o with
   | none => contradiction
   | some xs => rfl
-lemma qaJ : bank_opt=some bank :=
+theorem qaJ : bank_opt=some bank :=
   qaA [] bank_opt_some
-lemma qaq (xs : List entry)
+theorem qaq (xs : List entry)
     (hb : qV 2048 0 (.One 1 0)=some xs) :
     xs.length=2049 ∧ CheckTable.bank_ok xs:= by
   rcases qbY 2048 0 (.One 1 0) xs Built.built_root hb with ⟨hlen,hok⟩
   refine ⟨hlen,fun i f hget => ?_⟩
   simpa using! hok i f hget
-lemma bank_valid : bank.length=2049 ∧ CheckTable.bank_ok bank :=
+theorem bank_valid : bank.length=2049 ∧ CheckTable.bank_ok bank :=
   qaq bank qaJ
-lemma qc8 {xs : List entry} {i : ℕ} (h : CheckTable.nth_entry xs i=none) :
+theorem qc8 {xs : List entry} {i : ℕ} (h : CheckTable.nth_entry xs i=none) :
     xs.length ≤ i:= by
   induction xs generalizing i with
   | nil => simp
@@ -3110,7 +3101,7 @@ def qaI (k : ℤ) : List entry → List kernel
       if decide (1 ≤ k) then
         if q3 k x then rest else ⟨k,x⟩ :: rest
       else rest
-lemma collect_tail (k : ℤ) (f : entry) (xs : List entry) (z : kernel)
+theorem collect_tail (k : ℤ) (f : entry) (xs : List entry) (z : kernel)
     (hz : z ∈ qaI (k + 1) xs) : z ∈ qaI k (f :: xs):= by
   cases f with
   | One _ _ => exact hz
@@ -3118,7 +3109,7 @@ lemma collect_tail (k : ℤ) (f : entry) (xs : List entry) (z : kernel)
     unfold qaI
     try dsimp -failIfUnchanged only
     split_ifs <;> simp [hz]
-lemma qbB (k : ℤ) (xs : List entry) (i : ℕ) (x : Table.pair) (e : ℤ)
+theorem qbB (k : ℤ) (xs : List entry) (i : ℕ) (x : Table.pair) (e : ℤ)
     (hget : CheckTable.nth_entry xs i=some (.Two x e))
     (hk : 1 ≤ k + (i : ℤ))
     (he : q3 (k + (i : ℤ)) x=false) :
@@ -3141,7 +3132,7 @@ lemma qbB (k : ℤ) (xs : List entry) (i : ℕ) (x : Table.pair) (e : ℤ)
       have heq : k + ((i + 1 : ℕ) : ℤ)=(k + 1) + (i : ℤ):= by push_cast; ring
       rw [heq] at hk he ⊢
       exact ih (k + 1) i hget hk he
-lemma qap (xs : List entry)
+theorem qap (xs : List entry)
     (hlen : xs.length=2049) (hbank : CheckTable.bank_ok xs)
     (k : kernel) (hk : continuing k) (hmax : k.index ≤ 2048) :
     k ∈ qaI 0 xs:= by
@@ -3318,7 +3309,7 @@ def lib_15 : List kernel:=[
 ]
 def library_val : List kernel :=
   lib_0 ++ lib_1 ++ lib_2 ++ lib_3 ++ lib_4 ++ lib_5 ++ lib_6 ++ lib_7 ++ lib_8 ++ lib_9 ++ lib_10 ++ lib_11 ++ lib_12 ++ lib_13 ++ lib_14 ++ lib_15
-lemma library_eq : library=library_val:= by decide +kernel
+theorem library_eq : library=library_val:= by decide +kernel
 def action (k : kernel) (S U S' U' : ℤ) : Prop :=
   S'=S + gain k ∧
   q0 k.pair.d * U'=k.pair.p * (2 * S - U + 3) + q0 k.pair.d * k.pair.b ∧
@@ -3343,13 +3334,13 @@ def qE (z : state) (S0 U0 S U : ℤ) : Prop :=
   q0 z.D * U=z.P * S0 + z.Q * U0 + z.C ∧ S=S0 + z.mass ∧ optional z.rel S0 U0
 def A (z : state) : ℤ:=q0 (z.D + 1) - z.P
 def B (z : state) : ℤ:=(2 * z.mass + 3) * q0 z.D - z.C
-lemma qav (z : state) (S0 U0 S U : ℤ) (hz : qE z S0 U0 S U) :
+theorem qav (z : state) (S0 U0 S U : ℤ) (hz : qE z S0 U0 S U) :
     q0 z.D * (2 * S - U + 3)=A z * S0 - z.Q * U0 + B z:= by
   rcases hz with ⟨hD,hQ,hU,hS,hR⟩
   unfold A B
   rw [q5 hD (by omega),pow2_one,hS]
   linarith
-lemma qcj (z : state) (k : kernel) (S0 U0 S U S' U' : ℤ)
+theorem qcj (z : state) (k : kernel) (S0 U0 S U S' U' : ℤ)
     (hz : qE z S0 U0 S U) (hk : 0 ≤ k.index) (hact : action k S U S' U') :
     qa3 (z.D + k.index + 1) (z.Q * U0 - A z * S0 - (B z - q0 (z.D + k.index))):= by
   rcases hact with ⟨hS,hU,t,ht⟩
@@ -3367,7 +3358,7 @@ def push (z : state) (k : kernel) (r : relation) : state :=
    k.pair.p * B z + k.pair.b * q0 (z.D + k.pair.d),
    z.D + k.pair.d,
    z.mass + gain k⟩
-lemma push_spec (z : state) (k : kernel) (r : relation) (S0 U0 S U S' U' : ℤ)
+theorem push_spec (z : state) (k : kernel) (r : relation) (S0 U0 S U S' U' : ℤ)
     (hz : qE z S0 U0 S U) (hd : 0 ≤ k.pair.d) (hp : qW k.pair.p)
     (hact : action k S U S' U') (hr : qbd r S0 U0) :
     qE (push z k r) S0 U0 S' U':= by
@@ -3388,7 +3379,7 @@ lemma push_spec (z : state) (k : kernel) (r : relation) (S0 U0 S U S' U' : ℤ)
 def qJ {T : Type*} (f : T → Bool) : List T → Bool
   | [] => true
   | x :: r => if f x then qJ f r else false
-lemma qbf {T : Type*} (f : T → Bool) (xs : List T) (h : qJ f xs=true) :
+theorem qbf {T : Type*} (f : T → Bool) (xs : List T) (h : qJ f xs=true) :
     ∀ x ∈ xs,f x=true:= by
   induction xs with
   | nil => intro x hx; contradiction
@@ -3399,7 +3390,7 @@ lemma qbf {T : Type*} (f : T → Bool) (xs : List T) (h : qJ f xs=true) :
     rcases List.mem_cons.mp hx with rfl | hx'
     · exact ha
     · exact ih h x hx'
-lemma qbr {T : Type*} (f : T → Bool) (xs ys : List T) :
+theorem qbr {T : Type*} (f : T → Bool) (xs ys : List T) :
     qJ f (xs ++ ys)=(qJ f xs && qJ f ys):= by
   induction xs with
   | nil => simp [qJ]
@@ -3468,14 +3459,14 @@ def single (s : ℤ) : List kernel :=
         if int_lt s 1934 then find_kernel s lib_14
         else if int_le s 2046 then find_kernel s lib_15
         else []
-lemma single_all :
+theorem single_all :
     qJ (fun k => decide (k ∈ single k.index)) library_val=true:= by
   decide +kernel
-lemma qx (k : kernel) (hk : continuing k) (hmax : k.index ≤ 2048) :
+theorem qx (k : kernel) (hk : continuing k) (hmax : k.index ≤ 2048) :
     k ∈ library_val:= by
   rw [← library_eq]
   exact qby k hk hmax
-lemma qbL (k : kernel) (hk : continuing k) (hmax : k.index ≤ 2048) :
+theorem qbL (k : kernel) (hk : continuing k) (hmax : k.index ≤ 2048) :
     k ∈ single k.index:= by
   have hmem : k ∈ library_val:=qx k hk hmax
   exact of_decide_eq_true (qbf _ library_val single_all k hmem)
@@ -3486,7 +3477,7 @@ def qaQ (z : state) (f : state → Option state) : Option state :=
   q2 z.D fun D =>
   q2 z.mass fun mass =>
   f ⟨z.rel,P,Q,C,D,mass⟩
-@[simp] lemma strictState_eq (z : state) (f : state → Option state) :
+@[simp] theorem strictState_eq (z : state) (f : state → Option state) :
     qaQ z f=f z:= by
   cases z; simp [qaQ]
 def qbj (z : state) : List kernel :=
@@ -3502,7 +3493,7 @@ def qbj (z : state) : List kernel :=
     else
       q2 (bound - z.D) fun min_idx =>
       library_val.filter (fun k => decide (min_idx ≤ k.index))
-lemma choices_spec (z : state) (k : kernel) (S0 U0 S U S' U' : ℤ)
+theorem choices_spec (z : state) (k : kernel) (S0 U0 S U S' U' : ℤ)
     (hz : qE z S0 U0 S U) (hk : continuing k) (hmax : k.index ≤ 2048)
     (hstep : action k S U S' U') :
     k ∈ qbj z:= by
@@ -3546,7 +3537,7 @@ def advance (z : state) (k : kernel) : Option state :=
   match add z.rel az z.Q c_arg n_arg with
   | some r => qaQ (push z k r) some
   | none => none
-lemma advance_spec (z : state) (k : kernel) (S0 U0 S U S' U' : ℤ)
+theorem advance_spec (z : state) (k : kernel) (S0 U0 S U S' U' : ℤ)
     (hz : qE z S0 U0 S U) (hk : continuing k) (hstep : action k S U S' U') :
     ∃ z',advance z k=some z' ∧ qE z' S0 U0 S' U':= by
   rcases hk with ⟨e,hbuilt,hindex,hodd⟩
@@ -3585,7 +3576,7 @@ def cands_5 : List kernel := [⟨17,⟨1,1,37,0⟩⟩,⟨54,⟨1,1,133,0⟩⟩,�
 def cands_8 : List kernel := [⟨139,⟨1,1,367,0⟩⟩,⟨425,⟨1,1,1135,0⟩⟩,⟨714,⟨1,1,1903,0⟩⟩,⟨999,⟨1,1,2671,0⟩⟩,⟨1288,⟨1,1,3439,0⟩⟩,⟨1572,⟨1,1,4207,0⟩⟩,⟨1861,⟨1,1,4975,0⟩⟩]
 
 def qaG : state:=⟨none,0,1,0,0,0⟩
-lemma initial_spec (S U : ℤ) : qE qaG S U S U:= by
+theorem initial_spec (S U : ℤ) : qE qaG S U S U:= by
   unfold qE qaG WordRelation.optional
   try dsimp -failIfUnchanged only
   refine ⟨by omega,⟨0,rfl⟩,by simp,by omega,trivial⟩
@@ -3753,29 +3744,29 @@ def qbN_c : ℕ → state → Option kernel → kernel → Bool
         q2 (bound - z.D) fun min_idx =>
         qJ_cands fuel min_idx kp2 kp (fun k => qB (fun z' => qbN_c fuel z' (some kp) k) z k) (get_cands fuel kp)
 
-lemma int_le_iff (a b : ℤ) : int_le a b = true ↔ a ≤ b := by
+theorem int_le_iff (a b : ℤ) : int_le a b = true ↔ a ≤ b := by
   cases a <;> cases b <;> simp [int_le, Nat.ble_eq] <;> omega
 
-lemma int_lt_iff (a b : ℤ) : int_lt a b = true ↔ a < b := by
+theorem int_lt_iff (a b : ℤ) : int_lt a b = true ↔ a < b := by
   cases a <;> cases b <;> simp [int_lt, Nat.ble_eq] <;> omega
 
-lemma int_eq_iff (a b : ℤ) : int_eq a b = true ↔ a = b := by
+theorem int_eq_iff (a b : ℤ) : int_eq a b = true ↔ a = b := by
   cases a <;> cases b <;> simp [int_eq, Nat.beq_eq] <;> omega
 
-lemma int_min_eq (a b : ℤ) : int_min a b = min a b := by
+theorem int_min_eq (a b : ℤ) : int_min a b = min a b := by
   unfold int_min
   split_ifs with h
   · rw [int_le_iff] at h; exact (min_eq_left h).symm
   · have h' : ¬ a ≤ b := fun hab => h ((int_le_iff a b).mpr hab)
     omega
 
-lemma qq16_eq (n x : ℤ) : qq16 n x = qq n x := by
+theorem qq16_eq (n x : ℤ) : qq16 n x = qq n x := by
   unfold qq16 qq
   split_ifs with h
   · rfl
   · rw [ctz_16_eq, ctz_fast_eq]
 
-lemma qbg5_iff (x : ℤ) : qbg5 x = true ↔ qa3 5 x := by
+theorem qbg5_iff (x : ℤ) : qbg5 x = true ↔ qa3 5 x := by
   have h5 : (0 : ℤ) ≤ 5 := by omega
   rw [← qbs h5]
   rfl
@@ -3792,9 +3783,9 @@ def lib_kernel_ok (k : kernel) : Bool :=
   decide (k.index < 15 → single_small k.index = some k) &&
   decide (k ∈ get_bkt (k_tag k))
 
-lemma lib_kernel_ok_all : qJ lib_kernel_ok library_val = true := by decide +kernel
+theorem lib_kernel_ok_all : qJ lib_kernel_ok library_val = true := by decide +kernel
 
-lemma lib_kernel_props {k : kernel} (hk : k ∈ library_val) :
+theorem lib_kernel_props {k : kernel} (hk : k ∈ library_val) :
     5 ≤ k.index ∧
     1 ≤ k.pair.d ∧
     4 ≤ k.index - k.pair.d ∧
@@ -3811,7 +3802,7 @@ lemma lib_kernel_props {k : kernel} (hk : k ∈ library_val) :
   exact ⟨h.1.1.1.1.1.1.1.1.1, h.1.1.1.1.1.1.1.1.2, h.1.1.1.1.1.1.1.2,
     h.1.1.1.1.1.1.2, h.1.1.1.1.1.2, h.1.1.1.1.2, h.1.1.1.2, h.1.1.2, h.1.2, h.2⟩
 
-lemma single_small_props (v : ℤ) (k3 : kernel) (h : single_small v = some k3) :
+theorem single_small_props (v : ℤ) (k3 : kernel) (h : single_small v = some k3) :
     k3 ∈ library_val ∧ k3.index = v ∧ k3.pair.d = 1 ∧ k3.pair.p = 1 := by
   unfold single_small at h
   split_ifs at h with h5 h8 h12 h14
@@ -3824,23 +3815,23 @@ lemma single_small_props (v : ℤ) (k3 : kernel) (h : single_small v = some k3) 
   · injection h with h; subst h; rw [int_eq_iff] at h14; subst h14
     exact ⟨by decide, rfl, rfl, rfl⟩
 
-lemma odd_mul {x y : ℤ} (hx : qW x) (hy : qW y) : qW (x * y) := by
+theorem odd_mul {x y : ℤ} (hx : qW x) (hy : qW y) : qW (x * y) := by
   rcases hx with ⟨a, rfl⟩
   rcases hy with ⟨b, rfl⟩
   refine ⟨2 * a * b + a + b, ?_⟩
   ring
 
-lemma odd_neg {x : ℤ} (hx : qW x) : qW (-x) := by
+theorem odd_neg {x : ℤ} (hx : qW x) : qW (-x) := by
   rcases hx with ⟨a, rfl⟩
   refine ⟨-a - 1, ?_⟩
   ring
 
-lemma odd_add_two_mul {x : ℤ} (y : ℤ) (hx : qW x) : qW (2 * y + x) := by
+theorem odd_add_two_mul {x : ℤ} (y : ℤ) (hx : qW x) : qW (2 * y + x) := by
   rcases hx with ⟨a, rfl⟩
   refine ⟨y + a, ?_⟩
   ring
 
-lemma odd_pair_adj_dvd {m1 m2 u1 u2 : ℤ}
+theorem odd_pair_adj_dvd {m1 m2 u1 u2 : ℤ}
     (hm1 : 0 ≤ m1) (hm2 : 0 ≤ m2) (hu1 : qW u1) (hu2 : qW u2) :
     qa3 (min 15 (min m1 m2 + 1))
       (q0 m1 * u1 + q0 m2 * u2 -
@@ -3897,7 +3888,7 @@ def H_rel (base m1 m2 S U : ℤ) : Prop :=
   4 ≤ m1 ∧ 4 ≤ m2 ∧
   ∃ u1 u2 : ℤ, qW u1 ∧ qW u2 ∧ 2 * S - U + 3 = base + q0 m1 * u1 + q0 m2 * u2
 
-lemma step_base_sound {base m1 m2 S U S' U' : ℤ} {k_next : kernel}
+theorem step_base_sound {base m1 m2 S U S' U' : ℤ} {k_next : kernel}
     (hrel : H_rel base m1 m2 S U)
     (hk : k_next ∈ library_val)
     (hact : action k_next S U S' U') :
@@ -3964,7 +3955,7 @@ lemma step_base_sound {base m1 m2 S U S' U' : ℤ} {k_next : kernel}
     exact ⟨rfl, fun k3 hk3 => by injection hk3 with hk3; exact ⟨hk3.symm, hd, hp⟩⟩
   · exact ⟨rfl, fun k3 hk3 => by contradiction⟩
 
-lemma action_step_eq {k : kernel} {S U S' U' : ℤ}
+theorem action_step_eq {k : kernel} {S U S' U' : ℤ}
     (hk : k ∈ library_val) (hact : action k S U S' U') :
     ∃ t : ℤ,
       2 * S - U + 3 = q0 k.index * (2 * t + 1) ∧
@@ -3994,7 +3985,7 @@ def H_rel_full (base m1 : ℤ) (k_last : kernel) (S_cur U_cur : ℤ) : Prop :=
   H_rel base m1 (k_last.index - k_last.pair.d) S_cur U_cur ∧
   ∃ v2 : ℤ, U_cur = k_last.pair.b + q0 (k_last.index - k_last.pair.d) * v2
 
-lemma two_step_rel {k1 k2 : kernel} {S0 U0 S1 U1 S2 U2 : ℤ}
+theorem two_step_rel {k1 k2 : kernel} {S0 U0 S1 U1 S2 U2 : ℤ}
     (hk1 : k1 ∈ library_val) (hk2 : k2 ∈ library_val)
     (hact1 : action k1 S0 U0 S1 U1) (hact2 : action k2 S1 U1 S2 U2) :
     H_rel_full (2 * gain k2 + k1.pair.b - k2.pair.b) (k1.index - k1.pair.d) k2 S2 U2 := by
@@ -4009,7 +4000,7 @@ lemma two_step_rel {k1 k2 : kernel} {S0 U0 S1 U1 S2 U2 : ℤ}
     ⟨k2.pair.p * (2 * t2 + 1), hU2⟩⟩
   linarith
 
-lemma three_step_4k_rel {k0 kp k : kernel} {S0 U0 S1 U1 S2 U2 S3 U3 : ℤ}
+theorem three_step_4k_rel {k0 kp k : kernel} {S0 U0 S1 U1 S2 U2 S3 U3 : ℤ}
     (hk0 : k0 ∈ library_val) (hkp : kp ∈ library_val) (hk : k ∈ library_val)
     (hd1 : kp.pair.d = 1)
     (hact0 : action k0 S0 U0 S1 U1)
@@ -4044,7 +4035,7 @@ lemma three_step_4k_rel {k0 kp k : kernel} {S0 U0 S1 U1 S2 U2 S3 U3 : ℤ}
   dsimp -failIfUnchanged only at hpow'
   linarith
 
-lemma step_rel_div {base m1 : ℤ} {k_last k_next : kernel} {S_cur U_cur S_next U_next : ℤ}
+theorem step_rel_div {base m1 : ℤ} {k_last k_next : kernel} {S_cur U_cur S_next U_next : ℤ}
     (hrel : H_rel_full base m1 k_last S_cur U_cur)
     (hk_next : k_next ∈ library_val)
     (hd1 : k_next.pair.d = 1) (hp1 : k_next.pair.p = 1)
@@ -4091,13 +4082,13 @@ lemma step_rel_div {base m1 : ℤ} {k_last k_next : kernel} {S_cur U_cur S_next 
         q0 (m1 - 1) * u1 + q0 (k_last.index - k_last.pair.d - 1) * (2 * v2 + u2) := by
         dsimp -failIfUnchanged [Q1, Q2, V2]; ring
 
-lemma chain_simple_succ (fuel1 : ℕ) (k1 k2 : kernel) :
+theorem chain_simple_succ (fuel1 : ℕ) (k1 k2 : kernel) :
     chain_simple (fuel1 + 1) k1 k2 =
       eval_step_rel fuel1 (2 * gain k2 + k1.pair.b - k2.pair.b) (k1.index - k1.pair.d) k2 := by
   unfold chain_simple eval_step_rel
   simp only [strictInt_eq]
 
-lemma eval_step_rel_sound {fuel1 : ℕ} {base m1 : ℤ} {k_last : kernel}
+theorem eval_step_rel_sound {fuel1 : ℕ} {base m1 : ℤ} {k_last : kernel}
     {S_prev U_prev S_cur U_cur : ℤ} {rest : List kernel}
     (ih1 : ∀ (k_a k_b : kernel) (S_a U_a S_b U_b S_c U_c : ℤ) (rest_c : List kernel),
       k_a ∈ library_val → k_b ∈ library_val →
@@ -4174,7 +4165,7 @@ lemma eval_step_rel_sound {fuel1 : ℕ} {base m1 : ℤ} {k_last : kernel}
                 hk_next hk_next2 hstep_next hstep_next2 hall2 htail2 hlen2
         · rfl
 
-lemma chain_simple_sound (fuel : ℕ) :
+theorem chain_simple_sound (fuel : ℕ) :
     ∀ (k1 k2 : kernel) (S0 U0 S1 U1 S2 U2 : ℤ) (rest : List kernel),
       k1 ∈ library_val → k2 ∈ library_val →
       action k1 S0 U0 S1 U1 → action k2 S1 U1 S2 U2 →
@@ -4200,7 +4191,7 @@ def prev_ok (kp2 : Option kernel) (kp : kernel) (S U : ℤ) : Prop :=
     | none => True
     | some k0 => k0 ∈ library_val ∧ ∃ S_prev2 U_prev2 : ℤ, action k0 S_prev2 U_prev2 S_prev U_prev
 
-lemma check_4k_simple_sound (fuel : ℕ) (kp2 : Option kernel) (kp k : kernel)
+theorem check_4k_simple_sound (fuel : ℕ) (kp2 : Option kernel) (kp k : kernel)
     (S U S' U' : ℤ) (rest : List kernel)
     (hp_ok : prev_ok kp2 kp S U)
     (hk : k ∈ library_val)
@@ -4236,7 +4227,7 @@ lemma check_4k_simple_sound (fuel : ℕ) (kp2 : Option kernel) (kp k : kernel)
             hk hrel hact_k hall htrace hlen
         simp only [Bool.not_true, Bool.false_eq_true, ↓reduceIte, strictInt_eq, heval, hcs]
 
-lemma kernel_term_mod32 {k0 : kernel} {u : ℤ}
+theorem kernel_term_mod32 {k0 : kernel} {u : ℤ}
     (hk0 : k0 ∈ library_val) (hu : qW u) :
     ∃ c : ℤ, q0 (k0.index - k0.pair.d) * u =
       32 * c + (if int_eq k0.index 5 then 16 else 0) := by
@@ -4259,7 +4250,7 @@ lemma kernel_term_mod32 {k0 : kernel} {u : ℤ}
     rw [if_neg h5', hsplit]
     exact ⟨q0 (k0.index - k0.pair.d - 5) * (2 * a + 1), by ring⟩
 
-lemma two_step_bkt {kp k k_next : kernel} {S_prev U_prev S U S' U' S'' U'' : ℤ}
+theorem two_step_bkt {kp k k_next : kernel} {S_prev U_prev S U S' U' S'' U'' : ℤ}
     (hkp : kp ∈ library_val) (hk : k ∈ library_val) (hk_next : k_next ∈ library_val)
     (hact_kp : action kp S_prev U_prev S U)
     (hact_k : action k S U S' U')
@@ -4289,7 +4280,7 @@ def eq_kernel (k1 k2 : kernel) : Bool :=
   int_eq k1.pair.b k2.pair.b &&
   int_eq k1.pair.c k2.pair.c
 
-lemma eq_kernel_iff (k1 k2 : kernel) : eq_kernel k1 k2 = true ↔ k1 = k2 := by
+theorem eq_kernel_iff (k1 k2 : kernel) : eq_kernel k1 k2 = true ↔ k1 = k2 := by
   rcases k1 with ⟨i1, p1, d1, b1, c1⟩
   rcases k2 with ⟨i2, p2, d2, b2, c2⟩
   simp only [eq_kernel, Bool.and_eq_true, int_eq_iff, kernel.mk.injEq, Table.pair.mk.injEq]
@@ -4299,7 +4290,7 @@ def mem_kernel (k : kernel) : List kernel → Bool
   | [] => false
   | x :: xs => if eq_kernel k x then true else mem_kernel k xs
 
-lemma mem_kernel_iff (k : kernel) (xs : List kernel) :
+theorem mem_kernel_iff (k : kernel) (xs : List kernel) :
     mem_kernel k xs = true ↔ k ∈ xs := by
   induction xs with
   | nil => simp [mem_kernel]
@@ -4332,12 +4323,12 @@ def check_cs2_small (k : kernel) : Bool :=
   bool_beq (chain_simple 2 k ⟨12, ⟨1, 1, 25, 0⟩⟩) (cs2_small k ⟨12, ⟨1, 1, 25, 0⟩⟩) &&
   bool_beq (chain_simple 2 k ⟨14, ⟨1, 1, 31, 0⟩⟩) (cs2_small k ⟨14, ⟨1, 1, 31, 0⟩⟩)
 
-lemma check_cs2_small_all : qJ check_cs2_small library_val = true := by decide +kernel
+theorem check_cs2_small_all : qJ check_cs2_small library_val = true := by decide +kernel
 
-lemma bool_beq_eq {a b : Bool} (h : bool_beq a b = true) : a = b := by
+theorem bool_beq_eq {a b : Bool} (h : bool_beq a b = true) : a = b := by
   cases a <;> cases b <;> first | rfl | contradiction
 
-lemma cs2_small_eq {k k3 : kernel} {v : ℤ} (hk : k ∈ library_val)
+theorem cs2_small_eq {k k3 : kernel} {v : ℤ} (hk : k ∈ library_val)
     (hss : single_small v = some k3) :
     chain_simple 2 k k3 = cs2_small k k3 := by
   have h := qbf check_cs2_small library_val check_cs2_small_all k hk
@@ -4350,7 +4341,7 @@ lemma cs2_small_eq {k k3 : kernel} {v : ℤ} (hk : k ∈ library_val)
   · injection hss with hss; subst hss; exact bool_beq_eq h.1.2
   · injection hss with hss; subst hss; exact bool_beq_eq h.2
 
-lemma step_base_some_small {base m1 m2 : ℤ} {k3 : kernel}
+theorem step_base_some_small {base m1 m2 : ℤ} {k3 : kernel}
     (h : (step_base base m1 m2).2 = some k3) :
     ∃ v, single_small v = some k3 := by
   unfold step_base at h
@@ -4384,7 +4375,7 @@ def chain_simple_3_fast (kp k : kernel) : Bool :=
         | (true, some k4) => chain_simple 1 k3 k4
       else true
 
-lemma chain_simple_3_fast_eq (kp : kernel) {k : kernel} (hk : k ∈ library_val) :
+theorem chain_simple_3_fast_eq (kp : kernel) {k : kernel} (hk : k ∈ library_val) :
     chain_simple_3_fast kp k = chain_simple 3 kp k := by
   unfold chain_simple_3_fast
   conv_rhs => unfold chain_simple
@@ -4410,30 +4401,30 @@ def check_cands_3 (kp : kernel) : Bool :=
   qJ (fun k => if mem_kernel k cands then true else !(chain_simple_3_fast kp k))
     (get_bkt (k_req kp))
 
-lemma cands_3_0 : qJ check_cands_3 lib_0 = true := by decide +kernel
-lemma cands_3_1 : qJ check_cands_3 lib_1 = true := by decide +kernel
-lemma cands_3_2 : qJ check_cands_3 lib_2 = true := by decide +kernel
-lemma cands_3_3 : qJ check_cands_3 lib_3 = true := by decide +kernel
-lemma cands_3_4 : qJ check_cands_3 lib_4 = true := by decide +kernel
-lemma cands_3_5 : qJ check_cands_3 lib_5 = true := by decide +kernel
-lemma cands_3_6 : qJ check_cands_3 lib_6 = true := by decide +kernel
-lemma cands_3_7 : qJ check_cands_3 lib_7 = true := by decide +kernel
-lemma cands_3_8 : qJ check_cands_3 lib_8 = true := by decide +kernel
-lemma cands_3_9 : qJ check_cands_3 lib_9 = true := by decide +kernel
-lemma cands_3_10 : qJ check_cands_3 lib_10 = true := by decide +kernel
-lemma cands_3_11 : qJ check_cands_3 lib_11 = true := by decide +kernel
-lemma cands_3_12 : qJ check_cands_3 lib_12 = true := by decide +kernel
-lemma cands_3_13 : qJ check_cands_3 lib_13 = true := by decide +kernel
-lemma cands_3_14 : qJ check_cands_3 lib_14 = true := by decide +kernel
-lemma cands_3_15 : qJ check_cands_3 lib_15 = true := by decide +kernel
+theorem cands_3_0 : qJ check_cands_3 lib_0 = true := by decide +kernel
+theorem cands_3_1 : qJ check_cands_3 lib_1 = true := by decide +kernel
+theorem cands_3_2 : qJ check_cands_3 lib_2 = true := by decide +kernel
+theorem cands_3_3 : qJ check_cands_3 lib_3 = true := by decide +kernel
+theorem cands_3_4 : qJ check_cands_3 lib_4 = true := by decide +kernel
+theorem cands_3_5 : qJ check_cands_3 lib_5 = true := by decide +kernel
+theorem cands_3_6 : qJ check_cands_3 lib_6 = true := by decide +kernel
+theorem cands_3_7 : qJ check_cands_3 lib_7 = true := by decide +kernel
+theorem cands_3_8 : qJ check_cands_3 lib_8 = true := by decide +kernel
+theorem cands_3_9 : qJ check_cands_3 lib_9 = true := by decide +kernel
+theorem cands_3_10 : qJ check_cands_3 lib_10 = true := by decide +kernel
+theorem cands_3_11 : qJ check_cands_3 lib_11 = true := by decide +kernel
+theorem cands_3_12 : qJ check_cands_3 lib_12 = true := by decide +kernel
+theorem cands_3_13 : qJ check_cands_3 lib_13 = true := by decide +kernel
+theorem cands_3_14 : qJ check_cands_3 lib_14 = true := by decide +kernel
+theorem cands_3_15 : qJ check_cands_3 lib_15 = true := by decide +kernel
 
-lemma cands_3_sub_bkt : qJ check_cands_3 library_val = true := by
+theorem cands_3_sub_bkt : qJ check_cands_3 library_val = true := by
   unfold library_val
   simp only [qbr, cands_3_0, cands_3_1, cands_3_2, cands_3_3, cands_3_4, cands_3_5,
     cands_3_6, cands_3_7, cands_3_8, cands_3_9, cands_3_10, cands_3_11,
     cands_3_12, cands_3_13, cands_3_14, cands_3_15, Bool.and_self]
 
-lemma get_cands_sound (fuel : ℕ) (kp k : kernel)
+theorem get_cands_sound (fuel : ℕ) (kp k : kernel)
     (S_prev U_prev S U S' U' : ℤ) (rest : List kernel)
     (hkp : kp ∈ library_val) (hk : k ∈ library_val)
     (hact_kp : action kp S_prev U_prev S U)
@@ -4468,7 +4459,7 @@ lemma get_cands_sound (fuel : ℕ) (kp k : kernel)
         rw [hmem_f, if_neg Bool.false_ne_true, chain_simple_3_fast_eq kp hk, hcs3] at h4
         contradiction
 
-lemma qJ_cands_sound (fuel : ℕ) (min_idx : ℤ) (kp2 : Option kernel) (kp : kernel)
+theorem qJ_cands_sound (fuel : ℕ) (min_idx : ℤ) (kp2 : Option kernel) (kp : kernel)
     (step : kernel → Bool) (ks : List kernel)
     (h : qJ_cands fuel min_idx kp2 kp step ks = true) :
     ∀ k ∈ ks, min_idx ≤ k.index → check_4k_simple fuel kp2 kp k = true → step k = true := by
@@ -4555,28 +4546,28 @@ theorem refute_spec_c (fuel : ℕ) (z : state) (kp2 : Option kernel) (kp : kerne
 
 def q9_c (k : kernel) : Bool :=
   qB (fun z' => qbN_c 6 z' none k) qaG k
-lemma ref_0a : qJ q9_c lib_0a=true:= by decide +kernel
-lemma ref_0b : qJ q9_c lib_0b=true:= by decide +kernel
-lemma ref_0c : qJ q9_c lib_0c=true:= by decide +kernel
-lemma ref_0 : qJ q9_c lib_0=true:= by
+theorem ref_0a : qJ q9_c lib_0a=true:= by decide +kernel
+theorem ref_0b : qJ q9_c lib_0b=true:= by decide +kernel
+theorem ref_0c : qJ q9_c lib_0c=true:= by decide +kernel
+theorem ref_0 : qJ q9_c lib_0=true:= by
   unfold lib_0
   simp only [qbr,ref_0a,ref_0b,ref_0c,Bool.and_self]
-lemma ref_1 : qJ q9_c lib_1=true:= by decide +kernel
-lemma ref_2 : qJ q9_c lib_2=true:= by decide +kernel
-lemma ref_3 : qJ q9_c lib_3=true:= by decide +kernel
-lemma ref_4 : qJ q9_c lib_4=true:= by decide +kernel
-lemma ref_5 : qJ q9_c lib_5=true:= by decide +kernel
-lemma ref_6 : qJ q9_c lib_6=true:= by decide +kernel
-lemma ref_7 : qJ q9_c lib_7=true:= by decide +kernel
-lemma ref_8 : qJ q9_c lib_8=true:= by decide +kernel
-lemma ref_9 : qJ q9_c lib_9=true:= by decide +kernel
-lemma ref_10 : qJ q9_c lib_10=true:= by decide +kernel
-lemma ref_11 : qJ q9_c lib_11=true:= by decide +kernel
-lemma ref_12 : qJ q9_c lib_12=true:= by decide +kernel
-lemma ref_13 : qJ q9_c lib_13=true:= by decide +kernel
-lemma ref_14 : qJ q9_c lib_14=true:= by decide +kernel
-lemma ref_15 : qJ q9_c lib_15=true:= by decide +kernel
-lemma qbA : qJ q9_c library_val=true:= by
+theorem ref_1 : qJ q9_c lib_1=true:= by decide +kernel
+theorem ref_2 : qJ q9_c lib_2=true:= by decide +kernel
+theorem ref_3 : qJ q9_c lib_3=true:= by decide +kernel
+theorem ref_4 : qJ q9_c lib_4=true:= by decide +kernel
+theorem ref_5 : qJ q9_c lib_5=true:= by decide +kernel
+theorem ref_6 : qJ q9_c lib_6=true:= by decide +kernel
+theorem ref_7 : qJ q9_c lib_7=true:= by decide +kernel
+theorem ref_8 : qJ q9_c lib_8=true:= by decide +kernel
+theorem ref_9 : qJ q9_c lib_9=true:= by decide +kernel
+theorem ref_10 : qJ q9_c lib_10=true:= by decide +kernel
+theorem ref_11 : qJ q9_c lib_11=true:= by decide +kernel
+theorem ref_12 : qJ q9_c lib_12=true:= by decide +kernel
+theorem ref_13 : qJ q9_c lib_13=true:= by decide +kernel
+theorem ref_14 : qJ q9_c lib_14=true:= by decide +kernel
+theorem ref_15 : qJ q9_c lib_15=true:= by decide +kernel
+theorem qbA : qJ q9_c library_val=true:= by
   unfold library_val
   simp only [qbr,ref_0,ref_1,ref_2,ref_3,ref_4,ref_5,ref_6,ref_7,
     ref_8,ref_9,ref_10,ref_11,ref_12,ref_13,ref_14,ref_15,Bool.and_self]
@@ -4599,9 +4590,9 @@ theorem F2 (word : List kernel) (S U : ℤ)
     have hlen := refute_spec_c 6 z' none k S U S' U' hz' hp_ok hq9 rest hrest_all htail
     simp only [List.length_cons]
     omega
-lemma finite_bounds :
+theorem finite_bounds :
     qJ (fun k => decide (k.pair.d ≤ 5) && decide (gain k ≤ 5472)) library_val=true:= by decide +kernel
-lemma kernel_bounds (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) (hmax : k.index ≤ 2048) :
+theorem kernel_bounds (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) (hmax : k.index ≤ 2048) :
     k.pair.d ≤ 5 ∧ WordLibrary.gain k ≤ 5472:= by
   have hmem : k ∈ library_val:=qx k hk hmax
   have h:=qbf _ library_val finite_bounds k hmem
@@ -4610,16 +4601,16 @@ lemma kernel_bounds (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) (hm
 end WordCheck
 namespace WordLink
 open Table WordLibrary
-lemma continuing_good (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) :
+theorem continuing_good (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) :
     Block.good (Bridge.kernel k.pair):= by
   rcases hk with ⟨e,hb,hs,he⟩
   rcases (built_valid hb).1 with ⟨_,_,hx,_⟩
   exact Bridge.kernel_good hx
-lemma continuing_gain (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) :
+theorem continuing_gain (k : WordLibrary.kernel) (hk : WordLibrary.continuing k) :
     k.index < WordLibrary.gain k:= by
   rcases hk with ⟨e,hb,_⟩
   exact Bridge.kernel_gain (built_valid hb)
-lemma action_block {k : WordLibrary.kernel} {S U S' U' : ℤ}
+theorem action_block {k : WordLibrary.kernel} {S U S' U' : ℤ}
     (h : WordLibrary.action k S U S' U') :
     Block.call (Bridge.kernel k.pair) S (2 * S - U + 3) S' (2 * S' - U' + 3):= by
   rcases h with ⟨hS,hU,_⟩
@@ -4628,7 +4619,7 @@ lemma action_block {k : WordLibrary.kernel} {S U S' U' : ℤ}
   refine ⟨hS,?_⟩
   rw [hS]
   linarith
-lemma trace_suffix (pref suf : List WordLibrary.kernel) (S U : ℤ)
+theorem trace_suffix (pref suf : List WordLibrary.kernel) (S U : ℤ)
     (h : WordLibrary.trace (pref ++ suf) S U) :
     ∃ S' U',WordLibrary.trace suf S' U':= by
   induction pref generalizing S U with
@@ -4639,7 +4630,7 @@ lemma trace_suffix (pref suf : List WordLibrary.kernel) (S U : ℤ)
 def bound (L r : ℤ) : Prop :=
   ∀ word S U,(∀ k ∈ word,WordLibrary.continuing k ∧ k.index ≤ L) →
     WordLibrary.trace word S U → (word.length : ℤ) ≤ r
-lemma bound_mono (L L' r r' : ℤ) (hL : L' ≤ L) (hr : r ≤ r') (hb : bound L r) : bound L' r':= by
+theorem bound_mono (L L' r r' : ℤ) (hL : L' ≤ L) (hr : r ≤ r') (hb : bound L r) : bound L' r':= by
   intro word S U hall htrace
   have hall' : ∀ k ∈ word,WordLibrary.continuing k ∧ k.index ≤ L:= by
     intro k hk
@@ -4647,7 +4638,7 @@ lemma bound_mono (L L' r r' : ℤ) (hL : L' ≤ L) (hr : r ≤ r') (hb : bound L
     exact ⟨hc,by omega⟩
   have h1:=hb word S U hall' htrace
   omega
-lemma base_bound : bound 2048 6:= by
+theorem base_bound : bound 2048 6:= by
   intro word S U hall htrace
   have h:=WordCheck.F2 word S U hall htrace
   omega
@@ -4656,7 +4647,7 @@ namespace Phase
 open Table
 def qct (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) : Prop :=
   y.b=left s r x ∧ y.c=right s r x ∧ K - y.d=s - x.d + gap
-lemma qaT (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair)
+theorem qaT (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair)
     (hx : qaB s x) (hr : qW r) (hg : 1 ≤ gap) (hc : qct s r gap x K y) :
     q3 K y=q3 s x:= by
   rcases hc with ⟨hb,hcy,hd⟩
@@ -4665,7 +4656,7 @@ lemma qaT (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair)
   unfold q3 qk
   rw [if_pos hlt,hb]
   exact Bridge.head_value ⟨hdx0,hdxs,hpx0,hpxd,hpodd,hbx,hcx⟩ hr
-lemma qay (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) (t u : ℤ)
+theorem qay (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) (t u : ℤ)
     (hx : qaB s x) (hr : 1 ≤ r) (ho : qW r) (hg : 1 ≤ gap)
     (hc : qct s r gap x K y) (hsep : qa s x t u) :
     qa K y t (qg s r x t u):= by
@@ -4676,7 +4667,7 @@ lemma qay (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) (t u : ℤ)
   unfold h
   rw [hb,hcy]
   exact hH
-lemma copies_next (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) (t u : ℤ) (z : pair)
+theorem copies_next (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) (t u : ℤ) (z : pair)
     (hx : qaB s x) (hc : qct s r gap x K y)
     (hsep : qa s x t u) (hz : qo t z) :
     qct s r gap (qQ x t u z) (K + 1) (qbu (qQ y t (qg s r x t u) z)):= by
@@ -4697,7 +4688,7 @@ lemma copies_next (s r gap : ℤ) (x : pair) (K : ℤ) (y : pair) (t u : ℤ) (z
     omega
 def span (K : ℤ) (n : ℕ) (D : ℤ) : Prop :=
   ∀ i,0 ≤ i ∧ i ≤ (n : ℤ) → ∃ f,Built (K + i) f ∧ CheckTable.depth f ≤ D
-lemma span_one (K : ℤ) (y : pair) (e v f D : ℤ)
+theorem span_one (K : ℤ) (y : pair) (e v f D : ℤ)
     (h0 : Built K (.Two y e)) (h1 : Built (K + 1) (.One v f))
     (hD : y.d ≤ D) (hD0 : 0 ≤ D) :
     span K 1 D:= by
@@ -4707,7 +4698,7 @@ lemma span_one (K : ℤ) (y : pair) (e v f D : ℤ)
   · refine ⟨.Two y e,?_,hD⟩
     simpa using! h0
   · exact ⟨.One v f,h1,hD0⟩
-lemma qa0 (K : ℤ) (f : entry) (n : ℕ) (D : ℤ)
+theorem qa0 (K : ℤ) (f : entry) (n : ℕ) (D : ℤ)
     (h0 : Built K f) (hD : CheckTable.depth f ≤ D) (htail : span (K + 1) n D) :
     span K (1 + n) D:= by
   intro i hi
@@ -4781,31 +4772,31 @@ theorem boundary_copy (s : ℤ) (x : pair) (f : ℤ) (n : ℕ)
       · have h_eq : K - s - gap + s + ((1 + n : ℕ) : ℤ) - 1 =
             K + 1 - s - gap + s + (n : ℤ) - 1:= by omega
         rwa [h_eq]
-lemma qbI (K : ℤ) (n : ℕ) (D D' : ℤ) (hD : D ≤ D') (hspan : span K n D) :
+theorem qbI (K : ℤ) (n : ℕ) (D D' : ℤ) (hD : D ≤ D') (hspan : span K n D) :
     span K n D':= by
   intro i hi
   rcases hspan i hi with ⟨f,hf,hd⟩
   exact ⟨f,hf,by omega⟩
-lemma span_zero (K : ℤ) (f : entry) (D : ℤ) (hf : Built K f) (hd : CheckTable.depth f ≤ D) :
+theorem span_zero (K : ℤ) (f : entry) (D : ℤ) (hf : Built K f) (hd : CheckTable.depth f ≤ D) :
     span K 0 D:= by
   intro i hi
   have hi0 : i=0:= by omega
   subst hi0
   refine ⟨f,?_,hd⟩
   simpa using! hf
-lemma qbp (l B : ℤ) (hl : 1 ≤ l) :
+theorem qbp (l B : ℤ) (hl : 1 ≤ l) :
     q3 (l + 1) ⟨1,1,B,0⟩=qb6 B:= by
   unfold q3 qk
   dsimp -failIfUnchanged
   rw [if_pos (by omega)]
-lemma qbc (l B s r : ℤ) (hs : 1 ≤ s ∧ s < l)
+theorem qbc (l B s r : ℤ) (hs : 1 ≤ s ∧ s < l)
     (hB : B + 3=q0 s * r) (hr : qW r) :
     qa (l + 1) ⟨1,1,B,0⟩ s r:= by
   refine ⟨hs.1,by dsimp -failIfUnchanged; omega,?_,hr⟩
   unfold h
   dsimp -failIfUnchanged
   linarith
-lemma qcf (l B s r : ℤ) (x : pair) (hB : B + 3=q0 s * r) :
+theorem qcf (l B s r : ℤ) (x : pair) (hB : B + 3=q0 s * r) :
     qct s r (l - s) (qba x) (l + 2) (qbu (qQ ⟨1,1,B,0⟩ s r x)):= by
   refine ⟨rfl,?_,?_⟩
   · change B + 2 * 0 + 3 - (x.p * q0 (s - x.d) * r) + x.c - 0 - 1 =
@@ -4813,7 +4804,7 @@ lemma qcf (l B s r : ℤ) (x : pair) (hB : B + 3=q0 s * r) :
     nlinarith
   · change l + 2 - (1 + x.d + 1)=s - x.d + (l - s)
     omega
-lemma odd_factor (B s r : ℤ) (hs : 1 ≤ s) (hB : B + 3=q0 s * r) :
+theorem odd_factor (B s r : ℤ) (hs : 1 ≤ s) (hB : B + 3=q0 s * r) :
     qb6 B=false:= by
   rw [qa9]
   refine ⟨q0 (s - 1) * r - 2,?_⟩
@@ -4890,7 +4881,7 @@ theorem stage_odd (l B e s r : ℤ) (g : entry)
 end Phase
 namespace Cubic
 open Table
-lemma cubic_exp (k : ℤ) (hk : 16 ≤ k) : 12 * k ^ 3 + 4 < q0 k:= by
+theorem cubic_exp (k : ℤ) (hk : 16 ≤ k) : 12 * k ^ 3 + 4 < q0 k:= by
   have h : ∀ n : ℕ,12 * (16 + (n : ℤ)) ^ 3 + 4 < q0 (16 + (n : ℤ)):= by
     intro n
     induction n with
@@ -4905,7 +4896,7 @@ lemma cubic_exp (k : ℤ) (hk : 16 ≤ k) : 12 * k ^ 3 + 4 < q0 k:= by
   have hk_eq : k=16 + ((k - 16).toNat : ℤ):= by omega
   rw [hk_eq]
   exact h (k - 16).toNat
-lemma cubic_exp2 (x : ℤ) (hx : 16 ≤ x) : 2048 * x ^ 3 ≤ 12 * q0 (2 * x - 2):= by
+theorem cubic_exp2 (x : ℤ) (hx : 16 ≤ x) : 2048 * x ^ 3 ≤ 12 * q0 (2 * x - 2):= by
   have h : ∀ n : ℕ,2048 * (16 + (n : ℤ)) ^ 3 ≤ 12 * q0 (2 * (16 + (n : ℤ)) - 2):= by
     intro n
     induction n with
@@ -4923,7 +4914,7 @@ lemma cubic_exp2 (x : ℤ) (hx : 16 ≤ x) : 2048 * x ^ 3 ≤ 12 * q0 (2 * x - 2
   have hx_eq : x=16 + ((x - 16).toNat : ℤ):= by omega
   rw [hx_eq]
   exact h (x - 16).toNat
-lemma qbo (k s : ℤ) (hk : 2 ≤ k) (hs : 1 ≤ s) (hp : q0 s ≤ 24 * k ^ 3 + 4) :
+theorem qbo (k s : ℤ) (hk : 2 ≤ k) (hs : 1 ≤ s) (hp : q0 s ≤ 24 * k ^ 3 + 4) :
     s ≤ 3 * q1 k + 4:= by
   set x:=q1 k
   have hx : 0 ≤ x:=qh k
@@ -4942,7 +4933,7 @@ lemma qbo (k s : ℤ) (hk : 2 ≤ k) (hs : 1 ≤ s) (hp : q0 s ≤ 24 * k ^ 3 + 
   have hL : q0 s < q0 (3 * x + 5):= by linarith
   have hlt:=(qv (by omega) (by omega)).mp hL
   omega
-lemma growth (k s : ℤ) (hk : 65536 ≤ k) (hs : 1 ≤ s) (hp : q0 s ≤ 24 * k ^ 3 + 4) :
+theorem growth (k s : ℤ) (hk : 65536 ≤ k) (hs : 1 ≤ s) (hp : q0 s ≤ 24 * k ^ 3 + 4) :
     1 + 4 * s ^ 3 ≤ 12 * k ^ 2:= by
   have hsbound:=qbo k s (by omega) hs hp
   set x:=q1 k
@@ -4966,7 +4957,7 @@ lemma growth (k s : ℤ) (hk : 65536 ≤ k) (hs : 1 ≤ s) (hp : q0 s ≤ 24 * k
   rw [hP] at hE
   have hp_pos:=pow_pos (by omega : 0 ≤ x - 1)
   nlinarith
-lemma lookup_h (k : ℤ) (x : pair) (e s r : ℤ)
+theorem lookup_h (k : ℤ) (x : pair) (e s r : ℤ)
     (hb : Built k (.Two x e)) (hsep : qa k x s r) (he : e ≤ 4 * k ^ 3) :
     q0 s ≤ 24 * k ^ 3 + 4:= by
   rcases hsep with ⟨hs1,hsk,hh,hr⟩
@@ -5024,14 +5015,14 @@ theorem qaV (k : ℤ) (f : entry) (h : Built k f) : qad f ≤ 4 * k ^ 3:= by
 end Cubic
 namespace Stages
 open Table Phase Cubic
-lemma split2_spec (x : ℤ) (hx : 0 < x) :
+theorem split2_spec (x : ℤ) (hx : 0 < x) :
     let s:=(q4 x.toNat x).1
     let r:=(q4 x.toNat x).2
     0 ≤ s ∧ 1 ≤ r ∧ qW r ∧ x=q0 s * r:= by
   rcases qbH hx with ⟨hs0,heq,hodd⟩
   have hp:=qc hs0
   exact ⟨hs0,by nlinarith,hodd,heq⟩
-lemma qbv (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e)) (ho : qb6 B=false) :
+theorem qbv (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e)) (ho : qb6 B=false) :
     ∃ s r,(1 ≤ s ∧ s < l) ∧ B + 3=q0 s * r ∧ qW r ∧ s ≤ 3 * q1 l + 4:= by
   rcases (built_valid hB).1 with ⟨hl0,he0,hmass⟩
   change 0 ≤ e at he0
@@ -5110,7 +5101,7 @@ theorem through (target : ℤ) (htarget : 0 ≤ target)
 end Stages
 namespace BoundaryBound
 open Table WordLibrary
-lemma qbV (k : ℤ) (x : pair) (s r : ℤ) (y : pair) (e : ℤ)
+theorem qbV (k : ℤ) (x : pair) (s r : ℤ) (y : pair) (e : ℤ)
     (hsep : qa k x s r) (hb : Built s (.Two y e)) :
     action ⟨s,y⟩ (x.b + x.c) x.b ((qQ x s r y).b + (qQ x s r y).c) (qQ x s r y).b:= by
   rcases (built_valid hb).1 with ⟨hs,he,hy,hmass⟩
@@ -5124,7 +5115,7 @@ lemma qbV (k : ℤ) (x : pair) (s r : ℤ) (y : pair) (e : ℤ)
     unfold h at hh
     dsimp -failIfUnchanged
     linarith
-lemma qbJ (k : ℤ) (x : pair) (L : ℤ)
+theorem qbJ (k : ℤ) (x : pair) (L : ℤ)
     (hx : qaB k x) (hL : 1 ≤ L) (hdepth : x.d + L < k) (hbound : h x < q0 L)
     (he : q3 k x=false) :
     ∃ s r,qa k x s r ∧ s < L:= by
@@ -5150,7 +5141,7 @@ lemma qbJ (k : ℤ) (x : pair) (L : ℤ)
     have hp2:=pow_pos hs
     nlinarith
   exact ⟨s,r,⟨hs1,by omega,hfactor,hro⟩,hsL⟩
-lemma qbD (k L D M : ℤ)
+theorem qbD (k L D M : ℤ)
     (hL : 1 ≤ L) (hD : 0 ≤ D) (hM : 0 ≤ M)
     (hlib : ∀ s,1 ≤ s ∧ s ≤ L → ∃ f,Built s f)
     (hparams : ∀ s y e,1 ≤ s ∧ s ≤ L → Built s (.Two y e) → y.d ≤ D ∧ y.b + y.c + 2 ≤ M)
@@ -5236,14 +5227,14 @@ def budget (k : ℤ) : Prop :=
   ∃ L : ℤ,∃ n : ℕ,(1 ≤ L ∧ L < k) ∧ WordLink.bound L ((n : ℤ) - 1) ∧
     6 * q1 k + 9 + (n : ℤ) * (6 * q1 L + 9) + L < k ∧
     2 * (12 * k ^ 3 + (n : ℤ) * (12 * L ^ 3 + 3)) + 3 < q0 L
-lemma qch (k : ℤ) (h : earlier k) :
+theorem qch (k : ℤ) (h : earlier k) :
     ∀ s f,1 ≤ s ∧ s < k → Built s f → CheckTable.bounded s f:= by
   intro s f hs hf
   rcases h s hs with ⟨g,hg,hbounds,_⟩
   have heq:=UniqueTable.built_unique hf g hg
   subst heq
   exact hbounds
-lemma kernel_bounds (k L : ℤ) (hL : 1 ≤ L ∧ L < k) (hprev : earlier k) :
+theorem kernel_bounds (k L : ℤ) (hL : 1 ≤ L ∧ L < k) (hprev : earlier k) :
     ∀ s y e,(1 ≤ s ∧ s ≤ L) → Built s (.Two y e) →
       y.d ≤ 6 * q1 L + 9 ∧ y.b + y.c + 2 ≤ 12 * L ^ 3 + 3:= by
   intro s y e hs hb
@@ -5331,7 +5322,7 @@ inductive path (m D M B : ℤ) : List summary → ℤ → ℤ → Prop where
       q0 (m + 1) ∣ H → certified m D M B z →
       denotes z S H (S + z.added) H' → path m D M B zs (S + z.added) H' →
       path m D M B (z :: zs) S H
-lemma path_div (m D M B : ℤ) (zs : List summary) (S H : ℤ)
+theorem path_div (m D M B : ℤ) (zs : List summary) (S H : ℤ)
     (hp : path m D M B zs S H) : q0 (m + 1) ∣ H:= by
   cases hp with
   | path_stop _ _ h => exact h
@@ -5343,7 +5334,7 @@ inductive chain (m D M B : ℤ) : List summary → Prop where
       z.sc * z'.offset=z'.sc * (z.offset - z.sc * z.added) →
       chain m D M B (z' :: zs) →
       chain m D M B (z :: z' :: zs)
-lemma adjacent (m D M B : ℤ) (z z' : summary) (S H0 H1 H2 : ℤ)
+theorem adjacent (m D M B : ℤ) (z z' : summary) (S H0 H1 H2 : ℤ)
     (hm : 0 ≤ m)
     (hz : certified m D M B z) (hz' : certified m D M B z')
     (hH0 : q0 (m + 1) ∣ H0) (hH1 : q0 (m + 1) ∣ H1) (hH2 : q0 (m + 1) ∣ H2)
@@ -5364,7 +5355,7 @@ lemma adjacent (m D M B : ℤ) (z z' : summary) (S H0 H1 H2 : ℤ)
     (by omega) hA01 (by omega) hA11
     (by omega) hC01 (by omega) hC11
     hH0 hH1 hH2 hE0 hE1 hbudget
-lemma path_chain (m D M B : ℤ) (zs : List summary) (S H : ℤ)
+theorem path_chain (m D M B : ℤ) (zs : List summary) (S H : ℤ)
     (hm : 0 ≤ m) (hbudget : q0 (2 * D) * (12 * M + 8) < q0 (m + 1))
     (hp : path m D M B zs S H) (hne : zs ≠ []) : chain m D M B zs:= by
   induction hp with
@@ -5385,7 +5376,7 @@ inductive roots (A B m : ℤ) : ℤ → ℕ → Prop where
       g < f - A * m →
       roots A B m g n →
       roots A B m f (n + 1)
-lemma qc4 (A B m f : ℤ) (n : ℕ) (hr : roots A B m f n) :
+theorem qc4 (A B m f : ℤ) (n : ℕ) (hr : roots A B m f n) :
     ∃ v : ℕ → ℤ,v 0=f ∧ 0 < v n ∧
       ∀ i < n,3 * v (i + 1) ≤ v i + 2 * A * (B + 3) ∧ v (i + 1) < v i - A * m:= by
   induction hr with
@@ -5402,7 +5393,7 @@ lemma qc4 (A B m f : ℤ) (n : ℕ) (hr : roots A B m f n) :
       exact ⟨hshrink,hdrop⟩
     | succ j =>
       exact hsteps j (by omega)
-lemma roots_count (A B m f : ℤ) (n t q : ℕ) (V : ℤ)
+theorem roots_count (A B m f : ℤ) (n t q : ℕ) (V : ℤ)
     (hA : 0 < A) (hB : 0 ≤ B) (hm : 0 < m) (hV : 0 ≤ V)
     (hpow : V ≤ (3 : ℤ) ^ t) (hq : B + 4 ≤ (q : ℤ) * m) (hf : f ≤ A * V)
     (hr : roots A B m f n) : n < t + q:= by
@@ -5412,7 +5403,7 @@ lemma roots_count (A B m f : ℤ) (n t q : ℕ) (V : ℤ)
   · exact hlast
   · intro i hi; exact (hsteps i hi).1
   · intro i hi; exact (hsteps i hi).2
-lemma chain_roots (m D M B : ℤ) (zs : List summary) (hch : chain m D M B zs) :
+theorem chain_roots (m D M B : ℤ) (zs : List summary) (hch : chain m D M B zs) :
     ∀ z rest,zs=z :: rest → ∀ A f,0 < A → A * z.offset=z.sc * f →
       roots A B m f rest.length:= by
   induction hch with
@@ -5475,7 +5466,7 @@ def qw (word : List kernel) : List Block.kernel :=
   word.map (fun k => Bridge.kernel k.pair)
 def summary (word : List kernel) : Block.summary :=
   (qw word).foldl (fun z k => Block.push k z) Block.identity
-lemma qaj (f : kernel → ℤ) (word : List kernel)
+theorem qaj (f : kernel → ℤ) (word : List kernel)
     (h : ∀ k ∈ word,0 ≤ f k) : 0 ≤ qD f word:= by
   induction word with
   | nil => simp [qD]
@@ -5484,7 +5475,7 @@ lemma qaj (f : kernel → ℤ) (word : List kernel)
     have hrest:=ih (fun x hx => h x (by simp [hx]))
     rw [qD,List.foldr_cons,← qD]
     omega
-lemma qbF (f : kernel → ℤ) (word : List kernel) (C : ℤ)
+theorem qbF (f : kernel → ℤ) (word : List kernel) (C : ℤ)
     (h : ∀ k ∈ word,0 ≤ f k ∧ f k ≤ C) :
     0 ≤ qD f word ∧ qD f word ≤ (word.length : ℤ) * C:= by
   induction word with
@@ -5498,7 +5489,7 @@ lemma qbF (f : kernel → ℤ) (word : List kernel) (C : ℤ)
     constructor
     · omega
     · nlinarith
-lemma fold_added (word : List kernel) (z : Block.summary) :
+theorem fold_added (word : List kernel) (z : Block.summary) :
     ((qw word).foldl (fun z k => Block.push k z) z).added=z.added + qD gain word:= by
   induction word generalizing z with
   | nil => simp [qw,qD]
@@ -5507,7 +5498,7 @@ lemma fold_added (word : List kernel) (z : Block.summary) :
     rw [ih]
     dsimp -failIfUnchanged [Block.push,Bridge.kernel,gain]
     ring
-lemma qca (word : List kernel) (z : Block.summary) :
+theorem qca (word : List kernel) (z : Block.summary) :
     ((qw word).foldl (fun z k => Block.low_push k z) z).added=z.added + qD gain word:= by
   induction word generalizing z with
   | nil => simp [qw,qD]
@@ -5516,7 +5507,7 @@ lemma qca (word : List kernel) (z : Block.summary) :
     rw [ih]
     dsimp -failIfUnchanged [Block.low_push,Bridge.kernel,gain]
     ring
-lemma fold_scale (word : List kernel) (z : Block.summary)
+theorem fold_scale (word : List kernel) (z : Block.summary)
     (h : ∀ k ∈ word,0 ≤ depth k) :
     ((qw word).foldl (fun z k => Block.push k z) z).scale=z.scale * q0 (qD depth word):= by
   induction word generalizing z with
@@ -5530,7 +5521,7 @@ lemma fold_scale (word : List kernel) (z : Block.summary)
     rw [q5 hk htot]
     dsimp -failIfUnchanged [Block.push,Bridge.kernel,depth]
     ring
-lemma fold_strong (ks : List Block.kernel) (z : Block.summary)
+theorem fold_strong (ks : List Block.kernel) (z : Block.summary)
     (hgood : ∀ k ∈ ks,Block.good k) (hz : Block.bounded z) (hne : ks ≠ []) :
     let r:=ks.foldl (fun z k => Block.push k z) z
     Block.bounded r ∧ r.scale ≤ r.sc ∧ 0 < r.offset:= by
@@ -5546,7 +5537,7 @@ lemma fold_strong (ks : List Block.kernel) (z : Block.summary)
       simp only [List.foldl_cons]
       have hpush:=(Block.push_bounded k z hk hz).1
       exact ih (Block.push k z) (fun x hx => hgood x (by simp [hx])) hpush (by simp)
-lemma summary_data (word : List kernel)
+theorem summary_data (word : List kernel)
     (hall : ∀ k ∈ word,continuing k) (hne : word ≠ []) :
     0 ≤ qD depth word ∧
     (summary word).scale=q0 (qD depth word) ∧
@@ -5580,7 +5571,7 @@ lemma summary_data (word : List kernel)
     rw [fold_added]
     dsimp -failIfUnchanged [Block.identity]
     ring
-lemma qbl (xs ys : List kernel) (S U : ℤ)
+theorem qbl (xs ys : List kernel) (S U : ℤ)
     (h : trace (xs ++ ys) S U) : trace xs S U:= by
   induction xs generalizing S U with
   | nil => exact trace.trace_nil S U
@@ -5588,7 +5579,7 @@ lemma qbl (xs ys : List kernel) (S U : ℤ)
     cases h with
     | trace_cons hact htr =>
       exact trace.trace_cons hact (ih _ _ htr)
-lemma trace_split (xs ys : List kernel) (S U : ℤ)
+theorem trace_split (xs ys : List kernel) (S U : ℤ)
     (h : trace (xs ++ ys) S U) :
     ∃ S' U',Block.calls (qw xs) S (2 * S - U + 3) S' (2 * S' - U' + 3) ∧ trace ys S' U':= by
   induction xs generalizing S U with
@@ -5600,13 +5591,13 @@ lemma trace_split (xs ys : List kernel) (S U : ℤ)
       rcases ih _ _ htr with ⟨S2,U2,hcalls,hrest⟩
       refine ⟨S2,U2,?_,hrest⟩
       exact Block.calls.more_calls (WordLink.action_block hact) hcalls
-lemma summary_sound (word : List kernel) (S U S' U' : ℤ)
+theorem summary_sound (word : List kernel) (S U S' U' : ℤ)
     (h : Block.calls (qw word) S (2 * S - U + 3) S' (2 * S' - U' + 3)) :
     Block.denotes (summary word) S (2 * S - U + 3) S' (2 * S' - U' + 3):= by
   apply Block.fold_sound h Block.identity S (2 * S - U + 3)
   dsimp -failIfUnchanged [Block.denotes,Block.identity]
   exact ⟨by ring,by ring⟩
-lemma high_div (m : ℤ) (k : kernel) (word : List kernel) (S U : ℤ)
+theorem high_div (m : ℤ) (k : kernel) (word : List kernel) (S U : ℤ)
     (hm : 0 ≤ m) (hhigh : m < k.index) (htrace : trace (k :: word) S U) :
     q0 (m + 1) ∣ (2 * S - U + 3):= by
   cases htrace with
@@ -5614,7 +5605,7 @@ lemma high_div (m : ℤ) (k : kernel) (word : List kernel) (S U : ℤ)
     rcases hact with ⟨_,_,t,ht⟩
     rw [ht,Table.pow_split (by omega : 0 ≤ m + 1) (by omega : m + 1 ≤ k.index)]
     exact ⟨q0 (k.index - (m + 1)) * (2 * t + 1),by ring⟩
-lemma qbX (m r dL dm gL gm : ℤ) (k : kernel) (lows : List kernel) (S U : ℤ)
+theorem qbX (m r dL dm gL gm : ℤ) (k : kernel) (lows : List kernel) (S U : ℤ)
     (hm : 0 ≤ m) (hr : 0 ≤ r) (hdm : 0 ≤ dm) (hgm : 0 ≤ gm)
     (hhigh : m < k.index) (hk : continuing k) (hdk : depth k ≤ dL) (hgk : gain k ≤ gL)
     (hlow : ∀ z ∈ lows,continuing z ∧ z.index ≤ m ∧ depth z ≤ dm ∧ gain z ≤ gm)
@@ -5676,7 +5667,7 @@ namespace Multiscale
 open WordLibrary WordBlocks
 def qC (L d g : ℤ) : Prop :=
   ∀ k,continuing k → k.index ≤ L → depth k ≤ d ∧ gain k ≤ g
-lemma low_split (m : ℤ) (word : List kernel) :
+theorem low_split (m : ℤ) (word : List kernel) :
     ∃ lows tail,word=lows ++ tail ∧
       (∀ k ∈ lows,k.index ≤ m) ∧
       (tail=[] ∨ ∃ k rest,tail=k :: rest ∧ m < k.index):= by
@@ -5692,7 +5683,7 @@ lemma low_split (m : ℤ) (word : List kernel) :
       · exact hlow
       · exact hall x hx'
     · refine ⟨[],k :: word,rfl,by simp,Or.inr ⟨k,word,rfl,by omega⟩⟩
-lemma qc9 (m L dm gm : ℤ) (lows : List kernel)
+theorem qc9 (m L dm gm : ℤ) (lows : List kernel)
     (hparams : qC m dm gm)
     (hall : ∀ k ∈ lows,continuing k ∧ k.index ≤ L)
     (hlow : ∀ k ∈ lows,k.index ≤ m) :
@@ -5702,14 +5693,14 @@ lemma qc9 (m L dm gm : ℤ) (lows : List kernel)
   have h2:=hlow k hk
   have h3:=hparams k h1.1 h2
   exact ⟨h1.1,h2,h3.1,h3.2⟩
-lemma qco (m L r : ℤ) (lows : List kernel) (S U : ℤ)
+theorem qco (m L r : ℤ) (lows : List kernel) (S U : ℤ)
     (hb : WordLink.bound m r)
     (hall : ∀ k ∈ lows,continuing k ∧ k.index ≤ L)
     (hlow : ∀ k ∈ lows,k.index ≤ m)
     (htrace : trace lows S U) :
     (lows.length : ℤ) ≤ r:= by
   exact hb lows S U (fun k hk => ⟨(hall k hk).1,hlow k hk⟩) htrace
-lemma qcg (m L r dL dm gL gm : ℤ)
+theorem qcg (m L r dL dm gL gm : ℤ)
     (hm : 0 ≤ m) (hr : 0 ≤ r) (hdm : 0 ≤ dm) (hgm : 0 ≤ gm)
     (hglobal : qC L dL gL) (hlow : qC m dm gm) (hbound : WordLink.bound m r) :
     ∀ (fuel : ℕ) (k : kernel) (rest : List kernel) (S U : ℤ),
@@ -5803,19 +5794,19 @@ theorem qcr (m L r dL dm gL gm : ℤ) (t q : ℕ)
 end Multiscale
 namespace SmallScale
 open WordLibrary WordBlocks Multiscale
-lemma qbZ : qC 2048 5 5472:= by
+theorem qbZ : qC 2048 5 5472:= by
   intro k hk hL
   exact WordCheck.kernel_bounds k hk hL
-lemma earlier_parameters (k L : ℤ) (hL : 1 ≤ L ∧ L < k) (hprev : Closure.earlier k) :
+theorem earlier_parameters (k L : ℤ) (hL : 1 ≤ L ∧ L < k) (hprev : Closure.earlier k) :
     qC L (6 * q1 L + 9) (12 * L ^ 3 + 3):= by
   intro z hcont hindex
   rcases hcont with ⟨e,hb,hs,_⟩
   exact Closure.kernel_bounds k L hL hprev z.index z.pair e ⟨hs,hindex⟩ hb
-lemma exp3 (x : ℤ) (hx : 0 ≤ x) : q0 (3 * x)=(q0 x) ^ 3:= by
+theorem exp3 (x : ℤ) (hx : 0 ≤ x) : q0 (3 * x)=(q0 x) ^ 3:= by
   have h1 : 3 * x=x + (x + x):= by ring
   rw [h1,q5 hx (by omega),q5 hx hx]
   ring
-lemma qao (L x : ℤ) (hL : 2048 < L) (hx : 12 ≤ x) (hpow : L ≤ q0 x) :
+theorem qao (L x : ℤ) (hL : 2048 < L) (hx : 12 ≤ x) (hpow : L ≤ q0 x) :
     12 * L ^ 3 + 3 + 6 * 5472 ≤ 13 * q0 (3 * x):= by
   have hL3 : L ^ 3 ≤ (q0 x) ^ 3:=pow_le_pow_left₀ (by omega) hpow 3
   have hsmall : 65536 ≤ q0 (3 * x):= by
@@ -5824,7 +5815,7 @@ lemma qao (L x : ℤ) (hL : 2048 < L) (hx : 12 ≤ x) (hpow : L ≤ q0 x) :
     exact qd (by omega) (by omega)
   rw [exp3 x (by omega)] at hsmall ⊢
   linarith
-lemma budget120 (x M : ℤ) (hx : 12 ≤ x ∧ x ≤ 120) (hM : 0 ≤ M ∧ M ≤ 13 * q0 (3 * x)) :
+theorem budget120 (x M : ℤ) (hx : 12 ≤ x ∧ x ≤ 120) (hM : 0 ≤ M ∧ M ≤ 13 * q0 (3 * x)) :
     q0 (2 * (6 * x + 39)) * (12 * M + 8) < q0 2049:= by
   have hp : 0 < q0 (3 * x):=qc (by omega)
   have hB : 12 * M + 8 < q0 (3 * x + 8):= by
@@ -5837,7 +5828,7 @@ lemma budget120 (x M : ℤ) (hx : 12 ≤ x ∧ x ≤ 120) (hM : 0 ≤ M ∧ M �
     rw [heq,q5 (by omega) (by omega)]
     exact mul_lt_mul_of_pos_left hB (qc (by omega))
   exact lt_trans hbig (qbm (by omega) (by omega))
-lemma qa4 (x M : ℤ) (hx : 0 ≤ x) (hM : 0 ≤ M ∧ M ≤ 13 * q0 (3 * x)) :
+theorem qa4 (x M : ℤ) (hx : 0 ≤ x) (hM : 0 ≤ M ∧ M ≤ 13 * q0 (3 * x)) :
     2 * M + 2 ≤ (3 : ℤ) ^ (2 * x + 4).toNat:= by
   let n : ℕ:=x.toNat
   have hxn : x=(n : ℤ):=(Int.toNat_of_nonneg hx).symm
@@ -5900,7 +5891,7 @@ theorem range120 (L : ℤ) (hL : 2 ≤ L ∧ L ≤ q0 120)
     omega
 end SmallScale
 namespace Exponential
-lemma power_ratio (a b : ℤ) (p : ℕ) (c : ℤ)
+theorem power_ratio (a b : ℤ) (p : ℕ) (c : ℤ)
     (hab : 0 < b ∧ b ≤ a) (hc : 0 ≤ c) (hbase : (b + 1) ^ p ≤ c * b ^ p) :
     (a + 1) ^ p ≤ c * a ^ p:= by
   have hb0 : 0 ≤ b:= by omega
@@ -5914,7 +5905,7 @@ lemma power_ratio (a b : ℤ) (p : ℕ) (c : ℤ)
   have h3 : (b + 1) ^ p * a ^ p ≤ (c * b ^ p) * a ^ p :=
     mul_le_mul_of_nonneg_right hbase ha_nonneg
   nlinarith
-lemma qO (K c : ℤ) (p : ℕ) (start slope : ℤ)
+theorem qO (K c : ℤ) (p : ℕ) (start slope : ℤ)
     (hK : 0 ≤ K) (hstart0 : 0 ≤ start) (hstart : 0 < start + c) (hslope : 0 ≤ slope)
     (hratio : (start + c + 1) ^ p ≤ q0 slope * (start + c) ^ p)
     (hbase : K * (start + c) ^ p < q0 (slope * start)) :
@@ -5940,19 +5931,19 @@ lemma qO (K c : ℤ) (p : ℕ) (start slope : ℤ)
   have hdecomp : n=start + ((n - start).toNat : ℤ):= by omega
   rw [hdecomp]
   exact hall (n - start).toNat
-lemma square_tail (n : ℤ) (hn : 20 ≤ n) : 1024 * (n + 8) ^ 2 < q0 n:= by
+theorem square_tail (n : ℤ) (hn : 20 ≤ n) : 1024 * (n + 8) ^ 2 < q0 n:= by
   have h:=qO 1024 8 2 20 1 (by omega) (by omega) (by omega) (by omega)
     (by decide) (by decide) n hn
   simpa using! h
-lemma fifth_tail (n : ℤ) (hn : 114 ≤ n) : q0 70 * (n + 8) ^ 5 < q0 n:= by
+theorem fifth_tail (n : ℤ) (hn : 114 ≤ n) : q0 70 * (n + 8) ^ 5 < q0 n:= by
   have h:=qO (q0 70) 8 5 114 1 (qs 70) (by omega) (by omega) (by omega)
     (by decide) (by decide) n hn
   simpa using! h
-lemma eighth_tail (n : ℤ) (hn : 114 ≤ n) : q0 84 * (n + 8) ^ 8 < q0 (2 * n):= by
+theorem eighth_tail (n : ℤ) (hn : 114 ≤ n) : q0 84 * (n + 8) ^ 8 < q0 (2 * n):= by
   exact qO (q0 84) 8 8 114 2 (qs 84) (by omega) (by omega) (by omega)
     (by decide) (by decide) n hn
 set_option exponentiation.threshold 2048 in
-lemma final_tail (n : ℤ) (hn : 1024 ≤ n) : q0 70 * (n + 1) ^ 5 < q0 (n - 1):= by
+theorem final_tail (n : ℤ) (hn : 1024 ≤ n) : q0 70 * (n + 1) ^ 5 < q0 (n - 1):= by
   have h:=qO (q0 71) 1 5 1024 1 (qs 71) (by omega) (by omega) (by omega)
     (by decide) (by decide) n hn
   rw [one_mul,Table.pow_split (by omega : (0 : ℤ) ≤ 1) (by omega : 1 ≤ n)] at h
@@ -5960,7 +5951,7 @@ lemma final_tail (n : ℤ) (hn : 1024 ≤ n) : q0 70 * (n + 1) ^ 5 < q0 (n - 1):
   have h71 : q0 71=2 * q0 70:= by decide
   rw [h1,h71] at h
   linarith
-lemma final_square (n : ℤ) (hn : 17 ≤ n) : 200 * n ^ 2 < q0 (n - 1):= by
+theorem final_square (n : ℤ) (hn : 17 ≤ n) : 200 * n ^ 2 < q0 (n - 1):= by
   have h:=qO 400 0 2 17 1 (by omega) (by omega) (by omega) (by omega)
     (by decide) (by decide) n hn
   rw [add_zero,one_mul,Table.pow_split (by omega : (0 : ℤ) ≤ 1) (by omega : 1 ≤ n)] at h
@@ -5970,10 +5961,10 @@ lemma final_square (n : ℤ) (hn : 17 ≤ n) : 200 * n ^ 2 < q0 (n - 1):= by
 end Exponential
 namespace LargeStep
 open WordLibrary WordBlocks Multiscale
-lemma lin_lt_pow2 (n : ℤ) (hn : 0 ≤ n) : n < q0 n:= by
+theorem lin_lt_pow2 (n : ℤ) (hn : 0 ≤ n) : n < q0 n:= by
   have h:=qbP n.toNat
   rwa [Int.toNat_of_nonneg hn] at h
-lemma qao (L m x r : ℤ)
+theorem qao (L m x r : ℤ)
     (hx : 3 ≤ x) (hm : 2 ≤ m ∧ m ≤ L) (hL : L ≤ q0 x) (hr : 0 ≤ r) :
     0 ≤ 12 * L ^ 3 + 3 + r * (12 * m ^ 3 + 3) ∧
     12 * L ^ 3 + 3 + r * (12 * m ^ 3 + 3) ≤ 13 * (r + 1) * q0 (3 * x):= by
@@ -5989,7 +5980,7 @@ lemma qao (L m x r : ℤ)
   constructor
   · nlinarith
   · nlinarith
-lemma budget (m x y r M : ℤ)
+theorem budget (m x y r M : ℤ)
     (hx : 3 ≤ x) (hy : 0 ≤ y) (hr : 1 ≤ r)
     (hM : 0 ≤ M ∧ M ≤ 13 * (r + 1) * q0 (3 * x))
     (hbudget : 15 * x + 27 + 2 * r * (6 * y + 9) + r ≤ m + 1) :
@@ -6011,7 +6002,7 @@ lemma budget (m x y r M : ℤ)
     rw [heq,q5 (by nlinarith) (by omega)]
     exact mul_lt_mul_of_pos_left hMpow (qc (by nlinarith))
   exact lt_of_lt_of_le hstep (qd (by nlinarith) hbudget)
-lemma qa4 (x r M : ℤ)
+theorem qa4 (x r M : ℤ)
     (hx : 3 ≤ x) (hr : 1 ≤ r) (hrpow : r + 1 ≤ q0 x)
     (hM : 0 ≤ M ∧ M ≤ 13 * (r + 1) * q0 (3 * x)) :
     2 * M + 2 ≤ (3 : ℤ) ^ (4 * x).toNat:= by
@@ -6050,7 +6041,7 @@ lemma qa4 (x r M : ℤ)
   rw [hpow16] at hMpow
   rw [hpow81]
   nlinarith
-lemma qbQ (r x m : ℤ) (hr : 1 ≤ r) (hm : 2 ≤ m) (hx : x ≤ m ^ 2) :
+theorem qbQ (r x m : ℤ) (hr : 1 ≤ r) (hm : 2 ≤ m) (hx : x ≤ m ^ 2) :
     (r + 1) * (4 * x + 13 * r * m ^ 2 + 2) + r ≤ 64 * (r + 1) ^ 2 * m ^ 2:= by
   have h1 : (r + 1) * (4 * x + 13 * r * m ^ 2 + 2) ≤ (r + 1) * (4 * m ^ 2 + 13 * r * m ^ 2 + 2) :=
     mul_le_mul_of_nonneg_left (by linarith) (by omega)
@@ -6092,11 +6083,11 @@ theorem lift (m L x y r : ℤ)
   exact qbQ r x m hr hm.1 hsquare
 end LargeStep
 namespace ScaleNumbers
-lemma threshold (x : ℤ) (hx : 121 ≤ x) : q0 20 + 32 * x < q0 (x - 1):= by
+theorem threshold (x : ℤ) (hx : 121 ≤ x) : q0 20 + 32 * x < q0 (x - 1):= by
   have h:=Exponential.final_square x (by omega)
   have h20 : q0 20=1048576:= by decide
   nlinarith
-lemma subscale (x : ℤ) (hx : 121 ≤ x) :
+theorem subscale (x : ℤ) (hx : 121 ≤ x) :
     (20 ≤ q1 (q0 20 + 32 * x) ∧ q1 (q0 20 + 32 * x) ≤ x) ∧
     q0 20 + 32 * x ≤ q0 14 * x ∧ x ≤ (q0 20 + 32 * x) ^ 2:= by
   have ht:=threshold x hx
@@ -6111,13 +6102,13 @@ lemma subscale (x : ℤ) (hx : 121 ≤ x) :
     linarith
   · rw [h20,h14]; omega
   · nlinarith
-lemma small_window (x : ℤ) (hx : 121 ≤ x ∧ x ≤ q0 20) :
+theorem small_window (x : ℤ) (hx : 121 ≤ x ∧ x ≤ q0 20) :
     q1 (q0 20 + 32 * x) ≤ 26:= by
   have h20 : q0 20=1048576:= by decide
   have h26 : q0 26=67108864:= by decide
   apply (qm (by omega) (by omega)).mp
   omega
-lemma large_window (x : ℤ) (hx : q0 20 < x) :
+theorem large_window (x : ℤ) (hx : q0 20 < x) :
     20 ≤ qH x ∧
     (q0 (qH x) ≤ x ∧ x < q0 (qH x + 1)) ∧
     q1 (q0 20 + 32 * x) ≤ qH x + 7 ∧
@@ -6135,7 +6126,7 @@ lemma large_window (x : ℤ) (hx : q0 20 < x) :
   have heq : qH x + 7 - 6=qH x + 1:= by ring
   rw [h6,heq]
   omega
-lemma huge_window (x : ℤ) (hm : q0 120 < q0 20 + 32 * x) :
+theorem huge_window (x : ℤ) (hm : q0 120 < q0 20 + 32 * x) :
     q0 114 < x ∧ 114 ≤ qH x:= by
   have hfixed : q0 20 + 32 * q0 114 < q0 120:= by decide
   have hx : q0 114 < x:= by linarith
@@ -6143,10 +6134,10 @@ lemma huge_window (x : ℤ) (hm : q0 120 < q0 20 + 32 * x) :
   have h:=qas (le_of_lt hx)
   rw [qck (by omega)] at h
   exact h
-lemma qak (y n : ℤ) (hy : 0 ≤ y ∧ y ≤ n + 7) (hn : 0 ≤ n) :
+theorem qak (y n : ℤ) (hy : 0 ≤ y ∧ y ≤ n + 7) (hn : 0 ≤ n) :
     27 + 2 * (30 * y) * (6 * y + 9) + 30 * y ≤ 1024 * (n + 8) ^ 2:= by
   nlinarith
-lemma small_budget (x : ℤ) (hx : 121 ≤ x) :
+theorem small_budget (x : ℤ) (hx : 121 ≤ x) :
     let y:=q1 (q0 20 + 32 * x)
     15 * x + 27 + 2 * (30 * y) * (6 * y + 9) + 30 * y ≤ q0 20 + 32 * x + 1:= by
   rcases subscale x hx with ⟨hy,_⟩
@@ -6161,7 +6152,7 @@ lemma small_budget (x : ℤ) (hx : 121 ≤ x) :
     have hpoly:=qak (q1 (q0 20 + 32 * x)) (qH x) ⟨by omega,hyn⟩ (by omega)
     have htail:=Exponential.square_tail (qH x) hn
     linarith
-lemma qbb (y : ℤ) (hy : 0 ≤ y) :
+theorem qbb (y : ℤ) (hy : 0 ≤ y) :
     27 + 2 * (q0 64 * (y + 1) ^ 4) * (6 * y + 9) + q0 64 * (y + 1) ^ 4 ≤
       q0 70 * (y + 1) ^ 5:= by
   have hP : 1 ≤ (y + 1) ^ 4:=one_le_pow₀ (by omega)
@@ -6176,7 +6167,7 @@ lemma qbb (y : ℤ) (hy : 0 ≤ y) :
   rw [heq,heq2]
   have hp64 : 0 < q0 64:=qc (by omega)
   nlinarith
-lemma large_budget (x : ℤ) (hx : 121 ≤ x) (hm : q0 120 < q0 20 + 32 * x) :
+theorem large_budget (x : ℤ) (hx : 121 ≤ x) (hm : q0 120 < q0 20 + 32 * x) :
     let y:=q1 (q0 20 + 32 * x)
     15 * x + 27 + 2 * (q0 64 * (y + 1) ^ 4) * (6 * y + 9) + q0 64 * (y + 1) ^ 4 ≤
       q0 20 + 32 * x + 1:= by
@@ -6195,7 +6186,7 @@ lemma large_budget (x : ℤ) (hx : 121 ≤ x) (hm : q0 120 < q0 20 + 32 * x) :
   have hpow70_mono : q0 70 * (q1 (q0 20 + 32 * x) + 1) ^ 5 ≤ q0 70 * (qH x + 8) ^ 5 :=
     mul_le_mul_of_nonneg_left hmono (qs 70)
   linarith
-lemma qaE (a A b B : ℤ) (ha : 0 ≤ a ∧ a ≤ A) (hb : 0 ≤ b ∧ b ≤ B) :
+theorem qaE (a A b B : ℤ) (ha : 0 ≤ a ∧ a ≤ A) (hb : 0 ≤ b ∧ b ≤ B) :
     64 * a ^ 2 * b ^ 2 ≤ 64 * A ^ 2 * B ^ 2:= by
   have ha2 : a ^ 2 ≤ A ^ 2:=pow_le_pow_left₀ ha.1 ha.2 2
   have hb2 : b ^ 2 ≤ B ^ 2:=pow_le_pow_left₀ hb.1 hb.2 2
@@ -6203,7 +6194,7 @@ lemma qaE (a A b B : ℤ) (ha : 0 ≤ a ∧ a ≤ A) (hb : 0 ≤ b ∧ b ≤ B) 
   have hA0 : 0 ≤ A ^ 2:=sq_nonneg A
   have hmul : a ^ 2 * b ^ 2 ≤ A ^ 2 * B ^ 2:=mul_le_mul ha2 hb2 (sq_nonneg b) hA0
   linarith
-lemma small_output (x y m : ℤ)
+theorem small_output (x y m : ℤ)
     (hx : 121 ≤ x) (hy : 0 ≤ y ∧ y ≤ x) (hm : 0 ≤ m ∧ m ≤ q0 14 * x) :
     64 * (30 * y + 1) ^ 2 * m ^ 2 ≤ q0 64 * (x + 1) ^ 4:= by
   have h:=qaE (30 * y + 1) (32 * x) m (q0 14 * x) ⟨by omega,by omega⟩ hm
@@ -6219,7 +6210,7 @@ lemma small_output (x y m : ℤ)
   have h44_64 : q0 44 ≤ q0 64:=qd (by omega) (by omega)
   have hp64 : 0 ≤ q0 64:=qs 64
   nlinarith
-lemma large_output (x y m n : ℤ)
+theorem large_output (x y m n : ℤ)
     (hx : 1 ≤ x) (hy : 0 ≤ y ∧ y ≤ n + 7) (hn : 114 ≤ n)
     (hnx : q0 n ≤ x) (hm : 0 ≤ m ∧ m ≤ 64 * x) :
     64 * (q0 64 * (y + 1) ^ 4 + 1) ^ 2 * m ^ 2 ≤ q0 64 * (x + 1) ^ 4:= by
@@ -6257,14 +6248,14 @@ lemma large_output (x y m n : ℤ)
   nlinarith
 end ScaleNumbers
 namespace GlobalBounds
-lemma qcc (x : ℤ) (hx : 0 ≤ x) : 30 * x ≤ q0 64 * (x + 1) ^ 4:= by
+theorem qcc (x : ℤ) (hx : 0 ≤ x) : 30 * x ≤ q0 64 * (x + 1) ^ 4:= by
   have hpow : x + 1 ≤ (x + 1) ^ 4:= by
     have h1 : 1 ≤ (x + 1) ^ 3:=one_le_pow₀ (by omega)
     have h2 : (x + 1) * 1 ≤ (x + 1) * (x + 1) ^ 3:=mul_le_mul_of_nonneg_left h1 (by omega)
     linarith [show (x + 1) * (x + 1) ^ 3=(x + 1) ^ 4 by ring]
   have h64 : (30 : ℤ) ≤ q0 64:= by decide
   nlinarith
-lemma qae (k L : ℤ) (hprev : Closure.earlier k) (hL : 2 ≤ L ∧ L < k)
+theorem qae (k L : ℤ) (hprev : Closure.earlier k) (hL : 2 ≤ L ∧ L < k)
     (ih : ∀ m,2 ≤ m ∧ m < L → WordLink.bound m (q0 64 * (q1 m + 1) ^ 4)) :
     WordLink.bound L (q0 64 * (q1 L + 1) ^ 4):= by
   have hparams:=SmallScale.earlier_parameters k L ⟨by omega,hL.2⟩ hprev
@@ -6339,7 +6330,7 @@ theorem quartic (k : ℤ) (hprev : Closure.earlier k) :
   exact hnat L.toNat ⟨by omega,by omega⟩
 end GlobalBounds
 namespace FinalBudget
-lemma qa2 (k : ℤ) (hk : 65536 < k) :
+theorem qa2 (k : ℤ) (hk : 65536 < k) :
     let x:=q1 k
     17 ≤ x ∧ (q0 (x - 1) < k ∧ k ≤ q0 x) ∧
     (2 ≤ 8 * x ∧ 8 * x < k) ∧ (0 ≤ q1 (8 * x) ∧ q1 (8 * x) ≤ x):= by
@@ -6357,10 +6348,10 @@ lemma qa2 (k : ℤ) (hk : 65536 < k) :
   apply (qm (by omega) (by omega)).mp
   have hmono:=qd (by omega : 0 ≤ x - 1) (by omega : x - 1 ≤ x)
   nlinarith
-lemma small_depth (x y : ℤ) (hx : 17 ≤ x) (hy : 0 ≤ y ∧ y ≤ x) :
+theorem small_depth (x y : ℤ) (hx : 17 ≤ x) (hy : 0 ≤ y ∧ y ≤ x) :
     6 * x + 9 + (30 * y + 1) * (6 * y + 9) + 8 * x ≤ 200 * x ^ 2:= by
   nlinarith
-lemma qbz (x : ℤ) (hx : 0 ≤ x) :
+theorem qbz (x : ℤ) (hx : 0 ≤ x) :
     6 * x + 9 + (q0 64 * (x + 1) ^ 4 + 1) * (6 * x + 9) + 8 * x ≤ q0 70 * (x + 1) ^ 5:= by
   have hP : 1 ≤ (x + 1) ^ 4:=one_le_pow₀ (by omega)
   have hx4x : 0 ≤ (x + 1) ^ 4 * x:=mul_nonneg (pow_nonneg (by omega) 4) (by omega)
@@ -6375,7 +6366,7 @@ lemma qbz (x : ℤ) (hx : 0 ≤ x) :
   have hp64 : 0 < q0 64:=qc (by omega)
   have hx_le : x ≤ (x + 1) ^ 4 * x:= by nlinarith
   nlinarith
-lemma large_depth (x y : ℤ) (hy : 0 ≤ y ∧ y ≤ x) :
+theorem large_depth (x y : ℤ) (hy : 0 ≤ y ∧ y ≤ x) :
     6 * x + 9 + (q0 64 * (y + 1) ^ 4 + 1) * (6 * y + 9) + 8 * x ≤ q0 70 * (x + 1) ^ 5:= by
   have hP : (y + 1) ^ 4 ≤ (x + 1) ^ 4:=pow_le_pow_left₀ (by omega) (by omega) 4
   have hP0 : 0 ≤ (y + 1) ^ 4:=pow_nonneg (by omega) 4
@@ -6385,7 +6376,7 @@ lemma large_depth (x y : ℤ) (hy : 0 ≤ y ∧ y ≤ x) :
     mul_le_mul (by nlinarith) (by omega) (by omega) (by nlinarith)
   have hpoly:=qbz x (by omega)
   linarith
-lemma mass_poly (k : ℤ) (hk : 3 ≤ k) :
+theorem mass_poly (k : ℤ) (hk : 3 ≤ k) :
     2 * (12 * k ^ 3 + k * (12 * k ^ 3 + 3)) + 3 < k ^ 8:= by
   have hsmall : 2 * (12 * k ^ 3 + k * (12 * k ^ 3 + 3)) + 3 ≤ 40 * k ^ 4:= by
     have hk0 : 0 ≤ k:= by omega
@@ -6405,7 +6396,7 @@ lemma mass_poly (k : ℤ) (hk : 3 ≤ k) :
     rw [heq]
     nlinarith
   linarith
-lemma qao (k L n : ℤ) (hk : 3 ≤ k) (hL : 0 ≤ L ∧ L ≤ k) (hn : 0 ≤ n ∧ n ≤ k) :
+theorem qao (k L n : ℤ) (hk : 3 ≤ k) (hL : 0 ≤ L ∧ L ≤ k) (hn : 0 ≤ n ∧ n ≤ k) :
     2 * (12 * k ^ 3 + n * (12 * L ^ 3 + 3)) + 3 < k ^ 8:= by
   have hLk3 : L ^ 3 ≤ k ^ 3:=pow_le_pow_left₀ hL.1 hL.2 3
   have hL3_0 : 0 ≤ L ^ 3:=pow_nonneg hL.1 3
@@ -6414,7 +6405,7 @@ lemma qao (k L n : ℤ) (hk : 3 ≤ k) (hL : 0 ≤ L ∧ L ≤ k) (hn : 0 ≤ n 
     mul_le_mul hn.2 (by linarith) (by linarith) (by omega)
   have hmp:=mass_poly k hk
   linarith
-lemma assemble (k x y r : ℤ)
+theorem assemble (k x y r : ℤ)
     (hk : 65536 < k) (hx : x=q1 k) (hy : y=q1 (8 * x))
     (hr : 0 ≤ r) (hword : WordLink.bound (8 * x) r)
     (hD : 6 * x + 9 + (r + 1) * (6 * y + 9) + 8 * x < k) :
@@ -6469,46 +6460,46 @@ theorem budget (k : ℤ) (hk : 65536 < k) (hprev : Closure.earlier k) :
 end FinalBudget
 namespace TM1
 abbrev M:=target_tm
-@[simp] lemma multiStep_zero (config : Cfg (Fin 2) (Fin 6)) : multiStep M config 0=some config:=rfl
-@[simp] lemma multiStep_one (config : Cfg (Fin 2) (Fin 6)) : multiStep M config 1=step M config:=rfl
-@[simp] lemma multiStep_succ (config : Cfg (Fin 2) (Fin 6)) (n : ℕ) :
+@[simp] theorem multiStep_zero (config : Cfg (Fin 2) (Fin 6)) : multiStep M config 0=some config:=rfl
+@[simp] theorem multiStep_one (config : Cfg (Fin 2) (Fin 6)) : multiStep M config 1=step M config:=rfl
+@[simp] theorem multiStep_succ (config : Cfg (Fin 2) (Fin 6)) (n : ℕ) :
     multiStep M config (n + 1)=Option.bind (multiStep M config n) (step M):= by
   rw [multiStep,Function.iterate_succ',Function.comp_apply,multiStep]
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2))=default:= by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2))=default:= by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head=0:=rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail=default:=rfl
-lemma qc3 {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [M]⊢ c₂) :
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head=0:=rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail=default:=rfl
+theorem qc3 {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [M]⊢ c₂) :
     c₁ [M]⊢^{1} c₂:= by simp [h]
-lemma step_stepPlus {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [M]⊢ c₂) :
+theorem step_stepPlus {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [M]⊢ c₂) :
     c₁ [M]⊢⁺ c₂:=⟨1,by decide,qc3 h⟩
-lemma qb1 (c₁ : Cfg (Fin 2) (Fin 6)) (n m : ℕ) :
+theorem qb1 (c₁ : Cfg (Fin 2) (Fin 6)) (n m : ℕ) :
     multiStep M c₁ (n + m)=(multiStep M c₁ n).bind (fun c₂ => multiStep M c₂ m):= by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ,multiStep_succ,ih,Option.bind_assoc]
     simp_rw [multiStep_succ]
-lemma qR {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)} {n m : ℕ}
+theorem qR {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)} {n m : ℕ}
     (h₁ : c₁ [M]⊢^{n} c₂) (h₂ : c₂ [M]⊢^{m} c3) :
     c₁ [M]⊢^{n+m} c3:= by
   rw [qb1,h₁]; simp [h₂]
-lemma qF (c : Cfg (Fin 2) (Fin 6)) : c [M]⊢* c:=⟨0,rfl⟩
-lemma qi {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
+theorem qF (c : Cfg (Fin 2) (Fin 6)) : c [M]⊢* c:=⟨0,rfl⟩
+theorem qi {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [M]⊢* c₂) (h₂ : c₂ [M]⊢* c3) : c₁ [M]⊢* c3:= by
   rcases h₁ with ⟨n,hn⟩; rcases h₂ with ⟨m,hm⟩
   exact ⟨n + m,qR hn hm⟩
-lemma qf {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [M]⊢⁺ c₂) :
+theorem qf {c₁ c₂ : Cfg (Fin 2) (Fin 6)} (h : c₁ [M]⊢⁺ c₂) :
     c₁ [M]⊢* c₂:= by rcases h with ⟨n,_,hn⟩; exact ⟨n,hn⟩
-lemma q7 {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
+theorem q7 {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [M]⊢⁺ c₂) (h₂ : c₂ [M]⊢* c3) : c₁ [M]⊢⁺ c3:= by
   rcases h₁ with ⟨n,hn0,hn⟩; rcases h₂ with ⟨m,hm⟩
   exact ⟨n + m,by omega,qR hn hm⟩
-lemma qG {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
+theorem qG {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [M]⊢* c₂) (h₂ : c₂ [M]⊢⁺ c3) : c₁ [M]⊢⁺ c3:= by
   rcases h₁ with ⟨n,hn⟩; rcases h₂ with ⟨m,hm0,hm⟩
   exact ⟨n + m,by omega,qR hn hm⟩
-lemma qaz {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
+theorem qaz {c₁ c₂ c3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [M]⊢ c₂) (h₂ : c₂ [M]⊢* c3) : c₁ [M]⊢⁺ c3 :=
   q7 (step_stepPlus h₁) h₂
 macro "qbq" : tactic =>
@@ -6520,22 +6511,22 @@ macro "step" : tactic =>
 macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | qbq | step)))
 abbrev o1 : List (Fin 2):=[1]
-@[simp] lemma o1_pow_zero (s : ListBlank (Fin 2)) : (o1 ^ (0 : ℕ)) +> s=s:=rfl
-lemma q6 (n : ℕ) (s : ListBlank (Fin 2)) :
+@[simp] theorem o1_pow_zero (s : ListBlank (Fin 2)) : (o1 ^ (0 : ℕ)) +> s=s:=rfl
+theorem q6 (n : ℕ) (s : ListBlank (Fin 2)) :
     (o1 ^ (n + 1)) +> s=(1 : Fin 2) >> ((o1 ^ n) +> s):=rfl
-lemma qj (n : ℕ) (s : ListBlank (Fin 2)) :
+theorem qj (n : ℕ) (s : ListBlank (Fin 2)) :
     (o1 ^ n) +> ((1 : Fin 2) >> s)=(1 : Fin 2) >> ((o1 ^ n) +> s):= by
   induction n with
   | zero => rfl
   | succ n ih =>
     rw [q6,ih,← q6]
-lemma o1_pow_add (m n : ℕ) (s : ListBlank (Fin 2)) :
+theorem o1_pow_add (m n : ℕ) (s : ListBlank (Fin 2)) :
     (o1 ^ (m + n)) +> s=(o1 ^ m) +> ((o1 ^ n) +> s):= by
   induction m with
   | zero => simp [o1_pow_zero]
   | succ m ih =>
     rw [Nat.succ_add,q6,q6,ih]
-lemma qa1 (n : ℕ) (l r : ListBlank (Fin 2)) :
+theorem qa1 (n : ℕ) (l r : ListBlank (Fin 2)) :
     (((o1 ^ n) +> l) <{{A}} r) [M]⊢* (l <{{A}} ((o1 ^ n) +> r)):= by
   induction n generalizing l r with
   | zero => exact qF _
@@ -6544,7 +6535,7 @@ lemma qa1 (n : ℕ) (l r : ListBlank (Fin 2)) :
     have h1 : (((1 : Fin 2) >> ((o1 ^ n) +> l)) <{{A}} r) [M]⊢⁺
         (((o1 ^ n) +> l) <{{A}} ((1 : Fin 2) >> r)):= by execute
     exact qi (qf h1) (by rw [q6,← qj]; exact ih l ((1 : Fin 2) >> r))
-lemma qaX (n : ℕ) (l r : ListBlank (Fin 2)) :
+theorem qaX (n : ℕ) (l r : ListBlank (Fin 2)) :
     (l {{D}}> ((o1 ^ n) +> r)) [M]⊢* (((o1 ^ n) +> l) {{D}}> r):= by
   induction n generalizing l r with
   | zero => exact qF _
@@ -6559,7 +6550,7 @@ def S1 (a b c : ℕ) (r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 def S2 (a b c : ℕ) (r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ((0 : Fin 2) >> ((o1 ^ a) +> default)) <{{A}}
     ((o1 ^ b) +> ((1 : Fin 2) >> (0 : Fin 2) >> ((o1 ^ c) +> r)))
-lemma Inc1 (a b c : ℕ) (r : ListBlank (Fin 2)) :
+theorem Inc1 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     (S1 a (2 + b) c r) [M]⊢* (S1 (1 + a) b (1 + c) r):= by
   unfold S1
   rw [show 2 + b=b + 1 + 1 by omega,q6 (b + 1),q6 b]
@@ -6578,7 +6569,7 @@ lemma Inc1 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     ((0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> ((o1 ^ c) +> r))
   rw [show 1 + a=a + 1 by omega,show 1 + c=c + 1 by omega,q6 a,q6 c]
   exact qi (qf h1) (qi h2 (qi (qf h3) h4))
-lemma Incs1 (n a b c : ℕ) (r : ListBlank (Fin 2)) :
+theorem Incs1 (n a b c : ℕ) (r : ListBlank (Fin 2)) :
     (S1 a (n * 2 + b) c r) [M]⊢* (S1 (n + a) b (n + c) r):= by
   induction n generalizing a b c with
   | zero => simp [qF]
@@ -6588,7 +6579,7 @@ lemma Incs1 (n a b c : ℕ) (r : ListBlank (Fin 2)) :
     have h2:=Inc1 (n + a) b (n + c) r
     rw [show 1 + (n + a)=n + 1 + a by omega,show 1 + (n + c)=n + 1 + c by omega] at h2
     exact qi h1 h2
-lemma Inc2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
+theorem Inc2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     (S2 a b (1 + c) r) [M]⊢* (S2 (1 + a) b c r):= by
   unfold S2
   rw [show 1 + c=c + 1 by omega,q6 c,qj b]
@@ -6606,7 +6597,7 @@ lemma Inc2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     ((1 : Fin 2) >> (0 : Fin 2) >> ((o1 ^ c) +> r))
   rw [show 1 + a=a + 1 by omega,q6 a]
   exact qi (qf h1) (qi h2 (qi (qf h3) h4))
-lemma Incs2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
+theorem Incs2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     (S2 a b c r) [M]⊢* (S2 (c + a) b 0 r):= by
   induction c generalizing a b with
   | zero => simp [qF]
@@ -6616,7 +6607,7 @@ lemma Incs2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     have h2:=ih (1 + a) b
     rw [show c + (1 + a)=(1 + c) + a by omega] at h2
     exact qi h1 h2
-lemma Ov0_start (a c d : ℕ) (r' : ListBlank (Fin 2)) :
+theorem Ov0_start (a c d : ℕ) (r' : ListBlank (Fin 2)) :
     (S1 a 0 c ((0 : Fin 2) >> ((o1 ^ d) +> r'))) [M]⊢⁺ (S2 0 (2 + a + c) d r'):= by
   unfold S1 S2
   simp only [o1_pow_zero,zero_add]
@@ -6656,7 +6647,7 @@ lemma Ov0_start (a c d : ℕ) (r' : ListBlank (Fin 2)) :
           q6 (c + 1 + 1),q6 (c + 1),q6 c,qj c]
     rw [h_eq] at h2
     exact q7 h1 h2
-lemma Ov0 (a c d e : ℕ) (r : ListBlank (Fin 2)) :
+theorem Ov0 (a c d e : ℕ) (r : ListBlank (Fin 2)) :
     (S1 a 0 c ((0 : Fin 2) >> ((o1 ^ d) +> ((0 : Fin 2) >> ((o1 ^ e) +> r))))) [M]⊢⁺
     (S1 d (3 + a + c) e r):= by
   have h1:=Ov0_start a c d ((0 : Fin 2) >> ((o1 ^ e) +> r))
@@ -6668,7 +6659,7 @@ lemma Ov0 (a c d e : ℕ) (r : ListBlank (Fin 2)) :
     rw [show 3 + a + c=(2 + a + c) + 1 by omega,q6 (2 + a + c),qj (2 + a + c)]
   rw [h_eq] at h2
   exact q7 h1 h2
-lemma Ov1 (a c : ℕ) (r : ListBlank (Fin 2)) :
+theorem Ov1 (a c : ℕ) (r : ListBlank (Fin 2)) :
     (S1 (1 + a) 1 c r) [M]⊢⁺ (S1 0 a 1 ((0 : Fin 2) >> ((o1 ^ (1 + c)) +> r))):= by
   unfold S1
   rw [show 1 + a=a + 1 by omega,show 1 + c=c + 1 by omega,
@@ -6686,7 +6677,7 @@ lemma Ov1 (a c : ℕ) (r : ListBlank (Fin 2)) :
     rw [zero_cons_default]
   rw [h_eq] at h2
   exact q7 h1 h2
-lemma MacroE (n v w d e : ℕ) (r : ListBlank (Fin 2)) :
+theorem MacroE (n v w d e : ℕ) (r : ListBlank (Fin 2)) :
     (S1 v (2 * n) w ((0 : Fin 2) >> ((o1 ^ d) +> ((0 : Fin 2) >> ((o1 ^ e) +> r))))) [M]⊢⁺
     (S1 d (2 * n + v + w + 3) e r):= by
   have h1:=Incs1 n v 0 w ((0 : Fin 2) >> ((o1 ^ d) +> ((0 : Fin 2) >> ((o1 ^ e) +> r))))
@@ -6694,7 +6685,7 @@ lemma MacroE (n v w d e : ℕ) (r : ListBlank (Fin 2)) :
   have h2:=Ov0 (n + v) (n + w) d e r
   rw [show 3 + (n + v) + (n + w)=2 * n + v + w + 3 by omega] at h2
   exact qG h1 h2
-lemma MacroO (n v w : ℕ) (r : ListBlank (Fin 2)) (h : 1 ≤ n + v) :
+theorem MacroO (n v w : ℕ) (r : ListBlank (Fin 2)) (h : 1 ≤ n + v) :
     (S1 v (2 * n + 1) w r) [M]⊢⁺
     (S1 0 (n + v - 1) 1 ((0 : Fin 2) >> ((o1 ^ (w + n + 1)) +> r))):= by
   have h1:=Incs1 n v 1 w r
@@ -6710,7 +6701,7 @@ def qT : List ℕ → Cfg (Fin 2) (Fin 6)
   | [u] => S1 0 u 0 default
   | [u,v] => S1 v u 0 default
   | u :: v :: w :: r => S1 v u w (qr r)
-lemma step_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Step e xs ys) :
+theorem step_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Step e xs ys) :
     (qT xs) [M]⊢⁺ (qT ys):= by
   cases h with
   | E n v w r =>
@@ -6726,27 +6717,27 @@ lemma step_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Step e xs ys) :
   | O n v w r hnv =>
     dsimp -failIfUnchanged [qT,qr]
     exact MacroO n v w (qr r) hnv
-lemma qbG (xs : List ℕ) : qr (xs ++ [0])=qr xs:= by
+theorem qbG (xs : List ℕ) : qr (xs ++ [0])=qr xs:= by
   induction xs with
   | nil => simp [qr,o1_pow_zero,zero_cons_default]
   | cons x xs ih => simp [qr,ih]
-lemma qaW (xs : List ℕ) : qT (xs ++ [0])=qT xs:= by
+theorem qaW (xs : List ℕ) : qT (xs ++ [0])=qT xs:= by
   rcases xs with _ | ⟨u,_ | ⟨v,_ | ⟨w,xs⟩⟩⟩
   · simp [qT,S1,o1_pow_zero,zero_cons_default]
   · simp [qT,S1,o1_pow_zero,zero_cons_default]
   · simp [qT,S1,qr,o1_pow_zero,zero_cons_default]
   · simp [qT,qbG]
-lemma init_eq : init []=qT []:= by
+theorem init_eq : init []=qT []:= by
   unfold init qT S1
   simp [Tape.mk₁,o1_pow_zero,zero_cons_default,A]
   rfl
-lemma exec_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) :
+theorem exec_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) :
     (qT xs) [M]⊢* (qT ys):= by
   induction h with
   | stop xs => exact qF _
   | take hs _ ih => exact qi (qf (step_spec hs)) ih
   | zero _ ih => rw [← qaW]; exact ih
-lemma exec_progress {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) (he : 0 < e) :
+theorem exec_progress {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) (he : 0 < e) :
     (qT xs) [M]⊢⁺ (qT ys):= by
   induction h with
   | stop xs => omega
@@ -6755,14 +6746,14 @@ lemma exec_progress {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) (he :
   | zero _ ih =>
     rw [← qaW]
     exact ih he
-lemma qau {c c' : Cfg (Fin 2) (Fin 6)} {j d : ℕ}
+theorem qau {c c' : Cfg (Fin 2) (Fin 6)} {j d : ℕ}
     (h : multiStep M c (j + d)=some c') :
     (multiStep M c j).isSome:= by
   rw [qb1] at h
   cases h_j : multiStep M c j with
   | none => rw [h_j] at h; contradiction
   | some _ => rfl
-lemma nonhalt_of_returns (hreturn : ∀ k : ℕ,∃ e m : ℕ,Prefix.Exec (1 + e) [3 * k] [m]) :
+theorem nonhalt_of_returns (hreturn : ∀ k : ℕ,∃ e m : ℕ,Prefix.Exec (1 + e) [3 * k] [m]) :
     IsDoesNotHalt M:= by
   have h_chain : ∀ m : ℕ,∃ N ≥ m,∃ k : ℕ,multiStep M (init []) N=some (qT [3 * k]):= by
     intro m
@@ -6791,12 +6782,8 @@ lemma nonhalt_of_returns (hreturn : ∀ k : ℕ,∃ e m : ℕ,Prefix.Exec (1 + e
 end TM1
 
 end Solution
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

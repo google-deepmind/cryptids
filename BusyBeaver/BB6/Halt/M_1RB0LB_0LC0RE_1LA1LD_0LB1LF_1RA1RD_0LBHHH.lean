@@ -24,12 +24,8 @@ open Counter
 
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -79,28 +75,28 @@ def revWord : List Tok → List Tok
   | [] => []
   | t :: ts => revWord ts ++ [t]
 
-@[simp] lemma revWord_nil : revWord [] = [] := rfl
-@[simp] lemma revWord_cons (t : Tok) (ts : List Tok) : revWord (t :: ts) = revWord ts ++ [t] := rfl
+@[simp] theorem revWord_nil : revWord [] = [] := rfl
+@[simp] theorem revWord_cons (t : Tok) (ts : List Tok) : revWord (t :: ts) = revWord ts ++ [t] := rfl
 
-@[simp] lemma revWord_append (w₁ w₂ : List Tok) :
+@[simp] theorem revWord_append (w₁ w₂ : List Tok) :
     revWord (w₁ ++ w₂) = revWord w₂ ++ revWord w₁ := by
   induction w₁ with
   | nil => simp
   | cons t ts ih => simp [ih, List.append_assoc]
 
-@[simp] lemma revWord_revWord (w : List Tok) : revWord (revWord w) = w := by
+@[simp] theorem revWord_revWord (w : List Tok) : revWord (revWord w) = w := by
   induction w with
   | nil => rfl
   | cons t ts ih => simp [ih]
 
-@[simp] lemma isZpWord_append (w₁ w₂ : List Tok) :
+@[simp] theorem isZpWord_append (w₁ w₂ : List Tok) :
     isZpWord (w₁ ++ w₂) = (isZpWord w₁ && isZpWord w₂) := by
   induction w₁ with
   | nil => simp [isZpWord]
   | cons t ts ih =>
     cases t <;> simp [isZpWord, ih]
 
-@[simp] lemma isZpWord_revWord (w : List Tok) :
+@[simp] theorem isZpWord_revWord (w : List Tok) :
     isZpWord (revWord w) = isZpWord w := by
   induction w with
   | nil => rfl
@@ -126,11 +122,11 @@ def tokR : Tok → List (Fin 2)
 def wordL : List Tok → List (Fin 2) := encWords tokL
 def wordR : List Tok → List (Fin 2) := encWords tokR
 
-@[simp] lemma wordL_nil : wordL [] = [] := encWords_nil tokL
-@[simp] lemma wordL_cons (t : Tok) (ts : List Tok) : wordL (t :: ts) = tokL t ++ wordL ts := encWords_cons tokL t ts
+@[simp] theorem wordL_nil : wordL [] = [] := encWords_nil tokL
+@[simp] theorem wordL_cons (t : Tok) (ts : List Tok) : wordL (t :: ts) = tokL t ++ wordL ts := encWords_cons tokL t ts
 @[simp] theorem wordL_append (w₁ w₂ : List Tok) : wordL (w₁ ++ w₂) = wordL w₁ ++ wordL w₂ := encWords_append tokL w₁ w₂
-@[simp] lemma wordR_nil : wordR [] = [] := encWords_nil tokR
-@[simp] lemma wordR_cons (t : Tok) (ts : List Tok) : wordR (t :: ts) = tokR t ++ wordR ts := encWords_cons tokR t ts
+@[simp] theorem wordR_nil : wordR [] = [] := encWords_nil tokR
+@[simp] theorem wordR_cons (t : Tok) (ts : List Tok) : wordR (t :: ts) = tokR t ++ wordR ts := encWords_cons tokR t ts
 @[simp] theorem wordR_append (w₁ w₂ : List Tok) : wordR (w₁ ++ w₂) = wordR w₁ ++ wordR w₂ := encWords_append tokR w₁ w₂
 
 abbrev Rle := List (List Tok × Nat)
@@ -143,12 +139,12 @@ def evalRStack : Rle → ListBlank (Fin 2) → ListBlank (Fin 2)
   | [], r_end => r_end
   | (w, c) :: rest, r_end => ((wordR w) ^ c) +> evalRStack rest r_end
 
-@[simp] lemma evalRle_nil : evalRle [] = default := rfl
-@[simp] lemma evalRle_cons (w : List Tok) (c : Nat) (rest : Rle) :
+@[simp] theorem evalRle_nil : evalRle [] = default := rfl
+@[simp] theorem evalRle_cons (w : List Tok) (c : Nat) (rest : Rle) :
     evalRle ((w, c) :: rest) = ((wordL w) ^ c) +> evalRle rest := rfl
 
-@[simp] lemma evalRStack_nil (r_end : ListBlank (Fin 2)) : evalRStack [] r_end = r_end := rfl
-@[simp] lemma evalRStack_cons (w : List Tok) (c : Nat) (rest : Rle) (r_end : ListBlank (Fin 2)) :
+@[simp] theorem evalRStack_nil (r_end : ListBlank (Fin 2)) : evalRStack [] r_end = r_end := rfl
+@[simp] theorem evalRStack_cons (w : List Tok) (c : Nat) (rest : Rle) (r_end : ListBlank (Fin 2)) :
     evalRStack ((w, c) :: rest) r_end = ((wordR w) ^ c) +> evalRStack rest r_end := rfl
 
 def pushRle (w : List Tok) (c : Nat) (rle : Rle) : Rle :=
@@ -1124,8 +1120,8 @@ theorem hasRoundtrip_stack : ∀ (rs : Rle) {R : Nat → ListBlank (Fin 2)},
 def r1PhaseCfg (phase : Bool) (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   if phase then r1OddCfg l r else r1Cfg l r
 
-@[simp] lemma r1PhaseCfg_false (l r : ListBlank (Fin 2)) : r1PhaseCfg false l r = r1Cfg l r := rfl
-@[simp] lemma r1PhaseCfg_true (l r : ListBlank (Fin 2)) : r1PhaseCfg true l r = r1OddCfg l r := rfl
+@[simp] theorem r1PhaseCfg_false (l r : ListBlank (Fin 2)) : r1PhaseCfg false l r = r1Cfg l r := rfl
+@[simp] theorem r1PhaseCfg_true (l r : ListBlank (Fin 2)) : r1PhaseCfg true l r = r1OddCfg l r := rfl
 
 def stepR1StarWord : List Tok → Bool → List Tok × Nat × Bool
   | [], phase => ([], 0, phase)
@@ -1405,9 +1401,9 @@ def modeCfg : Mode → ListBlank (Fin 2) → ListBlank (Fin 2) → Cfg (Fin 2) (
   | .R1, l, r => r1Cfg l r
   | .R1_ODD, l, r => r1OddCfg l r
 
-@[simp] lemma modeCfg_R0 (l r : ListBlank (Fin 2)) : modeCfg .R0 l r = r0Cfg l r := rfl
-@[simp] lemma modeCfg_R1 (l r : ListBlank (Fin 2)) : modeCfg .R1 l r = r1Cfg l r := rfl
-@[simp] lemma modeCfg_R1_ODD (l r : ListBlank (Fin 2)) : modeCfg .R1_ODD l r = r1OddCfg l r := rfl
+@[simp] theorem modeCfg_R0 (l r : ListBlank (Fin 2)) : modeCfg .R0 l r = r0Cfg l r := rfl
+@[simp] theorem modeCfg_R1 (l r : ListBlank (Fin 2)) : modeCfg .R1 l r = r1Cfg l r := rfl
+@[simp] theorem modeCfg_R1_ODD (l r : ListBlank (Fin 2)) : modeCfg .R1_ODD l r = r1OddCfg l r := rfl
 
 def stepOneTok (rle : Rle) (mode : Mode) (t : Tok) : Option (Rle × Mode) :=
   match mode, t with
@@ -2277,12 +2273,8 @@ theorem runCarry_2605 : runCarry 2605 initRle 1 = true := rfl
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

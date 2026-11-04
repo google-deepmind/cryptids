@@ -4,28 +4,31 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import BusyBeaver.Basic
+import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
-namespace BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH
+@[expose] public section
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+namespace BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
+end BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH
+
+end
+
+namespace BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH
+
+variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option maxHeartbeats 4000000
+
+namespace Solution
 
 def A : Fin 6 := 0
 def B : Fin 6 := 1
@@ -34,92 +37,117 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-local notation "zB" => ListBlank (Fin 2)
-local notation "zF" => List (Fin 2)
+local notation "TapeBlank" => ListBlank (Fin 2)
+local notation "SymList" => List (Fin 2)
 
-@[simp] lemma zMz {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma zMo {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem multiStep_zero_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (M : Machine Γ Λ)
+    (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem multiStep_one_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (M : Machine Γ Λ)
+    (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem multiStep_succ_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (M : Machine Γ Λ)
+    (config : Cfg Γ Λ) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma z0i : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default_eq : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem default_head_eq : (default : TapeBlank).head = 0 := rfl
+@[simp] theorem default_tail_eq : (default : TapeBlank).tail = default := rfl
+@[simp] theorem append_nil (s : TapeBlank) : ([] : SymList) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : SymList) (s : TapeBlank) :
     (a :: l) +> s = a >> (l +> s) := rfl
-@[simp] lemma append_assoc (l₁ l₂ : zF) (s : zB) :
+@[simp] theorem append_assoc (l₁ l₂ : SymList) (s : TapeBlank) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   induction l₁ with
   | nil => rfl
   | cons a l₁ ih => simp [ih]
-@[simp] lemma zPz {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma z0j {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+@[simp] theorem pow_zero_list_eq {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list_eq {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n :=
+    rfl
 
-lemma zSm {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem step_to_multiStep {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ c₂ : Cfg
+    Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂ := by simp [h]
-lemma z0Q {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
-    c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, zSm tm c₁ c₂ h⟩
-lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+theorem step_to_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ
+    Λ) (h : c₁ [tm]⊢ c₂) :
+    c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, step_to_multiStep tm c₁ c₂ h⟩
+theorem multiStep_add_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ)
+    (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
-    rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
-    simp_rw [zMs]
-lemma zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+    rw [Nat.add_succ, multiStep_succ_eq, ih, Option.bind_assoc]
+    simp_rw [multiStep_succ_eq]
+theorem multiStep_trans_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] (tm : Machine Γ Λ) (c₁ c₂ c₃ :
+    Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
-  rw [zMa, h₁]; simp [h₂]
-lemma zSt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+  rw [multiStep_add_eq, h₁]; simp [h₂]
+theorem stepStar_trans_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ :
+    Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
-  exact ⟨n + m, zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma zSt_eq {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)} (h₁ : c₁ [target_tm]⊢* c₂) (heq : c₂ = c₃) :
+  exact ⟨n + m, multiStep_trans_eq tm c₁ c₂ c₃ n m hn hm⟩
+theorem stepStar_congr_eq {c₁ c₂ c₃ : Cfg (Fin 2) (Fin 6)} (h₁ : c₁ [target_tm]⊢* c₂) (heq : c₂ =
+    c₃) :
     c₁ [target_tm]⊢* c₃ := heq ▸ h₁
-lemma zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
+theorem stepPlus_to_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ :
+    Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma z0R {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem stepPlus_trans_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ :
+    Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
-  exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma zSpp {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+  exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m),
+      multiStep_trans_eq tm c₁ c₂ c₃ n m hn hm⟩
+theorem stepPlus_stepStar_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂
+    c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
-  exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n), zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma z0T {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+  exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n),
+      multiStep_trans_eq tm c₁ c₂ c₃ n m hn hm⟩
+theorem step_stepStar_eq {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ] {tm : Machine Γ Λ} {c₁ c₂ c₃ :
+    Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
-  z0R (z0Q tm c₁ c₂ h₁) h₂
+  stepPlus_trans_eq (step_to_stepPlus tm c₁ c₂ h₁) h₂
 
 macro "finish" : tactic =>
-  `(tactic| (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, List.cons_append, List.nil_append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, z0i, zDh, zDt]) <;> exists 0 <;> fail)
+  `(tactic| (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons,
+      append_nil, List.cons_append, List.nil_append, Turing.ListBlank.head_cons,
+      Turing.ListBlank.tail_cons, zero_cons_default_eq, default_head_eq,
+      default_tail_eq]) <;> exists 0 <;> fail)
 macro "step_tm" : tactic =>
-  `(tactic| (try dsimp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil]) <;> (try refine zPs ?_) <;>
-    refine z0T (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
-    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z0i, zDh, zDt])
+  `(tactic| (try dsimp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons,
+      append_nil]) <;> (try refine stepPlus_to_stepStar ?_) <;>
+    refine step_stepStar_eq (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft,
+        append_cons, append_nil, Turing.ListBlank.head_cons, default_head_eq]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, append_cons, append_nil,
+        Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
+        zero_cons_default_eq, default_head_eq, default_tail_eq])
 macro "execute5" : tactic =>
-  `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)))
+  `(tactic| (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;>
+      (any_goals (first | finish | step_tm)) <;> (any_goals (first | finish | step_tm)) <;>
+      (any_goals (first | finish | step_tm)))
 macro "execute" : tactic =>
   `(tactic| execute5 <;> execute5 <;> execute5)
 
-abbrev W0 : zF := [0]
-abbrev W1 : zF := [1]
+abbrev W0 : SymList := [0]
+abbrev W1 : SymList := [1]
 abbrev stS : Fin 6 := D
 abbrev stT : Fin 6 := C
 abbrev stU : Fin 6 := A
 abbrev stV : Fin 6 := A
 
 @[simp]
-def LC : List Nat → zB
+def LC : List Nat → TapeBlank
   | [] => default
-  | a :: l => ([0] : zF) +> ((W1 ^ a) +> LC l)
+  | a :: l => ([0] : SymList) +> ((W1 ^ a) +> LC l)
 
 
 @[simp]
-def RC : List Nat → zB
+def RC : List Nat → TapeBlank
   | [] => default
-  | a :: r => (W1 ^ a) +> (([0] : zF) +> RC r)
+  | a :: r => (W1 ^ a) +> (([0] : SymList) +> RC r)
 
 def S (l : List Nat) (b : Nat) (r : List Nat) : Cfg (Fin 2) (Fin 6) :=
   ((W1 ^ b) +> LC l) <{{stS}} (RC r)
@@ -130,102 +158,103 @@ def U (l : List Nat) (b : Nat) (r : List Nat) : Cfg (Fin 2) (Fin 6) :=
 def V (l : List Nat) (b : Nat) (r : List Nat) : Cfg (Fin 2) (Fin 6) :=
   ((W1 ^ b) +> LC l) {{stV}}> (RC r)
 
-lemma Lblanks (l : List Nat) : LC l = LC (l ++ [0]) := by
+theorem Lblanks (l : List Nat) : LC l = LC (l ++ [0]) := by
   induction l with
-  | nil => simp [LC, W1, z0i]
+  | nil => simp [LC]
   | cons a l ih => simp only [LC, List.cons_append]; rw [← ih]
 
-lemma Rblank (r : List Nat) : RC r = RC (r ++ [0]) := by
+theorem Rblank (r : List Nat) : RC r = RC (r ++ [0]) := by
   induction r with
-  | nil => simp [RC, W1, z0i]
+  | nil => simp [RC]
   | cons a r ih => simp only [RC, List.cons_append]; rw [← ih]
 
-lemma Sblankl (l : List Nat) (a : Nat) (r : List Nat) : S l a r = S (l ++ [0]) a r := by
+theorem Sblankl (l : List Nat) (a : Nat) (r : List Nat) : S l a r = S (l ++ [0]) a r := by
   dsimp only [S]; rw [← Lblanks]
-lemma Ublankl (l : List Nat) (a : Nat) (r : List Nat) : U l a r = U (l ++ [0]) a r := by
+theorem Ublankl (l : List Nat) (a : Nat) (r : List Nat) : U l a r = U (l ++ [0]) a r := by
   dsimp only [U]; rw [← Lblanks]
-lemma Sblankr (l : List Nat) (a : Nat) (r : List Nat) : S l a r = S l a (r ++ [0]) := by
+theorem Sblankr (l : List Nat) (a : Nat) (r : List Nat) : S l a r = S l a (r ++ [0]) := by
   dsimp only [S]; rw [← Rblank]
-lemma Tblankr (l : List Nat) (a : Nat) (r : List Nat) : T l a r = T l a (r ++ [0]) := by
+theorem Tblankr (l : List Nat) (a : Nat) (r : List Nat) : T l a r = T l a (r ++ [0]) := by
   dsimp only [T]; rw [← Rblank]
-lemma Ublankr (l : List Nat) (a : Nat) (r : List Nat) : U l a r = U l a (r ++ [0]) := by
+theorem Ublankr (l : List Nat) (a : Nat) (r : List Nat) : U l a r = U l a (r ++ [0]) := by
   dsimp only [U]; rw [← Rblank]
-lemma Vblankr (l : List Nat) (a : Nat) (r : List Nat) : V l a r = V l a (r ++ [0]) := by
+theorem Vblankr (l : List Nat) (a : Nat) (r : List Nat) : V l a r = V l a (r ++ [0]) := by
   dsimp only [V]; rw [← Rblank]
 
-lemma Sblankl0 (a : Nat) (r : List Nat) : S [] a r = S [0, 0] a r := by
-  dsimp [S]; simp [LC, W1, z0i]
-lemma Ublankl0 (a : Nat) (r : List Nat) : U [] a r = U [0] a r := by
-  dsimp [U]; simp [LC, W1, z0i]
-lemma Tblankr2 (l : List Nat) (a : Nat) : T l a [0, 0] = T l a [0, 0, 0] := by
-  dsimp [T]; simp [RC, W1, z0i]
+theorem Sblankl0 (a : Nat) (r : List Nat) : S [] a r = S [0, 0] a r := by
+  dsimp [S, LC]; simp
+theorem Ublankl0 (a : Nat) (r : List Nat) : U [] a r = U [0] a r := by
+  dsimp [U, LC]; simp
+theorem Tblankr2 (l : List Nat) (a : Nat) : T l a [0, 0] = T l a [0, 0, 0] := by
+  dsimp [T, RC]; simp
 
-lemma Spos (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Spos (l : List Nat) (a : Nat) (r : List Nat) :
     (S l (a + 1) r) [target_tm]⊢* (T l (a + 1) r) := by
-  simp only [S, T, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Spos_progress (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Spos_progress (l : List Nat) (a : Nat) (r : List Nat) :
     (S l (a + 1) r) [target_tm]⊢⁺ (T l (a + 1) r) := by
-  simp only [S, T, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Szero (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Szero (l : List Nat) (a c : Nat) (r : List Nat) :
     (S ((a + 1) :: l) 0 (c :: r)) [target_tm]⊢* (S l a (0 :: (c + 1) :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Sedge (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Sedge (l : List Nat) (a c : Nat) (r : List Nat) :
     (S (0 :: a :: l) 0 (c :: r)) [target_tm]⊢* (U l a (0 :: (c + 1) :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Upos (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Upos (l : List Nat) (a : Nat) (r : List Nat) :
     (U l (a + 1) r) [target_tm]⊢* (S l a (0 :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Uzero0 (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Uzero0 (l : List Nat) (a : Nat) (r : List Nat) :
     (U (a :: l) 0 (0 :: r)) [target_tm]⊢* (T l (a + 2) r) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Uzero1 (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Uzero1 (l : List Nat) (a : Nat) (r : List Nat) :
     (U (a :: l) 0 (1 :: r)) [target_tm]⊢* (T ((a + 2) :: l) 0 r) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Tzero (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Tzero (l : List Nat) (a c : Nat) (r : List Nat) :
     (T l a (0 :: 0 :: c :: r)) [target_tm]⊢* (U l a (0 :: (c + 1) :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Tmix (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Tmix (l : List Nat) (a c : Nat) (r : List Nat) :
     (T l a (0 :: (c + 1) :: r)) [target_tm]⊢* (T (a :: l) 1 (c :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Tpos (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Tpos (l : List Nat) (a c : Nat) (r : List Nat) :
     (T l a ((c + 1) :: r)) [target_tm]⊢* (V l (a + 1) (c :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Vpos (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Vpos (l : List Nat) (a c : Nat) (r : List Nat) :
     (V l a ((c + 1) :: r)) [target_tm]⊢* (S l a (0 :: c :: r)) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Vzero0 (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Vzero0 (l : List Nat) (a : Nat) (r : List Nat) :
     (V l a (0 :: 0 :: r)) [target_tm]⊢* (T l (a + 2) r) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma Vzero1 (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Vzero1 (l : List Nat) (a : Nat) (r : List Nat) :
     (V l a (0 :: 1 :: r)) [target_tm]⊢* (T ((a + 2) :: l) 0 r) := by
-  simp only [S, T, U, V, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+  dsimp [S, T, U, V, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq]; execute
 
-lemma init_to_T : (init []) [target_tm]⊢* (T [] 2 []) := by
-  simp only [init, Tape.mk₁, T, LC, RC, W1, zPz, z0j, List.cons_append, List.nil_append]; execute
+theorem init_to_T : (init []) [target_tm]⊢* (T [] 2 []) := by
+  simp only [init, Tape.mk₁, T, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq, List.cons_append,
+      List.nil_append]; execute
 
 abbrev rep (x n : Nat) : List Nat := List.replicate n x
 
-@[simp] lemma rep_zero (x : Nat) : rep x 0 = [] := rfl
-@[simp] lemma rep_succ (x n : Nat) : rep x (n + 1) = x :: rep x n := rfl
+@[simp] theorem rep_zero (x : Nat) : rep x 0 = [] := rfl
+@[simp] theorem rep_succ (x n : Nat) : rep x (n + 1) = x :: rep x n := rfl
 
-lemma rep_snoc (x n : Nat) (l : List Nat) : rep x n ++ x :: l = rep x (n + 1) ++ l := by
+theorem rep_snoc (x n : Nat) (l : List Nat) : rep x n ++ x :: l = rep x (n + 1) ++ l := by
   induction n with
   | zero => rfl
   | succ n ih => simp only [rep_succ, List.cons_append, ih]
 
-lemma Tmixs (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
+theorem Tmixs (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     (T l a (0 :: (rep 1 (n + 1) ++ r))) [target_tm]⊢*
     (T (rep 1 n ++ a :: l) 1 (0 :: r)) := by
   induction n generalizing l a with
@@ -234,9 +263,9 @@ lemma Tmixs (n : Nat) (l : List Nat) (a : Nat) (r : List Nat) :
     have h1 := Tmix l a 0 (rep 1 (n + 1) ++ r)
     have h2 := ih (a :: l) 1
     rw [rep_snoc] at h2
-    exact zSt h1 h2
+    exact stepStar_trans_eq h1 h2
 
-lemma Szeros (n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
+theorem Szeros (n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
     (S (rep 1 (n + 1) ++ l) 0 (c :: r)) [target_tm]⊢*
     (S l 0 (0 :: (rep 1 n ++ (c + 1) :: r))) := by
   induction n generalizing c r with
@@ -245,16 +274,16 @@ lemma Szeros (n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
     have h1 := Szero (rep 1 (n + 1) ++ l) 0 c r
     have h2 := ih 0 ((c + 1) :: r)
     rw [rep_snoc] at h2
-    exact zSt h1 h2
+    exact stepStar_trans_eq h1 h2
 
-lemma Triple (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Triple (l : List Nat) (a c : Nat) (r : List Nat) :
     (T l a ((c + 3) :: r)) [target_tm]⊢* (T ((a + 1) :: l) 1 (c :: r)) :=
-  zSt (Tpos l a (c + 2) r)
-    (zSt (Vpos l (a + 1) (c + 1) r)
-      (zSt (Spos l a (0 :: (c + 1) :: r))
+  stepStar_trans_eq (Tpos l a (c + 2) r)
+    (stepStar_trans_eq (Vpos l (a + 1) (c + 1) r)
+      (stepStar_trans_eq (Spos l a (0 :: (c + 1) :: r))
         (Tmix l (a + 1) c r)))
 
-lemma Triples (n : Nat) (l : List Nat) (a c : Nat) (r : List Nat) :
+theorem Triples (n : Nat) (l : List Nat) (a c : Nat) (r : List Nat) :
     (T l a (((n + 1) * 3 + c) :: r)) [target_tm]⊢*
     (T (rep 2 n ++ (a + 1) :: l) 1 (c :: r)) := by
   induction n generalizing l a with
@@ -266,9 +295,9 @@ lemma Triples (n : Nat) (l : List Nat) (a c : Nat) (r : List Nat) :
     have h1 := Triple l a ((n + 1) * 3 + c) r
     have h2 := ih ((a + 1) :: l) 1
     rw [rep_snoc] at h2
-    exact zSt h1 h2
+    exact stepStar_trans_eq h1 h2
 
-lemma Pairs (n : Nat) (l r : List Nat) :
+theorem Pairs (n : Nat) (l r : List Nat) :
     (T l 0 (rep 1 (n * 2) ++ r)) [target_tm]⊢*
     (T (rep 3 n ++ l) 0 r) := by
   induction n generalizing l with
@@ -279,9 +308,9 @@ lemma Pairs (n : Nat) (l r : List Nat) :
     have h2 := Vzero1 l 1 (rep 1 (n * 2) ++ r)
     have h3 := ih (3 :: l)
     rw [rep_snoc] at h3
-    exact zSt h1 (zSt h2 h3)
+    exact stepStar_trans_eq h1 (stepStar_trans_eq h2 h3)
 
-lemma CycleStep (a : Nat) (l : List Nat) (n c : Nat) (r : List Nat) :
+theorem CycleStep (a : Nat) (l : List Nat) (n c : Nat) (r : List Nat) :
     (S ((a + 1) :: l) 1 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l a (0 :: (rep 1 (n + 2) ++ 0 :: (c + 1) :: r))) := by
   have h1 := Spos ((a + 1) :: l) 0 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))
@@ -292,9 +321,10 @@ lemma CycleStep (a : Nat) (l : List Nat) (n c : Nat) (r : List Nat) :
   have h5 := Szeros n ((a + 1) :: l) 0 (0 :: (c + 1) :: r)
   rw [rep_snoc] at h5
   have h6 := Szero l a 0 (rep 1 (n + 1) ++ 0 :: (c + 1) :: r)
-  exact zSt h1 (zSt h2 (zSt h3 (zSt h4 (zSt h5 h6))))
+  exact stepStar_trans_eq h1 (stepStar_trans_eq h2 (stepStar_trans_eq h3 (stepStar_trans_eq h4
+      (stepStar_trans_eq h5 h6))))
 
-lemma CycleCarry (b : Nat) (l : List Nat) (n c : Nat) (r : List Nat) :
+theorem CycleCarry (b : Nat) (l : List Nat) (n c : Nat) (r : List Nat) :
     (S l (b + 1) (0 :: (rep 1 (n + 2) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l b (0 :: (rep 1 (n + 2) ++ 0 :: (c + 1) :: r))) := by
   have h1 := Spos l b (0 :: (rep 1 (n + 2) ++ 0 :: c :: r))
@@ -304,24 +334,26 @@ lemma CycleCarry (b : Nat) (l : List Nat) (n c : Nat) (r : List Nat) :
   have h5 := Szeros n ((b + 1) :: l) 0 (0 :: (c + 1) :: r)
   rw [rep_snoc] at h5
   have h6 := Szero l b 0 (rep 1 (n + 1) ++ 0 :: (c + 1) :: r)
-  exact zSt h1 (zSt h2 (zSt h3 (zSt h4 (zSt h5 h6))))
+  exact stepStar_trans_eq h1 (stepStar_trans_eq h2 (stepStar_trans_eq h3 (stepStar_trans_eq h4
+      (stepStar_trans_eq h5 h6))))
 
-lemma Cycle2 (l : List Nat) (n c : Nat) (r : List Nat) :
+theorem Cycle2 (l : List Nat) (n c : Nat) (r : List Nat) :
     (S (2 :: l) 1 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l 1 (0 :: (rep 1 (n + 2) ++ 0 :: (c + 1) :: r))) :=
   CycleStep 1 l n c r
 
-lemma Cycle (l : List Nat) (n c : Nat) (r : List Nat) :
+theorem Cycle (l : List Nat) (n c : Nat) (r : List Nat) :
     (S (3 :: l) 1 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l 1 (0 :: (rep 1 (n + 2) ++ 0 :: (c + 2) :: r))) :=
-  zSt (CycleStep 2 l n c r) (CycleCarry 1 l n (c + 1) r)
+  stepStar_trans_eq (CycleStep 2 l n c r) (CycleCarry 1 l n (c + 1) r)
 
-lemma Cycle4 (l : List Nat) (n c : Nat) (r : List Nat) :
+theorem Cycle4 (l : List Nat) (n c : Nat) (r : List Nat) :
     (S (4 :: l) 1 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l 1 (0 :: (rep 1 (n + 2) ++ 0 :: (c + 3) :: r))) :=
-  zSt (CycleStep 3 l n c r) (zSt (CycleCarry 2 l n (c + 1) r) (CycleCarry 1 l n (c + 2) r))
+  stepStar_trans_eq (CycleStep 3 l n c r) (stepStar_trans_eq (CycleCarry 2 l n (c + 1) r)
+      (CycleCarry 1 l n (c + 2) r))
 
-lemma Cycles (m n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
+theorem Cycles (m n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
     (S (rep 3 m ++ l) 1 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l 1 (0 :: (rep 1 (n + 1 + m) ++ 0 :: (m * 2 + c) :: r))) := by
   induction m generalizing n c with
@@ -334,9 +366,9 @@ lemma Cycles (m n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
     have h2 := ih (n + 1) (c + 2)
     rw [show n + 1 + 1 + m = n + 1 + (m + 1) by omega,
         show m * 2 + (c + 2) = (m + 1) * 2 + c by omega] at h2
-    exact zSt h1 h2
+    exact stepStar_trans_eq h1 h2
 
-lemma Cycles2 (m n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
+theorem Cycles2 (m n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
     (S (rep 2 m ++ l) 1 (0 :: (rep 1 (n + 1) ++ 0 :: c :: r))) [target_tm]⊢*
     (S l 1 (0 :: (rep 1 (n + 1 + m) ++ 0 :: (m + c) :: r))) := by
   induction m generalizing n c with
@@ -349,9 +381,9 @@ lemma Cycles2 (m n : Nat) (l : List Nat) (c : Nat) (r : List Nat) :
     have h2 := ih (n + 1) (c + 1)
     rw [show n + 1 + 1 + m = n + 1 + (m + 1) by omega,
         show m + (c + 1) = (m + 1) + c by omega] at h2
-    exact zSt h1 h2
+    exact stepStar_trans_eq h1 h2
 
-lemma cap_head (r : List Nat) :
+theorem cap_head (r : List Nat) :
     (T ([]) 2 (0 :: 1 :: 0 :: 6 :: 1 :: r)) [target_tm]⊢* (T ([4, 2, 2, 0, 5]) 0 (r)) := by
   have h0 := Tmix ([]) 2 0 (0 :: 6 :: 1 :: r)
   have h1 := Tzero ([2]) 1 6 (1 :: r)
@@ -373,9 +405,13 @@ lemma cap_head (r : List Nat) :
   have h17 := Triple ([2, 0, 5]) 1 1 (1 :: r)
   have h18 := Tpos ([2, 2, 0, 5]) 1 0 (1 :: r)
   have h19 := Vzero1 ([2, 2, 0, 5]) 2 (r)
-  exact (zSt h0 (zSt h1 (zSt h2 (zSt h3 (zSt h4 (zSt h5 (zSt h6 (zSt h7 (zSt h8 (zSt h10 (zSt h12 (zSt h13 (zSt h14 (zSt h15 (zSt h16 (zSt h17 (zSt h18 h19)))))))))))))))))
+  exact (stepStar_trans_eq h0 (stepStar_trans_eq h1 (stepStar_trans_eq h2 (stepStar_trans_eq h3
+      (stepStar_trans_eq h4 (stepStar_trans_eq h5 (stepStar_trans_eq h6 (stepStar_trans_eq h7
+      (stepStar_trans_eq h8 (stepStar_trans_eq h10 (stepStar_trans_eq h12 (stepStar_trans_eq h13
+      (stepStar_trans_eq h14 (stepStar_trans_eq h15 (stepStar_trans_eq h16 (stepStar_trans_eq h17
+      (stepStar_trans_eq h18 h19)))))))))))))))))
 
-lemma cap_mid_const (l : List Nat) :
+theorem cap_mid_const (l : List Nat) :
     (T (2 :: l) 1 ([2])) [target_tm]⊢* (S (l) 1 ([0, 1, 0, 2])) := by
   have h0 := Tpos (2 :: l) 1 1 ([])
   have h1 := Vpos (2 :: l) 2 0 ([])
@@ -387,9 +423,11 @@ lemma cap_mid_const (l : List Nat) :
   have h7 := Tzero (2 :: l) 1 1 ([])
   have h8 := Upos (2 :: l) 0 ([0, 2])
   have h9 := Szero (l) 1 0 ([0, 2])
-  exact (zSt h0 (zSt h1 (zSt h2 (zSt h4 (zSt h5 (zSt h6 (zSt h7 (zSt h8 h9))))))))
+  exact (stepStar_trans_eq h0 (stepStar_trans_eq h1 (stepStar_trans_eq h2 (stepStar_trans_eq h4
+      (stepStar_trans_eq h5 (stepStar_trans_eq h6 (stepStar_trans_eq h7 (stepStar_trans_eq h8
+      h9))))))))
 
-lemma cap_tail (r : List Nat) :
+theorem cap_tail (r : List Nat) :
     (S ([0, 5]) 0 (0 :: 1 :: r)) [target_tm]⊢⁺ (T ([]) 2 (0 :: 1 :: 0 :: 6 :: r)) := by
   have h0 := Sedge ([]) 5 0 (1 :: r)
   have h1 := Upos ([]) 4 (0 :: 1 :: 1 :: r)
@@ -437,21 +475,39 @@ lemma cap_tail (r : List Nat) :
   have h43 := Upos ([3]) 0 (0 :: 6 :: r)
   have h44 := Szero ([]) 2 0 (0 :: 6 :: r)
   have h45 := Spos_progress ([]) 1 (0 :: 1 :: 0 :: 6 :: r)
-  exact (zSpp h0 (zSpp h1 (zSpp h2 (zSpp h3 (zSpp h4 (zSpp h5 (zSpp h6 (zSpp h7 (zSpp h8 (zSpp h9 (zSpp h10 (zSpp h11 (zSpp h12 (zSpp h13 (zSpp h15 (zSpp h17 (zSpp h18 (zSpp h19 (zSpp h20 (zSpp h21 (zSpp h22 (zSpp h23 (zSpp h24 (zSpp h25 (zSpp h26 (zSpp h27 (zSpp h28 (zSpp h29 (zSpp h30 (zSpp h31 (zSpp h32 (zSpp h33 (zSpp h34 (zSpp h35 (zSpp h36 (zSpp h37 (zSpp h38 (zSpp h39 (zSpp h40 (zSpp h41 (zSpp h42 (zSpp h43 (zSpp h44 h45)))))))))))))))))))))))))))))))))))))))))))
+  exact (stepPlus_stepStar_eq h0 (stepPlus_stepStar_eq h1 (stepPlus_stepStar_eq h2
+      (stepPlus_stepStar_eq h3 (stepPlus_stepStar_eq h4 (stepPlus_stepStar_eq h5
+      (stepPlus_stepStar_eq h6 (stepPlus_stepStar_eq h7 (stepPlus_stepStar_eq h8
+      (stepPlus_stepStar_eq h9 (stepPlus_stepStar_eq h10 (stepPlus_stepStar_eq h11
+      (stepPlus_stepStar_eq h12 (stepPlus_stepStar_eq h13 (stepPlus_stepStar_eq h15
+      (stepPlus_stepStar_eq h17 (stepPlus_stepStar_eq h18 (stepPlus_stepStar_eq h19
+      (stepPlus_stepStar_eq h20 (stepPlus_stepStar_eq h21 (stepPlus_stepStar_eq h22
+      (stepPlus_stepStar_eq h23 (stepPlus_stepStar_eq h24 (stepPlus_stepStar_eq h25
+      (stepPlus_stepStar_eq h26 (stepPlus_stepStar_eq h27 (stepPlus_stepStar_eq h28
+      (stepPlus_stepStar_eq h29 (stepPlus_stepStar_eq h30 (stepPlus_stepStar_eq h31
+      (stepPlus_stepStar_eq h32 (stepPlus_stepStar_eq h33 (stepPlus_stepStar_eq h34
+      (stepPlus_stepStar_eq h35 (stepPlus_stepStar_eq h36 (stepPlus_stepStar_eq h37
+      (stepPlus_stepStar_eq h38 (stepPlus_stepStar_eq h39 (stepPlus_stepStar_eq h40
+      (stepPlus_stepStar_eq h41 (stepPlus_stepStar_eq h42 (stepPlus_stepStar_eq h43
+      (stepPlus_stepStar_eq h44 h45)))))))))))))))))))))))))))))))))))))))))))
 
 
 def cap (n : Nat) : Cfg (Fin 2) (Fin 6) :=
   T [] 2 (0 :: 1 :: 0 :: 6 :: (rep 1 (n * 2 + 4) ++ [0, n * 3 + 11]))
 
-lemma cap_step (n : Nat) : (cap n) [target_tm]⊢⁺ (cap (n + 1)) := by
+theorem cap_step (n : Nat) : (cap n) [target_tm]⊢⁺ (cap (n + 1)) := by
   unfold cap
   have heq1 : rep 1 (n * 2 + 3) ++ [0, n * 3 + 11] = rep 1 ((n + 1) * 2) ++ [1, 0, n * 3 + 11] := by
     rw [← rep_snoc, show (n + 1) * 2 = n * 2 + 2 by omega]
-  have s1 := zSt_eq (cap_head (rep 1 (n * 2 + 3) ++ [0, n * 3 + 11])) (congrArg (T [4, 2, 2, 0, 5] 0) heq1)
+  have s1 :=
+      stepStar_congr_eq (cap_head (rep 1 (n * 2 + 3) ++ [0, n * 3 + 11])) (congrArg (T [4, 2, 2, 0,
+      5] 0) heq1)
   have s2 := Pairs (n + 1) [4, 2, 2, 0, 5] [1, 0, n * 3 + 11]
   have heq3 : [n * 3 + 11] = [((n + 2) + 1) * 3 + 2] := by
     rw [show n * 3 + 11 = ((n + 2) + 1) * 3 + 2 by omega]
-  have s3 := zSt_eq (zSt (Tpos (rep 3 (n + 1) ++ [4, 2, 2, 0, 5]) 0 0 [0, n * 3 + 11])
+  have s3 :=
+      stepStar_congr_eq (stepStar_trans_eq (Tpos (rep 3 (n + 1) ++ [4, 2, 2, 0, 5]) 0 0 [0,
+      n * 3 + 11])
                          (Vzero0 (rep 3 (n + 1) ++ [4, 2, 2, 0, 5]) 1 [n * 3 + 11]))
                     (congrArg (T (rep 3 (n + 1) ++ [4, 2, 2, 0, 5]) 3) heq3)
   have s4 := Triples (n + 2) (rep 3 (n + 1) ++ [4, 2, 2, 0, 5]) 3 2 []
@@ -460,21 +516,30 @@ lemma cap_step (n : Nat) : (cap n) [target_tm]⊢⁺ (cap (n + 1)) := by
   rw [show 0 + 1 + (n + 1) = n + 2 by omega, show (n + 1) + 2 = n + 3 by omega] at s6
   have s7 := Cycle4 (rep 3 (n + 1) ++ [4, 2, 2, 0, 5]) (n + 1) (n + 3) []
   have s8 := Cycles (n + 1) (n + 2) [4, 2, 2, 0, 5] (n + 6) []
-  rw [show n + 2 + 1 + (n + 1) = n * 2 + 4 by omega, show (n + 1) * 2 + (n + 6) = n * 3 + 8 by omega] at s8
+  rw [show n + 2 + 1 + (n + 1) = n * 2 + 4 by omega,
+      show (n + 1) * 2 + (n + 6) = n * 3 + 8 by omega] at s8
   have s9 := Cycle4 [2, 2, 0, 5] (n * 2 + 3) (n * 3 + 8) []
   have s10 := Cycles2 2 (n * 2 + 4) [0, 5] (n * 3 + 11) []
-  rw [show n * 2 + 4 + 1 + 2 = n * 2 + 7 by omega, show 2 + (n * 3 + 11) = n * 3 + 13 by omega] at s10
+  rw [show n * 2 + 4 + 1 + 2 = n * 2 + 7 by omega,
+      show 2 + (n * 3 + 11) = n * 3 + 13 by omega] at s10
   have s11 := Spos [0, 5] 0 (0 :: (rep 1 (n * 2 + 7) ++ [0, n * 3 + 13]))
   have s12 := Tmixs (n * 2 + 6) [0, 5] 1 [0, n * 3 + 13]
   rw [rep_snoc] at s12
   have s13 := Tzero (rep 1 (n * 2 + 7) ++ [0, 5]) 1 (n * 3 + 13) []
   have s14 := Upos (rep 1 (n * 2 + 7) ++ [0, 5]) 0 [0, n * 3 + 14]
   have s15 := Szeros (n * 2 + 6) [0, 5] 0 [0, n * 3 + 14]
-  have heq15 : rep 1 (n * 2 + 6) ++ [1, 0, n * 3 + 14] = 1 :: (rep 1 ((n + 1) * 2 + 4) ++ [0, (n + 1) * 3 + 11]) := by
-    rw [rep_snoc, show n * 2 + 7 = (n + 1) * 2 + 5 by omega, show n * 3 + 14 = (n + 1) * 3 + 11 by omega]; rfl
+  have heq15 : rep 1 (n * 2 + 6) ++ [1, 0, n * 3 + 14] = 1 :: (rep 1 ((n + 1) * 2 + 4) ++ [0,
+      (n + 1) * 3 + 11]) := by
+    rw [rep_snoc, show n * 2 + 7 = (n + 1) * 2 + 5 by omega,
+        show n * 3 + 14 = (n + 1) * 3 + 11 by omega]; rfl
   rw [heq15] at s15
   have s16 := cap_tail (rep 1 ((n + 1) * 2 + 4) ++ [0, (n + 1) * 3 + 11])
-  exact zSpp s1 (zSpp s2 (zSpp s3 (zSpp s4 (zSpp s5 (zSpp s6 (zSpp s7 (zSpp s8 (zSpp s9 (zSpp s10 (zSpp s11 (zSpp s12 (zSpp s13 (zSpp s14 (zSpp s15 s16))))))))))))))
+  exact stepPlus_stepStar_eq s1 (stepPlus_stepStar_eq s2 (stepPlus_stepStar_eq s3
+      (stepPlus_stepStar_eq s4 (stepPlus_stepStar_eq s5 (stepPlus_stepStar_eq s6
+      (stepPlus_stepStar_eq s7 (stepPlus_stepStar_eq s8 (stepPlus_stepStar_eq s9
+      (stepPlus_stepStar_eq s10 (stepPlus_stepStar_eq s11 (stepPlus_stepStar_eq s12
+      (stepPlus_stepStar_eq s13 (stepPlus_stepStar_eq s14 (stepPlus_stepStar_eq s15
+      s16))))))))))))))
 
 -- ============================================================================
 -- Fast Kernel RLE Evaluator
@@ -511,7 +576,7 @@ def bindNat {α : Type} (n : Nat) (k : Nat → α) : α :=
   Nat.rec (k 0) (fun m _ => k m) (Nat.add 1 n)
 
 @[simp]
-lemma bindNat_eq {α : Type} (n : Nat) (k : Nat → α) : bindNat n k = k n := by
+theorem bindNat_eq {α : Type} (n : Nat) (k : Nat → α) : bindNat n k = k n := by
   unfold bindNat
   rw [show Nat.add 1 n = n + 1 from Nat.add_comm 1 n]
 
@@ -665,10 +730,12 @@ def step_S_pos (l : RList) (a : Nat) (r : RList) : CfgRLE :=
             (CfgRLE.mk Phase.pT (RList.cons v k_l l_tail) a (RList.cons v0 c0 RList.nil))
             (fun v1 n r_b _ =>
               RList.rec
-                (CfgRLE.mk Phase.pT (RList.cons v k_l l_tail) a (RList.cons v0 c0 (RList.cons v1 n RList.nil)))
+                (CfgRLE.mk Phase.pT (RList.cons v k_l l_tail) a (RList.cons v0 c0 (RList.cons v1 n
+                    RList.nil)))
                 (fun v2 c2 r3 _ =>
                   Bool.rec
-                    (CfgRLE.mk Phase.pT (RList.cons v k_l l_tail) a (RList.cons v0 c0 (RList.cons v1 n (RList.cons v2 c2 r3))))
+                    (CfgRLE.mk Phase.pT (RList.cons v k_l l_tail) a (RList.cons v0 c0 (RList.cons v1
+                        n (RList.cons v2 c2 r3))))
                     (do_cycle (Nat.beq v 3) k_l l_tail n r3)
                     (Bool.and (Nat.beq a 1)
                       (Bool.and (Bool.or (Nat.beq v 2) (Nat.beq v 3))
@@ -705,14 +772,14 @@ def run_seq : List Nat → CfgRLE → CfgRLE
 -- Soundness Proof of Fast Kernel RLE Evaluator
 -- ============================================================================
 
-lemma rep_add (v m n : Nat) (xs : List Nat) :
+theorem rep_add (v m n : Nat) (xs : List Nat) :
     rep v m ++ (rep v n ++ xs) = rep v (m + n) ++ xs := by
   induction m with
-  | zero => simp [rep_zero, Nat.zero_add]
+  | zero => simp
   | succ m ih => simp only [Nat.succ_add, rep_succ, List.cons_append, ih]
 
 @[simp]
-lemma decodeR_pushRep (v k : Nat) (l : RList) :
+theorem decodeR_pushRep (v k : Nat) (l : RList) :
     decodeR (pushRep v k l) = rep v (k + 1) ++ decodeR l := by
   cases l with
   | nil => simp [pushRep, decodeR]
@@ -729,25 +796,25 @@ lemma decodeR_pushRep (v k : Nat) (l : RList) :
       rw [rep_add, show (k + 1) + (m + 1) = k + (m + 1) + 1 by omega]
 
 @[simp]
-lemma decodeR_push1 (v : Nat) (l : RList) :
+theorem decodeR_push1 (v : Nat) (l : RList) :
     decodeR (push1 v l) = v :: decodeR l :=
   decodeR_pushRep v 0 l
 
 @[simp]
-lemma decodeR_pushRepN (v n : Nat) (l : RList) :
+theorem decodeR_pushRepN (v n : Nat) (l : RList) :
     decodeR (pushRepN v n l) = rep v n ++ decodeR l := by
   cases n with
   | zero => rfl
   | succ k => exact decodeR_pushRep v k l
 
-lemma decodeR_cons_pos {v c : Nat} (t : RList) (hc : Nat.beq c 0 = false) :
+theorem decodeR_cons_pos {v c : Nat} (t : RList) (hc : Nat.beq c 0 = false) :
     decodeR (RList.cons v c t) = v :: decodeR (RList.cons v (c - 1) t) := by
   have hne : c ≠ 0 := Nat.ne_of_beq_eq_false hc
   have heq : c + 1 = (c - 1) + 1 + 1 := by omega
   dsimp only [decodeR]
   rw [heq, rep_succ, List.cons_append]
 
-lemma popRList_spec {F : List Nat → Cfg (Fin 2) (Fin 6)} (h0 : F [] = F [0])
+theorem popRList_spec {F : List Nat → Cfg (Fin 2) (Fin 6)} (h0 : F [] = F [0])
     (xs : RList) (k : Nat → RList → CfgRLE)
     (hk : ∀ v t, (F (v :: decodeR t)) [target_tm]⊢* (decodeCfg (k v t))) :
     (F (decodeR xs)) [target_tm]⊢* (decodeCfg (popRList xs k)) := by
@@ -769,48 +836,53 @@ lemma popRList_spec {F : List Nat → Cfg (Fin 2) (Fin 6)} (h0 : F [] = F [0])
       rw [bindNat_eq, decodeR_cons_pos t hc]
       exact hk v (RList.cons v (c - 1) t)
 
-lemma S_nil_l (a : Nat) (r : List Nat) : S [] a r = S [0] a r := Sblankl [] a r
-lemma S_nil_l1 (x0 a : Nat) (r : List Nat) : S [x0] a r = S [x0, 0] a r := Sblankl [x0] a r
-lemma U_nil_l (a : Nat) (r : List Nat) : U [] a r = U [0] a r := Ublankl [] a r
-lemma S_nil_r (l : List Nat) (a : Nat) : S l a [] = S l a [0] := Sblankr l a []
-lemma S_nil_r3 (l : List Nat) (a n : Nat) :
+theorem S_nil_l (a : Nat) (r : List Nat) : S [] a r = S [0] a r := Sblankl [] a r
+theorem S_nil_l1 (x0 a : Nat) (r : List Nat) : S [x0] a r = S [x0, 0] a r := Sblankl [x0] a r
+theorem U_nil_l (a : Nat) (r : List Nat) : U [] a r = U [0] a r := Ublankl [] a r
+theorem S_nil_r (l : List Nat) (a : Nat) : S l a [] = S l a [0] := Sblankr l a []
+theorem S_nil_r3 (l : List Nat) (a n : Nat) :
     S l a (0 :: (rep 1 (n + 1) ++ [0])) = S l a (0 :: (rep 1 (n + 1) ++ [0, 0])) := by
   have h := Sblankr l a (0 :: (rep 1 (n + 1) ++ [0]))
   simpa only [List.cons_append, List.append_assoc, List.nil_append] using h
-lemma U_nil_r (l : List Nat) (a : Nat) : U l a [] = U l a [0] := Ublankr l a []
-lemma T_nil_r (l : List Nat) (a : Nat) : T l a [] = T l a [0] := Tblankr l a []
-lemma T_nil_r1 (l : List Nat) (a c0 : Nat) : T l a [c0] = T l a [c0, 0] := Tblankr l a [c0]
-lemma T_nil_r2 (l : List Nat) (a c0 c1 : Nat) : T l a [c0, c1] = T l a [c0, c1, 0] := Tblankr l a [c0, c1]
-lemma V_nil_r (l : List Nat) (a : Nat) : V l a [] = V l a [0] := Vblankr l a []
-lemma V_nil_r1 (l : List Nat) (a c0 : Nat) : V l a [c0] = V l a [c0, 0] := Vblankr l a [c0]
+theorem U_nil_r (l : List Nat) (a : Nat) : U l a [] = U l a [0] := Ublankr l a []
+theorem T_nil_r (l : List Nat) (a : Nat) : T l a [] = T l a [0] := Tblankr l a []
+theorem T_nil_r1 (l : List Nat) (a c0 : Nat) : T l a [c0] = T l a [c0, 0] := Tblankr l a [c0]
+theorem T_nil_r2 (l : List Nat) (a c0 c1 : Nat) : T l a [c0, c1] = T l a [c0, c1, 0] :=
+    Tblankr l a [c0, c1]
+theorem V_nil_r (l : List Nat) (a : Nat) : V l a [] = V l a [0] := Vblankr l a []
+theorem V_nil_r1 (l : List Nat) (a c0 : Nat) : V l a [c0] = V l a [c0, 0] := Vblankr l a [c0]
 
-lemma nat_not_le_of_ble_eq_false {a b : Nat} (h : Nat.ble a b = false) : ¬ (a ≤ b) := by
+theorem nat_not_le_of_ble_eq_false {a b : Nat} (h : Nat.ble a b = false) : ¬ (a ≤ b) := by
   intro hle
   have h1 : Nat.ble a b = true := Nat.ble_eq_true_of_le hle
   rw [h] at h1
   contradiction
 
-lemma step_U_spec (l : RList) (a : Nat) (r : RList) :
+theorem step_U_spec (l : RList) (a : Nat) (r : RList) :
     (U (decodeR l) a (decodeR r)) [target_tm]⊢* (decodeCfg (step_U l a r)) := by
   unfold step_U
   cases ha : Nat.beq a 0 with
   | false =>
     have hne : a ≠ 0 := Nat.ne_of_beq_eq_false ha
-    change _ [target_tm]⊢* (decodeCfg (bindNat (a - 1) (fun a' => CfgRLE.mk Phase.pS l a' (push1 0 r))))
+    change _ [target_tm]⊢* (decodeCfg (bindNat (a - 1) (fun a' =>
+        CfgRLE.mk Phase.pS l a' (push1 0 r))))
     simp only [bindNat_eq, decodeCfg, decodeR_push1]
     rw [show a = (a - 1) + 1 by omega]
     exact Upos (decodeR l) (a - 1) (decodeR r)
   | true =>
     have ha0 : a = 0 := Nat.eq_of_beq_eq_true ha
     subst ha0
-    refine popRList_spec (F := fun xs => U xs 0 (decodeR r)) (U_nil_l 0 (decodeR r)) l _ (fun x0 l1 => ?_)
-    refine popRList_spec (F := fun ys => U (x0 :: decodeR l1) 0 ys) (U_nil_r (x0 :: decodeR l1) 0) r _ (fun c r1 => ?_)
+    refine popRList_spec (F :=
+        fun xs => U xs 0 (decodeR r)) (U_nil_l 0 (decodeR r)) l _ (fun x0 l1 => ?_)
+    refine popRList_spec (F :=
+        fun ys => U (x0 :: decodeR l1) 0 ys) (U_nil_r (x0 :: decodeR l1) 0) r _ (fun c r1 => ?_)
     unfold step_U_a0_c
     cases hc0 : Nat.beq c 0 with
     | true =>
       have hc : c = 0 := Nat.eq_of_beq_eq_true hc0
       subst hc
-      change _ [target_tm]⊢* (decodeCfg (bindNat (x0 + 2) (fun x02 => CfgRLE.mk Phase.pT l1 x02 r1)))
+      change _ [target_tm]⊢* (decodeCfg (bindNat (x0 + 2) (fun x02 =>
+          CfgRLE.mk Phase.pT l1 x02 r1)))
       simp only [bindNat_eq, decodeCfg]
       exact Uzero0 (decodeR l1) x0 (decodeR r1)
     | false =>
@@ -819,28 +891,32 @@ lemma step_U_spec (l : RList) (a : Nat) (r : RList) :
       | true =>
         have hc : c = 1 := Nat.eq_of_beq_eq_true hc1
         subst hc
-        change _ [target_tm]⊢* (decodeCfg (bindNat (x0 + 2) (fun x02 => CfgRLE.mk Phase.pT (push1 x02 l1) 0 r1)))
+        change _ [target_tm]⊢* (decodeCfg (bindNat (x0 + 2) (fun x02 =>
+            CfgRLE.mk Phase.pT (push1 x02 l1) 0 r1)))
         simp only [bindNat_eq, decodeCfg, decodeR_push1]
         exact Uzero1 (decodeR l1) x0 (decodeR r1)
       | false =>
         simp only [decodeCfg, decodeR_push1]
         exact ⟨0, rfl⟩
 
-lemma step_V_spec (l : RList) (a : Nat) (r : RList) :
+theorem step_V_spec (l : RList) (a : Nat) (r : RList) :
     (V (decodeR l) a (decodeR r)) [target_tm]⊢* (decodeCfg (step_V l a r)) := by
   unfold step_V
-  refine popRList_spec (F := fun ys => V (decodeR l) a ys) (V_nil_r (decodeR l) a) r _ (fun c0 r1 => ?_)
+  refine popRList_spec (F :=
+      fun ys => V (decodeR l) a ys) (V_nil_r (decodeR l) a) r _ (fun c0 r1 => ?_)
   cases hc0 : Nat.beq c0 0 with
   | false =>
     have hne : c0 ≠ 0 := Nat.ne_of_beq_eq_false hc0
-    change _ [target_tm]⊢* (decodeCfg (bindNat (c0 - 1) (fun c0' => CfgRLE.mk Phase.pS l a (push1 0 (push1 c0' r1)))))
+    change _ [target_tm]⊢* (decodeCfg (bindNat (c0 - 1) (fun c0' =>
+        CfgRLE.mk Phase.pS l a (push1 0 (push1 c0' r1)))))
     simp only [bindNat_eq, decodeCfg, decodeR_push1]
     rw [show c0 = (c0 - 1) + 1 by omega]
     exact Vpos (decodeR l) a (c0 - 1) (decodeR r1)
   | true =>
     have hc : c0 = 0 := Nat.eq_of_beq_eq_true hc0
     subst hc
-    refine popRList_spec (F := fun ys => V (decodeR l) a (0 :: ys)) (V_nil_r1 (decodeR l) a 0) r1 _ (fun c1 r2 => ?_)
+    refine popRList_spec (F :=
+        fun ys => V (decodeR l) a (0 :: ys)) (V_nil_r1 (decodeR l) a 0) r1 _ (fun c1 r2 => ?_)
     unfold step_V_c0_0
     cases hc1 : Nat.beq c1 0 with
     | true =>
@@ -855,33 +931,40 @@ lemma step_V_spec (l : RList) (a : Nat) (r : RList) :
       | true =>
         have hc1_eq : c1 = 1 := Nat.eq_of_beq_eq_true hc1_1
         subst hc1_eq
-        change _ [target_tm]⊢* (decodeCfg (bindNat (a + 2) (fun a2 => CfgRLE.mk Phase.pT (push1 a2 l) 0 r2)))
+        change _ [target_tm]⊢* (decodeCfg (bindNat (a + 2) (fun a2 =>
+            CfgRLE.mk Phase.pT (push1 a2 l) 0 r2)))
         simp only [bindNat_eq, decodeCfg, decodeR_push1]
         exact Vzero1 (decodeR l) a (decodeR r2)
       | false =>
         simp only [decodeCfg, decodeR_push1]
         exact ⟨0, rfl⟩
 
-lemma step_T_c0_0_fallback_spec (l : RList) (a : Nat) (r1 : RList) :
-    (T (decodeR l) a (0 :: decodeR r1)) [target_tm]⊢* (decodeCfg (step_T_c0_0_fallback l a r1)) := by
+theorem step_T_c0_0_fallback_spec (l : RList) (a : Nat) (r1 : RList) :
+    (T (decodeR l) a (0 :: decodeR r1)) [target_tm]⊢* (decodeCfg (step_T_c0_0_fallback l a r1)) :=
+        by
   unfold step_T_c0_0_fallback
-  refine popRList_spec (F := fun ys => T (decodeR l) a (0 :: ys)) (T_nil_r1 (decodeR l) a 0) r1 _ (fun c1 r2 => ?_)
+  refine popRList_spec (F :=
+      fun ys => T (decodeR l) a (0 :: ys)) (T_nil_r1 (decodeR l) a 0) r1 _ (fun c1 r2 => ?_)
   cases hc1 : Nat.beq c1 0 with
   | false =>
     have hne : c1 ≠ 0 := Nat.ne_of_beq_eq_false hc1
-    change _ [target_tm]⊢* (decodeCfg (bindNat (c1 - 1) (fun c1' => CfgRLE.mk Phase.pT (push1 a l) 1 (push1 c1' r2))))
+    change _ [target_tm]⊢* (decodeCfg (bindNat (c1 - 1) (fun c1' =>
+        CfgRLE.mk Phase.pT (push1 a l) 1 (push1 c1' r2))))
     simp only [bindNat_eq, decodeCfg, decodeR_push1]
     rw [show c1 = (c1 - 1) + 1 by omega]
     exact Tmix (decodeR l) a (c1 - 1) (decodeR r2)
   | true =>
     have hc1_0 : c1 = 0 := Nat.eq_of_beq_eq_true hc1
     subst hc1_0
-    refine popRList_spec (F := fun ys => T (decodeR l) a (0 :: 0 :: ys)) (T_nil_r2 (decodeR l) a 0 0) r2 _ (fun c2 r3 => ?_)
-    change _ [target_tm]⊢* (decodeCfg (bindNat (c2 + 1) (fun c2' => CfgRLE.mk Phase.pU l a (push1 0 (push1 c2' r3)))))
+    refine popRList_spec (F :=
+        fun ys => T (decodeR l) a (0 :: 0 :: ys)) (T_nil_r2 (decodeR l) a 0 0) r2 _ (fun c2 r3 =>
+        ?_)
+    change _ [target_tm]⊢* (decodeCfg (bindNat (c2 + 1) (fun c2' =>
+        CfgRLE.mk Phase.pU l a (push1 0 (push1 c2' r3)))))
     simp only [bindNat_eq, decodeCfg, decodeR_push1]
     exact Tzero (decodeR l) a c2 (decodeR r3)
 
-lemma step_T_c0_0_spec (l : RList) (a : Nat) (r1 : RList) :
+theorem step_T_c0_0_spec (l : RList) (a : Nat) (r1 : RList) :
     (T (decodeR l) a (0 :: decodeR r1)) [target_tm]⊢* (decodeCfg (step_T_c0_0 l a r1)) := by
   cases r1 with
   | nil => exact step_T_c0_0_fallback_spec l a RList.nil
@@ -895,10 +978,11 @@ lemma step_T_c0_0_spec (l : RList) (a : Nat) (r1 : RList) :
       simp only [decodeCfg, decodeR_pushRepN, decodeR_push1, decodeR]
       exact Tmixs k1 (decodeR l) a (decodeR t1)
 
-lemma step_T_base_spec (l : RList) (a : Nat) (r : RList) :
+theorem step_T_base_spec (l : RList) (a : Nat) (r : RList) :
     (T (decodeR l) a (decodeR r)) [target_tm]⊢* (decodeCfg (step_T_base l a r)) := by
   unfold step_T_base
-  refine popRList_spec (F := fun ys => T (decodeR l) a ys) (T_nil_r (decodeR l) a) r _ (fun c0 r1 => ?_)
+  refine popRList_spec (F :=
+      fun ys => T (decodeR l) a ys) (T_nil_r (decodeR l) a) r _ (fun c0 r1 => ?_)
   cases hc0 : Nat.beq c0 0 with
   | true =>
     have hc : c0 = 0 := Nat.eq_of_beq_eq_true hc0
@@ -909,7 +993,8 @@ lemma step_T_base_spec (l : RList) (a : Nat) (r : RList) :
     dsimp only
     cases hc3 : Nat.ble 3 c0 with
     | false =>
-      change _ [target_tm]⊢* (decodeCfg (bindNat (c0 - 1) (fun c0' => CfgRLE.mk Phase.pV l (a + 1) (push1 c0' r1))))
+      change _ [target_tm]⊢* (decodeCfg (bindNat (c0 - 1) (fun c0' =>
+          CfgRLE.mk Phase.pV l (a + 1) (push1 c0' r1))))
       simp only [bindNat_eq, decodeCfg, decodeR_push1]
       rw [show c0 = (c0 - 1) + 1 by omega]
       exact Tpos (decodeR l) a (c0 - 1) (decodeR r1)
@@ -917,14 +1002,15 @@ lemma step_T_base_spec (l : RList) (a : Nat) (r : RList) :
       have hle : 3 ≤ c0 := Nat.le_of_ble_eq_true hc3
       change _ [target_tm]⊢* (decodeCfg
         (bindNat (c0 / 3) (fun q => bindNat (q - 1) (fun q1 => bindNat (c0 % 3) (fun rem =>
-         bindNat (a + 1) (fun a1 => CfgRLE.mk Phase.pT (pushRepN 2 q1 (push1 a1 l)) 1 (push1 rem r1)))))))
+         bindNat (a + 1) (fun a1 =>
+             CfgRLE.mk Phase.pT (pushRepN 2 q1 (push1 a1 l)) 1 (push1 rem r1)))))))
       simp only [bindNat_eq, decodeCfg, decodeR_pushRepN, decodeR_push1]
       have hdiv : ((c0 / 3 - 1) + 1) * 3 + c0 % 3 = c0 := by omega
       have hstep := Triples (c0 / 3 - 1) (decodeR l) a (c0 % 3) (decodeR r1)
       rw [hdiv] at hstep
       exact hstep
 
-lemma step_T_spec (l : RList) (a : Nat) (r : RList) :
+theorem step_T_spec (l : RList) (a : Nat) (r : RList) :
     (T (decodeR l) a (decodeR r)) [target_tm]⊢* (decodeCfg (step_T l a r)) := by
   cases r with
   | nil => exact step_T_base_spec l a RList.nil
@@ -958,31 +1044,36 @@ lemma step_T_spec (l : RList) (a : Nat) (r : RList) :
         rw [rep_snoc, hk] at hstep
         exact hstep
 
-lemma step_S_a0_fallback_spec (l : RList) (c : Nat) (r1 : RList) :
+theorem step_S_a0_fallback_spec (l : RList) (c : Nat) (r1 : RList) :
     (S (decodeR l) 0 (c :: decodeR r1)) [target_tm]⊢* (decodeCfg (step_S_a0_fallback l c r1)) := by
   unfold step_S_a0_fallback
-  refine popRList_spec (F := fun xs => S xs 0 (c :: decodeR r1)) (S_nil_l 0 (c :: decodeR r1)) l _ (fun x0 l1 => ?_)
+  refine popRList_spec (F :=
+      fun xs => S xs 0 (c :: decodeR r1)) (S_nil_l 0 (c :: decodeR r1)) l _ (fun x0 l1 => ?_)
   cases hx0 : Nat.beq x0 0 with
   | false =>
     have hne : x0 ≠ 0 := Nat.ne_of_beq_eq_false hx0
     change _ [target_tm]⊢* (decodeCfg
-      (bindNat (x0 - 1) (fun x0' => bindNat (c + 1) (fun c1 => CfgRLE.mk Phase.pS l1 x0' (push1 0 (push1 c1 r1))))))
+      (bindNat (x0 - 1) (fun x0' => bindNat (c + 1) (fun c1 =>
+          CfgRLE.mk Phase.pS l1 x0' (push1 0 (push1 c1 r1))))))
     simp only [bindNat_eq, decodeCfg, decodeR_push1]
     rw [show x0 = (x0 - 1) + 1 by omega]
     exact Szero (decodeR l1) (x0 - 1) c (decodeR r1)
   | true =>
     have hx0_0 : x0 = 0 := Nat.eq_of_beq_eq_true hx0
     subst hx0_0
-    refine popRList_spec (F := fun xs => S (0 :: xs) 0 (c :: decodeR r1)) (S_nil_l1 0 0 (c :: decodeR r1)) l1 _ (fun x1 l2 => ?_)
+    refine popRList_spec (F :=
+        fun xs =>
+        S (0 :: xs) 0 (c :: decodeR r1)) (S_nil_l1 0 0 (c :: decodeR r1)) l1 _ (fun x1 l2 => ?_)
     change _ [target_tm]⊢* (decodeCfg
       (bindNat (c + 1) (fun c1 => CfgRLE.mk Phase.pU l2 x1 (push1 0 (push1 c1 r1)))))
     simp only [bindNat_eq, decodeCfg, decodeR_push1]
     exact Sedge (decodeR l2) x1 c (decodeR r1)
 
-lemma step_S_a0_spec (l r : RList) :
+theorem step_S_a0_spec (l r : RList) :
     (S (decodeR l) 0 (decodeR r)) [target_tm]⊢* (decodeCfg (step_S_a0 l r)) := by
   unfold step_S_a0
-  refine popRList_spec (F := fun ys => S (decodeR l) 0 ys) (S_nil_r (decodeR l) 0) r _ (fun c r1 => ?_)
+  refine popRList_spec (F :=
+      fun ys => S (decodeR l) 0 ys) (S_nil_r (decodeR l) 0) r _ (fun c r1 => ?_)
   cases l with
   | nil => exact step_S_a0_fallback_spec RList.nil c r1
   | cons v k t =>
@@ -997,7 +1088,7 @@ lemma step_S_a0_spec (l r : RList) :
       simp only [bindNat_eq, decodeCfg, decodeR_push1, decodeR_pushRepN, decodeR]
       exact Szeros k (decodeR t) c (decodeR r1)
 
-lemma step_S_pos_spec (l : RList) (a : Nat) (r : RList) (ha : Nat.beq a 0 = false) :
+theorem step_S_pos_spec (l : RList) (a : Nat) (r : RList) (ha : Nat.beq a 0 = false) :
     (S (decodeR l) a (decodeR r)) [target_tm]⊢* (decodeCfg (step_S_pos l a r)) := by
   have hne : a ≠ 0 := Nat.ne_of_beq_eq_false ha
   have hspos : (S (decodeR l) a (decodeR r)) [target_tm]⊢* (T (decodeR l) a (decodeR r)) := by
@@ -1037,8 +1128,10 @@ lemma step_S_pos_spec (l : RList) (a : Nat) (r : RList) (ha : Nat.beq a 0 = fals
             have hc2_eq : c2 = 0 := Nat.eq_of_beq_eq_true hc2
             subst ha_eq; subst hv0_eq; subst hc0_eq; subst hv1_eq; subst hv2_eq; subst hc2_eq
             unfold do_cycle
-            change (S (decodeR (RList.cons v k_l l_tail)) 1 (0 :: (rep 1 (n + 1) ++ 0 :: decodeR r3))) [target_tm]⊢* _
-            refine popRList_spec (F := fun ys => S (decodeR (RList.cons v k_l l_tail)) 1 (0 :: (rep 1 (n + 1) ++ 0 :: ys)))
+            change (S (decodeR (RList.cons v k_l l_tail)) 1 (0 :: (rep 1 (n + 1) ++
+                0 :: decodeR r3))) [target_tm]⊢* _
+            refine popRList_spec (F :=
+                fun ys => S (decodeR (RList.cons v k_l l_tail)) 1 (0 :: (rep 1 (n + 1) ++ 0 :: ys)))
               (S_nil_r3 (decodeR (RList.cons v k_l l_tail)) 1 n) r3 _ (fun c r_tail => ?_)
             simp only [bindNat_eq]
             cases hv3 : Nat.beq v 3 with
@@ -1046,7 +1139,8 @@ lemma step_S_pos_spec (l : RList) (a : Nat) (r : RList) (ha : Nat.beq a 0 = fals
               have hv_eq : v = 3 := Nat.eq_of_beq_eq_true hv3
               subst hv_eq
               change _ [target_tm]⊢* (decodeCfg
-                (CfgRLE.mk Phase.pS l_tail 1 (push1 0 (pushRep 1 (n + (k_l + 1)) (push1 0 (push1 ((k_l + 1) * 2 + c) r_tail))))))
+                (CfgRLE.mk Phase.pS l_tail 1 (push1 0 (pushRep 1 (n + (k_l + 1)) (push1 0 (push1
+                    ((k_l + 1) * 2 + c) r_tail))))))
               simp only [decodeCfg, decodeR_push1, decodeR_pushRep, decodeR]
               have hcyc := Cycles (k_l + 1) n (decodeR l_tail) c (decodeR r_tail)
               rw [show n + 1 + (k_l + 1) = n + (k_l + 1) + 1 by omega] at hcyc
@@ -1059,13 +1153,14 @@ lemma step_S_pos_spec (l : RList) (a : Nat) (r : RList) (ha : Nat.beq a 0 = fals
               have hv_eq : v = 2 := Nat.eq_of_beq_eq_true hv2
               subst hv_eq
               change _ [target_tm]⊢* (decodeCfg
-                (CfgRLE.mk Phase.pS l_tail 1 (push1 0 (pushRep 1 (n + (k_l + 1)) (push1 0 (push1 ((k_l + 1) + c) r_tail))))))
+                (CfgRLE.mk Phase.pS l_tail 1 (push1 0 (pushRep 1 (n + (k_l + 1)) (push1 0 (push1
+                    ((k_l + 1) + c) r_tail))))))
               simp only [decodeCfg, decodeR_push1, decodeR_pushRep, decodeR]
               have hcyc := Cycles2 (k_l + 1) n (decodeR l_tail) c (decodeR r_tail)
               rw [show n + 1 + (k_l + 1) = n + (k_l + 1) + 1 by omega] at hcyc
               exact hcyc
 
-lemma step_S_spec (l : RList) (a : Nat) (r : RList) :
+theorem step_S_spec (l : RList) (a : Nat) (r : RList) :
     (S (decodeR l) a (decodeR r)) [target_tm]⊢* (decodeCfg (step_S l a r)) := by
   unfold step_S
   cases ha : Nat.beq a 0 with
@@ -1076,7 +1171,7 @@ lemma step_S_spec (l : RList) (a : Nat) (r : RList) :
   | false =>
     exact step_S_pos_spec l a r ha
 
-lemma rle_step_unpacked_spec (p : Phase) (l : RList) (a : Nat) (r : RList) :
+theorem rle_step_unpacked_spec (p : Phase) (l : RList) (a : Nat) (r : RList) :
     (decodeCfg (CfgRLE.mk p l a r)) [target_tm]⊢* (decodeCfg (rle_step_unpacked p l a r)) := by
   cases p with
   | pS => exact step_S_spec l a r
@@ -1084,27 +1179,29 @@ lemma rle_step_unpacked_spec (p : Phase) (l : RList) (a : Nat) (r : RList) :
   | pU => exact step_U_spec l a r
   | pV => exact step_V_spec l a r
 
-lemma run_pow_spec (k : Nat) (p : Phase) (l : RList) (a : Nat) (r : RList) :
+theorem run_pow_spec (k : Nat) (p : Phase) (l : RList) (a : Nat) (r : RList) :
     (decodeCfg (CfgRLE.mk p l a r)) [target_tm]⊢* (decodeCfg (run_pow k p l a r)) := by
   induction k generalizing p l a r with
   | zero => exact rle_step_unpacked_spec p l a r
   | succ k ih =>
-    change (decodeCfg (CfgRLE.mk p l a r)) [target_tm]⊢* (decodeCfg (CfgRLE.rec (run_pow k) (run_pow k p l a r)))
+    change (decodeCfg (CfgRLE.mk p l a r)) [target_tm]⊢* (decodeCfg (CfgRLE.rec (run_pow k) (run_pow
+        k p l a r)))
     have h1 := ih p l a r
     cases hc : run_pow k p l a r with
     | mk p' l' a' r' =>
       rw [hc] at h1
-      exact zSt h1 (ih p' l' a' r')
+      exact stepStar_trans_eq h1 (ih p' l' a' r')
 
-lemma run_seq_spec (ks : List Nat) (c : CfgRLE) :
+theorem run_seq_spec (ks : List Nat) (c : CfgRLE) :
     (decodeCfg c) [target_tm]⊢* (decodeCfg (run_seq ks c)) := by
   induction ks generalizing c with
   | nil => exact ⟨0, rfl⟩
   | cons k ks ih =>
     cases c with
     | mk p l a r =>
-      change (decodeCfg (CfgRLE.mk p l a r)) [target_tm]⊢* (decodeCfg (run_seq ks (run_pow k p l a r)))
-      exact zSt (run_pow_spec k p l a r) (ih (run_pow k p l a r))
+      change (decodeCfg (CfgRLE.mk p l a r)) [target_tm]⊢* (decodeCfg (run_seq ks (run_pow k p l a
+          r)))
+      exact stepStar_trans_eq (run_pow_spec k p l a r) (ih (run_pow k p l a r))
 
 def cfg_init : CfgRLE := CfgRLE.mk Phase.pT RList.nil 2 RList.nil
 def cfg_cap : CfgRLE :=
@@ -1112,24 +1209,23 @@ def cfg_cap : CfgRLE :=
     (RList.cons 0 0 (RList.cons 1 0 (RList.cons 0 0 (RList.cons 6 0
       (RList.cons 1 681 (RList.cons 0 0 (RList.cons 1028 0 RList.nil)))))))
 
-set_option maxHeartbeats 10000000
-set_option maxRecDepth 200000
 
+set_option maxRecDepth 200000 in
+set_option maxHeartbeats 10000000 in
+-- Bounded RLE simulation over 9 rounds requires higher recursion depth and heartbeats.
 theorem reach_cap_rle :
     run_seq [15, 13, 11, 10, 7, 6, 4, 1, 0] cfg_init = cfg_cap := by decide +kernel
 
-lemma init_to_cap : (init []) [target_tm]⊢* (cap 339) := by
+theorem init_to_cap : (init []) [target_tm]⊢* (cap 339) := by
   have h1 := init_to_T
   have h2 := run_seq_spec [15, 13, 11, 10, 7, 6, 4, 1, 0] cfg_init
   rw [reach_cap_rle] at h2
-  exact zSt h1 h2
+  exact stepStar_trans_eq h1 h2
 
-end
-
-lemma multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
+theorem multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : Nat}
     (h : multiStep target_tm c k = none) (d : Nat) :
     multiStep target_tm c (k + d) = none := by
-  rw [zMa, h]; rfl
+  rw [multiStep_add_eq, h]; rfl
 
 theorem reach_arbitrarily_long :
     ∀ m : Nat, ∃ N : Nat, m ≤ N ∧ multiStep target_tm (init []) N = some (cap (m + 339))
@@ -1140,9 +1236,46 @@ theorem reach_arbitrarily_long :
     obtain ⟨N, h_le, hN⟩ := reach_arbitrarily_long m
     obtain ⟨k, hk_pos, hk⟩ := cap_step (m + 339)
     rw [show (m + 339) + 1 = m + 1 + 339 by omega] at hk
-    exact ⟨N + k, by omega, zMt target_tm _ _ _ N k hN hk⟩
+    exact ⟨N + k, by omega, multiStep_trans_eq target_tm _ _ _ N k hN hk⟩
 
 
+
+
+theorem init_B_to_T :
+    (((default : TapeBlank) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢* (T [] 1 []) := by
+  simp only [T, LC, RC, W1, pow_zero_list_eq, pow_succ_list_eq, List.cons_append, List.nil_append]
+  execute
+
+def cfg_init_0702 : CfgRLE := CfgRLE.mk Phase.pT RList.nil 1 RList.nil
+def cfg_cap_0702 : CfgRLE :=
+  CfgRLE.mk Phase.pT RList.nil 2
+    (RList.cons 0 0 (RList.cons 1 0 (RList.cons 0 0 (RList.cons 6 0
+      (RList.cons 1 955 (RList.cons 0 0 (RList.cons 1439 0 RList.nil)))))))
+
+set_option maxRecDepth 200000 in
+set_option maxHeartbeats 10000000 in
+-- Bounded RLE simulation for twin 0702 over 9 rounds requires higher recursion depth.
+theorem reach_cap_rle_0702 :
+    run_seq [15, 14, 13, 12, 10, 9, 6, 5, 3] cfg_init_0702 = cfg_cap_0702 := by decide +kernel
+
+theorem init_B_to_cap_0702 :
+    (((default : TapeBlank) {{1}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢* (cap 476) := by
+  have h1 := init_B_to_T
+  have h2 := run_seq_spec [15, 14, 13, 12, 10, 9, 6, 5, 3] cfg_init_0702
+  rw [reach_cap_rle_0702] at h2
+  exact stepStar_trans_eq h1 h2
+
+theorem reach_arbitrarily_long_0702 :
+    ∀ m : Nat, ∃ N : Nat, m ≤ N ∧
+      multiStep target_tm ((default : TapeBlank) {{1}}> default) N = some (cap (m + 476))
+  | 0 => by
+    obtain ⟨N₀, hN₀⟩ := init_B_to_cap_0702
+    exact ⟨N₀, Nat.zero_le N₀, hN₀⟩
+  | m + 1 => by
+    obtain ⟨N, h_le, hN⟩ := reach_arbitrarily_long_0702 m
+    obtain ⟨k, hk_pos, hk⟩ := cap_step (m + 476)
+    rw [show (m + 476) + 1 = m + 1 + 476 by omega] at hk
+    exact ⟨N + k, by omega, multiStep_trans_eq target_tm _ _ _ N k hN hk⟩
 
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg ⟨k, hk⟩
@@ -1150,7 +1283,7 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   | some cfg' => rfl
   | none =>
     have h_none : multiStep target_tm (init []) (k + 1) = none := by
-      rw [zMs, hk]; exact h_step
+      rw [multiStep_succ_eq, hk]; exact h_step
     obtain ⟨N, h_ge, hN⟩ := reach_arbitrarily_long (k + 1)
     have h_split : N = (k + 1) + (N - (k + 1)) := by omega
     have h_none_N : multiStep target_tm (init []) N = none := by
@@ -1159,6 +1292,36 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     rw [hN] at h_none_N
     contradiction
 
+end
+
+end Solution
+
+public section
+
+open Solution in
+theorem is_not_halt_from_0702 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{1}}> default) [target]⊢* cfg) →
+      (step target cfg).isSome := by
+  intro cfg ⟨k, hk⟩
+  cases h_step : step target_tm cfg with
+  | some cfg' => rfl
+  | none =>
+    have h_none :
+        multiStep target_tm ((default : ListBlank (Fin 2)) {{1}}> default) (k + 1) = none := by
+      rw [multiStep_succ_eq, hk]; exact h_step
+    obtain ⟨N, h_ge, hN⟩ := reach_arbitrarily_long_0702 (k + 1)
+    have h_split : N = (k + 1) + (N - (k + 1)) := by omega
+    have h_none_N :
+        multiStep target_tm ((default : ListBlank (Fin 2)) {{1}}> default) N = none := by
+      rw [h_split]
+      exact multiStep_none_add h_none (N - (k + 1))
+    rw [hN] at h_none_N
+    contradiction
+
+open Solution in
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0LD_1RC1RF_0RD1RA_1LE1RC_0LA0LD_0RCHHH

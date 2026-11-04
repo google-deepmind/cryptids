@@ -25,7 +25,7 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
 
-variable {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
+variable {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
 abbrev C : Fin 6 := 2
@@ -33,742 +33,738 @@ abbrev D : Fin 6 := 4
 abbrev E : Fin 6 := 3
 abbrev F : Fin 6 := 5
 @[reducible] def tm : Machine (Fin 2) (Fin 6) := target_tm
-local notation "zB" => ListBlank (Fin 2)
-local notation "zF" => List (Fin 2)
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
-set_option linter.unusedTactic false
-set_option linter.unnecessarySeqFocus false
+local notation "HalfTape" => ListBlank (Fin 2)
+local notation "BitWord" => List (Fin 2)
 set_option maxHeartbeats 8000000
 
 open WordVKQ Word
 
-abbrev z04 (c : CCfg) : Cfg (Fin 2) (Fin 6) :=
+abbrev evalCCfgVKQ (c : CCfg) : Cfg (Fin 2) (Fin 6) :=
   ⟨some c.q, ⟨c.cur, c.l +> default, c.r +> default⟩⟩
 abbrev z0b (c : CCfg) : Option CCfg := Counter.bstep tm c
 abbrev zCm (c : CCfg) (n : Nat) : Option CCfg := Counter.bmultiStep tm n c
-lemma zTc {c1 c2 : CCfg} {n : Nat} (hn : 0 < n) (h : zCm c1 n = some c2) :
-    (z04 c1) [tm]⊢⁺ (z04 c2) :=
+theorem zTc {c1 c2 : CCfg} {n : Nat} (hn : 0 < n) (h : zCm c1 n = some c2) :
+    (evalCCfgVKQ c1) [tm]⊢⁺ (evalCCfgVKQ c2) :=
   ⟨n, hn, Counter.bmultiStep_sound n c1 c2 h⟩
 
 set_option maxRecDepth 200000
 set_option exponentiation.threshold 2048
-abbrev pref_cap : zF := [1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1,0]
+abbrev pref_cap : BitWord := [1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1,0]
 
 
 def zCs : Call -> Fin 6
   | .ch => E
   | .ca => C
 
-def zCR (w : zB) (c : Call) (r : zB) : Cfg (Fin 2) (Fin 6) :=
+def zCR (w : HalfTape) (c : Call) (r : HalfTape) : Cfg (Fin 2) (Fin 6) :=
   (w <{{zCs c}} ([1] +> r))
 
-def zCL (w : zB) (r : zB) : Cfg (Fin 2) (Fin 6) :=
+def zCL (w : HalfTape) (r : HalfTape) : Cfg (Fin 2) (Fin 6) :=
   (([0] +> w) {{A}}> r)
 
-def zCf (w : zB) : Cfg (Fin 2) (Fin 6) :=
+def zCf (w : HalfTape) : Cfg (Fin 2) (Fin 6) :=
   (([0] +> pref_cap +> w) {{A}}> default)
-abbrev z0f (c : Call) (w1 w2 : zB) : Prop :=
+abbrev callStep (c : Call) (w1 w2 : HalfTape) : Prop :=
   ∀ r, (zCR w1 c r) [tm]⊢⁺ (zCL w2 r)
 
-abbrev Side := SideP z0f
-abbrev Seg := SegP z0f
+abbrev Side := SideP callStep
+abbrev Seg := SegP callStep
 
-lemma seg_ch_V : Seg [.ch] [.ch, .ch] V_u V_u :=
-  zS5 (mid1 := [1, 0, 1, 1]) (mid2 := [1, 0, 1, 0])
+theorem seg_ch_V : Seg [.ch] [.ch, .ch] V_u V_u :=
+  segP_of_step_two (mid1 := [1, 0, 1, 1]) (mid2 := [1, 0, 1, 0])
     (fun u r => by unfold zCR zCs V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_V : Seg [.ca] [.ch] V_u Vp :=
-  zS2 (mid := [0, 1, 0, 1])
+theorem seg_ca_V : Seg [.ca] [.ch] V_u Vp :=
+  segP_of_step_one (mid := [0, 1, 0, 1])
     (fun u r => by unfold zCR zCs V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_Vp : Seg [.ca] [.ca, .ca] Vp Vp :=
-  zS5 (mid1 := [0, 1, 1, 1]) (mid2 := [0, 1, 0, 1])
+theorem seg_ca_Vp : Seg [.ca] [.ca, .ca] Vp Vp :=
+  segP_of_step_two (mid1 := [0, 1, 1, 1]) (mid2 := [0, 1, 0, 1])
     (fun u r => by unfold zCR zCs Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ch_K : Seg [.ch] [] K_u Q_u :=
-  zS4 (fun u r => by unfold zCR zCL zCs K_u Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+theorem seg_ch_K : Seg [.ch] [] K_u Q_u :=
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ch_Q : Seg [.ch] [.ch] Q_u K_u :=
-  zS2 (mid := [1, 1])
+theorem seg_ch_Q : Seg [.ch] [.ch] Q_u K_u :=
+  segP_of_step_one (mid := [1, 1])
     (fun u r => by unfold zCR zCs Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL K_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_VpQ : Seg [.ca] [.ca] (Vp ++ Q_u) (Kp ++ Vp) :=
-  zS2 (mid := [0, 1, 0, 1, 1, 1])
+theorem seg_ca_VpQ : Seg [.ca] [.ca] (Vp ++ Q_u) (Kp ++ Vp) :=
+  segP_of_step_one (mid := [0, 1, 0, 1, 1, 1])
     (fun u r => by unfold zCR zCs Vp Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Kp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_KpVp : Seg [.ca] [] (Kp ++ Vp) (Qp ++ Vp) :=
-  zS4 (fun u r => by unfold zCR zCL zCs Kp Vp Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+theorem seg_ca_KpVp : Seg [.ca] [] (Kp ++ Vp) (Qp ++ Vp) :=
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs Kp Vp Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_QpVp : Seg [.ca] [.ca, .ca] (Qp ++ Vp) (Kp ++ Vp) :=
-  zS5 (mid1 := [0, 1, 1, 1, 1, 1]) (mid2 := [0, 1, 0, 1, 1, 1])
+theorem seg_ca_QpVp : Seg [.ca] [.ca, .ca] (Qp ++ Vp) (Kp ++ Vp) :=
+  segP_of_step_two (mid1 := [0, 1, 1, 1, 1, 1]) (mid2 := [0, 1, 0, 1, 1, 1])
     (fun u r => by unfold zCR zCs Qp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Kp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_Kp : Seg [.ca] [] Kp Qp :=
-  zS4 (fun u r => by unfold zCR zCL zCs Kp Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+theorem seg_ca_Kp : Seg [.ca] [] Kp Qp :=
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs Kp Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_Qp : Seg [.ca] [.ca] Qp Kp :=
-  zS2 (mid := [1, 1])
+theorem seg_ca_Qp : Seg [.ca] [.ca] Qp Kp :=
+  segP_of_step_one (mid := [1, 1])
     (fun u r => by unfold zCR zCs Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Kp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_KQ : Seg [.ca] [] (K_u ++ Q_u) Vp :=
-  zS4 (fun u r => by unfold zCR zCL zCs K_u Q_u Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+theorem seg_ca_KQ : Seg [.ca] [] (K_u ++ Q_u) Vp :=
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
-lemma seg_ca_QQ : Seg [.ca] [.ca] (Q_u ++ Q_u) Vp :=
-  zS2 (mid := [0, 1, 0, 1])
+theorem seg_ca_QQ : Seg [.ca] [.ca] (Q_u ++ Q_u) Vp :=
+  segP_of_step_one (mid := [0, 1, 0, 1])
     (fun u r => by unfold zCR zCs Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
 
 -- Turnaround zP0..zP126
-abbrev tr1 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr2 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr3 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr4 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr5 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr6 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr7 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr8 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr9 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr10 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr11 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr12 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr13 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr14 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr15 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr16 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr17 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr18 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr19 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr20 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr21 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr22 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr23 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr24 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr25 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr26 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr27 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr28 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr29 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr30 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr31 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr32 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
-abbrev tr33 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr34 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr35 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr36 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr37 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr38 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr39 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr40 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr41 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr42 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr43 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr44 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr45 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr46 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr47 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr48 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr49 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr50 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr51 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr52 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr53 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr54 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr55 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr56 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr57 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr58 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr59 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr60 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr61 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr62 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr63 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr64 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
-abbrev tr65 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr66 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr67 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr68 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr69 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr70 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr71 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr72 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr73 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr74 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr75 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr76 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr77 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr78 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr79 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr80 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
-abbrev tr81 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr82 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr83 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr84 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr85 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr86 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr87 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr88 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr89 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr90 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr91 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr92 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr93 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr94 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr95 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr96 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
-abbrev tr97 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr98 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr99 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr100 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr101 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr102 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr103 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr104 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr105 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr106 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr107 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr108 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr109 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr110 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr111 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr112 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
-abbrev tr113 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr114 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr115 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr116 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr117 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr118 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr119 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr120 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr121 : zF := [0,1,1,1,0,1,1,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr122 : zF := [0,1,0,1,0,1,1,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr123 : zF := [0,1,1,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr124 : zF := [0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr125 : zF := [0,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
-abbrev tr126 : zF := [0,1,0,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr1 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr2 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr3 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr4 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr5 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr6 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr7 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr8 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr9 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr10 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr11 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr12 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr13 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr14 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr15 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr16 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr17 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr18 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr19 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr20 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr21 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr22 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr23 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr24 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr25 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr26 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr27 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr28 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr29 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr30 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr31 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr32 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1]
+abbrev tr33 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr34 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr35 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr36 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr37 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr38 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr39 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr40 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr41 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr42 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr43 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr44 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr45 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr46 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr47 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr48 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr49 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr50 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr51 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr52 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr53 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr54 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr55 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr56 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr57 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr58 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr59 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr60 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr61 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr62 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr63 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr64 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1]
+abbrev tr65 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr66 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr67 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr68 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr69 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr70 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr71 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr72 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr73 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr74 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr75 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr76 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr77 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr78 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr79 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr80 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1]
+abbrev tr81 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr82 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr83 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr84 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr85 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr86 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr87 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr88 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr89 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr90 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr91 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr92 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr93 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr94 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr95 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr96 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1]
+abbrev tr97 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr98 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr99 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr100 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr101 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr102 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr103 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr104 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr105 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr106 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr107 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr108 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr109 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr110 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr111 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr112 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1]
+abbrev tr113 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr114 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr115 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr116 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr117 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr118 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr119 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr120 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr121 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr122 : BitWord := [0,1,0,1,0,1,1,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr123 : BitWord := [0,1,1,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr124 : BitWord := [0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr125 : BitWord := [0,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+abbrev tr126 : BitWord := [0,1,0,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
 
-lemma zP0 (w : zB) : (zCf w) [tm]⊢⁺ (zCR w .ca (tr1 +> default)) := by
+theorem zP0 (w : HalfTape) : (zCf w) [tm]⊢⁺ (zCR w .ca (tr1 +> default)) := by
   unfold zCf zCR zCs pref_cap tr1
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP1 (w : zB) : (zCL w (tr1 +> default)) [tm]⊢⁺ (zCR w .ca (tr2 +> default)) := by
+theorem zP1 (w : HalfTape) : (zCL w (tr1 +> default)) [tm]⊢⁺ (zCR w .ca (tr2 +> default)) := by
   unfold zCL zCR zCs tr1 tr2
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP2 (w : zB) : (zCL w (tr2 +> default)) [tm]⊢⁺ (zCR w .ca (tr3 +> default)) := by
+theorem zP2 (w : HalfTape) : (zCL w (tr2 +> default)) [tm]⊢⁺ (zCR w .ca (tr3 +> default)) := by
   unfold zCL zCR zCs tr2 tr3
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP3 (w : zB) : (zCL w (tr3 +> default)) [tm]⊢⁺ (zCR w .ca (tr4 +> default)) := by
+theorem zP3 (w : HalfTape) : (zCL w (tr3 +> default)) [tm]⊢⁺ (zCR w .ca (tr4 +> default)) := by
   unfold zCL zCR zCs tr3 tr4
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP4 (w : zB) : (zCL w (tr4 +> default)) [tm]⊢⁺ (zCR w .ca (tr5 +> default)) := by
+theorem zP4 (w : HalfTape) : (zCL w (tr4 +> default)) [tm]⊢⁺ (zCR w .ca (tr5 +> default)) := by
   unfold zCL zCR zCs tr4 tr5
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP5 (w : zB) : (zCL w (tr5 +> default)) [tm]⊢⁺ (zCR w .ca (tr6 +> default)) := by
+theorem zP5 (w : HalfTape) : (zCL w (tr5 +> default)) [tm]⊢⁺ (zCR w .ca (tr6 +> default)) := by
   unfold zCL zCR zCs tr5 tr6
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP6 (w : zB) : (zCL w (tr6 +> default)) [tm]⊢⁺ (zCR w .ca (tr7 +> default)) := by
+theorem zP6 (w : HalfTape) : (zCL w (tr6 +> default)) [tm]⊢⁺ (zCR w .ca (tr7 +> default)) := by
   unfold zCL zCR zCs tr6 tr7
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP7 (w : zB) : (zCL w (tr7 +> default)) [tm]⊢⁺ (zCR w .ca (tr8 +> default)) := by
+theorem zP7 (w : HalfTape) : (zCL w (tr7 +> default)) [tm]⊢⁺ (zCR w .ca (tr8 +> default)) := by
   unfold zCL zCR zCs tr7 tr8
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP8 (w : zB) : (zCL w (tr8 +> default)) [tm]⊢⁺ (zCR w .ca (tr9 +> default)) := by
+theorem zP8 (w : HalfTape) : (zCL w (tr8 +> default)) [tm]⊢⁺ (zCR w .ca (tr9 +> default)) := by
   unfold zCL zCR zCs tr8 tr9
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP9 (w : zB) : (zCL w (tr9 +> default)) [tm]⊢⁺ (zCR w .ca (tr10 +> default)) := by
+theorem zP9 (w : HalfTape) : (zCL w (tr9 +> default)) [tm]⊢⁺ (zCR w .ca (tr10 +> default)) := by
   unfold zCL zCR zCs tr9 tr10
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP10 (w : zB) : (zCL w (tr10 +> default)) [tm]⊢⁺ (zCR w .ca (tr11 +> default)) := by
+theorem zP10 (w : HalfTape) : (zCL w (tr10 +> default)) [tm]⊢⁺ (zCR w .ca (tr11 +> default)) := by
   unfold zCL zCR zCs tr10 tr11
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP11 (w : zB) : (zCL w (tr11 +> default)) [tm]⊢⁺ (zCR w .ca (tr12 +> default)) := by
+theorem zP11 (w : HalfTape) : (zCL w (tr11 +> default)) [tm]⊢⁺ (zCR w .ca (tr12 +> default)) := by
   unfold zCL zCR zCs tr11 tr12
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP12 (w : zB) : (zCL w (tr12 +> default)) [tm]⊢⁺ (zCR w .ca (tr13 +> default)) := by
+theorem zP12 (w : HalfTape) : (zCL w (tr12 +> default)) [tm]⊢⁺ (zCR w .ca (tr13 +> default)) := by
   unfold zCL zCR zCs tr12 tr13
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP13 (w : zB) : (zCL w (tr13 +> default)) [tm]⊢⁺ (zCR w .ca (tr14 +> default)) := by
+theorem zP13 (w : HalfTape) : (zCL w (tr13 +> default)) [tm]⊢⁺ (zCR w .ca (tr14 +> default)) := by
   unfold zCL zCR zCs tr13 tr14
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP14 (w : zB) : (zCL w (tr14 +> default)) [tm]⊢⁺ (zCR w .ca (tr15 +> default)) := by
+theorem zP14 (w : HalfTape) : (zCL w (tr14 +> default)) [tm]⊢⁺ (zCR w .ca (tr15 +> default)) := by
   unfold zCL zCR zCs tr14 tr15
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP15 (w : zB) : (zCL w (tr15 +> default)) [tm]⊢⁺ (zCR w .ca (tr16 +> default)) := by
+theorem zP15 (w : HalfTape) : (zCL w (tr15 +> default)) [tm]⊢⁺ (zCR w .ca (tr16 +> default)) := by
   unfold zCL zCR zCs tr15 tr16
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP16 (w : zB) : (zCL w (tr16 +> default)) [tm]⊢⁺ (zCR w .ca (tr17 +> default)) := by
+theorem zP16 (w : HalfTape) : (zCL w (tr16 +> default)) [tm]⊢⁺ (zCR w .ca (tr17 +> default)) := by
   unfold zCL zCR zCs tr16 tr17
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP17 (w : zB) : (zCL w (tr17 +> default)) [tm]⊢⁺ (zCR w .ca (tr18 +> default)) := by
+theorem zP17 (w : HalfTape) : (zCL w (tr17 +> default)) [tm]⊢⁺ (zCR w .ca (tr18 +> default)) := by
   unfold zCL zCR zCs tr17 tr18
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP18 (w : zB) : (zCL w (tr18 +> default)) [tm]⊢⁺ (zCR w .ca (tr19 +> default)) := by
+theorem zP18 (w : HalfTape) : (zCL w (tr18 +> default)) [tm]⊢⁺ (zCR w .ca (tr19 +> default)) := by
   unfold zCL zCR zCs tr18 tr19
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP19 (w : zB) : (zCL w (tr19 +> default)) [tm]⊢⁺ (zCR w .ca (tr20 +> default)) := by
+theorem zP19 (w : HalfTape) : (zCL w (tr19 +> default)) [tm]⊢⁺ (zCR w .ca (tr20 +> default)) := by
   unfold zCL zCR zCs tr19 tr20
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP20 (w : zB) : (zCL w (tr20 +> default)) [tm]⊢⁺ (zCR w .ca (tr21 +> default)) := by
+theorem zP20 (w : HalfTape) : (zCL w (tr20 +> default)) [tm]⊢⁺ (zCR w .ca (tr21 +> default)) := by
   unfold zCL zCR zCs tr20 tr21
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP21 (w : zB) : (zCL w (tr21 +> default)) [tm]⊢⁺ (zCR w .ca (tr22 +> default)) := by
+theorem zP21 (w : HalfTape) : (zCL w (tr21 +> default)) [tm]⊢⁺ (zCR w .ca (tr22 +> default)) := by
   unfold zCL zCR zCs tr21 tr22
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP22 (w : zB) : (zCL w (tr22 +> default)) [tm]⊢⁺ (zCR w .ca (tr23 +> default)) := by
+theorem zP22 (w : HalfTape) : (zCL w (tr22 +> default)) [tm]⊢⁺ (zCR w .ca (tr23 +> default)) := by
   unfold zCL zCR zCs tr22 tr23
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP23 (w : zB) : (zCL w (tr23 +> default)) [tm]⊢⁺ (zCR w .ca (tr24 +> default)) := by
+theorem zP23 (w : HalfTape) : (zCL w (tr23 +> default)) [tm]⊢⁺ (zCR w .ca (tr24 +> default)) := by
   unfold zCL zCR zCs tr23 tr24
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP24 (w : zB) : (zCL w (tr24 +> default)) [tm]⊢⁺ (zCR w .ca (tr25 +> default)) := by
+theorem zP24 (w : HalfTape) : (zCL w (tr24 +> default)) [tm]⊢⁺ (zCR w .ca (tr25 +> default)) := by
   unfold zCL zCR zCs tr24 tr25
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP25 (w : zB) : (zCL w (tr25 +> default)) [tm]⊢⁺ (zCR w .ca (tr26 +> default)) := by
+theorem zP25 (w : HalfTape) : (zCL w (tr25 +> default)) [tm]⊢⁺ (zCR w .ca (tr26 +> default)) := by
   unfold zCL zCR zCs tr25 tr26
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP26 (w : zB) : (zCL w (tr26 +> default)) [tm]⊢⁺ (zCR w .ca (tr27 +> default)) := by
+theorem zP26 (w : HalfTape) : (zCL w (tr26 +> default)) [tm]⊢⁺ (zCR w .ca (tr27 +> default)) := by
   unfold zCL zCR zCs tr26 tr27
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP27 (w : zB) : (zCL w (tr27 +> default)) [tm]⊢⁺ (zCR w .ca (tr28 +> default)) := by
+theorem zP27 (w : HalfTape) : (zCL w (tr27 +> default)) [tm]⊢⁺ (zCR w .ca (tr28 +> default)) := by
   unfold zCL zCR zCs tr27 tr28
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP28 (w : zB) : (zCL w (tr28 +> default)) [tm]⊢⁺ (zCR w .ca (tr29 +> default)) := by
+theorem zP28 (w : HalfTape) : (zCL w (tr28 +> default)) [tm]⊢⁺ (zCR w .ca (tr29 +> default)) := by
   unfold zCL zCR zCs tr28 tr29
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP29 (w : zB) : (zCL w (tr29 +> default)) [tm]⊢⁺ (zCR w .ca (tr30 +> default)) := by
+theorem zP29 (w : HalfTape) : (zCL w (tr29 +> default)) [tm]⊢⁺ (zCR w .ca (tr30 +> default)) := by
   unfold zCL zCR zCs tr29 tr30
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP30 (w : zB) : (zCL w (tr30 +> default)) [tm]⊢⁺ (zCR w .ca (tr31 +> default)) := by
+theorem zP30 (w : HalfTape) : (zCL w (tr30 +> default)) [tm]⊢⁺ (zCR w .ca (tr31 +> default)) := by
   unfold zCL zCR zCs tr30 tr31
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP31 (w : zB) : (zCL w (tr31 +> default)) [tm]⊢⁺ (zCR w .ca (tr32 +> default)) := by
+theorem zP31 (w : HalfTape) : (zCL w (tr31 +> default)) [tm]⊢⁺ (zCR w .ca (tr32 +> default)) := by
   unfold zCL zCR zCs tr31 tr32
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP32 (w : zB) : (zCL w (tr32 +> default)) [tm]⊢⁺ (zCR w .ca (tr33 +> default)) := by
+theorem zP32 (w : HalfTape) : (zCL w (tr32 +> default)) [tm]⊢⁺ (zCR w .ca (tr33 +> default)) := by
   unfold zCL zCR zCs tr32 tr33
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP33 (w : zB) : (zCL w (tr33 +> default)) [tm]⊢⁺ (zCR w .ca (tr34 +> default)) := by
+theorem zP33 (w : HalfTape) : (zCL w (tr33 +> default)) [tm]⊢⁺ (zCR w .ca (tr34 +> default)) := by
   unfold zCL zCR zCs tr33 tr34
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP34 (w : zB) : (zCL w (tr34 +> default)) [tm]⊢⁺ (zCR w .ca (tr35 +> default)) := by
+theorem zP34 (w : HalfTape) : (zCL w (tr34 +> default)) [tm]⊢⁺ (zCR w .ca (tr35 +> default)) := by
   unfold zCL zCR zCs tr34 tr35
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP35 (w : zB) : (zCL w (tr35 +> default)) [tm]⊢⁺ (zCR w .ca (tr36 +> default)) := by
+theorem zP35 (w : HalfTape) : (zCL w (tr35 +> default)) [tm]⊢⁺ (zCR w .ca (tr36 +> default)) := by
   unfold zCL zCR zCs tr35 tr36
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP36 (w : zB) : (zCL w (tr36 +> default)) [tm]⊢⁺ (zCR w .ca (tr37 +> default)) := by
+theorem zP36 (w : HalfTape) : (zCL w (tr36 +> default)) [tm]⊢⁺ (zCR w .ca (tr37 +> default)) := by
   unfold zCL zCR zCs tr36 tr37
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP37 (w : zB) : (zCL w (tr37 +> default)) [tm]⊢⁺ (zCR w .ca (tr38 +> default)) := by
+theorem zP37 (w : HalfTape) : (zCL w (tr37 +> default)) [tm]⊢⁺ (zCR w .ca (tr38 +> default)) := by
   unfold zCL zCR zCs tr37 tr38
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP38 (w : zB) : (zCL w (tr38 +> default)) [tm]⊢⁺ (zCR w .ca (tr39 +> default)) := by
+theorem zP38 (w : HalfTape) : (zCL w (tr38 +> default)) [tm]⊢⁺ (zCR w .ca (tr39 +> default)) := by
   unfold zCL zCR zCs tr38 tr39
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP39 (w : zB) : (zCL w (tr39 +> default)) [tm]⊢⁺ (zCR w .ca (tr40 +> default)) := by
+theorem zP39 (w : HalfTape) : (zCL w (tr39 +> default)) [tm]⊢⁺ (zCR w .ca (tr40 +> default)) := by
   unfold zCL zCR zCs tr39 tr40
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP40 (w : zB) : (zCL w (tr40 +> default)) [tm]⊢⁺ (zCR w .ca (tr41 +> default)) := by
+theorem zP40 (w : HalfTape) : (zCL w (tr40 +> default)) [tm]⊢⁺ (zCR w .ca (tr41 +> default)) := by
   unfold zCL zCR zCs tr40 tr41
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP41 (w : zB) : (zCL w (tr41 +> default)) [tm]⊢⁺ (zCR w .ca (tr42 +> default)) := by
+theorem zP41 (w : HalfTape) : (zCL w (tr41 +> default)) [tm]⊢⁺ (zCR w .ca (tr42 +> default)) := by
   unfold zCL zCR zCs tr41 tr42
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP42 (w : zB) : (zCL w (tr42 +> default)) [tm]⊢⁺ (zCR w .ca (tr43 +> default)) := by
+theorem zP42 (w : HalfTape) : (zCL w (tr42 +> default)) [tm]⊢⁺ (zCR w .ca (tr43 +> default)) := by
   unfold zCL zCR zCs tr42 tr43
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP43 (w : zB) : (zCL w (tr43 +> default)) [tm]⊢⁺ (zCR w .ca (tr44 +> default)) := by
+theorem zP43 (w : HalfTape) : (zCL w (tr43 +> default)) [tm]⊢⁺ (zCR w .ca (tr44 +> default)) := by
   unfold zCL zCR zCs tr43 tr44
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP44 (w : zB) : (zCL w (tr44 +> default)) [tm]⊢⁺ (zCR w .ca (tr45 +> default)) := by
+theorem zP44 (w : HalfTape) : (zCL w (tr44 +> default)) [tm]⊢⁺ (zCR w .ca (tr45 +> default)) := by
   unfold zCL zCR zCs tr44 tr45
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP45 (w : zB) : (zCL w (tr45 +> default)) [tm]⊢⁺ (zCR w .ca (tr46 +> default)) := by
+theorem zP45 (w : HalfTape) : (zCL w (tr45 +> default)) [tm]⊢⁺ (zCR w .ca (tr46 +> default)) := by
   unfold zCL zCR zCs tr45 tr46
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP46 (w : zB) : (zCL w (tr46 +> default)) [tm]⊢⁺ (zCR w .ca (tr47 +> default)) := by
+theorem zP46 (w : HalfTape) : (zCL w (tr46 +> default)) [tm]⊢⁺ (zCR w .ca (tr47 +> default)) := by
   unfold zCL zCR zCs tr46 tr47
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP47 (w : zB) : (zCL w (tr47 +> default)) [tm]⊢⁺ (zCR w .ca (tr48 +> default)) := by
+theorem zP47 (w : HalfTape) : (zCL w (tr47 +> default)) [tm]⊢⁺ (zCR w .ca (tr48 +> default)) := by
   unfold zCL zCR zCs tr47 tr48
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP48 (w : zB) : (zCL w (tr48 +> default)) [tm]⊢⁺ (zCR w .ca (tr49 +> default)) := by
+theorem zP48 (w : HalfTape) : (zCL w (tr48 +> default)) [tm]⊢⁺ (zCR w .ca (tr49 +> default)) := by
   unfold zCL zCR zCs tr48 tr49
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP49 (w : zB) : (zCL w (tr49 +> default)) [tm]⊢⁺ (zCR w .ca (tr50 +> default)) := by
+theorem zP49 (w : HalfTape) : (zCL w (tr49 +> default)) [tm]⊢⁺ (zCR w .ca (tr50 +> default)) := by
   unfold zCL zCR zCs tr49 tr50
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP50 (w : zB) : (zCL w (tr50 +> default)) [tm]⊢⁺ (zCR w .ca (tr51 +> default)) := by
+theorem zP50 (w : HalfTape) : (zCL w (tr50 +> default)) [tm]⊢⁺ (zCR w .ca (tr51 +> default)) := by
   unfold zCL zCR zCs tr50 tr51
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP51 (w : zB) : (zCL w (tr51 +> default)) [tm]⊢⁺ (zCR w .ca (tr52 +> default)) := by
+theorem zP51 (w : HalfTape) : (zCL w (tr51 +> default)) [tm]⊢⁺ (zCR w .ca (tr52 +> default)) := by
   unfold zCL zCR zCs tr51 tr52
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP52 (w : zB) : (zCL w (tr52 +> default)) [tm]⊢⁺ (zCR w .ca (tr53 +> default)) := by
+theorem zP52 (w : HalfTape) : (zCL w (tr52 +> default)) [tm]⊢⁺ (zCR w .ca (tr53 +> default)) := by
   unfold zCL zCR zCs tr52 tr53
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP53 (w : zB) : (zCL w (tr53 +> default)) [tm]⊢⁺ (zCR w .ca (tr54 +> default)) := by
+theorem zP53 (w : HalfTape) : (zCL w (tr53 +> default)) [tm]⊢⁺ (zCR w .ca (tr54 +> default)) := by
   unfold zCL zCR zCs tr53 tr54
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP54 (w : zB) : (zCL w (tr54 +> default)) [tm]⊢⁺ (zCR w .ca (tr55 +> default)) := by
+theorem zP54 (w : HalfTape) : (zCL w (tr54 +> default)) [tm]⊢⁺ (zCR w .ca (tr55 +> default)) := by
   unfold zCL zCR zCs tr54 tr55
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP55 (w : zB) : (zCL w (tr55 +> default)) [tm]⊢⁺ (zCR w .ca (tr56 +> default)) := by
+theorem zP55 (w : HalfTape) : (zCL w (tr55 +> default)) [tm]⊢⁺ (zCR w .ca (tr56 +> default)) := by
   unfold zCL zCR zCs tr55 tr56
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP56 (w : zB) : (zCL w (tr56 +> default)) [tm]⊢⁺ (zCR w .ca (tr57 +> default)) := by
+theorem zP56 (w : HalfTape) : (zCL w (tr56 +> default)) [tm]⊢⁺ (zCR w .ca (tr57 +> default)) := by
   unfold zCL zCR zCs tr56 tr57
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP57 (w : zB) : (zCL w (tr57 +> default)) [tm]⊢⁺ (zCR w .ca (tr58 +> default)) := by
+theorem zP57 (w : HalfTape) : (zCL w (tr57 +> default)) [tm]⊢⁺ (zCR w .ca (tr58 +> default)) := by
   unfold zCL zCR zCs tr57 tr58
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP58 (w : zB) : (zCL w (tr58 +> default)) [tm]⊢⁺ (zCR w .ca (tr59 +> default)) := by
+theorem zP58 (w : HalfTape) : (zCL w (tr58 +> default)) [tm]⊢⁺ (zCR w .ca (tr59 +> default)) := by
   unfold zCL zCR zCs tr58 tr59
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP59 (w : zB) : (zCL w (tr59 +> default)) [tm]⊢⁺ (zCR w .ca (tr60 +> default)) := by
+theorem zP59 (w : HalfTape) : (zCL w (tr59 +> default)) [tm]⊢⁺ (zCR w .ca (tr60 +> default)) := by
   unfold zCL zCR zCs tr59 tr60
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP60 (w : zB) : (zCL w (tr60 +> default)) [tm]⊢⁺ (zCR w .ca (tr61 +> default)) := by
+theorem zP60 (w : HalfTape) : (zCL w (tr60 +> default)) [tm]⊢⁺ (zCR w .ca (tr61 +> default)) := by
   unfold zCL zCR zCs tr60 tr61
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP61 (w : zB) : (zCL w (tr61 +> default)) [tm]⊢⁺ (zCR w .ca (tr62 +> default)) := by
+theorem zP61 (w : HalfTape) : (zCL w (tr61 +> default)) [tm]⊢⁺ (zCR w .ca (tr62 +> default)) := by
   unfold zCL zCR zCs tr61 tr62
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP62 (w : zB) : (zCL w (tr62 +> default)) [tm]⊢⁺ (zCR w .ca (tr63 +> default)) := by
+theorem zP62 (w : HalfTape) : (zCL w (tr62 +> default)) [tm]⊢⁺ (zCR w .ca (tr63 +> default)) := by
   unfold zCL zCR zCs tr62 tr63
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP63 (w : zB) : (zCL w (tr63 +> default)) [tm]⊢⁺ (zCR w .ca (tr64 +> default)) := by
+theorem zP63 (w : HalfTape) : (zCL w (tr63 +> default)) [tm]⊢⁺ (zCR w .ca (tr64 +> default)) := by
   unfold zCL zCR zCs tr63 tr64
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP64 (w : zB) : (zCL w (tr64 +> default)) [tm]⊢⁺ (zCR w .ca (tr65 +> default)) := by
+theorem zP64 (w : HalfTape) : (zCL w (tr64 +> default)) [tm]⊢⁺ (zCR w .ca (tr65 +> default)) := by
   unfold zCL zCR zCs tr64 tr65
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP65 (w : zB) : (zCL w (tr65 +> default)) [tm]⊢⁺ (zCR w .ca (tr66 +> default)) := by
+theorem zP65 (w : HalfTape) : (zCL w (tr65 +> default)) [tm]⊢⁺ (zCR w .ca (tr66 +> default)) := by
   unfold zCL zCR zCs tr65 tr66
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP66 (w : zB) : (zCL w (tr66 +> default)) [tm]⊢⁺ (zCR w .ca (tr67 +> default)) := by
+theorem zP66 (w : HalfTape) : (zCL w (tr66 +> default)) [tm]⊢⁺ (zCR w .ca (tr67 +> default)) := by
   unfold zCL zCR zCs tr66 tr67
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP67 (w : zB) : (zCL w (tr67 +> default)) [tm]⊢⁺ (zCR w .ca (tr68 +> default)) := by
+theorem zP67 (w : HalfTape) : (zCL w (tr67 +> default)) [tm]⊢⁺ (zCR w .ca (tr68 +> default)) := by
   unfold zCL zCR zCs tr67 tr68
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP68 (w : zB) : (zCL w (tr68 +> default)) [tm]⊢⁺ (zCR w .ca (tr69 +> default)) := by
+theorem zP68 (w : HalfTape) : (zCL w (tr68 +> default)) [tm]⊢⁺ (zCR w .ca (tr69 +> default)) := by
   unfold zCL zCR zCs tr68 tr69
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP69 (w : zB) : (zCL w (tr69 +> default)) [tm]⊢⁺ (zCR w .ca (tr70 +> default)) := by
+theorem zP69 (w : HalfTape) : (zCL w (tr69 +> default)) [tm]⊢⁺ (zCR w .ca (tr70 +> default)) := by
   unfold zCL zCR zCs tr69 tr70
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP70 (w : zB) : (zCL w (tr70 +> default)) [tm]⊢⁺ (zCR w .ca (tr71 +> default)) := by
+theorem zP70 (w : HalfTape) : (zCL w (tr70 +> default)) [tm]⊢⁺ (zCR w .ca (tr71 +> default)) := by
   unfold zCL zCR zCs tr70 tr71
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP71 (w : zB) : (zCL w (tr71 +> default)) [tm]⊢⁺ (zCR w .ca (tr72 +> default)) := by
+theorem zP71 (w : HalfTape) : (zCL w (tr71 +> default)) [tm]⊢⁺ (zCR w .ca (tr72 +> default)) := by
   unfold zCL zCR zCs tr71 tr72
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP72 (w : zB) : (zCL w (tr72 +> default)) [tm]⊢⁺ (zCR w .ca (tr73 +> default)) := by
+theorem zP72 (w : HalfTape) : (zCL w (tr72 +> default)) [tm]⊢⁺ (zCR w .ca (tr73 +> default)) := by
   unfold zCL zCR zCs tr72 tr73
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP73 (w : zB) : (zCL w (tr73 +> default)) [tm]⊢⁺ (zCR w .ca (tr74 +> default)) := by
+theorem zP73 (w : HalfTape) : (zCL w (tr73 +> default)) [tm]⊢⁺ (zCR w .ca (tr74 +> default)) := by
   unfold zCL zCR zCs tr73 tr74
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP74 (w : zB) : (zCL w (tr74 +> default)) [tm]⊢⁺ (zCR w .ca (tr75 +> default)) := by
+theorem zP74 (w : HalfTape) : (zCL w (tr74 +> default)) [tm]⊢⁺ (zCR w .ca (tr75 +> default)) := by
   unfold zCL zCR zCs tr74 tr75
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP75 (w : zB) : (zCL w (tr75 +> default)) [tm]⊢⁺ (zCR w .ca (tr76 +> default)) := by
+theorem zP75 (w : HalfTape) : (zCL w (tr75 +> default)) [tm]⊢⁺ (zCR w .ca (tr76 +> default)) := by
   unfold zCL zCR zCs tr75 tr76
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP76 (w : zB) : (zCL w (tr76 +> default)) [tm]⊢⁺ (zCR w .ca (tr77 +> default)) := by
+theorem zP76 (w : HalfTape) : (zCL w (tr76 +> default)) [tm]⊢⁺ (zCR w .ca (tr77 +> default)) := by
   unfold zCL zCR zCs tr76 tr77
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP77 (w : zB) : (zCL w (tr77 +> default)) [tm]⊢⁺ (zCR w .ca (tr78 +> default)) := by
+theorem zP77 (w : HalfTape) : (zCL w (tr77 +> default)) [tm]⊢⁺ (zCR w .ca (tr78 +> default)) := by
   unfold zCL zCR zCs tr77 tr78
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP78 (w : zB) : (zCL w (tr78 +> default)) [tm]⊢⁺ (zCR w .ca (tr79 +> default)) := by
+theorem zP78 (w : HalfTape) : (zCL w (tr78 +> default)) [tm]⊢⁺ (zCR w .ca (tr79 +> default)) := by
   unfold zCL zCR zCs tr78 tr79
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP79 (w : zB) : (zCL w (tr79 +> default)) [tm]⊢⁺ (zCR w .ca (tr80 +> default)) := by
+theorem zP79 (w : HalfTape) : (zCL w (tr79 +> default)) [tm]⊢⁺ (zCR w .ca (tr80 +> default)) := by
   unfold zCL zCR zCs tr79 tr80
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP80 (w : zB) : (zCL w (tr80 +> default)) [tm]⊢⁺ (zCR w .ca (tr81 +> default)) := by
+theorem zP80 (w : HalfTape) : (zCL w (tr80 +> default)) [tm]⊢⁺ (zCR w .ca (tr81 +> default)) := by
   unfold zCL zCR zCs tr80 tr81
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP81 (w : zB) : (zCL w (tr81 +> default)) [tm]⊢⁺ (zCR w .ca (tr82 +> default)) := by
+theorem zP81 (w : HalfTape) : (zCL w (tr81 +> default)) [tm]⊢⁺ (zCR w .ca (tr82 +> default)) := by
   unfold zCL zCR zCs tr81 tr82
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP82 (w : zB) : (zCL w (tr82 +> default)) [tm]⊢⁺ (zCR w .ca (tr83 +> default)) := by
+theorem zP82 (w : HalfTape) : (zCL w (tr82 +> default)) [tm]⊢⁺ (zCR w .ca (tr83 +> default)) := by
   unfold zCL zCR zCs tr82 tr83
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP83 (w : zB) : (zCL w (tr83 +> default)) [tm]⊢⁺ (zCR w .ca (tr84 +> default)) := by
+theorem zP83 (w : HalfTape) : (zCL w (tr83 +> default)) [tm]⊢⁺ (zCR w .ca (tr84 +> default)) := by
   unfold zCL zCR zCs tr83 tr84
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP84 (w : zB) : (zCL w (tr84 +> default)) [tm]⊢⁺ (zCR w .ca (tr85 +> default)) := by
+theorem zP84 (w : HalfTape) : (zCL w (tr84 +> default)) [tm]⊢⁺ (zCR w .ca (tr85 +> default)) := by
   unfold zCL zCR zCs tr84 tr85
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP85 (w : zB) : (zCL w (tr85 +> default)) [tm]⊢⁺ (zCR w .ca (tr86 +> default)) := by
+theorem zP85 (w : HalfTape) : (zCL w (tr85 +> default)) [tm]⊢⁺ (zCR w .ca (tr86 +> default)) := by
   unfold zCL zCR zCs tr85 tr86
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP86 (w : zB) : (zCL w (tr86 +> default)) [tm]⊢⁺ (zCR w .ca (tr87 +> default)) := by
+theorem zP86 (w : HalfTape) : (zCL w (tr86 +> default)) [tm]⊢⁺ (zCR w .ca (tr87 +> default)) := by
   unfold zCL zCR zCs tr86 tr87
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP87 (w : zB) : (zCL w (tr87 +> default)) [tm]⊢⁺ (zCR w .ca (tr88 +> default)) := by
+theorem zP87 (w : HalfTape) : (zCL w (tr87 +> default)) [tm]⊢⁺ (zCR w .ca (tr88 +> default)) := by
   unfold zCL zCR zCs tr87 tr88
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP88 (w : zB) : (zCL w (tr88 +> default)) [tm]⊢⁺ (zCR w .ca (tr89 +> default)) := by
+theorem zP88 (w : HalfTape) : (zCL w (tr88 +> default)) [tm]⊢⁺ (zCR w .ca (tr89 +> default)) := by
   unfold zCL zCR zCs tr88 tr89
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP89 (w : zB) : (zCL w (tr89 +> default)) [tm]⊢⁺ (zCR w .ca (tr90 +> default)) := by
+theorem zP89 (w : HalfTape) : (zCL w (tr89 +> default)) [tm]⊢⁺ (zCR w .ca (tr90 +> default)) := by
   unfold zCL zCR zCs tr89 tr90
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP90 (w : zB) : (zCL w (tr90 +> default)) [tm]⊢⁺ (zCR w .ca (tr91 +> default)) := by
+theorem zP90 (w : HalfTape) : (zCL w (tr90 +> default)) [tm]⊢⁺ (zCR w .ca (tr91 +> default)) := by
   unfold zCL zCR zCs tr90 tr91
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP91 (w : zB) : (zCL w (tr91 +> default)) [tm]⊢⁺ (zCR w .ca (tr92 +> default)) := by
+theorem zP91 (w : HalfTape) : (zCL w (tr91 +> default)) [tm]⊢⁺ (zCR w .ca (tr92 +> default)) := by
   unfold zCL zCR zCs tr91 tr92
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP92 (w : zB) : (zCL w (tr92 +> default)) [tm]⊢⁺ (zCR w .ca (tr93 +> default)) := by
+theorem zP92 (w : HalfTape) : (zCL w (tr92 +> default)) [tm]⊢⁺ (zCR w .ca (tr93 +> default)) := by
   unfold zCL zCR zCs tr92 tr93
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP93 (w : zB) : (zCL w (tr93 +> default)) [tm]⊢⁺ (zCR w .ca (tr94 +> default)) := by
+theorem zP93 (w : HalfTape) : (zCL w (tr93 +> default)) [tm]⊢⁺ (zCR w .ca (tr94 +> default)) := by
   unfold zCL zCR zCs tr93 tr94
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP94 (w : zB) : (zCL w (tr94 +> default)) [tm]⊢⁺ (zCR w .ca (tr95 +> default)) := by
+theorem zP94 (w : HalfTape) : (zCL w (tr94 +> default)) [tm]⊢⁺ (zCR w .ca (tr95 +> default)) := by
   unfold zCL zCR zCs tr94 tr95
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP95 (w : zB) : (zCL w (tr95 +> default)) [tm]⊢⁺ (zCR w .ca (tr96 +> default)) := by
+theorem zP95 (w : HalfTape) : (zCL w (tr95 +> default)) [tm]⊢⁺ (zCR w .ca (tr96 +> default)) := by
   unfold zCL zCR zCs tr95 tr96
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP96 (w : zB) : (zCL w (tr96 +> default)) [tm]⊢⁺ (zCR w .ca (tr97 +> default)) := by
+theorem zP96 (w : HalfTape) : (zCL w (tr96 +> default)) [tm]⊢⁺ (zCR w .ca (tr97 +> default)) := by
   unfold zCL zCR zCs tr96 tr97
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP97 (w : zB) : (zCL w (tr97 +> default)) [tm]⊢⁺ (zCR w .ca (tr98 +> default)) := by
+theorem zP97 (w : HalfTape) : (zCL w (tr97 +> default)) [tm]⊢⁺ (zCR w .ca (tr98 +> default)) := by
   unfold zCL zCR zCs tr97 tr98
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP98 (w : zB) : (zCL w (tr98 +> default)) [tm]⊢⁺ (zCR w .ca (tr99 +> default)) := by
+theorem zP98 (w : HalfTape) : (zCL w (tr98 +> default)) [tm]⊢⁺ (zCR w .ca (tr99 +> default)) := by
   unfold zCL zCR zCs tr98 tr99
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP99 (w : zB) : (zCL w (tr99 +> default)) [tm]⊢⁺ (zCR w .ca (tr100 +> default)) := by
+theorem zP99 (w : HalfTape) : (zCL w (tr99 +> default)) [tm]⊢⁺ (zCR w .ca (tr100 +> default)) := by
   unfold zCL zCR zCs tr99 tr100
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP100 (w : zB) : (zCL w (tr100 +> default)) [tm]⊢⁺ (zCR w .ca (tr101 +> default)) := by
+theorem zP100 (w : HalfTape) : (zCL w (tr100 +> default)) [tm]⊢⁺ (zCR w .ca (tr101 +> default)) := by
   unfold zCL zCR zCs tr100 tr101
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP101 (w : zB) : (zCL w (tr101 +> default)) [tm]⊢⁺ (zCR w .ca (tr102 +> default)) := by
+theorem zP101 (w : HalfTape) : (zCL w (tr101 +> default)) [tm]⊢⁺ (zCR w .ca (tr102 +> default)) := by
   unfold zCL zCR zCs tr101 tr102
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP102 (w : zB) : (zCL w (tr102 +> default)) [tm]⊢⁺ (zCR w .ca (tr103 +> default)) := by
+theorem zP102 (w : HalfTape) : (zCL w (tr102 +> default)) [tm]⊢⁺ (zCR w .ca (tr103 +> default)) := by
   unfold zCL zCR zCs tr102 tr103
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP103 (w : zB) : (zCL w (tr103 +> default)) [tm]⊢⁺ (zCR w .ca (tr104 +> default)) := by
+theorem zP103 (w : HalfTape) : (zCL w (tr103 +> default)) [tm]⊢⁺ (zCR w .ca (tr104 +> default)) := by
   unfold zCL zCR zCs tr103 tr104
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP104 (w : zB) : (zCL w (tr104 +> default)) [tm]⊢⁺ (zCR w .ca (tr105 +> default)) := by
+theorem zP104 (w : HalfTape) : (zCL w (tr104 +> default)) [tm]⊢⁺ (zCR w .ca (tr105 +> default)) := by
   unfold zCL zCR zCs tr104 tr105
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP105 (w : zB) : (zCL w (tr105 +> default)) [tm]⊢⁺ (zCR w .ca (tr106 +> default)) := by
+theorem zP105 (w : HalfTape) : (zCL w (tr105 +> default)) [tm]⊢⁺ (zCR w .ca (tr106 +> default)) := by
   unfold zCL zCR zCs tr105 tr106
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP106 (w : zB) : (zCL w (tr106 +> default)) [tm]⊢⁺ (zCR w .ca (tr107 +> default)) := by
+theorem zP106 (w : HalfTape) : (zCL w (tr106 +> default)) [tm]⊢⁺ (zCR w .ca (tr107 +> default)) := by
   unfold zCL zCR zCs tr106 tr107
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP107 (w : zB) : (zCL w (tr107 +> default)) [tm]⊢⁺ (zCR w .ca (tr108 +> default)) := by
+theorem zP107 (w : HalfTape) : (zCL w (tr107 +> default)) [tm]⊢⁺ (zCR w .ca (tr108 +> default)) := by
   unfold zCL zCR zCs tr107 tr108
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP108 (w : zB) : (zCL w (tr108 +> default)) [tm]⊢⁺ (zCR w .ca (tr109 +> default)) := by
+theorem zP108 (w : HalfTape) : (zCL w (tr108 +> default)) [tm]⊢⁺ (zCR w .ca (tr109 +> default)) := by
   unfold zCL zCR zCs tr108 tr109
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP109 (w : zB) : (zCL w (tr109 +> default)) [tm]⊢⁺ (zCR w .ca (tr110 +> default)) := by
+theorem zP109 (w : HalfTape) : (zCL w (tr109 +> default)) [tm]⊢⁺ (zCR w .ca (tr110 +> default)) := by
   unfold zCL zCR zCs tr109 tr110
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP110 (w : zB) : (zCL w (tr110 +> default)) [tm]⊢⁺ (zCR w .ca (tr111 +> default)) := by
+theorem zP110 (w : HalfTape) : (zCL w (tr110 +> default)) [tm]⊢⁺ (zCR w .ca (tr111 +> default)) := by
   unfold zCL zCR zCs tr110 tr111
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP111 (w : zB) : (zCL w (tr111 +> default)) [tm]⊢⁺ (zCR w .ca (tr112 +> default)) := by
+theorem zP111 (w : HalfTape) : (zCL w (tr111 +> default)) [tm]⊢⁺ (zCR w .ca (tr112 +> default)) := by
   unfold zCL zCR zCs tr111 tr112
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP112 (w : zB) : (zCL w (tr112 +> default)) [tm]⊢⁺ (zCR w .ca (tr113 +> default)) := by
+theorem zP112 (w : HalfTape) : (zCL w (tr112 +> default)) [tm]⊢⁺ (zCR w .ca (tr113 +> default)) := by
   unfold zCL zCR zCs tr112 tr113
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP113 (w : zB) : (zCL w (tr113 +> default)) [tm]⊢⁺ (zCR w .ca (tr114 +> default)) := by
+theorem zP113 (w : HalfTape) : (zCL w (tr113 +> default)) [tm]⊢⁺ (zCR w .ca (tr114 +> default)) := by
   unfold zCL zCR zCs tr113 tr114
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP114 (w : zB) : (zCL w (tr114 +> default)) [tm]⊢⁺ (zCR w .ca (tr115 +> default)) := by
+theorem zP114 (w : HalfTape) : (zCL w (tr114 +> default)) [tm]⊢⁺ (zCR w .ca (tr115 +> default)) := by
   unfold zCL zCR zCs tr114 tr115
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP115 (w : zB) : (zCL w (tr115 +> default)) [tm]⊢⁺ (zCR w .ca (tr116 +> default)) := by
+theorem zP115 (w : HalfTape) : (zCL w (tr115 +> default)) [tm]⊢⁺ (zCR w .ca (tr116 +> default)) := by
   unfold zCL zCR zCs tr115 tr116
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP116 (w : zB) : (zCL w (tr116 +> default)) [tm]⊢⁺ (zCR w .ca (tr117 +> default)) := by
+theorem zP116 (w : HalfTape) : (zCL w (tr116 +> default)) [tm]⊢⁺ (zCR w .ca (tr117 +> default)) := by
   unfold zCL zCR zCs tr116 tr117
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP117 (w : zB) : (zCL w (tr117 +> default)) [tm]⊢⁺ (zCR w .ca (tr118 +> default)) := by
+theorem zP117 (w : HalfTape) : (zCL w (tr117 +> default)) [tm]⊢⁺ (zCR w .ca (tr118 +> default)) := by
   unfold zCL zCR zCs tr117 tr118
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP118 (w : zB) : (zCL w (tr118 +> default)) [tm]⊢⁺ (zCR w .ca (tr119 +> default)) := by
+theorem zP118 (w : HalfTape) : (zCL w (tr118 +> default)) [tm]⊢⁺ (zCR w .ca (tr119 +> default)) := by
   unfold zCL zCR zCs tr118 tr119
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP119 (w : zB) : (zCL w (tr119 +> default)) [tm]⊢⁺ (zCR w .ca (tr120 +> default)) := by
+theorem zP119 (w : HalfTape) : (zCL w (tr119 +> default)) [tm]⊢⁺ (zCR w .ca (tr120 +> default)) := by
   unfold zCL zCR zCs tr119 tr120
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP120 (w : zB) : (zCL w (tr120 +> default)) [tm]⊢⁺ (zCR w .ca (tr121 +> default)) := by
+theorem zP120 (w : HalfTape) : (zCL w (tr120 +> default)) [tm]⊢⁺ (zCR w .ca (tr121 +> default)) := by
   unfold zCL zCR zCs tr120 tr121
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP121 (w : zB) : (zCL w (tr121 +> default)) [tm]⊢⁺ (zCR w .ca (tr122 +> default)) := by
+theorem zP121 (w : HalfTape) : (zCL w (tr121 +> default)) [tm]⊢⁺ (zCR w .ca (tr122 +> default)) := by
   unfold zCL zCR zCs tr121 tr122
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP122 (w : zB) : (zCL w (tr122 +> default)) [tm]⊢⁺ (zCR w .ca (tr123 +> default)) := by
+theorem zP122 (w : HalfTape) : (zCL w (tr122 +> default)) [tm]⊢⁺ (zCR w .ca (tr123 +> default)) := by
   unfold zCL zCR zCs tr122 tr123
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP123 (w : zB) : (zCL w (tr123 +> default)) [tm]⊢⁺ (zCR w .ca (tr124 +> default)) := by
+theorem zP123 (w : HalfTape) : (zCL w (tr123 +> default)) [tm]⊢⁺ (zCR w .ca (tr124 +> default)) := by
   unfold zCL zCR zCs tr123 tr124
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP124 (w : zB) : (zCL w (tr124 +> default)) [tm]⊢⁺ (zCR w .ca (tr125 +> default)) := by
+theorem zP124 (w : HalfTape) : (zCL w (tr124 +> default)) [tm]⊢⁺ (zCR w .ca (tr125 +> default)) := by
   unfold zCL zCR zCs tr124 tr125
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP125 (w : zB) : (zCL w (tr125 +> default)) [tm]⊢⁺ (zCR w .ca (tr126 +> default)) := by
+theorem zP125 (w : HalfTape) : (zCL w (tr125 +> default)) [tm]⊢⁺ (zCR w .ca (tr126 +> default)) := by
   unfold zCL zCR zCs tr125 tr126
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
-lemma zP126 (w : zB) : (zCL w (tr126 +> default)) [tm]⊢⁺ (zCf ([1, 1, 0] +> w)) := by
+theorem zP126 (w : HalfTape) : (zCL w (tr126 +> default)) [tm]⊢⁺ (zCf ([1, 1, 0] +> w)) := by
   unfold zCL zCf tr126 pref_cap
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00]
+  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
   execute
 
--- Section 2: Words, Shift Identity, zDg, Parse, Scan, Step
-lemma segSpec : SegSpec z0f :=
+-- Section 2: Words, Shift Identity, DigitVal, Parse, Scan, Step
+theorem segSpec : SegSpec callStep :=
   ⟨seg_ch_V, seg_ca_V, seg_ca_Vp, seg_ch_K, seg_ch_Q,
    seg_ca_VpQ, seg_ca_KpVp, seg_ca_QpVp, seg_ca_Kp, seg_ca_Qp,
    seg_ca_KQ, seg_ca_QQ⟩
@@ -780,7 +776,7 @@ abbrev Rounds.next := @RoundsB.next 126
 abbrev checkStep := checkStepB 126
 abbrev checkStep_sound := checkStepB_sound 126
 
-lemma Side_turnaround {w w' : zB} (h : Side ([Call.ca] ^ 126) w w') :
+theorem Side_turnaround {w w' : HalfTape} (h : Side ([Call.ca] ^ 126) w w') :
     (zCf w) [tm]⊢⁺ (zCf ([1, 1, 0] +> w')) := by
   rcases h with _ | ⟨hc1, h⟩
   rcases h with _ | ⟨hc2, h⟩
@@ -909,23 +905,23 @@ lemma Side_turnaround {w w' : zB} (h : Side ([Call.ca] ^ 126) w w') :
   rcases h with _ | ⟨hc125, h⟩
   rcases h with _ | ⟨hc126, h⟩
   cases h
-  exact zPt (zP0 w) (zPt (hc1 (tr1 +> default)) (zPt (zP1 _) (zPt (hc2 (tr2 +> default)) (zPt (zP2 _) (zPt (hc3 (tr3 +> default)) (zPt (zP3 _) (zPt (hc4 (tr4 +> default)) (zPt (zP4 _) (zPt (hc5 (tr5 +> default)) (zPt (zP5 _) (zPt (hc6 (tr6 +> default)) (zPt (zP6 _) (zPt (hc7 (tr7 +> default)) (zPt (zP7 _) (zPt (hc8 (tr8 +> default)) (zPt (zP8 _) (zPt (hc9 (tr9 +> default)) (zPt (zP9 _) (zPt (hc10 (tr10 +> default)) (zPt (zP10 _) (zPt (hc11 (tr11 +> default)) (zPt (zP11 _) (zPt (hc12 (tr12 +> default)) (zPt (zP12 _) (zPt (hc13 (tr13 +> default)) (zPt (zP13 _) (zPt (hc14 (tr14 +> default)) (zPt (zP14 _) (zPt (hc15 (tr15 +> default)) (zPt (zP15 _) (zPt (hc16 (tr16 +> default)) (zPt (zP16 _) (zPt (hc17 (tr17 +> default)) (zPt (zP17 _) (zPt (hc18 (tr18 +> default)) (zPt (zP18 _) (zPt (hc19 (tr19 +> default)) (zPt (zP19 _) (zPt (hc20 (tr20 +> default)) (zPt (zP20 _) (zPt (hc21 (tr21 +> default)) (zPt (zP21 _) (zPt (hc22 (tr22 +> default)) (zPt (zP22 _) (zPt (hc23 (tr23 +> default)) (zPt (zP23 _) (zPt (hc24 (tr24 +> default)) (zPt (zP24 _) (zPt (hc25 (tr25 +> default)) (zPt (zP25 _) (zPt (hc26 (tr26 +> default)) (zPt (zP26 _) (zPt (hc27 (tr27 +> default)) (zPt (zP27 _) (zPt (hc28 (tr28 +> default)) (zPt (zP28 _) (zPt (hc29 (tr29 +> default)) (zPt (zP29 _) (zPt (hc30 (tr30 +> default)) (zPt (zP30 _) (zPt (hc31 (tr31 +> default)) (zPt (zP31 _) (zPt (hc32 (tr32 +> default)) (zPt (zP32 _) (zPt (hc33 (tr33 +> default)) (zPt (zP33 _) (zPt (hc34 (tr34 +> default)) (zPt (zP34 _) (zPt (hc35 (tr35 +> default)) (zPt (zP35 _) (zPt (hc36 (tr36 +> default)) (zPt (zP36 _) (zPt (hc37 (tr37 +> default)) (zPt (zP37 _) (zPt (hc38 (tr38 +> default)) (zPt (zP38 _) (zPt (hc39 (tr39 +> default)) (zPt (zP39 _) (zPt (hc40 (tr40 +> default)) (zPt (zP40 _) (zPt (hc41 (tr41 +> default)) (zPt (zP41 _) (zPt (hc42 (tr42 +> default)) (zPt (zP42 _) (zPt (hc43 (tr43 +> default)) (zPt (zP43 _) (zPt (hc44 (tr44 +> default)) (zPt (zP44 _) (zPt (hc45 (tr45 +> default)) (zPt (zP45 _) (zPt (hc46 (tr46 +> default)) (zPt (zP46 _) (zPt (hc47 (tr47 +> default)) (zPt (zP47 _) (zPt (hc48 (tr48 +> default)) (zPt (zP48 _) (zPt (hc49 (tr49 +> default)) (zPt (zP49 _) (zPt (hc50 (tr50 +> default)) (zPt (zP50 _) (zPt (hc51 (tr51 +> default)) (zPt (zP51 _) (zPt (hc52 (tr52 +> default)) (zPt (zP52 _) (zPt (hc53 (tr53 +> default)) (zPt (zP53 _) (zPt (hc54 (tr54 +> default)) (zPt (zP54 _) (zPt (hc55 (tr55 +> default)) (zPt (zP55 _) (zPt (hc56 (tr56 +> default)) (zPt (zP56 _) (zPt (hc57 (tr57 +> default)) (zPt (zP57 _) (zPt (hc58 (tr58 +> default)) (zPt (zP58 _) (zPt (hc59 (tr59 +> default)) (zPt (zP59 _) (zPt (hc60 (tr60 +> default)) (zPt (zP60 _) (zPt (hc61 (tr61 +> default)) (zPt (zP61 _) (zPt (hc62 (tr62 +> default)) (zPt (zP62 _) (zPt (hc63 (tr63 +> default)) (zPt (zP63 _) (zPt (hc64 (tr64 +> default)) (zPt (zP64 _) (zPt (hc65 (tr65 +> default)) (zPt (zP65 _) (zPt (hc66 (tr66 +> default)) (zPt (zP66 _) (zPt (hc67 (tr67 +> default)) (zPt (zP67 _) (zPt (hc68 (tr68 +> default)) (zPt (zP68 _) (zPt (hc69 (tr69 +> default)) (zPt (zP69 _) (zPt (hc70 (tr70 +> default)) (zPt (zP70 _) (zPt (hc71 (tr71 +> default)) (zPt (zP71 _) (zPt (hc72 (tr72 +> default)) (zPt (zP72 _) (zPt (hc73 (tr73 +> default)) (zPt (zP73 _) (zPt (hc74 (tr74 +> default)) (zPt (zP74 _) (zPt (hc75 (tr75 +> default)) (zPt (zP75 _) (zPt (hc76 (tr76 +> default)) (zPt (zP76 _) (zPt (hc77 (tr77 +> default)) (zPt (zP77 _) (zPt (hc78 (tr78 +> default)) (zPt (zP78 _) (zPt (hc79 (tr79 +> default)) (zPt (zP79 _) (zPt (hc80 (tr80 +> default)) (zPt (zP80 _) (zPt (hc81 (tr81 +> default)) (zPt (zP81 _) (zPt (hc82 (tr82 +> default)) (zPt (zP82 _) (zPt (hc83 (tr83 +> default)) (zPt (zP83 _) (zPt (hc84 (tr84 +> default)) (zPt (zP84 _) (zPt (hc85 (tr85 +> default)) (zPt (zP85 _) (zPt (hc86 (tr86 +> default)) (zPt (zP86 _) (zPt (hc87 (tr87 +> default)) (zPt (zP87 _) (zPt (hc88 (tr88 +> default)) (zPt (zP88 _) (zPt (hc89 (tr89 +> default)) (zPt (zP89 _) (zPt (hc90 (tr90 +> default)) (zPt (zP90 _) (zPt (hc91 (tr91 +> default)) (zPt (zP91 _) (zPt (hc92 (tr92 +> default)) (zPt (zP92 _) (zPt (hc93 (tr93 +> default)) (zPt (zP93 _) (zPt (hc94 (tr94 +> default)) (zPt (zP94 _) (zPt (hc95 (tr95 +> default)) (zPt (zP95 _) (zPt (hc96 (tr96 +> default)) (zPt (zP96 _) (zPt (hc97 (tr97 +> default)) (zPt (zP97 _) (zPt (hc98 (tr98 +> default)) (zPt (zP98 _) (zPt (hc99 (tr99 +> default)) (zPt (zP99 _) (zPt (hc100 (tr100 +> default)) (zPt (zP100 _) (zPt (hc101 (tr101 +> default)) (zPt (zP101 _) (zPt (hc102 (tr102 +> default)) (zPt (zP102 _) (zPt (hc103 (tr103 +> default)) (zPt (zP103 _) (zPt (hc104 (tr104 +> default)) (zPt (zP104 _) (zPt (hc105 (tr105 +> default)) (zPt (zP105 _) (zPt (hc106 (tr106 +> default)) (zPt (zP106 _) (zPt (hc107 (tr107 +> default)) (zPt (zP107 _) (zPt (hc108 (tr108 +> default)) (zPt (zP108 _) (zPt (hc109 (tr109 +> default)) (zPt (zP109 _) (zPt (hc110 (tr110 +> default)) (zPt (zP110 _) (zPt (hc111 (tr111 +> default)) (zPt (zP111 _) (zPt (hc112 (tr112 +> default)) (zPt (zP112 _) (zPt (hc113 (tr113 +> default)) (zPt (zP113 _) (zPt (hc114 (tr114 +> default)) (zPt (zP114 _) (zPt (hc115 (tr115 +> default)) (zPt (zP115 _) (zPt (hc116 (tr116 +> default)) (zPt (zP116 _) (zPt (hc117 (tr117 +> default)) (zPt (zP117 _) (zPt (hc118 (tr118 +> default)) (zPt (zP118 _) (zPt (hc119 (tr119 +> default)) (zPt (zP119 _) (zPt (hc120 (tr120 +> default)) (zPt (zP120 _) (zPt (hc121 (tr121 +> default)) (zPt (zP121 _) (zPt (hc122 (tr122 +> default)) (zPt (zP122 _) (zPt (hc123 (tr123 +> default)) (zPt (zP123 _) (zPt (hc124 (tr124 +> default)) (zPt (zP124 _) (zPt (hc125 (tr125 +> default)) (zPt (zP125 _) (zPt (hc126 (tr126 +> default)) (zP126 w'))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+  exact stepPlus_trans_vkq (zP0 w) (stepPlus_trans_vkq (hc1 (tr1 +> default)) (stepPlus_trans_vkq (zP1 _) (stepPlus_trans_vkq (hc2 (tr2 +> default)) (stepPlus_trans_vkq (zP2 _) (stepPlus_trans_vkq (hc3 (tr3 +> default)) (stepPlus_trans_vkq (zP3 _) (stepPlus_trans_vkq (hc4 (tr4 +> default)) (stepPlus_trans_vkq (zP4 _) (stepPlus_trans_vkq (hc5 (tr5 +> default)) (stepPlus_trans_vkq (zP5 _) (stepPlus_trans_vkq (hc6 (tr6 +> default)) (stepPlus_trans_vkq (zP6 _) (stepPlus_trans_vkq (hc7 (tr7 +> default)) (stepPlus_trans_vkq (zP7 _) (stepPlus_trans_vkq (hc8 (tr8 +> default)) (stepPlus_trans_vkq (zP8 _) (stepPlus_trans_vkq (hc9 (tr9 +> default)) (stepPlus_trans_vkq (zP9 _) (stepPlus_trans_vkq (hc10 (tr10 +> default)) (stepPlus_trans_vkq (zP10 _) (stepPlus_trans_vkq (hc11 (tr11 +> default)) (stepPlus_trans_vkq (zP11 _) (stepPlus_trans_vkq (hc12 (tr12 +> default)) (stepPlus_trans_vkq (zP12 _) (stepPlus_trans_vkq (hc13 (tr13 +> default)) (stepPlus_trans_vkq (zP13 _) (stepPlus_trans_vkq (hc14 (tr14 +> default)) (stepPlus_trans_vkq (zP14 _) (stepPlus_trans_vkq (hc15 (tr15 +> default)) (stepPlus_trans_vkq (zP15 _) (stepPlus_trans_vkq (hc16 (tr16 +> default)) (stepPlus_trans_vkq (zP16 _) (stepPlus_trans_vkq (hc17 (tr17 +> default)) (stepPlus_trans_vkq (zP17 _) (stepPlus_trans_vkq (hc18 (tr18 +> default)) (stepPlus_trans_vkq (zP18 _) (stepPlus_trans_vkq (hc19 (tr19 +> default)) (stepPlus_trans_vkq (zP19 _) (stepPlus_trans_vkq (hc20 (tr20 +> default)) (stepPlus_trans_vkq (zP20 _) (stepPlus_trans_vkq (hc21 (tr21 +> default)) (stepPlus_trans_vkq (zP21 _) (stepPlus_trans_vkq (hc22 (tr22 +> default)) (stepPlus_trans_vkq (zP22 _) (stepPlus_trans_vkq (hc23 (tr23 +> default)) (stepPlus_trans_vkq (zP23 _) (stepPlus_trans_vkq (hc24 (tr24 +> default)) (stepPlus_trans_vkq (zP24 _) (stepPlus_trans_vkq (hc25 (tr25 +> default)) (stepPlus_trans_vkq (zP25 _) (stepPlus_trans_vkq (hc26 (tr26 +> default)) (stepPlus_trans_vkq (zP26 _) (stepPlus_trans_vkq (hc27 (tr27 +> default)) (stepPlus_trans_vkq (zP27 _) (stepPlus_trans_vkq (hc28 (tr28 +> default)) (stepPlus_trans_vkq (zP28 _) (stepPlus_trans_vkq (hc29 (tr29 +> default)) (stepPlus_trans_vkq (zP29 _) (stepPlus_trans_vkq (hc30 (tr30 +> default)) (stepPlus_trans_vkq (zP30 _) (stepPlus_trans_vkq (hc31 (tr31 +> default)) (stepPlus_trans_vkq (zP31 _) (stepPlus_trans_vkq (hc32 (tr32 +> default)) (stepPlus_trans_vkq (zP32 _) (stepPlus_trans_vkq (hc33 (tr33 +> default)) (stepPlus_trans_vkq (zP33 _) (stepPlus_trans_vkq (hc34 (tr34 +> default)) (stepPlus_trans_vkq (zP34 _) (stepPlus_trans_vkq (hc35 (tr35 +> default)) (stepPlus_trans_vkq (zP35 _) (stepPlus_trans_vkq (hc36 (tr36 +> default)) (stepPlus_trans_vkq (zP36 _) (stepPlus_trans_vkq (hc37 (tr37 +> default)) (stepPlus_trans_vkq (zP37 _) (stepPlus_trans_vkq (hc38 (tr38 +> default)) (stepPlus_trans_vkq (zP38 _) (stepPlus_trans_vkq (hc39 (tr39 +> default)) (stepPlus_trans_vkq (zP39 _) (stepPlus_trans_vkq (hc40 (tr40 +> default)) (stepPlus_trans_vkq (zP40 _) (stepPlus_trans_vkq (hc41 (tr41 +> default)) (stepPlus_trans_vkq (zP41 _) (stepPlus_trans_vkq (hc42 (tr42 +> default)) (stepPlus_trans_vkq (zP42 _) (stepPlus_trans_vkq (hc43 (tr43 +> default)) (stepPlus_trans_vkq (zP43 _) (stepPlus_trans_vkq (hc44 (tr44 +> default)) (stepPlus_trans_vkq (zP44 _) (stepPlus_trans_vkq (hc45 (tr45 +> default)) (stepPlus_trans_vkq (zP45 _) (stepPlus_trans_vkq (hc46 (tr46 +> default)) (stepPlus_trans_vkq (zP46 _) (stepPlus_trans_vkq (hc47 (tr47 +> default)) (stepPlus_trans_vkq (zP47 _) (stepPlus_trans_vkq (hc48 (tr48 +> default)) (stepPlus_trans_vkq (zP48 _) (stepPlus_trans_vkq (hc49 (tr49 +> default)) (stepPlus_trans_vkq (zP49 _) (stepPlus_trans_vkq (hc50 (tr50 +> default)) (stepPlus_trans_vkq (zP50 _) (stepPlus_trans_vkq (hc51 (tr51 +> default)) (stepPlus_trans_vkq (zP51 _) (stepPlus_trans_vkq (hc52 (tr52 +> default)) (stepPlus_trans_vkq (zP52 _) (stepPlus_trans_vkq (hc53 (tr53 +> default)) (stepPlus_trans_vkq (zP53 _) (stepPlus_trans_vkq (hc54 (tr54 +> default)) (stepPlus_trans_vkq (zP54 _) (stepPlus_trans_vkq (hc55 (tr55 +> default)) (stepPlus_trans_vkq (zP55 _) (stepPlus_trans_vkq (hc56 (tr56 +> default)) (stepPlus_trans_vkq (zP56 _) (stepPlus_trans_vkq (hc57 (tr57 +> default)) (stepPlus_trans_vkq (zP57 _) (stepPlus_trans_vkq (hc58 (tr58 +> default)) (stepPlus_trans_vkq (zP58 _) (stepPlus_trans_vkq (hc59 (tr59 +> default)) (stepPlus_trans_vkq (zP59 _) (stepPlus_trans_vkq (hc60 (tr60 +> default)) (stepPlus_trans_vkq (zP60 _) (stepPlus_trans_vkq (hc61 (tr61 +> default)) (stepPlus_trans_vkq (zP61 _) (stepPlus_trans_vkq (hc62 (tr62 +> default)) (stepPlus_trans_vkq (zP62 _) (stepPlus_trans_vkq (hc63 (tr63 +> default)) (stepPlus_trans_vkq (zP63 _) (stepPlus_trans_vkq (hc64 (tr64 +> default)) (stepPlus_trans_vkq (zP64 _) (stepPlus_trans_vkq (hc65 (tr65 +> default)) (stepPlus_trans_vkq (zP65 _) (stepPlus_trans_vkq (hc66 (tr66 +> default)) (stepPlus_trans_vkq (zP66 _) (stepPlus_trans_vkq (hc67 (tr67 +> default)) (stepPlus_trans_vkq (zP67 _) (stepPlus_trans_vkq (hc68 (tr68 +> default)) (stepPlus_trans_vkq (zP68 _) (stepPlus_trans_vkq (hc69 (tr69 +> default)) (stepPlus_trans_vkq (zP69 _) (stepPlus_trans_vkq (hc70 (tr70 +> default)) (stepPlus_trans_vkq (zP70 _) (stepPlus_trans_vkq (hc71 (tr71 +> default)) (stepPlus_trans_vkq (zP71 _) (stepPlus_trans_vkq (hc72 (tr72 +> default)) (stepPlus_trans_vkq (zP72 _) (stepPlus_trans_vkq (hc73 (tr73 +> default)) (stepPlus_trans_vkq (zP73 _) (stepPlus_trans_vkq (hc74 (tr74 +> default)) (stepPlus_trans_vkq (zP74 _) (stepPlus_trans_vkq (hc75 (tr75 +> default)) (stepPlus_trans_vkq (zP75 _) (stepPlus_trans_vkq (hc76 (tr76 +> default)) (stepPlus_trans_vkq (zP76 _) (stepPlus_trans_vkq (hc77 (tr77 +> default)) (stepPlus_trans_vkq (zP77 _) (stepPlus_trans_vkq (hc78 (tr78 +> default)) (stepPlus_trans_vkq (zP78 _) (stepPlus_trans_vkq (hc79 (tr79 +> default)) (stepPlus_trans_vkq (zP79 _) (stepPlus_trans_vkq (hc80 (tr80 +> default)) (stepPlus_trans_vkq (zP80 _) (stepPlus_trans_vkq (hc81 (tr81 +> default)) (stepPlus_trans_vkq (zP81 _) (stepPlus_trans_vkq (hc82 (tr82 +> default)) (stepPlus_trans_vkq (zP82 _) (stepPlus_trans_vkq (hc83 (tr83 +> default)) (stepPlus_trans_vkq (zP83 _) (stepPlus_trans_vkq (hc84 (tr84 +> default)) (stepPlus_trans_vkq (zP84 _) (stepPlus_trans_vkq (hc85 (tr85 +> default)) (stepPlus_trans_vkq (zP85 _) (stepPlus_trans_vkq (hc86 (tr86 +> default)) (stepPlus_trans_vkq (zP86 _) (stepPlus_trans_vkq (hc87 (tr87 +> default)) (stepPlus_trans_vkq (zP87 _) (stepPlus_trans_vkq (hc88 (tr88 +> default)) (stepPlus_trans_vkq (zP88 _) (stepPlus_trans_vkq (hc89 (tr89 +> default)) (stepPlus_trans_vkq (zP89 _) (stepPlus_trans_vkq (hc90 (tr90 +> default)) (stepPlus_trans_vkq (zP90 _) (stepPlus_trans_vkq (hc91 (tr91 +> default)) (stepPlus_trans_vkq (zP91 _) (stepPlus_trans_vkq (hc92 (tr92 +> default)) (stepPlus_trans_vkq (zP92 _) (stepPlus_trans_vkq (hc93 (tr93 +> default)) (stepPlus_trans_vkq (zP93 _) (stepPlus_trans_vkq (hc94 (tr94 +> default)) (stepPlus_trans_vkq (zP94 _) (stepPlus_trans_vkq (hc95 (tr95 +> default)) (stepPlus_trans_vkq (zP95 _) (stepPlus_trans_vkq (hc96 (tr96 +> default)) (stepPlus_trans_vkq (zP96 _) (stepPlus_trans_vkq (hc97 (tr97 +> default)) (stepPlus_trans_vkq (zP97 _) (stepPlus_trans_vkq (hc98 (tr98 +> default)) (stepPlus_trans_vkq (zP98 _) (stepPlus_trans_vkq (hc99 (tr99 +> default)) (stepPlus_trans_vkq (zP99 _) (stepPlus_trans_vkq (hc100 (tr100 +> default)) (stepPlus_trans_vkq (zP100 _) (stepPlus_trans_vkq (hc101 (tr101 +> default)) (stepPlus_trans_vkq (zP101 _) (stepPlus_trans_vkq (hc102 (tr102 +> default)) (stepPlus_trans_vkq (zP102 _) (stepPlus_trans_vkq (hc103 (tr103 +> default)) (stepPlus_trans_vkq (zP103 _) (stepPlus_trans_vkq (hc104 (tr104 +> default)) (stepPlus_trans_vkq (zP104 _) (stepPlus_trans_vkq (hc105 (tr105 +> default)) (stepPlus_trans_vkq (zP105 _) (stepPlus_trans_vkq (hc106 (tr106 +> default)) (stepPlus_trans_vkq (zP106 _) (stepPlus_trans_vkq (hc107 (tr107 +> default)) (stepPlus_trans_vkq (zP107 _) (stepPlus_trans_vkq (hc108 (tr108 +> default)) (stepPlus_trans_vkq (zP108 _) (stepPlus_trans_vkq (hc109 (tr109 +> default)) (stepPlus_trans_vkq (zP109 _) (stepPlus_trans_vkq (hc110 (tr110 +> default)) (stepPlus_trans_vkq (zP110 _) (stepPlus_trans_vkq (hc111 (tr111 +> default)) (stepPlus_trans_vkq (zP111 _) (stepPlus_trans_vkq (hc112 (tr112 +> default)) (stepPlus_trans_vkq (zP112 _) (stepPlus_trans_vkq (hc113 (tr113 +> default)) (stepPlus_trans_vkq (zP113 _) (stepPlus_trans_vkq (hc114 (tr114 +> default)) (stepPlus_trans_vkq (zP114 _) (stepPlus_trans_vkq (hc115 (tr115 +> default)) (stepPlus_trans_vkq (zP115 _) (stepPlus_trans_vkq (hc116 (tr116 +> default)) (stepPlus_trans_vkq (zP116 _) (stepPlus_trans_vkq (hc117 (tr117 +> default)) (stepPlus_trans_vkq (zP117 _) (stepPlus_trans_vkq (hc118 (tr118 +> default)) (stepPlus_trans_vkq (zP118 _) (stepPlus_trans_vkq (hc119 (tr119 +> default)) (stepPlus_trans_vkq (zP119 _) (stepPlus_trans_vkq (hc120 (tr120 +> default)) (stepPlus_trans_vkq (zP120 _) (stepPlus_trans_vkq (hc121 (tr121 +> default)) (stepPlus_trans_vkq (zP121 _) (stepPlus_trans_vkq (hc122 (tr122 +> default)) (stepPlus_trans_vkq (zP122 _) (stepPlus_trans_vkq (hc123 (tr123 +> default)) (stepPlus_trans_vkq (zP123 _) (stepPlus_trans_vkq (hc124 (tr124 +> default)) (stepPlus_trans_vkq (zP124 _) (stepPlus_trans_vkq (hc125 (tr125 +> default)) (stepPlus_trans_vkq (zP125 _) (stepPlus_trans_vkq (hc126 (tr126 +> default)) (zP126 w'))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
-lemma Step_exec {u u' : List Word} (h : Step u u') :
-    (zCf (zTs u default)) [tm]⊢⁺ (zCf (zTs u' default)) := by
+theorem Step_exec {u u' : List Word} (h : Step u u') :
+    (zCf (evalWords u default)) [tm]⊢⁺ (zCf (evalWords u' default)) := by
   rcases h with ⟨n, b', v, da, H, g, hScan, hDg, rfl⟩
   have hSeg := Seg_of_Scan segSpec hScan
   dsimp at hSeg
-  have hSide0 := zSc hSeg (Side_ca_default segSpec hDg)
-  rw [zWt_zTs, zTs_append, zTs_rep_K, zWt'_zTs', <- zTs'_append] at hSide0
+  have hSide0 := sideP_of_segP hSeg (Side_ca_default segSpec hDg)
+  rw [wordsToBits_append_tape, evalWords_append, evalWords_replicate_K, wordsToBitsShifted_append_tape, <- evalWordsShifted_append] at hSide0
   have hTurn := Side_turnaround hSide0
-  rwa [zTs_V_shift] at hTurn
+  rwa [evalWords_V_shift] at hTurn
 
-lemma Rounds_exec {u v : List Word} (h : Rounds u v) :
-    (zCf (zTs u default)) [tm]⊢* (zCf (zTs v default)) := by
+theorem Rounds_exec {u v : List Word} (h : Rounds u v) :
+    (zCf (evalWords u default)) [tm]⊢* (zCf (evalWords v default)) := by
   induction h with
   | refl _ => exact ⟨0, rfl⟩
-  | next hS _ ih => exact zPs (z02 (Step_exec hS) ih)
+  | next hS _ ih => exact stepStar_of_stepPlus_vkq (stepPlus_stepStar_trans_vkq (Step_exec hS) ih)
 
 -- Section 3: Universal Parse_V_start, Scan_of_Parse, and Trace Evaluators
 
@@ -1011,53 +1007,53 @@ def zMidCCfg_4 : CCfg := ⟨0, 0, [0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,0,0,0
 def zHitCCfg : CCfg := ⟨0, 0, [0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,1], []⟩
 
 set_option maxRecDepth 200000 in
-lemma zCm_init_0 : zCm zInitCCfg 1000 = some zMidCCfg_1 := by decide
+theorem zCm_init_0 : zCm zInitCCfg 1000 = some zMidCCfg_1 := by decide
 set_option maxRecDepth 200000 in
-lemma zCm_init_1 : zCm zMidCCfg_1 1000 = some zMidCCfg_2 := by decide
+theorem zCm_init_1 : zCm zMidCCfg_1 1000 = some zMidCCfg_2 := by decide
 set_option maxRecDepth 200000 in
-lemma zCm_init_2 : zCm zMidCCfg_2 1000 = some zMidCCfg_3 := by decide
+theorem zCm_init_2 : zCm zMidCCfg_2 1000 = some zMidCCfg_3 := by decide
 set_option maxRecDepth 200000 in
-lemma zCm_init_3 : zCm zMidCCfg_3 1000 = some zMidCCfg_4 := by decide
+theorem zCm_init_3 : zCm zMidCCfg_3 1000 = some zMidCCfg_4 := by decide
 set_option maxRecDepth 200000 in
-lemma zCm_init_4 : zCm zMidCCfg_4 347 = some zHitCCfg := by decide
+theorem zCm_init_4 : zCm zMidCCfg_4 347 = some zHitCCfg := by decide
 
-lemma init_to_u0 : (init []) [tm]⊢* zCf (zTs u_0 default) := by
-  have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = z04 zInitCCfg := rfl
-  have h1 : z04 zHitCCfg = zCf (zTs u_0 default) := by
-    dsimp [z04, zHitCCfg, zCf, pref_cap, u_0, zTs, V_u, K_u, Q_u]
-    simp only [List.cons_append, List.nil_append, append_cons, append_nil, z00, zDh, zDt]
-  have hPlus := zPt (zTc (by decide : 0 < 1000) zCm_init_0) (zPt (zTc (by decide : 0 < 1000) zCm_init_1) (zPt (zTc (by decide : 0 < 1000) zCm_init_2) (zPt (zTc (by decide : 0 < 1000) zCm_init_3) (zTc (by decide : 0 < 347) zCm_init_4))))
+theorem init_to_u0 : (init []) [tm]⊢* zCf (evalWords u_0 default) := by
+  have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = evalCCfgVKQ zInitCCfg := rfl
+  have h1 : evalCCfgVKQ zHitCCfg = zCf (evalWords u_0 default) := by
+    dsimp [evalCCfgVKQ, zHitCCfg, zCf, pref_cap, u_0, evalWords, V_u, K_u, Q_u]
+    simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq, default_head_vkq, default_tail_vkq]
+  have hPlus := stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_0) (stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_1) (stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_2) (stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_3) (zTc (by decide : 0 < 347) zCm_init_4))))
   rw [<- h0, h1] at hPlus
-  exact zPs hPlus
+  exact stepStar_of_stepPlus_vkq hPlus
 
 set_option maxRecDepth 200000 in
-lemma step_0 : Step u_0 u_1 := checkStep_sound n_0 tags_0 u_0 da_0 u_1 (by decide)
+theorem step_0 : Step u_0 u_1 := checkStep_sound n_0 tags_0 u_0 da_0 u_1 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_1 : Step u_1 u_2 := checkStep_sound n_1 tags_1 u_1 da_1 u_2 (by decide)
+theorem step_1 : Step u_1 u_2 := checkStep_sound n_1 tags_1 u_1 da_1 u_2 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_2 : Step u_2 u_3 := checkStep_sound n_2 tags_2 u_2 da_2 u_3 (by decide)
+theorem step_2 : Step u_2 u_3 := checkStep_sound n_2 tags_2 u_2 da_2 u_3 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_3 : Step u_3 u_4 := checkStep_sound n_3 tags_3 u_3 da_3 u_4 (by decide)
+theorem step_3 : Step u_3 u_4 := checkStep_sound n_3 tags_3 u_3 da_3 u_4 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_4 : Step u_4 u_5 := checkStep_sound n_4 tags_4 u_4 da_4 u_5 (by decide)
+theorem step_4 : Step u_4 u_5 := checkStep_sound n_4 tags_4 u_4 da_4 u_5 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_5 : Step u_5 u_6 := checkStep_sound n_5 tags_5 u_5 da_5 u_6 (by decide)
+theorem step_5 : Step u_5 u_6 := checkStep_sound n_5 tags_5 u_5 da_5 u_6 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_6 : Step u_6 u_7 := checkStep_sound n_6 tags_6 u_6 da_6 u_7 (by decide)
+theorem step_6 : Step u_6 u_7 := checkStep_sound n_6 tags_6 u_6 da_6 u_7 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_7 : Step u_7 u_8 := checkStep_sound n_7 tags_7 u_7 da_7 u_8 (by decide)
+theorem step_7 : Step u_7 u_8 := checkStep_sound n_7 tags_7 u_7 da_7 u_8 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_8 : Step u_8 u_9 := checkStep_sound n_8 tags_8 u_8 da_8 u_9 (by decide)
+theorem step_8 : Step u_8 u_9 := checkStep_sound n_8 tags_8 u_8 da_8 u_9 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_9 : Step u_9 u_10 := checkStep_sound n_9 tags_9 u_9 da_9 u_10 (by decide)
+theorem step_9 : Step u_9 u_10 := checkStep_sound n_9 tags_9 u_9 da_9 u_10 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_10 : Step u_10 u_11 := checkStep_sound n_10 tags_10 u_10 da_10 u_11 (by decide)
+theorem step_10 : Step u_10 u_11 := checkStep_sound n_10 tags_10 u_10 da_10 u_11 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_11 : Step u_11 u_12 := checkStep_sound n_11 tags_11 u_11 da_11 u_12 (by decide)
+theorem step_11 : Step u_11 u_12 := checkStep_sound n_11 tags_11 u_11 da_11 u_12 (by decide)
 set_option maxRecDepth 200000 in
-lemma step_12 : Step u_12 u_13 := checkStep_sound n_12 tags_12 u_12 da_12 u_13 (by decide)
+theorem step_12 : Step u_12 u_13 := checkStep_sound n_12 tags_12 u_12 da_12 u_13 (by decide)
 
-lemma rounds_0_13 : Rounds u_0 u_13 :=
+theorem rounds_0_13 : Rounds u_0 u_13 :=
   Rounds.next step_0 (Rounds.next step_1 (Rounds.next step_2 (Rounds.next step_3 (Rounds.next step_4 (Rounds.next step_5 (Rounds.next step_6 (Rounds.next step_7 (Rounds.next step_8 (Rounds.next step_9 (Rounds.next step_10 (Rounds.next step_11 (Rounds.next step_12 (Rounds.refl u_13)))))))))))))
 
 abbrev Good (u : List Word) : Prop :=
@@ -1066,13 +1062,13 @@ abbrev Good (u : List Word) : Prop :=
     (∃ p_tail, p_w = V :: p_tail) ∧
     m = 1 + ds_core.length ∧
     11 <= m ∧
-    zDg A_core (m - 1) ds_core ∧
+    DigitVal A_core (m - 1) ds_core ∧
     A_core * 512 <= 35 * 2 ^ (m - 1) ∧
-    z13 p_w * ((2 ^ m : Nat) : Rat) = 512 ∧
-    zW p_w <= 29 / 4
+    wordScale p_w * ((2 ^ m : Nat) : Rat) = 512 ∧
+    wordPot p_w <= 29 / 4
 
 set_option maxRecDepth 200000 in
-lemma good_u13 : Good u_13 := by
+theorem good_u13 : Good u_13 := by
   refine ⟨p_init, ds_core_init, A_core_init, 101, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · decide
   · exact ⟨p_init.tail, rfl⟩
@@ -1080,35 +1076,35 @@ lemma good_u13 : Good u_13 := by
   · decide
   · exact checkDg_sound A_core_init ds_core_init (by decide)
   · decide
-  · have h := checkZ13Pow_sound p_init 101 9 (by decide)
+  · have h := checkScalePow_sound p_init 101 9 (by decide)
     norm_num at h
     exact h
-  · have h := checkZWLe_sound p_init 29 4 (by decide)
+  · have h := checkWordPotLe_sound p_init 29 4 (by decide)
     norm_num at h
     linarith
 
 set_option maxRecDepth 200000 in
-lemma Scan_head : Scan 0 126 head_w a_head b_head v_head 0 := by
+theorem Scan_head : Scan 0 126 head_w a_head b_head v_head 0 := by
   have h := checkAffineScan_sound tags_head 0 0 0 126 head_w 0 a_head 0 b_head v_head 0 0 0 (by decide)
   simpa using h
 
-lemma v_head_eq : V :: v_head = head_w ++ [V] := rfl
+theorem v_head_eq : V :: v_head = head_w ++ [V] := rfl
 
-lemma Scan_s (ap bp : Nat) (hbp : 3 <= bp) :
+theorem Scan_s (ap bp : Nat) (hbp : 3 <= bp) :
     Scan ap bp s_full (2 * ap + 2) (1024 * (bp - 3) + 908) v_s 3 := by
   have h := checkAffineScan_sound tags_s 1 0 1 3 s_full 2 2 1024 908 v_s 3 ap (bp - 3) (by decide)
   have h_bp : 1 * (bp - 3) + 3 = bp := by omega
   have h_ap : 1 * ap + 0 = ap := by omega
   rwa [h_ap, h_bp] at h
 
-lemma Scan_top (b_top : Nat) (hb : 2 <= b_top) :
+theorem Scan_top (b_top : Nat) (hb : 2 <= b_top) :
     Scan (2 ^ 21) b_top top_full 0 (512 * (b_top - 2) + 93) s_base 12 := by
   have h := checkAffineScan_sound tags_top 0 (2 ^ 21) 1 2 top_full 0 0 512 93 s_base 12 0 (b_top - 2) (by decide)
   have h_in : 1 * (b_top - 2) + 2 = b_top := by omega
   dsimp at h
   rwa [h_in] at h
 
-lemma Parse_s_split {ap a_end g_all : Nat} {rest : List Word}
+theorem Parse_s_split {ap a_end g_all : Nat} {rest : List Word}
     (h : Parse ap (s_full ++ K :: rest) a_end g_all) :
     ∃ g_mid, Parse (2 * (ap + 1)) (K :: rest) a_end g_mid := by
   change Parse ap ([V,V,V,V,V,Q,V,V,Q,V,V,Q,V,V,V,Q,K,Q,Q,Q,K,Q,K,K] ++ rest) a_end g_all at h
@@ -1185,20 +1181,20 @@ lemma Parse_s_split {ap a_end g_all : Nat} {rest : List Word}
   | P _ hw1 _ _ => exact False.elim (hw1 rfl)
 
 -- Section 6: Main Invariant Closure and Goal Proof
-lemma zDg_top : zDg A_top 27 top_base :=
+theorem zDg_top : DigitVal A_top 27 top_base :=
   checkDg_sound A_top top_base (by decide)
 
-lemma zDg_bot : zDg 93 9 [Q,K,Q,Q,Q,K,Q,K,K] :=
+theorem zDg_bot : DigitVal 93 9 [Q,K,Q,Q,Q,K,Q,K,K] :=
   checkDg_sound 93 [Q,K,Q,Q,Q,K,Q,K,K] (by decide)
 
-lemma zDg_mid {A_core m : Nat} {ds_core : List Word}
-    (hm : 11 <= m) (hD : zDg A_core (m - 1) ds_core)
+theorem digitVal_mid {A_core m : Nat} {ds_core : List Word}
+    (hm : 11 <= m) (hD : DigitVal A_core (m - 1) ds_core)
     (hA_core : A_core * 512 <= 35 * 2 ^ (m - 1)) :
     ∃ A_mid,
-      zDg A_mid m ([K] ++ ds_core) ∧
+      DigitVal A_mid m ([K] ++ ds_core) ∧
       A_mid <= 0 + 35 * 2 ^ (m - 9) := by
-  have h_bs : zDg 0 1 [K] := checkDg_sound 0 [K] (by decide)
-  have h1 := zDg_append h_bs hD
+  have h_bs : DigitVal 0 1 [K] := checkDg_sound 0 [K] (by decide)
+  have h1 := digitVal_append h_bs hD
   have hlen1 : 1 + (m - 1) = m := by omega
   rw [hlen1] at h1
   have h_pow1 : 2 ^ (m - 1) = 256 * 2 ^ (m - 9) := by
@@ -1206,23 +1202,23 @@ lemma zDg_mid {A_core m : Nat} {ds_core : List Word}
     rw [heq, Nat.pow_add]
   exact ⟨0 + A_core * 2, h1, by omega⟩
 
-lemma force_a_top {p_w ds_mid : List Word} {ap gp m A_mid a_top g_mid : Nat}
+theorem force_a_top {p_w ds_mid : List Word} {ap gp m A_mid a_top g_mid : Nat}
     (hm : 11 <= m)
     (hP_p : Parse a_head p_w ap gp)
-    (hz13 : z13 p_w * ((2 ^ m : Nat) : Rat) = 512)
-    (hzW : zW p_w <= 29 / 4)
-    (hD_mid : zDg A_mid m ds_mid)
+    (hz13 : wordScale p_w * ((2 ^ m : Nat) : Rat) = 512)
+    (hzW : wordPot p_w <= 29 / 4)
+    (hD_mid : DigitVal A_mid m ds_mid)
     (hA_hi : A_mid <= 0 + 35 * 2 ^ (m - 9))
     (hP_mid : Parse (2 * (ap + 1)) ds_mid a_top g_mid) :
     a_top = 2 ^ 21 := by
   rcases Parse_la hP_p with ⟨hla_lo, hla_hi⟩
-  have hz12 := z12_nonneg p_w
-  have hz10_le := z10_z12_le_zW p_w
-  have h_diff_hi : ((ap : Rat) + 1) * z13 p_w - ((a_head : Rat) + 1) < 15 := by linarith
-  have h_powm_pos : (0 : Rat) < ((2 ^ m : Nat) : Rat) := by exact_mod_cast (zPp m)
-  have h_mul_lo : ((a_head : Rat) + 1) * ((2 ^ m : Nat) : Rat) <= ((ap : Rat) + 1) * (z13 p_w * ((2 ^ m : Nat) : Rat)) := by
+  have hz12 := wordValQ_nonneg p_w
+  have hz10_le := two_wordVal_add_wordValQ_le p_w
+  have h_diff_hi : ((ap : Rat) + 1) * wordScale p_w - ((a_head : Rat) + 1) < 15 := by linarith
+  have h_powm_pos : (0 : Rat) < ((2 ^ m : Nat) : Rat) := by exact_mod_cast (pow_two_pos m)
+  have h_mul_lo : ((a_head : Rat) + 1) * ((2 ^ m : Nat) : Rat) <= ((ap : Rat) + 1) * (wordScale p_w * ((2 ^ m : Nat) : Rat)) := by
     nlinarith
-  have h_mul_hi : ((ap : Rat) + 1) * (z13 p_w * ((2 ^ m : Nat) : Rat)) < (((a_head : Rat) + 1) + 15) * ((2 ^ m : Nat) : Rat) := by
+  have h_mul_hi : ((ap : Rat) + 1) * (wordScale p_w * ((2 ^ m : Nat) : Rat)) < (((a_head : Rat) + 1) + 15) * ((2 ^ m : Nat) : Rat) := by
     nlinarith
   rw [hz13] at h_mul_lo h_mul_hi
   have ha_val : a_head + 1 = 2 ^ 29 := by decide
@@ -1259,43 +1255,43 @@ lemma force_a_top {p_w ds_mid : List Word} {ap gp m A_mid a_top g_mid : Nat}
     have h_le_m : 2 <= m - 9 := by omega
     have hle := Nat.pow_le_pow_right (by decide : 1 <= 2) h_le_m
     simpa using hle
-  rcases Parse_zDg_a hP_mid hD_mid with ⟨h_atop_lo, h_atop_hi⟩
+  rcases parse_digitVal_a hP_mid hD_mid with ⟨h_atop_lo, h_atop_hi⟩
   have h_sum_lo : 2 ^ 21 * 2 ^ m <= 2 * (ap + 1) + A_mid := by omega
   have h_sum_hi : 2 * (ap + 1) + A_mid < (2 ^ 21 + 1) * 2 ^ m := by
     have : (2 ^ 21 + 1) * 2 ^ m = 2 ^ 21 * 2 ^ m + 512 * 2 ^ (m - 9) := by
       rw [Nat.add_mul, Nat.one_mul, h_pow_m]
     omega
-  have h_pos_m : 0 < 2 ^ m := zPp m
+  have h_pos_m : 0 < 2 ^ m := pow_two_pos m
   have h_lt1 : a_top < 2 ^ 21 + 1 := Nat.lt_of_mul_lt_mul_right (lt_of_le_of_lt h_atop_lo h_sum_hi)
   have h_lt2 : 2 ^ 21 < a_top + 1 := Nat.lt_of_mul_lt_mul_right (lt_of_le_of_lt h_sum_lo h_atop_hi)
   omega
 
-lemma bound_b_mid0 {p_w v_p ds_mid : List Word}
+theorem bound_b_mid0 {p_w v_p ds_mid : List Word}
     {ap bp gp m A_mid b_mid0 : Nat}
     (hm : 11 <= m)
     (hS_p : Scan a_head b_head p_w ap bp v_p gp)
     (hbp : 3 <= bp)
-    (hz13 : z13 p_w * ((2 ^ m : Nat) : Rat) = 512)
-    (hzW : zW p_w <= 29 / 4)
+    (hz13 : wordScale p_w * ((2 ^ m : Nat) : Rat) = 512)
+    (hzW : wordPot p_w <= 29 / 4)
     (hb_mid0 : b_mid0 = 1024 * (bp - 3) + 908)
-    (hD_mid : zDg A_mid m ds_mid) :
-    2 + 4 * z10 ds_mid < (b_mid0 : Rat) := by
+    (hD_mid : DigitVal A_mid m ds_mid) :
+    2 + 4 * wordVal ds_mid < (b_mid0 : Rat) := by
   have h_delta_p := (Scan_delta hS_p).2
-  have h_4wv_p := z10_z12_le_four_zW_V v_p
-  have h_cw_p := Scan_zW_contract7 hS_p
+  have h_4wv_p := two_wordVal_add_wordValQ_le_four_wordPotV v_p
+  have h_cw_p := scan_wordPot_contract7 hS_p
   have hc_bh := (cPar77_bounds b_head).2
-  have h_wv_p_lt : zW_V v_p < 7 := by linarith
-  have h_z13_p := z13_Scan hS_p
-  have h_pow_gp_ge1 : (1 : Rat) <= ((2 ^ (3 * gp) : Nat) : Rat) := by exact_mod_cast (zPp (3 * gp))
-  have h_z13_vp_pos := z13_pos v_p
-  have h_z13_vp_le : z13 v_p <= z13 p_w := by nlinarith
+  have h_wv_p_lt : wordPotV v_p < 7 := by linarith
+  have h_z13_p := scan_wordScale_eq hS_p
+  have h_pow_gp_ge1 : (1 : Rat) <= ((2 ^ (3 * gp) : Nat) : Rat) := by exact_mod_cast (pow_two_pos (3 * gp))
+  have h_z13_vp_pos := wordScale_pos v_p
+  have h_z13_vp_le : wordScale v_p <= wordScale p_w := by nlinarith
   have h_bh_big : ((2 ^ 30 : Nat) : Rat) + 30 < (b_head : Rat) := by norm_num [b_head]
   have h_bp2_pos : (0 : Rat) <= (bp : Rat) - 2 := by
     have : (2 : Rat) <= (bp : Rat) := by exact_mod_cast (by omega : 2 <= bp)
     linarith
-  have h_prod_p : ((2 ^ 30 : Nat) : Rat) < ((bp : Rat) - 2) * z13 p_w := by nlinarith
-  have h_powm_pos : (0 : Rat) < ((2 ^ m : Nat) : Rat) := by exact_mod_cast (zPp m)
-  have h_mul_m : ((2 ^ 30 : Nat) : Rat) * ((2 ^ m : Nat) : Rat) < ((bp : Rat) - 2) * (z13 p_w * ((2 ^ m : Nat) : Rat)) := by
+  have h_prod_p : ((2 ^ 30 : Nat) : Rat) < ((bp : Rat) - 2) * wordScale p_w := by nlinarith
+  have h_powm_pos : (0 : Rat) < ((2 ^ m : Nat) : Rat) := by exact_mod_cast (pow_two_pos m)
+  have h_mul_m : ((2 ^ 30 : Nat) : Rat) * ((2 ^ m : Nat) : Rat) < ((bp : Rat) - 2) * (wordScale p_w * ((2 ^ m : Nat) : Rat)) := by
     nlinarith
   rw [hz13] at h_mul_m
   have h_pow_ebh : ((2 ^ 30 : Nat) : Rat) = ((2 ^ 21 : Nat) : Rat) * 512 := by norm_num
@@ -1303,101 +1299,101 @@ lemma bound_b_mid0 {p_w v_p ds_mid : List Word}
   have h_bp2_gt : ((2 ^ 21 : Nat) : Rat) * ((2 ^ m : Nat) : Rat) < (bp : Rat) - 2 := by linarith
   have h_bmid0_r : (b_mid0 : Rat) = 1024 * ((bp : Rat) - 3) + 908 := by
     rw [hb_mid0, Nat.cast_add, Nat.cast_mul, Nat.cast_sub hbp]; push_cast; ring
-  have h_z10_mid := (zDg_z13_z10 hD_mid).2
+  have h_z10_mid := (digitVal_scale_and_val hD_mid).2
   have h_pow_val : ((2 ^ 21 : Nat) : Rat) = 2097152 := by norm_num
-  have h_powm_ge1 : (1 : Rat) <= ((2 ^ m : Nat) : Rat) := by exact_mod_cast (zPp m)
+  have h_powm_ge1 : (1 : Rat) <= ((2 ^ m : Nat) : Rat) := by exact_mod_cast (pow_two_pos m)
   rw [h_z10_mid, h_bmid0_r]
   rw [h_pow_val] at h_bp2_gt
   linarith
 
-lemma bound_zW_p' {p_w v_p ds_mid v_mid : List Word}
+theorem bound_zW_p' {p_w v_p ds_mid v_mid : List Word}
     {ap bp gp m A_mid b_mid0 b_top g_mid : Nat}
     (hm : 11 <= m)
     (hS_p : Scan a_head b_head p_w ap bp v_p gp)
-    (hz13 : z13 p_w * ((2 ^ m : Nat) : Rat) = 512)
-    (hzW : zW p_w <= 29 / 4)
-    (hD_mid : zDg A_mid m ds_mid)
+    (hz13 : wordScale p_w * ((2 ^ m : Nat) : Rat) = 512)
+    (hzW : wordPot p_w <= 29 / 4)
+    (hD_mid : DigitVal A_mid m ds_mid)
     (hS_mid : Scan (2 * (ap + 1)) b_mid0 ds_mid (2 ^ 21) b_top v_mid g_mid) :
-    zW_V (v_p ++ v_s ++ v_mid) <= 29 / 4 := by
-  have h_cw_p := Scan_zW_contract7 hS_p
+    wordPotV (v_p ++ v_s ++ v_mid) <= 29 / 4 := by
+  have h_cw_p := scan_wordPot_contract7 hS_p
   have hc_bh : cPar7 b_head = 2 / 7 := by
     unfold cPar7
     have hmod : b_head % 2 = 0 := by decide
     rw [hmod]; rfl
   rw [hc_bh] at h_cw_p
-  have hA : zW_V v_p <= 13 / 2 := by linarith
-  have h_z13_p := z13_Scan hS_p
-  have h_z13_vs : z13 v_s = 1 / 1024 := by
-    have h := checkZ13Pow_sound v_s 10 0 (by decide)
+  have hA : wordPotV v_p <= 13 / 2 := by linarith
+  have h_z13_p := scan_wordScale_eq hS_p
+  have h_z13_vs : wordScale v_s = 1 / 1024 := by
+    have h := checkScalePow_sound v_s 10 0 (by decide)
     norm_num at h
     linarith
-  have h_wv_vs : zW_V v_s <= 9 / 8 := by
-    have h := checkZWVLe_sound v_s 9 8 (by decide)
+  have h_wv_vs : wordPotV v_s <= 9 / 8 := by
+    have h := checkWordPotVLe_sound v_s 9 8 (by decide)
     norm_num at h
     linarith
   have h_powm_ge : (2 ^ 11 : Nat) <= 2 ^ m := Nat.pow_le_pow_right (by decide) hm
   have h_powm_r : ((2 ^ 11 : Nat) : Rat) <= ((2 ^ m : Nat) : Rat) := by exact_mod_cast h_powm_ge
-  have h_z13_p_le : z13 p_w <= 1 / 4 := by
-    have h_pos_p := z13_pos p_w
+  have h_z13_p_le : wordScale p_w <= 1 / 4 := by
+    have h_pos_p := wordScale_pos p_w
     have h_mul := mul_le_mul_of_nonneg_left h_powm_r (le_of_lt h_pos_p)
     rw [hz13] at h_mul
     norm_num at h_mul
     linarith
-  have h_pow_gp_ge1 : (1 : Rat) <= ((2 ^ (3 * gp) : Nat) : Rat) := by exact_mod_cast (zPp (3 * gp))
-  have h_z13_vp_pos := z13_pos v_p
-  have h_z13_vp_le : z13 v_p <= 1 / 4 := by nlinarith
-  have hB : z13 v_p * zW_V v_s <= 9 / 32 := by
-    have h_wv_nn := zW_V_nonneg v_s
+  have h_pow_gp_ge1 : (1 : Rat) <= ((2 ^ (3 * gp) : Nat) : Rat) := by exact_mod_cast (pow_two_pos (3 * gp))
+  have h_z13_vp_pos := wordScale_pos v_p
+  have h_z13_vp_le : wordScale v_p <= 1 / 4 := by nlinarith
+  have hB : wordScale v_p * wordPotV v_s <= 9 / 32 := by
+    have h_wv_nn := wordPotV_nonneg v_s
     nlinarith
-  have h_dc_eq := zDg_Scan_dCount hS_mid hD_mid
+  have h_dc_eq := digitVal_scan_dCount hS_mid hD_mid
   have h_wv_mid_dc := dCount_bound_WV v_mid
-  have h_vp_m : z13 v_p * ((2 ^ m : Nat) : Rat) <= 512 := by
-    have h_eq : z13 v_p * ((2 ^ m : Nat) : Rat) * ((2 ^ (3 * gp) : Nat) : Rat) = 512 := by
-      calc z13 v_p * ((2 ^ m : Nat) : Rat) * ((2 ^ (3 * gp) : Nat) : Rat)
-        _ = (z13 v_p * ((2 ^ (3 * gp) : Nat) : Rat)) * ((2 ^ m : Nat) : Rat) := by ring
-        _ = z13 p_w * ((2 ^ m : Nat) : Rat) := by rw [h_z13_p]
+  have h_vp_m : wordScale v_p * ((2 ^ m : Nat) : Rat) <= 512 := by
+    have h_eq : wordScale v_p * ((2 ^ m : Nat) : Rat) * ((2 ^ (3 * gp) : Nat) : Rat) = 512 := by
+      calc wordScale v_p * ((2 ^ m : Nat) : Rat) * ((2 ^ (3 * gp) : Nat) : Rat)
+        _ = (wordScale v_p * ((2 ^ (3 * gp) : Nat) : Rat)) * ((2 ^ m : Nat) : Rat) := by ring
+        _ = wordScale p_w * ((2 ^ m : Nat) : Rat) := by rw [h_z13_p]
         _ = 512 := hz13
-    have h_pos_m : (0 : Rat) < ((2 ^ m : Nat) : Rat) := by exact_mod_cast (zPp m)
-    have h_nn : 0 <= z13 v_p * ((2 ^ m : Nat) : Rat) := mul_nonneg (le_of_lt h_z13_vp_pos) (le_of_lt h_pos_m)
+    have h_pos_m : (0 : Rat) < ((2 ^ m : Nat) : Rat) := by exact_mod_cast (pow_two_pos m)
+    have h_nn : 0 <= wordScale v_p * ((2 ^ m : Nat) : Rat) := mul_nonneg (le_of_lt h_z13_vp_pos) (le_of_lt h_pos_m)
     nlinarith
-  have h_prod_ps : z13 v_p * z13 v_s * ((2 ^ m : Nat) : Rat) <= 1 / 2 := by
+  have h_prod_ps : wordScale v_p * wordScale v_s * ((2 ^ m : Nat) : Rat) <= 1 / 2 := by
     rw [h_z13_vs]
     linarith
-  have hC : z13 (v_p ++ v_s) * zW_V v_mid <= 7 / 16 := by
-    rw [z13_append]
-    have h_wv_mid_le : zW_V v_mid <= (7 / 8) * ((2 ^ m : Nat) : Rat) := by
+  have hC : wordScale (v_p ++ v_s) * wordPotV v_mid <= 7 / 16 := by
+    rw [wordScale_append]
+    have h_wv_mid_le : wordPotV v_mid <= (7 / 8) * ((2 ^ m : Nat) : Rat) := by
       have h_dc_le_m : 2 ^ (dCount v_mid) <= 2 ^ m := Nat.pow_le_pow_right (by decide) (by omega)
       have h_dc_r : ((2 ^ (dCount v_mid) : Nat) : Rat) <= ((2 ^ m : Nat) : Rat) := by exact_mod_cast h_dc_le_m
       have hm_256 : (256 : Rat) <= ((2 ^ m : Nat) : Rat) := by
         have : (2048 : Rat) <= ((2 ^ 11 : Nat) : Rat) := by norm_num
         linarith
       linarith
-    have h_wv_mid_nn := zW_V_nonneg v_mid
-    have h_z13_ps_pos : 0 < z13 v_p * z13 v_s := mul_pos h_z13_vp_pos (z13_pos v_s)
+    have h_wv_mid_nn := wordPotV_nonneg v_mid
+    have h_z13_ps_pos : 0 < wordScale v_p * wordScale v_s := mul_pos h_z13_vp_pos (wordScale_pos v_s)
     nlinarith
-  have h_app1 := zW_V_append v_p v_s
-  have h_app2 := zW_V_append (v_p ++ v_s) v_mid
+  have h_app1 := wordPotV_append_le v_p v_s
+  have h_app2 := wordPotV_append_le (v_p ++ v_s) v_mid
   linarith
 
-lemma bound_b_end_zDg {w_all v_w : List Word} {b_top g_w k : Nat}
+theorem bound_b_end_digitVal {w_all v_w : List Word} {b_top g_w k : Nat}
     (hk : 1 <= k)
     (hb_top : 2 <= b_top)
     (hS_w : Scan a_head b_head w_all (2 ^ 21) b_top v_w g_w)
-    (hz13_vw : z13 v_w * ((2 ^ k : Nat) : Rat) = 1)
-    (hWV_vw : zW_V v_w <= 29 / 4) :
+    (hz13_vw : wordScale v_w * ((2 ^ k : Nat) : Rat) = 1)
+    (hWV_vw : wordPotV v_w <= 29 / 4) :
     ∃ A_core' ds_core',
-      zDg A_core' (k + 9) ds_core' ∧
+      DigitVal A_core' (k + 9) ds_core' ∧
       ds_core'.length = k + 9 ∧
       A_core' * 512 <= 35 * 2 ^ (k + 9) ∧
-      zDg (512 * (b_top - 2) + 93) (k + 45)
+      DigitVal (512 * (b_top - 2) + 93) (k + 45)
           ([Q,K,Q,Q,Q,K,Q,K,K] ++ ds_core' ++ top_base) := by
   rcases Scan_delta hS_w with ⟨hd_lo, hd_hi⟩
-  have h_4wv := z10_z12_le_four_zW_V v_w
-  have hd_hi' : ((b_head : Rat) - 2) - ((b_top : Rat) - 2) * z13 v_w <= 29 := by linarith
-  have h_powk_pos : (0 : Rat) < ((2 ^ k : Nat) : Rat) := by exact_mod_cast (zPp k)
-  have h_mul_lo : (((b_head : Rat) - 2) - 29) * ((2 ^ k : Nat) : Rat) <= ((b_top : Rat) - 2) * (z13 v_w * ((2 ^ k : Nat) : Rat)) := by
+  have h_4wv := two_wordVal_add_wordValQ_le_four_wordPotV v_w
+  have hd_hi' : ((b_head : Rat) - 2) - ((b_top : Rat) - 2) * wordScale v_w <= 29 := by linarith
+  have h_powk_pos : (0 : Rat) < ((2 ^ k : Nat) : Rat) := by exact_mod_cast (pow_two_pos k)
+  have h_mul_lo : (((b_head : Rat) - 2) - 29) * ((2 ^ k : Nat) : Rat) <= ((b_top : Rat) - 2) * (wordScale v_w * ((2 ^ k : Nat) : Rat)) := by
     nlinarith
-  have h_mul_hi : ((b_top : Rat) - 2) * (z13 v_w * ((2 ^ k : Nat) : Rat)) <= ((b_head : Rat) - 1) * ((2 ^ k : Nat) : Rat) := by
+  have h_mul_hi : ((b_top : Rat) - 2) * (wordScale v_w * ((2 ^ k : Nat) : Rat)) <= ((b_head : Rat) - 1) * ((2 ^ k : Nat) : Rat) := by
     nlinarith
   rw [hz13_vw, mul_one] at h_mul_lo h_mul_hi
   have hbh_r : (b_head : Rat) - 2 = (A_top : Rat) * 512 + 34 := by norm_num [b_head, A_top]
@@ -1412,7 +1408,7 @@ lemma bound_b_end_zDg {w_all v_w : List Word} {b_top g_w k : Nat}
   have h_pow_ksh : ((2 ^ (k + 18) : Nat) : Rat) = 262144 * ((2 ^ k : Nat) : Rat) := by
     have h_sh : ((2 ^ 18 : Nat) : Rat) = 262144 := by norm_num
     rw [Nat.pow_add, Nat.cast_mul, h_sh]; ring
-  have h_powk_ge1 : (1 : Rat) <= ((2 ^ k : Nat) : Rat) := by exact_mod_cast (zPp k)
+  have h_powk_ge1 : (1 : Rat) <= ((2 ^ k : Nat) : Rat) := by exact_mod_cast (pow_two_pos k)
   have h_bend_lo_r : (A_top : Rat) * ((2 ^ (k + 18) : Nat) : Rat) < (b_end : Rat) := by
     rw [hb_end_r, h_pow_ksh]; linarith
   have h_bend_mid_r : (b_end : Rat) <= (A_top : Rat) * ((2 ^ (k + 18) : Nat) : Rat) + 512 * 35 * ((2 ^ k : Nat) : Rat) + 93 := by
@@ -1423,17 +1419,17 @@ lemma bound_b_end_zDg {w_all v_w : List Word} {b_top g_w k : Nat}
   have h_bend_mid : b_end <= A_top * 2 ^ (k + 18) + 512 * 35 * 2 ^ k + 93 := by exact_mod_cast h_bend_mid_r
   have h_bend_hi : b_end < (A_top + 1) * 2 ^ (k + 18) := by exact_mod_cast h_bend_hi_r
   let A_core' := (b_end / 512) % (2 ^ (k + 9))
-  have h_Acore'_lt : A_core' < 2 ^ (k + 9) := Nat.mod_lt _ (zPp (k + 9))
-  rcases zDg_exists (k + 9) A_core' h_Acore'_lt with ⟨ds_core', hD_core'⟩
-  have h_len_core' := zDg_len hD_core'
-  have h_bot_mid := zDg_append zDg_bot hD_core'
-  have h_all := zDg_append h_bot_mid zDg_top
+  have h_Acore'_lt : A_core' < 2 ^ (k + 9) := Nat.mod_lt _ (pow_two_pos (k + 9))
+  rcases exists_digitVal_of_lt_pow (k + 9) A_core' h_Acore'_lt with ⟨ds_core', hD_core'⟩
+  have h_len_core' := length_of_digitVal hD_core'
+  have h_bot_mid := digitVal_append zDg_bot hD_core'
+  have h_all := digitVal_append h_bot_mid zDg_top
   have h_len_all : (9 + (k + 9)) + 27 = k + 45 := by omega
   have h_pow_ksh_eq : 2 ^ (k + 18) = 512 * 2 ^ (k + 9) := by
     have : k + 18 = 9 + (k + 9) := by omega
     rw [this, Nat.pow_add]
   have h_div_top : b_end / (2 ^ (k + 18)) = A_top := by
-    have h_pos_ksh : 0 < 2 ^ (k + 18) := zPp (k + 18)
+    have h_pos_ksh : 0 < 2 ^ (k + 18) := pow_two_pos (k + 18)
     have h1 := (Nat.le_div_iff_mul_le h_pos_ksh).mpr (le_of_lt h_bend_lo)
     have h2 := (Nat.div_lt_iff_lt_mul h_pos_ksh).mpr h_bend_hi
     omega
@@ -1465,22 +1461,22 @@ lemma bound_b_end_zDg {w_all v_w : List Word} {b_top g_w k : Nat}
   rw [h_len_all, h_val_all] at h_all
   exact ⟨A_core', ds_core', hD_core', h_len_core', h_Acore'_dg, by simpa [List.append_assoc] using h_all⟩
 
-lemma Good_step {u : List Word} (hG : Good u) :
+theorem Good_step {u : List Word} (hG : Good u) :
     ∃ u', Step u u' ∧ Good u' := by
   rcases hG with ⟨p_w, ds_core, A_core, m, rfl, ⟨p_tail, hp_start⟩, hm_def, hm, hD_core, hA_core, hz13, hzW⟩
   have hP_p_ex : ∃ ap gp, Parse a_head p_w ap gp := by
     rw [hp_start]; exact Parse_V_start a_head p_tail
   rcases hP_p_ex with ⟨ap, gp, hP_p⟩
-  have hb_head_ok : 2 + 4 * z10 p_w < (b_head : Rat) := by
-    have hz12 := z12_nonneg p_w
-    have hz10_le := z10_z12_le_zW p_w
+  have hb_head_ok : 2 + 4 * wordVal p_w < (b_head : Rat) := by
+    have hz12 := wordValQ_nonneg p_w
+    have hz10_le := two_wordVal_add_wordValQ_le p_w
     have hbh_gt : (31 : Rat) < (b_head : Rat) := by norm_num [b_head]
     linarith
   rcases Scan_of_Parse hP_p b_head hb_head_ok with ⟨bp, v_p, hS_p, hbp⟩
   have hS_s := Scan_s ap bp hbp
   let b_mid0 := 1024 * (bp - 3) + 908
   let ds_mid := [K] ++ ds_core
-  rcases zDg_mid hm hD_core hA_core with ⟨A_mid, hD_mid, hA_hi⟩
+  rcases digitVal_mid hm hD_core hA_core with ⟨A_mid, hD_mid, hA_hi⟩
   have hP_s_all : ∃ a_top g_all, Parse ap (s_full ++ ds_mid) a_top g_all := by
     change ∃ a_top g_all, Parse ap (V :: (s_full.tail ++ ds_mid)) a_top g_all
     exact Parse_V_start ap _
@@ -1516,18 +1512,18 @@ lemma Good_step {u : List Word} (hG : Good u) :
     exact Scan_append (Scan_append Scan_head hS_w) hS_top
   let k := 1 + 3 * gp + 3 * g_mid
   have hk : 1 <= k := by omega
-  have hWV_vw : zW_V v_w <= 29 / 4 :=
+  have hWV_vw : wordPotV v_w <= 29 / 4 :=
     bound_zW_p' hm hS_p hz13 hzW hD_mid hS_mid
-  have hz13_vw : z13 v_w * ((2 ^ k : Nat) : Rat) = 1 := by
-    have h_z13_w := z13_Scan hS_w
-    have h_w_eq : z13 w_all = 256 := by
+  have hz13_vw : wordScale v_w * ((2 ^ k : Nat) : Rat) = 1 := by
+    have h_z13_w := scan_wordScale_eq hS_w
+    have h_w_eq : wordScale w_all = 256 := by
       dsimp only [w_all]
-      rw [z13_append, z13_append]
-      have h_s : z13 s_full = 1 / 2 := by
-        have h := checkZ13Pow_sound s_full 1 0 (by decide)
+      rw [wordScale_append, wordScale_append]
+      have h_s : wordScale s_full = 1 / 2 := by
+        have h := checkScalePow_sound s_full 1 0 (by decide)
         norm_num at h
         linarith
-      have h_mid := (zDg_z13_z10 hD_mid).1
+      have h_mid := (digitVal_scale_and_val hD_mid).1
       rw [h_s, h_mid]
       linarith
     rw [h_w_eq] at h_z13_w
@@ -1535,7 +1531,7 @@ lemma Good_step {u : List Word} (hG : Good u) :
     have h_ew : ((2 ^ 8 : Nat) : Rat) = 256 := by norm_num
     rw [h_3gw, Nat.pow_add, Nat.cast_mul, h_ew] at h_z13_w
     linarith
-  rcases bound_b_end_zDg hk hb_top hS_w hz13_vw hWV_vw
+  rcases bound_b_end_digitVal hk hb_top hS_w hz13_vw hWV_vw
     with ⟨A_core', ds_core', hD_core', hlen_core', hA_core', hD_bend⟩
   let da := [Q,K,Q,Q,Q,K,Q,K,K] ++ ds_core' ++ top_base
   let u' := V :: (v_head ++ v_w ++ s_base ++ da)
@@ -1551,30 +1547,30 @@ lemma Good_step {u : List Word} (hG : Good u) :
     rw [h_m'_sub]; exact hD_core'
   · have h_m'_sub : m' - 1 = k + 9 := by omega
     rw [h_m'_sub]; exact hA_core'
-  · dsimp only [p_w', m', z13]
+  · dsimp only [p_w', m', wordScale]
     have h_m'_split : k + 10 = k + 1 + 9 := by omega
     have h1 : ((2 ^ 1 : Nat) : Rat) = 2 := by norm_num
     have h_ep : ((2 ^ 9 : Nat) : Rat) = 512 := by norm_num
     rw [h_m'_split, Nat.pow_add, Nat.pow_add, Nat.cast_mul, Nat.cast_mul, h1, h_ep]
     linarith
   · dsimp only [p_w']
-    rw [zW_cons_V]
+    rw [wordPot_cons_V]
     exact hWV_vw
 
-lemma reach_N (m : Nat) :
+theorem reach_N (m : Nat) :
     ∃ N, m <= N ∧ ∃ u,
-      multiStep tm (init []) N = some (zCf (zTs u default)) ∧
+      multiStep tm (init []) N = some (zCf (evalWords u default)) ∧
       Good u := by
   induction m with
   | zero =>
     rcases init_to_u0 with ⟨k1, hk1⟩
     rcases Rounds_exec rounds_0_13 with ⟨k2, hk2⟩
-    exact ⟨k1 + k2, Nat.zero_le _, u_13, zMt tm _ _ _ k1 k2 hk1 hk2, good_u13⟩
+    exact ⟨k1 + k2, Nat.zero_le _, u_13, multiStep_trans_vkq tm _ _ _ k1 k2 hk1 hk2, good_u13⟩
   | succ m ih =>
     rcases ih with ⟨N, hN, u, h_ms, hG⟩
     rcases Good_step hG with ⟨u', hStep, hG'⟩
     rcases Step_exec hStep with ⟨k, hk_pos, h_step_k⟩
-    exact ⟨N + k, Nat.add_le_add hN hk_pos, u', zMt tm _ _ _ N k h_ms h_step_k, hG'⟩
+    exact ⟨N + k, Nat.add_le_add hN hk_pos, u', multiStep_trans_vkq tm _ _ _ N k h_ms h_step_k, hG'⟩
 
 
 
@@ -1584,8 +1580,8 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rcases reach_N (n + 1) with ⟨N, hN, _, h_N, _⟩
   have h_eq : (n + 1) + (N - (n + 1)) = N := Nat.add_sub_of_le hN
   rw [<- h_eq] at h_N
-  have h_some := zIm h_N
-  rw [zMs, hn] at h_some
+  have h_some := multiStep_add_intermediate_vkq h_N
+  rw [multiStep_succ_vkq, hn] at h_some
   exact h_some
 
 theorem is_not_halt : IsNotHalt target := is_does_not_halt

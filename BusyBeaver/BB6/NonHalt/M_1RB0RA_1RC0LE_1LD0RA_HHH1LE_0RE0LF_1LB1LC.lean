@@ -35,10 +35,6 @@ def target_tm : Machine (Fin 2) (Fin 6)
 theorem target_eq : target = target_tm := by
   funext q s
   fin_cases q <;> fin_cases s <;> rfl
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unusedVariables false
-set_option linter.unreachableTactic false
 set_option maxRecDepth 200000
 set_option maxHeartbeats 4000000
 namespace M23
@@ -2908,8 +2904,8 @@ theorem nonhalt_N : ∀ n, ¬ halted N (run N n (blank 0)) := by
 end Cert
 
 
-@[simp] private lemma _jb_lb_mk_nil : (ListBlank.mk ([] : List (Fin 2))) = default := rfl
-@[simp] private lemma _jb_lb_mk_cons (x : Fin 2) (xs : List (Fin 2)) : ListBlank.mk (x :: xs) = x >> ListBlank.mk xs := rfl
+@[simp] private theorem _jb_lb_mk_nil : (ListBlank.mk ([] : List (Fin 2))) = default := rfl
+@[simp] private theorem _jb_lb_mk_cons (x : Fin 2) (xs : List (Fin 2)) : ListBlank.mk (x :: xs) = x >> ListBlank.mk xs := rfl
 
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1

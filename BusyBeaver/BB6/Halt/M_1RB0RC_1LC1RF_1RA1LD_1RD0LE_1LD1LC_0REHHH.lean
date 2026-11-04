@@ -33,21 +33,19 @@ abbrev holdout_0451_tm : Machine (Fin 2) (Fin 6) := target_tm
 -- Section 6: Direct-on-Cells (k, xs) Sk1 / TM91 Formalization
 -- ============================================================================
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 0 = some config := rfl
 
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) :
     multiStep M config 1 = step M config := rfl
 
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -56,30 +54,30 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma reaches_refl {M : Machine Γ Λ} (c : Cfg Γ Λ) : c [M]⊢* c := ⟨0, rfl⟩
+theorem reaches_refl {M : Machine Γ Λ} (c : Cfg Γ Λ) : c [M]⊢* c := ⟨0, rfl⟩
 
-lemma reaches_trans {M : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem reaches_trans {M : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [M]⊢* c₂) (h₂ : c₂ [M]⊢* c₃) : c₁ [M]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, multiStep_trans M c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
@@ -87,29 +85,29 @@ lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 def IsHaltFrom (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ c', (c [holdout_0451_tm]⊢* c') ∧ (step holdout_0451_tm c').isNone
 
-lemma isHaltFrom_of_reaches {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem isHaltFrom_of_reaches {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [holdout_0451_tm]⊢* c₂) (h₂ : IsHaltFrom c₂) : IsHaltFrom c₁ := by
   rcases h₂ with ⟨c', hc', hnone⟩
   exact ⟨c', reaches_trans h₁ hc', hnone⟩
 
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
 
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-@[simp] lemma append_nil_tape (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
+@[simp] theorem append_nil_tape (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
-@[simp] lemma append_cons_tape (a : Γ) (l : List Γ) (s : ListBlank Γ) :
+@[simp] theorem append_cons_tape (a : Γ) (l : List Γ) (s : ListBlank Γ) :
     (a :: l) +> s = a >> (l +> s) := rfl
 
-@[simp] lemma append_assoc_tape (l₁ l₂ : List Γ) (s : ListBlank Γ) :
+@[simp] theorem append_assoc_tape (l₁ l₂ : List Γ) (s : ListBlank Γ) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   induction l₁ with
   | nil => rfl
   | cons a l₁ ih => simp only [List.cons_append, append_cons_tape, ih]
 
-lemma pow_add_list (w : List Γ) (m n : ℕ) : w ^ (m + n) = w ^ m ++ w ^ n := by
+theorem pow_add_list (w : List Γ) (m n : ℕ) : w ^ (m + n) = w ^ m ++ w ^ n := by
   induction m with
   | zero =>
     rw [Nat.zero_add]
@@ -119,7 +117,7 @@ lemma pow_add_list (w : List Γ) (m n : ℕ) : w ^ (m + n) = w ^ m ++ w ^ n := b
     change w ++ (w ^ (m + n)) = (w ++ (w ^ m)) ++ w ^ n
     rw [ih, List.append_assoc]
 
-lemma pow_append_tape (w : List Γ) (m n : ℕ) (s : ListBlank Γ) :
+theorem pow_append_tape (w : List Γ) (m n : ℕ) (s : ListBlank Γ) :
     (w ^ (m + n)) +> s = (w ^ m) +> ((w ^ n) +> s) := by
   rw [pow_add_list, append_assoc_tape]
 
@@ -162,61 +160,61 @@ def SideHalt (r : ListBlank (Fin 2)) : Prop :=
     IsHaltFrom ((([0] : List (Fin 2)) +> l) {{C}}> r)
 
 -- Micro-step primitives proved via execute
-lemma wall_R (l r : ListBlank (Fin 2)) :
+theorem wall_R (l r : ListBlank (Fin 2)) :
     ((([0] : List (Fin 2)) +> l) {{C}}> ([0, 1] +> r)) [holdout_0451_tm]⊢*
     ((([0] : List (Fin 2)) +> (([1, 0] : List (Fin 2)) +> l)) {{C}}> r) := by
   dsimp [ListBlank.append]; execute
 
-lemma wall_L_C (l r : ListBlank (Fin 2)) :
+theorem wall_L_C (l r : ListBlank (Fin 2)) :
     ((([1, 0] : List (Fin 2)) +> l) <{{C}} ([1] +> r)) [holdout_0451_tm]⊢*
     (l <{{C}} (([1] : List (Fin 2)) +> (W +> r))) := by
   dsimp [W, ListBlank.append]; execute
 
-lemma wall_L_D (l r : ListBlank (Fin 2)) :
+theorem wall_L_D (l r : ListBlank (Fin 2)) :
     ((([1, 0] : List (Fin 2)) +> l) <{{D}} ([1] +> r)) [holdout_0451_tm]⊢*
     (l <{{D}} (([1] : List (Fin 2)) +> (W +> r))) := by
   dsimp [W, ListBlank.append]; execute
 
-lemma inc_step (l r : ListBlank (Fin 2)) :
+theorem inc_step (l r : ListBlank (Fin 2)) :
     ((([0] : List (Fin 2)) +> l) {{C}}> ([1] +> r)) [holdout_0451_tm]⊢*
     (l <{{C}} (([1] : List (Fin 2)) +> ([0] +> r))) := by
   dsimp [ListBlank.append]; execute
 
-lemma carry_R (l r : ListBlank (Fin 2)) :
+theorem carry_R (l r : ListBlank (Fin 2)) :
     ((([0] : List (Fin 2)) +> l) {{C}}> ([0, 0, 1, 0, 1] +> r)) [holdout_0451_tm]⊢*
     ((([0] : List (Fin 2)) +> (([1, 1, 1, 1, 0] : List (Fin 2)) +> l)) {{C}}> r) := by
   dsimp [ListBlank.append]; execute
 
-lemma carry_L_C (l r : ListBlank (Fin 2)) :
+theorem carry_L_C (l r : ListBlank (Fin 2)) :
     ((([1, 1, 1, 1, 0] : List (Fin 2)) +> l) <{{C}} ([1] +> r)) [holdout_0451_tm]⊢*
     (l <{{C}} (([1] : List (Fin 2)) +> ([0, 1, 0, 1, 1] +> r))) := by
   dsimp [ListBlank.append]; execute
 
-lemma carry_L_D (l r : ListBlank (Fin 2)) :
+theorem carry_L_D (l r : ListBlank (Fin 2)) :
     ((([1, 1, 1, 1, 0] : List (Fin 2)) +> l) <{{D}} ([1] +> r)) [holdout_0451_tm]⊢*
     (l <{{D}} (([1] : List (Fin 2)) +> ([0, 1, 1, 0, 1] +> r))) := by
   dsimp [ListBlank.append]; execute
 
-lemma leaf0_step (l r : ListBlank (Fin 2)) :
+theorem leaf0_step (l r : ListBlank (Fin 2)) :
     ((([0] : List (Fin 2)) +> l) {{C}}> ([0, 0, 0] +> r)) [holdout_0451_tm]⊢*
     (l <{{D}} (([1] : List (Fin 2)) +> ([0, 1, 1] +> r))) := by
   dsimp [ListBlank.append]; execute
 
-lemma leaf1_step (l r : ListBlank (Fin 2)) :
+theorem leaf1_step (l r : ListBlank (Fin 2)) :
     ((([0] : List (Fin 2)) +> l) {{C}}> ([0, 0, 1, 0, 0] +> r)) [holdout_0451_tm]⊢*
     (l <{{D}} (([1] : List (Fin 2)) +> ([1, 0, 1, 0, 0] +> r))) := by
   dsimp [ListBlank.append]; execute
 
-lemma stop_step (l r : ListBlank (Fin 2)) :
+theorem stop_step (l r : ListBlank (Fin 2)) :
     ((([0] : List (Fin 2)) +> l) {{C}}> ([0, 0, 1, 1] +> r)) [holdout_0451_tm]⊢*
     ((([1, 1, 1, 0] : List (Fin 2)) +> l) {{F}}> ([1] +> r)) := by
   dsimp [ListBlank.append]; execute
 
-lemma stop_isNone (l r : ListBlank (Fin 2)) :
+theorem stop_isNone (l r : ListBlank (Fin 2)) :
     (step holdout_0451_tm ((([1, 1, 1, 0] : List (Fin 2)) +> l) {{F}}> ([1] +> r))).isNone = true := by
   simp [step, holdout_0451_tm, target_tm, F, ListBlank.append, Turing.ListBlank.head_cons]; rfl
 
-lemma emit_true_step (r : ListBlank (Fin 2)) :
+theorem emit_true_step (r : ListBlank (Fin 2)) :
     ((default : ListBlank (Fin 2)) <{{D}} ([1] +> r)) [holdout_0451_tm]⊢*
     (start ([0, 1, 0] +> r)) := by
   unfold start
@@ -224,7 +222,7 @@ lemma emit_true_step (r : ListBlank (Fin 2)) :
   execute
 
 -- Segment & Side composition lemmas
-lemma wall_one_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
+theorem wall_one_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     Side b (W +> r) (W +> r') := by
   intro l
   have h1 := wall_R l r
@@ -236,7 +234,7 @@ lemma wall_one_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     · exact wall_L_D l r'
   exact reaches_trans h1 (reaches_trans h2 h3)
 
-lemma wall_side (b : Bool) (n : ℕ) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
+theorem wall_side (b : Bool) (n : ℕ) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     Side b ((W ^ n) +> r) ((W ^ n) +> r') := by
   induction n with
   | zero => exact h
@@ -245,12 +243,12 @@ lemma wall_side (b : Bool) (n : ℕ) {r r' : ListBlank (Fin 2)} (h : Side b r r'
     rw [append_assoc_tape, append_assoc_tape]
     exact wall_one_side b ih
 
-lemma wall_one_halt {r : ListBlank (Fin 2)} (h : SideHalt r) :
+theorem wall_one_halt {r : ListBlank (Fin 2)} (h : SideHalt r) :
     SideHalt (W +> r) := by
   intro l
   exact isHaltFrom_of_reaches (wall_R l r) (h (([1, 0] : List (Fin 2)) +> l))
 
-lemma wall_halt (n : ℕ) {r : ListBlank (Fin 2)} (h : SideHalt r) :
+theorem wall_halt (n : ℕ) {r : ListBlank (Fin 2)} (h : SideHalt r) :
     SideHalt ((W ^ n) +> r) := by
   induction n with
   | zero => exact h
@@ -259,7 +257,7 @@ lemma wall_halt (n : ℕ) {r : ListBlank (Fin 2)} (h : SideHalt r) :
     rw [append_assoc_tape]
     exact wall_one_halt ih
 
-lemma carry_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
+theorem carry_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     Side b ([0, 0, 1, 0, 1] +> r)
       ((if b then [0, 1, 1, 0, 1] else [0, 1, 0, 1, 1]) +> r') := by
   intro l
@@ -272,38 +270,38 @@ lemma carry_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     · exact carry_L_D l r'
   exact reaches_trans h1 (reaches_trans h2 h3)
 
-lemma carry_halt {r : ListBlank (Fin 2)} (h : SideHalt r) :
+theorem carry_halt {r : ListBlank (Fin 2)} (h : SideHalt r) :
     SideHalt ([0, 0, 1, 0, 1] +> r) := by
   intro l
   exact isHaltFrom_of_reaches (carry_R l r) (h (([1, 1, 1, 1, 0] : List (Fin 2)) +> l))
 
-lemma inc_side (r : ListBlank (Fin 2)) : Side false ([1] +> r) ([0] +> r) := by
+theorem inc_side (r : ListBlank (Fin 2)) : Side false ([1] +> r) ([0] +> r) := by
   intro l
   exact inc_step l r
 
-lemma leaf0_side (r : ListBlank (Fin 2)) : Side true ([0, 0, 0] +> r) ([0, 1, 1] +> r) := by
+theorem leaf0_side (r : ListBlank (Fin 2)) : Side true ([0, 0, 0] +> r) ([0, 1, 1] +> r) := by
   intro l
   exact leaf0_step l r
 
-lemma leaf1_side (r : ListBlank (Fin 2)) :
+theorem leaf1_side (r : ListBlank (Fin 2)) :
     Side true ([0, 0, 1, 0, 0] +> r) ([1, 0, 1, 0, 0] +> r) := by
   intro l
   exact leaf1_step l r
 
-lemma stop_halt (r : ListBlank (Fin 2)) : SideHalt ([0, 0, 1, 1] +> r) := by
+theorem stop_halt (r : ListBlank (Fin 2)) : SideHalt ([0, 0, 1, 1] +> r) := by
   intro l
   exact ⟨(([1, 1, 1, 0] : List (Fin 2)) +> l) {{F}}> ([1] +> r),
     stop_step l r, stop_isNone l r⟩
 
-lemma default_eq_zero_one :
+theorem default_eq_zero_one :
     (default : ListBlank (Fin 2)) = ([0] : List (Fin 2)) +> default := by
   simp [zero_cons_default]
 
-lemma default_eq_zero_three :
+theorem default_eq_zero_three :
     (default : ListBlank (Fin 2)) = ([0, 0, 0] : List (Fin 2)) +> default := by
   simp [zero_cons_default]
 
-lemma emit_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
+theorem emit_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     (start r) [holdout_0451_tm]⊢* (start ((if b then [0, 1, 0] else W) +> r')) := by
   have h1 : (start r) [holdout_0451_tm]⊢*
       ((default : ListBlank (Fin 2)) <{{retState b}} ([1] +> r')) := h default
@@ -318,7 +316,7 @@ lemma emit_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
   · simp only [↓reduceIte, retState] at h1 ⊢
     exact reaches_trans h1 (emit_true_step r')
 
-lemma init_reaches_start :
+theorem init_reaches_start :
     (init [] : Cfg (Fin 2) (Fin 6)) [holdout_0451_tm]⊢* (denote_state 2 []) := by
   have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = ((default : ListBlank (Fin 2)) {{A}}> default) := rfl
   rw [h0]
@@ -340,32 +338,32 @@ inductive Batch : ℕ → List (Bool × ℕ) → ℕ → List (Bool × ℕ) → 
       m + k * 2 = n + f →
       Batch t ((p, n) :: xs) (k * 2) ((p', m) :: ys)
 
-lemma batch_head {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_head {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch t xs e ys) : t + bval (first_cell xs) = e + bval (first_cell ys) := by
   cases h with
   | BNil => rfl
   | BCons t p n xs k p' f ys m hcount _ _ _ =>
     simpa [first_cell] using! hcount
 
-lemma batch_even {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_even {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch t xs e ys) : ∃ k, e = k * 2 := by
   cases h with
   | BNil => exact ⟨0, rfl⟩
   | BCons _ _ _ _ k _ _ _ _ _ _ _ _ => exact ⟨k, rfl⟩
 
-lemma batch_nil {t e : ℕ} {ys : List (Bool × ℕ)} (h : Batch t [] e ys) :
+theorem batch_nil {t e : ℕ} {ys : List (Bool × ℕ)} (h : Batch t [] e ys) :
     t = 0 ∧ e = 0 ∧ ys = [] := by
   cases h
   exact ⟨rfl, rfl, rfl⟩
 
-lemma batch_refl (xs : List (Bool × ℕ)) : Batch 0 xs 0 xs := by
+theorem batch_refl (xs : List (Bool × ℕ)) : Batch 0 xs 0 xs := by
   induction xs with
   | nil => exact Batch.BNil
   | cons hd tl ih =>
     rcases hd with ⟨p, n⟩
     exact Batch.BCons 0 p n tl 0 p 0 tl n (by omega) ih (Or.inl rfl) (by omega)
 
-lemma batch_zero {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_zero {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch 0 xs e ys) : e = 0 ∧ ys = xs := by
   induction xs generalizing e ys with
   | nil =>
@@ -382,7 +380,7 @@ lemma batch_zero {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     subst hm
     exact ⟨rfl, rfl⟩
 
-lemma first_one {xs : List (Bool × ℕ)} {f : ℕ} {ys : List (Bool × ℕ)}
+theorem first_one {xs : List (Bool × ℕ)} {f : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch 1 xs f ys) :
     bval (first_cell xs) + bval (first_cell ys) = 1 ∧ f = bval (first_cell xs) * 2 := by
   have hh := batch_head h
@@ -390,7 +388,7 @@ lemma first_one {xs : List (Bool × ℕ)} {f : ℕ} {ys : List (Bool × ℕ)}
   cases hfx : first_cell xs <;> cases hfy : first_cell ys <;>
     simp [hfx, hfy, bval] at hh ⊢ <;> omega
 
-lemma guard_positive {k : ℕ} {xs : List (Bool × ℕ)} {f : ℕ} {ys : List (Bool × ℕ)} {n : ℕ}
+theorem guard_positive {k : ℕ} {xs : List (Bool × ℕ)} {f : ℕ} {ys : List (Bool × ℕ)} {n : ℕ}
     (hk : 0 < k) (hB : Batch k xs f ys)
     (hG : k + 2 ≤ n + bval (first_cell xs) + bval (first_cell ys)) : 2 ≤ n := by
   have hh := batch_head hB
@@ -398,13 +396,13 @@ lemma guard_positive {k : ℕ} {xs : List (Bool × ℕ)} {f : ℕ} {ys : List (B
   cases hfx : first_cell xs <;> cases hfy : first_cell ys <;>
     simp [hfx, hfy, bval] at hh hG ⊢ <;> omega
 
-lemma split_guard_step {k' n f1 b_tl b_zs b_tail : ℕ}
+theorem split_guard_step {k' n f1 b_tl b_zs b_tail : ℕ}
     (hF1 : b_tl + b_zs = 1) (hF2 : f1 = b_tl * 2) (hn2 : 2 ≤ n)
     (hG2 : (k' + 1) + 2 ≤ n + b_tl + b_tail) :
     k' + 2 ≤ (n - 2 + f1) + b_zs + b_tail := by
   omega
 
-lemma batch_split {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_split {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch (t + 1) xs e ys) :
     ∃ f zs g, Batch 1 xs f zs ∧ Batch t zs g ys ∧ e = f + g := by
   induction xs generalizing t e ys with
@@ -445,7 +443,7 @@ lemma batch_split {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool
                 exact split_guard_step hF1 hF2 hn2 hG2)
           (by omega)
 
-lemma batch_one {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_one {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch 1 xs e ys) :
     Side false (words_tape xs) ((W ^ e) +> words_tape ys) := by
   induction xs generalizing e ys with
@@ -488,7 +486,7 @@ lemma batch_one {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
       rw [hlhs, hrhs] at h_carry
       exact h_carry
 
-lemma batch_one_start {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_one_start {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch 1 xs e ys) (k : ℕ) :
     (denote_state k xs) [holdout_0451_tm]⊢* (denote_state (k + 1 + e) ys) := by
   have h1 := wall_side false k (batch_one h)
@@ -502,7 +500,7 @@ lemma batch_one_start {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × �
   rw [← hrhs]
   exact h2
 
-lemma batch_steps {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
+theorem batch_steps {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool × ℕ)}
     (h : Batch t xs e ys) (k : ℕ) :
     (denote_state k xs) [holdout_0451_tm]⊢* (denote_state (k + t + e) ys) := by
   induction t generalizing xs e ys k with
@@ -525,17 +523,13 @@ lemma batch_steps {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bool
 
 noncomputable section
 set_option quotPrecheck false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
-
 @[simp] theorem nat_add_eq (a b : Nat) : Nat.add a b = a + b := rfl
 @[simp] theorem nat_sub_eq (a b : Nat) : Nat.sub a b = a - b := rfl
 @[simp] theorem nat_mul_eq (a b : Nat) : Nat.mul a b = a * b := rfl
 @[simp] theorem nat_div_eq (a b : Nat) : Nat.div a b = a / b := rfl
 @[simp] theorem nat_mod_eq (a b : Nat) : Nat.mod a b = a % b := rfl
 
-lemma wall_halt_start (k : ℕ) {r : ListBlank (Fin 2)} (h : SideHalt r) :
+theorem wall_halt_start (k : ℕ) {r : ListBlank (Fin 2)} (h : SideHalt r) :
     IsHaltFrom (start ((W ^ k) +> r)) :=
   wall_halt k h default
 -- ============================================================================
@@ -706,10 +700,10 @@ def WF : FastCells → Prop
   | FastCells.block _ pow2B max_v v F_next ns rest =>
       WF_block pow2B max_v v F_next ns ∧ WF rest
 
-lemma bval_rec_eq (p : Bool) : (bval(p)) = bval p := by
+theorem bval_rec_eq (p : Bool) : (bval(p)) = bval p := by
   cases p <;> rfl
 
-lemma wf_ns_mono {m1 m2 f1 f2 : Nat} {ns : List Nat}
+theorem wf_ns_mono {m1 m2 f1 f2 : Nat} {ns : List Nat}
     (hm : m1 ≤ m2) (hf : f1 ≤ f2) (h : WF_ns m2 f1 ns) : WF_ns m1 f2 ns := by
   induction ns generalizing m1 m2 with
   | nil => exact h
@@ -723,10 +717,10 @@ lemma wf_ns_mono {m1 m2 f1 f2 : Nat} {ns : List Nat}
       refine ⟨fun v' hv' => h.1 v' (by omega_fast), ?_⟩
       exact ih (by omega_fast) h.2
 
-lemma first_cell_unpack_block (v F_next : Nat) (n0 : Nat) (tail : List Nat) (rest : List (Bool × Nat)) :
+theorem first_cell_unpack_block (v F_next : Nat) (n0 : Nat) (tail : List Nat) (rest : List (Bool × Nat)) :
     first_cell (unpack_block v F_next (n0 :: tail) rest) = (Nat.beq (Nat.mod v 2) 1) := rfl
 
-lemma first_bit_eq (xs : FastCells) (hwf : WF xs) :
+theorem first_bit_eq (xs : FastCells) (hwf : WF xs) :
     first_bit xs = first_cell (to_cells xs) := by
   cases xs with
   | nil => rfl
@@ -737,7 +731,7 @@ lemma first_bit_eq (xs : FastCells) (hwf : WF xs) :
     | nil => contradiction
     | cons n0 tail => rfl
 
-lemma pop_top_of_block_to_cells (B pow2B max_v v F_next : Nat) (ns : List Nat) (rest : FastCells) :
+theorem pop_top_of_block_to_cells (B pow2B max_v v F_next : Nat) (ns : List Nat) (rest : FastCells) :
     to_cells (pop_top_of_block B pow2B max_v v F_next ns rest) =
     unpack_block v F_next ns (to_cells rest) := by
   cases ns with
@@ -745,11 +739,11 @@ lemma pop_top_of_block_to_cells (B pow2B max_v v F_next : Nat) (ns : List Nat) (
   | cons n0 tail_ns =>
     cases tail_ns <;> rfl
 
-lemma pow2_div2_cons (n1 : Nat) (tail : List Nat) :
+theorem pow2_div2_cons (n1 : Nat) (tail : List Nat) :
     (2 ^ (n1 :: tail).length * 2) / 2 = 2 ^ (n1 :: tail).length := by
   omega_fast
 
-lemma pop_top_of_block_wf (B pow2B max_v v F_next : Nat) (ns : List Nat) (rest : FastCells)
+theorem pop_top_of_block_wf (B pow2B max_v v F_next : Nat) (ns : List Nat) (rest : FastCells)
     (hb : WF_block pow2B max_v v F_next ns) (hr : WF rest) :
     WF (pop_top_of_block B pow2B max_v v F_next ns rest) := by
   rcases hb with ⟨hpow, hv, hns⟩
@@ -841,7 +835,7 @@ def repack_cells (init_req : Nat) (xs : FastCells) : FastCells :=
       (fun B pow2B max_v v F_next ns _ ih => repack_block_smart B pow2B max_v v F_next ns ih)
       xs)
 
-lemma prepend_cell_to_packed_spec (p : Bool) (raw_n : Nat) (ys : FastCells)
+theorem prepend_cell_to_packed_spec (p : Bool) (raw_n : Nat) (ys : FastCells)
     (hr : 4 ≤ raw_n) (hwf : WF ys) :
     to_cells (prepend_cell_to_packed p raw_n ys) = (p, raw_n) :: to_cells ys ∧
     WF (prepend_cell_to_packed p raw_n ys) := by
@@ -918,7 +912,7 @@ def acc_cells : PackAcc → List (Bool × Nat)
 def acc_wf : PackAcc → Prop
   | PackAcc.mk _ _ ys => WF ys
 
-lemma repack_step_spec (p : Bool) (raw_n : Nat) (acc : PackAcc) (hwf : acc_wf acc) :
+theorem repack_step_spec (p : Bool) (raw_n : Nat) (acc : PackAcc) (hwf : acc_wf acc) :
     acc_cells (repack_step p raw_n acc) = (p, raw_n) :: acc_cells acc ∧
     acc_wf (repack_step p raw_n acc) := by
   rcases acc with ⟨tk, req, ys⟩
@@ -938,7 +932,7 @@ lemma repack_step_spec (p : Bool) (raw_n : Nat) (acc : PackAcc) (hwf : acc_wf ac
       exact prepend_cell_to_packed_spec p raw_n ys hr4 hwf
   · exact ⟨rfl, hwf⟩
 
-lemma repack_block_spec (v F_next : Nat) (ns : List Nat) (acc : PackAcc) (hwf : acc_wf acc) :
+theorem repack_block_spec (v F_next : Nat) (ns : List Nat) (acc : PackAcc) (hwf : acc_wf acc) :
     acc_cells (repack_block v F_next ns acc) = unpack_block v F_next ns (acc_cells acc) ∧
     acc_wf (repack_block v F_next ns acc) := by
   induction ns generalizing v with
@@ -957,7 +951,7 @@ lemma repack_block_spec (v F_next : Nat) (ns : List Nat) (acc : PackAcc) (hwf : 
     rw [hs_c, ih_c]
     rfl
 
-lemma repack_block_smart_spec (B pow2B max_v v F_next : Nat) (ns : List Nat) (acc : PackAcc)
+theorem repack_block_smart_spec (B pow2B max_v v F_next : Nat) (ns : List Nat) (acc : PackAcc)
     (hb : WF_block pow2B max_v v F_next ns) (hwf : acc_wf acc) :
     acc_cells (repack_block_smart B pow2B max_v v F_next ns acc) =
       unpack_block v F_next ns (acc_cells acc) ∧
@@ -969,7 +963,7 @@ lemma repack_block_smart_spec (B pow2B max_v v F_next : Nat) (ns : List Nat) (ac
   · exact repack_block_spec v F_next ns (PackAcc.mk tk req ys) hwf
   · exact ⟨rfl, hb, hwf⟩
 
-lemma unroll_top_1_spec (ys : FastCells) (hwf : WF ys) :
+theorem unroll_top_1_spec (ys : FastCells) (hwf : WF ys) :
     to_cells (unroll_top_1 ys) = to_cells ys ∧ WF (unroll_top_1 ys) := by
   cases ys with
   | nil => exact ⟨rfl, trivial⟩
@@ -978,7 +972,7 @@ lemma unroll_top_1_spec (ys : FastCells) (hwf : WF ys) :
     exact ⟨pop_top_of_block_to_cells B pow2B max_v v F_next ns rest,
       pop_top_of_block_wf B pow2B max_v v F_next ns rest hwf.1 hwf.2⟩
 
-lemma unroll_top_2_spec (ys : FastCells) (hwf : WF ys) :
+theorem unroll_top_2_spec (ys : FastCells) (hwf : WF ys) :
     to_cells (unroll_top_2 ys) = to_cells ys ∧ WF (unroll_top_2 ys) := by
   rcases unroll_top_1_spec ys hwf with ⟨h1_c, h1_w⟩
   unfold unroll_top_2
@@ -999,7 +993,7 @@ def repack_fold (init_req : Nat) (xs : FastCells) : PackAcc :=
     (fun p n _ ih => repack_step p n ih)
     (fun B pow2B max_v v F_next ns _ ih => repack_block_smart B pow2B max_v v F_next ns ih) xs
 
-lemma repack_cells_spec (init_req : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem repack_cells_spec (init_req : Nat) (xs : FastCells) (hwf : WF xs) :
     to_cells (repack_cells init_req xs) = to_cells xs ∧ WF (repack_cells init_req xs) := by
   have hfold : ∀ xs, WF xs →
       acc_cells (repack_fold init_req xs) = to_cells xs ∧ acc_wf (repack_fold init_req xs) := by
@@ -1034,7 +1028,7 @@ def push_spec (p : Bool) (m k : Nat) (xs : FastCells) : PushRes → Prop
     (W ^ k') +> words_tape (to_cells xs') =
       (bit p) +> ((W ^ (m + k)) +> words_tape (to_cells xs)) ∧ WF xs'
 
-lemma push_cell_fast_spec (p : Bool) (m k : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem push_cell_fast_spec (p : Bool) (m k : Nat) (xs : FastCells) (hwf : WF xs) :
     push_spec p m k xs (push_cell p m k xs) := by
   unfold push_cell
   dsimp only
@@ -1090,10 +1084,10 @@ lemma push_cell_fast_spec (p : Bool) (m k : Nat) (xs : FastCells) (hwf : WF xs) 
 
 def nat_bit (b : Nat) : Fin 2 := if Nat.beq b 0 then 0 else 1
 
-lemma bit_eq_nat_bit (p : Bool) : bit p = [nat_bit (Bool.rec 1 0 p)] := by
+theorem bit_eq_nat_bit (p : Bool) : bit p = [nat_bit (Bool.rec 1 0 p)] := by
   cases p <;> rfl
 
-lemma bit_beq_zero (b : Nat) : bit (Nat.beq b 0) = [nat_bit b] := by
+theorem bit_beq_zero (b : Nat) : bit (Nat.beq b 0) = [nat_bit b] := by
   unfold nat_bit
   cases Nat.beq b 0 <;> rfl
 
@@ -1102,7 +1096,7 @@ def pop_spec (k : Nat) (xs : FastCells) : PopRes → Prop
     (W ^ k) +> words_tape (to_cells xs) =
       (nat_bit b') >> ((W ^ k') +> words_tape (to_cells xs')) ∧ WF xs'
 
-lemma pop_cell_bit_fast_spec (k : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem pop_cell_bit_fast_spec (k : Nat) (xs : FastCells) (hwf : WF xs) :
     pop_spec k xs (pop_cell_bit k xs) := by
   unfold pop_cell_bit
   cases hk : Nat.ble 1 k
@@ -1164,7 +1158,7 @@ def put_word (w : List Nat) (k : Nat) (xs : FastCells) : PushRes :=
         ih)
     w
 
-lemma remove_word_fast_spec (w : List Nat) (k : Nat) (xs : FastCells) (hwf : WF xs)
+theorem remove_word_fast_spec (w : List Nat) (k : Nat) (xs : FastCells) (hwf : WF xs)
     (k' : Nat) (ys : FastCells) (h : remove_word w k xs = OptCells.some k' ys) :
     (W ^ k) +> words_tape (to_cells xs) =
       (w.map nat_bit) +> ((W ^ k') +> words_tape (to_cells ys)) ∧ WF ys := by
@@ -1196,7 +1190,7 @@ def put_word_spec_prop (w : List Nat) (k : Nat) (xs : FastCells) : PushRes → P
     (W ^ k') +> words_tape (to_cells xs') =
       (w.map nat_bit) +> ((W ^ k) +> words_tape (to_cells xs)) ∧ WF xs'
 
-lemma put_word_fast_spec (w : List Nat) (k : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem put_word_fast_spec (w : List Nat) (k : Nat) (xs : FastCells) (hwf : WF xs) :
     put_word_spec_prop w k xs (put_word w k xs) := by
   induction w with
   | nil => exact ⟨rfl, hwf⟩
@@ -1213,7 +1207,7 @@ lemma put_word_fast_spec (w : List Nat) (k : Nat) (xs : FastCells) (hwf : WF xs)
     rw [Nat.zero_add, bit_beq_zero, ih_t] at hpc_t
     exact ⟨hpc_t, hpc_w⟩
 
-lemma bval_beq_mod2 (x : Nat) : bval (Nat.beq (Nat.mod x 2) 1) = x % 2 := by
+theorem bval_beq_mod2 (x : Nat) : bval (Nat.beq (Nat.mod x 2) 1) = x % 2 := by
   by_cases h : x % 2 = 1
   · have hb : Nat.beq (Nat.mod x 2) 1 = true := Nat.beq_eq.mpr h
     rw [hb]; dsimp [bval]; omega_fast
@@ -1224,7 +1218,7 @@ lemma bval_beq_mod2 (x : Nat) : bval (Nat.beq (Nat.mod x 2) 1) = x % 2 := by
       · exfalso; exact h (Nat.beq_eq.mp hbeq)
     rw [hb]; dsimp [bval]; omega_fast
 
-lemma unpack_block_batch (ns : List Nat) (v v_new max_v F_next f : Nat) (rest ys_rest : List (Bool × Nat))
+theorem unpack_block_batch (ns : List Nat) (v v_new max_v F_next f : Nat) (rest ys_rest : List (Bool × Nat))
     (hle : v ≤ v_new) (hv : v_new ≤ max_v) (hwf : WF_ns max_v F_next ns)
     (hB : Batch (v_new / (2 ^ ns.length) - v / (2 ^ ns.length)) rest f ys_rest) :
     Batch (v_new - v) (unpack_block v F_next ns rest)
@@ -1278,7 +1272,7 @@ lemma unpack_block_batch (ns : List Nat) (v v_new max_v F_next f : Nat) (rest ys
           ((n0 + 2 * ((v / 2) / 2)) - 2 * (v / 2)) + 2 * ((v_new / 2) / 2 - (v / 2) / 2)
         omega_fast
 
-lemma unpack_block_absorb_extra (ns : List Nat) (v max_v F_next k_extra : Nat)
+theorem unpack_block_absorb_extra (ns : List Nat) (v max_v F_next k_extra : Nat)
     (ys_norm ys_rest : List (Bool × Nat))
     (hv : v ≤ max_v) (hwf : WF_ns max_v F_next ns)
     (hW : (W ^ k_extra) +> words_tape ys_norm = words_tape ys_rest) :
@@ -1305,12 +1299,12 @@ lemma unpack_block_absorb_extra (ns : List Nat) (v max_v F_next k_extra : Nat)
       rw [h_ih]
 
 
-lemma pow2_pos (ns : List Nat) : 0 < 2 ^ ns.length := by
+theorem pow2_pos (ns : List Nat) : 0 < 2 ^ ns.length := by
   induction ns with
   | nil => decide
   | cons _ tail ih => rw [List.length_cons, Nat.pow_succ]; omega_fast
 
-lemma div_succ_of_mod_ne (v d : Nat) (hd : 0 < d) (hne : v % d + 1 ≠ d) :
+theorem div_succ_of_mod_ne (v d : Nat) (hd : 0 < d) (hne : v % d + 1 ≠ d) :
     (v + 1) / d = v / d := by
   have hlt : v % d < d := Nat.mod_lt v hd
   have hlt2 : v % d + 1 < d := by omega_fast
@@ -1319,7 +1313,7 @@ lemma div_succ_of_mod_ne (v d : Nat) (hd : 0 < d) (hne : v % d + 1 ≠ d) :
     omega_fast
   rw [h1, Nat.mul_add_div hd, Nat.div_eq_of_lt hlt2, Nat.add_zero]
 
-lemma div_succ_of_mod_eq (v d : Nat) (hd : 0 < d) (heq : v % d + 1 = d) :
+theorem div_succ_of_mod_eq (v d : Nat) (hd : 0 < d) (heq : v % d + 1 = d) :
     (v + 1) / d = v / d + 1 := by
   have h1 : v + 1 = d * (v / d + 1) + 0 := by
     have := Nat.div_add_mod v d
@@ -1381,7 +1375,7 @@ def call_fast_spec (r : ListBlank (Fin 2)) : CallOutcome → Prop
   | CallOutcome.Stopped => SideHalt r
   | CallOutcome.Returned b k ys => Side b r ((W ^ k) +> words_tape (to_cells ys)) ∧ WF ys
 
-lemma unpack_block_call_overflow (ns : List Nat) (v max_v F_next : Nat) (rest : FastCells)
+theorem unpack_block_call_overflow (ns : List Nat) (v max_v F_next : Nat) (rest : FastCells)
     (hv : v + 1 ≤ max_v) (hwf : WF_ns max_v F_next ns)
     (hov : (v + 1) / (2 ^ ns.length) = v / (2 ^ ns.length) + 1)
     (out : CallOutcome) (hout : call_fast_spec (words_tape (to_cells rest)) out)
@@ -1562,7 +1556,7 @@ lemma unpack_block_call_overflow (ns : List Nat) (v max_v F_next : Nat) (rest : 
     refine ⟨hmain, ⟨hpow, hv, wf_ns_mono (Nat.le_refl _) ?_ hwf⟩, hy_wf⟩
     cases b <;> dsimp <;> omega_fast
 
-lemma call_cells_fast_spec (xs : FastCells) (hwf : WF xs) :
+theorem call_cells_fast_spec (xs : FastCells) (hwf : WF xs) :
     call_fast_spec (words_tape (to_cells xs)) (call_cells xs) := by
   induction xs with
   | nil =>
@@ -1798,7 +1792,7 @@ def batch_fused_top (xs : FastCells) : FusedRes :=
 @[simp] theorem bval_false : bval false = 0 := rfl
 @[simp] theorem bval_true : bval true = 1 := rfl
 
-lemma natMin_spec (a b : Nat) :
+theorem natMin_spec (a b : Nat) :
     (natMin(a, b)) ≤ a ∧ (natMin(a, b)) ≤ b ∧ ((natMin(a, b)) = a ∨ (natMin(a, b)) = b) := by
   cases h : Nat.ble a b
   · refine ⟨?_, Nat.le_refl _, Or.inr rfl⟩
@@ -1806,7 +1800,7 @@ lemma natMin_spec (a b : Nat) :
     omega_fast
   · exact ⟨Nat.le_refl _, Nat.ble_eq.mp h, Or.inl rfl⟩
 
-lemma div_sub_of_next_ub_zero (v ub d : Nat) (hd : 0 < d) (h0 : (ub + v % d) / d = 0) :
+theorem div_sub_of_next_ub_zero (v ub d : Nat) (hd : 0 < d) (h0 : (ub + v % d) / d = 0) :
     (v + ub) / d - v / d = 0 := by
   have hlt : ub + v % d < d := by
     have hdiv := Nat.div_add_mod (ub + v % d) d
@@ -1819,7 +1813,7 @@ lemma div_sub_of_next_ub_zero (v ub d : Nat) (hd : 0 < d) (h0 : (ub + v % d) / d
   rw [h1, Nat.mul_add_div hd, Nat.div_eq_of_lt hlt]
   omega_fast
 
-lemma div_sub_of_cap (v ub rl d : Nat) (hd : 0 < d)
+theorem div_sub_of_cap (v ub rl d : Nat) (hd : 0 < d)
     (hrl : rl ≤ (ub + v % d) / d) :
     (v + natMin(ub, rl * d + (d - 1 - v % d))) / d - v / d = rl ∧
       natMin(ub, rl * d + (d - 1 - v % d)) ≤ ub := by
@@ -1870,7 +1864,7 @@ def fused_spec_top (xs : FastCells) : FusedRes → Prop
     ∃ ys, Batch t (to_cells xs) e ys ∧
       (W ^ k_extra) +> words_tape (to_cells ys_norm) = words_tape ys
 
-lemma cell_fused_step (p : Bool) (n : Nat) (rest : FastCells) (hwf : WF rest)
+theorem cell_fused_step (p : Bool) (n : Nat) (rest : FastCells) (hwf : WF rest)
     (cur_ub : Nat) (hc_pos : 0 < cur_ub)
     (hc_bound : cur_ub ≤ Nat.sub (Nat.mul 2 (Nat.add (Nat.mul 2 (Nat.div n 2)) (bval(first_bit rest)))) (Nat.add (bval(p)) 1))
     (res : FusedRes) (hres : fused_spec_ub rest (Nat.div (Nat.add cur_ub (bval(p))) 2) res)
@@ -1924,7 +1918,7 @@ lemma cell_fused_step (p : Bool) (n : Nat) (rest : FastCells) (hwf : WF rest)
   · dsimp only [fused_spec_ub]
     exact ⟨Nat.zero_le ub, hwf, (p, n) :: to_cells rest, batch_refl _, rfl⟩
 
-lemma batch_fused_ub_spec (xs : FastCells) (ub : Nat) (hwf : WF xs) :
+theorem batch_fused_ub_spec (xs : FastCells) (ub : Nat) (hwf : WF xs) :
     fused_spec_ub xs ub (batch_fused_ub xs ub) := by
   induction xs generalizing ub with
   | nil =>
@@ -2080,12 +2074,12 @@ lemma batch_fused_ub_spec (xs : FastCells) (ub : Nat) (hwf : WF xs) :
             unpack_block (v + ub) F_next ns (to_cells rest), hB_blk, rfl⟩
     · exact ⟨Nat.zero_le ub, ⟨⟨hpow, hv, hns⟩, hrest⟩, to_cells (FastCells.block B pow2B max_v v F_next ns rest), batch_refl _, rfl⟩
 
-lemma fused_spec_top_of_ub {xs : FastCells} {ub : Nat} {res : FusedRes} (h : fused_spec_ub xs ub res) :
+theorem fused_spec_top_of_ub {xs : FastCells} {ub : Nat} {res : FusedRes} (h : fused_spec_ub xs ub res) :
     fused_spec_top xs res := by
   rcases res with ⟨t, e, k_extra, ys_norm⟩
   exact h.2
 
-lemma batch_fused_top_spec (xs : FastCells) (hwf : WF xs) :
+theorem batch_fused_top_spec (xs : FastCells) (hwf : WF xs) :
     fused_spec_top xs (batch_fused_top xs) := by
   cases xs with
   | nil =>
@@ -2178,7 +2172,7 @@ def step_res_spec (k : Nat) (xs : FastCells) : StepRes → Prop
   | StepRes.running _ k' xs' =>
       ((denote_state k (to_cells xs)) [holdout_0451_tm]⊢* (denote_state k' (to_cells xs'))) ∧ WF xs'
 
-lemma step_call_only_fast_spec (k : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem step_call_only_fast_spec (k : Nat) (xs : FastCells) (hwf : WF xs) :
     step_res_spec k xs (step_call_only k xs) := by
   unfold step_call_only
   have hcc := call_cells_fast_spec xs hwf
@@ -2218,7 +2212,7 @@ lemma step_call_only_fast_spec (k : Nat) (xs : FastCells) (hwf : WF xs) :
       rw [← hrhs]
       exact ⟨h_emit, hpc_w⟩
 
-lemma step_state_fast_spec (skip_bulk : Bool) (k : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem step_state_fast_spec (skip_bulk : Bool) (k : Nat) (xs : FastCells) (hwf : WF xs) :
     step_res_spec k xs (step_state skip_bulk k xs) := by
   unfold step_state
   cases skip_bulk
@@ -2237,7 +2231,7 @@ lemma step_state_fast_spec (skip_bulk : Bool) (k : Nat) (xs : FastCells) (hwf : 
       cases Nat.beq k_extra 0 <;> exact ⟨hsteps, hys_wf⟩
   · exact step_call_only_fast_spec k xs hwf
 
-lemma run_chunk_fast_spec (fuel : Nat) (sb : Bool) (k : Nat) (xs : FastCells) (hwf : WF xs) :
+theorem run_chunk_fast_spec (fuel : Nat) (sb : Bool) (k : Nat) (xs : FastCells) (hwf : WF xs) :
     step_res_spec k xs (run_chunk fuel sb k xs) := by
   induction fuel generalizing sb k xs with
   | zero => exact ⟨reaches_refl _, hwf⟩
@@ -2258,7 +2252,7 @@ lemma run_chunk_fast_spec (fuel : Nat) (sb : Bool) (k : Nat) (xs : FastCells) (h
         rcases h_ih with ⟨h_reach2, h_wf2⟩
         exact ⟨reaches_trans h_reach h_reach2, h_wf2⟩
 
-lemma run_outer_fast_spec (outer inner init_req : Nat) (sb : Bool) (k : Nat) (xs : FastCells)
+theorem run_outer_fast_spec (outer inner init_req : Nat) (sb : Bool) (k : Nat) (xs : FastCells)
     (hwf : WF xs) (h : run_outer outer inner init_req sb k xs = true) :
     IsHaltFrom (denote_state k (to_cells xs)) := by
   induction outer generalizing sb k xs with
@@ -2279,9 +2273,9 @@ lemma run_outer_fast_spec (outer inner init_req : Nat) (sb : Bool) (k : Nat) (xs
 
 
 set_option maxRecDepth 200000 in
-lemma trajectory_halts : (run_outer 1273 60 24 false 2 FastCells.nil) = true := by decide +kernel
+theorem trajectory_halts : (run_outer 1273 60 24 false 2 FastCells.nil) = true := by decide +kernel
 
-lemma holdout_0451_halt : IsHalt holdout_0451_tm := by
+theorem holdout_0451_halt : IsHalt holdout_0451_tm := by
   have h := run_outer_fast_spec 1273 60 24 false 2 FastCells.nil trivial trajectory_halts
   exact isHaltFrom_of_reaches init_reaches_start h
 

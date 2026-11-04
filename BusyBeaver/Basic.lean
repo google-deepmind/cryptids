@@ -255,55 +255,6 @@ theorem step_stepStar_stepPlus {M : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
   obtain ⟨m, hm⟩ := h₂
   exact ⟨1 + m, by omega, multiStep_trans h₁ hm⟩
 
-/-! ## Legacy / Shorthand Reachability Aliases -/
-
-theorem zSm (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
-    c₁ [tm]⊢* c₂ :=
-  ⟨1, h⟩
-
-theorem z01 (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
-    c₁ [tm]⊢⁺ c₂ :=
-  ⟨1, by decide, h⟩
-
-theorem z02 {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
-    (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
-  stepPlus_stepStar_stepPlus h₁ h₂
-
-theorem z03 {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
-    (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
-  step_stepStar_stepPlus h₁ h₂
-
-theorem z04 {tm : Machine Γ Λ} (c : Cfg Γ Λ) : c [tm]⊢* c :=
-  ⟨0, rfl⟩
-
-theorem z05 (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
-    c₁ [tm]⊢* c₂ :=
-  ⟨1, h⟩
-
-theorem z06 {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
-    (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ :=
-  stepStar_trans h₁ h₂
-
-theorem zMa {tm : Machine Γ Λ} (c₁ : Cfg Γ Λ) (n m : ℕ) :
-    multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) :=
-  multiStep_add tm c₁ n m
-
-theorem zMt (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
-    (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) : c₁ [tm]⊢^{n + m} c₃ :=
-  multiStep_trans h₁ h₂
-
-theorem zPs {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
-    c₁ [tm]⊢* c₂ :=
-  stepPlus_stepStar h
-
-theorem zPt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
-    (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
-  stepPlus_trans h₁ h₂
-
-theorem zSt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
-    (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ :=
-  stepStar_trans h₁ h₂
-
 /-! ## Halting and Non-Halting Invariants -/
 
 /-- `M` eventually reaches a halting configuration starting from `c`. -/
@@ -664,13 +615,13 @@ theorem step_headRight_left {M : Machine Γ Λ} {q q' : Λ} {a b : Γ}
     (hM : M q a = some (some q', Stmt.write b Dir.left)) (l r : ListBlank Γ) :
     step M (Cfg.headRight q l (ListBlank.cons a r)) =
       some (Cfg.headLeft q' l (ListBlank.cons b r)) := by
-  simp [Cfg.headRight, Cfg.headLeft, step, hM, Tape.write, Tape.move]
+  simp [Cfg.headLeft, step, hM, Tape.write, Tape.move]
 
 theorem step_headLeft_right {M : Machine Γ Λ} {q q' : Λ} {a b : Γ}
     (hM : M q a = some (some q', Stmt.write b Dir.right)) (l r : ListBlank Γ) :
     step M (Cfg.headLeft q (ListBlank.cons a l) r) =
       some (Cfg.headRight q' (ListBlank.cons b l) r) := by
-  simp [Cfg.headRight, Cfg.headLeft, step, hM, Tape.write, Tape.move]
+  simp [Cfg.headRight, step, hM, Tape.write, Tape.move]
 
 theorem step_headLeft_left {M : Machine Γ Λ} {q q' : Λ} {a b : Γ}
     (hM : M q a = some (some q', Stmt.write b Dir.left)) (l r : ListBlank Γ) :
@@ -681,12 +632,12 @@ theorem step_headLeft_left {M : Machine Γ Λ} {q q' : Λ} {a b : Γ}
 theorem step_headRight_none {M : Machine Γ Λ} {q : Λ} {a : Γ}
     (hM : M q a = none) (l r : ListBlank Γ) :
     step M (Cfg.headRight q l (ListBlank.cons a r)) = none := by
-  simp [Cfg.headRight, step, hM]
+  simp [step, hM]
 
 theorem step_headLeft_none {M : Machine Γ Λ} {q : Λ} {a : Γ}
     (hM : M q a = none) (l r : ListBlank Γ) :
     step M (Cfg.headLeft q (ListBlank.cons a l) r) = none := by
-  simp [Cfg.headLeft, step, hM]
+  simp [step, hM]
 
 theorem step_headRight_default_right {M : Machine Γ Λ} {q q' : Λ} {b : Γ}
     (hM : M q default = some (some q', Stmt.write b Dir.right)) (l : ListBlank Γ) :

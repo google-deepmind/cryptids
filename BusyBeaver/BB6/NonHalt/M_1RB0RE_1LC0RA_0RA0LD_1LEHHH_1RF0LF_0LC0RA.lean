@@ -23,12 +23,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -51,28 +47,26 @@ abbrev F : Fin 6 := 5
 -- ============================================================================
 /- Transition function for holdout_0504: `1RB0RE_1LC0RA_0RA0LD_1LE---_1RF0LF_0LC0RA` -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option maxHeartbeats 8000000
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-@[simp] lemma pow_zero_list (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem pow_zero_list (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -81,43 +75,43 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma stepStar_refl {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_refl {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} (c : Cfg Γ Λ) : c [tm]⊢* c := ⟨0, rfl⟩
 
-lemma stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_stepPlus_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_stepPlus_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus h₁ (stepPlus_stepStar h₂)
 
-lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
@@ -171,7 +165,7 @@ def cfg_modeB (w s : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 def cfg_modeF (w s : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ((1 : Fin 2) >> (0 : Fin 2) >> w) {{F}}> s
 
-lemma step_init_to_h01B :
+theorem step_init_to_h01B :
     (init []) [target_tm]⊢⁺ cfg_h01B default ((1 : Fin 2) >> default) := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
@@ -179,79 +173,79 @@ lemma step_init_to_h01B :
   execute
 
 -- h01B rules (8)
-lemma step_h01B_nil (s : ListBlank (Fin 2)) :
+theorem step_h01B_nil (s : ListBlank (Fin 2)) :
     (cfg_h01B default s) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> default) s := by
   unfold cfg_h01B cfg_modeB E B; simp only [zero_cons_default]; execute
 
-lemma step_h01B_010 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_010 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_h01B cfg_modeB E B; execute
 
-lemma step_h01B_0010 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_0010 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_h01B cfg_modeB E B; execute
 
-lemma step_h01B_0110 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_0110 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_h01B cfg_modeB E B; execute
 
-lemma step_h01B_110 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_110 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_h01B cfg_modeB E B; execute
 
-lemma step_h01B_1110 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_1110 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((1 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_h01B cfg_modeB E B; execute
 
-lemma step_h01B_100 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_100 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_h01B w ((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s) := by
   unfold cfg_h01B E; execute
 
-lemma step_h01B_1010 (w s : ListBlank (Fin 2)) :
+theorem step_h01B_1010 (w s : ListBlank (Fin 2)) :
     (cfg_h01B ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s) [target_tm]⊢⁺
       cfg_h01B w ((0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s) := by
   unfold cfg_h01B E; execute
 
 -- modeB rules (4)
-lemma step_modeB_base (w : ListBlank (Fin 2)) :
+theorem step_modeB_base (w : ListBlank (Fin 2)) :
     (cfg_modeB w ((1 : Fin 2) >> default)) [target_tm]⊢⁺
       cfg_h01B ((1 : Fin 2) >> (0 : Fin 2) >> w) ((1 : Fin 2) >> default) := by
   unfold cfg_modeB cfg_h01B B E; execute
 
-lemma step_modeB_0100 (w s : ListBlank (Fin 2)) :
+theorem step_modeB_0100 (w s : ListBlank (Fin 2)) :
     (cfg_modeB w ((0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s)) [target_tm]⊢⁺
       cfg_h01B w ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s) := by
   unfold cfg_modeB cfg_h01B B E; execute
 
-lemma step_modeB_0101 (w s : ListBlank (Fin 2)) :
+theorem step_modeB_0101 (w s : ListBlank (Fin 2)) :
     (cfg_modeB w ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s)) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_modeB B; execute
 
-lemma step_modeB_011 (w s : ListBlank (Fin 2)) :
+theorem step_modeB_011 (w s : ListBlank (Fin 2)) :
     (cfg_modeB w ((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s)) [target_tm]⊢⁺
       cfg_modeF ((0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_modeB cfg_modeF B F; execute
 
 -- modeF rules (3)
-lemma step_modeF_0100 (w s : ListBlank (Fin 2)) :
+theorem step_modeF_0100 (w s : ListBlank (Fin 2)) :
     (cfg_modeF w ((0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s)) [target_tm]⊢⁺
       cfg_h01B w ((0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s) := by
   unfold cfg_modeF cfg_h01B F E; execute
 
-lemma step_modeF_0101 (w s : ListBlank (Fin 2)) :
+theorem step_modeF_0101 (w s : ListBlank (Fin 2)) :
     (cfg_modeF w ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s)) [target_tm]⊢⁺
       cfg_modeB ((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_modeF cfg_modeB F B; execute
 
-lemma step_modeF_011 (w s : ListBlank (Fin 2)) :
+theorem step_modeF_011 (w s : ListBlank (Fin 2)) :
     (cfg_modeF w ((1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> s)) [target_tm]⊢⁺
       cfg_modeF ((0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> w) s := by
   unfold cfg_modeF F; execute
@@ -293,72 +287,72 @@ def evalS : List STok → ListBlank (Fin 2)
   | .T011 :: S => (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> evalS S
 
 -- Symbolic transitions on `(evalW L)` and `(evalS S)`
-lemma sym_h01B_nil (S : List STok) :
+theorem sym_h01B_nil (S : List STok) :
     (cfg_h01B (evalW []) (evalS S)) [target_tm]⊢⁺
       cfg_modeB (evalW [.W100]) (evalS S) :=
   step_h01B_nil (evalS S)
 
-lemma sym_h01B_010 (L : List WTok) (S : List STok) :
+theorem sym_h01B_010 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W010 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_modeB (evalW (.W110 :: L)) (evalS S) :=
   step_h01B_010 (evalW L) (evalS S)
 
-lemma sym_h01B_0010 (L : List WTok) (S : List STok) :
+theorem sym_h01B_0010 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W0010 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_modeB (evalW (.W1010 :: L)) (evalS S) :=
   step_h01B_0010 (evalW L) (evalS S)
 
-lemma sym_h01B_0110 (L : List WTok) (S : List STok) :
+theorem sym_h01B_0110 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W0110 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_modeB (evalW (.W1110 :: L)) (evalS S) :=
   step_h01B_0110 (evalW L) (evalS S)
 
-lemma sym_h01B_110 (L : List WTok) (S : List STok) :
+theorem sym_h01B_110 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W110 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_modeB (evalW (.W100 :: L)) (evalS S) :=
   step_h01B_110 (evalW L) (evalS S)
 
-lemma sym_h01B_1110 (L : List WTok) (S : List STok) :
+theorem sym_h01B_1110 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W1110 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_modeB (evalW (.W1010 :: L)) (evalS S) :=
   step_h01B_1110 (evalW L) (evalS S)
 
-lemma sym_h01B_100 (L : List WTok) (S : List STok) :
+theorem sym_h01B_100 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W100 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_h01B (evalW L) (evalS (.T011 :: S)) :=
   step_h01B_100 (evalW L) (evalS S)
 
-lemma sym_h01B_1010 (L : List WTok) (S : List STok) :
+theorem sym_h01B_1010 (L : List WTok) (S : List STok) :
     (cfg_h01B (evalW (.W1010 :: L)) (evalS S)) [target_tm]⊢⁺
       cfg_h01B (evalW L) (evalS (.T0100 :: S)) :=
   step_h01B_1010 (evalW L) (evalS S)
 
-lemma sym_modeB_0100 (L : List WTok) (S : List STok) :
+theorem sym_modeB_0100 (L : List WTok) (S : List STok) :
     (cfg_modeB (evalW L) (evalS (.T0100 :: S))) [target_tm]⊢⁺
       cfg_h01B (evalW L) (evalS (.T0101 :: S)) :=
   step_modeB_0100 (evalW L) (evalS S)
 
-lemma sym_modeB_0101 (L : List WTok) (S : List STok) :
+theorem sym_modeB_0101 (L : List WTok) (S : List STok) :
     (cfg_modeB (evalW L) (evalS (.T0101 :: S))) [target_tm]⊢⁺
       cfg_modeB (evalW (.W1010 :: L)) (evalS S) :=
   step_modeB_0101 (evalW L) (evalS S)
 
-lemma sym_modeB_011 (L : List WTok) (S : List STok) :
+theorem sym_modeB_011 (L : List WTok) (S : List STok) :
     (cfg_modeB (evalW L) (evalS (.T011 :: S))) [target_tm]⊢⁺
       cfg_modeF (evalW (.W010 :: L)) (evalS S) :=
   step_modeB_011 (evalW L) (evalS S)
 
-lemma sym_modeF_0100 (L : List WTok) (S : List STok) :
+theorem sym_modeF_0100 (L : List WTok) (S : List STok) :
     (cfg_modeF (evalW L) (evalS (.T0100 :: S))) [target_tm]⊢⁺
       cfg_h01B (evalW L) (evalS (.T0100 :: S)) :=
   step_modeF_0100 (evalW L) (evalS S)
 
-lemma sym_modeF_0101 (L : List WTok) (S : List STok) :
+theorem sym_modeF_0101 (L : List WTok) (S : List STok) :
     (cfg_modeF (evalW L) (evalS (.T0101 :: S))) [target_tm]⊢⁺
       cfg_modeB (evalW (.W1010 :: L)) (evalS S) :=
   step_modeF_0101 (evalW L) (evalS S)
 
-lemma sym_modeF_011 (L : List WTok) (S : List STok) :
+theorem sym_modeF_011 (L : List WTok) (S : List STok) :
     (cfg_modeF (evalW L) (evalS (.T011 :: S))) [target_tm]⊢⁺
       cfg_modeF (evalW (.W010 :: L)) (evalS S) :=
   step_modeF_011 (evalW L) (evalS S)
@@ -703,19 +697,19 @@ theorem stepOK_W1010_F {M M₁ : List WTok}
       exact ⟨rfl, rfl, by omega, by omega⟩
 
 -- Symbolic pass combinators
-lemma pass_W100_B {M M' : List WTok}
+theorem pass_W100_B {M M' : List WTok}
     (h : ∀ S : List STok, (cfg_h01B (evalW M) (evalS S)) [target_tm]⊢⁺ cfg_modeB (evalW M') (evalS S))
     (S : List STok) :
     (cfg_h01B (evalW (.W100 :: M)) (evalS S)) [target_tm]⊢⁺ cfg_modeF (evalW (.W010 :: M')) (evalS S) :=
   stepPlus_trans (sym_h01B_100 M S) (stepPlus_trans (h (.T011 :: S)) (sym_modeB_011 M' S))
 
-lemma pass_W100_F {M M' : List WTok}
+theorem pass_W100_F {M M' : List WTok}
     (h : ∀ S : List STok, (cfg_h01B (evalW M) (evalS S)) [target_tm]⊢⁺ cfg_modeF (evalW M') (evalS S))
     (S : List STok) :
     (cfg_h01B (evalW (.W100 :: M)) (evalS S)) [target_tm]⊢⁺ cfg_modeF (evalW (.W010 :: M')) (evalS S) :=
   stepPlus_trans (sym_h01B_100 M S) (stepPlus_trans (h (.T011 :: S)) (sym_modeF_011 M' S))
 
-lemma pass_W1010_BB {M M₁ M₂ : List WTok}
+theorem pass_W1010_BB {M M₁ M₂ : List WTok}
     (h₁ : ∀ S : List STok, (cfg_h01B (evalW M) (evalS S)) [target_tm]⊢⁺ cfg_modeB (evalW M₁) (evalS S))
     (h₂ : ∀ S : List STok, (cfg_h01B (evalW M₁) (evalS S)) [target_tm]⊢⁺ cfg_modeB (evalW M₂) (evalS S))
     (S : List STok) :
@@ -726,7 +720,7 @@ lemma pass_W1010_BB {M M₁ M₂ : List WTok}
         (stepPlus_trans (h₂ (.T0101 :: S))
           (sym_modeB_0101 M₂ S))))
 
-lemma pass_W1010_BF {M M₁ M₂ : List WTok}
+theorem pass_W1010_BF {M M₁ M₂ : List WTok}
     (h₁ : ∀ S : List STok, (cfg_h01B (evalW M) (evalS S)) [target_tm]⊢⁺ cfg_modeB (evalW M₁) (evalS S))
     (h₂ : ∀ S : List STok, (cfg_h01B (evalW M₁) (evalS S)) [target_tm]⊢⁺ cfg_modeF (evalW M₂) (evalS S))
     (S : List STok) :
@@ -737,7 +731,7 @@ lemma pass_W1010_BF {M M₁ M₂ : List WTok}
         (stepPlus_trans (h₂ (.T0101 :: S))
           (sym_modeF_0101 M₂ S))))
 
-lemma pass_W1010_F {M M₁ : List WTok}
+theorem pass_W1010_F {M M₁ : List WTok}
     (h₁ : ∀ S : List STok, (cfg_h01B (evalW M) (evalS S)) [target_tm]⊢⁺ cfg_modeF (evalW (.W010 :: M₁)) (evalS S))
     (S : List STok) :
     (cfg_h01B (evalW (.W1010 :: M)) (evalS S)) [target_tm]⊢⁺ cfg_modeB (evalW (.W1010 :: .W100 :: M₁)) (evalS S) :=
@@ -855,14 +849,14 @@ theorem buildTreeW : ∀ (L : List WTok) (n : Nat), TreeW n L
 -- Section 10: Initial Reachability (`step_init_to_w4`) & `holdout_0504_nonhalt`
 -- ============================================================================
 
-lemma step_modeB_reparse {u w : List WTok}
+theorem step_modeB_reparse {u w : List WTok}
     (heq : (1 : Fin 2) >> (0 : Fin 2) >> evalW u = evalW w) :
     (cfg_modeB (evalW u) (evalS [])) [target_tm]⊢⁺
       cfg_h01B (evalW w) (evalS []) := by
   rw [← heq]
   exact step_modeB_base (evalW u)
 
-lemma step_init_to_w4 :
+theorem step_init_to_w4 :
     (init []) [target_tm]⊢⁺
       cfg_h01B (evalW [.W1010, .W1010, .W1010, .W0010, .W1010, .W010, .W100]) (evalS []) := by
   have h_w1 := pass_W1010_BF sym_h01B_nil (pass_W100_B sym_h01B_nil)
@@ -896,12 +890,8 @@ end Solution
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

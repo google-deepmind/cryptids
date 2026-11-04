@@ -31,14 +31,14 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
 
-lemma multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
+theorem multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
     multiStep M c (n + 1) = (multiStep M c n).bind (step M) := by
   simp only [multiStep, Function.iterate_succ_apply']
 
-lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
+theorem multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     multiStep M c₁ (n + m) = (multiStep M c₁ n).bind (fun c₂ => multiStep M c₂ m) := by
   induction m with
   | zero => simp
@@ -46,35 +46,35 @@ lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
+theorem multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
     (h₁ : c₁ [M]⊢^{n} c₂) (h₂ : c₂ [M]⊢^{m} c₃) :
     c₁ [M]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-@[simp] lemma pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
-@[simp] lemma nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
+@[simp] theorem pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
+@[simp] theorem nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
     (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
-@[simp] lemma init_nil : (init ([] : List (Fin 2))) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem init_nil : (init ([] : List (Fin 2))) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 omit [Inhabited Γ] in
 @[simp]
 
 
-lemma listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
+theorem listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
     s <+ (([1] : List (Fin 2)) ^ (n + m)) := by
   rw [listblank_append_append, list_pow_add_comm, ← list_pow_add]
 
-lemma listblank_right_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
+theorem listblank_right_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (([1] : List (Fin 2)) ^ n) +> ((([1] : List (Fin 2)) ^ m) +> s) =
     (([1] : List (Fin 2)) ^ (n + m)) +> s := by
   rw [← listblank_append_right_assoc, ← list_pow_add]
@@ -91,24 +91,24 @@ def encRight1 : List ℕ → ListBlank (Fin 2)
   | [] => default
   | d :: R => (([1] : List (Fin 2)) ^ (d + 1)) +> ((encRight1 R).cons 0)
 
-@[simp] lemma encLeft_nil : encLeft1 [] = default := rfl
-@[simp] lemma encLeft_cons (a : ℕ) (L : List ℕ) :
+@[simp] theorem encLeft_nil : encLeft1 [] = default := rfl
+@[simp] theorem encLeft_cons (a : ℕ) (L : List ℕ) :
     encLeft1 (a :: L) = ((encLeft1 L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1)) := rfl
-@[simp] lemma encRight_nil : encRight1 [] = default := rfl
-@[simp] lemma encRight_cons (d : ℕ) (R : List ℕ) :
+@[simp] theorem encRight_nil : encRight1 [] = default := rfl
+@[simp] theorem encRight_cons (d : ℕ) (R : List ℕ) :
     encRight1 (d :: R) = (([1] : List (Fin 2)) ^ (d + 1)) +> ((encRight1 R).cons 0) := rfl
 
 def bumpHead : List ℕ → List ℕ
   | [] => [0]
   | b :: L => (b + 1) :: L
 
-@[simp] lemma encLeft_cons_one (L : List ℕ) :
+@[simp] theorem encLeft_cons_one (L : List ℕ) :
     (1 : Fin 2) >> encLeft1 L = encLeft1 (bumpHead L) := by
   cases L with
   | nil => simp [bumpHead, encLeft1]
   | cons b L' => rfl
 
-@[simp] lemma encRight_cons_one (R : List ℕ) :
+@[simp] theorem encRight_cons_one (R : List ℕ) :
     (1 : Fin 2) >> encRight1 R = encRight1 (bumpHead R) := by
   cases R with
   | nil => simp [bumpHead, encRight1]
@@ -141,8 +141,8 @@ def evalStackCfg : StackMode → List ℕ → List ℕ → Cfg (Fin 2) (Fin 6)
   | .F, L, R => cfg_F L R
   | .AR, L, R => cfg_AR L R
 
-@[simp] lemma evalStackCfg_F (L R : List ℕ) : evalStackCfg .F L R = cfg_F L R := rfl
-@[simp] lemma evalStackCfg_AR (L R : List ℕ) : evalStackCfg .AR L R = cfg_AR L R := rfl
+@[simp] theorem evalStackCfg_F (L R : List ℕ) : evalStackCfg .F L R = cfg_F L R := rfl
+@[simp] theorem evalStackCfg_AR (L R : List ℕ) : evalStackCfg .AR L R = cfg_AR L R := rfl
 
 -- Mode F Rules (8 Rules)
 
@@ -303,7 +303,7 @@ theorem rule_AR_add_two (L R : List ℕ) (d : ℕ) :
 -- Section 2: Multi-Step Bulk Contractions on `List ℕ`
 -- ============================================================================
 
-lemma bumpHead_iterate_cons (k v : ℕ) (L : List ℕ) :
+theorem bumpHead_iterate_cons (k v : ℕ) (L : List ℕ) :
     bumpHead^[k] (v :: L) = (v + k) :: L := by
   induction k generalizing v with
   | zero => simp
@@ -312,11 +312,11 @@ lemma bumpHead_iterate_cons (k v : ℕ) (L : List ℕ) :
     have h : v + 1 + k = v + (k + 1) := by omega
     rw [h]
 
-lemma bumpHead_iterate_nil (k : ℕ) :
+theorem bumpHead_iterate_nil (k : ℕ) :
     bumpHead^[k + 1] [] = [k] := by
   rw [Function.iterate_succ_apply, bumpHead, bumpHead_iterate_cons, Nat.zero_add]
 
-lemma bumpHead2_iterate_eq (k : ℕ) (R : List ℕ) :
+theorem bumpHead2_iterate_eq (k : ℕ) (R : List ℕ) :
     (fun R => bumpHead (bumpHead R))^[k] R = bumpHead^[2 * k] R := by
   induction k generalizing R with
   | zero => simp
@@ -329,7 +329,7 @@ def stepF3Right : ℕ → List ℕ → List ℕ
   | 0, R => R
   | k + 1, R => stepF3Right k (0 :: bumpHead R)
 
-lemma stepF3Right_succ (k : ℕ) (R : List ℕ) :
+theorem stepF3Right_succ (k : ℕ) (R : List ℕ) :
     stepF3Right (k + 1) R = 0 :: (List.replicate k 1 ++ bumpHead R) := by
   induction k generalizing R with
   | zero => rfl
@@ -491,16 +491,16 @@ def SubHalt (S : List ℕ) : Prop :=
   ∀ R_bot : List ℕ,
     ∃ cfg, ((cfg_F (0 :: S) (9 :: R_bot)) [target_tm]⊢* cfg) ∧ (step target_tm cfg).isNone
 
-lemma topStep_refl (S : List ℕ) : TopStep S S := ⟨0, rfl⟩
+theorem topStep_refl (S : List ℕ) : TopStep S S := ⟨0, rfl⟩
 
-lemma topStep_trans {S₁ S₂ S₃ : List ℕ} (h₁ : TopStep S₁ S₂) (h₂ : TopStep S₂ S₃) :
+theorem topStep_trans {S₁ S₂ S₃ : List ℕ} (h₁ : TopStep S₁ S₂) (h₂ : TopStep S₂ S₃) :
     TopStep S₁ S₃ := stepStar_trans h₁ h₂
 
-lemma exit_sub (W : List ℕ) (R_bot : List ℕ) :
+theorem exit_sub (W : List ℕ) (R_bot : List ℕ) :
     (cfg_AR W (10 :: R_bot)) [target_tm]⊢* (cfg_AR (0 :: 0 :: 0 :: 0 :: 0 :: W) (0 :: R_bot)) := by
   simpa using rule_AR_step2_all W R_bot 0 5
 
-lemma exit_top (W : List ℕ) :
+theorem exit_top (W : List ℕ) :
     (cfg_AR W [6]) [target_tm]⊢* (cfg_F (0 :: W) [5]) := by
   refine stepStar_trans (rule_AR_step2_all W [] 0 3) ?_
   dsimp [List.replicate]
@@ -706,25 +706,25 @@ def forceNat {α : Type} (e : ℕ) (f : ℕ → α) : α :=
   Nat.rec (f 0) (fun v _ => f v) (Nat.add e 1)
 
 @[simp]
-lemma forceNat_eq {α : Type} (e : ℕ) (f : ℕ → α) : forceNat e f = f e := rfl
+theorem forceNat_eq {α : Type} (e : ℕ) (f : ℕ → α) : forceNat e f = f e := rfl
 
 def stepTowerAt (c : ℕ) : List ℕ → List ℕ
   | [] => []
   | k :: ks => forceNat (k + c) (fun kc => forceNat (4 * c) (fun c4 => kc :: stepTowerAt c4 ks))
 
-lemma stepTowerAt_ne_nil (c : ℕ) {ks : List ℕ} (hks : ks ≠ []) :
+theorem stepTowerAt_ne_nil (c : ℕ) {ks : List ℕ} (hks : ks ≠ []) :
     stepTowerAt c ks ≠ [] := by
   cases ks with
   | nil => contradiction
   | cons _ _ => simp [stepTowerAt]
 
-lemma stepTowerAt_length (c : ℕ) (ks : List ℕ) :
+theorem stepTowerAt_length (c : ℕ) (ks : List ℕ) :
     (stepTowerAt c ks).length = ks.length := by
   induction ks generalizing c with
   | nil => rfl
   | cons k ks ih => simp [stepTowerAt, ih (4 * c)]
 
-lemma stepTowerAt_four (ks : List ℕ) (c : ℕ) :
+theorem stepTowerAt_four (ks : List ℕ) (c : ℕ) :
     (stepTowerAt c)^[4] ks = stepTowerAt (4 * c) ks := by
   induction ks generalizing c with
   | nil => rfl
@@ -774,7 +774,7 @@ def absorbA0 (k : ℕ) (ks : List ℕ) : List ℕ :=
   | [] => [k + 1]
   | _ :: _ => (k + 1) :: stepTowerAt 2 (stepTowerAt 2 ks)
 
-lemma absorbA0_ne_nil (k : ℕ) (ks : List ℕ) : absorbA0 k ks ≠ [] := by
+theorem absorbA0_ne_nil (k : ℕ) (ks : List ℕ) : absorbA0 k ks ≠ [] := by
   cases ks <;> simp [absorbA0]
 
 theorem towerA3_absorb_A0 (k : ℕ) (ks : List ℕ) (U : List ℕ) :
@@ -793,7 +793,7 @@ def absorbTowerA0Out : List ℕ → List ℕ → List ℕ
   | [], ks_top => ks_top
   | k :: ks_bot, ks_top => absorbTowerA0Out ks_bot (absorbA0 k ks_top)
 
-lemma absorbTowerA0Out_ne_nil : ∀ (ks_bot ks_top : List ℕ),
+theorem absorbTowerA0Out_ne_nil : ∀ (ks_bot ks_top : List ℕ),
     (ks_bot ≠ [] ∨ ks_top ≠ []) → absorbTowerA0Out ks_bot ks_top ≠ []
   | [], ks_top, h => by
     rcases h with h | h
@@ -840,7 +840,7 @@ theorem towerA3_halt (ks : List ℕ) (hks : ks ≠ []) {S : List ℕ} (h : SubHa
   | zero => exact absurd (List.eq_nil_of_length_eq_zero hlen) hks
   | succ n => exact towerA3_halt_len n ks hlen h
 
-lemma TowerA3_append : ∀ (ks₁ ks₂ : List ℕ) (S : List ℕ),
+theorem TowerA3_append : ∀ (ks₁ ks₂ : List ℕ) (S : List ℕ),
     TowerA3 (ks₁ ++ ks₂) S = TowerA3 ks₂ (TowerA3 ks₁ S)
   | [], _, _ => rfl
   | k :: ks₁, ks₂, S => by
@@ -864,12 +864,12 @@ def evalRLEWith (isOpen : Bool) (s : RLEStack) (bot : List ℕ) : List ℕ :=
   evalRLE s ++ tailFor isOpen bot
 
 @[simp]
-lemma evalRLEWith_false (s : RLEStack) (bot : List ℕ) :
+theorem evalRLEWith_false (s : RLEStack) (bot : List ℕ) :
     evalRLEWith false s bot = evalRLE s := by
   simp [evalRLEWith, tailFor]
 
 @[simp]
-lemma evalRLEWith_true (s : RLEStack) (bot : List ℕ) :
+theorem evalRLEWith_true (s : RLEStack) (bot : List ℕ) :
     evalRLEWith true s bot = evalRLE s ++ bot := by
   simp [evalRLEWith, tailFor]
 
@@ -881,7 +881,7 @@ def pushRun (v c : ℕ) (s : RLEStack) : RLEStack :=
       if v = v' then forceNat (c + c') (fun cc => (v', cc) :: rest)
       else forceNat v (fun v0 => forceNat c (fun c0 => (v0, c0) :: (v', c') :: rest))
 
-lemma evalRLE_pushRun (v c : ℕ) (s : RLEStack) :
+theorem evalRLE_pushRun (v c : ℕ) (s : RLEStack) :
     evalRLE (pushRun v c s) = List.replicate c v ++ evalRLE s := by
   unfold pushRun
   split_ifs with hc
@@ -896,11 +896,11 @@ lemma evalRLE_pushRun (v c : ℕ) (s : RLEStack) :
         rw [evalRLE, evalRLE, List.replicate_add, List.append_assoc]
       · simp [evalRLE]
 
-lemma evalRLEWith_pushRun (isOpen : Bool) (v c : ℕ) (s : RLEStack) (bot : List ℕ) :
+theorem evalRLEWith_pushRun (isOpen : Bool) (v c : ℕ) (s : RLEStack) (bot : List ℕ) :
     evalRLEWith isOpen (pushRun v c s) bot = List.replicate c v ++ evalRLEWith isOpen s bot := by
   simp [evalRLEWith, evalRLE_pushRun, List.append_assoc]
 
-lemma evalRLEWith_pushOne (isOpen : Bool) (v : ℕ) (s : RLEStack) (bot : List ℕ) :
+theorem evalRLEWith_pushOne (isOpen : Bool) (v : ℕ) (s : RLEStack) (bot : List ℕ) :
     evalRLEWith isOpen (pushRun v 1 s) bot = v :: evalRLEWith isOpen s bot := by
   simpa using evalRLEWith_pushRun isOpen v 1 s bot
 
@@ -909,7 +909,7 @@ def popOne : RLEStack → Option (ℕ × RLEStack)
   | (_, 0) :: s => popOne s
   | (v, c + 1) :: s => some (v, if c = 0 then s else (v, c) :: s)
 
-lemma evalRLE_popOne_some : ∀ {s s' : RLEStack} {v : ℕ},
+theorem evalRLE_popOne_some : ∀ {s s' : RLEStack} {v : ℕ},
     popOne s = some (v, s') → evalRLE s = v :: evalRLE s'
   | [], _, _, h => by simp [popOne] at h
   | (_, 0) :: s, s', v, h => by
@@ -922,7 +922,7 @@ lemma evalRLE_popOne_some : ∀ {s s' : RLEStack} {v : ℕ},
     · subst hc; simp [evalRLE]
     · simp [evalRLE, List.replicate_succ]
 
-lemma evalRLE_popOne_none : ∀ {s : RLEStack},
+theorem evalRLE_popOne_none : ∀ {s : RLEStack},
     popOne s = none → evalRLE s = []
   | [], _ => rfl
   | (_, 0) :: s, h => by
@@ -930,12 +930,12 @@ lemma evalRLE_popOne_none : ∀ {s : RLEStack},
     exact evalRLE_popOne_none h
   | (_, _ + 1) :: _, h => by simp [popOne] at h
 
-lemma evalRLEWith_popOne_some {isOpen : Bool} {s s' : RLEStack} {v : ℕ} (bot : List ℕ)
+theorem evalRLEWith_popOne_some {isOpen : Bool} {s s' : RLEStack} {v : ℕ} (bot : List ℕ)
     (h : popOne s = some (v, s')) :
     evalRLEWith isOpen s bot = v :: evalRLEWith isOpen s' bot := by
   simp [evalRLEWith, evalRLE_popOne_some h]
 
-lemma evalRLEWith_popOne_none_closed {s : RLEStack} (bot : List ℕ)
+theorem evalRLEWith_popOne_none_closed {s : RLEStack} (bot : List ℕ)
     (h : popOne s = none) :
     evalRLEWith false s bot = [] := by
   simp [evalRLEWith, tailFor, evalRLE_popOne_none h]
@@ -948,7 +948,7 @@ def bumpTopOpt (isOpen : Bool) (k : ℕ) (s : RLEStack) : Option RLEStack :=
     | some (v, s') => some (pushRun (v + (m + 1)) 1 s')
     | none => if isOpen then none else some (pushRun m 1 [])
 
-lemma evalRLEWith_bumpTopOpt {isOpen : Bool} {k : ℕ} {s s' : RLEStack} (bot : List ℕ)
+theorem evalRLEWith_bumpTopOpt {isOpen : Bool} {k : ℕ} {s s' : RLEStack} (bot : List ℕ)
     (h : bumpTopOpt isOpen k s = some s') :
     evalRLEWith isOpen s' bot = bumpHead^[k] (evalRLEWith isOpen s bot) := by
   cases k with
@@ -1005,7 +1005,7 @@ def tryFastF (L R : RLEStack) : Option (RLEStack × RLEStack) :=
       else none
     | _ + 1 => none
 
-lemma tryFastF_sound {openL openR : Bool} {L R L' R' : RLEStack} (L_bot R_bot : List ℕ)
+theorem tryFastF_sound {openL openR : Bool} {L R L' R' : RLEStack} (L_bot R_bot : List ℕ)
     (h : tryFastF L R = some (L', R')) :
     (cfg_F (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
     (cfg_F (evalRLEWith openL L' L_bot) (evalRLEWith openR R' R_bot)) := by
@@ -1071,7 +1071,7 @@ def tryFastAR_ones (fast1 : Bool) (L R : RLEStack) : Option (RLEStack × RLEStac
         else none
       | _ + 2 => none
 
-lemma tryFastAR_ones_sound {openL openR fast1 : Bool} {L R L' R' : RLEStack}
+theorem tryFastAR_ones_sound {openL openR fast1 : Bool} {L R L' R' : RLEStack}
     (L_bot R_bot : List ℕ) (h : tryFastAR_ones fast1 L R = some (L', R')) :
     (cfg_AR (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
     (cfg_AR (evalRLEWith openL L' L_bot) (evalRLEWith openR R' R_bot)) := by
@@ -1136,7 +1136,7 @@ def tryFastAR_zeroOnes (L R : RLEStack) : Option (RLEStack × RLEStack) :=
           | _ + 1 => none
       else none
 
-lemma tryFastAR_zeroOnes_sound {openL openR : Bool} {L R L' R' : RLEStack}
+theorem tryFastAR_zeroOnes_sound {openL openR : Bool} {L R L' R' : RLEStack}
     (L_bot R_bot : List ℕ) (h : tryFastAR_zeroOnes L R = some (L', R')) :
     (cfg_AR (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
     (cfg_AR (evalRLEWith openL L' L_bot) (evalRLEWith openR R' R_bot)) := by
@@ -1222,7 +1222,7 @@ def stepGenF_slow (openL openR : Bool) (L R : RLEStack) : GenStepResult :=
         .stepped .F (pushRun (a' % 3) 1 L₁)
           (pushRun 0 1 (pushRun 1 (a' / 3) R₁))
 
-lemma stepGenF_slow_sound_step {openL openR : Bool} {L R L' R' : RLEStack} {mode' : StackMode}
+theorem stepGenF_slow_sound_step {openL openR : Bool} {L R L' R' : RLEStack} {mode' : StackMode}
     (L_bot R_bot : List ℕ) (h : stepGenF_slow openL openR L R = .stepped mode' L' R') :
     (cfg_F (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
     (evalStackCfg mode' (evalRLEWith openL L' L_bot) (evalRLEWith openR R' R_bot)) := by
@@ -1335,7 +1335,7 @@ lemma stepGenF_slow_sound_step {openL openR : Bool} {L R L' R' : RLEStack} {mode
         rw [stepF3Right_succ] at h_step
         exact h_step
 
-lemma stepGenF_slow_sound_halt {openL openR : Bool} {L R : RLEStack}
+theorem stepGenF_slow_sound_halt {openL openR : Bool} {L R : RLEStack}
     (L_bot R_bot : List ℕ) (h : stepGenF_slow openL openR L R = .halted) :
     ∃ cfg, ((cfg_F (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢* cfg) ∧
       (step target_tm cfg).isNone := by
@@ -1419,7 +1419,7 @@ def stepGenAR_slow (openL openR : Bool) (L R : RLEStack) : GenStepResult :=
       let k := (d' + 2) / 2
       .stepped .AR (pushRun 0 k L) (pushRun ((d' + 2) % 2) 1 R₁)
 
-lemma stepGenAR_slow_sound_step {openL openR : Bool} {L R L' R' : RLEStack} {mode' : StackMode}
+theorem stepGenAR_slow_sound_step {openL openR : Bool} {L R L' R' : RLEStack} {mode' : StackMode}
     (L_bot R_bot : List ℕ) (h : stepGenAR_slow openL openR L R = .stepped mode' L' R') :
     (cfg_AR (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
     (evalStackCfg mode' (evalRLEWith openL L' L_bot) (evalRLEWith openR R' R_bot)) := by
@@ -1540,7 +1540,7 @@ lemma stepGenAR_slow_sound_step {openL openR : Bool} {L R L' R' : RLEStack} {mod
       exact rule_AR_step2_all (evalRLEWith openL L L_bot) (evalRLEWith openR R₁ R_bot)
         ((d' + 2) % 2) ((d' + 2) / 2)
 
-lemma stepGenAR_slow_not_halt (openL openR : Bool) (L R : RLEStack) :
+theorem stepGenAR_slow_not_halt (openL openR : Bool) (L R : RLEStack) :
     stepGenAR_slow openL openR L R ≠ .halted := by
   unfold stepGenAR_slow
   cases popOne R with
@@ -1583,7 +1583,7 @@ def stepGenRLE (openL openR fast1 : Bool) (mode : StackMode) (L R : RLEStack) : 
       | some (L', R') => .stepped .AR L' R'
       | none => stepGenAR_slow openL openR L R
 
-lemma stepGenRLE_sound_step {openL openR fast1 : Bool} {mode mode' : StackMode}
+theorem stepGenRLE_sound_step {openL openR fast1 : Bool} {mode mode' : StackMode}
     {L R L' R' : RLEStack} (L_bot R_bot : List ℕ)
     (h : stepGenRLE openL openR fast1 mode L R = .stepped mode' L' R') :
     (evalStackCfg mode (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
@@ -1622,7 +1622,7 @@ lemma stepGenRLE_sound_step {openL openR fast1 : Bool} {mode mode' : StackMode}
         rw [hfast2] at h
         exact stepGenAR_slow_sound_step L_bot R_bot h
 
-lemma stepGenRLE_sound_halt {openL openR fast1 : Bool} {mode : StackMode} {L R : RLEStack}
+theorem stepGenRLE_sound_halt {openL openR fast1 : Bool} {mode : StackMode} {L R : RLEStack}
     (L_bot R_bot : List ℕ) (h : stepGenRLE openL openR fast1 mode L R = .halted) :
     ∃ cfg, ((evalStackCfg mode (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢* cfg) ∧
       (step target_tm cfg).isNone := by
@@ -1662,7 +1662,7 @@ def runStepsRLE : ℕ → Bool → Bool → Bool → StackMode → RLEStack → 
     | .halted => .halted
     | .abort => .abort
 
-lemma runStepsRLE_sound_step : ∀ {n : ℕ} {openL openR fast1 : Bool} {mode mode' : StackMode}
+theorem runStepsRLE_sound_step : ∀ {n : ℕ} {openL openR fast1 : Bool} {mode mode' : StackMode}
     {L R L' R' : RLEStack} (L_bot R_bot : List ℕ),
     runStepsRLE n openL openR fast1 mode L R = .stepped mode' L' R' →
     (evalStackCfg mode (evalRLEWith openL L L_bot) (evalRLEWith openR R R_bot)) [target_tm]⊢*
@@ -1691,7 +1691,7 @@ def peelZeros : ℕ → RLEStack → Option RLEStack
       | 0 => peelZeros n s'
       | _ + 1 => none
 
-lemma evalRLE_peelZeros : ∀ {n : ℕ} {s s' : RLEStack},
+theorem evalRLE_peelZeros : ∀ {n : ℕ} {s s' : RLEStack},
     peelZeros n s = some s' → evalRLE s = List.replicate n 0 ++ evalRLE s'
   | 0, _, _, h => by
     simp only [peelZeros, Option.some.injEq] at h
@@ -1711,7 +1711,7 @@ lemma evalRLE_peelZeros : ∀ {n : ℕ} {s s' : RLEStack},
         rw [evalRLE_popOne_some hpop, evalRLE_peelZeros h]
         rfl
 
-lemma evalRLEWith_peelZeros {isOpen : Bool} {n : ℕ} {s s' : RLEStack} (bot : List ℕ)
+theorem evalRLEWith_peelZeros {isOpen : Bool} {n : ℕ} {s s' : RLEStack} (bot : List ℕ)
     (h : peelZeros n s = some s') :
     evalRLEWith isOpen s bot = List.replicate n 0 ++ evalRLEWith isOpen s' bot := by
   simp [evalRLEWith, evalRLE_peelZeros h, List.append_assoc]
@@ -1721,7 +1721,7 @@ def isSingleVal (v : ℕ) (s : RLEStack) : Bool :=
   | some (w, s') => (w == v) && (popOne s').isNone
   | none => false
 
-lemma evalRLEWith_isSingleVal {v : ℕ} {s : RLEStack} (bot : List ℕ)
+theorem evalRLEWith_isSingleVal {v : ℕ} {s : RLEStack} (bot : List ℕ)
     (h : isSingleVal v s = true) :
     evalRLEWith true s bot = v :: bot := by
   unfold isSingleVal at h
@@ -1734,7 +1734,7 @@ lemma evalRLEWith_isSingleVal {v : ℕ} {s : RLEStack} (bot : List ℕ)
     rcases h with ⟨rfl, hpop2⟩
     simp [evalRLEWith, tailFor, evalRLE_popOne_some hpop1, evalRLE_popOne_none hpop2]
 
-lemma evalRLE_isSingleVal {v : ℕ} {s : RLEStack} (h : isSingleVal v s = true) :
+theorem evalRLE_isSingleVal {v : ℕ} {s : RLEStack} (h : isSingleVal v s = true) :
     evalRLE s = [v] := by
   have h1 := evalRLEWith_isSingleVal [] h
   simpa [evalRLEWith, tailFor] using h1
@@ -1761,7 +1761,7 @@ def runSubLoop : ℕ → Bool → Bool → StackMode → RLEStack → RLEStack �
 def runSubSim (fuel : ℕ) (openL fast1 : Bool) (S : RLEStack) : SubSimResult :=
   runSubLoop fuel openL fast1 .F (pushRun 0 1 S) [(9, 1)]
 
-lemma runSubLoop_sound_step : ∀ {fuel : ℕ} {openL fast1 : Bool} {mode : StackMode}
+theorem runSubLoop_sound_step : ∀ {fuel : ℕ} {openL fast1 : Bool} {mode : StackMode}
     {L R S' : RLEStack} (L_bot R_bot : List ℕ),
     runSubLoop fuel openL fast1 mode L R = .stepped S' →
     (evalStackCfg mode (evalRLEWith openL L L_bot) (evalRLEWith true R R_bot)) [target_tm]⊢*
@@ -1788,7 +1788,7 @@ lemma runSubLoop_sound_step : ∀ {fuel : ℕ} {openL fast1 : Bool} {mode : Stac
       | halted => rw [hstep] at h; simp at h
       | abort => rw [hstep] at h; simp at h
 
-lemma runSubLoop_sound_halt : ∀ {fuel : ℕ} {openL fast1 : Bool} {mode : StackMode}
+theorem runSubLoop_sound_halt : ∀ {fuel : ℕ} {openL fast1 : Bool} {mode : StackMode}
     {L R : RLEStack} (L_bot R_bot : List ℕ),
     runSubLoop fuel openL fast1 mode L R = .halted →
     ∃ cfg, ((evalStackCfg mode (evalRLEWith openL L L_bot) (evalRLEWith true R R_bot)) [target_tm]⊢* cfg) ∧
@@ -1807,21 +1807,21 @@ lemma runSubLoop_sound_halt : ∀ {fuel : ℕ} {openL fast1 : Bool} {mode : Stac
         exact stepGenRLE_sound_halt L_bot R_bot hstep
       | abort => rw [hstep] at h; simp at h
 
-lemma runSubSim_sound_closed {fuel : ℕ} {fast1 : Bool} {S S' : RLEStack}
+theorem runSubSim_sound_closed {fuel : ℕ} {fast1 : Bool} {S S' : RLEStack}
     (h : runSubSim fuel false fast1 S = .stepped S') :
     SubStep (evalRLE S) (evalRLE S') := by
   intro R_bot
   have h1 := runSubLoop_sound_step [] R_bot h
   simpa [evalRLEWith, tailFor, evalRLE_pushRun, evalRLE] using h1
 
-lemma runSubSim_sound_open {fuel : ℕ} {fast1 : Bool} {S S' : RLEStack} (U : List ℕ)
+theorem runSubSim_sound_open {fuel : ℕ} {fast1 : Bool} {S S' : RLEStack} (U : List ℕ)
     (h : runSubSim fuel true fast1 S = .stepped S') :
     SubStep (evalRLE S ++ U) (evalRLE S' ++ U) := by
   intro R_bot
   have h1 := runSubLoop_sound_step U R_bot h
   simpa [evalRLEWith, tailFor, evalRLE_pushRun, evalRLE] using h1
 
-lemma runSubSim_sound_halt {fuel : ℕ} {fast1 : Bool} {S : RLEStack}
+theorem runSubSim_sound_halt {fuel : ℕ} {fast1 : Bool} {S : RLEStack}
     (h : runSubSim fuel false fast1 S = .halted) :
     SubHalt (evalRLE S) := by
   intro R_bot
@@ -1853,7 +1853,7 @@ def peelOneA3 (s : RLEStack) : Option (ℕ × RLEStack) :=
           else none
     else none
 
-lemma evalRLE_peelOneA3 {s s' : RLEStack} {k : ℕ} (h : peelOneA3 s = some (k, s')) :
+theorem evalRLE_peelOneA3 {s s' : RLEStack} {k : ℕ} (h : peelOneA3 s = some (k, s')) :
     evalRLE s = A3 k (evalRLE s') := by
   unfold peelOneA3 at h
   cases hp1 : popOne s with
@@ -1910,7 +1910,7 @@ def peelA3Loop : ℕ → List ℕ → RLEStack → List ℕ × RLEStack
     | some (k, s') => peelA3Loop fuel (k :: acc) s'
     | none => (acc, s)
 
-lemma evalRLE_peelA3Loop : ∀ (fuel : ℕ) (acc : List ℕ) (s : RLEStack),
+theorem evalRLE_peelA3Loop : ∀ (fuel : ℕ) (acc : List ℕ) (s : RLEStack),
     TowerA3 (peelA3Loop fuel acc s).1 (evalRLE (peelA3Loop fuel acc s).2) =
     TowerA3 acc (evalRLE s)
   | 0, _, _ => rfl
@@ -1929,11 +1929,11 @@ def wrapTowerA3RLE : List ℕ → RLEStack → RLEStack
   | [], s => s
   | k :: ks, s => wrapTowerA3RLE ks (wrapOneA3RLE k s)
 
-lemma evalRLE_wrapOneA3RLE (k : ℕ) (s : RLEStack) :
+theorem evalRLE_wrapOneA3RLE (k : ℕ) (s : RLEStack) :
     evalRLE (wrapOneA3RLE k s) = A3 k (evalRLE s) := by
   simp [wrapOneA3RLE, evalRLE_pushRun, A3]
 
-lemma evalRLE_wrapTowerA3RLE : ∀ (ks : List ℕ) (s : RLEStack),
+theorem evalRLE_wrapTowerA3RLE : ∀ (ks : List ℕ) (s : RLEStack),
     evalRLE (wrapTowerA3RLE ks s) = TowerA3 ks (evalRLE s)
   | [], _ => rfl
   | k :: ks, s => by
@@ -1946,11 +1946,11 @@ def wrapTowerA0OutRLE : List ℕ → RLEStack → RLEStack
   | [], s => s
   | k :: ks, s => wrapOneA0RLE k (wrapTowerA0OutRLE ks s)
 
-lemma evalRLE_wrapOneA0RLE (k : ℕ) (s : RLEStack) :
+theorem evalRLE_wrapOneA0RLE (k : ℕ) (s : RLEStack) :
     evalRLE (wrapOneA0RLE k s) = A0 k (evalRLE s) := by
   simp [wrapOneA0RLE, evalRLE_pushRun, A0]
 
-lemma evalRLE_wrapTowerA0OutRLE : ∀ (ks : List ℕ) (s : RLEStack),
+theorem evalRLE_wrapTowerA0OutRLE : ∀ (ks : List ℕ) (s : RLEStack),
     evalRLE (wrapTowerA0OutRLE ks s) = TowerA0Out ks (evalRLE s)
   | [], _ => rfl
   | k :: ks, s => by
@@ -1960,7 +1960,7 @@ lemma evalRLE_wrapTowerA0OutRLE : ∀ (ks : List ℕ) (s : RLEStack),
 -- Section 5: Three-Phase Halting Trajectory (`init [] -> HALT`)
 -- ============================================================================
 
-lemma evalRLE_append : ∀ (s₁ s₂ : RLEStack),
+theorem evalRLE_append : ∀ (s₁ s₂ : RLEStack),
     evalRLE (s₁ ++ s₂) = evalRLE s₁ ++ evalRLE s₂
   | [], _ => rfl
   | (v, c) :: s₁, s₂ => by simp [evalRLE, evalRLE_append s₁ s₂, List.append_assoc]
@@ -1981,7 +1981,7 @@ def bodyStackRLE (Z b1 : ℕ) : RLEStack :=
   pushRun 0 1 (pushRun 3 1 (pushRun 0 Z (pushRun 6 1
     (midPrefixRLE ++ [(b1, 1), (2, 1)]))))
 
-lemma evalRLE_bodyStackRLE (Z b1 : ℕ) :
+theorem evalRLE_bodyStackRLE (Z b1 : ℕ) :
     evalRLE (bodyStackRLE Z b1) = bodyStack Z b1 := by
   simp [bodyStackRLE, bodyStack, midPrefix, evalRLE_pushRun, evalRLE_append, evalRLE]
 
@@ -1991,7 +1991,7 @@ def ksInitOut : List ℕ :=
 def expectedPhase1L : RLEStack :=
   pushRun 0 1 (wrapTowerA0OutRLE ksInitOut (bodyStackRLE 56233 3))
 
-lemma evalRLE_expectedPhase1L :
+theorem evalRLE_expectedPhase1L :
     evalRLE expectedPhase1L = 0 :: TowerA0Out ksInitOut (bodyStack 56233 3) := by
   simp [expectedPhase1L, evalRLE_pushRun, evalRLE_wrapTowerA0OutRLE, evalRLE_bodyStackRLE]
 
@@ -2016,7 +2016,7 @@ def tryJumpPhase1 (mode : StackMode) (L R : RLEStack) : Option RLEStack :=
       | _ + 1 => none
   else none
 
-lemma tryJumpPhase1_sound {mode : StackMode} {L R L' : RLEStack}
+theorem tryJumpPhase1_sound {mode : StackMode} {L R L' : RLEStack}
     (h : tryJumpPhase1 mode L R = some L') :
     (evalStackCfg mode (evalRLE L) (evalRLE R)) [target_tm]⊢*
     (cfg_F (evalRLE L') [5]) := by
@@ -2061,7 +2061,7 @@ def stepPhase1 (mode : StackMode) (L R : RLEStack) : Option (StackMode × RLESta
     | .halted => none
     | .abort => none
 
-lemma stepPhase1_sound {mode mode' : StackMode} {L R L' R' : RLEStack}
+theorem stepPhase1_sound {mode mode' : StackMode} {L R L' R' : RLEStack}
     (h : stepPhase1 mode L R = some (mode', L', R')) :
     (evalStackCfg mode (evalRLE L) (evalRLE R)) [target_tm]⊢*
     (evalStackCfg mode' (evalRLE L') (evalRLE R')) := by
@@ -2091,7 +2091,7 @@ def runPhase1Steps : ℕ → StackMode → RLEStack → RLEStack → Option (Sta
     | some (mode₁, L₁, R₁) => runPhase1Steps n mode₁ L₁ R₁
     | none => none
 
-lemma runPhase1Steps_sound : ∀ {n : ℕ} {mode mode' : StackMode} {L R L' R' : RLEStack},
+theorem runPhase1Steps_sound : ∀ {n : ℕ} {mode mode' : StackMode} {L R L' R' : RLEStack},
     runPhase1Steps n mode L R = some (mode', L', R') →
     (evalStackCfg mode (evalRLE L) (evalRLE R)) [target_tm]⊢*
     (evalStackCfg mode' (evalRLE L') (evalRLE R'))
@@ -2109,7 +2109,7 @@ lemma runPhase1Steps_sound : ∀ {n : ℕ} {mode mode' : StackMode} {L R L' R' :
       exact stepStar_trans (stepPhase1_sound hstep) (runPhase1Steps_sound h)
 
 set_option maxRecDepth 200000 in
-lemma runPhase1All_eq :
+theorem runPhase1All_eq :
     runPhase1Steps 11728 .F [] [(1, 1)] = some (.F, expectedPhase1L, [(5, 1)]) := by
   decide +kernel
 
@@ -2139,7 +2139,7 @@ def runOpenSubCalls : ℕ → ℕ → RLEStack → Option RLEStack
     | .halted => none
     | .abort => none
 
-lemma runOpenSubCalls_sound : ∀ {n fuel : ℕ} {s s' : RLEStack} {ks : List ℕ},
+theorem runOpenSubCalls_sound : ∀ {n fuel : ℕ} {s s' : RLEStack} {ks : List ℕ},
     ks ≠ [] → runOpenSubCalls n fuel s = some s' →
     ∀ (U : List ℕ),
     ∃ ks' : List ℕ, ks' ≠ [] ∧
@@ -2166,11 +2166,11 @@ def headForA (m : ℕ) (U : List ℕ) : List ℕ :=
   | 0 => 3 :: 9 :: U
   | m' + 1 => 3 :: 3 :: (List.replicate (8 * m' + 7) 0 ++ (6 :: U))
 
-lemma calls1to10_m0_rle :
+theorem calls1to10_m0_rle :
     runOpenSubCalls 10 50 [(0, 1), (3, 1), (0, 9), (6, 1)] =
     some [(0, 1), (3, 2), (0, 2), (12, 1), (3, 1), (0, 1), (3, 1), (9, 1)] := by decide +kernel
 
-lemma calls1to10_mpos_rle :
+theorem calls1to10_mpos_rle :
     runOpenSubCalls 10 50 [(0, 1), (3, 1), (0, 10)] =
     some [(0, 1), (3, 2), (0, 2), (12, 1), (3, 1), (0, 1), (3, 2)] := by decide +kernel
 
@@ -2260,7 +2260,7 @@ def midRightTailRLE : RLEStack :=
     (1, 114), (9, 1), (1, 1), (9, 1), (1, 465), (10, 1), (8, 1), (1, 3),
     (5641, 1), (1, 1) ]
 
-lemma partB_rle :
+theorem partB_rle :
     runStepsRLE 189 true true true .F (pushRun 0 1 midPrefixRLE) [(0, 1), (1, 2)] =
     .stepped .AR [(0, 1)] ((0, 1) :: (3, 1) :: (0, 1) :: (18, 1) :: midRightTailRLE) := by decide +kernel
 
@@ -2320,7 +2320,7 @@ theorem partC_step (k : ℕ) (R_tail : List ℕ) :
   rw [hk1]
   try exact ⟨0, rfl⟩
 
-lemma partD_rle :
+theorem partD_rle :
     runStepsRLE 83 true true true .AR [] (pushRun 28 1 midRightTailRLE) =
     .stepped .AR ((0, 1) :: (3, 1) :: midPrefixRLE) [(1, 1)] := by decide +kernel
 
@@ -2411,7 +2411,7 @@ def runPhase3 : ℕ → RLEStack → Bool
     | .abort => false
 
 set_option maxRecDepth 200000 in
-lemma runPhase3_eq : runPhase3 186 (bodyStackRLE 1 21090) = true := by decide +kernel
+theorem runPhase3_eq : runPhase3 186 (bodyStackRLE 1 21090) = true := by decide +kernel
 
 theorem runPhase3_sound : ∀ (fuel : ℕ) (s : RLEStack),
     runPhase3 fuel s = true →

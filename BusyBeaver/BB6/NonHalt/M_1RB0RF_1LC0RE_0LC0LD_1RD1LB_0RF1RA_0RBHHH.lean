@@ -24,57 +24,55 @@ abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 2000000
 
-@[simp] lemma zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
+@[simp] theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
+@[simp] theorem zMo (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) (n : Nat) :
+@[simp] theorem zMs (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma z00 : (0 : Fin 2) >> default = default := by
+@[simp] theorem z00 : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : zB).head = 0 := rfl
+@[simp] theorem zDt : (default : zB).tail = default := rfl
+@[simp] theorem append_nil (s : zB) : ([] : zF) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : zF) (s : zB) :
     (a :: l) +> s = a >> (l +> s) := rfl
-@[simp] lemma append_assoc (l1 l2 : zF) (s : zB) :
+@[simp] theorem append_assoc (l1 l2 : zF) (s : zB) :
     (l1 ++ l2) +> s = l1 +> (l2 +> s) := by
   induction l1 with
   | nil => rfl
   | cons a l1 ih => simp only [List.cons_append, append_cons, ih]
 
-lemma zSm (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
+theorem zSm (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢^{1} c_2 := by simp [h]
-lemma z01 (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
+theorem z01 (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢⁺ c_2 := ⟨1, by decide, zSm tm c_1 c_2 h⟩
-lemma zMa (tm : Machine (Fin 2) (Fin 6)) (c_1 : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
+theorem zMa (tm : Machine (Fin 2) (Fin 6)) (c_1 : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
     multiStep tm c_1 (n + m) = (multiStep tm c_1 n).bind (fun c_2 => multiStep tm c_2 m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)) (n m : Nat)
+theorem zMt (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)) (n m : Nat)
     (h₁ : c_1 [tm]⊢^{n} c_2) (h₂ : c_2 [tm]⊢^{m} c_3) :
     c_1 [tm]⊢^{n+m} c_3 := by
   rw [zMa, h₁]; simp [h₂]
-lemma zPs {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 : Cfg (Fin 2) (Fin 6)} (h : c_1 [tm]⊢⁺ c_2) :
+theorem zPs {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 : Cfg (Fin 2) (Fin 6)} (h : c_1 [tm]⊢⁺ c_2) :
     c_1 [tm]⊢* c_2 := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma zPt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zPt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, by omega, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z02 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem z02 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z03 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem z03 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 :=
   z02 (z01 tm c_1 c_2 h₁) h₂
 
@@ -93,10 +91,10 @@ abbrev d1 : zF := [1, 0, 0]
 abbrev w1ld : zF := [1, 1, 1, 0]
 abbrev lh : zB := [1] +> default
 
-@[simp] lemma zDd : d0 +> (default : zB) = default := by simp [d0]
+@[simp] theorem zDd : d0 +> (default : zB) = default := by simp [d0]
 
-lemma z1_eq : [1] +> (d1 +> (default : zB)) = ld +> default := by simp [d1, ld]
-lemma z0_eq : [1] +> (d0 +> (default : zB)) = d1 +> default := by simp [d0, d1]
+theorem z1_eq : [1] +> (d1 +> (default : zB)) = ld +> default := by simp [d1, ld]
+theorem z0_eq : [1] +> (d0 +> (default : zB)) = d1 +> default := by simp [d0, d1]
 
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
@@ -121,76 +119,76 @@ def zCL (l : zB) (r : zB) : Cfg (Fin 2) (Fin 6) :=
 abbrev Side := SideRLs target_tm
 abbrev Seg := SegRLs target_tm
 
-@[simp] lemma z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-@[simp] lemma zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
+@[simp] theorem z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+@[simp] theorem zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
   rw [Nat.add_comm 1 n]; rfl
-@[simp] lemma z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
+@[simp] theorem z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
   change l ++ [] = l; exact List.append_nil l
 
-lemma z08 {ls1 ls2 : List Call} {r1 r2 r3 : zB}
+theorem z08 {ls1 ls2 : List Call} {r1 r2 r3 : zB}
     (h1 : Side ls1 r1 r2) (h2 : Side ls2 r2 r3) : Side (ls1 ++ ls2) r1 r3 :=
   h1.trans h2
 
-lemma zSc {ls1 ls2 : List Call} {w1 w2 : zF} {r1 r2 : zB}
+theorem zSc {ls1 ls2 : List Call} {w1 w2 : zF} {r1 r2 : zB}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Side ls2 r1 r2) :
     Side ls1 (w1 +> r1) (w2 +> r2) :=
   h1.sideRLs_concat h2
 
-lemma zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : zF}
+theorem zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : zF}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Seg ls3 ls4 w2 w3) :
     Seg (ls1 ++ ls3) (ls2 ++ ls4) w1 w3 :=
   h1.trans h2
 
-lemma seg_ch_d0 : Seg [ch] [] d0 d1 :=
+theorem seg_ch_d0 : Seg [ch] [] d0 d1 :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch_d1 : Seg [ch] [ch] d1 d0 :=
+theorem seg_ch_d1 : Seg [ch] [ch] d1 d0 :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch_ld : Seg [ch] [ch] ld ld :=
+theorem seg_ch_ld : Seg [ch] [ch] ld ld :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch'_ld_atom : Seg [ch'] [ch, ch', ch] ld ld :=
+theorem seg_ch'_ld_atom : Seg [ch'] [ch, ch', ch] ld ld :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch_w1ld_atom : Seg [ch] [ch, ch', ch] w1ld ld :=
+theorem seg_ch_w1ld_atom : Seg [ch] [ch, ch', ch] w1ld ld :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch'_d1 : Seg [ch'] [] d1 (ld ++ [1]) :=
+theorem seg_ch'_d1 : Seg [ch'] [] d1 (ld ++ [1]) :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch'_d0_atom : Seg [ch'] [ch', ch] d0 ld :=
+theorem seg_ch'_d0_atom : Seg [ch'] [ch', ch] d0 ld :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch_1d1 : Seg [ch] [] ([1] ++ d1) (ld ++ [1]) :=
+theorem seg_ch_1d1 : Seg [ch] [] ([1] ++ d1) (ld ++ [1]) :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_ch_1d0 : Seg [ch] [] ([1] ++ d0) (d0 ++ [1]) :=
+theorem seg_ch_1d0 : Seg [ch] [] ([1] ++ d0) (d0 ++ [1]) :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_wall_ld (k : Nat) : Seg ([ch] ^ k) ([ch] ^ k) ld ld :=
+theorem seg_wall_ld (k : Nat) : Seg ([ch] ^ k) ([ch] ^ k) ld ld :=
   seg_ch_ld.wall_pow k
 
-lemma seg_ch2_d0 : Seg [ch, ch] [ch] d0 d0 := zSg seg_ch_d0 seg_ch_d1
-lemma seg_ch2_d1 : Seg [ch, ch] [ch] d1 d1 := zSg seg_ch_d1 seg_ch_d0
+theorem seg_ch2_d0 : Seg [ch, ch] [ch] d0 d0 := zSg seg_ch_d0 seg_ch_d1
+theorem seg_ch2_d1 : Seg [ch, ch] [ch] d1 d1 := zSg seg_ch_d1 seg_ch_d0
 
-lemma seg_d0_even (k : Nat) : Seg ([ch] ^ (k * 2)) ([ch] ^ k) d0 d0 :=
+theorem seg_d0_even (k : Nat) : Seg ([ch] ^ (k * 2)) ([ch] ^ k) d0 d0 :=
   SegRLs.addmul (h := [ch]) (a := 2) (x := k) (b := 0) (c := 0) (.nil d0) seg_ch2_d0
 
-lemma seg_d1_even (k : Nat) : Seg ([ch] ^ (k * 2)) ([ch] ^ k) d1 d1 :=
+theorem seg_d1_even (k : Nat) : Seg ([ch] ^ (k * 2)) ([ch] ^ k) d1 d1 :=
   SegRLs.addmul (h := [ch]) (a := 2) (x := k) (b := 0) (c := 0) (.nil d1) seg_ch2_d1
 
-lemma seg_d0_odd (k : Nat) : Seg ([ch] ^ (1 + k * 2)) ([ch] ^ k) d0 d1 := by
+theorem seg_d0_odd (k : Nat) : Seg ([ch] ^ (1 + k * 2)) ([ch] ^ k) d0 d1 := by
   simpa only [zLp', List.cons_append, List.nil_append] using zSg seg_ch_d0 (seg_d1_even k)
 
-lemma seg_hx_ld (k : Nat) : Seg ([ch'] ++ [ch] ^ k) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) ld ld := by
+theorem seg_hx_ld (k : Nat) : Seg ([ch'] ++ [ch] ^ k) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) ld ld := by
   simpa only [zLp', List.cons_append, List.nil_append] using zSg seg_ch'_ld_atom (seg_wall_ld k)
 
-lemma seg_h1_ld (k : Nat) : Seg ([ch] ^ (1 + k)) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) w1ld ld := by
+theorem seg_h1_ld (k : Nat) : Seg ([ch] ^ (1 + k)) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) w1ld ld := by
   simpa only [zLp', List.cons_append, List.nil_append] using zSg seg_ch_w1ld_atom (seg_wall_ld k)
 
-lemma seg_hx_d0 (k : Nat) : Seg ([ch'] ++ [ch] ^ k) ([ch'] ++ [ch] ^ (1 + k)) d0 ld := by
+theorem seg_hx_d0 (k : Nat) : Seg ([ch'] ++ [ch] ^ k) ([ch'] ++ [ch] ^ (1 + k)) d0 ld := by
   simpa only [zLp', List.cons_append, List.nil_append] using zSg seg_ch'_d0_atom (seg_wall_ld k)
 
 inductive RD where
@@ -252,7 +250,7 @@ inductive RIncs : H -> Nat -> List RD -> List RD -> Prop where
   | h1_z0 :
       RIncs h1 0 [D0] [D1]
 
-lemma Inc_spec {r r' : List RD} (h : Inc r r') :
+theorem Inc_spec {r r' : List RD} (h : Inc r r') :
     Side [ch] (toRC r) (toRC r') := by
   induction h with
   | nil =>
@@ -264,7 +262,7 @@ lemma Inc_spec {r r' : List RD} (h : Inc r r') :
   | ld _ ih =>
     exact zSc seg_ch_ld ih
 
-lemma RIncs_spec {tp : H} {k : Nat} {r r' : List RD} (h : RIncs tp k r r') :
+theorem RIncs_spec {tp : H} {k : Nat} {r r' : List RD} (h : RIncs tp k r r') :
     Side (toH tp ++ [ch] ^ k) (toH' tp +> toRC r) (toRC r') := by
   induction h with
   | @hx_ld k r r1 r' h_inc _ ih =>
@@ -335,7 +333,7 @@ lemma RIncs_spec {tp : H} {k : Nat} {r r' : List RD} (h : RIncs tp k r r') :
     simp only [toH, toH', toRC, z05, List.append_nil, z0_eq]
     exact SideRLs.nil (d1 +> default)
 
-lemma Inc_total (r : List RD) : ∃ r', Inc r r' := by
+theorem Inc_total (r : List RD) : ∃ r', Inc r r' := by
   induction r with
   | nil => exact ⟨[D1], Inc.nil⟩
   | cons d r ih =>
@@ -345,18 +343,18 @@ lemma Inc_total (r : List RD) : ∃ r', Inc r r' := by
     | D0 => exact ⟨D1 :: r, Inc.d0 r⟩
     | D1 => exact ⟨D0 :: r', Inc.d1 hI⟩
 
-lemma Inc_fun {r r1 r2 : List RD} (h1 : Inc r r1) (h2 : Inc r r2) : r1 = r2 := by
+theorem Inc_fun {r r1 r2 : List RD} (h1 : Inc r r1) (h2 : Inc r r2) : r1 = r2 := by
   induction h1 generalizing r2 with
   | nil => cases h2; rfl
   | d0 r => cases h2; rfl
   | d1 _ ih => cases h2 with | d1 h2' => rw [ih h2']
   | ld _ ih => cases h2 with | ld h2' => rw [ih h2']
 
-lemma RIncs_eqk {tp : H} {k k' : Nat} {r r' : List RD}
+theorem RIncs_eqk {tp : H} {k k' : Nat} {r r' : List RD}
     (h : RIncs tp k r r') (hk : k = k') : RIncs tp k' r r' := by
   subst hk; exact h
 
-lemma RIncs_Inc {tp : H} {k : Nat} {r r' r'' : List RD}
+theorem RIncs_Inc {tp : H} {k : Nat} {r r' r'' : List RD}
     (h : RIncs tp k r r') (hJ : Inc r' r'') : RIncs tp (1 + k) r r'' := by
   induction h generalizing r'' with
   | hx_ld h_inc h_ri ih =>
@@ -406,12 +404,12 @@ lemma RIncs_Inc {tp : H} {k : Nat} {r r' r'' : List RD}
       cases hJ' with
       | nil => exact RIncs.h1_d0_0 RIncs.h1_rh_0
 
-lemma mod2 (n : Nat) : (∃ b, n = b * 2) ∨ (∃ b, n = 1 + b * 2) := by
+theorem mod2 (n : Nat) : (∃ b, n = b * 2) ∨ (∃ b, n = 1 + b * 2) := by
   rcases Nat.mod_two_eq_zero_or_one n with h | h
   · left; exact ⟨n / 2, by omega⟩
   · right; exact ⟨n / 2, by omega⟩
 
-lemma RIncs_nxt_1 (k : Nat) : ∃ r, RIncs h1 k [] r := by
+theorem RIncs_nxt_1 (k : Nat) : ∃ r, RIncs h1 k [] r := by
   induction k using Nat.strong_induction_on with
   | h k ih =>
     cases k with
@@ -425,7 +423,7 @@ lemma RIncs_nxt_1 (k : Nat) : ∃ r, RIncs h1 k [] r := by
         refine ⟨D1 :: r, ?_⟩
         exact RIncs_eqk (RIncs.h1_rh_2 hI) (by omega)
 
-lemma End_1 {tp : H} {m : Nat} {e w : List RD} (h : RIncs tp m e w)
+theorem End_1 {tp : H} {m : Nat} {e w : List RD} (h : RIncs tp m e w)
     (htp : tp = h1) (he : e = []) :
     ∀ q, m ≤ q -> ∃ w', RIncs h1 q w w' := by
   induction h with
@@ -465,7 +463,7 @@ lemma End_1 {tp : H} {m : Nat} {e w : List RD} (h : RIncs tp m e w)
   | h1_z1 => cases he
   | h1_z0 => cases he
 
-lemma End_x {tp : H} {m : Nat} {e w : List RD} (h : RIncs tp m e w)
+theorem End_x {tp : H} {m : Nat} {e w : List RD} (h : RIncs tp m e w)
     (htp : tp = h1) (he : e = []) :
     ∀ q, m ≤ 2 * q + 2 -> ∃ w', RIncs hx q w w' := by
   induction h with
@@ -491,22 +489,22 @@ lemma End_x {tp : H} {m : Nat} {e w : List RD} (h : RIncs tp m e w)
   | h1_z1 => cases he
   | h1_z0 => cases he
 
-lemma inv_hx_ld {k : Nat} {r rK : List RD} (h : RIncs hx k (LD :: r) rK) :
+theorem inv_hx_ld {k : Nat} {r rK : List RD} (h : RIncs hx k (LD :: r) rK) :
     ∃ r1 rK', Inc r r1 ∧ RIncs hx (1 + k) r1 rK' ∧ rK = LD :: rK' := by
   cases h with
   | hx_ld h_inc h_ri => exact ⟨_, _, h_inc, h_ri, rfl⟩
 
-lemma inv_hx_d1 {k : Nat} {r rK : List RD} (h : RIncs hx k (D1 :: r) rK) :
+theorem inv_hx_d1 {k : Nat} {r rK : List RD} (h : RIncs hx k (D1 :: r) rK) :
     ∃ rK', RIncs h1 k r rK' ∧ rK = LD :: rK' := by
   cases h with
   | hx_d1 h_ri => exact ⟨_, h_ri, rfl⟩
 
-lemma inv_hx_d0 {k : Nat} {r rK : List RD} (h : RIncs hx k (D0 :: r) rK) :
+theorem inv_hx_d0 {k : Nat} {r rK : List RD} (h : RIncs hx k (D0 :: r) rK) :
     ∃ rK', RIncs hx (1 + k) r rK' ∧ rK = LD :: rK' := by
   cases h with
   | hx_d0 h_ri => exact ⟨_, h_ri, rfl⟩
 
-lemma inv_h1_ld {k : Nat} {r rK : List RD} (h : RIncs h1 (1 + k) (LD :: r) rK) :
+theorem inv_h1_ld {k : Nat} {r rK : List RD} (h : RIncs h1 (1 + k) (LD :: r) rK) :
     ∃ r1 rK', Inc r r1 ∧ RIncs hx (1 + k) r1 rK' ∧ rK = LD :: rK' := by
   generalize hk : 1 + k = K at h
   cases h with
@@ -515,7 +513,7 @@ lemma inv_h1_ld {k : Nat} {r rK : List RD} (h : RIncs h1 (1 + k) (LD :: r) rK) :
     subst hk0
     exact ⟨r1, rK', h_inc, h_ri, rfl⟩
 
-lemma inv_h1_d1 {k : Nat} {r rK : List RD} (h : RIncs h1 (1 + k) (D1 :: r) rK) :
+theorem inv_h1_d1 {k : Nat} {r rK : List RD} (h : RIncs h1 (1 + k) (D1 :: r) rK) :
     ∃ rK', RIncs h1 k r rK' ∧ rK = LD :: rK' := by
   generalize hk : 1 + k = K at h
   cases h with
@@ -525,7 +523,7 @@ lemma inv_h1_d1 {k : Nat} {r rK : List RD} (h : RIncs h1 (1 + k) (D1 :: r) rK) :
     exact ⟨rK', h_ri, rfl⟩
   | h1_z1 => omega
 
-lemma inv_h1_d0 {K : Nat} {r rK : List RD} (h : RIncs h1 K (D0 :: r) rK) :
+theorem inv_h1_d0 {K : Nat} {r rK : List RD} (h : RIncs h1 K (D0 :: r) rK) :
     (∃ A rK', K = 1 + A * 2 ∧ RIncs h1 A r rK' ∧ rK = D0 :: rK') ∨
     (∃ A rK', K = 2 + A * 2 ∧ RIncs h1 A r rK' ∧ rK = D1 :: rK') ∨
     (K = 0 ∧ r = [] ∧ rK = [D1]) := by
@@ -547,7 +545,7 @@ lemma inv_h1_d0 {K : Nat} {r rK : List RD} (h : RIncs h1 K (D0 :: r) rK) :
     injection hd with _ hr; subst hr
     right; right; exact ⟨rfl, rfl, rfl⟩
 
-lemma inv_z1 {K : Nat} {rK : List RD} (h : RIncs h1 K [D1] rK) :
+theorem inv_z1 {K : Nat} {rK : List RD} (h : RIncs h1 K [D1] rK) :
     (K = 0 ∧ rK = [LD]) ∨
     (∃ K0 rK', K = 1 + K0 ∧ RIncs h1 K0 [] rK' ∧ rK = LD :: rK') := by
   generalize hd : ([D1] : List RD) = r0 at h
@@ -571,7 +569,7 @@ def Inv (tp : H) (k j : Nat) (tq : H) (q : Nat) : Prop :=
   | h1, h1 => (j = 0 ∧ 2 * k + 1 ≤ q) ∨ (1 ≤ j ∧ k + j ≤ q ∧ 1 ≤ q)
   | hx, h1 => False
 
-lemma key {tp : H} {k : Nat} {r r1 : List RD} (D : RIncs tp k r r1) :
+theorem key {tp : H} {k : Nat} {r r1 : List RD} (D : RIncs tp k r r1) :
     ∀ j rK tq q, RIncs tp (k + j) r rK -> Inv tp k j tq q -> ∃ r2, RIncs tq q rK r2 := by
   induction D with
   | @hx_ld k r r1 r' Hi D ih =>
@@ -778,31 +776,31 @@ lemma key {tp : H} {k : Nat} {r r1 : List RD} (D : RIncs tp k r r1) :
           rcases RIncs_nxt_1 q0 with ⟨w, I⟩
           exact ⟨LD :: w, RIncs_eqk (RIncs.h1_d1 I) (by omega)⟩
 
-lemma domain {r r' : List RD} (h : RIncs hx 0 r r') : ∃ r'', RIncs hx 0 r' r'' :=
+theorem domain {r r' : List RD} (h : RIncs hx 0 r r') : ∃ r'', RIncs hx 0 r' r'' :=
   key h 0 r' hx 0 h (by dsimp [Inv]; omega)
 
 def S' (r : List RD) : Cfg (Fin 2) (Fin 6) :=
   zCR lh ch' (toRC r)
 
-lemma turn_lh (r : List RD) : (zCL lh (toRC r)) [target_tm]⊢⁺ S' r := by
+theorem turn_lh (r : List RD) : (zCL lh (toRC r)) [target_tm]⊢⁺ S' r := by
   unfold zCL S' zCR lh toDHCfg
   simp only [append_cons, append_nil]
   execute
 
-lemma BigStep {r r' : List RD} (h : RIncs hx 0 r r') :
+theorem BigStep {r r' : List RD} (h : RIncs hx 0 r r') :
     (S' r) [target_tm]⊢⁺ (S' r') := by
   have hS := RIncs_spec h
   simp only [toH, toH', z05, List.append_nil, append_nil] at hS
   exact zPt (hS.elim_single lh) (turn_lh r')
 
-lemma start_to_S' : (init []) [target_tm]⊢⁺ S' [LD, D1] := by
+theorem start_to_S' : (init []) [target_tm]⊢⁺ S' [LD, D1] := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
   unfold S' zCR lh toDHCfg
   dsimp [toRC, ld, d1]
   execute
 
-lemma init_r : ∃ r', RIncs hx 0 [LD, D1] r' := by
+theorem init_r : ∃ r', RIncs hx 0 [LD, D1] r' := by
   refine ⟨[LD, LD, LD, D1, D1], ?_⟩
   refine RIncs.hx_ld (Inc.d1 Inc.nil) ?_
   refine RIncs.hx_d0 ?_

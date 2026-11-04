@@ -23,12 +23,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -51,58 +47,56 @@ def F : Fin 6 := 5
 -- ============================================================================
 /- Transition function for holdout_0010: `1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RC---` -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option maxHeartbeats 8000000
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : ℕ) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-@[simp] lemma pow_zero_list (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem pow_zero_list (l : List (Fin 2)) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (l : List (Fin 2)) (n : Nat) : l ^ (n + 1) = l ++ (l ^ n) := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) : (x :: xs) +> b = x >> (xs +> b) := rfl
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
 omit [Inhabited Γ] in
 @[simp]
 
 
-lemma list_pow_append_one (u : List (Fin 2)) (k : Nat) :
+theorem list_pow_append_one (u : List (Fin 2)) (k : Nat) :
     u^k ++ u = u^(k + 1) := by
   have h := list_pow_add_comm u k 1
   dsimp -failIfUnchanged [HPow.hPow] at h ⊢
   rw [List.append_nil] at h
   exact h
 
-lemma cons_eq_singleton_append (x : Fin 2) (r : ListBlank (Fin 2)) :
+theorem cons_eq_singleton_append (x : Fin 2) (r : ListBlank (Fin 2)) :
     x >> r = [x] +> r := rfl
 
-lemma pow_add_append_right (u : List (Fin 2)) (m n : Nat) (r : ListBlank (Fin 2)) :
+theorem pow_add_append_right (u : List (Fin 2)) (m n : Nat) (r : ListBlank (Fin 2)) :
     (u ^ (m + n)) +> r = (u ^ m) +> ((u ^ n) +> r) := by
   rw [list_pow_add, ← listblank_append_append]
 
-lemma pow_succ_append_right (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
+theorem pow_succ_append_right (u : List (Fin 2)) (n : Nat) (r : ListBlank (Fin 2)) :
     (u ^ (n + 1)) +> r = u +> ((u ^ n) +> r) := by
   rw [pow_succ_list, ← listblank_append_append]
 
-lemma pow_add_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m n : Nat) :
+theorem pow_add_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m n : Nat) :
     s <+ (u ^ (m + n)) = (s <+ (u ^ m)) <+ (u ^ n) := by
   rw [listblank_append_append, ← list_pow_add, add_comm]
 
-lemma pow_succ_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m : Nat) :
+theorem pow_succ_append_left (s : ListBlank (Fin 2)) (u : List (Fin 2)) (m : Nat) :
     (s <+ (u ^ m)) <+ u = s <+ (u ^ (m + 1)) := by
   rw [listblank_append_append, ← pow_succ_list]
 
-lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -111,40 +105,40 @@ lemma multiStep_add {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-lemma stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepStar_stepPlus_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepStar_stepPlus_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le m_pos (Nat.le_add_left m n), multiStep_trans tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem stepPlus_trans {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus h₁ (stepPlus_stepStar h₂)
 
-lemma step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem step_stepStar_stepPlus {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   stepPlus_stepStar_stepPlus (step_stepPlus tm c₁ c₂ h₁) h₂
@@ -232,31 +226,31 @@ def Pplus : word → Nat
 def positive_head (W : word) : Prop :=
   ∃ a U, W = a :: U ∧ 0 < a ∧ a % 4 ≠ 0
 
-lemma label_weight_period (a : Nat) : label_weight (a + 4) = label_weight a := by
+theorem label_weight_period (a : Nat) : label_weight (a + 4) = label_weight a := by
   unfold label_weight; omega
 
-lemma label_weight_bound (a : Nat) : label_weight a < 4 := by
+theorem label_weight_bound (a : Nat) : label_weight a < 4 := by
   unfold label_weight; omega
 
-lemma label_weight_shift (a k : Nat) : label_weight (a + k) ≤ label_weight a + k := by
+theorem label_weight_shift (a k : Nat) : label_weight (a + k) ≤ label_weight a + k := by
   unfold label_weight; omega
 
-lemma label_weight_back_three (a : Nat) : label_weight a ≤ label_weight (a + 3) + 1 := by
+theorem label_weight_back_three (a : Nat) : label_weight a ≤ label_weight (a + 3) + 1 := by
   unfold label_weight; omega
 
-lemma Pplus_first_plus_four (W : word) : Pplus (first_plus 4 W) = Pplus W := by
+theorem Pplus_first_plus_four (W : word) : Pplus (first_plus 4 W) = Pplus W := by
   cases W with
   | nil => rfl
   | cons a U => simp [first_plus, Pplus, label_weight_period]
 
-lemma Pplus_first_plus_bound (W : word) (k : Nat) : Pplus (first_plus k W) ≤ Pplus W + k := by
+theorem Pplus_first_plus_bound (W : word) (k : Nat) : Pplus (first_plus k W) ≤ Pplus W + k := by
   cases W with
   | nil => simp [first_plus, Pplus]
   | cons a U =>
     simp only [first_plus, Pplus]
     have h := label_weight_shift a k
     (try omega)
-lemma positive_head_plus_four {W : word} (h : positive_head W) : positive_head (first_plus 4 W) := by
+theorem positive_head_plus_four {W : word} (h : positive_head W) : positive_head (first_plus 4 W) := by
   rcases h with ⟨a, U, rfl, ha, hmod⟩
   refine ⟨a + 4, U, rfl, by omega, by omega⟩
 
@@ -472,13 +466,13 @@ def power {α : Type*} (fn : α → α) : Nat → α → α
   | 0, x => x
   | n + 1, x => fn (power fn n x)
 
-lemma power_add {α : Type*} (fn : α → α) (a b : Nat) (x : α) :
+theorem power_add {α : Type*} (fn : α → α) (a b : Nat) (x : α) :
     power fn (a + b) x = power fn a (power fn b x) := by
   induction a with
   | zero => rw [Nat.zero_add]; rfl
   | succ a ih => simp only [Nat.succ_add, power, ih]
 
-lemma power_succ_r {α : Type*} (fn : α → α) (a : Nat) (x : α) :
+theorem power_succ_r {α : Type*} (fn : α → α) (a : Nat) (x : α) :
     power fn (a + 1) x = power fn a (fn x) := by
   induction a with
   | zero => rfl
@@ -486,44 +480,44 @@ lemma power_succ_r {α : Type*} (fn : α → α) (a : Nat) (x : α) :
     change fn (power fn (a + 1) x) = fn (power fn a (fn x))
     rw [ih]
 
-lemma power_commute {α : Type*} (fn gn : α → α) (h : ∀ x, fn (gn x) = gn (fn x)) (n : Nat) (x : α) :
+theorem power_commute {α : Type*} (fn gn : α → α) (h : ∀ x, fn (gn x) = gn (fn x)) (n : Nat) (x : α) :
     power fn n (gn x) = gn (power fn n x) := by
   induction n with
   | zero => rfl
   | succ n ih => simp only [power, ih, h]
 
-lemma power_ext {α : Type*} (fn gn : α → α) (h : ∀ x, fn x = gn x) (n : Nat) (x : α) :
+theorem power_ext {α : Type*} (fn gn : α → α) (h : ∀ x, fn x = gn x) (n : Nat) (x : α) :
     power fn n x = power gn n x := by
   induction n with
   | zero => rfl
   | succ n ih => simp only [power, ih, h]
 
-lemma power_mul {α : Type*} (fn : α → α) (a b : Nat) (x : α) :
+theorem power_mul {α : Type*} (fn : α → α) (a b : Nat) (x : α) :
     power fn (a * b) x = power (fun y => power fn b y) a x := by
   induction a with
   | zero => rw [Nat.zero_mul]; rfl
   | succ a ih => rw [Nat.succ_mul, Nat.add_comm _ b, power_add, ih]; rfl
 
-lemma power_strict {α : Type*} (fn : Option α → Option α) (h : fn none = none) (n : Nat) :
+theorem power_strict {α : Type*} (fn : Option α → Option α) (h : fn none = none) (n : Nat) :
     power fn n none = none := by
   induction n with
   | zero => rfl
   | succ n ih => simp only [power, ih, h]
 
-lemma power_halt_mono {α : Type*} (fn : Option α → Option α) (h : fn none = none)
+theorem power_halt_mono {α : Type*} (fn : Option α → Option α) (h : fn none = none)
     {a b : Nat} {x : Option α} (hab : a ≤ b) (ha : power fn a x = none) :
     power fn b x = none := by
   have hb : b = (b - a) + a := by omega
   rw [hb, power_add, ha, power_strict fn h]
 
-lemma power_injective_none {α : Type*} (fn : Option α → Option α)
+theorem power_injective_none {α : Type*} (fn : Option α → Option α)
     (h : ∀ x, fn x = none ↔ x = none) (n : Nat) (x : Option α) :
     power fn n x = none ↔ x = none := by
   induction n with
   | zero => exact Iff.rfl
   | succ n ih => simp only [power, h, ih]
 
-lemma power_product {α : Type*} (fn gn : α → α) (h : ∀ x, fn (gn x) = gn (fn x)) (n : Nat) (x : α) :
+theorem power_product {α : Type*} (fn gn : α → α) (h : ∀ x, fn (gn x) = gn (fn x)) (n : Nat) (x : α) :
     power (fun y => fn (gn y)) n x = power fn n (power gn n x) := by
   induction n with
   | zero => rfl
@@ -532,7 +526,7 @@ lemma power_product {α : Type*} (fn gn : α → α) (h : ∀ x, fn (gn x) = gn 
 def eventually {α : Type*} (fn : Option α → Option α) (x : Option α) : Prop :=
   ∃ k, power fn k x = none
 
-lemma eventually_step {α : Type*} (fn : Option α → Option α) (h : fn none = none) (x : Option α) :
+theorem eventually_step {α : Type*} (fn : Option α → Option α) (h : fn none = none) (x : Option α) :
     eventually fn x ↔ eventually fn (fn x) := by
   constructor
   · rintro ⟨k, hk⟩
@@ -542,7 +536,7 @@ lemma eventually_step {α : Type*} (fn : Option α → Option α) (h : fn none =
   · rintro ⟨k, hk⟩
     exact ⟨k + 1, by rw [power_succ_r, hk]⟩
 
-lemma eventually_rotate {α : Type*} (fn gn : Option α → Option α)
+theorem eventually_rotate {α : Type*} (fn gn : Option α → Option α)
     (hf : fn none = none) (hg : gn none = none) (x : Option α) :
     eventually (fun y => fn (gn y)) x ↔ eventually (fun y => gn (fn y)) (gn x) := by
   have hC : ∀ k y, power (fun z => gn (fn z)) k (gn y) = gn (power (fun z => fn (gn z)) k y) := by
@@ -569,21 +563,21 @@ noncomputable def H (n : Nat) (x : result) : result := G (power opF n x)
 def P (n : Nat) (x : result) : result := Z (power Q n x)
 def K (n : Nat) (x : result) : Prop := eventually (H n) x
 
-lemma opF_none : opF none = none := rfl
-lemma G_none : G none = none := rfl
+theorem opF_none : opF none = none := rfl
+theorem G_none : G none = none := rfl
 
-lemma pfx_none (d : Nat) (x : result) : pfx d x = none ↔ x = none := by
+theorem pfx_none (d : Nat) (x : result) : pfx d x = none ↔ x = none := by
   cases x <;> simp [pfx]
 
-lemma Q_none (x : result) : Q x = none ↔ x = none := pfx_none 2 x
-lemma Z_none (x : result) : Z x = none ↔ x = none := pfx_none 0 x
+theorem Q_none (x : result) : Q x = none ↔ x = none := pfx_none 2 x
+theorem Z_none (x : result) : Z x = none ↔ x = none := pfx_none 0 x
 
-lemma opF_Q (x : result) : opF (Q x) = Q (opF x) := by
+theorem opF_Q (x : result) : opF (Q x) = Q (opF x) := by
   rcases x with _ | U; · rfl
   simp only [opF, Q, pfx, bind_res, Option.map, f_two]
   cases f U <;> rfl
 
-lemma f_zero_head_eq (U : word) : f (0 :: U) = Q (Option.map List.tail (f (0 :: U))) := by
+theorem f_zero_head_eq (U : word) : f (0 :: U) = Q (Option.map List.tail (f (0 :: U))) := by
   rcases U with _ | ⟨a, U'⟩
   · rw [f_zero]; rfl
   · rcases a with _ | _ | _ | a'
@@ -592,16 +586,16 @@ lemma f_zero_head_eq (U : word) : f (0 :: U) = Q (Option.map List.tail (f (0 :: 
     · rw [f_zero_two]; cases f U' <;> rfl
     · rw [f_zero_large]; cases f (a' :: U') <;> rfl
 
-lemma opF_Z (x : result) : opF (Z x) = Q (G x) := by
+theorem opF_Z (x : result) : opF (Z x) = Q (G x) := by
   rcases x with _ | U; · rfl
   exact f_zero_head_eq U
 
-lemma G_Q (x : result) : G (Q x) = Z (opF x) := by
+theorem G_Q (x : result) : G (Q x) = Z (opF x) := by
   rcases x with _ | U; · rfl
   simp only [G, opF, Z, Q, pfx, bind_res, Option.map, f_zero_two]
   cases f U <;> rfl
 
-lemma G_nine (U : word) : G (some (9 :: U)) = some (2 :: 2 :: U) := by
+theorem G_nine (U : word) : G (some (9 :: U)) = some (2 :: 2 :: U) := by
   unfold G opF Z pfx bind_res
   simp only [Option.map]
   have h9 : (9 : Nat) = 6 + 3 := rfl
@@ -610,12 +604,12 @@ lemma G_nine (U : word) : G (some (9 :: U)) = some (2 :: 2 :: U) := by
   rw [h6, f_large]
   rfl
 
-lemma opF_three (x : result) : opF (pfx 3 x) = pfx 3 (opF (opF x)) := by
+theorem opF_three (x : result) : opF (pfx 3 x) = pfx 3 (opF (opF x)) := by
   rcases x with _ | U; · rfl
   simp only [opF, pfx, bind_res, Option.map, f_three]
   cases f U <;> rfl
 
-lemma G_three (x : result) : G (pfx 3 x) = pfx 3 (G x) := by
+theorem G_three (x : result) : G (pfx 3 x) = pfx 3 (G x) := by
   rcases x with _ | U; · rfl
   unfold G opF Z pfx bind_res
   simp only [Option.map]
@@ -633,36 +627,36 @@ lemma G_three (x : result) : G (pfx 3 x) = pfx 3 (G x) := by
       subst ha
       rfl
 
-lemma opF_power_Q (n : Nat) (x : result) : power opF n (Q x) = Q (power opF n x) :=
+theorem opF_power_Q (n : Nat) (x : result) : power opF n (Q x) = Q (power opF n x) :=
   power_commute opF Q opF_Q n x
 
-lemma opF_power_Z (n : Nat) (x : result) : power opF (n + 1) (Z x) = Q (power opF n (G x)) := by
+theorem opF_power_Z (n : Nat) (x : result) : power opF (n + 1) (Z x) = Q (power opF n (G x)) := by
   rw [power_succ_r, opF_Z, opF_power_Q]
 
-lemma H_Q (n : Nat) (x : result) : H n (Q x) = T n (opF x) := by
+theorem H_Q (n : Nat) (x : result) : H n (Q x) = T n (opF x) := by
   unfold H T
   rw [opF_power_Q, G_Q, ← power_succ_r]
   rfl
 
-lemma H_T (n : Nat) (x : result) (hn : 1 ≤ n) : H n (T n x) = T n (H n x) := by
+theorem H_T (n : Nat) (x : result) (hn : 1 ≤ n) : H n (T n x) = T n (H n x) := by
   rcases n with _ | m; · omega
   unfold H T
   rw [opF_power_Z, G_Q]
   rfl
 
-lemma H_strict (n : Nat) : H n none = none := by
+theorem H_strict (n : Nat) : H n none = none := by
   unfold H; rw [power_strict opF opF_none]; rfl
 
-lemma T_strict (n : Nat) : T n none = none := by
+theorem T_strict (n : Nat) : T n none = none := by
   unfold T; rw [power_strict opF opF_none]; rfl
 
-lemma P_none (n : Nat) (x : result) : P n x = none ↔ x = none := by
+theorem P_none (n : Nat) (x : result) : P n x = none ↔ x = none := by
   unfold P; rw [Z_none]; exact power_injective_none Q Q_none n x
 
-lemma opF_Q_power (k : Nat) (x : result) : opF (power Q k x) = power Q k (opF x) :=
+theorem opF_Q_power (k : Nat) (x : result) : opF (power Q k x) = power Q k (opF x) :=
   (power_commute Q opF (fun y => (opF_Q y).symm) k x).symm
 
-lemma transport (j : Nat) :
+theorem transport (j : Nat) :
     ∀ (l : Nat) (x : result),
       power opF j (Z (power Q (j + l) x)) = power Q j (Z (power Q l (power opF j x))) := by
   induction j with
@@ -673,7 +667,7 @@ lemma transport (j : Nat) :
     change power opF (j + 1) (Z (Q (power Q (j + l) x))) = Q (power Q j (Z (power Q l (power opF (j + 1) x))))
     rw [opF_power_Z, G_Q, opF_Q_power, ih, ← power_succ_r]
 
-lemma H_P (n : Nat) (x : result) (hn : 1 ≤ n) : H n (P n x) = P n (H n x) := by
+theorem H_P (n : Nat) (x : result) (hn : 1 ≤ n) : H n (P n x) = P n (H n x) := by
   unfold H P
   have htr := transport n 0 x
   rw [Nat.add_zero] at htr
@@ -683,7 +677,7 @@ lemma H_P (n : Nat) (x : result) (hn : 1 ≤ n) : H n (P n x) = P n (H n x) := b
   simp only [power]
   rw [G_Q, opF_Q_power, opF_Z, power_commute Q Q (fun _ => rfl) m]
 
-lemma bounded_factor (n : Nat) (hn : 1 ≤ n) (j : Nat) :
+theorem bounded_factor (n : Nat) (hn : 1 ≤ n) (j : Nat) :
     ∀ (x : result), j ≤ n →
       power (T n) (j + 1) x = Z (power Q j (power opF (n - j) (power (H n) j x))) := by
   induction j with
@@ -698,14 +692,14 @@ lemma bounded_factor (n : Nat) (hn : 1 ≤ n) (j : Nat) :
     rw [hsub, opF_power_Z, ← power_succ_r]
     rfl
 
-lemma T_factor (n : Nat) (x : result) (hn : 1 ≤ n) :
+theorem T_factor (n : Nat) (x : result) (hn : 1 ≤ n) :
     power (T n) (n + 1) x = P n (power (H n) n x) := by
   rw [bounded_factor n hn n x (Nat.le_refl n)]
   unfold P
   rw [Nat.sub_self]
   rfl
 
-lemma T_cofinal_factor (n k : Nat) (x : result) (hn : 1 ≤ n) :
+theorem T_cofinal_factor (n k : Nat) (x : result) (hn : 1 ≤ n) :
     power (T n) (k * (n + 1)) x = power (P n) k (power (H n) (k * n) x) := by
   rw [power_mul, power_mul]
   rw [power_ext (fun y => power (T n) (n + 1) y) (fun y => P n (power (H n) n y)) (fun y => T_factor n y hn)]
@@ -731,12 +725,12 @@ theorem K_T_equiv (n : Nat) (x : result) (hn : 1 ≤ n) :
     rw [hD]
     exact power_strict (P n) ((P_none n none).mpr rfl) k
 
-lemma H_Q_power (n k : Nat) (x : result) (hn : 1 ≤ n) :
+theorem H_Q_power (n k : Nat) (x : result) (hn : 1 ≤ n) :
     power (H n) (k + 1) (Q x) = T n (power (H n) k (opF x)) := by
   rw [power_succ_r, H_Q]
   exact power_commute (H n) (T n) (fun y => H_T n y hn) k (opF x)
 
-lemma T_halt_G (n : Nat) (x : result) (h : T n x = none) : H n x = none := by
+theorem T_halt_G (n : Nat) (x : result) (h : T n x = none) : H n x = none := by
   unfold T H at *
   have hz := (Z_none _).mp h
   rw [hz]; rfl
@@ -749,13 +743,13 @@ theorem Q_index_nonincrease (n k : Nat) (x : result) (hn : 1 ≤ n)
   · rw [H_Q_power n k x hn] at h
     exact T_halt_G n _ h
 
-lemma H_Z (n : Nat) (x : result) (hn : 1 ≤ n) : H n (Z x) = T n (G x) := by
+theorem H_Z (n : Nat) (x : result) (hn : 1 ≤ n) : H n (Z x) = T n (G x) := by
   rcases n with _ | m; · omega
   unfold H T
   rw [opF_power_Z, G_Q]
   rfl
 
-lemma H_Z_power (n k : Nat) (x : result) (hn : 1 ≤ n) :
+theorem H_Z_power (n k : Nat) (x : result) (hn : 1 ≤ n) :
     power (H n) (k + 1) (Z x) = T n (power (H n) k (G x)) := by
   rw [power_succ_r, H_Z n x hn]
   exact power_commute (H n) (T n) (fun y => H_T n y hn) k (G x)
@@ -782,7 +776,7 @@ theorem K_T (n : Nat) (x : result) (hn : 1 ≤ n) : K n x ↔ K n (T n x) := by
   rw [← K_T_equiv n x hn, ← K_T_equiv n (T n x) hn]
   exact eventually_step (T n) (T_strict n) x
 
-lemma opF_power_three (n : Nat) (x : result) :
+theorem opF_power_three (n : Nat) (x : result) :
     power opF n (pfx 3 x) = pfx 3 (power opF (2 * n) x) := by
   induction n with
   | zero => rfl
@@ -791,10 +785,10 @@ lemma opF_power_three (n : Nat) (x : result) :
     have h2 : 2 * (n + 1) = (2 * n) + 1 + 1 := by omega
     rw [h2]; rfl
 
-lemma H_three (n : Nat) (x : result) : H n (pfx 3 x) = pfx 3 (H (2 * n) x) := by
+theorem H_three (n : Nat) (x : result) : H n (pfx 3 x) = pfx 3 (H (2 * n) x) := by
   unfold H; rw [opF_power_three, G_three]
 
-lemma H_power_three (n k : Nat) (x : result) :
+theorem H_power_three (n k : Nat) (x : result) :
     power (H n) k (pfx 3 x) = pfx 3 (power (H (2 * n)) k x) := by
   induction k with
   | zero => rfl
@@ -813,26 +807,26 @@ theorem K_three (n : Nat) (x : result) : K n (pfx 3 x) ↔ K (2 * n) x := by
 def opD (x : result) : result := lift_plus 4 x
 def L1 (x : result) : result := pfx 1 x
 
-lemma acc_F_valid (x : result) : opF x ≠ some [] := by
+theorem acc_F_valid (x : result) : opF x ≠ some [] := by
   rcases x with _ | w; · intro h; cases h
   exact fun h => f_success_nonempty h rfl
 
-lemma acc_power_valid (n : Nat) {x : result} (hx : x ≠ some []) : power opF n x ≠ some [] := by
+theorem acc_power_valid (n : Nat) {x : result} (hx : x ≠ some []) : power opF n x ≠ some [] := by
   cases n with
   | zero => exact hx
   | succ n => exact acc_F_valid _
 
-lemma acc_F_D {x : result} (hx : x ≠ some []) : opF (opD x) = L1 x := by
+theorem acc_F_D {x : result} (hx : x ≠ some []) : opF (opD x) = L1 x := by
   rcases x with _ | ⟨_ | ⟨a, u⟩⟩
   · rfl
   · exact False.elim (hx rfl)
   · exact f_large a u
 
-lemma acc_F_L (x : result) : opF (L1 x) = opD (opF x) := by
+theorem acc_F_L (x : result) : opF (L1 x) = opD (opF x) := by
   rcases x with _ | w; · rfl
   exact f_one w
 
-lemma acc_D_even (n : Nat) {x : result} (hx : x ≠ some []) :
+theorem acc_D_even (n : Nat) {x : result} (hx : x ≠ some []) :
     power opF (2 * n) (opD x) = opD (power opF n x) := by
   induction n with
   | zero => rfl
@@ -842,12 +836,12 @@ lemma acc_D_even (n : Nat) {x : result} (hx : x ≠ some []) :
     simp only [power]
     rw [ih, acc_F_D (acc_power_valid n hx), acc_F_L]
 
-lemma acc_D_odd (n : Nat) {x : result} (hx : x ≠ some []) :
+theorem acc_D_odd (n : Nat) {x : result} (hx : x ≠ some []) :
     power opF (2 * n + 1) (opD x) = L1 (power opF n x) := by
   simp only [power]
   rw [acc_D_even n hx, acc_F_D (acc_power_valid n hx)]
 
-lemma acc_L_even (n : Nat) (x : result) :
+theorem acc_L_even (n : Nat) (x : result) :
     power opF (2 * n) (L1 x) = L1 (power opF n x) := by
   induction n with
   | zero => rfl
@@ -857,24 +851,24 @@ lemma acc_L_even (n : Nat) (x : result) :
     simp only [power]
     rw [ih, acc_F_L, acc_F_D (acc_F_valid _)]
 
-lemma acc_L_odd (n : Nat) (x : result) :
+theorem acc_L_odd (n : Nat) (x : result) :
     power opF (2 * n + 1) (L1 x) = opD (power opF (n + 1) x) := by
   simp only [power]
   rw [acc_L_even, acc_F_L]
 
-lemma acc_power_two (n : Nat) (x : result) :
+theorem acc_power_two (n : Nat) (x : result) :
     power opF n (pfx 2 x) = pfx 2 (power opF n x) := opF_power_Q n x
 
-lemma acc_power_three (n : Nat) (x : result) :
+theorem acc_power_three (n : Nat) (x : result) :
     power opF n (pfx 3 x) = pfx 3 (power opF (2 * n) x) := opF_power_three n x
 
-lemma four_G_one (x : result) : G (pfx 1 x) = lift_plus 2 (opF x) := by
+theorem four_G_one (x : result) : G (pfx 1 x) = lift_plus 2 (opF x) := by
   rcases x with _ | U; · rfl
   unfold G opF Z pfx bind_res
   simp only [Option.map, f_zero_one]
   cases f U <;> rfl
 
-lemma four_G_six (x : result) : G (pfx 6 x) = pfx 4 (opF (opF x)) := by
+theorem four_G_six (x : result) : G (pfx 6 x) = pfx 4 (opF (opF x)) := by
   rcases x with _ | U; · rfl
   unfold G opF Z pfx
   simp only [Option.map, bind_res]
@@ -886,16 +880,16 @@ lemma four_G_six (x : result) : G (pfx 6 x) = pfx 4 (opF (opF x)) := by
   · dsimp -failIfUnchanged only
     rcases f V with _ | W <;> rfl
 
-lemma four_prefix_D_Z (x : result) : pfx 4 x = opD (Z x) := by
+theorem four_prefix_D_Z (x : result) : pfx 4 x = opD (Z x) := by
   cases x <;> rfl
 
-lemma four_D_Q (x : result) : opD (Q x) = pfx 6 x := by
+theorem four_D_Q (x : result) : opD (Q x) = pfx 6 x := by
   cases x <;> rfl
 
-lemma four_plus_Q (x : result) : lift_plus 2 (Q x) = pfx 4 x := by
+theorem four_plus_Q (x : result) : lift_plus 2 (Q x) = pfx 4 x := by
   cases x <;> rfl
 
-lemma H_four_even (m : Nat) (x : result) (hm : 1 ≤ m) :
+theorem H_four_even (m : Nat) (x : result) (hm : 1 ≤ m) :
     H (2 * m) (pfx 4 x) = pfx 4 (power opF (m + 1) (G x)) := by
   unfold H
   rw [four_prefix_D_Z, acc_D_even m (by cases x <;> intro h <;> cases h)]
@@ -903,7 +897,7 @@ lemma H_four_even (m : Nat) (x : result) (hm : 1 ≤ m) :
   rw [opF_power_Z, four_D_Q, four_G_six]
   rfl
 
-lemma H_four_odd (m : Nat) (x : result) (hm : 1 ≤ m) :
+theorem H_four_odd (m : Nat) (x : result) (hm : 1 ≤ m) :
     H (2 * m + 1) (pfx 4 x) = pfx 4 (power opF m (G x)) := by
   unfold H
   rw [four_prefix_D_Z, acc_D_odd m (by cases x <;> intro h <;> cases h)]
@@ -913,7 +907,7 @@ lemma H_four_odd (m : Nat) (x : result) (hm : 1 ≤ m) :
   rw [four_G_one, opF_Q, four_plus_Q]
   rfl
 
-lemma H_four_one (x : result) : H 1 (pfx 4 x) = pfx 4 (G x) := by
+theorem H_four_one (x : result) : H 1 (pfx 4 x) = pfx 4 (G x) := by
   unfold H
   rw [four_prefix_D_Z]
   have h1 : (1 : Nat) = 2 * 0 + 1 := rfl
@@ -922,7 +916,7 @@ lemma H_four_one (x : result) : H 1 (pfx 4 x) = pfx 4 (G x) := by
   unfold L1
   rw [four_G_one, opF_Z, four_plus_Q]
 
-lemma K_four_transfer (n e : Nat) (x : result)
+theorem K_four_transfer (n e : Nat) (x : result)
     (hE : ∀ y, H n (pfx 4 y) = pfx 4 (power opF e (G y))) :
     K n (pfx 4 x) ↔ K e (G x) := by
   have hC : ∀ k y, power (H n) k (pfx 4 y) = pfx 4 (power (fun z => power opF e (G z)) k y) := by
@@ -941,12 +935,12 @@ lemma K_four_transfer (n e : Nat) (x : result)
 def four_clock (n : Nat) : Nat :=
   if n % 2 == 0 then n / 2 + 1 else (n - 1) / 2
 
-lemma four_clock_even (m : Nat) : four_clock (2 * m) = m + 1 := by
+theorem four_clock_even (m : Nat) : four_clock (2 * m) = m + 1 := by
   unfold four_clock
   have h : ((2 * m) % 2 == 0) = true := by rw [beq_iff_eq]; omega
   rw [if_pos h]; omega
 
-lemma four_clock_odd (m : Nat) : four_clock (2 * m + 1) = m := by
+theorem four_clock_odd (m : Nat) : four_clock (2 * m + 1) = m := by
   unfold four_clock
   have h : ¬ (((2 * m + 1) % 2 == 0) = true) := by rw [beq_iff_eq]; omega
   rw [if_neg h]; omega
@@ -977,7 +971,7 @@ def numeral_fuel : Nat → Nat → word
 
 def numeral (n : Nat) : word := numeral_fuel n n
 
-lemma numeral_fuel_eq (f1 : Nat) :
+theorem numeral_fuel_eq (f1 : Nat) :
     ∀ (f2 n : Nat), n ≤ f1 → n ≤ f2 → numeral_fuel f1 n = numeral_fuel f2 n := by
   induction f1 with
   | zero =>
@@ -996,9 +990,9 @@ lemma numeral_fuel_eq (f1 : Nat) :
         simp only [numeral_fuel]
         rw [ih f2 ((m + 1) / 2) (by omega) (by omega)]
 
-lemma numeral_zero : numeral 0 = [] := rfl
+theorem numeral_zero : numeral 0 = [] := rfl
 
-lemma numeral_double (n : Nat) : numeral (2 * n) = first_plus 4 (numeral n) := by
+theorem numeral_double (n : Nat) : numeral (2 * n) = first_plus 4 (numeral n) := by
   cases n with
   | zero => rfl
   | succ m =>
@@ -1013,7 +1007,7 @@ lemma numeral_double (n : Nat) : numeral (2 * n) = first_plus 4 (numeral n) := b
     rw [numeral_fuel_eq (2 * m + 1) (m + 1) (m + 1) (by omega) (by omega)]
     rfl
 
-lemma numeral_odd (n : Nat) : numeral (2 * n + 1) = 1 :: numeral n := by
+theorem numeral_odd (n : Nat) : numeral (2 * n + 1) = 1 :: numeral n := by
   unfold numeral
   simp only [numeral_fuel]
   have hmod : ((2 * n + 1) % 2 == 1) = true := by
@@ -1022,7 +1016,7 @@ lemma numeral_odd (n : Nat) : numeral (2 * n + 1) = 1 :: numeral n := by
   rw [if_pos hmod, hdiv]
   rw [numeral_fuel_eq (2 * n) n n (by omega) (by omega)]
 
-lemma numeral_nonempty (n : Nat) (hn : 0 < n) : numeral n ≠ [] := by
+theorem numeral_nonempty (n : Nat) (hn : 0 < n) : numeral n ≠ [] := by
   induction n using Nat.strongRecOn with
   | ind n ih =>
     intro hnil
@@ -1035,7 +1029,7 @@ lemma numeral_nonempty (n : Nat) (hn : 0 < n) : numeral n ≠ [] := by
     · rw [numeral_odd] at hnil
       cases hnil
 
-lemma Eval_numeral_succ (n : Nat) : Eval (numeral n) (some (numeral (n + 1))) := by
+theorem Eval_numeral_succ (n : Nat) : Eval (numeral n) (some (numeral (n + 1))) := by
   induction n using Nat.strongRecOn with
   | ind n ih =>
     rcases n with _ | m
@@ -1071,17 +1065,17 @@ theorem power_F_nil (a : Nat) : power opF a (some []) = some (numeral a) := by
   rw [Nat.zero_add] at h
   exact h
 
-lemma numeral_eight_four (n : Nat) : numeral (8 * n + 4) = 9 :: numeral n := by
+theorem numeral_eight_four (n : Nat) : numeral (8 * n + 4) = 9 :: numeral n := by
   have h : 8 * n + 4 = 2 * (2 * (2 * n + 1)) := by omega
   rw [h, numeral_double, numeral_double, numeral_odd]
   rfl
 
-lemma numeral_boundary (m : Nat) (hm : 2 ≤ m) :
+theorem numeral_boundary (m : Nat) (hm : 2 ≤ m) :
     numeral (m + (7 * m - 12)) = 9 :: numeral (m - 2) := by
   have h : m + (7 * m - 12) = 8 * (m - 2) + 4 := by omega
   rw [h, numeral_eight_four]
 
-lemma H_numeral_boundary (m : Nat) (hm : 2 ≤ m) :
+theorem H_numeral_boundary (m : Nat) (hm : 2 ≤ m) :
     H (7 * m - 12) (some (numeral m)) = Q (Q (some (numeral (m - 2)))) := by
   unfold H
   rw [power_F_numeral, numeral_boundary m hm, G_nine]
@@ -1109,7 +1103,7 @@ theorem productive_numeric_family_boundary (m : Nat) (hm : 2 ≤ m) :
   rw [power_succ_r, H_numeral_boundary m hm]
   exact hk
 
-lemma numeral_9070 : numeral 9070 = [5, 1, 1, 5, 1, 5, 1, 13] := rfl
+theorem numeral_9070 : numeral 9070 = [5, 1, 1, 5, 1, 5, 1, 13] := rfl
 
 theorem selected_numeric_endpoint_nonhalting :
     ¬ K 63492 (some [2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) := by
@@ -1165,7 +1159,7 @@ def checked_f : Nat → Nat → word → Option result
       | 0 :: 2 :: u => Option.map (lift_prefix [2, 0]) (checked_f accel fuel u)
       | 0 :: (g + 3) :: u => Option.map (fun r => lift_prefix [2] (lift_plus 1 r)) (checked_f accel fuel (g :: u))
 
-lemma acc_D_binary (n : Nat) {x : result} (hx : x ≠ some []) :
+theorem acc_D_binary (n : Nat) {x : result} (hx : x ≠ some []) :
     power opF n (opD x) =
       if n % 2 == 1 then L1 (power opF (n / 2) x)
       else opD (power opF (n / 2) x) := by
@@ -1179,7 +1173,7 @@ lemma acc_D_binary (n : Nat) {x : result} (hx : x ≠ some []) :
     rw [if_pos hmod, hdiv]
     exact acc_D_odd k hx
 
-lemma acc_L_binary (n : Nat) (x : result) :
+theorem acc_L_binary (n : Nat) (x : result) :
     power opF n (L1 x) =
       if n % 2 == 1 then opD (power opF (n / 2 + 1) x)
       else L1 (power opF (n / 2) x) := by
@@ -1304,43 +1298,43 @@ theorem checked_f_sound (accel fuel : Nat) :
       injection h with h; subst h
       exact fast_power_sound accel 1 w v hfp
 
-lemma row9_cert_G {u v : word} (h : f (0 :: u) = some (2 :: v)) : G (some u) = some v := by
+theorem row9_cert_G {u v : word} (h : f (0 :: u) = some (2 :: v)) : G (some u) = some v := by
   unfold G opF Z pfx bind_res
   simp only [Option.map, h, List.tail_cons]
 
-lemma row9_cert_T {u a b v : word}
+theorem row9_cert_T {u a b v : word}
     (h0 : f u = some a) (h1 : f a = some b) (h2 : f b = some v) :
     T 3 (some u) = some (0 :: v) := by
   unfold T
   simp only [power, opF, bind_res, h0, h1, h2, Z, pfx, Option.map]
 
-lemma row9_cert_H {u a b c v : word}
+theorem row9_cert_H {u a b c v : word}
     (h0 : f u = some a) (h1 : f a = some b) (h2 : f b = some c) (h3 : f (0 :: c) = some (2 :: v)) :
     H 3 (some u) = some v := by
   unfold H
   simp only [power, opF, bind_res, h0, h1, h2]
   exact row9_cert_G h3
 
-lemma step_edge_T {u a b v : word}
+theorem step_edge_T {u a b v : word}
     (h0 : f u = some a) (h1 : f a = some b) (h2 : f b = some v) :
     K 3 (some u) ↔ K 3 (some (0 :: v)) := by
   rw [K_T 3 (some u) (by decide), row9_cert_T h0 h1 h2]
 
-lemma step_edge_H {u a b c v : word}
+theorem step_edge_H {u a b c v : word}
     (h0 : f u = some a) (h1 : f a = some b) (h2 : f b = some c) (h3 : f (0 :: c) = some (2 :: v)) :
     K 3 (some u) ↔ K 3 (some v) := by
   rw [K_H 3 (some u), row9_cert_H h0 h1 h2 h3]
 
-lemma step_normal_Z {n : Nat} {u v : word} (hn : 1 ≤ n) (h : f (0 :: u) = some (2 :: v)) :
+theorem step_normal_Z {n : Nat} {u v : word} (hn : 1 ≤ n) (h : f (0 :: u) = some (2 :: v)) :
     K n (some (0 :: u)) ↔ K n (some v) := by
   change K n (Z (some u)) ↔ K n (some v)
   rw [K_Z n (some u) hn, row9_cert_G h]
 
-lemma step_normal_three {n m : Nat} {u : word} (hm : 2 * n = m) :
+theorem step_normal_three {n m : Nat} {u : word} (hm : 2 * n = m) :
     K n (some (3 :: u)) ↔ K m (some u) := by
   subst hm; exact K_three n (some u)
 
-lemma step_normal_four {n m : Nat} {u v : word} (hn : 2 ≤ n) (hm : four_clock n = m)
+theorem step_normal_four {n m : Nat} {u v : word} (hn : 2 ≤ n) (hm : four_clock n = m)
     (h : f (0 :: u) = some (2 :: v)) :
     K n (some (4 :: u)) ↔ K m (some v) := by
   subst hm
@@ -1351,338 +1345,338 @@ lemma step_normal_four {n m : Nat} {u v : word} (hn : 2 ≤ n) (hm : four_clock 
 -- Section 11: 222 Certificate Calls (`Row9CertificateCalls.v`)
 -- ============================================================================
 
-lemma row9_f_0 : f [] = some [1] := checked_f_sound 256 128 [] (some [1]) rfl
-lemma row9_f_1 : f [1] = some [5] := checked_f_sound 256 128 [1] (some [5]) rfl
-lemma row9_f_2 : f [5] = some [1, 1] := checked_f_sound 256 128 [5] (some [1, 1]) rfl
-lemma row9_f_3 : f [0, 1, 1] = some [2, 7] := checked_f_sound 256 128 [0, 1, 1] (some [2, 7]) rfl
-lemma row9_f_8 : f [2, 7] = some [2, 1, 3] := checked_f_sound 256 128 [2, 7] (some [2, 1, 3]) rfl
-lemma row9_f_9 : f [2, 1, 3] = some [2, 7, 5] := checked_f_sound 256 128 [2, 1, 3] (some [2, 7, 5]) rfl
-lemma row9_f_10 : f [0, 2, 7, 5] = some [2, 0, 1, 3, 5] := checked_f_sound 256 128 [0, 2, 7, 5] (some [2, 0, 1, 3, 5]) rfl
-lemma row9_f_22 : f [2, 0, 1, 3, 5] = some [2, 2, 5, 9] := checked_f_sound 256 128 [2, 0, 1, 3, 5] (some [2, 2, 5, 9]) rfl
-lemma row9_f_23 : f [2, 2, 5, 9] = some [2, 2, 1, 1, 9] := checked_f_sound 256 128 [2, 2, 5, 9] (some [2, 2, 1, 1, 9]) rfl
-lemma row9_f_24 : f [0, 2, 2, 1, 1, 9] = some [2, 0, 2, 9, 5] := checked_f_sound 256 128 [0, 2, 2, 1, 1, 9] (some [2, 0, 2, 9, 5]) rfl
-lemma row9_f_49 : f [2, 0, 2, 9, 5] = some [2, 2, 0, 1, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 9, 5] (some [2, 2, 0, 1, 5, 5]) rfl
-lemma row9_f_50 : f [2, 2, 0, 1, 5, 5] = some [2, 2, 2, 3, 1, 5] := checked_f_sound 256 128 [2, 2, 0, 1, 5, 5] (some [2, 2, 2, 3, 1, 5]) rfl
-lemma row9_f_52 : f [0, 2, 2, 2, 3, 1, 5] = some [2, 0, 2, 2, 3, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 1, 5] (some [2, 0, 2, 2, 3, 1, 1, 1]) rfl
-lemma row9_f_60 : f [0, 2, 2, 3, 1, 1, 1] = some [2, 0, 2, 3, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 3, 1, 1, 1] (some [2, 0, 2, 3, 1, 9]) rfl
-lemma row9_f_79 : f [2, 0, 2, 3, 1, 9] = some [2, 2, 0, 3, 1, 1, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 1, 9] (some [2, 2, 0, 3, 1, 1, 5]) rfl
-lemma row9_f_80 : f [2, 2, 0, 3, 1, 1, 5] = some [2, 2, 2, 3, 7, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 1, 1, 5] (some [2, 2, 2, 3, 7, 1]) rfl
-lemma row9_f_82 : f [0, 2, 2, 2, 3, 7, 1] = some [2, 0, 2, 2, 3, 7, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 7, 1] (some [2, 0, 2, 2, 3, 7, 1, 1]) rfl
-lemma row9_f_89 : f [0, 2, 2, 3, 7, 1, 1] = some [2, 0, 2, 3, 7, 1, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 7, 1, 1] (some [2, 0, 2, 3, 7, 1, 5]) rfl
-lemma row9_f_111 : f [2, 0, 2, 3, 7, 1, 5] = some [2, 2, 0, 3, 7, 1, 1, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 7, 1, 5] (some [2, 2, 0, 3, 7, 1, 1, 1]) rfl
-lemma row9_f_112 : f [2, 2, 0, 3, 7, 1, 1, 1] = some [2, 2, 2, 3, 2, 0, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 7, 1, 1, 1] (some [2, 2, 2, 3, 2, 0, 1, 1, 1]) rfl
-lemma row9_f_114 : f [0, 2, 2, 2, 3, 2, 0, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 1, 7] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 2, 0, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 1, 7]) rfl
-lemma row9_f_125 : f [0, 2, 2, 3, 2, 2, 1, 7] = some [2, 0, 2, 3, 2, 2, 1, 1, 3] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 1, 7] (some [2, 0, 2, 3, 2, 2, 1, 1, 3]) rfl
-lemma row9_f_145 : f [2, 0, 2, 3, 2, 2, 1, 1, 3] = some [2, 2, 0, 3, 2, 2, 1, 7, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 1, 1, 3] (some [2, 2, 0, 3, 2, 2, 1, 7, 5]) rfl
-lemma row9_f_146 : f [2, 2, 0, 3, 2, 2, 1, 7, 5] = some [2, 2, 2, 3, 0, 2, 5, 3, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 1, 7, 5] (some [2, 2, 2, 3, 0, 2, 5, 3, 5]) rfl
-lemma row9_f_148 : f [0, 2, 2, 2, 3, 0, 2, 5, 3, 5] = some [2, 0, 2, 2, 3, 2, 2, 9, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 5, 3, 5] (some [2, 0, 2, 2, 3, 2, 2, 9, 9]) rfl
-lemma row9_f_173 : f [0, 2, 2, 3, 2, 2, 9, 9] = some [2, 0, 2, 3, 2, 2, 5, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 9, 9] (some [2, 0, 2, 3, 2, 2, 5, 1, 9]) rfl
-lemma row9_f_191 : f [2, 0, 2, 3, 2, 2, 5, 1, 9] = some [2, 2, 0, 3, 2, 2, 13, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 5, 1, 9] (some [2, 2, 0, 3, 2, 2, 13, 5]) rfl
-lemma row9_f_192 : f [2, 2, 0, 3, 2, 2, 13, 5] = some [2, 2, 2, 3, 0, 2, 1, 9, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 13, 5] (some [2, 2, 2, 3, 0, 2, 1, 9, 5]) rfl
-lemma row9_f_194 : f [0, 2, 2, 2, 3, 0, 2, 1, 9, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 1, 1, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 1, 9, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 1, 1, 5]) rfl
-lemma row9_f_220 : f [0, 2, 2, 3, 2, 2, 3, 1, 1, 5] = some [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 1, 1, 5] (some [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1]) rfl
-lemma row9_f_238 : f [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 1, 1, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 1, 1, 9]) rfl
-lemma row9_f_239 : f [2, 2, 0, 3, 2, 2, 3, 1, 1, 9] = some [2, 2, 2, 3, 0, 2, 3, 1, 5, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 1, 1, 9] (some [2, 2, 2, 3, 0, 2, 3, 1, 5, 5]) rfl
-lemma row9_f_241 : f [0, 2, 2, 2, 3, 0, 2, 3, 1, 5, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 11, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 1, 5, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 11, 1]) rfl
-lemma row9_f_278 : f [0, 2, 2, 3, 2, 2, 3, 11, 1] = some [2, 0, 2, 3, 2, 2, 3, 11, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 11, 1] (some [2, 0, 2, 3, 2, 2, 3, 11, 1, 1]) rfl
-lemma row9_f_295 : f [2, 0, 2, 3, 2, 2, 3, 11, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 11, 1, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 11, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 11, 1, 5]) rfl
-lemma row9_f_296 : f [2, 2, 0, 3, 2, 2, 3, 11, 1, 5] = some [2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 11, 1, 5] (some [2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5]) rfl
-lemma row9_f_298 : f [0, 2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1]) rfl
-lemma row9_f_351 : f [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7]) rfl
-lemma row9_f_376 : f [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7] = some [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7] (some [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3]) rfl
-lemma row9_f_377 : f [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3] = some [2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3] (some [2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5]) rfl
-lemma row9_f_379 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5]) rfl
-lemma row9_f_455 : f [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9]) rfl
-lemma row9_f_485 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1]) rfl
-lemma row9_f_486 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17]) rfl
-lemma row9_f_488 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1]) rfl
-lemma row9_f_579 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14]) rfl
-lemma row9_f_614 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1]) rfl
-lemma row9_f_615 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1]) rfl
-lemma row9_f_617 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5]) rfl
-lemma row9_f_709 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1]) rfl
-lemma row9_f_779 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5]) rfl
-lemma row9_f_780 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1]) rfl
-lemma row9_f_782 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5]) rfl
-lemma row9_f_874 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_951 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2]) rfl
-lemma row9_f_952 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1]) rfl
-lemma row9_f_954 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5]) rfl
-lemma row9_f_1046 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1]) rfl
-lemma row9_f_1152 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9]) rfl
-lemma row9_f_1153 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1]) rfl
-lemma row9_f_1155 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5]) rfl
-lemma row9_f_1247 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1]) rfl
-lemma row9_f_1370 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13]) rfl
-lemma row9_f_1371 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1]) rfl
-lemma row9_f_1373 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5]) rfl
-lemma row9_f_1465 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1]) rfl
-lemma row9_f_1634 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1]) rfl
-lemma row9_f_1635 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5]) rfl
-lemma row9_f_1637 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9]) rfl
-lemma row9_f_1729 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1]) rfl
-lemma row9_f_1916 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1]) rfl
-lemma row9_f_1917 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5]) rfl
-lemma row9_f_1919 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9]) rfl
-lemma row9_f_2011 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1]) rfl
-lemma row9_f_2235 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5]) rfl
-lemma row9_f_2236 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9]) rfl
-lemma row9_f_2238 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13]) rfl
-lemma row9_f_2330 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1]) rfl
-lemma row9_f_2578 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13]) rfl
-lemma row9_f_2579 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17]) rfl
-lemma row9_f_2581 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21]) rfl
-lemma row9_f_2673 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1]) rfl
-lemma row9_f_2947 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13]) rfl
-lemma row9_f_2948 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17]) rfl
-lemma row9_f_2950 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21]) rfl
-lemma row9_f_3042 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1]) rfl
-lemma row9_f_3323 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13]) rfl
-lemma row9_f_3324 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17]) rfl
-lemma row9_f_3326 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21]) rfl
-lemma row9_f_3418 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1]) rfl
-lemma row9_f_3754 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13]) rfl
-lemma row9_f_3755 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21]) rfl
-lemma row9_f_3757 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25]) rfl
-lemma row9_f_3849 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1]) rfl
-lemma row9_f_4194 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13]) rfl
-lemma row9_f_4195 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9]) rfl
-lemma row9_f_4197 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9]) rfl
-lemma row9_f_4289 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5]) rfl
-lemma row9_f_4656 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5]) rfl
-lemma row9_f_4657 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1]) rfl
-lemma row9_f_4659 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17]) rfl
-lemma row9_f_4751 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5]) rfl
-lemma row9_f_5125 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1]) rfl
-lemma row9_f_5126 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5]) rfl
-lemma row9_f_5128 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9]) rfl
-lemma row9_f_5220 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1]) rfl
-lemma row9_f_5623 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9]) rfl
-lemma row9_f_5624 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17]) rfl
-lemma row9_f_5626 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21]) rfl
-lemma row9_f_5718 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1]) rfl
-lemma row9_f_6135 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13]) rfl
-lemma row9_f_6136 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_6138 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_6230 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1]) rfl
-lemma row9_f_6676 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13]) rfl
-lemma row9_f_6677 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9]) rfl
-lemma row9_f_6679 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9]) rfl
-lemma row9_f_6771 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5]) rfl
-lemma row9_f_7223 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5]) rfl
-lemma row9_f_7224 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1]) rfl
-lemma row9_f_7226 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17]) rfl
-lemma row9_f_7318 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5]) rfl
-lemma row9_f_7791 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1]) rfl
-lemma row9_f_7792 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5]) rfl
-lemma row9_f_7794 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9]) rfl
-lemma row9_f_7886 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1]) rfl
-lemma row9_f_8365 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9]) rfl
-lemma row9_f_8366 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21]) rfl
-lemma row9_f_8368 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25]) rfl
-lemma row9_f_8460 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1]) rfl
-lemma row9_f_8963 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13]) rfl
-lemma row9_f_8964 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_8966 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_9058 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1]) rfl
-lemma row9_f_9568 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13]) rfl
-lemma row9_f_9569 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_9571 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_9663 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1]) rfl
-lemma row9_f_10217 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13]) rfl
-lemma row9_f_10218 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_10220 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_10312 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1]) rfl
-lemma row9_f_10893 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13]) rfl
-lemma row9_f_10894 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_10896 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_10988 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1]) rfl
-lemma row9_f_11624 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13]) rfl
-lemma row9_f_11625 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_11627 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_11719 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1]) rfl
-lemma row9_f_12389 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_12390 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_12392 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_12484 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1]) rfl
-lemma row9_f_13175 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_13176 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_13178 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_13270 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1]) rfl
-lemma row9_f_13968 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_13969 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_13971 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_14063 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1]) rfl
-lemma row9_f_14812 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_14813 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_14815 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_14907 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1]) rfl
-lemma row9_f_15663 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_15664 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_15666 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_15758 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1]) rfl
-lemma row9_f_16544 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_16545 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_16547 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_16639 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1]) rfl
-lemma row9_f_17447 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_17448 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_17450 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_17542 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1]) rfl
-lemma row9_f_18392 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_18393 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_18395 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_18487 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1]) rfl
-lemma row9_f_19358 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_19359 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_19361 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_19453 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1]) rfl
-lemma row9_f_19690 : f [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1] = some [2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1] (some [2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_20031 : f [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13] = some [2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13] (some [2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) rfl
-lemma row9_f_20375 : f [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1] = some [2, 0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5] := checked_f_sound 256 128 [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1] (some [2, 0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5]) rfl
-lemma row9_f_20378 : f [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5] = some [2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5] (some [2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_20486 : f [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1] = some [2, 4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5] := checked_f_sound 256 128 [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1] (some [2, 4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5]) rfl
-lemma row9_f_20495 : f [0, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5] = some [2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5] (some [2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) rfl
-lemma row9_f_20727 : f [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1] = some [2, 3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1] := checked_f_sound 256 128 [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1] (some [2, 3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) rfl
-lemma row9_f_20734 : f [0, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1] = some [2, 0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1] := checked_f_sound 256 128 [0, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1] (some [2, 0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1]) rfl
-lemma row9_f_20742 : f [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1] = some [2, 3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1] := checked_f_sound 256 128 [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1] (some [2, 3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) rfl
-lemma row9_f_20754 : f [0, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1] = some [2, 0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1] (some [2, 0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1]) rfl
-lemma row9_f_20776 : f [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1] = some [2, 0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1] (some [2, 0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1]) rfl
-lemma row9_f_20789 : f [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1] = some [2, 3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21] := checked_f_sound 256 128 [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1] (some [2, 3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) rfl
-lemma row9_f_20806 : f [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21] = some [2, 4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13] := checked_f_sound 256 128 [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21] (some [2, 4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13]) rfl
-lemma row9_f_20825 : f [0, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13] = some [2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [0, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13] (some [2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) rfl
-lemma row9_f_21086 : f [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13] = some [2, 0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13] (some [2, 0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13]) rfl
-lemma row9_f_21089 : f [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13] = some [2, 3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13] := checked_f_sound 256 128 [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13] (some [2, 3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) rfl
-lemma row9_f_21096 : f [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13] = some [2, 0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13] (some [2, 0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13]) rfl
-lemma row9_f_21099 : f [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13] = some [2, 0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13] (some [2, 0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13]) rfl
-lemma row9_f_21106 : f [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13] = some [2, 0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13] (some [2, 0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13]) rfl
-lemma row9_f_21111 : f [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13] = some [2, 3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13] (some [2, 3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) rfl
-lemma row9_f_21130 : f [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13] = some [2, 4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13] (some [2, 4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) rfl
-lemma row9_f_21137 : f [0, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] = some [2, 0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] (some [2, 0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) rfl
-lemma row9_f_21146 : f [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] = some [2, 4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] (some [2, 4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13]) rfl
-lemma row9_f_21166 : f [0, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13] = some [2, 0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13] (some [2, 0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13]) rfl
-lemma row9_f_21186 : f [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13] = some [2, 0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13] (some [2, 0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21213 : f [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13] = some [2, 3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13] (some [2, 3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21241 : f [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13] = some [2, 0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13] (some [2, 0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21244 : f [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13] = some [2, 3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13] (some [2, 3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21251 : f [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13] = some [2, 4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13] (some [2, 4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21260 : f [0, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13] = some [2, 0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13] (some [2, 0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21272 : f [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13] = some [2, 0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13] (some [2, 0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21283 : f [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13] = some [2, 0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13] (some [2, 0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21296 : f [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13] = some [2, 0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13] (some [2, 0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21309 : f [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13] = some [2, 3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13] (some [2, 3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21349 : f [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13] = some [2, 0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13] (some [2, 0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13]) rfl
-lemma row9_f_21352 : f [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13] = some [2, 3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13] (some [2, 3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_0 : f [] = some [1] := checked_f_sound 256 128 [] (some [1]) rfl
+theorem row9_f_1 : f [1] = some [5] := checked_f_sound 256 128 [1] (some [5]) rfl
+theorem row9_f_2 : f [5] = some [1, 1] := checked_f_sound 256 128 [5] (some [1, 1]) rfl
+theorem row9_f_3 : f [0, 1, 1] = some [2, 7] := checked_f_sound 256 128 [0, 1, 1] (some [2, 7]) rfl
+theorem row9_f_8 : f [2, 7] = some [2, 1, 3] := checked_f_sound 256 128 [2, 7] (some [2, 1, 3]) rfl
+theorem row9_f_9 : f [2, 1, 3] = some [2, 7, 5] := checked_f_sound 256 128 [2, 1, 3] (some [2, 7, 5]) rfl
+theorem row9_f_10 : f [0, 2, 7, 5] = some [2, 0, 1, 3, 5] := checked_f_sound 256 128 [0, 2, 7, 5] (some [2, 0, 1, 3, 5]) rfl
+theorem row9_f_22 : f [2, 0, 1, 3, 5] = some [2, 2, 5, 9] := checked_f_sound 256 128 [2, 0, 1, 3, 5] (some [2, 2, 5, 9]) rfl
+theorem row9_f_23 : f [2, 2, 5, 9] = some [2, 2, 1, 1, 9] := checked_f_sound 256 128 [2, 2, 5, 9] (some [2, 2, 1, 1, 9]) rfl
+theorem row9_f_24 : f [0, 2, 2, 1, 1, 9] = some [2, 0, 2, 9, 5] := checked_f_sound 256 128 [0, 2, 2, 1, 1, 9] (some [2, 0, 2, 9, 5]) rfl
+theorem row9_f_49 : f [2, 0, 2, 9, 5] = some [2, 2, 0, 1, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 9, 5] (some [2, 2, 0, 1, 5, 5]) rfl
+theorem row9_f_50 : f [2, 2, 0, 1, 5, 5] = some [2, 2, 2, 3, 1, 5] := checked_f_sound 256 128 [2, 2, 0, 1, 5, 5] (some [2, 2, 2, 3, 1, 5]) rfl
+theorem row9_f_52 : f [0, 2, 2, 2, 3, 1, 5] = some [2, 0, 2, 2, 3, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 1, 5] (some [2, 0, 2, 2, 3, 1, 1, 1]) rfl
+theorem row9_f_60 : f [0, 2, 2, 3, 1, 1, 1] = some [2, 0, 2, 3, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 3, 1, 1, 1] (some [2, 0, 2, 3, 1, 9]) rfl
+theorem row9_f_79 : f [2, 0, 2, 3, 1, 9] = some [2, 2, 0, 3, 1, 1, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 1, 9] (some [2, 2, 0, 3, 1, 1, 5]) rfl
+theorem row9_f_80 : f [2, 2, 0, 3, 1, 1, 5] = some [2, 2, 2, 3, 7, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 1, 1, 5] (some [2, 2, 2, 3, 7, 1]) rfl
+theorem row9_f_82 : f [0, 2, 2, 2, 3, 7, 1] = some [2, 0, 2, 2, 3, 7, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 7, 1] (some [2, 0, 2, 2, 3, 7, 1, 1]) rfl
+theorem row9_f_89 : f [0, 2, 2, 3, 7, 1, 1] = some [2, 0, 2, 3, 7, 1, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 7, 1, 1] (some [2, 0, 2, 3, 7, 1, 5]) rfl
+theorem row9_f_111 : f [2, 0, 2, 3, 7, 1, 5] = some [2, 2, 0, 3, 7, 1, 1, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 7, 1, 5] (some [2, 2, 0, 3, 7, 1, 1, 1]) rfl
+theorem row9_f_112 : f [2, 2, 0, 3, 7, 1, 1, 1] = some [2, 2, 2, 3, 2, 0, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 7, 1, 1, 1] (some [2, 2, 2, 3, 2, 0, 1, 1, 1]) rfl
+theorem row9_f_114 : f [0, 2, 2, 2, 3, 2, 0, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 1, 7] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 2, 0, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 1, 7]) rfl
+theorem row9_f_125 : f [0, 2, 2, 3, 2, 2, 1, 7] = some [2, 0, 2, 3, 2, 2, 1, 1, 3] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 1, 7] (some [2, 0, 2, 3, 2, 2, 1, 1, 3]) rfl
+theorem row9_f_145 : f [2, 0, 2, 3, 2, 2, 1, 1, 3] = some [2, 2, 0, 3, 2, 2, 1, 7, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 1, 1, 3] (some [2, 2, 0, 3, 2, 2, 1, 7, 5]) rfl
+theorem row9_f_146 : f [2, 2, 0, 3, 2, 2, 1, 7, 5] = some [2, 2, 2, 3, 0, 2, 5, 3, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 1, 7, 5] (some [2, 2, 2, 3, 0, 2, 5, 3, 5]) rfl
+theorem row9_f_148 : f [0, 2, 2, 2, 3, 0, 2, 5, 3, 5] = some [2, 0, 2, 2, 3, 2, 2, 9, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 5, 3, 5] (some [2, 0, 2, 2, 3, 2, 2, 9, 9]) rfl
+theorem row9_f_173 : f [0, 2, 2, 3, 2, 2, 9, 9] = some [2, 0, 2, 3, 2, 2, 5, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 9, 9] (some [2, 0, 2, 3, 2, 2, 5, 1, 9]) rfl
+theorem row9_f_191 : f [2, 0, 2, 3, 2, 2, 5, 1, 9] = some [2, 2, 0, 3, 2, 2, 13, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 5, 1, 9] (some [2, 2, 0, 3, 2, 2, 13, 5]) rfl
+theorem row9_f_192 : f [2, 2, 0, 3, 2, 2, 13, 5] = some [2, 2, 2, 3, 0, 2, 1, 9, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 13, 5] (some [2, 2, 2, 3, 0, 2, 1, 9, 5]) rfl
+theorem row9_f_194 : f [0, 2, 2, 2, 3, 0, 2, 1, 9, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 1, 1, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 1, 9, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 1, 1, 5]) rfl
+theorem row9_f_220 : f [0, 2, 2, 3, 2, 2, 3, 1, 1, 5] = some [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 1, 1, 5] (some [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1]) rfl
+theorem row9_f_238 : f [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 1, 1, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 1, 1, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 1, 1, 9]) rfl
+theorem row9_f_239 : f [2, 2, 0, 3, 2, 2, 3, 1, 1, 9] = some [2, 2, 2, 3, 0, 2, 3, 1, 5, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 1, 1, 9] (some [2, 2, 2, 3, 0, 2, 3, 1, 5, 5]) rfl
+theorem row9_f_241 : f [0, 2, 2, 2, 3, 0, 2, 3, 1, 5, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 11, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 1, 5, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 11, 1]) rfl
+theorem row9_f_278 : f [0, 2, 2, 3, 2, 2, 3, 11, 1] = some [2, 0, 2, 3, 2, 2, 3, 11, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 11, 1] (some [2, 0, 2, 3, 2, 2, 3, 11, 1, 1]) rfl
+theorem row9_f_295 : f [2, 0, 2, 3, 2, 2, 3, 11, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 11, 1, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 11, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 11, 1, 5]) rfl
+theorem row9_f_296 : f [2, 2, 0, 3, 2, 2, 3, 11, 1, 5] = some [2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 11, 1, 5] (some [2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5]) rfl
+theorem row9_f_298 : f [0, 2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 5, 3, 1, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1]) rfl
+theorem row9_f_351 : f [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7]) rfl
+theorem row9_f_376 : f [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7] = some [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 6, 1, 7] (some [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3]) rfl
+theorem row9_f_377 : f [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3] = some [2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 6, 1, 1, 3] (some [2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5]) rfl
+theorem row9_f_379 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 6, 11, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5]) rfl
+theorem row9_f_455 : f [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9]) rfl
+theorem row9_f_485 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1]) rfl
+theorem row9_f_486 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 9, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17]) rfl
+theorem row9_f_488 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1]) rfl
+theorem row9_f_579 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14]) rfl
+theorem row9_f_614 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1]) rfl
+theorem row9_f_615 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 14, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1]) rfl
+theorem row9_f_617 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 9, 2, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5]) rfl
+theorem row9_f_709 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1]) rfl
+theorem row9_f_779 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 1, 5, 2, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5]) rfl
+theorem row9_f_780 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1]) rfl
+theorem row9_f_782 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 1, 2, 5, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5]) rfl
+theorem row9_f_874 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_951 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 1, 2, 1, 1, 1, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2]) rfl
+theorem row9_f_952 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 1, 2] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1]) rfl
+theorem row9_f_954 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 5, 6, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5]) rfl
+theorem row9_f_1046 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1]) rfl
+theorem row9_f_1152 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 1, 1, 6, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9]) rfl
+theorem row9_f_1153 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 9] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1]) rfl
+theorem row9_f_1155 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5]) rfl
+theorem row9_f_1247 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1]) rfl
+theorem row9_f_1370 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 5, 1, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13]) rfl
+theorem row9_f_1371 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1]) rfl
+theorem row9_f_1373 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5]) rfl
+theorem row9_f_1465 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1]) rfl
+theorem row9_f_1634 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 1, 3, 9, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1]) rfl
+theorem row9_f_1635 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5]) rfl
+theorem row9_f_1637 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9]) rfl
+theorem row9_f_1729 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1]) rfl
+theorem row9_f_1916 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 1, 9, 1, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1]) rfl
+theorem row9_f_1917 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5]) rfl
+theorem row9_f_1919 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9]) rfl
+theorem row9_f_2011 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1]) rfl
+theorem row9_f_2235 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 5, 3, 5, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5]) rfl
+theorem row9_f_2236 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9]) rfl
+theorem row9_f_2238 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 9] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13]) rfl
+theorem row9_f_2330 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1]) rfl
+theorem row9_f_2578 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 5, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13]) rfl
+theorem row9_f_2579 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17]) rfl
+theorem row9_f_2581 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21]) rfl
+theorem row9_f_2673 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1]) rfl
+theorem row9_f_2947 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13]) rfl
+theorem row9_f_2948 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17]) rfl
+theorem row9_f_2950 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21]) rfl
+theorem row9_f_3042 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1]) rfl
+theorem row9_f_3323 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13]) rfl
+theorem row9_f_3324 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17]) rfl
+theorem row9_f_3326 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21]) rfl
+theorem row9_f_3418 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1]) rfl
+theorem row9_f_3754 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13]) rfl
+theorem row9_f_3755 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 0, 1, 1, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21]) rfl
+theorem row9_f_3757 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 21] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25]) rfl
+theorem row9_f_3849 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1]) rfl
+theorem row9_f_4194 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 9, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13]) rfl
+theorem row9_f_4195 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 7, 1, 1, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9]) rfl
+theorem row9_f_4197 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 9, 9] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9]) rfl
+theorem row9_f_4289 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5]) rfl
+theorem row9_f_4656 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 1, 1, 13, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5]) rfl
+theorem row9_f_4657 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 1, 5, 1, 5, 1, 5, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1]) rfl
+theorem row9_f_4659 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 9, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17]) rfl
+theorem row9_f_4751 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5]) rfl
+theorem row9_f_5125 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 5, 5, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1]) rfl
+theorem row9_f_5126 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 5, 5, 9, 5, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5]) rfl
+theorem row9_f_5128 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9]) rfl
+theorem row9_f_5220 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1]) rfl
+theorem row9_f_5623 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 5, 1, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9]) rfl
+theorem row9_f_5624 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 1, 1, 1, 5, 5, 9] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17]) rfl
+theorem row9_f_5626 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 17] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21]) rfl
+theorem row9_f_5718 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1]) rfl
+theorem row9_f_6135 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 5, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13]) rfl
+theorem row9_f_6136 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 7, 1, 1, 1, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_6138 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_6230 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1]) rfl
+theorem row9_f_6676 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13]) rfl
+theorem row9_f_6677 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 1, 3, 1, 13, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9]) rfl
+theorem row9_f_6679 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 13, 9] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9]) rfl
+theorem row9_f_6771 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5]) rfl
+theorem row9_f_7223 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 5, 13, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5]) rfl
+theorem row9_f_7224 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 17, 5, 1, 5, 5] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1]) rfl
+theorem row9_f_7226 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 9, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17]) rfl
+theorem row9_f_7318 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5]) rfl
+theorem row9_f_7791 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 13, 5, 5] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1]) rfl
+theorem row9_f_7792 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 5, 5, 13, 5, 1] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5]) rfl
+theorem row9_f_7794 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 5] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9]) rfl
+theorem row9_f_7886 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1]) rfl
+theorem row9_f_8365 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 13, 1, 5, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9]) rfl
+theorem row9_f_8366 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 1, 9, 5, 9] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21]) rfl
+theorem row9_f_8368 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 21] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25]) rfl
+theorem row9_f_8460 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1]) rfl
+theorem row9_f_8963 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 9, 9, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13]) rfl
+theorem row9_f_8964 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 5, 5, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_8966 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_9058 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1]) rfl
+theorem row9_f_9568 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13]) rfl
+theorem row9_f_9569 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 13, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_9571 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_9663 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1]) rfl
+theorem row9_f_10217 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13]) rfl
+theorem row9_f_10218 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 17, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_10220 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_10312 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1]) rfl
+theorem row9_f_10893 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13]) rfl
+theorem row9_f_10894 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 21, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_10896 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_10988 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1]) rfl
+theorem row9_f_11624 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13]) rfl
+theorem row9_f_11625 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 21, 1, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_11627 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_11719 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1]) rfl
+theorem row9_f_12389 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_12390 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_12392 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_12484 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1]) rfl
+theorem row9_f_13175 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_13176 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_13178 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_13270 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1]) rfl
+theorem row9_f_13968 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_13969 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_13971 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_14063 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1]) rfl
+theorem row9_f_14812 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_14813 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_14815 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_14907 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1]) rfl
+theorem row9_f_15663 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_15664 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_15666 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_15758 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1]) rfl
+theorem row9_f_16544 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_16545 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_16547 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_16639 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1]) rfl
+theorem row9_f_17447 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_17448 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_17450 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_17542 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1]) rfl
+theorem row9_f_18392 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_18393 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_18395 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_18487 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1]) rfl
+theorem row9_f_19358 : f [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1] = some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 13, 1] (some [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_19359 : f [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13] = some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [2, 2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 1, 1, 1, 5, 13] (some [2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_19361 : f [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1] = some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1] (some [2, 0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_19453 : f [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1] = some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1] (some [2, 0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1]) rfl
+theorem row9_f_19690 : f [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1] = some [2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1] (some [2, 0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_20031 : f [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13] = some [2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13] (some [2, 3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) rfl
+theorem row9_f_20375 : f [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1] = some [2, 0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5] := checked_f_sound 256 128 [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1] (some [2, 0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5]) rfl
+theorem row9_f_20378 : f [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5] = some [2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5] (some [2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_20486 : f [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1] = some [2, 4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5] := checked_f_sound 256 128 [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1] (some [2, 4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5]) rfl
+theorem row9_f_20495 : f [0, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5] = some [2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1] := checked_f_sound 256 128 [0, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5] (some [2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) rfl
+theorem row9_f_20727 : f [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1] = some [2, 3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1] := checked_f_sound 256 128 [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1] (some [2, 3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) rfl
+theorem row9_f_20734 : f [0, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1] = some [2, 0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1] := checked_f_sound 256 128 [0, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1] (some [2, 0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1]) rfl
+theorem row9_f_20742 : f [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1] = some [2, 3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1] := checked_f_sound 256 128 [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1] (some [2, 3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) rfl
+theorem row9_f_20754 : f [0, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1] = some [2, 0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1] (some [2, 0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1]) rfl
+theorem row9_f_20776 : f [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1] = some [2, 0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1] := checked_f_sound 256 128 [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1] (some [2, 0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1]) rfl
+theorem row9_f_20789 : f [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1] = some [2, 3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21] := checked_f_sound 256 128 [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1] (some [2, 3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) rfl
+theorem row9_f_20806 : f [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21] = some [2, 4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13] := checked_f_sound 256 128 [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21] (some [2, 4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13]) rfl
+theorem row9_f_20825 : f [0, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13] = some [2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13] := checked_f_sound 256 128 [0, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13] (some [2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) rfl
+theorem row9_f_21086 : f [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13] = some [2, 0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13] (some [2, 0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13]) rfl
+theorem row9_f_21089 : f [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13] = some [2, 3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13] := checked_f_sound 256 128 [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13] (some [2, 3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) rfl
+theorem row9_f_21096 : f [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13] = some [2, 0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13] (some [2, 0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13]) rfl
+theorem row9_f_21099 : f [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13] = some [2, 0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13] (some [2, 0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13]) rfl
+theorem row9_f_21106 : f [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13] = some [2, 0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13] (some [2, 0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13]) rfl
+theorem row9_f_21111 : f [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13] = some [2, 3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13] (some [2, 3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) rfl
+theorem row9_f_21130 : f [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13] = some [2, 4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13] (some [2, 4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) rfl
+theorem row9_f_21137 : f [0, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] = some [2, 0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] (some [2, 0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) rfl
+theorem row9_f_21146 : f [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] = some [2, 4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13] (some [2, 4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13]) rfl
+theorem row9_f_21166 : f [0, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13] = some [2, 0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13] (some [2, 0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13]) rfl
+theorem row9_f_21186 : f [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13] = some [2, 0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13] (some [2, 0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21213 : f [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13] = some [2, 3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13] (some [2, 3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21241 : f [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13] = some [2, 0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13] (some [2, 0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21244 : f [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13] = some [2, 3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13] (some [2, 3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21251 : f [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13] = some [2, 4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13] (some [2, 4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21260 : f [0, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13] = some [2, 0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13] (some [2, 0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21272 : f [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13] = some [2, 0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13] (some [2, 0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21283 : f [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13] = some [2, 0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13] (some [2, 0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21296 : f [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13] = some [2, 0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13] (some [2, 0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21309 : f [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13] = some [2, 3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13] (some [2, 3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21349 : f [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13] = some [2, 0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13] (some [2, 0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13]) rfl
+theorem row9_f_21352 : f [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13] = some [2, 3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13] := checked_f_sound 256 128 [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13] (some [2, 3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) rfl
 
 -- ============================================================================
 -- Section 12: Certificate Path (`Row9Certificate.v`)
 -- ============================================================================
 
-lemma row9_edge_0 : K 3 (some []) ↔ K 3 (some [0, 1, 1]) := step_edge_T row9_f_0 row9_f_1 row9_f_2
-lemma row9_edge_6 : K 3 (some [0, 1, 1]) ↔ K 3 (some [0, 2, 7, 5]) := step_edge_T row9_f_3 row9_f_8 row9_f_9
-lemma row9_edge_15 : K 3 (some [0, 2, 7, 5]) ↔ K 3 (some [0, 2, 2, 1, 1, 9]) := step_edge_T row9_f_10 row9_f_22 row9_f_23
-lemma row9_edge_30 : K 3 (some [0, 2, 2, 1, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 1, 1, 1]) := step_edge_H row9_f_24 row9_f_49 row9_f_50 row9_f_52
-lemma row9_edge_48 : K 3 (some [0, 2, 2, 3, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 7, 1, 1]) := step_edge_H row9_f_60 row9_f_79 row9_f_80 row9_f_82
-lemma row9_edge_66 : K 3 (some [0, 2, 2, 3, 7, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 1, 7]) := step_edge_H row9_f_89 row9_f_111 row9_f_112 row9_f_114
-lemma row9_edge_84 : K 3 (some [0, 2, 2, 3, 2, 2, 1, 7]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 9, 9]) := step_edge_H row9_f_125 row9_f_145 row9_f_146 row9_f_148
-lemma row9_edge_102 : K 3 (some [0, 2, 2, 3, 2, 2, 9, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 1, 1, 5]) := step_edge_H row9_f_173 row9_f_191 row9_f_192 row9_f_194
-lemma row9_edge_120 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 1, 1, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 11, 1]) := step_edge_H row9_f_220 row9_f_238 row9_f_239 row9_f_241
-lemma row9_edge_138 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 11, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1]) := step_edge_H row9_f_278 row9_f_295 row9_f_296 row9_f_298
-lemma row9_edge_156 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5]) := step_edge_H row9_f_351 row9_f_376 row9_f_377 row9_f_379
-lemma row9_edge_174 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1]) := step_edge_H row9_f_455 row9_f_485 row9_f_486 row9_f_488
-lemma row9_edge_192 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5]) := step_edge_H row9_f_579 row9_f_614 row9_f_615 row9_f_617
-lemma row9_edge_210 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5]) := step_edge_H row9_f_709 row9_f_779 row9_f_780 row9_f_782
-lemma row9_edge_228 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5]) := step_edge_H row9_f_874 row9_f_951 row9_f_952 row9_f_954
-lemma row9_edge_246 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5]) := step_edge_H row9_f_1046 row9_f_1152 row9_f_1153 row9_f_1155
-lemma row9_edge_264 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5]) := step_edge_H row9_f_1247 row9_f_1370 row9_f_1371 row9_f_1373
-lemma row9_edge_282 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9]) := step_edge_H row9_f_1465 row9_f_1634 row9_f_1635 row9_f_1637
-lemma row9_edge_300 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9]) := step_edge_H row9_f_1729 row9_f_1916 row9_f_1917 row9_f_1919
-lemma row9_edge_318 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13]) := step_edge_H row9_f_2011 row9_f_2235 row9_f_2236 row9_f_2238
-lemma row9_edge_336 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21]) := step_edge_H row9_f_2330 row9_f_2578 row9_f_2579 row9_f_2581
-lemma row9_edge_354 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21]) := step_edge_H row9_f_2673 row9_f_2947 row9_f_2948 row9_f_2950
-lemma row9_edge_372 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21]) := step_edge_H row9_f_3042 row9_f_3323 row9_f_3324 row9_f_3326
-lemma row9_edge_390 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25]) := step_edge_H row9_f_3418 row9_f_3754 row9_f_3755 row9_f_3757
-lemma row9_edge_408 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9]) := step_edge_H row9_f_3849 row9_f_4194 row9_f_4195 row9_f_4197
-lemma row9_edge_426 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17]) := step_edge_H row9_f_4289 row9_f_4656 row9_f_4657 row9_f_4659
-lemma row9_edge_444 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9]) := step_edge_H row9_f_4751 row9_f_5125 row9_f_5126 row9_f_5128
-lemma row9_edge_462 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21]) := step_edge_H row9_f_5220 row9_f_5623 row9_f_5624 row9_f_5626
-lemma row9_edge_480 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_5718 row9_f_6135 row9_f_6136 row9_f_6138
-lemma row9_edge_498 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9]) := step_edge_H row9_f_6230 row9_f_6676 row9_f_6677 row9_f_6679
-lemma row9_edge_516 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17]) := step_edge_H row9_f_6771 row9_f_7223 row9_f_7224 row9_f_7226
-lemma row9_edge_534 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9]) := step_edge_H row9_f_7318 row9_f_7791 row9_f_7792 row9_f_7794
-lemma row9_edge_552 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25]) := step_edge_H row9_f_7886 row9_f_8365 row9_f_8366 row9_f_8368
-lemma row9_edge_570 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_8460 row9_f_8963 row9_f_8964 row9_f_8966
-lemma row9_edge_588 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_9058 row9_f_9568 row9_f_9569 row9_f_9571
-lemma row9_edge_606 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_9663 row9_f_10217 row9_f_10218 row9_f_10220
-lemma row9_edge_624 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_10312 row9_f_10893 row9_f_10894 row9_f_10896
-lemma row9_edge_642 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_10988 row9_f_11624 row9_f_11625 row9_f_11627
-lemma row9_edge_660 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_11719 row9_f_12389 row9_f_12390 row9_f_12392
-lemma row9_edge_678 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_12484 row9_f_13175 row9_f_13176 row9_f_13178
-lemma row9_edge_696 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_13270 row9_f_13968 row9_f_13969 row9_f_13971
-lemma row9_edge_714 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_14063 row9_f_14812 row9_f_14813 row9_f_14815
-lemma row9_edge_732 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_14907 row9_f_15663 row9_f_15664 row9_f_15666
-lemma row9_edge_750 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_15758 row9_f_16544 row9_f_16545 row9_f_16547
-lemma row9_edge_768 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_16639 row9_f_17447 row9_f_17448 row9_f_17450
-lemma row9_edge_786 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_17542 row9_f_18392 row9_f_18393 row9_f_18395
-lemma row9_edge_804 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_18487 row9_f_19358 row9_f_19359 row9_f_19361
-lemma row9_normal_2233 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1]) := step_normal_Z (by decide) row9_f_19453
-lemma row9_normal_2234 : K 3 (some [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1]) ↔ K 3 (some [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_Z (by decide) row9_f_19690
-lemma row9_normal_2235 : K 3 (some [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 3 (some [3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) := step_normal_Z (by decide) row9_f_20031
-lemma row9_normal_2236 : K 3 (some [3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) ↔ K 6 (some [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) := step_normal_three rfl
-lemma row9_normal_2237 : K 6 (some [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) ↔ K 6 (some [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5]) := step_normal_Z (by decide) row9_f_20375
-lemma row9_normal_2238 : K 6 (some [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5]) ↔ K 6 (some [3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) := step_normal_Z (by decide) row9_f_20378
-lemma row9_normal_2239 : K 6 (some [3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) ↔ K 12 (some [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) := step_normal_three rfl
-lemma row9_normal_2240 : K 12 (some [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) ↔ K 12 (some [4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5]) := step_normal_Z (by decide) row9_f_20486
-lemma row9_normal_2241 : K 12 (some [4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5]) ↔ K 7 (some [3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) := step_normal_four (by decide) rfl row9_f_20495
-lemma row9_normal_2242 : K 7 (some [3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) ↔ K 14 (some [3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) := step_normal_three rfl
-lemma row9_normal_2243 : K 14 (some [3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) ↔ K 28 (some [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) := step_normal_three rfl
-lemma row9_normal_2244 : K 28 (some [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) ↔ K 28 (some [3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) := step_normal_Z (by decide) row9_f_20727
-lemma row9_normal_2245 : K 28 (some [3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) ↔ K 56 (some [4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) := step_normal_three rfl
-lemma row9_normal_2246 : K 56 (some [4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) ↔ K 29 (some [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1]) := step_normal_four (by decide) rfl row9_f_20734
-lemma row9_normal_2247 : K 29 (some [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1]) ↔ K 29 (some [3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) := step_normal_Z (by decide) row9_f_20742
-lemma row9_normal_2248 : K 29 (some [3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) ↔ K 58 (some [4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) := step_normal_three rfl
-lemma row9_normal_2249 : K 58 (some [4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) ↔ K 30 (some [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1]) := step_normal_four (by decide) rfl row9_f_20754
-lemma row9_normal_2250 : K 30 (some [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1]) ↔ K 30 (some [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1]) := step_normal_Z (by decide) row9_f_20776
-lemma row9_normal_2251 : K 30 (some [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1]) ↔ K 30 (some [3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) := step_normal_Z (by decide) row9_f_20789
-lemma row9_normal_2252 : K 30 (some [3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) ↔ K 60 (some [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) := step_normal_three rfl
-lemma row9_normal_2253 : K 60 (some [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) ↔ K 60 (some [4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13]) := step_normal_Z (by decide) row9_f_20806
-lemma row9_normal_2254 : K 60 (some [4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13]) ↔ K 31 (some [3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_four (by decide) rfl row9_f_20825
-lemma row9_normal_2255 : K 31 (some [3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 62 (some [3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_three rfl
-lemma row9_normal_2256 : K 62 (some [3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 124 (some [3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_three rfl
-lemma row9_normal_2257 : K 124 (some [3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 248 (some [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_three rfl
-lemma row9_normal_2258 : K 248 (some [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 248 (some [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13]) := step_normal_Z (by decide) row9_f_21086
-lemma row9_normal_2259 : K 248 (some [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13]) ↔ K 248 (some [3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) := step_normal_Z (by decide) row9_f_21089
-lemma row9_normal_2260 : K 248 (some [3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) ↔ K 496 (some [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2261 : K 496 (some [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) ↔ K 496 (some [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13]) := step_normal_Z (by decide) row9_f_21096
-lemma row9_normal_2262 : K 496 (some [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13]) ↔ K 496 (some [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21099
-lemma row9_normal_2263 : K 496 (some [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13]) ↔ K 496 (some [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21106
-lemma row9_normal_2264 : K 496 (some [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13]) ↔ K 496 (some [3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21111
-lemma row9_normal_2265 : K 496 (some [3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 992 (some [3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2266 : K 992 (some [3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 1984 (some [3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2267 : K 1984 (some [3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 3968 (some [3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2268 : K 3968 (some [3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 7936 (some [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2269 : K 7936 (some [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 7936 (some [4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21130
-lemma row9_normal_2270 : K 7936 (some [4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) ↔ K 3969 (some [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) := step_normal_four (by decide) rfl row9_f_21137
-lemma row9_normal_2271 : K 3969 (some [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) ↔ K 3969 (some [4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21146
-lemma row9_normal_2272 : K 3969 (some [4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13]) ↔ K 1984 (some [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13]) := step_normal_four (by decide) rfl row9_f_21166
-lemma row9_normal_2273 : K 1984 (some [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13]) ↔ K 1984 (some [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21186
-lemma row9_normal_2274 : K 1984 (some [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13]) ↔ K 1984 (some [3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21213
-lemma row9_normal_2275 : K 1984 (some [3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 3968 (some [3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2276 : K 3968 (some [3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 7936 (some [3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2277 : K 7936 (some [3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 15872 (some [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2278 : K 15872 (some [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 15872 (some [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21241
-lemma row9_normal_2279 : K 15872 (some [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13]) ↔ K 15872 (some [3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21244
-lemma row9_normal_2280 : K 15872 (some [3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) ↔ K 31744 (some [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2281 : K 31744 (some [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) ↔ K 31744 (some [4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21251
-lemma row9_normal_2282 : K 31744 (some [4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13]) := step_normal_four (by decide) rfl row9_f_21260
-lemma row9_normal_2283 : K 15873 (some [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21272
-lemma row9_normal_2284 : K 15873 (some [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21283
-lemma row9_normal_2285 : K 15873 (some [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21296
-lemma row9_normal_2286 : K 15873 (some [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21309
-lemma row9_normal_2287 : K 15873 (some [3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) ↔ K 31746 (some [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) := step_normal_three rfl
-lemma row9_normal_2288 : K 31746 (some [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) ↔ K 31746 (some [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21349
-lemma row9_normal_2289 : K 31746 (some [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13]) ↔ K 31746 (some [3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21352
-lemma row9_normal_2290 : K 31746 (some [3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) ↔ K 63492 (some [2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) := step_normal_three rfl
+theorem row9_edge_0 : K 3 (some []) ↔ K 3 (some [0, 1, 1]) := step_edge_T row9_f_0 row9_f_1 row9_f_2
+theorem row9_edge_6 : K 3 (some [0, 1, 1]) ↔ K 3 (some [0, 2, 7, 5]) := step_edge_T row9_f_3 row9_f_8 row9_f_9
+theorem row9_edge_15 : K 3 (some [0, 2, 7, 5]) ↔ K 3 (some [0, 2, 2, 1, 1, 9]) := step_edge_T row9_f_10 row9_f_22 row9_f_23
+theorem row9_edge_30 : K 3 (some [0, 2, 2, 1, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 1, 1, 1]) := step_edge_H row9_f_24 row9_f_49 row9_f_50 row9_f_52
+theorem row9_edge_48 : K 3 (some [0, 2, 2, 3, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 7, 1, 1]) := step_edge_H row9_f_60 row9_f_79 row9_f_80 row9_f_82
+theorem row9_edge_66 : K 3 (some [0, 2, 2, 3, 7, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 1, 7]) := step_edge_H row9_f_89 row9_f_111 row9_f_112 row9_f_114
+theorem row9_edge_84 : K 3 (some [0, 2, 2, 3, 2, 2, 1, 7]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 9, 9]) := step_edge_H row9_f_125 row9_f_145 row9_f_146 row9_f_148
+theorem row9_edge_102 : K 3 (some [0, 2, 2, 3, 2, 2, 9, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 1, 1, 5]) := step_edge_H row9_f_173 row9_f_191 row9_f_192 row9_f_194
+theorem row9_edge_120 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 1, 1, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 11, 1]) := step_edge_H row9_f_220 row9_f_238 row9_f_239 row9_f_241
+theorem row9_edge_138 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 11, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1]) := step_edge_H row9_f_278 row9_f_295 row9_f_296 row9_f_298
+theorem row9_edge_156 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 2, 4, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5]) := step_edge_H row9_f_351 row9_f_376 row9_f_377 row9_f_379
+theorem row9_edge_174 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 1, 2, 1, 7, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1]) := step_edge_H row9_f_455 row9_f_485 row9_f_486 row9_f_488
+theorem row9_edge_192 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 13, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5]) := step_edge_H row9_f_579 row9_f_614 row9_f_615 row9_f_617
+theorem row9_edge_210 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 9, 2, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5]) := step_edge_H row9_f_709 row9_f_779 row9_f_780 row9_f_782
+theorem row9_edge_228 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 1, 2, 5, 1, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5]) := step_edge_H row9_f_874 row9_f_951 row9_f_952 row9_f_954
+theorem row9_edge_246 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 5, 6, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5]) := step_edge_H row9_f_1046 row9_f_1152 row9_f_1153 row9_f_1155
+theorem row9_edge_264 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 1, 5, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5]) := step_edge_H row9_f_1247 row9_f_1370 row9_f_1371 row9_f_1373
+theorem row9_edge_282 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 7, 9, 5]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9]) := step_edge_H row9_f_1465 row9_f_1634 row9_f_1635 row9_f_1637
+theorem row9_edge_300 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 1, 1, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9]) := step_edge_H row9_f_1729 row9_f_1916 row9_f_1917 row9_f_1919
+theorem row9_edge_318 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 11, 5, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13]) := step_edge_H row9_f_2011 row9_f_2235 row9_f_2236 row9_f_2238
+theorem row9_edge_336 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 6, 3, 1, 1, 13]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21]) := step_edge_H row9_f_2330 row9_f_2578 row9_f_2579 row9_f_2581
+theorem row9_edge_354 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 1, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21]) := step_edge_H row9_f_2673 row9_f_2947 row9_f_2948 row9_f_2950
+theorem row9_edge_372 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 1, 1, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21]) := step_edge_H row9_f_3042 row9_f_3323 row9_f_3324 row9_f_3326
+theorem row9_edge_390 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 7, 1, 1, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25]) := step_edge_H row9_f_3418 row9_f_3754 row9_f_3755 row9_f_3757
+theorem row9_edge_408 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 1, 3, 1, 25]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9]) := step_edge_H row9_f_3849 row9_f_4194 row9_f_4195 row9_f_4197
+theorem row9_edge_426 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 9, 5, 5, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17]) := step_edge_H row9_f_4289 row9_f_4656 row9_f_4657 row9_f_4659
+theorem row9_edge_444 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 13, 1, 17]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9]) := step_edge_H row9_f_4751 row9_f_5125 row9_f_5126 row9_f_5128
+theorem row9_edge_462 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 1, 5, 9, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21]) := step_edge_H row9_f_5220 row9_f_5623 row9_f_5624 row9_f_5626
+theorem row9_edge_480 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 7, 1, 5, 21]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_5718 row9_f_6135 row9_f_6136 row9_f_6138
+theorem row9_edge_498 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9]) := step_edge_H row9_f_6230 row9_f_6676 row9_f_6677 row9_f_6679
+theorem row9_edge_516 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 5, 1, 1, 1, 9, 1, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17]) := step_edge_H row9_f_6771 row9_f_7223 row9_f_7224 row9_f_7226
+theorem row9_edge_534 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 5, 1, 9, 17]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9]) := step_edge_H row9_f_7318 row9_f_7791 row9_f_7792 row9_f_7794
+theorem row9_edge_552 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 5, 1, 17, 9]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25]) := step_edge_H row9_f_7886 row9_f_8365 row9_f_8366 row9_f_8368
+theorem row9_edge_570 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 5, 5, 1, 25]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_8460 row9_f_8963 row9_f_8964 row9_f_8966
+theorem row9_edge_588 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_9058 row9_f_9568 row9_f_9569 row9_f_9571
+theorem row9_edge_606 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 11, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_9663 row9_f_10217 row9_f_10218 row9_f_10220
+theorem row9_edge_624 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 6, 1, 1, 3, 1, 9, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1]) := step_edge_H row9_f_10312 row9_f_10893 row9_f_10894 row9_f_10896
+theorem row9_edge_642 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 6, 7, 1, 9, 1, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_10988 row9_f_11624 row9_f_11625 row9_f_11627
+theorem row9_edge_660 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_11719 row9_f_12389 row9_f_12390 row9_f_12392
+theorem row9_edge_678 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 5, 5, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_12484 row9_f_13175 row9_f_13176 row9_f_13178
+theorem row9_edge_696 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 9, 5, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_13270 row9_f_13968 row9_f_13969 row9_f_13971
+theorem row9_edge_714 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 9, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_14063 row9_f_14812 row9_f_14813 row9_f_14815
+theorem row9_edge_732 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 1, 1, 13, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_14907 row9_f_15663 row9_f_15664 row9_f_15666
+theorem row9_edge_750 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 11, 1, 13, 1, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_15758 row9_f_16544 row9_f_16545 row9_f_16547
+theorem row9_edge_768 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 6, 1, 3, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_16639 row9_f_17447 row9_f_17448 row9_f_17450
+theorem row9_edge_786 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 1, 3, 1, 5, 1, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_17542 row9_f_18392 row9_f_18393 row9_f_18395
+theorem row9_edge_804 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 1, 9, 1, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1]) := step_edge_H row9_f_18487 row9_f_19358 row9_f_19359 row9_f_19361
+theorem row9_normal_2233 : K 3 (some [0, 2, 2, 3, 2, 2, 3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 1, 1, 1, 1]) ↔ K 3 (some [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1]) := step_normal_Z (by decide) row9_f_19453
+theorem row9_normal_2234 : K 3 (some [0, 2, 3, 2, 2, 3, 2, 1, 2, 3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 5, 1, 13, 1]) ↔ K 3 (some [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_Z (by decide) row9_f_19690
+theorem row9_normal_2235 : K 3 (some [0, 3, 2, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 7, 1, 1, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 3 (some [3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) := step_normal_Z (by decide) row9_f_20031
+theorem row9_normal_2236 : K 3 (some [3, 0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) ↔ K 6 (some [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) := step_normal_three rfl
+theorem row9_normal_2237 : K 6 (some [0, 2, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1]) ↔ K 6 (some [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5]) := step_normal_Z (by decide) row9_f_20375
+theorem row9_normal_2238 : K 6 (some [0, 3, 2, 1, 2, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5]) ↔ K 6 (some [3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) := step_normal_Z (by decide) row9_f_20378
+theorem row9_normal_2239 : K 6 (some [3, 0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) ↔ K 12 (some [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) := step_normal_three rfl
+theorem row9_normal_2240 : K 12 (some [0, 6, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1]) ↔ K 12 (some [4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5]) := step_normal_Z (by decide) row9_f_20486
+theorem row9_normal_2241 : K 12 (some [4, 3, 3, 2, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 5]) ↔ K 7 (some [3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) := step_normal_four (by decide) rfl row9_f_20495
+theorem row9_normal_2242 : K 7 (some [3, 3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) ↔ K 14 (some [3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) := step_normal_three rfl
+theorem row9_normal_2243 : K 14 (some [3, 0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) ↔ K 28 (some [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) := step_normal_three rfl
+theorem row9_normal_2244 : K 28 (some [0, 3, 6, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 13, 1]) ↔ K 28 (some [3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) := step_normal_Z (by decide) row9_f_20727
+theorem row9_normal_2245 : K 28 (some [3, 4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) ↔ K 56 (some [4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) := step_normal_three rfl
+theorem row9_normal_2246 : K 56 (some [4, 2, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 5, 1]) ↔ K 29 (some [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1]) := step_normal_four (by decide) rfl row9_f_20734
+theorem row9_normal_2247 : K 29 (some [0, 3, 6, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 5, 1]) ↔ K 29 (some [3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) := step_normal_Z (by decide) row9_f_20742
+theorem row9_normal_2248 : K 29 (some [3, 4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) ↔ K 58 (some [4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) := step_normal_three rfl
+theorem row9_normal_2249 : K 58 (some [4, 2, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 5, 1, 1]) ↔ K 30 (some [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1]) := step_normal_four (by decide) rfl row9_f_20754
+theorem row9_normal_2250 : K 30 (some [0, 2, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 1, 1, 1]) ↔ K 30 (some [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1]) := step_normal_Z (by decide) row9_f_20776
+theorem row9_normal_2251 : K 30 (some [0, 3, 2, 1, 2, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 1, 1, 1, 1, 1]) ↔ K 30 (some [3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) := step_normal_Z (by decide) row9_f_20789
+theorem row9_normal_2252 : K 30 (some [3, 0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) ↔ K 60 (some [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) := step_normal_three rfl
+theorem row9_normal_2253 : K 60 (some [0, 6, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 21]) ↔ K 60 (some [4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13]) := step_normal_Z (by decide) row9_f_20806
+theorem row9_normal_2254 : K 60 (some [4, 3, 3, 3, 2, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 1, 5, 13]) ↔ K 31 (some [3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_four (by decide) rfl row9_f_20825
+theorem row9_normal_2255 : K 31 (some [3, 3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 62 (some [3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_three rfl
+theorem row9_normal_2256 : K 62 (some [3, 3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 124 (some [3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_three rfl
+theorem row9_normal_2257 : K 124 (some [3, 0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 248 (some [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) := step_normal_three rfl
+theorem row9_normal_2258 : K 248 (some [0, 2, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 1, 1, 5, 13]) ↔ K 248 (some [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13]) := step_normal_Z (by decide) row9_f_21086
+theorem row9_normal_2259 : K 248 (some [0, 3, 2, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 13, 1, 13]) ↔ K 248 (some [3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) := step_normal_Z (by decide) row9_f_21089
+theorem row9_normal_2260 : K 248 (some [3, 0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) ↔ K 496 (some [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2261 : K 496 (some [0, 2, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 9, 1, 13]) ↔ K 496 (some [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13]) := step_normal_Z (by decide) row9_f_21096
+theorem row9_normal_2262 : K 496 (some [0, 2, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 1, 9, 1, 13]) ↔ K 496 (some [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21099
+theorem row9_normal_2263 : K 496 (some [0, 2, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 13, 5, 1, 13]) ↔ K 496 (some [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21106
+theorem row9_normal_2264 : K 496 (some [0, 3, 3, 3, 3, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 5, 5, 5, 1, 13]) ↔ K 496 (some [3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21111
+theorem row9_normal_2265 : K 496 (some [3, 3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 992 (some [3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2266 : K 992 (some [3, 3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 1984 (some [3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2267 : K 1984 (some [3, 3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 3968 (some [3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2268 : K 3968 (some [3, 0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 7936 (some [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2269 : K 7936 (some [0, 6, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 1, 5, 5, 1, 13]) ↔ K 7936 (some [4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21130
+theorem row9_normal_2270 : K 7936 (some [4, 2, 6, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) ↔ K 3969 (some [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) := step_normal_four (by decide) rfl row9_f_21137
+theorem row9_normal_2271 : K 3969 (some [0, 1, 2, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 1, 1, 5, 5, 1, 13]) ↔ K 3969 (some [4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21146
+theorem row9_normal_2272 : K 3969 (some [4, 2, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 17, 1, 5, 1, 13]) ↔ K 1984 (some [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13]) := step_normal_four (by decide) rfl row9_f_21166
+theorem row9_normal_2273 : K 1984 (some [0, 2, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 5, 9, 1, 5, 1, 13]) ↔ K 1984 (some [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21186
+theorem row9_normal_2274 : K 1984 (some [0, 3, 3, 3, 2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 1, 9, 5, 1, 5, 1, 13]) ↔ K 1984 (some [3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21213
+theorem row9_normal_2275 : K 1984 (some [3, 3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 3968 (some [3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2276 : K 3968 (some [3, 3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 7936 (some [3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2277 : K 7936 (some [3, 0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 15872 (some [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2278 : K 15872 (some [0, 2, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 17, 5, 5, 1, 5, 1, 13]) ↔ K 15872 (some [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21241
+theorem row9_normal_2279 : K 15872 (some [0, 3, 2, 1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 9, 5, 5, 5, 1, 5, 1, 13]) ↔ K 15872 (some [3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21244
+theorem row9_normal_2280 : K 15872 (some [3, 0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) ↔ K 31744 (some [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2281 : K 31744 (some [0, 6, 2, 2, 2, 2, 3, 2, 2, 3, 13, 1, 5, 5, 1, 5, 1, 13]) ↔ K 31744 (some [4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21251
+theorem row9_normal_2282 : K 31744 (some [4, 2, 2, 2, 2, 3, 2, 2, 3, 21, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13]) := step_normal_four (by decide) rfl row9_f_21260
+theorem row9_normal_2283 : K 15873 (some [0, 2, 2, 2, 3, 2, 2, 3, 9, 9, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21272
+theorem row9_normal_2284 : K 15873 (some [0, 2, 2, 3, 2, 2, 3, 13, 5, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21283
+theorem row9_normal_2285 : K 15873 (some [0, 2, 3, 2, 2, 3, 9, 1, 5, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21296
+theorem row9_normal_2286 : K 15873 (some [0, 3, 2, 2, 3, 17, 1, 1, 5, 1, 5, 1, 13]) ↔ K 15873 (some [3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21309
+theorem row9_normal_2287 : K 15873 (some [3, 0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) ↔ K 31746 (some [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) := step_normal_three rfl
+theorem row9_normal_2288 : K 31746 (some [0, 2, 3, 5, 9, 1, 1, 5, 1, 5, 1, 13]) ↔ K 31746 (some [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21349
+theorem row9_normal_2289 : K 31746 (some [0, 3, 9, 5, 1, 1, 5, 1, 5, 1, 13]) ↔ K 31746 (some [3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) := step_normal_Z (by decide) row9_f_21352
+theorem row9_normal_2290 : K 31746 (some [3, 2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) ↔ K 63492 (some [2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) := step_normal_three rfl
 
 theorem row9_selected_path : K 3 (some []) ↔ K 63492 (some [2, 2, 5, 1, 1, 5, 1, 5, 1, 13]) := by
   refine Iff.trans row9_edge_0 ?_
@@ -1813,8 +1807,8 @@ def word_tape : word → ListBlank (Fin 2)
   | [] => (1 : Fin 2) >> default
   | g :: u => (1 : Fin 2) >> (([0] : List (Fin 2)) ^ g +> ((1 : Fin 2) >> ((0 : Fin 2) >> word_tape u)))
 
-lemma word_tape_nil : word_tape [] = (1 : Fin 2) >> default := rfl
-lemma word_tape_cons (g : Nat) (u : word) :
+theorem word_tape_nil : word_tape [] = (1 : Fin 2) >> default := rfl
+theorem word_tape_cons (g : Nat) (u : word) :
     word_tape (g :: u) = (1 : Fin 2) >> (([0] : List (Fin 2)) ^ g +> ((1 : Fin 2) >> ((0 : Fin 2) >> word_tape u))) := rfl
 
 def reset (l : ListBlank (Fin 2)) (w : word) : Cfg (Fin 2) (Fin 6) :=
@@ -1823,10 +1817,10 @@ def reset (l : ListBlank (Fin 2)) (w : word) : Cfg (Fin 2) (Fin 6) :=
 def scan (k : Nat) (l : ListBlank (Fin 2)) (w : word) : Cfg (Fin 2) (Fin 6) :=
   (((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (2 + k)) {{C}}> word_tape w)
 
-lemma word_tape_head (w : word) : ∃ r, word_tape w = (1 : Fin 2) >> r := by
+theorem word_tape_head (w : word) : ∃ r, word_tape w = (1 : Fin 2) >> r := by
   cases w <;> exact ⟨_, rfl⟩
 
-lemma a_sweep (n : Nat) (l r : ListBlank (Fin 2)) :
+theorem a_sweep (n : Nat) (l r : ListBlank (Fin 2)) :
     (((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ n) <{{A}} r) [target_tm]⊢⁺
     ((l <+ ([1] : List (Fin 2))) {{B}}> (([0] : List (Fin 2)) ^ n +> r)) := by
   induction n generalizing l r with
@@ -1846,7 +1840,7 @@ lemma a_sweep (n : Nat) (l r : ListBlank (Fin 2)) :
     rw [h_eq] at h2
     exact stepPlus_trans h1 h2
 
-lemma carry (l : ListBlank (Fin 2)) (w : word) (k : Nat) :
+theorem carry (l : ListBlank (Fin 2)) (w : word) (k : Nat) :
     (reset ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (2 + k)) w) [target_tm]⊢⁺
     (reset l (k :: w)) := by
   obtain ⟨r, hr⟩ := word_tape_head w
@@ -1874,7 +1868,7 @@ lemma carry (l : ListBlank (Fin 2)) (w : word) (k : Nat) :
   rw [word_tape_cons, hr]
   exact h_tot
 
-lemma short_even (l : ListBlank (Fin 2)) (w : word) :
+theorem short_even (l : ListBlank (Fin 2)) (w : word) :
     (reset (l <+ ([0] : List (Fin 2))) w) [target_tm]⊢⁺
     (scan 0 (l <+ ([1] : List (Fin 2))) w) := by
   obtain ⟨r, hr⟩ := word_tape_head w
@@ -1883,7 +1877,7 @@ lemma short_even (l : ListBlank (Fin 2)) (w : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma short_one (l : ListBlank (Fin 2)) (w : word) :
+theorem short_one (l : ListBlank (Fin 2)) (w : word) :
     (reset (l <+ ([1, 0] : List (Fin 2))) w) [target_tm]⊢⁺
     (scan 0 (l <+ ([0, 1] : List (Fin 2))) w) := by
   obtain ⟨r, hr⟩ := word_tape_head w
@@ -1892,7 +1886,7 @@ lemma short_one (l : ListBlank (Fin 2)) (w : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_one (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
+theorem scan_one (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
     (scan k l (1 :: u)) [target_tm]⊢⁺ (scan (k + 4) l u) := by
   obtain ⟨r, hr⟩ := word_tape_head u
   unfold scan
@@ -1902,7 +1896,7 @@ lemma scan_one (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_two (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
+theorem scan_two (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
     (scan k l (2 :: u)) [target_tm]⊢⁺
     (scan 0 ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (4 + k)) u) := by
   obtain ⟨r, hr⟩ := word_tape_head u
@@ -1913,7 +1907,7 @@ lemma scan_two (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_three (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
+theorem scan_three (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
     (scan k l (3 :: u)) [target_tm]⊢⁺
     (scan 0 (((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (4 + k)) <+ ([0] : List (Fin 2))) u) := by
   obtain ⟨r, hr⟩ := word_tape_head u
@@ -1924,7 +1918,7 @@ lemma scan_three (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_zero_one (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
+theorem scan_zero_one (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
     (scan k l (0 :: 1 :: u)) [target_tm]⊢⁺
     (scan 2 ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (4 + k)) u) := by
   obtain ⟨r, hr⟩ := word_tape_head u
@@ -1935,7 +1929,7 @@ lemma scan_zero_one (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_zero_two (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
+theorem scan_zero_two (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
     (scan k l (0 :: 2 :: u)) [target_tm]⊢⁺
     (scan 0 (((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (4 + k)) <+ ([1, 1, 0] : List (Fin 2))) u) := by
   obtain ⟨r, hr⟩ := word_tape_head u
@@ -1946,7 +1940,7 @@ lemma scan_zero_two (k : Nat) (l : ListBlank (Fin 2)) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_zero_large (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
+theorem scan_zero_large (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
     (scan k l (0 :: (g + 3) :: u)) [target_tm]⊢⁺
     (scan 1 ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (4 + k)) (g :: u)) := by
   obtain ⟨r, hr⟩ := word_tape_head u
@@ -1959,7 +1953,7 @@ lemma scan_zero_large (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_zero (k : Nat) (l : ListBlank (Fin 2)) :
+theorem scan_zero (k : Nat) (l : ListBlank (Fin 2)) :
     (scan k l [0]) [target_tm]⊢⁺
     (scan 1 ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (4 + k)) []) := by
   unfold scan
@@ -1969,7 +1963,7 @@ lemma scan_zero (k : Nat) (l : ListBlank (Fin 2)) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_large (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
+theorem scan_large (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
     (scan k l ((g + 4) :: u)) [target_tm]⊢⁺
     (reset ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (3 + k)) (g :: u)) := by
   obtain ⟨r, hr⟩ := word_tape_head u
@@ -1982,7 +1976,7 @@ lemma scan_large (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma scan_nil (k : Nat) (l : ListBlank (Fin 2)) :
+theorem scan_nil (k : Nat) (l : ListBlank (Fin 2)) :
     (scan k l []) [target_tm]⊢⁺
     (reset ((l <+ ([0] : List (Fin 2))) <+ ([1] : List (Fin 2)) ^ (3 + k)) []) := by
   unfold scan reset
@@ -1992,25 +1986,25 @@ lemma scan_nil (k : Nat) (l : ListBlank (Fin 2)) :
   dsimp -failIfUnchanged [ListBlank.append]
   execute
 
-lemma first_plus_0 (w : word) : first_plus 0 w = w := by
+theorem first_plus_0 (w : word) : first_plus 0 w = w := by
   cases w with
   | nil => rfl
   | cons a u => simp [first_plus]
 
-lemma first_plus_comp (k j : Nat) (w : word) :
+theorem first_plus_comp (k j : Nat) (w : word) :
     first_plus k (first_plus j w) = first_plus (j + k) w := by
   cases w with
   | nil => rfl
   | cons a u => simp [first_plus, Nat.add_assoc]
 
-lemma scan_nil_return (k : Nat) (l : ListBlank (Fin 2)) :
+theorem scan_nil_return (k : Nat) (l : ListBlank (Fin 2)) :
     (scan k l []) [target_tm]⊢⁺ (reset l [1 + k]) := by
   have h1 := scan_nil k l
   have hk : 3 + k = 2 + (1 + k) := by omega
   rw [hk] at h1
   exact stepPlus_trans h1 (carry l [] (1 + k))
 
-lemma scan_large_return (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
+theorem scan_large_return (k : Nat) (l : ListBlank (Fin 2)) (g : Nat) (u : word) :
     (scan k l ((g + 4) :: u)) [target_tm]⊢⁺ (reset l ((1 + k) :: g :: u)) := by
   have h1 := scan_large k l g u
   have hk : 3 + k = 2 + (1 + k) := by omega
@@ -2137,22 +2131,22 @@ theorem f_embedding_some {u v : word} (h : f u = some v) (k : Nat) (l : ListBlan
     (scan k l u) [target_tm]⊢⁺ (reset l (first_plus k v)) :=
   eval_embedding_some (f_spec u) v k l h
 
-lemma init_to_reset : (init []) [target_tm]⊢⁺ (reset default []) := by
+theorem init_to_reset : (init []) [target_tm]⊢⁺ (reset default []) := by
   unfold init reset word_tape
   simp only [Tape.mk₁, Tape.mk₂, Tape.mk', listblank_append_cons, listblank_append_nil,
     zero_cons_default, default_head, default_tail]
   execute
 
-lemma default_append_zero : (default : ListBlank (Fin 2)) <+ ([0] : List (Fin 2)) = default := by
+theorem default_append_zero : (default : ListBlank (Fin 2)) <+ ([0] : List (Fin 2)) = default := by
   simp only [listblank_append_cons, listblank_append_nil, zero_cons_default]
 
-lemma short_initial (w : word) :
+theorem short_initial (w : word) :
     (reset default w) [target_tm]⊢⁺ (scan 0 (default <+ ([1] : List (Fin 2))) w) := by
   have h := short_even default w
   rw [default_append_zero] at h
   exact h
 
-lemma short_second (w : word) :
+theorem short_second (w : word) :
     (reset (default <+ ([1] : List (Fin 2))) w) [target_tm]⊢⁺
     (scan 0 (default <+ ([0, 1] : List (Fin 2))) w) := by
   have h := short_one default w
@@ -2161,14 +2155,14 @@ lemma short_second (w : word) :
   rw [heq] at h
   exact h
 
-lemma short_third (w : word) :
+theorem short_third (w : word) :
     (reset (default <+ ([0, 1] : List (Fin 2))) w) [target_tm]⊢⁺
     (scan 0 (default <+ ([1, 1] : List (Fin 2))) w) := by
   have h := short_even (default <+ ([1] : List (Fin 2))) w
   rw [listblank_append_append, listblank_append_append] at h
   exact h
 
-lemma phase_carry (w : word) :
+theorem phase_carry (w : word) :
     (reset (default <+ ([1, 1] : List (Fin 2))) w) [target_tm]⊢⁺
     (reset default (0 :: w)) := by
   have h := carry default w 0
@@ -2206,18 +2200,18 @@ noncomputable def T3_word (k : Nat) : word :=
   | some w => w
   | none => False.elim (T3_never_none k h)
 
-lemma T3_word_spec (k : Nat) : power (T 3) k (some []) = some (T3_word k) := by
+theorem T3_word_spec (k : Nat) : power (T 3) k (some []) = some (T3_word k) := by
   unfold T3_word
   split
   · rename_i w hw; exact hw.symm ▸ rfl
   · rename_i hnone; exact False.elim (T3_never_none k hnone)
 
-lemma T3_word_zero : T3_word 0 = [] := by
+theorem T3_word_zero : T3_word 0 = [] := by
   have h := T3_word_spec 0
   simp only [power] at h
   exact (Option.some.inj h).symm
 
-lemma T3_word_step (k : Nat) : T 3 (some (T3_word k)) = some (T3_word (k + 1)) := by
+theorem T3_word_step (k : Nat) : T 3 (some (T3_word k)) = some (T3_word (k + 1)) := by
   have h1 := T3_word_spec k
   have h2 := T3_word_spec (k + 1)
   simp only [power, h1] at h2
@@ -2231,12 +2225,8 @@ end Solution
 
 
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

@@ -31,12 +31,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
@@ -49,14 +45,14 @@ abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
 
-lemma multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
+theorem multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
     multiStep M c (n + 1) = (multiStep M c n).bind (step M) := by
   simp only [multiStep, Function.iterate_succ_apply']
 
-lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
+theorem multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     multiStep M c₁ (n + m) = (multiStep M c₁ n).bind (fun c₂ => multiStep M c₂ m) := by
   induction m with
   | zero => simp
@@ -64,35 +60,35 @@ lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
+theorem multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
     (h₁ : c₁ [M]⊢^{n} c₂) (h₂ : c₂ [M]⊢^{m} c₃) :
     c₁ [M]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-@[simp] lemma pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
-@[simp] lemma nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
+@[simp] theorem pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
+@[simp] theorem nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
     (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
-@[simp] lemma init_nil : (init ([] : List (Fin 2))) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem init_nil : (init ([] : List (Fin 2))) = ⟨some A, ⟨0, default, default⟩⟩ := rfl
 
 omit [Inhabited Γ] in
 @[simp]
 
 
-lemma listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
+theorem listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
     s <+ (([1] : List (Fin 2)) ^ (n + m)) := by
   rw [listblank_append_append, list_pow_add_comm, ← list_pow_add]
 
-lemma listblank_right_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
+theorem listblank_right_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (([1] : List (Fin 2)) ^ n) +> ((([1] : List (Fin 2)) ^ m) +> s) =
     (([1] : List (Fin 2)) ^ (n + m)) +> s := by
   rw [← listblank_append_right_assoc, ← list_pow_add]
@@ -113,11 +109,11 @@ def encRight : List ℕ → ListBlank (Fin 2)
   | [] => default
   | d :: R => (([1] : List (Fin 2)) ^ (d + 1)) +> (((encRight R).cons 0).cons 0)
 
-@[simp] lemma encLeft_nil : encLeft [] = default := rfl
-@[simp] lemma encLeft_cons (a : ℕ) (L : List ℕ) :
+@[simp] theorem encLeft_nil : encLeft [] = default := rfl
+@[simp] theorem encLeft_cons (a : ℕ) (L : List ℕ) :
     encLeft (a :: L) = ((encLeft L).cons 0) <+ (([1] : List (Fin 2)) ^ (a + 1)) := rfl
-@[simp] lemma encRight_nil : encRight [] = default := rfl
-@[simp] lemma encRight_cons (d : ℕ) (R : List ℕ) :
+@[simp] theorem encRight_nil : encRight [] = default := rfl
+@[simp] theorem encRight_cons (d : ℕ) (R : List ℕ) :
     encRight (d :: R) = (([1] : List (Fin 2)) ^ (d + 1)) +> (((encRight R).cons 0).cons 0) := rfl
 
 /-- Increment the head digit of a stack (or push `0` if empty), corresponding to `.cons 1`. -/
@@ -125,13 +121,13 @@ def bumpHead : List ℕ → List ℕ
   | [] => [0]
   | b :: L => (b + 1) :: L
 
-@[simp] lemma encLeft_cons_one (L : List ℕ) :
+@[simp] theorem encLeft_cons_one (L : List ℕ) :
     (1 : Fin 2) >> encLeft L = encLeft (bumpHead L) := by
   cases L with
   | nil => simp [bumpHead, encLeft]
   | cons b L' => rfl
 
-@[simp] lemma encRight_cons_one (R : List ℕ) :
+@[simp] theorem encRight_cons_one (R : List ℕ) :
     (1 : Fin 2) >> encRight R = encRight (bumpHead R) := by
   cases R with
   | nil => simp [bumpHead, encRight]
@@ -142,7 +138,7 @@ def tailWeight : List ℕ → ℕ
   | [] => 0
   | d :: _ => d
 
-@[simp] lemma encRight_tail_cons_one (R : List ℕ) :
+@[simp] theorem encRight_tail_cons_one (R : List ℕ) :
     (1 : Fin 2) >> (encRight R).tail = encRight (tailWeight R :: R.tail) := by
   cases R with
   | nil => simp [tailWeight, encRight]
@@ -193,7 +189,7 @@ def IsInStackSystem (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ m L R, cfg = evalStackCfg m L R
 
 /-- State `A` walks right across `1^k` (`A, 1 -> 1RA`). -/
-lemma a_walk_right (k : ℕ) (l r : ListBlank (Fin 2)) :
+theorem a_walk_right (k : ℕ) (l r : ListBlank (Fin 2)) :
     (l {{A}}> ((([1] : List (Fin 2)) ^ k) +> r)) [target_tm]⊢*
     ((l <+ (([1] : List (Fin 2)) ^ k)) {{A}}> r) := by
   induction k generalizing l r with
@@ -214,7 +210,7 @@ lemma a_walk_right (k : ℕ) (l r : ListBlank (Fin 2)) :
     try exact ⟨0, rfl⟩
 
 /-- State `B` walks left across `1^k` (`B, 1 -> 1LB`). -/
-lemma b_walk_left (k : ℕ) (l r : ListBlank (Fin 2)) :
+theorem b_walk_left (k : ℕ) (l r : ListBlank (Fin 2)) :
     ((l <+ (([1] : List (Fin 2)) ^ k)) <{{B}} r) [target_tm]⊢*
     (l <{{B}} ((([1] : List (Fin 2)) ^ k) +> r)) := by
   induction k generalizing l r with
@@ -249,7 +245,7 @@ theorem rule_B_nil (L : List ℕ) :
 
 /-- Helper: from state `C` on `1` with `encLeft K` on the left and `1^d 00 encRight R` on the right,
     the TM walks right across `1^d` and enters `cfg_B (d :: K) R`. -/
-lemma c_sweep_right (K R : List ℕ) (d : ℕ) :
+theorem c_sweep_right (K R : List ℕ) (d : ℕ) :
     (⟨some C, ⟨1, encLeft K, (([1] : List (Fin 2)) ^ d) +> (((encRight R).cons 0).cons 0)⟩⟩ : Cfg (Fin 2) (Fin 6))
     [target_tm]⊢⁺ (cfg_B (d :: K) R) := by
   unfold cfg_B
@@ -363,7 +359,7 @@ theorem rule_CR_two (L R : List ℕ) :
   execute 5
 
 /-- General helper for `L = (a + 3) :: L'` in state `C` with arbitrary right tape `r`. -/
-lemma c_ge3_gen (L : List ℕ) (a : ℕ) (r : ListBlank (Fin 2)) :
+theorem c_ge3_gen (L : List ℕ) (a : ℕ) (r : ListBlank (Fin 2)) :
     (⟨some C, ⟨0, encLeft ((a + 3) :: L), r⟩⟩ : Cfg (Fin 2) (Fin 6))
     [target_tm]⊢⁺
     (⟨some C, ⟨0, encLeft ((a + 1) :: bumpHead L), (1 : Fin 2) >> r⟩⟩ : Cfg (Fin 2) (Fin 6)) := by
@@ -426,7 +422,7 @@ theorem init_reaches_stack_system :
   refine ⟨cfg_B [3, 1] [], init_to_cfg_B, ?_⟩
   exact ⟨.B, [3, 1], [], rfl⟩
 
-lemma bumpHead_eq_cons (S : List ℕ) : bumpHead S = tailWeight (bumpHead S) :: S.tail := by
+theorem bumpHead_eq_cons (S : List ℕ) : bumpHead S = tailWeight (bumpHead S) :: S.tail := by
   cases S <;> rfl
 
 /-- Inductive peel contraction: `k` iterations of `rule_CR_ge3` peel `2 * k` from the top block of `L`,
@@ -517,7 +513,7 @@ theorem rule_C000_ones_all (L R : List ℕ) (b k : ℕ) :
 
 /-- Universal odd-CR turnaround helper:
     `cfg_CR ((2 * k + 3) :: b :: L) [] ⊢⁺ cfg_B ((b + 2 * k + 6) :: bumpHead L) []`. -/
-lemma cr_odd_turnaround (L : List ℕ) (b k : ℕ) :
+theorem cr_odd_turnaround (L : List ℕ) (b k : ℕ) :
     (cfg_CR ((2 * k + 3) :: b :: L) []) [target_tm]⊢⁺
     (cfg_B ((b + 2 * k + 6) :: bumpHead L) []) := by
   have h_cr0 : cfg_CR ((2 * k + 3) :: b :: L) [] = cfg_CR ((2 * k + 3) :: b :: L) [0] := by
@@ -621,25 +617,25 @@ theorem cap_b_step (k : ℕ) :
 def strictNat {α : Type} (n : ℕ) (k : ℕ → α) : α :=
   Nat.casesOn (Nat.add n 1) (k 0) (fun m => k m)
 
-@[simp] lemma strictNat_eq {α : Type} (n : ℕ) (k : ℕ → α) :
+@[simp] theorem strictNat_eq {α : Type} (n : ℕ) (k : ℕ → α) :
     strictNat n k = k n := rfl
 
 def bumpHeadS (L : List ℕ) : List ℕ :=
   List.casesOn L [0] (fun b L' => strictNat (Nat.add b 1) (fun b1 => b1 :: L'))
 
-@[simp] lemma bumpHeadS_eq (L : List ℕ) : bumpHeadS L = bumpHead L := by
+@[simp] theorem bumpHeadS_eq (L : List ℕ) : bumpHeadS L = bumpHead L := by
   cases L <;> rfl
 
 def tailWeightS (R : List ℕ) : ℕ :=
   List.casesOn R 0 (fun d _ => d)
 
-@[simp] lemma tailWeightS_eq (R : List ℕ) : tailWeightS R = tailWeight R := by
+@[simp] theorem tailWeightS_eq (R : List ℕ) : tailWeightS R = tailWeight R := by
   cases R <;> rfl
 
 def tailS (R : List ℕ) : List ℕ :=
   List.casesOn R [] (fun _ R' => R')
 
-@[simp] lemma tailS_eq (R : List ℕ) : tailS R = R.tail := by
+@[simp] theorem tailS_eq (R : List ℕ) : tailS R = R.tail := by
   cases R <;> rfl
 
 def sweepB : List ℕ → List ℕ → List ℕ
@@ -652,7 +648,7 @@ def sweepBS (L R : List ℕ) : List ℕ :=
     (fun d _ ih L => ih (d :: bumpHeadS L))
     R L
 
-@[simp] lemma sweepBS_eq (R L : List ℕ) : sweepBS L R = sweepB L R := by
+@[simp] theorem sweepBS_eq (R L : List ℕ) : sweepBS L R = sweepB L R := by
   induction R generalizing L with
   | nil => rfl
   | cons d R' ih =>
@@ -660,7 +656,7 @@ def sweepBS (L R : List ℕ) : List ℕ :=
     rw [bumpHeadS_eq]
     exact ih (d :: bumpHead L)
 
-lemma rule_B_sweep_all (R L : List ℕ) :
+theorem rule_B_sweep_all (R L : List ℕ) :
     (cfg_B L R) [target_tm]⊢⁺ (cfg_CR (bumpHead (sweepB L R)) []) := by
   induction R generalizing L with
   | nil => exact rule_B_nil L
@@ -705,7 +701,7 @@ def CRResValid (L R : List ℕ) : CRRes → Prop
   | .next L' R' => (cfg_CR L R) [target_tm]⊢* (cfg_CR L' R')
   | .err => False
 
-lemma crResValid_of_stepStar {L₁ R₁ L₂ R₂ : List ℕ} {res : CRRes}
+theorem crResValid_of_stepStar {L₁ R₁ L₂ R₂ : List ℕ} {res : CRRes}
     (h₁ : (cfg_CR L₁ R₁) [target_tm]⊢* (cfg_CR L₂ R₂))
     (h₂ : CRResValid L₂ R₂ res) :
     CRResValid L₁ R₁ res := by
@@ -713,7 +709,7 @@ lemma crResValid_of_stepStar {L₁ R₁ L₂ R₂ : List ℕ} {res : CRRes}
   | next L₃ R₃ => exact stepStar_trans h₁ h₂
   | err => exact h₂
 
-lemma stepCRBase_sound (L R : List ℕ) (h : stepCRBase L R ≠ .err) :
+theorem stepCRBase_sound (L R : List ℕ) (h : stepCRBase L R ≠ .err) :
     CRResValid L R (stepCRBase L R) := by
   rcases L with _ | ⟨_ | _ | _ | a₀, L'⟩
   · exfalso; exact h rfl
@@ -737,7 +733,7 @@ lemma stepCRBase_sound (L R : List ℕ) (h : stepCRBase L R ≠ .err) :
     exact stepPlus_stepStar (rule_CR_two L' R)
   · exfalso; exact h rfl
 
-lemma cr_ge3_contract (L' R : List ℕ) (a₀ : ℕ) :
+theorem cr_ge3_contract (L' R : List ℕ) (a₀ : ℕ) :
     (cfg_CR ((a₀ + 3) :: L') R) [target_tm]⊢⁺
     (cfg_CR (((a₀ % 2) + 1) :: (tailWeight (bumpHead L') + a₀ / 2) :: L'.tail)
       ((tailWeight R + 1 + a₀ / 2) :: R.tail)) := by
@@ -747,7 +743,7 @@ lemma cr_ge3_contract (L' R : List ℕ) (a₀ : ℕ) :
   have h2 := rule_CR_peel_all L'.tail R.tail (a₀ % 2) (tailWeight (bumpHead L')) (tailWeight R + 1) (a₀ / 2)
   exact stepPlus_stepStar_stepPlus h1 h2
 
-lemma stepCR_sound (L R : List ℕ) (h : stepCR L R ≠ .err) :
+theorem stepCR_sound (L R : List ℕ) (h : stepCR L R ≠ .err) :
     CRResValid L R (stepCR L R) := by
   rcases L with _ | ⟨_ | _ | _ | a₀, L'⟩
   · exfalso; exact h rfl
@@ -772,13 +768,13 @@ def runCRChunk (n : ℕ) (L R : List ℕ) : CRRes :=
         .err)
     n L R
 
-lemma runCRChunk_succ (n : ℕ) (L R : List ℕ) :
+theorem runCRChunk_succ (n : ℕ) (L R : List ℕ) :
     runCRChunk (n + 1) L R =
       CRRes.casesOn (stepCR L R)
         (fun L' R' => runCRChunk n L' R')
         .err := rfl
 
-lemma runCRChunk_sound : ∀ (n : ℕ) (L R : List ℕ),
+theorem runCRChunk_sound : ∀ (n : ℕ) (L R : List ℕ),
     runCRChunk n L R ≠ .err →
     CRResValid L R (runCRChunk n L R)
   | 0, _, _, _ => ⟨0, rfl⟩
@@ -805,13 +801,13 @@ def runCRChunks (chunks chunkSize : ℕ) (L R : List ℕ) : CRRes :=
         .err)
     chunks L R
 
-lemma runCRChunks_succ (chunks chunkSize : ℕ) (L R : List ℕ) :
+theorem runCRChunks_succ (chunks chunkSize : ℕ) (L R : List ℕ) :
     runCRChunks (chunks + 1) chunkSize L R =
       CRRes.casesOn (runCRChunk chunkSize L R)
         (fun L' R' => runCRChunks chunks chunkSize L' R')
         .err := rfl
 
-lemma runCRChunks_sound : ∀ (chunks chunkSize : ℕ) (L R : List ℕ),
+theorem runCRChunks_sound : ∀ (chunks chunkSize : ℕ) (L R : List ℕ),
     runCRChunks chunks chunkSize L R ≠ .err →
     CRResValid L R (runCRChunks chunks chunkSize L R)
   | 0, _, _, _, _ => ⟨0, rfl⟩
@@ -834,7 +830,7 @@ def runCRTwo (c1 s1 s2 : ℕ) (L R : List ℕ) : CRRes :=
     (fun L' R' => runCRChunk s2 L' R')
     .err
 
-lemma runCRTwo_sound (c1 s1 s2 : ℕ) (L R : List ℕ) (hne : runCRTwo c1 s1 s2 L R ≠ .err) :
+theorem runCRTwo_sound (c1 s1 s2 : ℕ) (L R : List ℕ) (hne : runCRTwo c1 s1 s2 L R ≠ .err) :
     CRResValid L R (runCRTwo c1 s1 s2 L R) := by
   unfold runCRTwo at hne ⊢
   cases hc : runCRChunks c1 s1 L R with
@@ -849,7 +845,7 @@ lemma runCRTwo_sound (c1 s1 s2 : ℕ) (L R : List ℕ) (hne : runCRTwo c1 s1 s2 
     dsimp only at hne
     exfalso; exact hne rfl
 
-lemma runCRTwo_reach {c1 s1 s2 : ℕ} {L R L' R' : List ℕ}
+theorem runCRTwo_reach {c1 s1 s2 : ℕ} {L R L' R' : List ℕ}
     (heq : runCRTwo c1 s1 s2 L R = .next L' R') :
     (cfg_CR L R) [target_tm]⊢* (cfg_CR L' R') := by
   have hne : runCRTwo c1 s1 s2 L R ≠ .err := by
@@ -870,7 +866,7 @@ theorem init_reaches_cap_cr :
     (stepPlus_trans init_to_cfg_B (rule_B_nil [3, 1]))
     (runCRTwo_reach runCRTwo_to_cap)
 
-lemma multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : ℕ}
+theorem multiStep_none_add {c : Cfg (Fin 2) (Fin 6)} {k : ℕ}
     (h : multiStep target_tm c k = none) (d : ℕ) :
     multiStep target_tm c (k + d) = none := by
   rw [multiStep_add, h]; rfl
@@ -891,12 +887,8 @@ theorem reach_arbitrarily_long :
 
 end Solution
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000

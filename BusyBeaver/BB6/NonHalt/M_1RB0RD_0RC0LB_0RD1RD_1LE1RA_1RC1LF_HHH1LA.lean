@@ -24,66 +24,64 @@ abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 0
 set_option maxRecDepth 200000
 
-@[simp] lemma zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
+@[simp] theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
+@[simp] theorem zMo (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) (n : Nat) :
+@[simp] theorem zMs (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma z00 : Turing.ListBlank.cons (0 : Fin 2) default = default := by
+@[simp] theorem z00 : Turing.ListBlank.cons (0 : Fin 2) default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : zB).head = 0 := rfl
+@[simp] theorem zDt : (default : zB).tail = default := rfl
+@[simp] theorem append_nil (s : zB) : ([] : zF) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : zF) (s : zB) :
     (a :: l) +> s = Turing.ListBlank.cons a (l +> s) := rfl
-@[simp] lemma append_assoc (l1 l2 : zF) (s : zB) :
+@[simp] theorem append_assoc (l1 l2 : zF) (s : zB) :
     (l1 ++ l2) +> s = l1 +> (l2 +> s) := by
   induction l1 with
   | nil => rfl
   | cons a l1 ih => simp only [List.cons_append, append_cons, ih]
 
-lemma zSm (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
+theorem zSm (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢^{1} c_2 := by simp [h]
-lemma z01 (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
+theorem z01 (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢⁺ c_2 := ⟨1, by decide, zSm tm c_1 c_2 h⟩
-lemma zMa (tm : Machine (Fin 2) (Fin 6)) (c_1 : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
+theorem zMa (tm : Machine (Fin 2) (Fin 6)) (c_1 : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
     multiStep tm c_1 (n + m) = (multiStep tm c_1 n).bind (fun c_2 => multiStep tm c_2 m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)) (n m : Nat)
+theorem zMt (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)) (n m : Nat)
     (h₁ : c_1 [tm]⊢^{n} c_2) (h₂ : c_2 [tm]⊢^{m} c_3) :
     c_1 [tm]⊢^{n+m} c_3 := by
   rw [zMa, h₁]; simp [h₂]
-lemma zPs {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 : Cfg (Fin 2) (Fin 6)} (h : c_1 [tm]⊢⁺ c_2) :
+theorem zPs {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 : Cfg (Fin 2) (Fin 6)} (h : c_1 [tm]⊢⁺ c_2) :
     c_1 [tm]⊢* c_2 := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma zPt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zPt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, by omega, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z02 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem z02 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma zSp {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zSp {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢* c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, by omega, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma zSt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zSt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢* c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢* c_3 := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z03 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem z03 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 :=
   z02 (z01 tm c_1 c_2 h₁) h₂
 
@@ -96,23 +94,23 @@ macro "step" : tactic =>
 macro "execute" : tactic =>
   `(tactic| focus (repeat (first | finish | step)))
 
-@[simp] lemma z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-@[simp] lemma zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
+@[simp] theorem z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+@[simp] theorem zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
   rw [Nat.add_comm 1 n]; rfl
-@[simp] lemma z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
+@[simp] theorem z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
   change l ++ [] = l; exact List.append_nil l
 
-lemma zLp_add {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n :=
+theorem zLp_add {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n :=
   BusyBeaver.Longitudinal.pow_add_list l m n
 
-lemma zLp_shift {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ^ n ++ l := by
+theorem zLp_shift {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ^ n ++ l := by
   rw [Nat.add_comm 1 n, BusyBeaver.Longitudinal.pow_succ_list']
 
-lemma z07 (l : zF) (n : Nat) (s : zB) : (l ^ (1 + n)) +> s = l +> ((l ^ n) +> s) := by
+theorem z07 (l : zF) (n : Nat) (s : zB) : (l ^ (1 + n)) +> s = l +> ((l ^ n) +> s) := by
   rw [zLp', append_assoc]
 
-lemma z09 (l : zF) (n : Nat) (s : zB) : (l ^ n) +> (l +> s) = (l ^ (1 + n)) +> s := by
+theorem z09 (l : zF) (n : Nat) (s : zB) : (l ^ n) +> (l +> s) = (l ^ (1 + n)) +> s := by
   rw [zLp_shift, append_assoc]
 
 -- State aliases mapping TM1 (A..F) to #687 (TM2)
@@ -145,15 +143,15 @@ def dstateToCfg (q : DState) (l r : zB) : Cfg (Fin 2) (Fin 6) :=
 
 def bitToSym (b : Bool) : Fin 2 := if b then 1 else 0
 
-@[simp] lemma bitToSym_false : bitToSym false = 0 := rfl
-@[simp] lemma bitToSym_true : bitToSym true = 1 := rfl
+@[simp] theorem bitToSym_false : bitToSym false = 0 := rfl
+@[simp] theorem bitToSym_true : bitToSym true = 1 := rfl
 
 def evalBoolList : List Bool → zB → zB
   | [], tail => tail
   | b :: bs, tail => Turing.ListBlank.cons (bitToSym b) (evalBoolList bs tail)
 
-@[simp] lemma evalBoolList_nil (tail : zB) : evalBoolList [] tail = tail := rfl
-@[simp] lemma evalBoolList_cons (b : Bool) (bs : List Bool) (tail : zB) :
+@[simp] theorem evalBoolList_nil (tail : zB) : evalBoolList [] tail = tail := rfl
+@[simp] theorem evalBoolList_cons (b : Bool) (bs : List Bool) (tail : zB) :
     evalBoolList (b :: bs) tail = Turing.ListBlank.cons (bitToSym b) (evalBoolList bs tail) := rfl
 
 def pushBool (w : Bool) (xs : List Bool) : List Bool :=
@@ -161,7 +159,7 @@ def pushBool (w : Bool) (xs : List Bool) : List Bool :=
   | false, [] => []
   | _, _ => w :: xs
 
-@[simp] lemma eval_pushBool (w : Bool) (xs : List Bool) :
+@[simp] theorem eval_pushBool (w : Bool) (xs : List Bool) :
     evalBoolList (pushBool w xs) default = Turing.ListBlank.cons (bitToSym w) (evalBoolList xs default) := by
   cases w <;> cases xs <;> simp [pushBool]
 
@@ -210,7 +208,7 @@ def rawSteps (r_def : Bool) : Nat → DState → List Bool → List Bool → DSt
       | false :: r' => rawSteps r_def n .BR (pushBool false l) r'
       | true :: r' => rawSteps r_def n .FL l (if r_def then pushBool false r' else false :: r')
 
-lemma rawSteps_false_sound (n : Nat) (q : DState) (l r : List Bool) (r_tail : zB) :
+theorem rawSteps_false_sound (n : Nat) (q : DState) (l r : List Bool) (r_tail : zB) :
     (dstateToCfg q (evalBoolList l default) (evalBoolList r r_tail)) [target_tm]⊢*
       (dstateToCfg (rawSteps false n q l r).1 (evalBoolList (rawSteps false n q l r).2.1 default)
         (evalBoolList (rawSteps false n q l r).2.2 r_tail)) := by
@@ -275,7 +273,7 @@ lemma rawSteps_false_sound (n : Nat) (q : DState) (l r : List Bool) (r_tail : zB
         · exact zSt (by dsimp [dstateToCfg]; rw [eval_pushBool]; execute) (ih .BR (pushBool false l) r')
         · exact zSt (by dsimp [dstateToCfg]; execute) (ih .FL l (false :: r'))
 
-lemma rawSteps_true_sound (n : Nat) (q : DState) (l r : List Bool) :
+theorem rawSteps_true_sound (n : Nat) (q : DState) (l r : List Bool) :
     (dstateToCfg q (evalBoolList l default) (evalBoolList r default)) [target_tm]⊢*
       (dstateToCfg (rawSteps true n q l r).1 (evalBoolList (rawSteps true n q l r).2.1 default)
         (evalBoolList (rawSteps true n q l r).2.2 default)) := by
@@ -353,11 +351,11 @@ def evalSideWith (vars : Nat → Nat) (tail : zB) : List SymElem → zB
   | .bit b :: xs => Turing.ListBlank.cons (bitToSym b) (evalSideWith vars tail xs)
   | .blk b1 b2 v :: xs => (pairWord b1 b2 ^ (vars v)) +> evalSideWith vars tail xs
 
-@[simp] lemma evalSideWith_nil (vars : Nat → Nat) (tail : zB) :
+@[simp] theorem evalSideWith_nil (vars : Nat → Nat) (tail : zB) :
     evalSideWith vars tail [] = tail := rfl
-@[simp] lemma evalSideWith_bit (vars : Nat → Nat) (tail : zB) (b : Bool) (xs : List SymElem) :
+@[simp] theorem evalSideWith_bit (vars : Nat → Nat) (tail : zB) (b : Bool) (xs : List SymElem) :
     evalSideWith vars tail (.bit b :: xs) = Turing.ListBlank.cons (bitToSym b) (evalSideWith vars tail xs) := rfl
-@[simp] lemma evalSideWith_blk (vars : Nat → Nat) (tail : zB) (b1 b2 : Bool) (v : Nat) (xs : List SymElem) :
+@[simp] theorem evalSideWith_blk (vars : Nat → Nat) (tail : zB) (b1 b2 : Bool) (v : Nat) (xs : List SymElem) :
     evalSideWith vars tail (.blk b1 b2 v :: xs) = (pairWord b1 b2 ^ (vars v)) +> evalSideWith vars tail xs := rfl
 
 def push (w : Bool) (xs : List SymElem) : List SymElem :=
@@ -365,7 +363,7 @@ def push (w : Bool) (xs : List SymElem) : List SymElem :=
   | false, [] => []
   | _, _ => .bit w :: xs
 
-@[simp] lemma eval_push_false (vars : Nat → Nat) (xs : List SymElem) :
+@[simp] theorem eval_push_false (vars : Nat → Nat) (xs : List SymElem) :
     evalSideWith vars default (push false xs) = Turing.ListBlank.cons 0 (evalSideWith vars default xs) := by
   cases xs <;> simp [push]
 
@@ -375,7 +373,7 @@ def push_sym (b1 b2 : Bool) (v : Nat) : List SymElem → List SymElem
     else .blk b1 b2 v :: .bit b :: xs
   | xs => .blk b1 b2 v :: xs
 
-lemma rot_pair (b1 b2 : Bool) (k : Nat) (r : zB) :
+theorem rot_pair (b1 b2 : Bool) (k : Nat) (r : zB) :
     ([bitToSym b1] : zF) +> ((pairWord b2 b1 ^ k) +> r) =
       (pairWord b1 b2 ^ k) +> ([bitToSym b1] +> r) := by
   induction k with
@@ -386,7 +384,7 @@ lemma rot_pair (b1 b2 : Bool) (k : Nat) (r : zB) :
     simp only [pairWord, append_cons, append_nil] at ih ⊢
     rw [ih]
 
-lemma eval_push_sym (vars : Nat → Nat) (tail : zB) (b1 b2 : Bool) (v : Nat) (xs : List SymElem) :
+theorem eval_push_sym (vars : Nat → Nat) (tail : zB) (b1 b2 : Bool) (v : Nat) (xs : List SymElem) :
     evalSideWith vars tail (push_sym b1 b2 v xs) =
       (pairWord b1 b2 ^ (vars v)) +> evalSideWith vars tail xs := by
   induction xs generalizing b1 b2 with
@@ -404,12 +402,12 @@ lemma eval_push_sym (vars : Nat → Nat) (tail : zB) (b1 b2 : Bool) (v : Nat) (x
     | blk c1 c2 w => rfl
 
 -- Shift rules SR1..SR4
-lemma shiftR_E_O_step (l r : zB) :
+theorem shiftR_E_O_step (l r : zB) :
     (l {{qE}}> (O +> r)) [target_tm]⊢* ((V +> l) {{qE}}> r) := by
   simp only [O, V, append_cons, append_nil]
   execute
 
-lemma shiftR_E_O (k : Nat) (l r : zB) :
+theorem shiftR_E_O (k : Nat) (l r : zB) :
     (l {{qE}}> ((O ^ k) +> r)) [target_tm]⊢* (((V ^ k) +> l) {{qE}}> r) := by
   induction k generalizing l with
   | zero => simp only [z05, append_nil]; finish
@@ -419,12 +417,12 @@ lemma shiftR_E_O (k : Nat) (l r : zB) :
     refine zSt (shiftR_E_O_step l ((O ^ k) +> r)) ?_
     simpa only [z09 V k l] using ih (V +> l)
 
-lemma shiftR_C_O_step (l r : zB) :
+theorem shiftR_C_O_step (l r : zB) :
     (l {{qC}}> (O +> r)) [target_tm]⊢* ((U +> l) {{qC}}> r) := by
   simp only [O, U, append_cons, append_nil]
   execute
 
-lemma shiftR_C_O (k : Nat) (l r : zB) :
+theorem shiftR_C_O (k : Nat) (l r : zB) :
     (l {{qC}}> ((O ^ k) +> r)) [target_tm]⊢* (((U ^ k) +> l) {{qC}}> r) := by
   induction k generalizing l with
   | zero => simp only [z05, append_nil]; finish
@@ -434,12 +432,12 @@ lemma shiftR_C_O (k : Nat) (l r : zB) :
     refine zSt (shiftR_C_O_step l ((O ^ k) +> r)) ?_
     simpa only [z09 U k l] using ih (U +> l)
 
-lemma shiftL_F_V_step (l r : zB) :
+theorem shiftL_F_V_step (l r : zB) :
     ((V +> l) <{{qF}} (Z +> r)) [target_tm]⊢* (l <{{qF}} (Z +> (O +> r))) := by
   simp only [V, Z, O, append_cons, append_nil]
   execute
 
-lemma shiftL_F_V (k : Nat) (l r : zB) :
+theorem shiftL_F_V (k : Nat) (l r : zB) :
     (((V ^ k) +> l) <{{qF}} (Z +> r)) [target_tm]⊢* (l <{{qF}} (Z +> ((O ^ k) +> r))) := by
   induction k generalizing r with
   | zero => simp only [z05, append_nil]; finish
@@ -449,12 +447,12 @@ lemma shiftL_F_V (k : Nat) (l r : zB) :
     refine zSt (shiftL_F_V_step ((V ^ k) +> l) r) ?_
     simpa only [z09 O k r] using ih (O +> r)
 
-lemma shiftL_F_U_step (l r : zB) :
+theorem shiftL_F_U_step (l r : zB) :
     ((U +> l) <{{qF}} ([0, 0, 0] +> r)) [target_tm]⊢* (l <{{qF}} ([0, 0, 0] +> (O +> r))) := by
   simp only [U, O, append_cons, append_nil]
   execute
 
-lemma shiftL_F_U (k : Nat) (l r : zB) :
+theorem shiftL_F_U (k : Nat) (l r : zB) :
     (((U ^ k) +> l) <{{qF}} ([0, 0, 0] +> r)) [target_tm]⊢* (l <{{qF}} ([0, 0, 0] +> ((O ^ k) +> r))) := by
   induction k generalizing r with
   | zero => simp only [z05, append_nil]; finish
@@ -469,7 +467,7 @@ def f_shift_loop : Nat → List SymElem → List SymElem → List SymElem × Lis
   | k + 1, .bit true :: .bit false :: l, r => f_shift_loop k l (.bit true :: .bit true :: r)
   | _, l, r => (l, r)
 
-lemma f_shift_loop_sound (k : Nat) (vars : Nat → Nat) (l_tail : zB) (l r : List SymElem) :
+theorem f_shift_loop_sound (k : Nat) (vars : Nat → Nat) (l_tail : zB) (l r : List SymElem) :
     ((evalSideWith vars l_tail l) <{{qF}} (Z +> evalSideWith vars default r)) [target_tm]⊢*
       ((evalSideWith vars l_tail (f_shift_loop k l r).1) <{{qF}}
         (Z +> evalSideWith vars default (f_shift_loop k l r).2)) := by
@@ -497,7 +495,7 @@ def e_shift_m : Nat → Nat → List SymElem → Nat × List SymElem
   | k + 1, m, .bit true :: .bit true :: r => e_shift_m k (m + 1) r
   | _, m, r => (m, r)
 
-lemma e_shift_m_sound (k : Nat) (l_tail : zB) (vars : Nat → Nat) (n_off m : Nat) (r : List SymElem) :
+theorem e_shift_m_sound (k : Nat) (l_tail : zB) (vars : Nat → Nat) (n_off m : Nat) (r : List SymElem) :
     (((V ^ (n_off + m)) +> l_tail) {{qE}}> (evalSideWith vars default r)) [target_tm]⊢*
       (((V ^ (n_off + (e_shift_m k m r).1)) +> l_tail) {{qE}}>
         (evalSideWith vars default (e_shift_m k m r).2)) := by
@@ -528,7 +526,7 @@ def c_ones_loop : Nat → List SymElem → List SymElem → List SymElem × List
   | k + 1, l, .bit true :: .bit true :: r => c_ones_loop k (.bit false :: .bit true :: l) r
   | _, l, r => (l, r)
 
-lemma c_ones_loop_sound (k : Nat) (vars : Nat → Nat) (l_tail : zB) (l r : List SymElem) :
+theorem c_ones_loop_sound (k : Nat) (vars : Nat → Nat) (l_tail : zB) (l r : List SymElem) :
     ((evalSideWith vars l_tail l) {{qC}}> (evalSideWith vars default r)) [target_tm]⊢*
       ((evalSideWith vars l_tail (c_ones_loop k l r).1) {{qC}}>
         (evalSideWith vars default (c_ones_loop k l r).2)) := by
@@ -556,12 +554,12 @@ def c_zeros_loop : Nat → List SymElem → List SymElem → List SymElem × Lis
   | k + 1, .bit false :: l, .bit false :: r => c_zeros_loop k (.bit true :: .bit true :: l) r
   | _, l, r => (l, r)
 
-lemma c_zeros_step (l r : zB) :
+theorem c_zeros_step (l r : zB) :
     ((Turing.ListBlank.cons 0 l) {{qC}}> (Turing.ListBlank.cons 0 r)) [target_tm]⊢*
       ((Turing.ListBlank.cons 1 (Turing.ListBlank.cons 1 l)) {{qC}}> r) := by
   execute
 
-lemma c_zeros_loop_sound (k : Nat) (vars : Nat → Nat) (l_tail : zB) (l r : List SymElem) :
+theorem c_zeros_loop_sound (k : Nat) (vars : Nat → Nat) (l_tail : zB) (l r : List SymElem) :
     ((evalSideWith vars l_tail l) {{qC}}> (evalSideWith vars default r)) [target_tm]⊢*
       ((evalSideWith vars l_tail (c_zeros_loop k l r).1) {{qC}}>
         (evalSideWith vars default (c_zeros_loop k l r).2)) := by
@@ -665,7 +663,7 @@ def symMacroSteps : Nat → DState → Nat → List SymElem → List SymElem →
       | .bit true :: l_rest => symMacroSteps n .EL m l_rest (.bit true :: r)
       | _ => (q, m, l, r)
 
-lemma bounce_empty_sound (l_tail : zB)
+theorem bounce_empty_sound (l_tail : zB)
     (h_bounce : ∀ r_t : zB, (l_tail <{{qF}} (Turing.ListBlank.cons 0 (Turing.ListBlank.cons 0 r_t))) [target_tm]⊢*
       (((V ^ 2) +> l_tail) {{qE}}> r_t))
     (vars : Nat → Nat) (n_off m : Nat) (r_tail : List SymElem) :
@@ -681,14 +679,14 @@ lemma bounce_empty_sound (l_tail : zB)
   have h4 := e_shift_m_sound 200 l_tail vars n_off (m + 2) r_tail
   exact zSt h1 (zSt h2 (zSt h3 h4))
 
-lemma fl_push_false_step (l_tail : zB) (vars : Nat → Nat) (n_off m : Nat) (l_rest r : List SymElem) :
+theorem fl_push_false_step (l_tail : zB) (vars : Nat → Nat) (n_off m : Nat) (l_rest r : List SymElem) :
     (toSymCfg l_tail vars n_off .FL m (.bit true :: l_rest) r) [target_tm]⊢*
       (toSymCfg l_tail vars n_off .FL m l_rest (push false r)) := by
   dsimp [toSymCfg, dstateToCfg]
   rw [eval_push_false]
   execute
 
-lemma symMacroSteps_sound (l_tail : zB)
+theorem symMacroSteps_sound (l_tail : zB)
     (h_bounce : ∀ r_t : zB, (l_tail <{{qF}} (Turing.ListBlank.cons 0 (Turing.ListBlank.cons 0 r_t))) [target_tm]⊢*
       (((V ^ 2) +> l_tail) {{qE}}> r_t))
     (vars : Nat → Nat) (n_off k : Nat) (q : DState) (m : Nat) (l r : List SymElem) :
@@ -896,7 +894,7 @@ theorem raw_G_bounce_eq :
     rawSteps false 765 .FL l_G_core_bool [false, false] =
       (.ER, true :: false :: true :: false :: l_G_core_bool, []) := rfl
 
-lemma G_bounce (r_t : zB) :
+theorem G_bounce (r_t : zB) :
     (l_G_tail <{{qF}} (Turing.ListBlank.cons 0 (Turing.ListBlank.cons 0 r_t))) [target_tm]⊢*
       (((V ^ 2) +> l_G_tail) {{qE}}> r_t) := by
   have h := rawSteps_false_sound 765 .FL l_G_core_bool [false, false] r_t
@@ -907,7 +905,7 @@ theorem raw_init_eq :
     rawSteps true 6736 .ER [] [] =
       (.ER, true :: false :: true :: false :: l_G_core_bool, r_init_bool) := rfl
 
-lemma symMacroSteps_sound_eq (vars : Nat → Nat) (n_off k : Nat)
+theorem symMacroSteps_sound_eq (vars : Nat → Nat) (n_off k : Nat)
     (q : DState) (m : Nat) (l r : List SymElem)
     (q' : DState) (m' : Nat) (l' r' : List SymElem)
     (heq : symMacroSteps k q m l r = (q', m', l', r')) :
@@ -917,7 +915,7 @@ lemma symMacroSteps_sound_eq (vars : Nat → Nat) (n_off k : Nat)
   rw [heq] at h
   exact h
 
-lemma symMacroSteps_ER_plus (k : Nat) (vars : Nat → Nat) (n_off m : Nat) (r_rest : List SymElem)
+theorem symMacroSteps_ER_plus (k : Nat) (vars : Nat → Nat) (n_off m : Nat) (r_rest : List SymElem)
     (q' : DState) (m' : Nat) (l' r' : List SymElem)
     (heq : symMacroSteps (k + 1) .ER m [] (.bit true :: .bit false :: r_rest) = (q', m', l', r')) :
     (toSymCfg l_G_tail vars n_off .ER m [] (.bit true :: .bit false :: r_rest)) [target_tm]⊢⁺
@@ -952,7 +950,7 @@ def evalVarSum (vars : Nat → Nat) : List Nat → Nat
   | [] => 0
   | v :: vs => vars v + evalVarSum vars vs
 
-lemma eval_repO (vars : Nat → Nat) (tail : zB) (k : Nat) (xs : List SymElem) :
+theorem eval_repO (vars : Nat → Nat) (tail : zB) (k : Nat) (xs : List SymElem) :
     evalSideWith vars tail (repO k xs) = (O ^ k) +> evalSideWith vars tail xs := by
   induction k with
   | zero => rfl
@@ -961,7 +959,7 @@ lemma eval_repO (vars : Nat → Nat) (tail : zB) (k : Nat) (xs : List SymElem) :
     dsimp [repO, evalSideWith, O]
     rw [ih]
 
-lemma eval_addVars (vars : Nat → Nat) (tail : zB) (vs : List Nat) (xs : List SymElem) :
+theorem eval_addVars (vars : Nat → Nat) (tail : zB) (vs : List Nat) (xs : List SymElem) :
     evalSideWith vars tail (addVars vs xs) =
       (O ^ (evalVarSum vars vs)) +> evalSideWith vars tail xs := by
   induction vs with
@@ -971,12 +969,12 @@ lemma eval_addVars (vars : Nat → Nat) (tail : zB) (vs : List Nat) (xs : List S
       (O ^ (vars v + evalVarSum vars vs)) +> evalSideWith vars tail xs
     rw [ih, ← append_assoc, ← zLp_add O (vars v) (evalVarSum vars vs)]
 
-lemma eval_repO_addVars (vars : Nat → Nat) (tail : zB) (c : Nat) (vs : List Nat) (xs : List SymElem) :
+theorem eval_repO_addVars (vars : Nat → Nat) (tail : zB) (c : Nat) (vs : List Nat) (xs : List SymElem) :
     evalSideWith vars tail (repO c (addVars vs xs)) =
       (O ^ (c + evalVarSum vars vs)) +> evalSideWith vars tail xs := by
   rw [eval_repO, eval_addVars, ← append_assoc, ← zLp_add O c (evalVarSum vars vs)]
 
-lemma eval_addBits (vars : Nat → Nat) (tail : zB) (bs : List Bool) (xs : List SymElem) :
+theorem eval_addBits (vars : Nat → Nat) (tail : zB) (bs : List Bool) (xs : List SymElem) :
     evalSideWith vars tail (addBits bs xs) = evalBoolList bs (evalSideWith vars tail xs) := by
   induction bs with
   | nil => rfl
@@ -1004,7 +1002,7 @@ def r_kr_tail (a b c d : Nat) : zB :=
   evalBoolList seg0 ((O ^ a) +> evalBoolList seg1 ((O ^ b) +> evalBoolList seg2
     ((O ^ c) +> evalBoolList seg3 ((O ^ d) +> evalBoolList seg4 default))))
 
-lemma eval_mkSymR (vars : Nat → Nat) (ca : Nat) (va : List Nat) (cb : Nat) (vb : List Nat)
+theorem eval_mkSymR (vars : Nat → Nat) (ca : Nat) (va : List Nat) (cb : Nat) (vb : List Nat)
     (cc : Nat) (vc : List Nat) (cd : Nat) (vd : List Nat) :
     evalSideWith vars default (mkSymR ca va cb vb cc vc cd vd) =
       r_kr_tail (ca + evalVarSum vars va) (cb + evalVarSum vars vb)
@@ -1019,7 +1017,7 @@ def Kr (n a b c d : Nat) : Cfg (Fin 2) (Fin 6) :=
 def Ev (N X : Nat) : Cfg (Fin 2) (Fin 6) :=
   Kr N (4 * X + 26) (2 * X + 32) 17 9
 
-lemma toSymCfg_mkSymR (vars : Nat → Nat) (n k : Nat)
+theorem toSymCfg_mkSymR (vars : Nat → Nat) (n k : Nat)
     (ca : Nat) (va : List Nat) (cb : Nat) (vb : List Nat)
     (cc : Nat) (vc : List Nat) (cd : Nat) (vd : List Nat) :
     toSymCfg l_G_tail vars n .ER (k + 2) [] (mkSymR ca va cb vb cc vc cd vd) =
@@ -1029,7 +1027,7 @@ lemma toSymCfg_mkSymR (vars : Nat → Nat) (n k : Nat)
   dsimp only [evalSideWith]
   rw [eval_mkSymR, Nat.add_assoc]
 
-lemma symMacroSteps_mkSymR_plus (k : Nat) (vars : Nat → Nat) (n k_m : Nat)
+theorem symMacroSteps_mkSymR_plus (k : Nat) (vars : Nat → Nat) (n k_m : Nat)
     (ca : Nat) (va : List Nat) (cb : Nat) (vb : List Nat)
     (cc : Nat) (vc : List Nat) (cd : Nat) (vd : List Nat)
     (k_m' : Nat)
@@ -1061,7 +1059,7 @@ theorem sym_S_step_eq :
     symMacroSteps 1067 .ER 2 [] (mkSymR 5 [0] 3 [1] 3 [2] 1 [3]) =
       (.ER, 26, [], mkSymR 1 [0] 5 [1] 3 [2] 3 [3]) := rfl
 
-lemma S_step (n a b c d : Nat) :
+theorem S_step (n a b c d : Nat) :
     (Kr n (5 + a) (3 + b) (3 + c) (1 + d)) [target_tm]⊢⁺
       (Kr (24 + n) (1 + a) (5 + b) (3 + c) (3 + d)) :=
   symMacroSteps_mkSymR_plus 1066 (mkVars a b c d) n 0
@@ -1078,7 +1076,7 @@ theorem sym_TE_eq :
     symMacroSteps 11957 .ER 2 [] (mkSymR 2 [] 44 [1] 17 [] 10 [3]) =
       (.ER, 280, [], mkSymR 1 [1] 41 [] 35 [3] 9 []) := rfl
 
-lemma TE (n b d : Nat) :
+theorem TE (n b d : Nat) :
     (Kr n 2 (44 + b) 17 (10 + d)) [target_tm]⊢⁺
       (Kr (278 + n) (1 + b) 41 (35 + d) 9) :=
   symMacroSteps_mkSymR_plus 11956 (mkVars 0 b 0 d) n 0
@@ -1095,7 +1093,7 @@ theorem sym_TO_eq :
     symMacroSteps 11792 .ER 2 [] (mkSymR 1 [] 41 [1] 18 [2] 9 [3]) =
       (.ER, 296, [], mkSymR 14 [1, 2] 40 [3] 17 [] 9 []) := rfl
 
-lemma TO (n b c d : Nat) :
+theorem TO (n b c d : Nat) :
     (Kr n 1 (41 + b) (18 + c) (9 + d)) [target_tm]⊢⁺
       (Kr (294 + n) (14 + b + c) (40 + d) 17 9) :=
   symMacroSteps_mkSymR_plus 11791 (mkVars 0 b c d) n 0
@@ -1112,7 +1110,7 @@ theorem sym_T6_eq :
     symMacroSteps 11927 .ER 2 [] (mkSymR 3 [] 41 [1] 17 [2] 9 [3]) =
       (.ER, 298, [], mkSymR 13 [1, 2] 40 [3] 17 [] 9 []) := rfl
 
-lemma T6 (n b c d : Nat) :
+theorem T6 (n b c d : Nat) :
     (Kr n 3 (41 + b) (17 + c) (9 + d)) [target_tm]⊢⁺
       (Kr (296 + n) (13 + b + c) (40 + d) 17 9) :=
   symMacroSteps_mkSymR_plus 11926 (mkVars 0 b c d) n 0
@@ -1129,7 +1127,7 @@ theorem sym_T8_eq :
     symMacroSteps 11689 .ER 2 [] (mkSymR 4 [] 44 [1] 17 [] 10 [3]) =
       (.ER, 272, [], mkSymR 7 [1] 43 [] 33 [3] 9 []) := rfl
 
-lemma T8 (n b d : Nat) :
+theorem T8 (n b d : Nat) :
     (Kr n 4 (44 + b) 17 (10 + d)) [target_tm]⊢⁺
       (Kr (270 + n) (7 + b) 43 (33 + d) 9) :=
   symMacroSteps_mkSymR_plus 11688 (mkVars 0 b 0 d) n 0
@@ -1142,7 +1140,7 @@ lemma T8 (n b d : Nat) :
     (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega)
 
-lemma follow_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
+theorem follow_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
     (h1 : (Kr n1 a1 b1 c1 d1) [target_tm]⊢⁺ (Kr n2 a2 b2 c2 d2))
     (hn : n1 = n1') (ha : a1 = a1') (hb : b1 = b1') (hc : c1 = c1') (hd : d1 = d1')
     (h2 : (Kr n2 a2 b2 c2 d2) [target_tm]⊢* c3) :
@@ -1150,7 +1148,7 @@ lemma follow_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {
   subst hn ha hb hc hd
   exact zPs (z02 h1 h2)
 
-lemma follow_Kr_star {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
+theorem follow_Kr_star {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
     (h1 : (Kr n1 a1 b1 c1 d1) [target_tm]⊢* (Kr n2 a2 b2 c2 d2))
     (hn : n1 = n1') (ha : a1 = a1') (hb : b1 = b1') (hc : c1 = c1') (hd : d1 = d1')
     (h2 : (Kr n2 a2 b2 c2 d2) [target_tm]⊢* c3) :
@@ -1158,13 +1156,13 @@ lemma follow_Kr_star {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {
   subst hn ha hb hc hd
   exact zSt h1 h2
 
-lemma finish_Kr {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 : Nat}
+theorem finish_Kr {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 : Nat}
     (hn : n1 = n2) (ha : a1 = a2) (hb : b1 = b2) (hc : c1 = c2) (hd : d1 = d2) :
     (Kr n1 a1 b1 c1 d1) [target_tm]⊢* (Kr n2 a2 b2 c2 d2) := by
   subst hn ha hb hc hd
   exact ⟨0, rfl⟩
 
-lemma follow_Kr_star_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
+theorem follow_Kr_star_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
     (h1 : (Kr n1 a1 b1 c1 d1) [target_tm]⊢* (Kr n2 a2 b2 c2 d2))
     (hn : n1 = n1') (ha : a1 = a1') (hb : b1 = b1') (hc : c1 = c1') (hd : d1 = d1')
     (h2 : (Kr n2 a2 b2 c2 d2) [target_tm]⊢⁺ c3) :
@@ -1172,7 +1170,7 @@ lemma follow_Kr_star_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : N
   subst hn ha hb hc hd
   exact zSp h1 h2
 
-lemma follow_Kr_plus_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
+theorem follow_Kr_plus_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
     (h1 : (Kr n1 a1 b1 c1 d1) [target_tm]⊢⁺ (Kr n2 a2 b2 c2 d2))
     (hn : n1 = n1') (ha : a1 = a1') (hb : b1 = b1') (hc : c1 = c1') (hd : d1 = d1')
     (h2 : (Kr n2 a2 b2 c2 d2) [target_tm]⊢⁺ c3) :
@@ -1180,7 +1178,7 @@ lemma follow_Kr_plus_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : N
   subst hn ha hb hc hd
   exact zPt h1 h2
 
-lemma finish_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' n2' a2' b2' c2' d2' : Nat}
+theorem finish_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' n2' a2' b2' c2' d2' : Nat}
     (h1 : (Kr n1 a1 b1 c1 d1) [target_tm]⊢⁺ (Kr n2 a2 b2 c2 d2))
     (hn1 : n1 = n1') (ha1 : a1 = a1') (hb1 : b1 = b1') (hc1 : c1 = c1') (hd1 : d1 = d1')
     (hn2 : n2 = n2') (ha2 : a2 = a2') (hb2 : b2 = b2') (hc2 : c2 = c2') (hd2 : d2 = d2') :
@@ -1188,7 +1186,7 @@ lemma finish_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' n2' a2' 
   subst hn1 ha1 hb1 hc1 hd1 hn2 ha2 hb2 hc2 hd2
   exact h1
 
-lemma S_iter (k : Nat) : ∀ n a b c d : Nat,
+theorem S_iter (k : Nat) : ∀ n a b c d : Nat,
     (Kr n (4 * k + 1 + a) (3 + b) (3 + c) (1 + d)) [target_tm]⊢*
       (Kr (24 * k + n) (1 + a) (2 * k + 3 + b) (3 + c) (2 * k + 1 + d)) := by
   induction k with
@@ -1201,7 +1199,7 @@ lemma S_iter (k : Nat) : ∀ n a b c d : Nat,
     refine follow_Kr_star (ih (24 + n) a (2 + b) c (2 + d)) (by omega) (by omega) (by omega) (by omega) (by omega) ?_
     exact finish_Kr (by omega) (by omega) (by omega) (by omega) (by omega)
 
-lemma DC (N X : Nat) :
+theorem DC (N X : Nat) :
     (Ev N X) [target_tm]⊢⁺ (Ev (48 * X + 716 + N) (4 + X)) := by
   unfold Ev
   refine follow_Kr_star_plus (S_iter (X + 6) N 1 (2 * X + 29) 14 8) (by omega) (by omega) (by omega) (by omega) (by omega) ?_
@@ -1211,7 +1209,7 @@ lemma DC (N X : Nat) :
     (by omega) (by omega) (by omega) (by omega) (by omega)
     (by omega) (by omega) (by omega) (by omega) (by omega)
 
-lemma rawSteps_true_sound_eq (n : Nat) (q : DState) (l r : List Bool)
+theorem rawSteps_true_sound_eq (n : Nat) (q : DState) (l r : List Bool)
     (q' : DState) (l' r' : List Bool)
     (heq : rawSteps true n q l r = (q', l', r')) :
     (dstateToCfg q (evalBoolList l default) (evalBoolList r default)) [target_tm]⊢*
@@ -1224,7 +1222,7 @@ theorem sym_init_eq :
     symMacroSteps 42693 .ER 2 [] (addBits r_init_bool []) =
       (.ER, 1293, [], mkSymR 35 [] 38 [] 21 [] 9 []) := rfl
 
-lemma init_to_Kr : (init []) [target_tm]⊢* (Kr 1291 35 38 21 9) := by
+theorem init_to_Kr : (init []) [target_tm]⊢* (Kr 1291 35 38 21 9) := by
   have h1 := rawSteps_true_sound_eq 6736 .ER [] []
     .ER (true :: false :: true :: false :: l_G_core_bool) r_init_bool raw_init_eq
   have h2 := symMacroSteps_sound_eq (mkVars 0 0 0 0) 0 42693
@@ -1245,7 +1243,7 @@ lemma init_to_Kr : (init []) [target_tm]⊢* (Kr 1291 35 38 21 9) := by
   rw [h3] at h12
   exact h12
 
-lemma opening : (Kr 1291 35 38 21 9) [target_tm]⊢* (Ev 6649 21) := by
+theorem opening : (Kr 1291 35 38 21 9) [target_tm]⊢* (Ev 6649 21) := by
   unfold Ev
   refine follow_Kr_star (S_iter 8 1291 2 35 18 8) (by omega) (by omega) (by omega) (by omega) (by omega) ?_
   refine follow_Kr_plus (T6 1483 13 4 16) (by omega) (by omega) (by omega) (by omega) (by omega) ?_

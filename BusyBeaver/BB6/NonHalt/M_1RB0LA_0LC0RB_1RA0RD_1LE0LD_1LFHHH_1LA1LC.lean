@@ -4,21 +4,27 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-
-@[expose] public section
+import BusyBeaver.Basic
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
-namespace BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC
+@[expose] public section
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+namespace BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC
+
+end
+
+namespace BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC
+
+variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
@@ -30,18 +36,15 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-set_option linter.unusedSimpArgs false
-set_option maxHeartbeats 2000000
-set_option maxRecDepth 2000
 
-@[simp] lemma multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
-@[simp] lemma multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
+@[simp] theorem multiStep_zero (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 0 = some c := rfl
+@[simp] theorem multiStep_one (M : Machine Γ Λ) (c : Cfg Γ Λ) : multiStep M c 1 = step M c := rfl
 
-@[simp] lemma multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
+@[simp] theorem multiStep_succ (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) :
     multiStep M c (n + 1) = (multiStep M c n).bind (step M) := by
   simp only [multiStep, Function.iterate_succ_apply']
 
-lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
+theorem multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     multiStep M c₁ (n + m) = (multiStep M c₁ n).bind (fun c₂ => multiStep M c₂ m) := by
   induction m with
   | zero => simp
@@ -49,36 +52,42 @@ lemma multiStep_add (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : ℕ) :
     rw [Nat.add_succ, multiStep_succ, ih, Option.bind_assoc]
     simp_rw [multiStep_succ]
 
-lemma multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
+theorem multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : ℕ)
     (h₁ : c₁ [M]⊢^{n} c₂) (h₂ : c₂ [M]⊢^{m} c₃) :
     c₁ [M]⊢^{n+m} c₃ := by
   rw [multiStep_add, h₁]; simp [h₂]
 
-@[simp] lemma pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
-@[simp] lemma pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
-@[simp] lemma nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
-@[simp] lemma cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
-@[simp] lemma append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
-@[simp] lemma listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
-@[simp] lemma listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
+@[simp] theorem pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
+@[simp] theorem pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
+@[simp] theorem nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
+@[simp] theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++
+    ys) := rfl
+@[simp] theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
+@[simp] theorem listblank_append_nil (b : ListBlank (Fin 2)) : ([] : List (Fin 2)) +> b = b := rfl
+@[simp] theorem listblank_append_cons (x : Fin 2) (xs : List (Fin 2)) (b : ListBlank (Fin 2)) :
     (x :: xs) +> b = x >> (xs +> b) := rfl
-@[simp] lemma zero_cons_default : (0 : Fin 2) >> default = default := by
+@[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
-@[simp] lemma default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem default_head : (default : ListBlank (Fin 2)).head = 0 := rfl
+@[simp] theorem default_tail : (default : ListBlank (Fin 2)).tail = default := rfl
 
 macro "finish" : tactic =>
   `(tactic| exists 0 <;> fail)
 macro "step" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
-    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default, default_head, default_tail])
+    refine step_stepStar_stepPlus (by (try simp only [BusyBeaver.Cfg.headRight,
+        BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,
+        Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, zero_cons_default,
+        default_head, default_tail])
 macro "execute5" : tactic =>
-  `(tactic| (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)))
+  `(tactic| (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;>
+      (any_goals (first | finish | step)) <;> (any_goals (first | finish | step)) <;>
+      (any_goals (first | finish | step)))
 macro "execute" : tactic =>
   `(tactic| execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5 <;> execute5)
 
-lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (c₀ cfg cfg' : Cfg Γ Λ) (n m : Nat)
     (hn : multiStep M c₀ n = some cfg)
     (hnm : multiStep M c₀ (n + (1 + m)) = some cfg') :
@@ -92,12 +101,12 @@ lemma multiStep_step_isSome {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     nomatch hnm
   | some c₁ => rfl
 
-lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
+theorem inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+    (M : Machine Γ Λ) {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ cfg₀, (c_init [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg')
     (N : Nat) :
-    ∃ (m : Nat) (cfg' : Cfg Γ Λ), multiStep M (init []) (N + m) = some cfg' ∧ Inv cfg' := by
+    ∃ (m : Nat) (cfg' : Cfg Γ Λ), multiStep M c_init (N + m) = some cfg' ∧ Inv cfg' := by
   induction N with
   | zero =>
     obtain ⟨cfg₀, ⟨n₀, hn₀⟩, h_inv₀⟩ := h_init
@@ -112,7 +121,7 @@ lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
       | zero => omega
       | succ k' =>
         refine ⟨k', cfg₂, ?_, h_inv₂⟩
-        have h_trans := multiStep_trans M (init []) cfg₁ cfg₂ N (k' + 1) hm hk
+        have h_trans := multiStep_trans M c_init cfg₁ cfg₂ N (k' + 1) hm hk
         have h_eq : (N + 1) + k' = N + (k' + 1) := by omega
         rwa [h_eq]
     | succ m' =>
@@ -121,15 +130,15 @@ lemma inv_reaches_beyond {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
       rwa [h_eq]
 
 theorem closed_inv_does_not_halt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
-    (h_init : ∃ cfg₀, ((init []) [M]⊢* cfg₀) ∧ Inv cfg₀)
+    (M : Machine Γ Λ) {c_init : Cfg Γ Λ} (Inv : Cfg Γ Λ → Prop)
+    (h_init : ∃ cfg₀, (c_init [M]⊢* cfg₀) ∧ Inv cfg₀)
     (h_step : ∀ cfg, Inv cfg → ∃ cfg', (cfg [M]⊢⁺ cfg') ∧ Inv cfg') :
-    IsNotHalt M := by
+    ∀ cfg : Cfg Γ Λ, (c_init [M]⊢* cfg) → (step M cfg).isSome := by
   intro cfg ⟨n, hn⟩
   obtain ⟨m, cfg', hnm, _⟩ := inv_reaches_beyond M Inv h_init h_step (n + 1)
   have h_eq : (n + 1) + m = n + (1 + m) := by omega
   rw [h_eq] at hnm
-  exact multiStep_step_isSome M (init []) cfg cfg' n m hn hnm
+  exact multiStep_step_isSome M c_init cfg cfg' n m hn hnm
 
 def B00 (m l : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ([0, 0] +> m) {{B}}> l
@@ -140,49 +149,58 @@ def F11 (m l : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 def A0 (m l : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   m <{{A}} ((0 : Fin 2) >> l)
 
-lemma rule_B00_111 (m l : ListBlank (Fin 2)) :
+theorem rule_B00_111 (m l : ListBlank (Fin 2)) :
     (B00 m ([1, 1, 1] +> l)) [target_tm]⊢⁺ (B00 ([0, 0, 0] +> m) l) := by
   dsimp [B00, ListBlank.append]; execute
 
-lemma rule_B00_011 (m l : ListBlank (Fin 2)) :
+theorem rule_B00_011 (m l : ListBlank (Fin 2)) :
     (B00 m ([0, 1, 1] +> l)) [target_tm]⊢⁺ (B00 ([1, 1, 0] +> m) l) := by
   dsimp [B00, ListBlank.append]; execute
 
-lemma rule_B00_00 (m l : ListBlank (Fin 2)) :
+theorem rule_B00_00 (m l : ListBlank (Fin 2)) :
     (B00 m ([0, 0] +> l)) [target_tm]⊢⁺ (A0 m ([0, 1, 1] +> l)) := by
   dsimp [B00, A0, ListBlank.append]; execute
 
-lemma rule_B00_nil (m : ListBlank (Fin 2)) :
+theorem rule_B00_nil (m : ListBlank (Fin 2)) :
     (B00 m default) [target_tm]⊢⁺ (A0 m ([0, 1, 1] +> default)) := by
   dsimp [B00, A0, ListBlank.append]; execute
 
-lemma rule_F11_000 (m l : ListBlank (Fin 2)) :
+theorem rule_F11_000 (m l : ListBlank (Fin 2)) :
     (F11 ([0, 0, 0] +> m) l) [target_tm]⊢⁺ (B00 ([0, 1, 0] +> m) l) := by
   dsimp [F11, B00, ListBlank.append]; execute
 
-lemma rule_F11_010 (m l : ListBlank (Fin 2)) :
+theorem rule_F11_00 (m l : ListBlank (Fin 2)) :
+    (F11 ([0, 0] +> m) l) [target_tm]⊢⁺ (B00 ([0, 1] +> m) l) := by
+  dsimp [F11, B00, ListBlank.append]; execute
+
+theorem rule_F11_010 (m l : ListBlank (Fin 2)) :
     (F11 ([0, 1, 0] +> m) l) [target_tm]⊢⁺ (F11 m ([1, 1, 1] +> l)) := by
   dsimp [F11, ListBlank.append]; execute
 
-lemma rule_F11_110 (m l : ListBlank (Fin 2)) :
+theorem rule_F11_110 (m l : ListBlank (Fin 2)) :
     (F11 ([1, 1, 0] +> m) l) [target_tm]⊢⁺ (F11 m ([0, 1, 1] +> l)) := by
   dsimp [F11, ListBlank.append]; execute
 
-lemma rule_F11_01 (m l : ListBlank (Fin 2)) :
+theorem rule_F11_01 (m l : ListBlank (Fin 2)) :
     (F11 ([0, 1] +> m) l) [target_tm]⊢⁺ (A0 m ([1, 1, 1] +> l)) := by
   dsimp [F11, A0, ListBlank.append]; execute
 
-lemma rule_A0_000 (m l : ListBlank (Fin 2)) :
+theorem rule_A0_000 (m l : ListBlank (Fin 2)) :
     (A0 ([0, 0, 0] +> m) l) [target_tm]⊢⁺ (B00 ([0, 1] +> m) l) := by
   dsimp [A0, B00, ListBlank.append]; execute
 
-lemma rule_A0_010 (m l : ListBlank (Fin 2)) :
+theorem rule_A0_010 (m l : ListBlank (Fin 2)) :
     (A0 ([0, 1, 0] +> m) l) [target_tm]⊢⁺ (A0 m ([0, 1, 1] +> l)) := by
   dsimp [A0, ListBlank.append]; execute
 
-lemma rule_A0_110 (m l : ListBlank (Fin 2)) :
+theorem rule_A0_110 (m l : ListBlank (Fin 2)) :
     (A0 ([1, 1, 0] +> m) l) [target_tm]⊢⁺ (F11 m ([0, 0] +> l)) := by
   dsimp [A0, F11, ListBlank.append]; execute
+
+theorem rule_A0_01_01 (l : ListBlank (Fin 2)) :
+    (A0 ([0, 1] +> ([0, 1] +> default)) l) [target_tm]⊢⁺
+      (B00 ([0, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([0, 1] +> default)))) l) := by
+  dsimp [A0, B00, ListBlank.append]; execute; execute
 
 abbrev RoundF (m m' : ListBlank (Fin 2)) : Prop :=
   ∀ l : ListBlank (Fin 2), (F11 m l) [target_tm]⊢⁺ (B00 m' l)
@@ -190,43 +208,56 @@ abbrev RoundF (m m' : ListBlank (Fin 2)) : Prop :=
 abbrev RoundA (m m' : ListBlank (Fin 2)) : Prop :=
   ∀ l : ListBlank (Fin 2), (A0 m l) [target_tm]⊢⁺ (B00 m' l)
 
-lemma roundF_000 (m : ListBlank (Fin 2)) :
+theorem roundF_000 (m : ListBlank (Fin 2)) :
     RoundF ([0, 0, 0] +> m) ([0, 1, 0] +> m) :=
   fun l => rule_F11_000 m l
 
-lemma roundF_010 {m m' : ListBlank (Fin 2)} (h : RoundF m m') :
+theorem roundF_00 (m : ListBlank (Fin 2)) :
+    RoundF ([0, 0] +> m) ([0, 1] +> m) :=
+  fun l => rule_F11_00 m l
+
+theorem roundF_010 {m m' : ListBlank (Fin 2)} (h : RoundF m m') :
     RoundF ([0, 1, 0] +> m) ([0, 0, 0] +> m') :=
-  fun l => stepPlus_trans (rule_F11_010 m l) (stepPlus_trans (h ([1, 1, 1] +> l)) (rule_B00_111 m' l))
+  fun l =>
+      stepPlus_trans (rule_F11_010 m l) (stepPlus_trans (h ([1, 1, 1] +> l)) (rule_B00_111 m' l))
 
-lemma roundF_110 {m m' : ListBlank (Fin 2)} (h : RoundF m m') :
+theorem roundF_110 {m m' : ListBlank (Fin 2)} (h : RoundF m m') :
     RoundF ([1, 1, 0] +> m) ([1, 1, 0] +> m') :=
-  fun l => stepPlus_trans (rule_F11_110 m l) (stepPlus_trans (h ([0, 1, 1] +> l)) (rule_B00_011 m' l))
+  fun l =>
+      stepPlus_trans (rule_F11_110 m l) (stepPlus_trans (h ([0, 1, 1] +> l)) (rule_B00_011 m' l))
 
-lemma roundF_01 {m m' : ListBlank (Fin 2)} (h : RoundA m m') :
+theorem roundF_01 {m m' : ListBlank (Fin 2)} (h : RoundA m m') :
     RoundF ([0, 1] +> m) ([0, 0, 0] +> m') :=
-  fun l => stepPlus_trans (rule_F11_01 m l) (stepPlus_trans (h ([1, 1, 1] +> l)) (rule_B00_111 m' l))
+  fun l =>
+      stepPlus_trans (rule_F11_01 m l) (stepPlus_trans (h ([1, 1, 1] +> l)) (rule_B00_111 m' l))
 
-lemma roundA_000 (m : ListBlank (Fin 2)) :
+theorem roundA_000 (m : ListBlank (Fin 2)) :
     RoundA ([0, 0, 0] +> m) ([0, 1] +> m) :=
   fun l => rule_A0_000 m l
 
-lemma roundA_010 {m m' : ListBlank (Fin 2)} (h : RoundA m m') :
+theorem roundA_010 {m m' : ListBlank (Fin 2)} (h : RoundA m m') :
     RoundA ([0, 1, 0] +> m) ([1, 1, 0] +> m') :=
-  fun l => stepPlus_trans (rule_A0_010 m l) (stepPlus_trans (h ([0, 1, 1] +> l)) (rule_B00_011 m' l))
+  fun l =>
+      stepPlus_trans (rule_A0_010 m l) (stepPlus_trans (h ([0, 1, 1] +> l)) (rule_B00_011 m' l))
 
-lemma roundA_110 {m m₁ m₂ : ListBlank (Fin 2)} (h₁ : RoundF m m₁) (h₂ : RoundA m₁ m₂) :
+theorem roundA_110 {m m₁ m₂ : ListBlank (Fin 2)} (h₁ : RoundF m m₁) (h₂ : RoundA m₁ m₂) :
     RoundA ([1, 1, 0] +> m) ([1, 1, 0] +> m₂) :=
   fun l => stepPlus_trans (rule_A0_110 m l)
     (stepPlus_trans (h₁ ([0, 0] +> l))
       (stepPlus_trans (rule_B00_00 m₁ l)
         (stepPlus_trans (h₂ ([0, 1, 1] +> l)) (rule_B00_011 m₂ l))))
 
+theorem roundA_01_01 :
+    RoundA ([0, 1] +> ([0, 1] +> default))
+      ([0, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([0, 1] +> default)))) :=
+  fun l => rule_A0_01_01 l
+
 inductive SweepsF : Nat → ListBlank (Fin 2) → ListBlank (Fin 2) → Prop
   | zero (r : ListBlank (Fin 2)) : SweepsF 0 r r
   | succ {n : Nat} {r r₁ r₂ : ListBlank (Fin 2)} :
       RoundF r r₁ → SweepsF n r₁ r₂ → SweepsF (n + 1) r r₂
 
-lemma SweepsF.trans {a b : Nat} {r₁ r₂ r₃ : ListBlank (Fin 2)}
+theorem SweepsF.trans {a b : Nat} {r₁ r₂ r₃ : ListBlank (Fin 2)}
     (h₁ : SweepsF a r₁ r₂) (h₂ : SweepsF b r₂ r₃) : SweepsF (a + b) r₁ r₃ := by
   induction h₁ with
   | zero _ => simpa using h₂
@@ -234,7 +265,7 @@ lemma SweepsF.trans {a b : Nat} {r₁ r₂ r₃ : ListBlank (Fin 2)}
     rw [Nat.succ_add]
     exact SweepsF.succ hr (ih h₂)
 
-lemma sweepsF_split_last {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF (n + 1) r r') :
+theorem sweepsF_split_last {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF (n + 1) r r') :
     ∃ r₁ : ListBlank (Fin 2), SweepsF n r r₁ ∧ RoundF r₁ r' := by
   induction n generalizing r with
   | zero =>
@@ -248,13 +279,13 @@ lemma sweepsF_split_last {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF (n + 
       obtain ⟨r₁, hs₁, hr₁⟩ := ih hs
       exact ⟨r₁, SweepsF.succ hr hs₁, hr₁⟩
 
-lemma sweepsF_110 {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF n r r') :
+theorem sweepsF_110 {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF n r r') :
     SweepsF n ([1, 1, 0] +> r) ([1, 1, 0] +> r') := by
   induction h with
   | zero r => exact SweepsF.zero _
   | succ hr _ ih => exact SweepsF.succ (roundF_110 hr) ih
 
-lemma sweepsF_000_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF k r r') :
+theorem sweepsF_000_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF k r r') :
     SweepsF (2 * k) ([0, 0, 0] +> r) ([0, 0, 0] +> r') := by
   induction h with
   | zero r => exact SweepsF.zero _
@@ -265,7 +296,7 @@ lemma sweepsF_000_even {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF k r r')
     rw [show 2 + 2 * m = 2 * (m + 1) by omega] at htr
     exact htr
 
-lemma sweepsF_000_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF k r r') :
+theorem sweepsF_000_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF k r r') :
     SweepsF (2 * k + 1) ([0, 0, 0] +> r) ([0, 1, 0] +> r') := by
   have he := sweepsF_000_even h
   have h1 : SweepsF 1 ([0, 0, 0] +> r') ([0, 1, 0] +> r') :=
@@ -275,38 +306,43 @@ lemma sweepsF_000_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsF k r r') 
 def SweepsFA (n : Nat) (r r' : ListBlank (Fin 2)) : Prop :=
   ∃ r₁ : ListBlank (Fin 2), SweepsF n r r₁ ∧ RoundA r₁ r'
 
-lemma sweepsFA_succ {n : Nat} {r r₁ r₂ : ListBlank (Fin 2)}
+theorem sweepsFA_succ {n : Nat} {r r₁ r₂ : ListBlank (Fin 2)}
     (hr : RoundF r r₁) (hs : SweepsFA n r₁ r₂) : SweepsFA (n + 1) r r₂ := by
   obtain ⟨r_m, hs_m, ha⟩ := hs
   exact ⟨r_m, SweepsF.succ hr hs_m, ha⟩
 
-lemma sweepsFA_110 {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsFA (n + 1) r r') :
+theorem sweepsFA_110 {n : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsFA (n + 1) r r') :
     SweepsFA n ([1, 1, 0] +> r) ([1, 1, 0] +> r') := by
   obtain ⟨r₁, hs, ha⟩ := h
   obtain ⟨r₀, hs₀, hr₀⟩ := sweepsF_split_last hs
   exact ⟨[1, 1, 0] +> r₀, sweepsF_110 hs₀, roundA_110 hr₀ ha⟩
 
-lemma sweepsFA_000_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsFA k r r') :
+theorem sweepsFA_000_odd {k : Nat} {r r' : ListBlank (Fin 2)} (h : SweepsFA k r r') :
     SweepsFA (2 * k + 1) ([0, 0, 0] +> r) ([1, 1, 0] +> r') := by
   obtain ⟨r₁, hs, ha⟩ := h
   exact ⟨[0, 1, 0] +> r₁, sweepsF_000_odd hs, roundA_010 ha⟩
 
-lemma sweepsFA_000_even {k : Nat} {r r_m : ListBlank (Fin 2)} (hs : SweepsF k r r_m) :
+theorem sweepsFA_000_even {k : Nat} {r r_m : ListBlank (Fin 2)} (hs : SweepsF k r r_m) :
     SweepsFA (2 * k) ([0, 0, 0] +> r) ([0, 1] +> r_m) :=
   ⟨[0, 0, 0] +> r_m, sweepsF_000_even hs, roundA_000 r_m⟩
 
-lemma default_eq_b000 :
+theorem default_eq_b000 :
     (default : ListBlank (Fin 2)) = [0, 0, 0] +> default := by
   simp only [listblank_append_cons, listblank_append_nil, zero_cons_default]
 
-lemma b01_default_eq :
+theorem b01_default_eq :
     ([0, 1] +> default : ListBlank (Fin 2)) = [0, 1, 0] +> default := by
   simp only [listblank_append_cons, listblank_append_nil, zero_cons_default]
 
-lemma roundA_default :
+theorem roundA_default :
     RoundA default ([0, 1] +> default) := by
   have h := roundA_000 default
   rwa [← default_eq_b000] at h
+
+theorem roundA_01_bot :
+    RoundA ([0, 1] +> default) ([1, 1, 0] +> ([0, 1] +> default)) := by
+  have h0 := roundA_010 roundA_default
+  rwa [← b01_default_eq] at h0
 
 inductive Valid : Nat → ListBlank (Fin 2) → Prop
   | bot (n : Nat) :
@@ -317,23 +353,22 @@ inductive Valid : Nat → ListBlank (Fin 2) → Prop
       (hround : RoundA r_k r₁) (hr : Valid ((n - 1) / 2) r₁) :
       Valid n ([0, 1] +> r_k)
 
-lemma Valid.mono {n : Nat} {r : ListBlank (Fin 2)} (h : Valid n r) {n' : Nat} (hle : n ≤ n') :
+theorem Valid.mono {n : Nat} {r : ListBlank (Fin 2)} (h : Valid n r) {n' : Nat} (hle : n ≤ n') :
     Valid n' r := by
   induction h generalizing n' with
   | bot _ => exact Valid.bot n'
   | t_110 _ ih => exact Valid.t_110 (ih (by omega))
   | t_01 hn hround _ ih => exact Valid.t_01 (by omega) hround (ih (by omega))
 
-lemma valid_sweeps_bot : ∀ n : Nat,
+theorem valid_sweeps_bot : ∀ n : Nat,
     ∃ r' : ListBlank (Fin 2), Valid n r' ∧ SweepsFA n ([0, 1] +> default) r' := by
   intro n
   induction n using Nat.strongRecOn with
   | ind n ih =>
-    rcases (by omega : n = 0 ∨ (n ≥ 1 ∧ (n - 1) % 2 = 1) ∨ (n ≥ 1 ∧ (n - 1) % 2 = 0)) with rfl | ⟨hn1, hod⟩ | ⟨hn1, hev⟩
+    rcases (by omega : n = 0 ∨ (n ≥ 1 ∧ (n - 1) % 2 = 1) ∨ (n ≥ 1 ∧
+        (n - 1) % 2 = 0)) with rfl | ⟨hn1, hod⟩ | ⟨hn1, hev⟩
     · refine ⟨[1, 1, 0] +> ([0, 1] +> default), Valid.t_110 (Valid.bot 1), ?_⟩
-      refine ⟨[0, 1] +> default, SweepsF.zero _, ?_⟩
-      have h0 := roundA_010 roundA_default
-      rwa [← b01_default_eq] at h0
+      exact ⟨[0, 1] +> default, SweepsF.zero _, roundA_01_bot⟩
     · obtain ⟨r₂, hr₂, hs₂⟩ := ih ((n - 1) / 2) (by omega)
       refine ⟨[1, 1, 0] +> r₂, Valid.t_110 (hr₂.mono (by omega)), ?_⟩
       have hs_odd := sweepsFA_000_odd hs₂
@@ -348,7 +383,7 @@ lemma valid_sweeps_bot : ∀ n : Nat,
       have hs_all := sweepsFA_succ (roundF_01 roundA_default) hs_even
       rwa [show (n - 1) + 1 = n by omega] at hs_all
 
-lemma valid_sweeps {n : Nat} {r : ListBlank (Fin 2)} (h : Valid n r) :
+theorem valid_sweeps {n : Nat} {r : ListBlank (Fin 2)} (h : Valid n r) :
     ∃ r' : ListBlank (Fin 2), Valid n r' ∧ SweepsFA n r r' := by
   induction h with
   | bot n => exact valid_sweeps_bot n
@@ -370,20 +405,118 @@ lemma valid_sweeps {n : Nat} {r : ListBlank (Fin 2)} (h : Valid n r) :
       have hs_all := sweepsFA_succ (roundF_01 hround) hs_even
       rwa [show (n - 1) + 1 = n by omega] at hs_all
 
-lemma era_step {r : ListBlank (Fin 2)} (h : Valid 0 r) :
+theorem era_step_of_roundA {r r₁ : ListBlank (Fin 2)} (ha : RoundA r r₁) :
+    (B00 r default) [target_tm]⊢⁺ (B00 ([1, 1, 0] +> r₁) default) :=
+  stepPlus_trans (rule_B00_nil r)
+    (stepPlus_trans (ha ([0, 1, 1] +> default)) (rule_B00_011 r₁ default))
+
+theorem era_step {r : ListBlank (Fin 2)} (h : Valid 0 r) :
     ∃ r' : ListBlank (Fin 2), Valid 0 r' ∧ ((B00 r default) [target_tm]⊢⁺ (B00 r' default)) := by
   obtain ⟨r', hr', hs'⟩ := valid_sweeps h
   obtain ⟨r₁, hs₁, ha⟩ := hs'
   cases hs₁ with
   | zero _ =>
-    refine ⟨[1, 1, 0] +> r', Valid.t_110 (hr'.mono (by omega)), ?_⟩
-    exact stepPlus_trans (rule_B00_nil r)
-      (stepPlus_trans (ha ([0, 1, 1] +> default)) (rule_B00_011 r' default))
+    exact ⟨[1, 1, 0] +> r', Valid.t_110 (hr'.mono (by omega)), era_step_of_roundA ha⟩
+
+def m_69 : ListBlank (Fin 2) :=
+  [0, 0, 1, 1, 0, 1, 1, 0, 0, 1] +> default
+
+def m_129 : ListBlank (Fin 2) :=
+  [1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1] +> default
+
+def m_176 : ListBlank (Fin 2) :=
+  [0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1] +> default
+
+def l_176 : ListBlank (Fin 2) :=
+  [0, 0, 0, 1, 1] +> default
+
+def m_era0 : ListBlank (Fin 2) :=
+  [1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+    ([0, 0, 0] +> ([0, 0, 0] +> ([0, 1] +> default))))))
+
+theorem step_0_to_69 : ((default : ListBlank (Fin 2)) {{E}}> default) [target_tm]⊢⁺ (B00 m_69
+    default) := by
+  dsimp [m_69, B00, ListBlank.append]; execute; execute
+
+theorem step_69_to_129 : (B00 m_69 default) [target_tm]⊢⁺ (B00 m_129 default) := by
+  dsimp [m_69, m_129, B00, ListBlank.append]; execute; execute
+
+theorem step_129_to_176 : (B00 m_129 default) [target_tm]⊢⁺ (B00 m_176 l_176) := by
+  dsimp [m_129, m_176, l_176, B00, ListBlank.append]; execute; execute
+
+theorem step_176_to_247 : (B00 m_176 l_176) [target_tm]⊢⁺ (B00 m_era0 default) := by
+  dsimp [m_176, l_176, m_era0, B00, ListBlank.append]; execute; execute; execute
+
+theorem roundA_era1 :
+    RoundA m_era0
+      ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+        ([0, 1] +> ([0, 0, 0] +> ([0, 0, 0] +> ([0, 1] +> default)))))))) :=
+  (roundA_110 (roundF_110 (roundF_110 (roundF_110 (roundF_000 _)))) (roundA_110 (roundF_110
+      (roundF_110 (roundF_010 (roundF_000 _)))) (roundA_110 (roundF_110 (roundF_000 _)) (roundA_110
+      (roundF_010 (roundF_010 (roundF_01 roundA_default))) (roundA_000 _)))))
+
+def m_era1 : ListBlank (Fin 2) :=
+  [1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+    ([0, 1] +> ([0, 0, 0] +> ([0, 0, 0] +> ([0, 1] +> default))))))))
+
+theorem roundA_era2 :
+    RoundA m_era1
+      ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+        ([0, 1] +> ([0, 1, 0] +> ([0, 1] +> ([0, 1] +> default))))))))) :=
+  (roundA_110 (roundF_110 (roundF_110 (roundF_110 (roundF_110 (roundF_01 (roundA_000 _))))))
+      (roundA_110 (roundF_110 (roundF_110 (roundF_110 (roundF_000 _)))) (roundA_110 (roundF_110
+      (roundF_110 (roundF_010 (roundF_01 (roundA_000 _))))) (roundA_110 (roundF_110 (roundF_000 _))
+      (roundA_110 (roundF_010 (roundF_000 _)) (roundA_000 _))))))
+
+def m_era2 : ListBlank (Fin 2) :=
+  [1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+    ([0, 1] +> ([0, 1, 0] +> ([0, 1] +> ([0, 1] +> default)))))))))
+
+theorem roundA_era3 :
+    RoundA m_era2
+      ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+        ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+          ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+            ([0, 1] +> ([0, 1] +> default)))))))))))))))) :=
+  (roundA_110 (roundF_110 (roundF_110 (roundF_110 (roundF_110 (roundF_110 (roundF_01 (roundA_010
+      roundA_01_01))))))) (roundA_110 (roundF_110 (roundF_110 (roundF_110 (roundF_110 (roundF_000
+      _))))) (roundA_110 (roundF_110 (roundF_110 (roundF_110 (roundF_010 (roundF_110 (roundF_00
+      _)))))) (roundA_110 (roundF_110 (roundF_110 (roundF_000 _))) (roundA_110 (roundF_110
+      (roundF_010 (roundF_110 (roundF_01 (roundA_110 (roundF_110 (roundF_01 roundA_default))
+      (roundA_110 (roundF_000 _) (roundA_010 roundA_01_bot))))))) (roundA_110 (roundF_000 _)
+      (roundA_010 (roundA_110 (roundF_000 _) (roundA_010 (roundA_110 (roundF_110 (roundF_110
+      (roundF_110 (roundF_01 roundA_default)))) (roundA_110 (roundF_110 (roundF_110 (roundF_000 _)))
+      (roundA_110 (roundF_110 (roundF_010 (roundF_01 roundA_default))) (roundA_110 (roundF_000 _)
+      (roundA_010 (roundA_000 _)))))))))))))))
+
+def era3_m : ListBlank (Fin 2) :=
+  [1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+    ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+      ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +> ([1, 1, 0] +>
+        ([0, 1] +> ([0, 1] +> default))))))))))))))))
+
+theorem valid_era3_m : Valid 0 era3_m :=
+  Valid.t_110 (Valid.t_110 (Valid.t_110 (Valid.t_110 (Valid.t_110
+    (Valid.t_110 (Valid.t_110 (Valid.t_110 (Valid.t_110 (Valid.t_110
+      (Valid.t_110 (Valid.t_110 (Valid.t_110 (Valid.t_110 (Valid.t_110
+        (Valid.t_01 (by omega) roundA_01_bot (Valid.t_110 (Valid.bot 8)))))))))))))))))
+
+theorem init_E_reaches_era3 :
+    ((default : ListBlank (Fin 2)) {{E}}> default) [target_tm]⊢* (B00 era3_m default) := by
+  apply stepPlus_stepStar
+  exact stepPlus_trans step_0_to_69
+    (stepPlus_trans step_69_to_129
+      (stepPlus_trans step_129_to_176
+        (stepPlus_trans step_176_to_247
+          (stepPlus_trans (era_step_of_roundA roundA_era1)
+            (stepPlus_trans (era_step_of_roundA roundA_era2)
+              (era_step_of_roundA roundA_era3))))))
+
 
 def era0_m : ListBlank (Fin 2) :=
   [0, 1] +> default
 
-lemma init_reaches_era0 :
+theorem init_reaches_era0 :
     (init []) [target_tm]⊢* (B00 era0_m default) := by
   apply stepPlus_stepStar
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
@@ -391,13 +524,46 @@ lemma init_reaches_era0 :
   dsimp [era0_m, B00, ListBlank.append]
   execute
 
+def era0_m_0676 : ListBlank (Fin 2) :=
+  [1, 1, 0] +> ([0, 1] +> default)
+
+theorem init_F_reaches_era0 :
+    ((default : ListBlank (Fin 2)) {{F}}> default) [target_tm]⊢* (B00 era0_m_0676 default) := by
+  apply stepPlus_stepStar
+  dsimp [era0_m_0676, B00, ListBlank.append]
+  execute
+
 end Solution
 
 open Solution
 
+public section
 
+theorem is_not_halt_from_0676 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{5}}> default) [target]⊢* cfg) →
+      (step target cfg).isSome := by
+  refine closed_inv_does_not_halt target_tm
+    (fun cfg => ∃ r : ListBlank (Fin 2), Valid 0 r ∧ cfg = B00 r default)
+    ⟨B00 era0_m_0676 default, init_F_reaches_era0, ⟨era0_m_0676, Valid.t_110 (Valid.bot 1), rfl⟩⟩ ?_
+  intro cfg ⟨r, hr, hcfg⟩
+  subst hcfg
+  obtain ⟨r', hr', hstep⟩ := era_step hr
+  exact ⟨B00 r' default, hstep, ⟨r', hr', rfl⟩⟩
 
-theorem is_does_not_halt : IsNotHalt target_tm := by
+theorem is_not_halt_from_0772 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{4}}> default) [target]⊢* cfg) →
+      (step target cfg).isSome := by
+  refine closed_inv_does_not_halt target_tm
+    (fun cfg => ∃ r : ListBlank (Fin 2), Valid 0 r ∧ cfg = B00 r default)
+    ⟨B00 era3_m default, init_E_reaches_era3, ⟨era3_m, valid_era3_m, rfl⟩⟩ ?_
+  intro cfg ⟨r, hr, hcfg⟩
+  subst hcfg
+  obtain ⟨r', hr', hstep⟩ := era_step hr
+  exact ⟨B00 r' default, hstep, ⟨r', hr', rfl⟩⟩
+
+theorem is_not_halt : IsNotHalt target := by
   refine closed_inv_does_not_halt target_tm
     (fun cfg => ∃ r : ListBlank (Fin 2), Valid 0 r ∧ cfg = B00 r default)
     ⟨B00 era0_m default, init_reaches_era0, ⟨era0_m, Valid.bot 0, rfl⟩⟩ ?_
@@ -406,6 +572,6 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   obtain ⟨r', hr', hstep⟩ := era_step hr
   exact ⟨B00 r' default, hstep, ⟨r', hr', rfl⟩⟩
 
-theorem is_not_halt : IsNotHalt target := is_does_not_halt
+end
 
 end BusyBeaver.M_1RB0LA_0LC0RB_1RA0RD_1LE0LD_1LFHHH_1LA1LC

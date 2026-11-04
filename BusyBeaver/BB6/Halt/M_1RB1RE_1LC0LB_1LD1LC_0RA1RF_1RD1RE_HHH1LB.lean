@@ -21,9 +21,6 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
-
 def A : Fin 6 := 0
 def B : Fin 6 := 1
 def C : Fin 6 := 2
@@ -36,62 +33,62 @@ def F : Fin 6 := 5
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
-@[simp] lemma zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
+@[simp] theorem zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
+@[simp] theorem zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma z0i : (0 : Fin 2) >> default = default := by
+@[simp] theorem z0i : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : zB).head = 0 := rfl
+@[simp] theorem zDt : (default : zB).tail = default := rfl
+@[simp] theorem append_nil (s : zB) : ([] : zF) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : zF) (s : zB) :
     (a :: l) +> s = a >> (l +> s) := rfl
-@[simp] lemma append_assoc (l₁ l₂ : zF) (s : zB) :
+@[simp] theorem append_assoc (l₁ l₂ : zF) (s : zB) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   induction l₁ with
   | nil => rfl
   | cons a l₁ ih => simp [ih]
-@[simp] lemma zPz {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma z0j {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-lemma z0k {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
+@[simp] theorem zPz {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem z0j {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+theorem z0k {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
   | zero => simp [Nat.zero_add]
   | succ m ih => simp [z0j, Nat.succ_add, ih, List.append_assoc]
-lemma z0l {α : Type*} (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
+theorem z0l {α : Type*} (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
   | zero => simp [z0j]
   | succ n ih => simp [z0j, List.append_assoc, ih]
 
-lemma zSm (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem zSm (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢^{1} c₂ := by simp [h]
-lemma z0P (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem z0P (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢* c₂ := ⟨1, zSm tm c₁ c₂ h⟩
-lemma z0Q (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
+theorem z0Q (tm : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [tm]⊢ c₂) :
     c₁ [tm]⊢⁺ c₂ := ⟨1, by decide, zSm tm c₁ c₂ h⟩
-lemma zMa (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
+theorem zMa (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
+theorem zMt (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [zMa, h₁]; simp [h₂]
-lemma zSt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem zSt {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢* c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma zPs {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
+theorem zPs {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma z0R {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem z0R {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c₁ c₂ c₃ n m hn hm⟩
-lemma z0T {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
+theorem z0T {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ :=
   z0R (z0Q tm c₁ c₂ h₁) h₂
 
@@ -109,7 +106,7 @@ macro "execute" : tactic =>
 def IsHaltFrom (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ cfg, (c [target_tm]⊢* cfg) ∧ (step target_tm cfg).isNone
 
-lemma halt_from_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
+theorem halt_from_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
     (h₁ : c₁ [target_tm]⊢* c₂) (h₂ : IsHaltFrom c₂) : IsHaltFrom c₁ := by
   rcases h₂ with ⟨cfg, h₂, h₃⟩
   exact ⟨cfg, zSt h₁ h₂, h₃⟩
@@ -117,16 +114,16 @@ lemma halt_from_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)}
 abbrev W0 : zF := [0]
 abbrev W1 : zF := [1]
 
-@[simp] lemma zero_pow_default (n : Nat) : (W0 ^ n) +> (default : zB) = default := by
+@[simp] theorem zero_pow_default (n : Nat) : (W0 ^ n) +> (default : zB) = default := by
   induction n with
   | zero => rfl
   | succ n ih => rw [z0j, append_assoc, append_cons, append_nil, ih, z0i]
 
-lemma start_sweep (r : zB) :
+theorem start_sweep (r : zB) :
     (default <{{C}} r) [target_tm]⊢* ((default << 1) {{E}}> r) := by
   execute
 
-lemma sweep_ones (n : Nat) (l r : zB) :
+theorem sweep_ones (n : Nat) (l r : zB) :
     (l {{E}}> ((W1 ^ n) +> r)) [target_tm]⊢* ((l <+ (W1 ^ n)) {{E}}> r) := by
   induction n generalizing l r with
   | zero => try exact ⟨0, rfl⟩
@@ -141,28 +138,28 @@ lemma sweep_ones (n : Nat) (l r : zB) :
     rw [heq] at h2
     exact zSt h1 h2
 
-lemma sweep_011 (l r : zB) :
+theorem sweep_011 (l r : zB) :
     (l {{E}}> (([0, 1, 1] : zF) +> r)) [target_tm]⊢* (l <{{B}} (([0, 0, 1] : zF) +> r)) := by
   execute
 
-lemma sweep_010_halt (l r : zB) :
+theorem sweep_010_halt (l r : zB) :
     IsHaltFrom (l {{E}}> (([0, 1, 0] : zF) +> r)) := by
   refine ⟨((l << 1 << 1) {{F}}> (([0] : zF) +> r)), ?_, by (simp [step, target_tm, F]; rfl)⟩
   execute
 
-lemma sweep_001 (l r : zB) :
+theorem sweep_001 (l r : zB) :
     (l {{E}}> (([0, 0, 1] : zF) +> r)) [target_tm]⊢* ((l << 1 << 0 << 1) {{E}}> r) := by
   execute
 
-lemma sweep_0001 (l r : zB) :
+theorem sweep_0001 (l r : zB) :
     (l {{E}}> (([0, 0, 0, 1] : zF) +> r)) [target_tm]⊢* (l <{{C}} (([1, 1, 0, 0] : zF) +> r)) := by
   execute
 
-lemma sweep_0000 (l r : zB) :
+theorem sweep_0000 (l r : zB) :
     (l {{E}}> (([0, 0, 0, 0] : zF) +> r)) [target_tm]⊢* (l <{{B}} (([0, 1, 1, 1] : zF) +> r)) := by
   execute
 
-lemma back_some_C (n : Nat) (l r : zB) :
+theorem back_some_C (n : Nat) (l r : zB) :
     ((l <+ (W1 ^ n)) <{{C}} r) [target_tm]⊢* (l <{{C}} ((W1 ^ n) +> r)) := by
   induction n generalizing l r with
   | zero => try exact ⟨0, rfl⟩
@@ -177,7 +174,7 @@ lemma back_some_C (n : Nat) (l r : zB) :
     rw [heq] at h2
     exact zSt h1 h2
 
-lemma back_some_B (n : Nat) (l r : zB) :
+theorem back_some_B (n : Nat) (l r : zB) :
     ((l <+ (W1 ^ n)) <{{B}} r) [target_tm]⊢* (l <{{B}} ((W0 ^ n) +> r)) := by
   induction n generalizing l r with
   | zero => try exact ⟨0, rfl⟩
@@ -192,28 +189,28 @@ lemma back_some_B (n : Nat) (l r : zB) :
     rw [heq] at h2
     exact zSt h1 h2
 
-lemma back_none_C (l r : zB) :
+theorem back_none_C (l r : zB) :
     ((l << 1 << 0 << 1) <{{C}} r) [target_tm]⊢* (l <{{B}} (([0, 1, 1] : zF) +> r)) := by
   execute
 
-lemma back_none_B (l r : zB) :
+theorem back_none_B (l r : zB) :
     ((l << 1 << 0 << 1) <{{B}} r) [target_tm]⊢* (l <{{C}} (([1, 1, 0] : zF) +> r)) := by
   execute
 
-lemma back_nil_C (r : zB) :
+theorem back_nil_C (r : zB) :
     ((default << 1) <{{C}} r) [target_tm]⊢* (default <{{C}} (W1 +> r)) := by
   dsimp [W1]; execute
 
-lemma back_nil_B (r : zB) :
+theorem back_nil_B (r : zB) :
     ((default << 1) <{{B}} r) [target_tm]⊢* (default <{{C}} (([1, 0] : zF) +> r)) := by
   execute
 
-lemma ff_entry (s : zB) :
+theorem ff_entry (s : zB) :
     (default <{{C}} (([1, 0, 0, 0, 0] : zF) +> s)) [target_tm]⊢*
     (default <{{C}} ((W1 ^ 4) +> (([0, 0, 1, 1] : zF) +> s))) := by
   dsimp [W1]; execute
 
-lemma sweep_a_3 (a : Nat) (s : zB) :
+theorem sweep_a_3 (a : Nat) (s : zB) :
     (default <{{C}} ((W1 ^ a) +> (([0, 0, 0, 1] : zF) +> s))) [target_tm]⊢*
     (default <{{C}} ((W1 ^ (a + 3)) +> (([0, 0] : zF) +> s))) := by
   refine zSt (start_sweep _) ?_
@@ -227,7 +224,7 @@ lemma sweep_a_3 (a : Nat) (s : zB) :
   rw [heq] at h1
   exact h1
 
-lemma sweep_a_ge4 (a : Nat) (s : zB) :
+theorem sweep_a_ge4 (a : Nat) (s : zB) :
     (default <{{C}} ((W1 ^ a) +> (([0, 0, 0, 0] : zF) +> s))) [target_tm]⊢*
     (default <{{C}} (W1 +> ((W0 ^ (a + 2)) +> (([1, 1, 1] : zF) +> s)))) := by
   refine zSt (start_sweep _) ?_
@@ -242,7 +239,7 @@ lemma sweep_a_ge4 (a : Nat) (s : zB) :
   rw [heq] at h1
   exact h1
 
-lemma ff_one (a : Nat) (s : zB) :
+theorem ff_one (a : Nat) (s : zB) :
     (default <{{C}} ((W1 ^ a) +> (([0, 0, 1, 1, 0, 0, 0, 0] : zF) +> s))) [target_tm]⊢*
     (default <{{C}} ((W1 ^ (a + 6)) +> (([0, 0, 1, 1] : zF) +> s))) := by
   refine zSt (start_sweep _) ?_
@@ -267,7 +264,7 @@ lemma ff_one (a : Nat) (s : zB) :
   rw [heq2] at h2
   exact h2
 
-lemma ff_loop (q a : Nat) (s : zB) :
+theorem ff_loop (q a : Nat) (s : zB) :
     (default <{{C}} ((W1 ^ a) +> (([0, 0, 1, 1] : zF) +> ((W0 ^ (4 * q)) +> s)))) [target_tm]⊢*
     (default <{{C}} ((W1 ^ (a + 6 * q)) +> (([0, 0, 1, 1] : zF) +> s))) := by
   induction q generalizing a with
@@ -284,7 +281,7 @@ lemma ff_loop (q a : Nat) (s : zB) :
     rw [ha] at h2
     exact h2
 
-lemma init_to_seed :
+theorem init_to_seed :
     (init []) [target_tm]⊢*
     (default <{{C}} ((W1 ^ 4) +> ((W0 ^ 2) +> ((W1 ^ 5) +> default)))) := by
   dsimp [init, Tape.mk₁, W0, W1]
@@ -598,11 +595,11 @@ def is_running_eq (sr : StepRes) (target : RTape) : Bool :=
 -- ============================================================================
 
 @[simp]
-lemma bindNat_eq {α : Type} (n : Nat) (k : Nat → α) :
+theorem bindNat_eq {α : Type} (n : Nat) (k : Nat → α) :
     bindNat n k = k n := rfl
 
 @[simp]
-lemma forceRTape_eq {α : Type} (t : RTape) (k : RTape → α) :
+theorem forceRTape_eq {α : Type} (t : RTape) (k : RTape → α) :
     forceRTape t k = k t := by
   cases t <;> rfl
 
@@ -623,7 +620,7 @@ def denote_acc_rel (l0 : zB) : AccList → zB
   | .none rest => denote_acc_rel l0 rest << 1 << 0 << 1
 
 @[simp]
-lemma denote_push1 (b : Bool) (n : Nat) (t : RTape) :
+theorem denote_push1 (b : Bool) (n : Nat) (t : RTape) :
     denote_tape (push1 b n t) = ((if b then W1 else W0) ^ n) +> denote_tape t := by
   cases t with
   | nil =>
@@ -633,7 +630,7 @@ lemma denote_push1 (b : Bool) (n : Nat) (t : RTape) :
       simp [push1, push1_cons, bool_eq, push1_branch, push1_cons_same, push1_cons_diff, z0k, append_assoc]
 
 @[simp]
-lemma denote_push (b : Bool) (n : Nat) (t : RTape) :
+theorem denote_push (b : Bool) (n : Nat) (t : RTape) :
     denote_tape (push b n t) = ((if b then W1 else W0) ^ n) +> denote_tape t := by
   unfold push
   cases h : Nat.beq n 0 with
@@ -644,25 +641,25 @@ lemma denote_push (b : Bool) (n : Nat) (t : RTape) :
   | false =>
     simp [push_branch, denote_push1]
 
-lemma split_W0_1 {n : Nat} (hn : 1 ≤ n) (s : zB) :
+theorem split_W0_1 {n : Nat} (hn : 1 ≤ n) (s : zB) :
     (W0 ^ n) +> s = ([0] : zF) +> ((W0 ^ (n - 1)) +> s) := by
   obtain ⟨m, rfl⟩ : ∃ m, n = 1 + m := ⟨n - 1, by omega⟩
   rw [show 1 + m - 1 = m by omega, z0k W0 1 m, append_assoc]
   rfl
 
-lemma split_W0_4 {n : Nat} (hn : 4 ≤ n) (s : zB) :
+theorem split_W0_4 {n : Nat} (hn : 4 ≤ n) (s : zB) :
     (W0 ^ n) +> s = ([0, 0, 0, 0] : zF) +> ((W0 ^ (n - 4)) +> s) := by
   obtain ⟨m, rfl⟩ : ∃ m, n = 4 + m := ⟨n - 4, by omega⟩
   rw [show 4 + m - 4 = m by omega, z0k W0 4 m, append_assoc]
   rfl
 
-lemma split_W1_1 {n : Nat} (hn : 1 ≤ n) (s : zB) :
+theorem split_W1_1 {n : Nat} (hn : 1 ≤ n) (s : zB) :
     (W1 ^ n) +> s = ([1] : zF) +> ((W1 ^ (n - 1)) +> s) := by
   obtain ⟨m, rfl⟩ : ∃ m, n = 1 + m := ⟨n - 1, by omega⟩
   rw [show 1 + m - 1 = m by omega, z0k W1 1 m, append_assoc]
   rfl
 
-lemma split_W1_2 {n : Nat} (hn : 2 ≤ n) (s : zB) :
+theorem split_W1_2 {n : Nat} (hn : 2 ≤ n) (s : zB) :
     (W1 ^ n) +> s = ([1, 1] : zF) +> ((W1 ^ (n - 2)) +> s) := by
   obtain ⟨m, rfl⟩ : ∃ m, n = 2 + m := ⟨n - 2, by omega⟩
   rw [show 2 + m - 2 = m by omega, z0k W1 2 m, append_assoc]
@@ -672,18 +669,18 @@ def head_zero_tail (tail : zB) (t : RTape) : Prop :=
   ∃ r, denote_tape_tail tail t = ([0] : zF) +> r
 local notation "head_zero" => head_zero_tail tail
 
-lemma head_zero_of_W0 (n : Nat) (hn : 1 ≤ n) (s : zB) :
+theorem head_zero_of_W0 (n : Nat) (hn : 1 ≤ n) (s : zB) :
     ∃ r, (W0 ^ n) +> s = ([0] : zF) +> r :=
   ⟨(W0 ^ (n - 1)) +> s, split_W0_1 hn s⟩
 
-lemma head_zero_nil : head_zero_tail default RTape.nil :=
+theorem head_zero_nil : head_zero_tail default RTape.nil :=
   ⟨default, z0i.symm⟩
 
-lemma head_zero_cons_false {n : Nat} (hn : 1 ≤ n) (rest : RTape) :
+theorem head_zero_cons_false {n : Nat} (hn : 1 ≤ n) (rest : RTape) :
     head_zero (RTape.cons false n rest) :=
   head_zero_of_W0 n hn (denote_tape rest)
 
-lemma head_zero_push1_false {n : Nat} (hn : 1 ≤ n) (rest : RTape) :
+theorem head_zero_push1_false {n : Nat} (hn : 1 ≤ n) (rest : RTape) :
     head_zero (push1 false n rest) := by
   unfold head_zero_tail
   rw [denote_push1]
@@ -699,15 +696,15 @@ def ValidAcc : AccList → Prop
   | .some n rest => 1 ≤ n ∧ ValidAcc rest
   | .none rest => ValidAcc rest
 
-lemma valid_cons_false {n : Nat} {t : RTape} (hn : 1 ≤ n) (ht : Valid t) :
+theorem valid_cons_false {n : Nat} {t : RTape} (hn : 1 ≤ n) (ht : Valid t) :
     Valid (RTape.cons false n t) :=
   ⟨hn, fun h => Bool.noConfusion h, ht⟩
 
-lemma valid_cons_true {n : Nat} {t : RTape} (hn : 1 ≤ n) (hz : head_zero t) (ht : Valid t) :
+theorem valid_cons_true {n : Nat} {t : RTape} (hn : 1 ≤ n) (hz : head_zero t) (ht : Valid t) :
     Valid (RTape.cons true n t) :=
   ⟨hn, fun _ => hz, ht⟩
 
-lemma valid_push1 {b : Bool} {n : Nat} {t : RTape} (hn : 1 ≤ n) (ht : Valid t) :
+theorem valid_push1 {b : Bool} {n : Nat} {t : RTape} (hn : 1 ≤ n) (ht : Valid t) :
     Valid (push1 b n t) := by
   cases t with
   | nil =>
@@ -722,7 +719,7 @@ lemma valid_push1 {b : Bool} {n : Nat} {t : RTape} (hn : 1 ≤ n) (ht : Valid t)
     · exact ⟨hn, fun _ => head_zero_cons_false hn0 rest, hn0, hz0, hrest⟩
     · exact ⟨by change 1 ≤ n + n0; omega, hz0, hrest⟩
 
-lemma valid_push {b : Bool} {n : Nat} {t : RTape} (ht : Valid t) :
+theorem valid_push {b : Bool} {n : Nat} {t : RTape} (ht : Valid t) :
     Valid (push b n t) := by
   unfold push
   cases h : Nat.beq n 0 with
@@ -740,7 +737,7 @@ def SweepSpec_tail (tail : zB) (l0 : zB) (c : Cfg (Fin 2) (Fin 6)) : SweepRes �
   | .failed => True
 local notation "SweepSpec" => SweepSpec_tail tail
 
-lemma sweep_spec_trans {l0 : zB} {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {sr : SweepRes}
+theorem sweep_spec_trans {l0 : zB} {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {sr : SweepRes}
     (h₁₂ : c₁ [target_tm]⊢* c₂) (h₂ : SweepSpec l0 c₂ sr) :
     SweepSpec l0 c₁ sr := by
   cases sr with
@@ -748,7 +745,7 @@ lemma sweep_spec_trans {l0 : zB} {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {sr : SweepRe
   | done ph' t' => exact ⟨h₂.1, zSt h₁₂ h₂.2⟩
   | failed => trivial
 
-lemma back_rel_spec (l0 : zB) (acc : AccList) (phase : Bool) (t : RTape)
+theorem back_rel_spec (l0 : zB) (acc : AccList) (phase : Bool) (t : RTape)
     (hacc : ValidAcc acc) (ht : Valid t) :
     SweepSpec l0 (denote_acc_rel l0 acc <{{if phase then C else B}} denote_tape t) (back_rel acc phase t) := by
   induction acc generalizing phase t with
@@ -787,7 +784,7 @@ lemma back_rel_spec (l0 : zB) (acc : AccList) (phase : Bool) (t : RTape)
 
 
 
-lemma sweep_false_rel_spec (l0 : zB) (ih : AccList → RTape → SweepRes)
+theorem sweep_false_rel_spec (l0 : zB) (ih : AccList → RTape → SweepRes)
     (h_ih : ∀ acc' t', ValidAcc acc' → Valid t' →
       SweepSpec l0 (denote_acc_rel l0 acc' {{E}}> denote_tape t') (ih acc' t'))
     (acc : AccList) (t : RTape) (hacc : ValidAcc acc) (ht : Valid t) :
@@ -915,7 +912,7 @@ lemma sweep_false_rel_spec (l0 : zB) (ih : AccList → RTape → SweepRes)
             rw [heq_in, heq_out]
             exact hstep
 
-lemma run_sweep_rel_spec (l0 : zB) (fuel : Nat) (acc : AccList) (t : RTape)
+theorem run_sweep_rel_spec (l0 : zB) (fuel : Nat) (acc : AccList) (t : RTape)
     (hacc : ValidAcc acc) (ht : Valid t) :
     SweepSpec l0 (denote_acc_rel l0 acc {{E}}> denote_tape t) (run_sweep_rel fuel acc t) := by
   induction fuel generalizing acc t with
@@ -938,7 +935,7 @@ def StepSpec_tail (tail : zB) (c : Cfg (Fin 2) (Fin 6)) : StepRes → Prop
   | .failed => True
 local notation "StepSpec" => StepSpec_tail tail
 
-lemma step_spec_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
+theorem step_spec_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
     (h₁₂ : c₁ [target_tm]⊢* c₂) (h₂ : StepSpec c₂ res) :
     StepSpec c₁ res := by
   cases res with
@@ -946,7 +943,7 @@ lemma step_spec_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
   | running t' => exact ⟨h₂.1, zSt h₁₂ h₂.2⟩
   | failed => trivial
 
-lemma finish_some_none_fused_spec (a : Nat) (c : Cfg (Fin 2) (Fin 6)) (sr : SweepRes)
+theorem finish_some_none_fused_spec (a : Nat) (c : Cfg (Fin 2) (Fin 6)) (sr : SweepRes)
     (hsr : SweepSpec ((default << 1 <+ (W1 ^ a)) << 1 << 0 << 1) c sr) :
     StepSpec c (finish_some_none_fused sr (a + 2)) := by
   cases sr with
@@ -1047,7 +1044,7 @@ lemma finish_some_none_fused_spec (a : Nat) (c : Cfg (Fin 2) (Fin 6)) (sr : Swee
                     rw [heq_out] at hstep
                     exact hstep
 
-lemma rle_step_spec (t : RTape) (ht : Valid t) :
+theorem rle_step_spec (t : RTape) (ht : Valid t) :
     StepSpec (default <{{C}} denote_tape t) (rle_step t) := by
   cases t with
   | nil => trivial
@@ -1156,7 +1153,7 @@ lemma rle_step_spec (t : RTape) (ht : Valid t) :
                 exact h_s001
               exact sweep_spec_trans h_init (run_sweep_rel_spec ((default << 1 <+ (W1 ^ (4 + 6 * q))) << 1 << 0 << 1) 16 AccList.nil (push1 true 1 (push false (b % 4) r2)) trivial (valid_push1 (by decide) (valid_push hr2)))
 
-lemma run_pow_spec (k : Nat) (t : RTape) (ht : Valid t) :
+theorem run_pow_spec (k : Nat) (t : RTape) (ht : Valid t) :
     StepSpec (default <{{C}} denote_tape t) (run_pow k t) := by
   induction k generalizing t with
   | zero => exact rle_step_spec t ht
@@ -1181,7 +1178,7 @@ def trunc_tail (tail : zB) : Nat → RTape → zB
   | _ + 1, .nil => tail
   | k + 1, .cons _ _ rest => trunc_tail tail k rest
 
-lemma denote_trunc (tail : zB) (k : Nat) (t : RTape) :
+theorem denote_trunc (tail : zB) (k : Nat) (t : RTape) :
     denote_tape_tail (trunc_tail tail k t) (trunc k t) = denote_tape_tail tail t := by
   induction k generalizing t with
   | zero =>
@@ -1198,12 +1195,12 @@ lemma denote_trunc (tail : zB) (k : Nat) (t : RTape) :
       rw [ih rest]
       rfl
 
-lemma head_zero_trunc {tail : zB} (k : Nat) {t : RTape} (hz : @head_zero tail t) :
+theorem head_zero_trunc {tail : zB} (k : Nat) {t : RTape} (hz : @head_zero tail t) :
     @head_zero (trunc_tail tail k t) (trunc k t) := by
   unfold head_zero head_zero_tail at hz ⊢
   rwa [denote_trunc]
 
-lemma valid_trunc {tail : zB} (k : Nat) {t : RTape} (ht : @Valid tail t) :
+theorem valid_trunc {tail : zB} (k : Nat) {t : RTape} (ht : @Valid tail t) :
     @Valid (trunc_tail tail k t) (trunc k t) := by
   induction k generalizing t with
   | zero =>
@@ -1229,7 +1226,7 @@ def StepSpecEx (c : Cfg (Fin 2) (Fin 6)) : StepRes → Prop
   | .running t' => ∃ tail', @Valid tail' t' ∧ (c [target_tm]⊢* (default <{{C}} denote_tape_tail tail' t'))
   | .failed => True
 
-lemma step_spec_ex_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
+theorem step_spec_ex_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
     (h₁₂ : c₁ [target_tm]⊢* c₂) (h₂ : StepSpecEx c₂ res) :
     StepSpecEx c₁ res := by
   cases res with
@@ -1239,7 +1236,7 @@ lemma step_spec_ex_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
     exact ⟨tail', ht', zSt h₁₂ hstep⟩
   | failed => trivial
 
-lemma run_64_spec {tail : zB} (t : RTape) (ht : @Valid tail t) :
+theorem run_64_spec {tail : zB} (t : RTape) (ht : @Valid tail t) :
     StepSpecEx (default <{{C}} denote_tape_tail tail t) (run_64 t) := by
   unfold run_64
   have h1 := @run_pow_spec tail 6 t ht
@@ -1253,7 +1250,7 @@ lemma run_64_spec {tail : zB} (t : RTape) (ht : @Valid tail t) :
     exact hstep
   | failed => trivial
 
-lemma run_chunk_spec (k : Nat) {tail : zB} (t : RTape) (ht : @Valid tail t) :
+theorem run_chunk_spec (k : Nat) {tail : zB} (t : RTape) (ht : @Valid tail t) :
     StepSpecEx (default <{{C}} denote_tape_tail tail t) (run_chunk k t) := by
   induction k generalizing tail t with
   | zero => exact run_64_spec t ht
@@ -1268,10 +1265,10 @@ lemma run_chunk_spec (k : Nat) {tail : zB} (t : RTape) (ht : @Valid tail t) :
       exact step_spec_ex_trans hstep (ih t' ht')
     | failed => trivial
 
-lemma bool_beq_eq {b1 b2 : Bool} (h : bool_beq b1 b2 = true) : b1 = b2 := by
+theorem bool_beq_eq {b1 b2 : Bool} (h : bool_beq b1 b2 = true) : b1 = b2 := by
   cases b1 <;> cases b2 <;> first | rfl | cases h
 
-lemma rtape_beq_eq {t1 t2 : RTape} (h : rtape_beq t1 t2 = true) : t1 = t2 := by
+theorem rtape_beq_eq {t1 t2 : RTape} (h : rtape_beq t1 t2 = true) : t1 = t2 := by
   induction t1 generalizing t2 with
   | nil =>
     cases t2 with
@@ -1292,7 +1289,7 @@ lemma rtape_beq_eq {t1 t2 : RTape} (h : rtape_beq t1 t2 = true) : t1 = t2 := by
           dsimp at h
           rw [bool_beq_eq hb, Nat.eq_of_beq_eq_true hn, ih h]
 
-lemma chain_chunk {t t' : RTape}
+theorem chain_chunk {t t' : RTape}
     (h_eq : is_running_eq (run_chunk 8 t) t' = true)
     (h_next : ∀ {tail' : zB}, @Valid tail' t' → IsHaltFrom (default <{{C}} denote_tape_tail tail' t'))
     {tail : zB} (ht : @Valid tail t) :
@@ -1310,7 +1307,7 @@ lemma chain_chunk {t t' : RTape}
     rcases h1 with ⟨tail', ht', hstep⟩
     exact halt_from_trans hstep (h_next ht')
 
-lemma finish_chunk {t : RTape}
+theorem finish_chunk {t : RTape}
     (h_halt : is_halted (run_chunk 8 t) = true)
     {tail : zB} (ht : @Valid tail t) :
     IsHaltFrom (default <{{C}} denote_tape_tail tail t) := by
@@ -1352,17 +1349,17 @@ theorem step_8 : is_running_eq (run_chunk 8 st_8) st_9 = true := by fast_rfl
 theorem step_9 : is_running_eq (run_chunk 8 st_9) st_10 = true := by fast_rfl
 theorem step_10 : is_halted (run_chunk 8 st_10) = true := by fast_rfl
 
-lemma halt_10 {tail : zB} (ht : @Valid tail st_10) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_10) := finish_chunk step_10 ht
-lemma halt_9 {tail : zB} (ht : @Valid tail st_9) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_9) := chain_chunk step_9 halt_10 ht
-lemma halt_8 {tail : zB} (ht : @Valid tail st_8) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_8) := chain_chunk step_8 halt_9 ht
-lemma halt_7 {tail : zB} (ht : @Valid tail st_7) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_7) := chain_chunk step_7 halt_8 ht
-lemma halt_6 {tail : zB} (ht : @Valid tail st_6) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_6) := chain_chunk step_6 halt_7 ht
-lemma halt_5 {tail : zB} (ht : @Valid tail st_5) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_5) := chain_chunk step_5 halt_6 ht
-lemma halt_4 {tail : zB} (ht : @Valid tail st_4) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_4) := chain_chunk step_4 halt_5 ht
-lemma halt_3 {tail : zB} (ht : @Valid tail st_3) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_3) := chain_chunk step_3 halt_4 ht
-lemma halt_2 {tail : zB} (ht : @Valid tail st_2) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_2) := chain_chunk step_2 halt_3 ht
-lemma halt_1 {tail : zB} (ht : @Valid tail st_1) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_1) := chain_chunk step_1 halt_2 ht
-lemma halt_0 {tail : zB} (ht : @Valid tail st_0) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_0) := chain_chunk step_0 halt_1 ht
+theorem halt_10 {tail : zB} (ht : @Valid tail st_10) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_10) := finish_chunk step_10 ht
+theorem halt_9 {tail : zB} (ht : @Valid tail st_9) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_9) := chain_chunk step_9 halt_10 ht
+theorem halt_8 {tail : zB} (ht : @Valid tail st_8) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_8) := chain_chunk step_8 halt_9 ht
+theorem halt_7 {tail : zB} (ht : @Valid tail st_7) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_7) := chain_chunk step_7 halt_8 ht
+theorem halt_6 {tail : zB} (ht : @Valid tail st_6) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_6) := chain_chunk step_6 halt_7 ht
+theorem halt_5 {tail : zB} (ht : @Valid tail st_5) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_5) := chain_chunk step_5 halt_6 ht
+theorem halt_4 {tail : zB} (ht : @Valid tail st_4) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_4) := chain_chunk step_4 halt_5 ht
+theorem halt_3 {tail : zB} (ht : @Valid tail st_3) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_3) := chain_chunk step_3 halt_4 ht
+theorem halt_2 {tail : zB} (ht : @Valid tail st_2) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_2) := chain_chunk step_2 halt_3 ht
+theorem halt_1 {tail : zB} (ht : @Valid tail st_1) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_1) := chain_chunk step_1 halt_2 ht
+theorem halt_0 {tail : zB} (ht : @Valid tail st_0) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_0) := chain_chunk step_0 halt_1 ht
 
 end
 

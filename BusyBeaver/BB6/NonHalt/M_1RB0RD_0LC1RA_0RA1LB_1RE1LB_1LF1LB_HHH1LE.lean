@@ -37,8 +37,6 @@ def target_tm : Machine (Fin 2) (Fin 6)
 theorem target_eq_target_tm : target = target_tm := by
   funext q a
   fin_cases q <;> fin_cases a <;> simp [target, machine, ConjectureMachines.Machine.toBB, ConjectureMachines.Machine.ofRows, target_tm]
-set_option linter.unusedSimpArgs false
-
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
 abbrev C : Fin 6 := 2
@@ -53,16 +51,16 @@ local infixr:67 (priority := high) " >> " =>
 def mkCfg (q : Fin 6) (s : Fin 2) (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
   ⟨some q, ⟨s, l, r⟩⟩
 
-@[simp] lemma zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
+@[simp] theorem zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
 
-@[simp] lemma zZcd : (0 : Fin 2) >> default = default := by
+@[simp] theorem zZcd : (0 : Fin 2) >> default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : ListBlank (Fin 2)).head = (0 : Fin 2) := rfl
-@[simp] lemma zDt : (default : ListBlank (Fin 2)).tail = default := rfl
+@[simp] theorem zDh : (default : ListBlank (Fin 2)).head = (0 : Fin 2) := rfl
+@[simp] theorem zDt : (default : ListBlank (Fin 2)).tail = default := rfl
 
-lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep tm c₁ (n + m) = (multiStep tm c₁ n).bind (fun c₂ => multiStep tm c₂ m) := by
   induction m with
@@ -71,30 +69,30 @@ lemma zMa {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
 
-lemma zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zMt {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (tm : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [tm]⊢^{n} c₂) (h₂ : c₂ [tm]⊢^{m} c₃) :
     c₁ [tm]⊢^{n+m} c₃ := by
   rw [zMa, h₁]; simp [h₂]
 
-lemma zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem zPs {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} (h : c₁ [tm]⊢⁺ c₂) :
     c₁ [tm]⊢* c₂ := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
 
-lemma q7 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem q7 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢⁺ c₂) (h₂ : c₂ [tm]⊢* c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c₁ c₂ c₃ n m hn hm⟩
 
-lemma q8 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem q8 {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c₁ c₂ c₃ : Cfg Γ Λ}
     (h₁ : c₁ [tm]⊢* c₂) (h₂ : c₂ [tm]⊢⁺ c₃) : c₁ [tm]⊢⁺ c₃ := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, by omega, zMt tm c₁ c₂ c₃ n m hn hm⟩
 
 /-- General invariant theorem for `IsNotHalt`. -/
-lemma isNotHalt_of_invariant {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+theorem isNotHalt_of_invariant {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (Inv : Cfg Γ Λ → Prop)
     (h_init : ∃ c₀, ((init []) [M]⊢⁺ c₀) ∧ Inv c₀)
     (h_step : ∀ c, Inv c → ∃ c', (c [M]⊢⁺ c') ∧ Inv c') :
@@ -128,13 +126,13 @@ def rep01 : Nat → ListBlank (Fin 2) → ListBlank (Fin 2)
   | 0, s => s
   | m + 1, s => 0 >> 1 >> rep01 m s
 
-lemma rep1_add (a b : Nat) (s : ListBlank (Fin 2)) :
+theorem rep1_add (a b : Nat) (s : ListBlank (Fin 2)) :
     rep1 a (rep1 b s) = rep1 (a + b) s := by
   induction a generalizing b s with
   | zero => simp [rep1]
   | succ a ih => simp [rep1, Nat.succ_add, ih]
 
-lemma rep01_snoc (m : Nat) (s : ListBlank (Fin 2)) :
+theorem rep01_snoc (m : Nat) (s : ListBlank (Fin 2)) :
     rep01 m (0 >> 1 >> s) = rep01 (m + 1) s := by
   induction m generalizing s with
   | zero => rfl
@@ -149,9 +147,9 @@ def cfgB : Nat → Nat → Cfg (Fin 2) (Fin 6)
 def peelState (k a r : Nat) : Cfg (Fin 2) (Fin 6) :=
   mkCfg B 1 (rep01 k (rep1 a default)) (rep1 (r + 1) default)
 
-lemma peelState_zero (a r : Nat) : peelState 0 a r = cfgB (a + 1) r := rfl
+theorem peelState_zero (a r : Nat) : peelState 0 a r = cfgB (a + 1) r := rfl
 
-lemma step_C_left_one (L R : ListBlank (Fin 2)) :
+theorem step_C_left_one (L R : ListBlank (Fin 2)) :
     (mkCfg C 1 (0 >> 1 >> L) R) [target_tm]⊢⁺ (mkCfg C 1 L (0 >> 1 >> R)) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
@@ -159,7 +157,7 @@ lemma step_C_left_one (L R : ListBlank (Fin 2)) :
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
 /-- Sweep left across `rep01 m L` in state `C` (`2m` steps). -/
-lemma sweep_C_left (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem sweep_C_left (m : Nat) (L R : ListBlank (Fin 2)) :
     (mkCfg C 1 (rep01 m L) R) [target_tm]⊢* (mkCfg C 1 L (rep01 m R)) := by
   induction m generalizing L R with
   | zero => exact ⟨0, rfl⟩
@@ -169,7 +167,7 @@ lemma sweep_C_left (m : Nat) (L R : ListBlank (Fin 2)) :
     rw [rep01_snoc] at h2
     exact zPs (q7 h1 h2)
 
-lemma step_A_right_one (L R : ListBlank (Fin 2)) :
+theorem step_A_right_one (L R : ListBlank (Fin 2)) :
     (mkCfg A 1 (1 >> L) (0 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg A 1 (1 >> (0 >> 1 >> L)) R) :=
   ⟨4, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
@@ -177,7 +175,7 @@ lemma step_A_right_one (L R : ListBlank (Fin 2)) :
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
 /-- Sweep right across `rep01 m R` in state `A` (`4m` steps). -/
-lemma sweep_A_right (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem sweep_A_right (m : Nat) (L R : ListBlank (Fin 2)) :
     (mkCfg A 1 (1 >> L) (rep01 m R)) [target_tm]⊢* (mkCfg A 1 (1 >> rep01 m L) R) := by
   induction m generalizing L R with
   | zero => exact ⟨0, rfl⟩
@@ -187,7 +185,7 @@ lemma sweep_A_right (m : Nat) (L R : ListBlank (Fin 2)) :
     rw [rep01_snoc] at h2
     exact zPs (q7 h1 h2)
 
-lemma step_AB_right_one (L R : ListBlank (Fin 2)) :
+theorem step_AB_right_one (L R : ListBlank (Fin 2)) :
     (mkCfg A 0 L (1 >> 0 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg A 0 (1 >> 1 >> L) (1 >> R)) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
@@ -195,7 +193,7 @@ lemma step_AB_right_one (L R : ListBlank (Fin 2)) :
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
 /-- Sweep right across `1 >> rep01 m R` in state `A` (`2m` steps). -/
-lemma sweep_AB_right (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem sweep_AB_right (m : Nat) (L R : ListBlank (Fin 2)) :
     (mkCfg A 0 L (1 >> rep01 m R)) [target_tm]⊢* (mkCfg A 0 (rep1 (2 * m) L) (1 >> R)) := by
   induction m generalizing L R with
   | zero => exact ⟨0, rfl⟩
@@ -210,7 +208,7 @@ lemma sweep_AB_right (m : Nat) (L R : ListBlank (Fin 2)) :
     rw [heq] at h2
     exact zPs (q7 h1 h2)
 
-lemma step_FE_left_one (L R : ListBlank (Fin 2)) :
+theorem step_FE_left_one (L R : ListBlank (Fin 2)) :
     (mkCfg F 1 (0 >> 1 >> L) R) [target_tm]⊢⁺ (mkCfg F 1 L (1 >> 1 >> R)) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
@@ -218,7 +216,7 @@ lemma step_FE_left_one (L R : ListBlank (Fin 2)) :
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
 /-- Sweep left across `rep01 m L` in state `F` (`2m` steps). -/
-lemma sweep_FE_left (m : Nat) (L R : ListBlank (Fin 2)) :
+theorem sweep_FE_left (m : Nat) (L R : ListBlank (Fin 2)) :
     (mkCfg F 1 (rep01 m L) R) [target_tm]⊢* (mkCfg F 1 L (rep1 (2 * m) R)) := by
   induction m generalizing L R with
   | zero => exact ⟨0, rfl⟩
@@ -233,35 +231,35 @@ lemma sweep_FE_left (m : Nat) (L R : ListBlank (Fin 2)) :
     rw [heq] at h2
     exact zPs (q7 h1 h2)
 
-lemma peel_entry (L R : ListBlank (Fin 2)) :
+theorem peel_entry (L R : ListBlank (Fin 2)) :
     (mkCfg B 1 L (1 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg C 1 L (0 >> 1 >> R)) :=
   ⟨4, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
       Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
-lemma peel_mid (L R : ListBlank (Fin 2)) :
+theorem peel_mid (L R : ListBlank (Fin 2)) :
     (mkCfg C 1 (1 >> L) R) [target_tm]⊢⁺ (mkCfg A 1 (1 >> L) R) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
       Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
-lemma peel_end (L R : ListBlank (Fin 2)) :
+theorem peel_end (L R : ListBlank (Fin 2)) :
     (mkCfg A 1 (1 >> L) (0 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg B 1 (0 >> 1 >> L) (1 >> R)) :=
   ⟨3, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
       Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
       ListBlank.tail_cons, A, B, C, D, E, F]⟩
 
-lemma left_turn (R : ListBlank (Fin 2)) :
+theorem left_turn (R : ListBlank (Fin 2)) :
     (mkCfg C 1 default R) [target_tm]⊢⁺ (mkCfg A 0 default (1 >> R)) :=
   ⟨3, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
       Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
       ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
 
-lemma right_entry (L : ListBlank (Fin 2)) :
+theorem right_entry (L : ListBlank (Fin 2)) :
     (mkCfg B 1 L (1 >> default)) [target_tm]⊢⁺ (mkCfg F 1 (0 >> 1 >> L) (1 >> default)) :=
   ⟨4, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
@@ -269,7 +267,7 @@ lemma right_entry (L : ListBlank (Fin 2)) :
       ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
 
 /-- Single peel step: `(peelState k (a + 1) (r + 1)) ⊢⁺ (peelState (k + 1) a r)`. -/
-lemma peelState_step (k a r : Nat) :
+theorem peelState_step (k a r : Nat) :
     (peelState k (a + 1) (r + 1)) [target_tm]⊢⁺ (peelState (k + 1) a r) := by
   unfold peelState
   have h1 := peel_entry (rep01 k (1 >> rep1 a default)) (rep1 r default)
@@ -280,7 +278,7 @@ lemma peelState_step (k a r : Nat) :
   exact q7 (q8 (zPs (q7 h1 h2)) (q7 h3 h4)) (zPs h5)
 
 /-- Iterated peel lemma across `n` steps. -/
-lemma peelState_many (n k a r : Nat) :
+theorem peelState_many (n k a r : Nat) :
     (peelState k (n + a) (n + r)) [target_tm]⊢* (peelState (k + n) a r) := by
   induction n generalizing k a r with
   | zero =>
@@ -298,7 +296,7 @@ lemma peelState_many (n k a r : Nat) :
     exact zPs (q7 h1 h2)
 
 /-- Rule 1 (`a ≤ c - 1`): `(cfgB a (a + d + 1)) ⊢⁺ (cfgB (2a + 2) d)`. -/
-lemma rule_lt (a d : Nat) :
+theorem rule_lt (a d : Nat) :
     (cfgB a (a + d + 1)) [target_tm]⊢⁺ (cfgB (2 * a + 2) d) := by
   cases a with
   | zero =>
@@ -333,7 +331,7 @@ lemma rule_lt (a d : Nat) :
     exact q7 (q8 (zPs (q7 h1 h2)) (q7 h3 h4)) (zPs h5)
 
 /-- Rule 2 (`a = c`): `(cfgB a a) ⊢⁺ (cfgB (2a + 2) 0)`. -/
-lemma rule_eq (a : Nat) :
+theorem rule_eq (a : Nat) :
     (cfgB a a) [target_tm]⊢⁺ (cfgB (2 * a + 2) 0) := by
   cases a with
   | zero =>
@@ -365,7 +363,7 @@ lemma rule_eq (a : Nat) :
     exact q7 (q8 (zPs (q7 h1 h2)) (q7 h3 h4)) (zPs h5)
 
 /-- Rule 3 (`a ≥ c + 2`): `(cfgB (c + d + 2) c) ⊢⁺ (cfgB d (2c + 4))`. -/
-lemma rule_ge (d c : Nat) :
+theorem rule_ge (d c : Nat) :
     (cfgB (c + d + 2) c) [target_tm]⊢⁺ (cfgB d (2 * c + 4)) := by
   have h0 : cfgB (c + d + 2) c = peelState 0 (c + (d + 1)) (c + 0) := rfl
   rw [h0]
@@ -400,11 +398,11 @@ lemma rule_ge (d c : Nat) :
           ListBlank.tail_cons, A, B, C, D, E, F]⟩
   exact q7 (q7 h1 h2) (zPs h3)
 
-@[simp] lemma zEmpty : (ListBlank.mk ([] : List (Fin 2)) : ListBlank (Fin 2)) = default := by
+@[simp] theorem zEmpty : (ListBlank.mk ([] : List (Fin 2)) : ListBlank (Fin 2)) = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
 
 /-- Blank-tape entry (`3` micro-steps): `(init []) ⊢⁺ (cfgB 0 0)`. -/
-lemma init_to_cfgB : (init []) [target_tm]⊢⁺ (cfgB 0 0) :=
+theorem init_to_cfgB : (init []) [target_tm]⊢⁺ (cfgB 0 0) :=
   ⟨3, by decide, by
     simp only [init, Tape.mk₁, Tape.mk₂, Tape.mk', zEmpty, multiStep, Function.iterate_succ',
       Function.iterate_zero, id_eq, Function.comp_apply, Option.bind, Option.map, step, target_tm,
@@ -419,7 +417,7 @@ def stepB : Nat × Nat → Option (Nat × Nat)
     else if a == c + 1 then none
     else some (a - c - 2, 2 * c + 4)
 
-lemma stepB_sound (p p' : Nat × Nat) (h : stepB p = some p') :
+theorem stepB_sound (p p' : Nat × Nat) (h : stepB p = some p') :
     (cfgB p.1 p.2) [target_tm]⊢⁺ (cfgB p'.1 p'.2) := by
   rcases p with ⟨a, c⟩
   dsimp only
@@ -453,7 +451,7 @@ def runStepB : Nat → Nat × Nat → Option (Nat × Nat)
     | none => none
     | some p' => runStepB n p'
 
-lemma runStepB_sound (n : Nat) (p p' : Nat × Nat) (h : runStepB n p = some p') :
+theorem runStepB_sound (n : Nat) (p p' : Nat × Nat) (h : runStepB n p = some p') :
     (cfgB p.1 p.2) [target_tm]⊢* (cfgB p'.1 p'.2) := by
   induction n generalizing p with
   | zero =>
@@ -467,17 +465,17 @@ lemma runStepB_sound (n : Nat) (p p' : Nat × Nat) (h : runStepB n p = some p') 
       exact zPs (q7 (stepB_sound p pm hst) (ih pm h))
 
 /-- Kernel-checked 303-macro-step trajectory from `(0, 0)` to `(150, 300)` (`5,056,008` steps). -/
-lemma bootstrap_303 : runStepB 303 (0, 0) = some (150, 300) := by
+theorem bootstrap_303 : runStepB 303 (0, 0) = some (150, 300) := by
   decide
 
-lemma reach_150_300 : (init []) [target_tm]⊢⁺ (cfgB 150 300) :=
+theorem reach_150_300 : (init []) [target_tm]⊢⁺ (cfgB 150 300) :=
   q7 init_to_cfgB (runStepB_sound 303 (0, 0) (150, 300) bootstrap_303)
 
 /-- Closed infinite loop invariant: `{ cfgB (n + 1) (2 * (n + 1)) | n : ℕ }`. -/
 def Inv (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ n : Nat, cfg = cfgB (n + 1) (2 * (n + 1))
 
-lemma loop_step (n : Nat) :
+theorem loop_step (n : Nat) :
     (cfgB (n + 1) (2 * (n + 1))) [target_tm]⊢⁺ (cfgB (n + 2) (2 * (n + 2))) := by
   have h1 : (cfgB (n + 1) (2 * (n + 1))) [target_tm]⊢⁺ (cfgB (2 * n + 4) n) := by
     have heq1 : 2 * (n + 1) = (n + 1) + n + 1 := by omega

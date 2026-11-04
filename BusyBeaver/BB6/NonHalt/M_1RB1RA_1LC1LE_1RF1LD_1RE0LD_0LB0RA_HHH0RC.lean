@@ -24,65 +24,63 @@ abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 2000000
 
-@[simp] lemma zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
+@[simp] theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 0 = some config := rfl
-@[simp] lemma zMo (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
+@[simp] theorem zMo (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 1 = step M config := rfl
-@[simp] lemma zMs (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) (n : Nat) :
+@[simp] theorem zMs (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (multiStep M config n) (step M) := by
   rw [multiStep, Function.iterate_succ', Function.comp_apply, multiStep]
-@[simp] lemma z00 : Turing.ListBlank.cons (0 : Fin 2) default = default := by
+@[simp] theorem z00 : Turing.ListBlank.cons (0 : Fin 2) default = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
-@[simp] lemma zDh : (default : zB).head = 0 := rfl
-@[simp] lemma zDt : (default : zB).tail = default := rfl
-@[simp] lemma append_nil (s : zB) : ([] : zF) +> s = s := rfl
-@[simp] lemma append_cons (a : Fin 2) (l : zF) (s : zB) :
+@[simp] theorem zDh : (default : zB).head = 0 := rfl
+@[simp] theorem zDt : (default : zB).tail = default := rfl
+@[simp] theorem append_nil (s : zB) : ([] : zF) +> s = s := rfl
+@[simp] theorem append_cons (a : Fin 2) (l : zF) (s : zB) :
     (a :: l) +> s = Turing.ListBlank.cons a (l +> s) := rfl
-@[simp] lemma append_assoc (l1 l2 : zF) (s : zB) :
+@[simp] theorem append_assoc (l1 l2 : zF) (s : zB) :
     (l1 ++ l2) +> s = l1 +> (l2 +> s) := by
   induction l1 with
   | nil => rfl
   | cons a l1 ih => simp only [List.cons_append, append_cons, ih]
 
-lemma zSm (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
+theorem zSm (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢^{1} c_2 := by simp [h]
-lemma z01 (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
+theorem z01 (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 : Cfg (Fin 2) (Fin 6)) (h : c_1 [tm]⊢ c_2) :
     c_1 [tm]⊢⁺ c_2 := ⟨1, by decide, zSm tm c_1 c_2 h⟩
-lemma zMa (tm : Machine (Fin 2) (Fin 6)) (c_1 : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
+theorem zMa (tm : Machine (Fin 2) (Fin 6)) (c_1 : Cfg (Fin 2) (Fin 6)) (n m : Nat) :
     multiStep tm c_1 (n + m) = (multiStep tm c_1 n).bind (fun c_2 => multiStep tm c_2 m) := by
   induction m with
   | zero => simp
   | succ m' ih =>
     rw [Nat.add_succ, zMs, ih, Option.bind_assoc]
     simp_rw [zMs]
-lemma zMt (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)) (n m : Nat)
+theorem zMt (tm : Machine (Fin 2) (Fin 6)) (c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)) (n m : Nat)
     (h₁ : c_1 [tm]⊢^{n} c_2) (h₂ : c_2 [tm]⊢^{m} c_3) :
     c_1 [tm]⊢^{n+m} c_3 := by
   rw [zMa, h₁]; simp [h₂]
-lemma zPs {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 : Cfg (Fin 2) (Fin 6)} (h : c_1 [tm]⊢⁺ c_2) :
+theorem zPs {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 : Cfg (Fin 2) (Fin 6)} (h : c_1 [tm]⊢⁺ c_2) :
     c_1 [tm]⊢* c_2 := by obtain ⟨n, _, hn⟩ := h; exact ⟨n, hn⟩
-lemma zPt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zPt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, by omega, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z02 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem z02 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢⁺ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, n_pos, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, lt_of_lt_of_le n_pos (Nat.le_add_right n m), zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma zSp {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zSp {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢* c_2) (h₂ : c_2 [tm]⊢⁺ c_3) : c_1 [tm]⊢⁺ c_3 := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, m_pos, hm⟩ := h₂
   exact ⟨n + m, by omega, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma zSt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem zSt {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢* c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢* c_3 := by
   obtain ⟨n, hn⟩ := h₁; obtain ⟨m, hm⟩ := h₂
   exact ⟨n + m, zMt tm c_1 c_2 c_3 n m hn hm⟩
-lemma z03 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
+theorem z03 {tm : Machine (Fin 2) (Fin 6)} {c_1 c_2 c_3 : Cfg (Fin 2) (Fin 6)}
     (h₁ : c_1 [tm]⊢ c_2) (h₂ : c_2 [tm]⊢* c_3) : c_1 [tm]⊢⁺ c_3 :=
   z02 (z01 tm c_1 c_2 h₁) h₂
 
@@ -109,7 +107,7 @@ abbrev U : zF := [0, 1]
 abbrev V : zF := [1, 0]
 abbrev O : zF := [1, 1]
 
-@[simp] lemma zZd : Z +> (default : zB) = default := by simp [Z]
+@[simp] theorem zZd : Z +> (default : zB) = default := by simp [Z]
 
 open BusyBeaver.Longitudinal (DH0 toDHCfg SideRLs SegRLs)
 open BusyBeaver.Longitudinal.BoundedConfig (segRLs_c_spec)
@@ -119,26 +117,26 @@ abbrev ch : Call := ((A, []), (D, []))
 abbrev Side := SideRLs target_tm
 abbrev Seg := SegRLs target_tm
 
-@[simp] lemma z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
-@[simp] lemma zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
-@[simp] lemma zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
+@[simp] theorem z05 {α : Type*} (l : List α) : l ^ (0 : Nat) = [] := rfl
+@[simp] theorem zLp {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
+@[simp] theorem zLp' {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ++ l ^ n := by
   rw [Nat.add_comm 1 n]; rfl
-@[simp] lemma z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
+@[simp] theorem z06 {α : Type*} (l : List α) : l ^ (1 : Nat) = l := by
   change l ++ [] = l; exact List.append_nil l
 
-lemma zLp_add {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n :=
+theorem zLp_add {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n :=
   BusyBeaver.Longitudinal.pow_add_list l m n
 
-lemma zLp_shift {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ^ n ++ l := by
+theorem zLp_shift {α : Type*} (l : List α) (n : Nat) : l ^ (1 + n) = l ^ n ++ l := by
   rw [Nat.add_comm 1 n, BusyBeaver.Longitudinal.pow_succ_list']
 
-lemma z07 (l : zF) (n : Nat) (s : zB) : (l ^ (1 + n)) +> s = l +> ((l ^ n) +> s) := by
+theorem z07 (l : zF) (n : Nat) (s : zB) : (l ^ (1 + n)) +> s = l +> ((l ^ n) +> s) := by
   rw [zLp', append_assoc]
 
-lemma z09 (l : zF) (n : Nat) (s : zB) : (l ^ n) +> (l +> s) = (l ^ (1 + n)) +> s := by
+theorem z09 (l : zF) (n : Nat) (s : zB) : (l ^ n) +> (l +> s) = (l ^ (1 + n)) +> s := by
   rw [zLp_shift, append_assoc]
 
-lemma rot_U_V (k : Nat) (r : zB) :
+theorem rot_U_V (k : Nat) (r : zB) :
     ([1] : zF) +> ((U ^ k) +> r) = (V ^ k) +> ([1] +> r) := by
   induction k with
   | zero => rfl
@@ -148,7 +146,7 @@ lemma rot_U_V (k : Nat) (r : zB) :
     simp only [U, V, append_cons, append_nil] at ih ⊢
     rw [ih]
 
-lemma rot_Z (k : Nat) (r : zB) :
+theorem rot_Z (k : Nat) (r : zB) :
     ([0] : zF) +> ((Z ^ k) +> r) = (Z ^ k) +> ([0] +> r) := by
   induction k with
   | zero => rfl
@@ -158,7 +156,7 @@ lemma rot_Z (k : Nat) (r : zB) :
     simp only [Z, append_cons, append_nil] at ih ⊢
     rw [ih]
 
-lemma rot_O (k : Nat) (r : zB) :
+theorem rot_O (k : Nat) (r : zB) :
     ([1] : zF) +> ((O ^ k) +> r) = (O ^ k) +> ([1] +> r) := by
   induction k with
   | zero => rfl
@@ -168,17 +166,17 @@ lemma rot_O (k : Nat) (r : zB) :
     simp only [O, append_cons, append_nil] at ih ⊢
     rw [ih]
 
-lemma mod2 (n : Nat) : (∃ k, n = k * 2) ∨ (∃ k, n = 1 + k * 2) := by
+theorem mod2 (n : Nat) : (∃ k, n = k * 2) ∨ (∃ k, n = 1 + k * 2) := by
   rcases Nat.even_or_odd' n with ⟨k, rfl | rfl⟩
   · exact Or.inl ⟨k, by omega⟩
   · exact Or.inr ⟨k, by omega⟩
 
-lemma zSc {ls1 ls2 : List Call} {w1 w2 : zF} {r1 r2 : zB}
+theorem zSc {ls1 ls2 : List Call} {w1 w2 : zF} {r1 r2 : zB}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Side ls2 r1 r2) :
     Side ls1 (w1 +> r1) (w2 +> r2) :=
   h1.sideRLs_concat h2
 
-lemma zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : zF}
+theorem zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : zF}
     (h1 : Seg ls1 ls2 w1 w2) (h2 : Seg ls3 ls4 w2 w3) :
     Seg (ls1 ++ ls3) (ls2 ++ ls4) w1 w3 :=
   h1.trans h2
@@ -189,10 +187,10 @@ inductive Num : Nat → zB → Prop where
   | zero {n : Nat} {r : zB} : Num n r → Num (n * 2) (Z +> r)
   | one {n : Nat} {r : zB} : Num n r → Num (1 + n * 2) (O +> r)
 
-lemma Num_eq {n m : Nat} {r s : zB} (h : Num n r) (hn : n = m) (hr : r = s) : Num m s := by
+theorem Num_eq {n m : Nat} {r s : zB} (h : Num n r) (hn : n = m) (hr : r = s) : Num m s := by
   subst hn; subst hr; exact h
 
-lemma Num_even (n : Nat) {r : zB} (h : Num (n * 2) r) : ∃ s, r = Z +> s ∧ Num n s := by
+theorem Num_even (n : Nat) {r : zB} (h : Num (n * 2) r) : ∃ s, r = Z +> s ∧ Num n s := by
   generalize hm : n * 2 = m at h
   cases h with
   | nil =>
@@ -205,7 +203,7 @@ lemma Num_even (n : Nat) {r : zB} (h : Num (n * 2) r) : ∃ s, r = Z +> s ∧ Nu
     exact ⟨s, rfl, h0⟩
   | @one n0 s _ => omega
 
-lemma Num_odd (n : Nat) {r : zB} (h : Num (1 + n * 2) r) : ∃ s, r = O +> s ∧ Num n s := by
+theorem Num_odd (n : Nat) {r : zB} (h : Num (1 + n * 2) r) : ∃ s, r = O +> s ∧ Num n s := by
   generalize hm : 1 + n * 2 = m at h
   cases h with
   | nil => omega
@@ -215,16 +213,16 @@ lemma Num_odd (n : Nat) {r : zB} (h : Num (1 + n * 2) r) : ∃ s, r = O +> s ∧
     subst hn
     exact ⟨s, rfl, h0⟩
 
-lemma carry : Seg [ch] [ch] O Z :=
+theorem carry : Seg [ch] [ch] O Z :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_Z_O : Seg [ch] [] Z O :=
+theorem seg_Z_O : Seg [ch] [] Z O :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma seg_100_011 : Seg [ch] [] [1, 0, 0] [0, 1, 1] :=
+theorem seg_100_011 : Seg [ch] [] [1, 0, 0] [0, 1, 1] :=
   segRLs_c_spec target_tm (T := 200) (by decide)
 
-lemma increment {n : Nat} {r : zB} (h : Num n r) : ∃ s, Num (1 + n) s ∧ Side [ch] r s := by
+theorem increment {n : Nat} {r : zB} (h : Num n r) : ∃ s, Num (1 + n) s ∧ Side [ch] r s := by
   induction h with
   | nil =>
     refine ⟨O +> default, Num.one Num.nil, ?_⟩
@@ -237,12 +235,12 @@ lemma increment {n : Nat} {r : zB} (h : Num n r) : ∃ s, Num (1 + n) s ∧ Side
 
 -- Tape-sweep helper lemmas for `es` / `es'`
 
-lemma shiftL_E_U_step (l r : zB) :
+theorem shiftL_E_U_step (l r : zB) :
     ((U +> l) <{{E}} r) [target_tm]⊢* (l <{{E}} (V +> r)) := by
   simp only [U, V, append_cons, append_nil]
   execute
 
-lemma shiftL_E_U (q : Nat) (l r : zB) :
+theorem shiftL_E_U (q : Nat) (l r : zB) :
     (((U ^ q) +> l) <{{E}} r) [target_tm]⊢* (l <{{E}} ((V ^ q) +> r)) := by
   induction q generalizing r with
   | zero =>
@@ -254,12 +252,12 @@ lemma shiftL_E_U (q : Nat) (l r : zB) :
     refine zSt (shiftL_E_U_step ((U ^ q) +> l) r) ?_
     simpa only [z09 V q r] using ih (V +> r)
 
-lemma shiftR_F_V_step (l r : zB) :
+theorem shiftR_F_V_step (l r : zB) :
     (l {{F}}> (V +> r)) [target_tm]⊢* ((V +> l) {{F}}> r) := by
   simp only [V, append_cons, append_nil]
   execute
 
-lemma shiftR_F_V (q : Nat) (l r : zB) :
+theorem shiftR_F_V (q : Nat) (l r : zB) :
     (l {{F}}> ((V ^ q) +> r)) [target_tm]⊢* (((V ^ q) +> l) {{F}}> r) := by
   induction q generalizing l with
   | zero =>
@@ -271,12 +269,12 @@ lemma shiftR_F_V (q : Nat) (l r : zB) :
     refine zSt (shiftR_F_V_step l ((V ^ q) +> r)) ?_
     simpa only [z09 V q l] using ih (V +> l)
 
-lemma shiftL_B_V_step (l r : zB) :
+theorem shiftL_B_V_step (l r : zB) :
     ((V +> l) <{{B}} r) [target_tm]⊢* (l <{{B}} (U +> r)) := by
   simp only [V, U, append_cons, append_nil]
   execute
 
-lemma shiftL_B_V (d : Nat) (l r : zB) :
+theorem shiftL_B_V (d : Nat) (l r : zB) :
     (((V ^ d) +> l) <{{B}} r) [target_tm]⊢* (l <{{B}} ((U ^ d) +> r)) := by
   induction d generalizing r with
   | zero =>
@@ -288,12 +286,12 @@ lemma shiftL_B_V (d : Nat) (l r : zB) :
     refine zSt (shiftL_B_V_step ((V ^ d) +> l) r) ?_
     simpa only [z09 U d r] using ih (U +> r)
 
-lemma shiftR_A_U_step (l r : zB) :
+theorem shiftR_A_U_step (l r : zB) :
     (l {{A}}> (U +> r)) [target_tm]⊢* ((V +> l) {{A}}> r) := by
   simp only [U, V, append_cons, append_nil]
   execute
 
-lemma shiftR_A_U (d : Nat) (l r : zB) :
+theorem shiftR_A_U (d : Nat) (l r : zB) :
     (l {{A}}> ((U ^ d) +> r)) [target_tm]⊢* (((V ^ d) +> l) {{A}}> r) := by
   induction d generalizing l with
   | zero =>
@@ -305,12 +303,12 @@ lemma shiftR_A_U (d : Nat) (l r : zB) :
     refine zSt (shiftR_A_U_step l ((U ^ d) +> r)) ?_
     simpa only [z09 V d l] using ih (V +> l)
 
-lemma scanO_step (l r : zB) :
+theorem scanO_step (l r : zB) :
     (l {{A}}> (O +> r)) [target_tm]⊢* ((O +> l) {{A}}> r) := by
   simp only [O, append_cons, append_nil]
   execute
 
-lemma scanO (j : Nat) (l r : zB) :
+theorem scanO (j : Nat) (l r : zB) :
     (l {{A}}> ((O ^ j) +> r)) [target_tm]⊢* (((O ^ j) +> l) {{A}}> r) := by
   induction j generalizing l with
   | zero =>
@@ -324,12 +322,12 @@ lemma scanO (j : Nat) (l r : zB) :
 
 -- Two ordinary right calls, including the intervening left return (`BECv10.v:2899–2908`)
 
-lemma pair_base (l s : zB) :
+theorem pair_base (l s : zB) :
     ((U +> l) <{{D}} (Z +> s)) [target_tm]⊢* (l <{{E}} (V +> (O +> s))) := by
   simp only [U, Z, V, O, append_cons, append_nil]
   execute
 
-lemma pair (n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem pair (n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (1 + n) s ∧ ∀ l q,
       (((U ^ (1 + q)) +> l) {{A}}> r) [target_tm]⊢⁺
         (l <{{E}} ((V ^ (1 + q)) +> (O +> s))) := by
@@ -351,12 +349,12 @@ def S0 (l : zB) (a q : Nat) (r : zB) : Cfg (Fin 2) (Fin 6) :=
 def S1 (l : zB) (a q : Nat) (r : zB) : Cfg (Fin 2) (Fin 6) :=
   ((U ^ q) +> (Z +> ((V ^ a) +> l))) {{A}}> r
 
-lemma scanV_step (l r : zB) :
+theorem scanV_step (l r : zB) :
     (l {{A}}> (V +> ([1] +> r))) [target_tm]⊢* ((U +> l) {{A}}> ([1] +> r)) := by
   simp only [V, U, append_cons, append_nil]
   execute
 
-lemma scanV (q : Nat) (l r : zB) :
+theorem scanV (q : Nat) (l r : zB) :
     (l {{A}}> ((V ^ q) +> ([1] +> r))) [target_tm]⊢* (((U ^ q) +> l) {{A}}> ([1] +> r)) := by
   induction q generalizing l with
   | zero =>
@@ -377,24 +375,24 @@ lemma scanV (q : Nat) (l r : zB) :
       refine zSt h1 ?_
       simpa only [z09 U (q' + 1) l] using ih (U +> l)
 
-lemma resume0_step (l r : zB) :
+theorem resume0_step (l r : zB) :
     ((V +> l) <{{E}} r) [target_tm]⊢* ((Z +> l) {{A}}> r) := by
   simp only [V, Z, append_cons, append_nil]
   execute
 
-lemma resume0 (a q : Nat) (l r : zB) :
+theorem resume0 (a q : Nat) (l r : zB) :
     (((V ^ (1 + a)) +> l) <{{E}} ((V ^ q) +> ([1] +> r))) [target_tm]⊢*
       (((U ^ q) +> (Z +> ((V ^ a) +> l))) {{A}}> ([1] +> r)) := by
   rw [z07 V a l]
   exact zSt (resume0_step ((V ^ a) +> l) ((V ^ q) +> ([1] +> r)))
     (scanV q (Z +> ((V ^ a) +> l)) r)
 
-lemma resume1_step (l r : zB) :
+theorem resume1_step (l r : zB) :
     ((Z +> (V +> l)) <{{E}} r) [target_tm]⊢* ((U +> l) {{A}}> (V +> r)) := by
   simp only [Z, V, U, append_cons, append_nil]
   execute
 
-lemma resume1 (a q : Nat) (l r : zB) :
+theorem resume1 (a q : Nat) (l r : zB) :
     ((Z +> ((V ^ (1 + a)) +> l)) <{{E}} ((V ^ q) +> ([1] +> r))) [target_tm]⊢*
       (((U ^ (2 + q)) +> ((V ^ a) +> l)) {{A}}> ([1] +> r)) := by
   rw [z07 V a l]
@@ -404,9 +402,9 @@ lemma resume1 (a q : Nat) (l r : zB) :
   have h2_eq : (1 : Nat) + (1 + q) = 2 + q := by omega
   rwa [h2_eq] at h2
 
-lemma O_eq_1_1 (s : zB) : O +> s = [1] +> ([1] +> s) := rfl
+theorem O_eq_1_1 (s : zB) : O +> s = [1] +> ([1] +> s) := rfl
 
-lemma count0 (l : zB) (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem count0 (l : zB) (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (3 + n * 2) s ∧ (S0 l (1 + a) (1 + q) r) [target_tm]⊢⁺ (S1 l a (1 + q) s) := by
   rcases pair n h with ⟨s, hs, hPair⟩
   refine ⟨O +> s, Num_eq (Num.one hs) (by omega) rfl, ?_⟩
@@ -415,7 +413,7 @@ lemma count0 (l : zB) (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
   rw [O_eq_1_1 s]
   exact resume0 a (1 + q) l ([1] +> s)
 
-lemma count1 (l : zB) (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem count1 (l : zB) (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (3 + n * 2) s ∧ (S1 l (1 + a) (1 + q) r) [target_tm]⊢⁺ (S0 l a (3 + q) s) := by
   rcases pair n h with ⟨s, hs, hPair⟩
   refine ⟨O +> s, Num_eq (Num.one hs) (by omega) rfl, ?_⟩
@@ -427,7 +425,7 @@ lemma count1 (l : zB) (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
   rw [O_eq_1_1 s]
   exact hr
 
-lemma counts (l : zB) (a a0 q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem counts (l : zB) (a a0 q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (1 + n * 2 + a * 4) s ∧
       (S0 l (a * 2 + a0) (1 + q) r) [target_tm]⊢* (S0 l a0 (1 + q + a * 2) s) := by
   induction a generalizing q n r with
@@ -454,17 +452,17 @@ lemma counts (l : zB) (a a0 q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
 
 def K (b : Nat) (r : zB) : Cfg (Fin 2) (Fin 6) := S0 default 0 b r
 
-lemma overflow_start (r : zB) :
+theorem overflow_start (r : zB) :
     (default <{{E}} r) [target_tm]⊢* ((V +> default) {{F}}> (V +> r)) := by
   simp only [V, append_cons, append_nil, z00]
   execute
 
-lemma overflow_end (l s : zB) :
+theorem overflow_end (l s : zB) :
     (l {{F}}> (O +> s)) [target_tm]⊢* ((U +> l) {{A}}> s) := by
   simp only [O, U, append_cons, append_nil]
   execute
 
-lemma overflow (b n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem overflow (b n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (1 + n) s ∧ (K (1 + b) r) [target_tm]⊢⁺ (S0 default (3 + b) 1 s) := by
   rcases pair n h with ⟨s, hs, hPair⟩
   refine ⟨s, hs, ?_⟩
@@ -479,12 +477,12 @@ lemma overflow (b n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
   rw [hb] at hSweep
   exact zSt hSweep (overflow_end ((V ^ (3 + b)) +> default) s)
 
-lemma S1_0_to_K (b : Nat) (s : zB) :
+theorem S1_0_to_K (b : Nat) (s : zB) :
     S1 default 0 b s = K b s := by
   unfold S1 K S0
   simp only [z05, append_nil, zZd]
 
-lemma counts_end (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem counts_end (a q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ b s, Num (1 + n * 2 + a * 2) s ∧ a + q ≤ b ∧ 1 ≤ b ∧
       (S0 default a (1 + q) r) [target_tm]⊢* (K b s) := by
   rcases mod2 a with ⟨k, rfl⟩ | ⟨k, rfl⟩
@@ -507,11 +505,11 @@ inductive Bits : Nat → Nat → zF → Prop where
   | zero {j n : Nat} {w : zF} : Bits j n w → Bits (1 + j) (n * 2) (Z ++ w)
   | one {j n : Nat} {w : zF} : Bits j n w → Bits (1 + j) (1 + n * 2) (O ++ w)
 
-lemma Bits_eq {j j' n n' : Nat} {w w' : zF}
+theorem Bits_eq {j j' n n' : Nat} {w w' : zF}
     (h : Bits j n w) (hj : j = j') (hn : n = n') (hw : w = w') : Bits j' n' w' := by
   subst hj; subst hn; subst hw; exact h
 
-lemma finite_increment {j n : Nat} {w : zF} (h : Bits j n w) (hb : 1 + n < 2 ^ j) :
+theorem finite_increment {j n : Nat} {w : zF} (h : Bits j n w) (hb : 1 + n < 2 ^ j) :
     ∃ w', Bits j (1 + n) w' ∧ Seg [ch] [] (1 :: w) (0 :: w') := by
   induction h with
   | nil => omega
@@ -528,13 +526,13 @@ lemma finite_increment {j n : Nat} {w : zF} (h : Bits j n w) (hb : 1 + n < 2 ^ j
     change Seg [ch] [] (O ++ (1 :: w)) (Z ++ (0 :: w'))
     exact carry.concat hSeg'
 
-lemma wrap_base (l r : zB) :
+theorem wrap_base (l r : zB) :
     ((V +> (V +> l)) <{{D}} ([0] +> r)) [target_tm]⊢*
       (l <{{B}} (U +> (U +> ([1] +> r)))) := by
   simp only [V, U, append_cons, append_nil]
   execute
 
-lemma wrap (d : Nat) (l r : zB) :
+theorem wrap (d : Nat) (l r : zB) :
     (((V ^ (2 + d)) +> l) <{{D}} ([0] +> r)) [target_tm]⊢*
       (l <{{B}} ((U ^ (2 + d)) +> ([1] +> r))) := by
   have hd : 2 + d = 1 + (1 + d) := by omega
@@ -543,7 +541,7 @@ lemma wrap (d : Nat) (l r : zB) :
   have hShift := shiftL_B_V d l (U +> (U +> ([1] +> r)))
   rwa [z09 U d (U +> ([1] +> r)), z09 U (1 + d) ([1] +> r)] at hShift
 
-lemma internal_inc {j n : Nat} {w : zF} (h : Bits j n w) (hb : 1 + n < 2 ^ j) :
+theorem internal_inc {j n : Nat} {w : zF} (h : Bits j n w) (hb : 1 + n < 2 ^ j) :
     ∃ w', Bits j (1 + n) w' ∧ ∀ l d r,
       (((V ^ (2 + d)) +> l) {{A}}> ([1] +> (w +> ([0] +> r)))) [target_tm]⊢⁺
         (l <{{B}} ((U ^ (2 + d)) +> ([1] +> (w' +> ([0] +> r))))) := by
@@ -557,12 +555,12 @@ lemma internal_inc {j n : Nat} {w : zF} (h : Bits j n w) (hb : 1 + n < 2 ^ j) :
   simp only [toDHCfg, append_nil, h_in, h_out] at h1
   exact z02 h1 (wrap d l (w' +> ([0] +> r)))
 
-lemma resumeB2_base (l r : zB) :
+theorem resumeB2_base (l r : zB) :
     ((U +> (U +> l)) <{{B}} r) [target_tm]⊢* ((V +> (O +> l)) {{A}}> r) := by
   simp only [U, V, O, append_cons, append_nil]
   execute
 
-lemma resumeB2 (d : Nat) (l r : zB) :
+theorem resumeB2 (d : Nat) (l r : zB) :
     (((U ^ 2) +> l) <{{B}} ((U ^ d) +> r)) [target_tm]⊢*
       (((V ^ (1 + d)) +> (O +> l)) {{A}}> r) := by
   have h2 : (U ^ 2) +> l = U +> (U +> l) := by simp [zLp, append_assoc]
@@ -570,12 +568,12 @@ lemma resumeB2 (d : Nat) (l r : zB) :
   refine zSt (resumeB2_base l ((U ^ d) +> r)) ?_
   simpa only [z09 V d (O +> l)] using shiftR_A_U d (V +> (O +> l)) r
 
-lemma resumeBO_base (l r : zB) :
+theorem resumeBO_base (l r : zB) :
     ((O +> l) <{{B}} r) [target_tm]⊢* ((V +> l) {{A}}> r) := by
   simp only [O, V, append_cons, append_nil]
   execute
 
-lemma resumeBO (d : Nat) (l r : zB) :
+theorem resumeBO (d : Nat) (l r : zB) :
     ((O +> l) <{{B}} ((U ^ d) +> r)) [target_tm]⊢*
       (((V ^ (1 + d)) +> l) {{A}}> r) := by
   refine zSt (resumeBO_base l ((U ^ d) +> r)) ?_
@@ -584,7 +582,7 @@ lemma resumeBO (d : Nat) (l r : zB) :
 def Internal (l : zB) (c d : Nat) (w : zF) (r : zB) : Cfg (Fin 2) (Fin 6) :=
   ((V ^ d) +> ((U ^ c) +> l)) {{A}}> ([1] +> (w +> ([0] +> r)))
 
-lemma internal_pair {j n : Nat} {w : zF} (h : Bits j n w) (hb : 2 + n < 2 ^ j) :
+theorem internal_pair {j n : Nat} {w : zF} (h : Bits j n w) (hb : 2 + n < 2 ^ j) :
     ∃ w', Bits j (2 + n) w' ∧ ∀ l c d r,
       (Internal l (2 + c) (2 + d) w r) [target_tm]⊢⁺ (Internal l c (4 + d) w' r) := by
   rcases internal_inc h (by omega) with ⟨w1, hN1, h1⟩
@@ -604,7 +602,7 @@ lemma internal_pair {j n : Nat} {w : zF} (h : Bits j n w) (hb : 2 + n < 2 ^ j) :
   rw [hd2]
   simpa only [hd3] using resumeBO (3 + d) ((U ^ c) +> l) ([1] +> (w2 +> ([0] +> r)))
 
-lemma internal_pairs (k : Nat) {j n : Nat} {w : zF} (h : Bits j n w) (hb : n + k * 2 < 2 ^ j) :
+theorem internal_pairs (k : Nat) {j n : Nat} {w : zF} (h : Bits j n w) (hb : n + k * 2 < 2 ^ j) :
     ∃ w', Bits j (n + k * 2) w' ∧ ∀ l c d r,
       (Internal l (k * 2 + c) (2 + d) w r) [target_tm]⊢* (Internal l c (2 + d + k * 2) w' r) := by
   induction k generalizing n w with
@@ -628,14 +626,14 @@ lemma internal_pairs (k : Nat) {j n : Nat} {w : zF} (h : Bits j n w) (hb : n + k
     rw [hd2] at step2
     exact zSt (zPs step1) step2
 
-lemma Bits_zeros (j : Nat) : Bits j 0 (Z ^ j) := by
+theorem Bits_zeros (j : Nat) : Bits j 0 (Z ^ j) := by
   induction j with
   | zero => exact Bits.nil
   | succ j ih =>
     rw [zLp]
     exact Bits_eq (Bits.zero ih) (by omega) (by omega) rfl
 
-lemma Bits_ones (j : Nat) {w : zF} (h : Bits j (2 ^ j - 1) w) : w = O ^ j := by
+theorem Bits_ones (j : Nat) {w : zF} (h : Bits j (2 ^ j - 1) w) : w = O ^ j := by
   generalize hn : 2 ^ j - 1 = n at h
   induction h with
   | nil => rfl
@@ -651,7 +649,7 @@ lemma Bits_ones (j : Nat) {w : zF} (h : Bits j (2 ^ j - 1) w) : w = O ^ j := by
 
 -- Entry, internal transition, and exit lemmas (`BECv10.v:3081–3186`)
 
-lemma side_O_pow_Z (k : Nat) (r : zB) :
+theorem side_O_pow_Z (k : Nat) (r : zB) :
     Side [ch] ((O ^ k) +> (Z +> r)) ((Z ^ k) +> (O +> r)) := by
   induction k with
   | zero =>
@@ -661,18 +659,18 @@ lemma side_O_pow_Z (k : Nat) (r : zB) :
     rw [zLp, append_assoc, zLp, append_assoc]
     exact zSc carry ih
 
-lemma enter_mid1 (l r : zB) :
+theorem enter_mid1 (l r : zB) :
     ((U +> l) {{A}}> (Z +> r)) [target_tm]⊢* ((V +> (O +> l)) {{A}}> r) := by
   simp only [U, Z, V, O, append_cons, append_nil]
   execute
 
-lemma enter_mid2 (l r : zB) :
+theorem enter_mid2 (l r : zB) :
     ((V +> (O +> l)) <{{D}} (Z +> (Z +> r))) [target_tm]⊢*
       ((V +> l) <{{B}} (U +> (O +> (V +> r)))) := by
   simp only [V, O, Z, U, append_cons, append_nil]
   execute
 
-lemma enter (b j : Nat) (r : zB) :
+theorem enter (b j : Nat) (r : zB) :
     (K (1 + b) (O +> (O +> (Z +> ((O ^ (1 + j)) +> (Z +> r)))))) [target_tm]⊢⁺
       (default <{{B}} ((U ^ (5 + b)) +> (O +> (V +> ((Z ^ j) +> (O +> r)))))) := by
   have hSide1 : Side [ch]
@@ -710,7 +708,7 @@ lemma enter (b j : Nat) (r : zB) :
   have hb5 : 1 + (1 + (3 + b)) = 5 + b := by omega
   rwa [hb5] at hShiftB
 
-lemma sweep_B_U (d : Nat) (r : zB) :
+theorem sweep_B_U (d : Nat) (r : zB) :
     (default <{{B}} ((U ^ d) +> r)) [target_tm]⊢*
       (([1] +> ((U ^ d) +> default)) {{F}}> ([1] +> r)) := by
   have h1 : (default <{{B}} ((U ^ d) +> r)) [target_tm]⊢*
@@ -721,13 +719,13 @@ lemma sweep_B_U (d : Nat) (r : zB) :
   rw [rot_U_V d r, rot_U_V d default]
   exact shiftR_F_V d ([1] +> default) ([1] +> r)
 
-lemma start_internal_tail (l r : zB) :
+theorem start_internal_tail (l r : zB) :
     (([1] +> l) {{F}}> ([1] +> (O +> (V +> (Z +> r))))) [target_tm]⊢*
       ((V +> (V +> l)) {{A}}> (O +> (V +> r))) := by
   simp only [O, V, Z, append_cons, append_nil]
   execute
 
-lemma start_internal (b j : Nat) (r : zB) :
+theorem start_internal (b j : Nat) (r : zB) :
     (default <{{B}} ((U ^ (5 + b)) +> (O +> (V +> ((Z ^ (1 + j)) +> (O +> r)))))) [target_tm]⊢*
       (Internal default (5 + b) 2 (O ++ (Z ^ j)) (O +> r)) := by
   refine zSt (sweep_B_U (5 + b) (O +> (V +> ((Z ^ (1 + j)) +> (O +> r))))) ?_
@@ -744,12 +742,12 @@ lemma start_internal (b j : Nat) (r : zB) :
     rw [hV2, hR]
   rwa [hEq] at hTail
 
-lemma clear_one_step (l r : zB) :
+theorem clear_one_step (l r : zB) :
     ((O +> l) <{{E}} r) [target_tm]⊢* ((U +> l) {{A}}> r) := by
   simp only [O, U, append_cons, append_nil]
   execute
 
-lemma clear_one (n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem clear_one (n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (3 + n * 2) s ∧ ∀ l q,
       (((U ^ (1 + q)) +> (O +> l)) {{A}}> r) [target_tm]⊢⁺
         (((U ^ (2 + q)) +> l) {{A}}> s) := by
@@ -764,7 +762,7 @@ lemma clear_one (n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
   rw [O_eq_1_1 s]
   exact hScan
 
-lemma clear_ones (j n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
+theorem clear_ones (j n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     ∃ s, Num (1 + n * 2 + j * 2) s ∧ ∀ l q,
       (((U ^ (1 + q)) +> ((O ^ j) +> l)) {{A}}> r) [target_tm]⊢*
         (((U ^ (1 + q + j)) +> l) {{A}}> s) := by
@@ -793,20 +791,20 @@ def Safe (b : Nat) (r : zB) : Prop :=
 def Returns (b : Nat) (r : zB) : Prop :=
   ∃ b' r', Safe b' r' ∧ (K b r) [target_tm]⊢⁺ (K b' r')
 
-lemma branch1 (b m : Nat) (r : zB) (hN : Num (1 + m * 4) r) (hB : m ≤ 1 + b) :
+theorem branch1 (b m : Nat) (r : zB) (hN : Num (1 + m * 4) r) (hB : m ≤ 1 + b) :
     Returns (1 + b) r := by
   have hN' : Num (1 + (m * 2) * 2) r := Num_eq hN (by omega) rfl
   rcases overflow b (m * 2) hN' with ⟨s, hNs, hs⟩
   rcases counts_end (3 + b) 0 m hNs with ⟨b', t, hNt, hB1, hB2, ht⟩
   refine ⟨b', t, ⟨hB2, m + 3 + b, Num_eq hNt (by omega) rfl, by omega⟩, z02 hs ht⟩
 
-lemma bridge2 (l : zB) (a : Nat) (r : zB) :
+theorem bridge2 (l : zB) (a : Nat) (r : zB) :
     (S0 l a 1 (Z +> (Z +> r))) [target_tm]⊢* (S0 l a 2 (O +> r)) := by
   unfold S0
   simp only [z06, zLp, z05, append_nil, append_assoc, Z, O, U, append_cons]
   execute
 
-lemma bridge3 (l : zB) (a : Nat) (r : zB) :
+theorem bridge3 (l : zB) (a : Nat) (r : zB) :
     (S0 l a 1 (Z +> (O +> (Z +> r)))) [target_tm]⊢* (S0 l (2 + a) 1 (O +> r)) := by
   unfold S0
   have ha : (V ^ (2 + a)) +> l = V +> (V +> ((V ^ a) +> l)) := by
@@ -816,7 +814,7 @@ lemma bridge3 (l : zB) (a : Nat) (r : zB) :
   simp only [z06, Z, O, U, V, append_cons, append_nil]
   execute
 
-lemma branch2 (b m : Nat) (r : zB) (hN : Num (7 + m * 8) r) (hB : m ≤ 1 + b) :
+theorem branch2 (b m : Nat) (r : zB) (hN : Num (7 + m * 8) r) (hB : m ≤ 1 + b) :
     Returns (1 + b) r := by
   have hN' : Num (1 + (3 + m * 4) * 2) r := Num_eq hN (by omega) rfl
   rcases overflow b (3 + m * 4) hN' with ⟨s, hNs, hs⟩
@@ -828,7 +826,7 @@ lemma branch2 (b m : Nat) (r : zB) (hN : Num (7 + m * 8) r) (hB : m ≤ 1 + b) :
   refine ⟨b', t, ⟨hB2, m + 4 + b, Num_eq hNt (by omega) rfl, by omega⟩, ?_⟩
   exact z02 hs (zSt (bridge2 default (3 + b) s2) ht)
 
-lemma branch3 (b m : Nat) (r : zB) (hN : Num (3 + m * 16) r) (hB : m ≤ 1 + b) :
+theorem branch3 (b m : Nat) (r : zB) (hN : Num (3 + m * 16) r) (hB : m ≤ 1 + b) :
     Returns (1 + b) r := by
   have hN' : Num (1 + (1 + m * 8) * 2) r := Num_eq hN (by omega) rfl
   rcases overflow b (1 + m * 8) hN' with ⟨s, hNs, hs⟩
@@ -844,12 +842,12 @@ lemma branch3 (b m : Nat) (r : zB) (hN : Num (3 + m * 16) r) (hB : m ≤ 1 + b) 
   rw [hb] at hBr
   exact z02 hs (zSt hBr ht)
 
-lemma zeros_after_one (j : Nat) (r : zB) :
+theorem zeros_after_one (j : Nat) (r : zB) :
     ([1] : zF) +> ((O ^ j) +> ([0] +> r)) = (O ^ j) +> (V +> r) := by
   rw [rot_O]
   rfl
 
-lemma exit_internal (j : Nat) (l r : zB) :
+theorem exit_internal (j : Nat) (l r : zB) :
     (l {{A}}> ([1] +> ((O ^ j) +> ([0] +> (O +> r))))) [target_tm]⊢*
       ((U +> ((O ^ j) +> l)) {{A}}> (O +> r)) := by
   rw [zeros_after_one]
@@ -858,13 +856,13 @@ lemma exit_internal (j : Nat) (l r : zB) :
   simp only [z06] at hScan
   rwa [O_eq_1_1 r]
 
-lemma start_zero_tail (l r : zB) :
+theorem start_zero_tail (l r : zB) :
     (([1] +> l) {{F}}> ([1] +> (O +> (V +> (O +> r))))) [target_tm]⊢*
       ((U +> (V +> (O +> l))) {{A}}> (O +> r)) := by
   simp only [O, V, U, append_cons, append_nil]
   execute
 
-lemma start_zero (b : Nat) (r : zB) :
+theorem start_zero (b : Nat) (r : zB) :
     (default <{{B}} ((U ^ (5 + b)) +> (O +> (V +> (O +> r))))) [target_tm]⊢*
       (S0 (O +> ((U ^ (5 + b)) +> default)) 1 1 (O +> r)) := by
   refine zSt (sweep_B_U (5 + b) (O +> (V +> (O +> r)))) ?_
@@ -872,14 +870,14 @@ lemma start_zero (b : Nat) (r : zB) :
   simp only [z06]
   exact start_zero_tail ((U ^ (5 + b)) +> default) r
 
-lemma cleanup (l r : zB) :
+theorem cleanup (l r : zB) :
     ((Z +> (O +> (U +> l))) <{{E}} (V +> (O +> r))) [target_tm]⊢*
       (S0 l 2 2 (O +> r)) := by
   unfold S0
   simp only [zLp, z05, append_nil, append_assoc, Z, O, U, V, append_cons]
   execute
 
-lemma fourth_zero (b m : Nat) {r : zB} (hN : Num m r) (hB : m + 4 ≤ (8 + b) * 2) :
+theorem fourth_zero (b m : Nat) {r : zB} (hN : Num m r) (hB : m + 4 ≤ (8 + b) * 2) :
     Returns (1 + b) (O +> (O +> (Z +> (O +> (Z +> r))))) := by
   rcases count0 (O +> ((U ^ (5 + b)) +> default)) 0 0 m (Num.one hN) with ⟨s, hNs, hs⟩
   have hNs' : Num (1 + (1 + m) * 2) s := Num_eq hNs (by omega) rfl
@@ -910,7 +908,7 @@ lemma fourth_zero (b m : Nat) {r : zB} (hN : Num m r) (hB : m + 4 ≤ (8 + b) * 
   rw [hEq]
   finish
 
-lemma index_power (j : Nat) : j ≤ 2 ^ j := by
+theorem index_power (j : Nat) : j ≤ 2 ^ j := by
   induction j with
   | zero => omega
   | succ j ih =>
@@ -918,7 +916,7 @@ lemma index_power (j : Nat) : j ≤ 2 ^ j := by
     rw [Nat.pow_succ]
     omega
 
-lemma fourth_positive (b j m : Nat) {r : zB} (hN : Num m r)
+theorem fourth_positive (b j m : Nat) {r : zB} (hN : Num m r)
     (hB : 4 * 2 ^ (1 + j) * (1 + m * 2) ≤ 2 + b) :
     Returns (1 + b) (O +> (O +> (Z +> ((O ^ (2 + j)) +> (Z +> r))))) := by
   have hP : 0 < 2 ^ j := Nat.two_pow_pos j
@@ -974,7 +972,7 @@ lemma fourth_positive (b j m : Nat) {r : zB} (hN : Num m r)
   rw [hEq]
   finish
 
-lemma Num_run {n : Nat} {r : zB} (h : Num n r) :
+theorem Num_run {n : Nat} {r : zB} (h : Num n r) :
     ∃ j m s, r = (O ^ j) +> (Z +> s) ∧ Num m s ∧ 1 + n = 2 ^ j * (1 + m * 2) := by
   induction h with
   | nil =>
@@ -991,7 +989,7 @@ lemma Num_run {n : Nat} {r : zB} (h : Num n r) :
       _ = (2 * 2 ^ j) * (1 + m * 2) := by ring
       _ = 2 ^ (1 + j) * (1 + m * 2) := by rw [← hp]
 
-lemma closed {b : Nat} {r : zB} (h : Safe b r) : Returns b r := by
+theorem closed {b : Nat} {r : zB} (h : Safe b r) : Returns b r := by
   rcases h with ⟨hB, n, hN, hVb⟩
   cases b with
   | zero => omega
@@ -1028,7 +1026,7 @@ lemma closed {b : Nat} {r : zB} (h : Safe b r) : Returns b r := by
             omega
       · exact branch2 b m r (Num_eq hN (by omega) rfl) (by omega)
 
-lemma start_to_K1 : (init []) [target_tm]⊢* K 1 (O +> default) := by
+theorem start_to_K1 : (init []) [target_tm]⊢* K 1 (O +> default) := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
   unfold K S0

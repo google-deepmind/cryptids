@@ -4,12 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import BusyBeaver.Basic
+import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
-
 open Mathlib Relation Nat Turing BusyBeaver SixState
+
+@[expose] public section
 
 namespace BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH
 
@@ -17,6 +17,15 @@ def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH
+
+end
+
+namespace BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH
+
+variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
 
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
@@ -36,14 +45,13 @@ theorem target_eq : target = target_tm := by
   funext q s
   fin_cases q <;> fin_cases s <;> rfl
 
-set_option linter.unusedSimpArgs false
-set_option linter.unnecessarySeqFocus false
 
-@[simp] private lemma multiStep_zero_simp (c : Cfg (Fin 2) (Fin 6)) :
+@[simp] private theorem multiStep_zero_simp (c : Cfg (Fin 2) (Fin 6)) :
     multiStep target_tm c 0 = some c := rfl
 
-@[simp] private lemma multiStep_succ_simp (c : Cfg (Fin 2) (Fin 6)) (n : ℕ) :
-    multiStep target_tm c (n + 1) = (step target_tm c).bind (fun c' => multiStep target_tm c' n) := by
+@[simp] private theorem multiStep_succ_simp (c : Cfg (Fin 2) (Fin 6)) (n : ℕ) :
+    multiStep target_tm c (n + 1) = (step target_tm c).bind (fun c' => multiStep target_tm c' n) :=
+        by
   rw [multiStep, Function.iterate_succ_apply]
   change ((fun x => Option.bind x (step target_tm))^[n] (step target_tm c)) = _
   cases hs : step target_tm c with
@@ -55,25 +63,25 @@ set_option linter.unnecessarySeqFocus false
     simp [hnone]
   | some c' => rfl
 
-@[simp] private lemma lb_head_cons_fin2 (a : Fin 2) (s : ListBlank (Fin 2)) :
+@[simp] private theorem lb_head_cons_fin2 (a : Fin 2) (s : ListBlank (Fin 2)) :
     (a >> s).head = a := ListBlank.head_cons a s
 
-@[simp] private lemma lb_tail_cons_fin2 (a : Fin 2) (s : ListBlank (Fin 2)) :
+@[simp] private theorem lb_tail_cons_fin2 (a : Fin 2) (s : ListBlank (Fin 2)) :
     (a >> s).tail = s := ListBlank.tail_cons a s
 
-@[simp] private lemma pow_succ_zero (k : ℕ) (s : ListBlank (Fin 2)) :
+@[simp] private theorem pow_succ_zero (k : ℕ) (s : ListBlank (Fin 2)) :
     (([0] : List (Fin 2)) ^ (k + 1)) +> s = (0 : Fin 2) >> ((([0] : List (Fin 2)) ^ k) +> s) := rfl
 
-@[simp] private lemma pow_zero_zero (s : ListBlank (Fin 2)) :
+@[simp] private theorem pow_zero_zero (s : ListBlank (Fin 2)) :
     (([0] : List (Fin 2)) ^ 0) +> s = s := rfl
 
-@[simp] private lemma head_default_fin2 :
+@[simp] private theorem head_default_fin2 :
     ((default : ListBlank (Fin 2)).head) = (0 : Fin 2) := rfl
 
-@[simp] private lemma tail_default_fin2 :
+@[simp] private theorem tail_default_fin2 :
     ((default : ListBlank (Fin 2)).tail) = default := rfl
 
-@[simp] private lemma cons_zero_default_fin2 :
+@[simp] private theorem cons_zero_default_fin2 :
     (0 : Fin 2) >> (default : ListBlank (Fin 2)) = default := by
   apply ListBlank.ext
   intro n
@@ -84,7 +92,7 @@ private def encL : List ℕ → ListBlank (Fin 2)
   | 0 :: w => (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> encL w
   | (n + 1) :: w => (1 : Fin 2) >> ((([0] : List (Fin 2)) ^ (n + 1)) +> encL w)
 
-@[simp] private lemma encL_head (w : List ℕ) : (encL w).head = (1 : Fin 2) := by
+@[simp] private theorem encL_head (w : List ℕ) : (encL w).head = (1 : Fin 2) := by
   cases w with
   | nil => simp [encL]
   | cons x w' => cases x <;> simp [encL]
@@ -94,7 +102,7 @@ private def bumpW : List ℕ → List ℕ
   | 0 :: w => 1 :: 1 :: w
   | (n + 1) :: w => (n + 2) :: w
 
-@[simp] private lemma encL_bumpW (w : List ℕ) :
+@[simp] private theorem encL_bumpW (w : List ℕ) :
     (1 : Fin 2) >> ((0 : Fin 2) >> (encL w).tail) = encL (bumpW w) := by
   cases w with
   | nil => simp [encL, bumpW]
@@ -120,7 +128,7 @@ private inductive GoodCD : ℕ → List (Fin 3) → Prop
   | z01 {a v} : GoodVA a (0 :: v) → GoodCD 0 (0 :: 1 :: v)
   | z1 {b v}  : GoodCD b v → GoodCD (b + 1) (1 :: v)
 
-private lemma GoodVA_cons0 {b : ℕ} {v : List (Fin 3)} : GoodCD b v → GoodVA b (0 :: v)
+private theorem GoodVA_cons0 {b : ℕ} {v : List (Fin 3)} : GoodCD b v → GoodVA b (0 :: v)
   | .nil => .zero
   | .z01 hv => .z001 hv
   | .z1 hv => .z01 (GoodVA_cons0 hv)
@@ -132,7 +140,7 @@ private inductive SafeW : ℕ → List ℕ → Prop
   | z2 {b w}   : SafeW b w → SafeW b (2 :: w)
   | z3 {b k w} : SafeW b ((k + 2) :: w) → SafeW (b + 1) ((k + 3) :: w)
 
-private lemma SafeW_mono_aux {b : ℕ} {w : List ℕ} (hw : SafeW b w) : ∀ d, b ≤ d → SafeW d w := by
+private theorem SafeW_mono_aux {b : ℕ} {w : List ℕ} (hw : SafeW b w) : ∀ d, b ≤ d → SafeW d w := by
   induction hw with
   | nil => intro d _; exact .nil
   | z0 hw0 => intro d _; exact .z0 hw0
@@ -143,10 +151,10 @@ private lemma SafeW_mono_aux {b : ℕ} {w : List ℕ} (hw : SafeW b w) : ∀ d, 
     obtain ⟨d', rfl⟩ : ∃ d', d = d' + 1 := ⟨d - 1, by omega⟩
     exact .z3 (ih d' (by omega))
 
-private lemma SafeW_mono {b b' : ℕ} (h : b ≤ b') {w : List ℕ} (hw : SafeW b w) : SafeW b' w :=
+private theorem SafeW_mono {b b' : ℕ} (h : b ≤ b') {w : List ℕ} (hw : SafeW b w) : SafeW b' w :=
   SafeW_mono_aux hw b' h
 
-private lemma bumpW_safe {b : ℕ} {w : List ℕ} (hw : SafeW b w) : SafeW (b + 1) (bumpW w) := by
+private theorem bumpW_safe {b : ℕ} {w : List ℕ} (hw : SafeW b w) : SafeW (b + 1) (bumpW w) := by
   cases hw with
   | nil => exact .nil
   | z0 hw0 => exact .z1 (.z1 (SafeW_mono (by omega) hw0))
@@ -159,13 +167,13 @@ private inductive SafeWA : ℕ → List ℕ → Prop
   | z0 {a w} : SafeW 0 w → SafeWA a (0 :: w)
   | z1 {a w} : SafeW a w → SafeWA a (1 :: w)
 
-private lemma SafeWA_succ_to_SafeW {a : ℕ} {w : List ℕ} (hw : SafeWA (a + 1) w) : SafeW a w := by
+private theorem SafeWA_succ_to_SafeW {a : ℕ} {w : List ℕ} (hw : SafeWA (a + 1) w) : SafeW a w := by
   cases hw with
   | nil => exact .nil
   | z0 hw0 => exact .z0 hw0
   | z1 hw1 => exact .z1 hw1
 
-private lemma SafeWA_zero_to_SafeW0 {w : List ℕ} (hw : SafeWA 0 w) : SafeW 0 w := by
+private theorem SafeWA_zero_to_SafeW0 {w : List ℕ} (hw : SafeWA 0 w) : SafeW 0 w := by
   cases hw with
   | nil => exact .nil
   | z0 hw0 => exact .z0 hw0
@@ -184,7 +192,7 @@ private inductive GoodSym : Cfg (Fin 2) (Fin 6) → Prop
   | mkD {b w v} : SafeW (b + 1) w → GoodCD b v → GoodSym (evalSym .modeD w v)
   | mkA {a w v} : SafeWA a w → GoodVA a v → GoodSym (evalSym .modeA w v)
 
-private lemma step_sym_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : GoodSym cfg) :
+private theorem step_sym_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : GoodSym cfg) :
     ∃ cfg', (cfg [target_tm]⊢⁺ cfg') ∧ GoodSym cfg' := by
   cases h with
   | @mkC b w v hw hv =>
@@ -200,7 +208,7 @@ private lemma step_sym_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : GoodSym cfg) :
       simp [step, target_tm, Tape.move, Tape.write, evalSym, encL, encR]
     | @z2 _ w' hw' =>
       refine ⟨evalSym .modeD (bumpW w') v, ⟨5, by omega, ?_⟩, .mkD (bumpW_safe hw') hv⟩
-      simp [step, target_tm, Tape.move, Tape.write, evalSym, encL, encR]
+      simp [step, target_tm, Tape.move, Tape.write, evalSym, encL]
     | @z3 b₀ k w' hw' =>
       cases hv with
       | @z1 _ vt hvt =>
@@ -259,18 +267,19 @@ private lemma step_sym_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : GoodSym cfg) :
           .mkC hw' (.z01 (.z02 hvt))⟩
         simp [step, target_tm, Tape.move, Tape.write, evalSym, encL, encR]
 
-private lemma init_reaches_sym :
+private theorem init_reaches_sym :
     multiStep target_tm (init []) 2 = some (evalSym .modeC [] [1]) := by
   have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = ⟨some 0, ⟨0, default, default⟩⟩ := rfl
   rw [h0]
   simp [step, target_tm, Tape.move, Tape.write, evalSym, encL, encR]
 
-private lemma _ms_succ (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
+private theorem _ms_succ (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
     multiStep target_tm c (n + 1) = (multiStep target_tm c n).bind (step target_tm) :=
   Function.iterate_succ_apply' _ n (some c)
 
-private lemma _ms_add (c : Cfg (Fin 2) (Fin 6)) (m k : Nat) :
-    multiStep target_tm c (m + k) = (multiStep target_tm c m).bind (fun c' => multiStep target_tm c' k) := by
+private theorem _ms_add (c : Cfg (Fin 2) (Fin 6)) (m k : Nat) :
+    multiStep target_tm c (m + k) = (multiStep target_tm c m).bind (fun c' =>
+        multiStep target_tm c' k) := by
   induction k with
   | zero => rw [Nat.add_zero]; cases multiStep target_tm c m <;> rfl
   | succ k ih =>
@@ -279,40 +288,66 @@ private lemma _ms_add (c : Cfg (Fin 2) (Fin 6)) (m k : Nat) :
     | none => rfl
     | some c' => exact (_ms_succ c' k).symm
 
-private lemma _closed_not_halt
+private theorem init_1_reaches_sym :
+    multiStep target_tm ((default : ListBlank (Fin 2)) {{1}}> default) 7 =
+      some (evalSym .modeA [] [0]) := by
+  simp [step, target_tm, Tape.move, Tape.write, evalSym, encL, encR]
+
+private theorem init_5_reaches_sym :
+    multiStep target_tm ((default : ListBlank (Fin 2)) {{5}}> default) 6 =
+      some (evalSym .modeC [] [1, 1]) := by
+  simp [step, target_tm, Tape.move, Tape.write, evalSym, encL, encR]
+
+private theorem _closed_not_halt {c_init : Cfg (Fin 2) (Fin 6)}
     (P : Cfg (Fin 2) (Fin 6) → Prop)
     (h_step : ∀ c, P c → ∃ c', (c [target_tm]⊢⁺ c') ∧ P c')
     (c₀ : Cfg (Fin 2) (Fin 6))
-    {N₀ : ℕ} (h_init : multiStep target_tm (init []) N₀ = some c₀)
+    {N₀ : ℕ} (h_init : multiStep target_tm c_init N₀ = some c₀)
     (h₀ : P c₀) :
-    IsNotHalt target_tm := by
-  have h_unb : ∀ K : ℕ, ∃ M ≥ K, ∃ c, multiStep target_tm (init []) M = some c ∧ P c := by
+    ∀ cfg : Cfg (Fin 2) (Fin 6), (c_init [target_tm]⊢* cfg) → (step target_tm cfg).isSome := by
+  have h_unb : ∀ K : ℕ, ∃ M ≥ K, ∃ c, multiStep target_tm c_init M = some c ∧ P c := by
     intro K
     induction K with
     | zero => exact ⟨N₀, Nat.zero_le N₀, c₀, h_init, h₀⟩
     | succ K ih =>
-      rcases ih with ⟨M, hMK, c, hMc, hc⟩
+      rcases ih with ⟨M, _, c, hMc, hc⟩
       rcases h_step c hc with ⟨c', ⟨k, hk_pos, h_ck⟩, hc'⟩
       refine ⟨M + k, by omega, c', ?_, hc'⟩
-      rw [_ms_add (init []) M k, hMc]
+      rw [_ms_add c_init M k, hMc]
       exact h_ck
   intro cfg ⟨N, hN⟩
   rcases h_unb (N + 1) with ⟨M, hMN, c, hMc, _⟩
   obtain ⟨d, rfl⟩ : ∃ d, M = (N + 1) + d := ⟨M - (N + 1), by omega⟩
-  rw [_ms_add (init []) (N + 1) d, _ms_succ (init []) N, hN] at hMc
+  rw [_ms_add c_init (N + 1) d, _ms_succ c_init N, hN] at hMc
   cases hst : step target_tm cfg with
   | none =>
     change Option.bind (step target_tm cfg) (fun c' => multiStep target_tm c' d) = some c at hMc
     rw [hst] at hMc; cases hMc
   | some _ => rfl
 
+public section
 
+theorem is_not_halt_from_0682 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{1}}> default) [target]⊢* cfg) → (step target cfg).isSome :=
+          by
+  rw [target_eq]
+  exact _closed_not_halt GoodSym step_sym_closed (evalSym .modeA [] [0])
+    init_1_reaches_sym (.mkA .nil .zero)
 
-theorem is_does_not_halt : IsNotHalt target_tm := by
+theorem is_not_halt_from_0713 :
+    ∀ cfg : Cfg (Fin 2) (Fin 6),
+      (((default : ListBlank (Fin 2)) {{5}}> default) [target]⊢* cfg) → (step target cfg).isSome :=
+          by
+  rw [target_eq]
+  exact _closed_not_halt GoodSym step_sym_closed (evalSym .modeC [] [1, 1])
+    init_5_reaches_sym (.mkC .nil (.z1 (.z1 .nil)))
+
+theorem is_not_halt : IsNotHalt target := by
+  rw [target_eq]
   exact _closed_not_halt GoodSym step_sym_closed (evalSym .modeC [] [1])
     init_reaches_sym (.mkC .nil (.z1 .nil))
 
-
-theorem is_not_halt : IsNotHalt target := by rw [target_eq]; exact is_does_not_halt
+end
 
 end BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH

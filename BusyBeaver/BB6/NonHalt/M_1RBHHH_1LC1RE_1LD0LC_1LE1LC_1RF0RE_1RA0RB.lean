@@ -26,8 +26,6 @@ open BusyBeaver.Longitudinal
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
@@ -49,7 +47,7 @@ def runSteps (M : Machine (Fin 2) (Fin 6)) :
   | 0, x => some x
   | n + 1, x => (BoundedConfig.step M x).bind (runSteps M n)
 
-lemma runSteps_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
+theorem runSteps_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
     (x x' : BoundedConfig.BCfg (Fin 2) (Fin 6))
     (h : runSteps M n x = some x') (l₀ r₀ : zB) :
     (BoundedConfig.toCfg x l₀ r₀) [M]⊢* (BoundedConfig.toCfg x' l₀ r₀) := by
@@ -61,7 +59,7 @@ lemma runSteps_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
     · cases h
     · exact stepStar_trans ⟨1, BoundedConfig.step_spec M x hst l₀ r₀⟩ (ih y h)
 
-lemma runSteps1_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
+theorem runSteps1_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
     (x x' : BoundedConfig.BCfg (Fin 2) (Fin 6))
     (h : runSteps M (n + 1) x = some x') (l₀ r₀ : zB) :
     (BoundedConfig.toCfg x l₀ r₀) [M]⊢⁺ (BoundedConfig.toCfg x' l₀ r₀) := by
@@ -71,24 +69,24 @@ lemma runSteps1_spec (M : Machine (Fin 2) (Fin 6)) (n : ℕ)
   · exact stepPlus_stepStar_trans ⟨1, by decide, BoundedConfig.step_spec M x hst l₀ r₀⟩
       (runSteps_spec M n y x' h l₀ r₀)
 
-lemma stepStar_congr {c₁ c₁' c₂ c₂' : Cfg (Fin 2) (Fin 6)}
+theorem stepStar_congr {c₁ c₁' c₂ c₂' : Cfg (Fin 2) (Fin 6)}
     (h : c₁ [tm]⊢* c₂) (hc₁ : c₁ = c₁') (hc₂ : c₂ = c₂') :
     c₁' [tm]⊢* c₂' := by
   subst hc₁ hc₂; exact h
 
-lemma stepPlus_congr {c₁ c₁' c₂ c₂' : Cfg (Fin 2) (Fin 6)}
+theorem stepPlus_congr {c₁ c₁' c₂ c₂' : Cfg (Fin 2) (Fin 6)}
     (h : c₁ [tm]⊢⁺ c₂) (hc₁ : c₁ = c₁') (hc₂ : c₂ = c₂') :
     c₁' [tm]⊢⁺ c₂' := by
   subst hc₁ hc₂; exact h
 
-lemma SideRLs.congr {M : Machine (Fin 2) (Fin 6)}
+theorem SideRLs.congr {M : Machine (Fin 2) (Fin 6)}
     {ls ls' : List (DH0 (Fin 2) (Fin 6) × DH0 (Fin 2) (Fin 6))}
     {r₁ r₁' r₂ r₂' : zB}
     (h : SideRLs M ls r₁ r₂) (hls : ls = ls') (hr₁ : r₁ = r₁') (hr₂ : r₂ = r₂') :
     SideRLs M ls' r₁' r₂' := by
   subst hls hr₁ hr₂; exact h
 
-lemma segRLs_addmul'' {M : Machine (Fin 2) (Fin 6)}
+theorem segRLs_addmul'' {M : Machine (Fin 2) (Fin 6)}
     {h : List (DH0 (Fin 2) (Fin 6) × DH0 (Fin 2) (Fin 6))}
     {a x b : ℕ} {w₁ w₂ : zF}
     (hb : SegRLs M (h ^ b) [] w₁ w₂)
@@ -136,7 +134,7 @@ def offset : Tp → ℕ
   | .t6 => 0
   | .t7 => 1
 
-lemma offset_le_one (t : Tp) : offset t ≤ 1 := by
+theorem offset_le_one (t : Tp) : offset t ≤ 1 := by
   cases t <;> decide
 
 abbrev d0 : zF := [0, 0, 1, 1, 1, 1]
@@ -161,26 +159,26 @@ inductive RC : ℕ → Tp → zB → Prop where
       RC (n * 2 + (1 - offset t)) (nxt t) r →
       RC (n * 3 + 5) t (d2 +> (w ^ ((n + 1 + offset t) / 3) +> r))
 
-lemma RC.congr {n n' : ℕ} {t t' : Tp} {r r' : zB}
+theorem RC.congr {n n' : ℕ} {t t' : Tp} {r r' : zB}
     (h : RC n t r) (hn : n = n') (ht : t = t') (hr : r = r') : RC n' t' r' := by
   subst hn ht hr; exact h
 
-private lemma rinc_d0 (l r : zB) :
+private theorem rinc_d0 (l r : zB) :
     (l {{E}}> (d0 +> r)) [tm]⊢⁺ (l <{{A}} (d1 +> r)) := by
   have h := runSteps1_spec tm 4 ⟨[], d0, E, .right⟩ ⟨d1, [], A, .left⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma rinc_d1 (l r : zB) :
+private theorem rinc_d1 (l r : zB) :
     (l {{E}}> (d1 +> r)) [tm]⊢⁺ (l <{{A}} (d2 +> r)) := by
   have h := runSteps1_spec tm 4 ⟨[], d1, E, .right⟩ ⟨d2, [], A, .left⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma shift_E_w_step (l r : zB) :
+private theorem shift_E_w_step (l r : zB) :
     (l {{E}}> (w +> r)) [tm]⊢* ((v +> l) {{E}}> r) := by
   have h := runSteps_spec tm 5 ⟨[], w, E, .right⟩ ⟨v, [], E, .right⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma shift_E_w (k : ℕ) (l r : zB) :
+private theorem shift_E_w (k : ℕ) (l r : zB) :
     (l {{E}}> (w ^ k +> r)) [tm]⊢* ((v ^ k +> l) {{E}}> r) := by
   induction k generalizing l with
   | zero => exact stepStar_refl tm _
@@ -190,12 +188,12 @@ private lemma shift_E_w (k : ℕ) (l r : zB) :
     refine stepStar_congr (ih (v +> l)) rfl ?_
     rw [← append_assoc, ← pow_succ_list']
 
-private lemma shift_A_v_step (l r : zB) :
+private theorem shift_A_v_step (l r : zB) :
     ((v +> l) <{{A}} r) [tm]⊢* (l <{{A}} (w +> r)) := by
   have h := runSteps_spec tm 5 ⟨[], v, A, .left⟩ ⟨w, [], A, .left⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma shift_A_v (k : ℕ) (l r : zB) :
+private theorem shift_A_v (k : ℕ) (l r : zB) :
     ((v ^ k +> l) <{{A}} r) [tm]⊢* (l <{{A}} (w ^ k +> r)) := by
   induction k generalizing r with
   | zero => exact stepStar_refl tm _
@@ -205,46 +203,46 @@ private lemma shift_A_v (k : ℕ) (l r : zB) :
     refine stepStar_congr (ih (w +> r)) rfl ?_
     rw [← append_assoc (w ^ k) w r, ← pow_succ_list']
 
-private lemma pow_v_comm (k : ℕ) (l : zB) :
+private theorem pow_v_comm (k : ℕ) (l : zB) :
     v ^ (k + 1) +> l = v +> (v ^ k +> l) := by
   rw [pow_succ_list, append_assoc]
 
-private lemma enter_d2_base (l r : zB) :
+private theorem enter_d2_base (l r : zB) :
     ((v +> l) {{E}}> (d2 +> r)) [tm]⊢* ((v +> (([0] ++ v) +> l)) {{E}}> r) := by
   have h := runSteps_spec tm 6 ⟨v, d2, E, .right⟩ ⟨v ++ ([0] ++ v), [], E, .right⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil, append_assoc] using h
 
-private lemma enter_d2 (k : ℕ) (l r : zB) :
+private theorem enter_d2 (k : ℕ) (l r : zB) :
     ((v +> l) {{E}}> (d2 +> (w ^ k +> r))) [tm]⊢*
       ((v ^ (k + 1) +> (([0] ++ v) +> l)) {{E}}> r) := by
   refine stepStar_trans (enter_d2_base l (w ^ k +> r)) ?_
   refine stepStar_congr (shift_E_w k (v +> (([0] ++ v) +> l)) r) rfl ?_
   rw [← append_assoc, ← pow_succ_list']
 
-private lemma bounce_mid_base (l r : zB) :
+private theorem bounce_mid_base (l r : zB) :
     ((([0] ++ v) +> l) <{{A}} r) [tm]⊢* ((d1 +> l) {{E}}> r) := by
   have h := runSteps_spec tm 7 ⟨[], [0] ++ v, A, .left⟩ ⟨d1, [], E, .right⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma bounce_mid (k : ℕ) (l r : zB) :
+private theorem bounce_mid (k : ℕ) (l r : zB) :
     ((v ^ k +> (([0] ++ v) +> l)) <{{A}} r) [tm]⊢*
       ((v ^ k +> (d1 +> l)) {{E}}> r) := by
   refine stepStar_trans (shift_A_v k (([0] ++ v) +> l) r) ?_
   refine stepStar_trans (bounce_mid_base l (w ^ k +> r)) ?_
   exact shift_E_w k (d1 +> l) r
 
-private lemma exit_d0_base (l r : zB) :
+private theorem exit_d0_base (l r : zB) :
     ((d1 +> l) <{{A}} r) [tm]⊢* (l <{{A}} (d0 +> r)) := by
   have h := runSteps_spec tm 6 ⟨[], d1, A, .left⟩ ⟨d0, [], A, .left⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma exit_d0 (k : ℕ) (l r : zB) :
+private theorem exit_d0 (k : ℕ) (l r : zB) :
     ((v ^ k +> (d1 +> l)) <{{A}} r) [tm]⊢*
       (l <{{A}} (d0 +> (w ^ k +> r))) := by
   refine stepStar_trans (shift_A_v k (d1 +> l) r) ?_
   exact exit_d0_base l (w ^ k +> r)
 
-private lemma rinc_rc2 (t : Tp) :
+private theorem rinc_rc2 (t : Tp) :
     ∃ r', RC 3 t r' ∧ ∀ l, ((v +> l) {{E}}> (d2 +> rh t)) [tm]⊢⁺ (l <{{A}} r') := by
   cases t
   · refine ⟨d0 +> (w ^ ((0 + 1 + offset .t0) / 3) +> (d1 +> rh .t1)),
@@ -296,7 +294,7 @@ private lemma rinc_rc2 (t : Tp) :
     rw [show (0 + 1 + offset .t7) / 3 = 0 by rfl, pow_zero_list, append_nil]
     simpa only [toDHCfg, rh, append_nil, append_assoc] using h
 
-lemma RInc (n : ℕ) (t : Tp) (r : zB) (h : RC n t r) :
+theorem RInc (n : ℕ) (t : Tp) (r : zB) (h : RC n t r) :
     ∃ r', RC (n + 1) t r' ∧
       (n % 3 ≠ 2 → ∀ l, (l {{E}}> r) [tm]⊢⁺ (l <{{A}} r')) ∧
       (n % 3 = 2 → ∀ l, ((v +> l) {{E}}> r) [tm]⊢⁺ (l <{{A}} r')) := by
@@ -365,7 +363,7 @@ abbrev hL : DH0 (Fin 2) (Fin 6) := (A, [])
 abbrev hRL : List (DH0 (Fin 2) (Fin 6) × DH0 (Fin 2) (Fin 6)) := [(hR, hL)]
 abbrev hLR : List (DH0 (Fin 2) (Fin 6) × DH0 (Fin 2) (Fin 6)) := [(hL, hR)]
 
-private lemma sideRL_w_mod2 (m : ℕ) {r r0 : zB}
+private theorem sideRL_w_mod2 (m : ℕ) {r r0 : zB}
     (hstep : ∀ l, ((v +> l) {{E}}> r) [tm]⊢⁺ (l <{{A}} r0)) :
     SideRL tm hR hL (w +> (w ^ m +> r)) (w ^ m +> r0) := by
   intro l
@@ -377,7 +375,7 @@ private lemma sideRL_w_mod2 (m : ℕ) {r r0 : zB}
   rw [hv]
   exact stepPlus_stepStar_trans (hstep (v ^ m +> l)) (shift_A_v m l r0)
 
-private lemma sideRL_w_ne2 (m : ℕ) {r r0 : zB}
+private theorem sideRL_w_ne2 (m : ℕ) {r r0 : zB}
     (hstep : ∀ l, (l {{E}}> r) [tm]⊢⁺ (l <{{A}} r0)) :
     SideRL tm hR hL (w ^ m +> r) (w ^ m +> r0) := by
   intro l
@@ -385,7 +383,7 @@ private lemma sideRL_w_ne2 (m : ℕ) {r r0 : zB}
   exact stepStar_stepPlus_trans (shift_E_w m l r)
     (stepPlus_stepStar_trans (hstep (v ^ m +> l)) (shift_A_v m l r0))
 
-lemma RIncs2 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 2) :
+theorem RIncs2 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 2) :
     ∃ r', RC (n + m * 3) t r' ∧ SideRLs tm (hRL ^ (m * 3)) (w ^ m +> r) r' := by
   induction m generalizing n t r with
   | zero =>
@@ -404,7 +402,7 @@ lemma RIncs2 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 2) :
       (.cons (sideRL_w_ne2 m (i4 (by omega)))
         (.cons (sideRL_w_ne2 m (i6 (by omega))) hside))
 
-lemma RIncs1 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 1) :
+theorem RIncs1 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 1) :
     ∃ r', RC (n + m * 3 + 1) t r' ∧ SideRLs tm (hRL ^ (m * 3 + 1)) (w ^ m +> r) r' := by
   rcases RInc n t r h with ⟨r0, h0, i2, _⟩
   rcases RIncs2 m (n + 1) t r0 h0 (by omega) with ⟨r', hr', hside⟩
@@ -414,7 +412,7 @@ lemma RIncs1 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 1) :
   rw [hm_pow]
   exact .cons (sideRL_w_ne2 m (i2 (by omega))) hside
 
-lemma RIncs0 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 0) :
+theorem RIncs0 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 0) :
     ∃ r', RC (n + m * 3 + 2) t r' ∧ SideRLs tm (hRL ^ (m * 3 + 2)) (w ^ m +> r) r' := by
   rcases RInc n t r h with ⟨r0, h0, i2, _⟩
   rcases RIncs1 m (n + 1) t r0 h0 (by omega) with ⟨r', hr', hside⟩
@@ -425,7 +423,7 @@ lemma RIncs0 (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) (hm : n % 3 = 0) :
   rw [hm_pow]
   exact .cons (sideRL_w_ne2 m (i2 (by omega))) hside
 
-lemma RIncs (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) :
+theorem RIncs (m n : ℕ) (t : Tp) (r : zB) (h : RC n t r) :
     ∃ r', RC (n + m * 3 + (2 - n % 3)) t r' ∧
       SideRLs tm (hRL ^ (m * 3 + (2 - n % 3))) (w ^ m +> r) r' := by
   have hmod : n % 3 = 0 ∨ n % 3 = 1 ∨ n % 3 = 2 := by omega
@@ -445,26 +443,26 @@ inductive LC : ℕ → List ℕ → zB → Prop where
   | LC_w (n : ℕ) (ls : List ℕ) (l : zB) :
       LC n ls l → LC n (0 :: ls) (v +> l)
 
-lemma LC.congr {n n' : ℕ} {ls ls' : List ℕ} {l l' : zB}
+theorem LC.congr {n n' : ℕ} {ls ls' : List ℕ} {l l' : zB}
     (h : LC n ls l) (hn : n = n') (hls : ls = ls') (hl : l = l') : LC n' ls' l' := by
   subst hn hls hl; exact h
 
-private lemma linc_z0 (l r : zB) :
+private theorem linc_z0 (l r : zB) :
     ((z0 +> l) <{{A}} r) [tm]⊢⁺ ((z1 +> l) {{E}}> r) := by
   have h := runSteps1_spec tm 6 ⟨[], z0, A, .left⟩ ⟨z1, [], E, .right⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma linc_z1_left (l r : zB) :
+private theorem linc_z1_left (l r : zB) :
     ((z1 +> l) <{{A}} r) [tm]⊢* (l <{{A}} ([1, 1, 1, 1] +> r)) := by
   have h := runSteps_spec tm 4 ⟨[], z1, A, .left⟩ ⟨[1, 1, 1, 1], [], A, .left⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-private lemma linc_z1_right (l r : zB) :
+private theorem linc_z1_right (l r : zB) :
     (l {{E}}> ([1, 1, 1, 1] +> r)) [tm]⊢* ((z0 +> l) {{E}}> r) := by
   have h := runSteps_spec tm 4 ⟨[], [1, 1, 1, 1], E, .right⟩ ⟨z0, [], E, .right⟩ (by decide) l r
   simpa only [BoundedConfig.toCfg, append_nil] using h
 
-lemma LInc (n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
+theorem LInc (n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
     ∃ l', LC (n + 1) ls l' ∧ ∀ r, (l <{{A}} r) [tm]⊢⁺ (l' {{E}}> r) := by
   induction h with
   | LC_0 =>
@@ -491,7 +489,7 @@ lemma LInc (n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
     exact stepStar_stepPlus_trans (shift_A_v_step l r)
       (stepPlus_stepStar_trans (hstep (w +> r)) (shift_E_w_step l' r))
 
-lemma LIncs (m n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
+theorem LIncs (m n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
     ∃ l', LC (n + m) ls l' ∧ SideRLs (flipTM tm) (hLR ^ m) l l' := by
   induction m generalizing n l with
   | zero =>
@@ -505,7 +503,7 @@ lemma LIncs (m n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
     refine .cons (fun r => ?_) hside
     exact toDHCfg_stepPlus_flip (h₁ := hL) (h₂ := hR) (d₁ := .left) (d₂ := .right) (hstep r)
 
-private lemma rov_enter (k : ℕ) (l r : zB) :
+private theorem rov_enter (k : ℕ) (l r : zB) :
     (l {{E}}> (d2 +> (w ^ k +> r))) [tm]⊢*
       ((v ^ (k + 1) +> ([0] +> l)) {{E}}> r) := by
   have h1 : (l {{E}}> (d2 +> (w ^ k +> r))) [tm]⊢*
@@ -516,7 +514,7 @@ private lemma rov_enter (k : ℕ) (l r : zB) :
   refine stepStar_congr (shift_E_w k (v +> ([0] +> l)) r) rfl ?_
   rw [← append_assoc, ← pow_succ_list']
 
-lemma ROv01 (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r)
+theorem ROv01 (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r)
     (hm : (n * 2 + (1 - offset t)) % 3 ≠ 2) :
     ∃ r', RC (n * 2 + (1 - offset t) + 1) (nxt t) r' ∧
       ∀ l, (l {{E}}> r) [tm]⊢*
@@ -534,7 +532,7 @@ lemma ROv01 (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r)
         (shift_A_v (k + 1) ([0] +> l) r'))
   | _ => omega
 
-lemma ROv2 (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r)
+theorem ROv2 (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r)
     (hm : (n * 2 + (1 - offset t)) % 3 = 2) :
     ∃ r', RC (n * 2 + (1 - offset t) + 1) (nxt t) r' ∧
       ∀ l, (l {{E}}> r) [tm]⊢*
@@ -556,7 +554,7 @@ lemma ROv2 (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r)
         (shift_A_v k ([0] +> l) r'))
   | _ => omega
 
-lemma ROv (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r) :
+theorem ROv (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r) :
     ∃ r', RC (n * 2 + (1 - offset t) + 1) (nxt t) r' ∧
       ∀ l, (l {{E}}> r) [tm]⊢*
         (([0] +> l) <{{A}}
@@ -569,7 +567,7 @@ lemma ROv (n : ℕ) (t : Tp) (r : zB) (h : RC (n * 3 + 5) t r) :
     rw [hdiv]
     exact ROv01 n t r h hm
 
-lemma BigStep0 {k : ℕ} {ls : List ℕ} {l : zB} {n : ℕ} {t : Tp} {r : zB}
+theorem BigStep0 {k : ℕ} {ls : List ℕ} {l : zB} {n : ℕ} {t : Tp} {r : zB}
     (hlc : LC k (0 :: ls) l) (hrc : RC (n * 3 + 5) t r) :
     ∃ l' r', LC (3 + k) ls l' ∧ RC ((n + 1) * 3 + 5) t r' ∧
       (l {{E}}> r) [tm]⊢⁺ (l' {{E}}> r') := by
@@ -601,32 +599,32 @@ abbrev Hs : List (DH0 (Fin 2) (Fin 6) × DH0 (Fin 2) (Fin 6)) := hLR
 abbrev LH (n : ℕ) (l l' : zB) : Prop :=
   SideRLs (flipTM tm) (Hs ^ n) l l'
 
-lemma LH.congr {n n' : ℕ} {l l₀ l' l₀' : zB}
+theorem LH.congr {n n' : ℕ} {l l₀ l' l₀' : zB}
     (h : LH n l l') (hn : n = n') (hl : l = l₀) (hl' : l' = l₀') : LH n' l₀ l₀' := by
   subst hn hl hl'; exact h
 
-lemma LH_add {a b : ℕ} {l l' l'' : zB} (h1 : LH a l l') (h2 : LH b l' l'') :
+theorem LH_add {a b : ℕ} {l l' l'' : zB} (h1 : LH a l l') (h2 : LH b l' l'') :
     LH (a + b) l l'' :=
   h1.trans_add h2
 
-lemma LH_inc (m k : ℕ) (ls : List ℕ) (l : zB) (h : LC k ls l) :
+theorem LH_inc (m k : ℕ) (ls : List ℕ) (l : zB) (h : LC k ls l) :
     ∃ l', LC (k + m) ls l' ∧ LH m l l' :=
   LIncs m k ls l h
 
-lemma LH_word {n : ℕ} {l l' : zB} (h : LH n l l') :
+theorem LH_word {n : ℕ} {l l' : zB} (h : LH n l l') :
     LH n (v +> l) (v +> l') := by
   have hseg : SegRLs (flipTM tm) Hs Hs v v :=
     BoundedConfig.segRLs_c_spec (flipTM tm) (T := 100) (by decide)
   exact (SegRLs.wall_pow hseg n).sideRLs_concat h
 
-lemma LH_zero {n : ℕ} {l l' : zB} (h : LH n l l') :
+theorem LH_zero {n : ℕ} {l l' : zB} (h : LH n l l') :
     LH (n * 2) (z0 +> l) (z0 +> l') := by
   have ha : SegRLs (flipTM tm) (Hs ^ 2) Hs z0 z0 :=
     BoundedConfig.segRLs_c_spec (flipTM tm) (T := 100) (by decide)
   have hseg := segRLs_addmul'' (x := n) (a := 2) (b := 0) (.nil z0) ha
   simpa only [Nat.add_zero] using hseg.sideRLs_concat h
 
-lemma LH_cross {l l' : zB} (h : LH 3 l l') :
+theorem LH_cross {l l' : zB} (h : LH 3 l l') :
     LH 2 ([0] +> (v +> l)) (v +> ([0] +> l')) := by
   have hseg : SegRLs (flipTM tm) (Hs ^ 2) (Hs ^ 3) ([0] ++ v) (v ++ [0]) :=
     BoundedConfig.segRLs_c_spec (flipTM tm) (T := 200) (by decide)
@@ -640,7 +638,7 @@ def down : List ℕ → List ℕ
   | [] => []
   | h :: ls => (h - 1) :: ls
 
-lemma LC_even_intro (n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
+theorem LC_even_intro (n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
     LC (n * 2) (up ls) (z0 +> l) := by
   rcases ls with _ | ⟨hd, tl⟩
   · rcases n with _ | n
@@ -653,7 +651,7 @@ lemma LC_even_intro (n : ℕ) (ls : List ℕ) (l : zB) (h : LC n ls l) :
     · exact (LC.LC_2 n l h).congr (by omega) rfl rfl
   · exact (LC.LC_0' n hd tl l h).congr rfl (by simp [up]; try omega) rfl
 
-lemma LC_even (n : ℕ) (ls : List ℕ) (l : zB) (h : LC (n * 2) (up ls) l) :
+theorem LC_even (n : ℕ) (ls : List ℕ) (l : zB) (h : LC (n * 2) (up ls) l) :
     ∃ l', LC n ls l' ∧ l = z0 +> l' := by
   generalize hm : n * 2 = m at h
   generalize hls : up ls = ls0 at h
@@ -676,7 +674,7 @@ lemma LC_even (n : ℕ) (ls : List ℕ) (l : zB) (h : LC (n * 2) (up ls) l) :
     | LC_w n0 ls1 l0 _ => injection hls with hh; omega
     | _ => cases hls
 
-lemma LC_odd (n : ℕ) (ls : List ℕ) (l : zB) (h : LC (n * 2 + 1) (up ls) l) :
+theorem LC_odd (n : ℕ) (ls : List ℕ) (l : zB) (h : LC (n * 2 + 1) (up ls) l) :
     ∃ l', LC n ls l' ∧ l = z1 +> l' := by
   generalize hm : n * 2 + 1 = m at h
   generalize hls : up ls = ls0 at h
@@ -703,18 +701,18 @@ inductive Reset : ℕ → List ℕ → ℕ → ℕ → List ℕ → Prop where
   | RMark (n : ℕ) (ls : List ℕ) (c k : ℕ) (ls' : List ℕ) :
       Reset (n + 3) ls c k ls' → Reset n (0 :: ls) (2 + c) k (0 :: ls')
 
-lemma Reset.congr {n n' : ℕ} {ls ls₀ : List ℕ} {c c' k k' : ℕ} {ls' ls₀' : List ℕ}
+theorem Reset.congr {n n' : ℕ} {ls ls₀ : List ℕ} {c c' k k' : ℕ} {ls' ls₀' : List ℕ}
     (h : Reset n ls c k ls')
     (hn : n = n') (hls : ls = ls₀) (hc : c = c') (hk : k = k') (hls' : ls' = ls₀') :
     Reset n' ls₀ c' k' ls₀' := by
   subst hn hls hc hk hls'; exact h
 
-lemma LH_absorb (l : zB) : LH 1 ([0] +> (z1 +> l)) (v +> l) := by
+theorem LH_absorb (l : zB) : LH 1 ([0] +> (z1 +> l)) (v +> l) := by
   have hseg : SegRLs (flipTM tm) (Hs ^ 1) [] ([0] ++ z1) v :=
     BoundedConfig.segRLs_c_spec (flipTM tm) (T := 100) (by decide)
   simpa only [append_assoc, append_cons, append_nil] using hseg.sideRLs_concat (.nil l)
 
-lemma Reset_spec {n : ℕ} {ls : List ℕ} {c k : ℕ} {ls' : List ℕ}
+theorem Reset_spec {n : ℕ} {ls : List ℕ} {c k : ℕ} {ls' : List ℕ}
     (h : Reset n ls c k ls') (l : zB) (hl : LC n ls l) :
     ∃ l', LC k ls' l' ∧ LH c ([0] +> l) l' := by
   induction h generalizing l with
@@ -749,7 +747,7 @@ lemma Reset_spec {n : ℕ} {ls : List ℕ} {c k : ℕ} {ls' : List ℕ}
       exact ⟨v +> l', .LC_w k ls' l' hl', LH_add (LH_cross h3) (LH_word hr)⟩
     | _ => cases hls
 
-lemma LH_first {n : ℕ} {l l' : zB} (h : LH (1 + n) l l') :
+theorem LH_first {n : ℕ} {l l' : zB} (h : LH (1 + n) l l') :
     ∃ l0, LH n l0 l' ∧ ∀ r, (l <{{A}} r) [tm]⊢⁺ (l0 {{E}}> r) := by
   have hpow : Hs ^ (1 + n) = (hL, hR) :: (Hs ^ n) := by
     rw [pow_add_list]; rfl
@@ -760,7 +758,7 @@ lemma LH_first {n : ℕ} {l l' : zB} (h : LH (1 + n) l l') :
     exact ⟨_, h_rest, fun r =>
       toDHCfg_stepPlus_unflip (h₁ := hL) (h₂ := hR) (d₁ := .right) (d₂ := .left) (h_first r)⟩
 
-lemma phase_calls (n : ℕ) {l l' r r' : zB}
+theorem phase_calls (n : ℕ) {l l' r r' : zB}
     (hl : LH (1 + n) l l') (hr : SideRLs tm (hRL ^ n) r r') :
     (l <{{A}} r) [tm]⊢⁺ (l' {{E}}> r') := by
   induction n generalizing l r with
@@ -780,7 +778,7 @@ lemma phase_calls (n : ℕ) {l l' r r' : zB}
       exact stepPlus_trans (hleft r)
         (stepPlus_trans (hr_first l0) (ih hl0 hr_rest))
 
-lemma Phase {n : ℕ} {t : Tp} {r l l' : zB}
+theorem Phase {n : ℕ} {t : Tp} {r l l' : zB}
     (hr : RC (n * 3 + 5) t r) (hl : LH (n + 4 + offset t) ([0] +> l) l') :
     ∃ r', RC (n * 3 + 5) (nxt t) r' ∧ (l {{E}}> r) [tm]⊢⁺ (l' {{E}}> r') := by
   have hoff := offset_le_one t
@@ -793,7 +791,7 @@ lemma Phase {n : ℕ} {t : Tp} {r l l' : zB}
   exact stepStar_stepPlus_trans (h0 l)
     (phase_calls (n + 3 + offset t) (hl.congr (by omega) rfl rfl) h1)
 
-lemma Phase_reset {n : ℕ} {t : Tp} {r : zB} {k : ℕ} {ls : List ℕ} {c k' : ℕ} {ls' : List ℕ} {l : zB}
+theorem Phase_reset {n : ℕ} {t : Tp} {r : zB} {k : ℕ} {ls : List ℕ} {c k' : ℕ} {ls' : List ℕ} {l : zB}
     (hr : RC (n * 3 + 5) t r) (hl : LC k ls l)
     (hreset : Reset k ls c k' ls') (hc : c ≤ n + 4 + offset t) :
     ∃ l' r', LC (k' + (n + 4 + offset t - c)) ls' l' ∧
@@ -831,12 +829,12 @@ def Denote (s : State) (l r : zB) : Prop :=
   match s with
   | .st k ls n t => LC k ls l ∧ RC (n * 3 + 5) t r
 
-lemma Denote.congr {s s' : State} {l l' r r' : zB}
+theorem Denote.congr {s s' : State} {l l' r r' : zB}
     (h : Denote s l r) (hs : s = s') (hl : l = l') (hr : r = r') :
     Denote s' l' r' := by
   subst hs hl hr; exact h
 
-lemma Next_spec {s s' : State} (h : Next s s') (l r : zB) (hd : Denote s l r) :
+theorem Next_spec {s s' : State} (h : Next s s') (l r : zB) (hd : Denote s l r) :
     ∃ l' r', Denote s' l' r' ∧ (l {{E}}> r) [tm]⊢⁺ (l' {{E}}> r') := by
   rcases h with ⟨k, ls, n, t⟩ | ⟨k, ls, n, t, c, k', ls', hres, hc⟩
   · rcases hd with ⟨hl, hr⟩
@@ -850,7 +848,7 @@ def shift (i : ℕ) : List ℕ → List ℕ
   | [] => []
   | h :: ls => (i + h) :: ls
 
-lemma Reset_scale (i : ℕ) {n : ℕ} {ls : List ℕ} {c k : ℕ} {ls' : List ℕ}
+theorem Reset_scale (i : ℕ) {n : ℕ} {ls : List ℕ} {c k : ℕ} {ls' : List ℕ}
     (h : Reset n ls c k ls') :
     Reset (n * 2 ^ i) (shift i ls) (c * 2 ^ i) (k * 2 ^ i) (shift i ls') := by
   induction i with
@@ -869,11 +867,11 @@ inductive Steps : State → State → Prop where
   | Done (s : State) : Steps s s
   | Advance {s t u : State} : Next s t → Steps t u → Steps s u
 
-lemma Steps.congr {s s' t t' : State} (h : Steps s t) (hs : s = s') (ht : t = t') :
+theorem Steps.congr {s s' t t' : State} (h : Steps s t) (hs : s = s') (ht : t = t') :
     Steps s' t' := by
   subst hs ht; exact h
 
-lemma Steps_spec {s s' : State} (h : Steps s s') (l r : zB) (hd : Denote s l r) :
+theorem Steps_spec {s s' : State} (h : Steps s s') (l r : zB) (hd : Denote s l r) :
     ∃ l' r', Denote s' l' r' ∧ (l {{E}}> r) [tm]⊢* (l' {{E}}> r') := by
   induction h generalizing l r with
   | Done s =>
@@ -883,18 +881,18 @@ lemma Steps_spec {s s' : State} (h : Steps s s') (l r : zB) (hd : Denote s l r) 
     rcases ih l0 r0 hmid with ⟨l', r', h', hrun'⟩
     exact ⟨l', r', h', stepPlus_to_stepStar (stepPlus_stepStar_trans hrun hrun')⟩
 
-lemma reset_odd (n : ℕ) (ls' : List ℕ) {k : ℕ} {ls : List ℕ}
+theorem reset_odd (n : ℕ) (ls' : List ℕ) {k : ℕ} {ls : List ℕ}
     (hk : k = n * 2 + 1) (hls : ls = up ls') :
     Reset k ls 1 n (0 :: ls') :=
   (Reset.ROdd n ls').congr hk.symm hls.symm rfl rfl rfl
 
-lemma reset_even (n : ℕ) (ls0 : List ℕ) {k : ℕ} {ls : List ℕ} {c k' : ℕ} {ls' : List ℕ}
+theorem reset_even (n : ℕ) (ls0 : List ℕ) {k : ℕ} {ls : List ℕ} {c k' : ℕ} {ls' : List ℕ}
     (hk : k = n * 2) (hls : ls = up ls0)
     (h : Reset n ls0 c k' ls') :
     Reset k ls (c * 2) (k' * 2) (up ls') :=
   (Reset.REven n ls0 c k' ls' h).congr hk.symm hls.symm rfl rfl rfl
 
-lemma reset_mark {k : ℕ} {ls : List ℕ} {c k' : ℕ} {ls' : List ℕ}
+theorem reset_mark {k : ℕ} {ls : List ℕ} {c k' : ℕ} {ls' : List ℕ}
     (h : Reset (k + 3) ls c k' ls') :
     Reset k (0 :: ls) (2 + c) k' (0 :: ls') :=
   .RMark k ls c k' ls' h
@@ -908,12 +906,12 @@ macro "reven" n:term:arg ls:term:arg : tactic =>
 macro "rmark" : tactic =>
   `(tactic| apply reset_mark)
 
-lemma step_drop {k : ℕ} {ls : List ℕ} {n : ℕ} {t : Tp} {s' : State}
+theorem step_drop {k : ℕ} {ls : List ℕ} {n : ℕ} {t : Tp} {s' : State}
     (h : Steps (.st (k + 3) ls (n + 1) t) s') :
     Steps (.st k (0 :: ls) n t) s' :=
   .Advance (.Drop k ls n t) h
 
-lemma step_reset_as (k_new n_new : ℕ)
+theorem step_reset_as (k_new n_new : ℕ)
     {k : ℕ} {ls : List ℕ} {n : ℕ} {t : Tp} {c k' : ℕ} {ls' : List ℕ} {s' : State}
     (hr : Reset k ls c k' ls')
     (hc : c ≤ n + 4 + offset t)
@@ -936,7 +934,7 @@ def RootD (h n : ℕ) : State := .st (n * 2 + 7 - 3 * 2 ^ (h - 1)) [0, h] n .t5
 def RootE (n : ℕ) : State := .st (n * 2 + 3) [1, 0] n .t5
 def RootF (n : ℕ) : State := .st (n * 2 + 3) [0, 0, 1] n .t5
 
-lemma E_cycle (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
+theorem E_cycle (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
     Steps (RootE n) (RootG (n + 9)) := by
   set q := n / 8
   have hq : n = q * 8 + 2 := by omega
@@ -951,7 +949,7 @@ lemma E_cycle (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
   phase_with (n * 2 + 25) (n + 9) { rodd (q * 8 + 14) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma F_cycle (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 1) :
+theorem F_cycle (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 1) :
     Steps (RootF n) (RootG (n + 10)) := by
   set q := n / 8
   have hq : n = q * 8 + 1 := by omega
@@ -966,7 +964,7 @@ lemma F_cycle (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 1) :
   phase_with (n * 2 + 27) (n + 10) { rodd (q * 8 + 14) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma D_shrink (j n : ℕ) (hn : 384 * 2 ^ j ≤ n) (hmod : n % 8 = 2) :
+theorem D_shrink (j n : ℕ) (hn : 384 * 2 ^ j ≤ n) (hmod : n % 8 = 2) :
     Steps (RootD (9 + j) n) (RootD (1 + j) (n + 8)) := by
   set q := n / 8
   have hq : n = q * 8 + 2 := by omega
@@ -984,7 +982,7 @@ lemma D_shrink (j n : ℕ) (hn : 384 * 2 ^ j ≤ n) (hmod : n % 8 = 2) :
   phase_with (n * 2 + 23 - 3 * 2 ^ j) (n + 8) { rodd (q * 8 + 13 - 3 * 2 ^ j) [(j + 1)] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma D_small (h n : ℕ) (hh1 : 1 ≤ h) (hh2 : h ≤ 5) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
+theorem D_small (h n : ℕ) (hh1 : 1 ≤ h) (hh2 : h ≤ 5) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
     Steps (RootD h n) (RootG (n + 9)) := by
   set q := n / 8
   have hq : n = q * 8 + 2 := by omega
@@ -1041,7 +1039,7 @@ lemma D_small (h n : ℕ) (hh1 : 1 ≤ h) (hh2 : h ≤ 5) (hn : 64 ≤ n) (hmod 
     phase_with (n * 2 + 25) (n + 9) { rodd (q * 8 + 14) [] }
     exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma D7 (n : ℕ) (hn : 96 ≤ n) (hmod : n % 8 = 2) :
+theorem D7 (n : ℕ) (hn : 96 ≤ n) (hmod : n % 8 = 2) :
     Steps (RootD 7 n) (RootF (n + 7)) := by
   set q := n / 8
   have hq : n = q * 8 + 2 := by omega
@@ -1056,7 +1054,7 @@ lemma D7 (n : ℕ) (hn : 96 ≤ n) (hmod : n % 8 = 2) :
   phase_with (n * 2 + 17) (n + 7) { rodd (q * 8 + 8) [0, 1] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma D8 (n : ℕ) (hn : 192 ≤ n) (hmod : n % 8 = 2) :
+theorem D8 (n : ℕ) (hn : 192 ≤ n) (hmod : n % 8 = 2) :
     Steps (RootD 8 n) (RootE (n + 8)) := by
   set q := n / 8
   have hq : n = q * 8 + 2 := by omega
@@ -1071,7 +1069,7 @@ lemma D8 (n : ℕ) (hn : 192 ≤ n) (hmod : n % 8 = 2) :
   phase_with (n * 2 + 19) (n + 8) { reven (q * 8 + 12) [0]; rmark; rodd (q * 4 + 7) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma D6_even (n : ℕ) (hn : 64 ≤ n) (hmod : n % 16 = 10) :
+theorem D6_even (n : ℕ) (hn : 64 ≤ n) (hmod : n % 16 = 10) :
     Steps (RootD 6 n) (RootE (n + 8)) := by
   set q := n / 16
   have hq : n = q * 16 + 10 := by omega
@@ -1086,12 +1084,12 @@ lemma D6_even (n : ℕ) (hn : 64 ≤ n) (hmod : n % 16 = 10) :
   phase_with (n * 2 + 19) (n + 8) { reven (q * 16 + 20) [0]; rmark; rodd (q * 8 + 11) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma Reset_power (i u : ℕ) :
+theorem Reset_power (i u : ℕ) :
     Reset ((u * 2 + 1) * 2 ^ i) [] (2 ^ i) (u * 2 ^ i) [i] := by
   have h := Reset_scale i (Reset.ROdd u [])
   exact h.congr rfl rfl (by omega) rfl (by simp [shift])
 
-lemma Reset_cross (a u : ℕ) :
+theorem Reset_cross (a u : ℕ) :
     Reset ((u * 2 + 3) * 32 * 2 ^ a - 24) [3] (16 + 32 * 2 ^ a) ((u + 1) * 32 * 2 ^ a) [3, a + 2] := by
   have hp : 2 ^ (a + 2) = 4 * 2 ^ a := by rw [Nat.pow_add]; ring
   have h1 : 1 ≤ 2 ^ a := Nat.one_le_pow a 2 (by decide)
@@ -1111,7 +1109,7 @@ lemma Reset_cross (a u : ℕ) :
   · change ((u + 1) * 2 ^ (a + 2)) * 8 = (u + 1) * 32 * 2 ^ a
     rw [hp]; ring
 
-lemma D6_odd_ge3 (a u n : ℕ) (hn : 64 ≤ n) (hval : n + 14 = (u * 2 + 3) * 16 * 2 ^ a) :
+theorem D6_odd_ge3 (a u n : ℕ) (hn : 64 ≤ n) (hval : n + 14 = (u * 2 + 3) * 16 * 2 ^ a) :
     Steps (RootD 6 n) (RootD (1 + a) (n + 8)) := by
   have h1 : 1 ≤ 2 ^ a := Nat.one_le_pow a 2 (by decide)
   have hval_lin : n + 14 = 32 * (u * 2 ^ a) + 48 * 2 ^ a := by rw [hval]; ring
@@ -1137,7 +1135,7 @@ lemma D6_odd_ge3 (a u n : ℕ) (hn : 64 ≤ n) (hval : n + 14 = (u * 2 + 3) * 16
   phase_with (n * 2 + 23 - 3 * 2 ^ a) (n + 8) { rodd (q * 8 + 13 - 3 * 2 ^ a) [(a + 1)] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma LH_one {n : ℕ} {l l' : zB} (h : LH n l l') :
+theorem LH_one {n : ℕ} {l l' : zB} (h : LH n l l') :
     LH (n * 2) (z1 +> l) (z1 +> l') := by
   have hb : SegRLs (flipTM tm) (Hs ^ 0) [] z1 z1 := .nil z1
   have ha : SegRLs (flipTM tm) (Hs ^ 2) Hs z1 z1 :=
@@ -1145,7 +1143,7 @@ lemma LH_one {n : ℕ} {l l' : zB} (h : LH n l l') :
   have hseg := segRLs_addmul'' (x := n) (a := 2) (b := 0) hb ha
   simpa only [Nat.add_zero] using hseg.sideRLs_concat h
 
-lemma LH_zeros (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
+theorem LH_zeros (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
     LH (n * 2 ^ j) (z0 ^ j +> l) (z0 ^ j +> l') := by
   induction j with
   | zero =>
@@ -1156,7 +1154,7 @@ lemma LH_zeros (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
     have hp : 2 ^ (j + 1) = 2 ^ j * 2 := by rw [Nat.pow_succ]
     exact hz.congr (by rw [hp]; ring) rfl rfl
 
-lemma G_start (j u n : ℕ) (hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 3) * 2 ^ (1 + j)) :
+theorem G_start (j u n : ℕ) (hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 3) * 2 ^ (1 + j)) :
     Steps (RootG n) (.st (n * 2 + 9 - 3 * 2 ^ j) [0, 1 + j] (n + 1) .t7) := by
   have hp1 : 2 ^ (1 + j) = 2 * 2 ^ j := by rw [Nat.add_comm 1 j, Nat.pow_succ]; ring
   have hp2 : 2 ^ (2 + j) = 4 * 2 ^ j := by rw [Nat.add_comm 2 j, Nat.pow_add]; ring
@@ -1179,17 +1177,17 @@ lemma G_start (j u n : ℕ) (hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 3) * 2 ^ (1 
   phase_with (n * 2 + 9 - 3 * 2 ^ j) (n + 1) { rodd (n + 5 - 3 * 2 ^ j) [(j + 1)] }
   exact (Steps.Done _)
 
-lemma LH_set (l : zB) : LH 1 (z0 +> l) (z1 +> l) := by
+theorem LH_set (l : zB) : LH 1 (z0 +> l) (z1 +> l) := by
   have hseg : SegRLs (flipTM tm) (Hs ^ 1) [] z0 z1 :=
     BoundedConfig.segRLs_c_spec (flipTM tm) (T := 100) (by decide)
   exact hseg.sideRLs_concat (.nil l)
 
-lemma LH_last (l : zB) : LH 1 (z1 +> ([0] +> (z1 +> l))) (z0 +> (v +> l)) := by
+theorem LH_last (l : zB) : LH 1 (z1 +> ([0] +> (z1 +> l))) (z0 +> (v +> l)) := by
   have hseg : SegRLs (flipTM tm) (Hs ^ 1) [] (z1 ++ [0] ++ z1) (z0 ++ v) :=
     BoundedConfig.segRLs_c_spec (flipTM tm) (T := 100) (by decide)
   simpa only [append_assoc, append_cons, append_nil] using hseg.sideRLs_concat (.nil l)
 
-lemma LH_fill (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
+theorem LH_fill (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
     LH ((n + 1) * 2 ^ j - 1) (z0 ^ j +> l) (z1 ^ j +> l') := by
   induction j with
   | zero =>
@@ -1209,7 +1207,7 @@ lemma LH_fill (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
     rw [pow_succ_list, pow_succ_list, append_assoc, append_assoc]
     exact LH.congr (hseg.sideRLs_concat ih) h_eq rfl rfl
 
-lemma LH_clear (j : ℕ) {l l' : zB} (h : LH 1 l l') :
+theorem LH_clear (j : ℕ) {l l' : zB} (h : LH 1 l l') :
     LH 1 (z1 ^ j +> l) (z0 ^ j +> l') := by
   induction j with
   | zero => exact h
@@ -1219,7 +1217,7 @@ lemma LH_clear (j : ℕ) {l l' : zB} (h : LH 1 l l') :
     rw [pow_succ_list, pow_succ_list, append_assoc, append_assoc]
     exact hseg.sideRLs_concat ih
 
-lemma LH_partial_D (j : ℕ) :
+theorem LH_partial_D (j : ℕ) :
     LH (2 ^ (5 + j) - 22)
       (z0 +> (z0 +> (z0 +> (v +> (z0 +> (z0 +> (z0 ^ j +> (z0 +> ([0] +> (z1 +> default))))))))))
       (z0 +> (z1 +> (z0 +> (v +> (z1 +> (z0 +> (z1 ^ j +> (z0 +> ([0] +> (z1 +> default)))))))))) := by
@@ -1246,14 +1244,14 @@ lemma LH_partial_D (j : ℕ) :
   · simp only [append_assoc]
   · simp only [append_assoc]
 
-lemma LH_partial (j : ℕ) (r : zB) :
+theorem LH_partial (j : ℕ) (r : zB) :
     LH (1 + 2 ^ j * 2) (z0 +> (z0 ^ j +> (z0 +> ([0] +> (z1 +> r)))))
       (z1 +> (z0 ^ j +> (z1 +> ([0] +> (z1 +> r))))) := by
   refine LH_add (LH_set _) ?_
   refine LH_one ?_
   exact (LH_zeros j (LH_set ([0] +> (z1 +> r)))).congr (by omega) rfl rfl
 
-lemma LC_zero_words (j : ℕ) {ls : List ℕ} {l : zB} (h : LC 0 ls l) :
+theorem LC_zero_words (j : ℕ) {ls : List ℕ} {l : zB} (h : LC 0 ls l) :
     LC 0 (shift j ls) (z0 ^ j +> l) := by
   induction j with
   | zero =>
@@ -1264,7 +1262,7 @@ lemma LC_zero_words (j : ℕ) {ls : List ℕ} {l : zB} (h : LC 0 ls l) :
     refine (LC_even_intro 0 (shift j ls) (z0 ^ j +> l) ih).congr rfl ?_ rfl
     cases ls <;> simp [shift, up]; omega
 
-lemma LH_partial_finish (j : ℕ) :
+theorem LH_partial_finish (j : ℕ) :
     ∃ l', LC (2 ^ j - 1) [0, 1 + j] l' ∧
       LH (2 ^ j * 2) ([0] +> (z1 +> (z0 ^ j +> (z1 +> ([0] +> (z1 +> default)))))) l' := by
   have h1 : 1 ≤ 2 ^ j := Nat.one_le_pow j 2 (by decide)
@@ -1281,7 +1279,7 @@ lemma LH_partial_finish (j : ℕ) :
     LH_word ((LH_zeros j (LH_last default)).congr (by omega) rfl rfl)
   exact (LH_add hstep1 (LH_add hstep2 hrun)).congr (by omega) rfl rfl
 
-lemma LC_unzeros (j : ℕ) {n : ℕ} {ls : List ℕ} {l : zB} (h : LC (n * 2 ^ j) (shift j ls) l) :
+theorem LC_unzeros (j : ℕ) {n : ℕ} {ls : List ℕ} {l : zB} (h : LC (n * 2 ^ j) (shift j ls) l) :
     ∃ l', LC n ls l' ∧ l = z0 ^ j +> l' := by
   induction j generalizing l with
   | zero =>
@@ -1297,7 +1295,7 @@ lemma LC_unzeros (j : ℕ) {n : ℕ} {ls : List ℕ} {l : zB} (h : LC (n * 2 ^ j
     refine ⟨l', hl', ?_⟩
     rw [pow_succ_list, append_assoc]
 
-lemma LC_pow (j : ℕ) {l : zB} (h : LC (2 ^ j) [] l) :
+theorem LC_pow (j : ℕ) {l : zB} (h : LC (2 ^ j) [] l) :
     l = z0 ^ j +> (z1 +> default) := by
   have he : LC (1 * 2 ^ j) (shift j []) l := h.congr (by omega) rfl rfl
   rcases LC_unzeros j he with ⟨l0, hl0, rfl⟩
@@ -1311,7 +1309,7 @@ lemma LC_pow (j : ℕ) {l : zB} (h : LC (2 ^ j) [] l) :
   | LC_1' => cases hls
   | _ => omega
 
-lemma zero_move (j : ℕ) (l : zB) :
+theorem zero_move (j : ℕ) (l : zB) :
     ([0] : zF) +> (z0 ^ j +> l) = z0 ^ j +> ([0] +> l) := by
   induction j with
   | zero => rfl
@@ -1319,7 +1317,7 @@ lemma zero_move (j : ℕ) (l : zB) :
     rw [pow_succ_list, append_assoc, append_assoc, ← ih]
     rfl
 
-lemma LC_mark {k : ℕ} {ls : List ℕ} {l : zB} (h : LC k (0 :: ls) l) :
+theorem LC_mark {k : ℕ} {ls : List ℕ} {l : zB} (h : LC k (0 :: ls) l) :
     ∃ l', LC k ls l' ∧ l = v +> l' := by
   generalize hls : (0 :: ls : List ℕ) = ls0 at h
   cases h with
@@ -1329,7 +1327,7 @@ lemma LC_mark {k : ℕ} {ls : List ℕ} {l : zB} (h : LC k (0 :: ls) l) :
     exact ⟨l0, hl0, rfl⟩
   | _ => cases hls
 
-lemma LH_partial_D_start (j k : ℕ) (l : zB) (hk : k + 24 = 2 ^ (6 + j)) (hl : LC k [3] l) :
+theorem LH_partial_D_start (j k : ℕ) (l : zB) (hk : k + 24 = 2 ^ (6 + j)) (hl : LC k [3] l) :
     LH (2 ^ (5 + j) - 6) ([0] +> l)
       (z0 +> (z1 +> (z0 +> (v +> (z1 +> (z0 +> (z1 ^ j +> (z0 +> ([0] +> (z1 +> default)))))))))) := by
   have hp6 : 2 ^ (6 + j) = 64 * 2 ^ j := by rw [Nat.add_comm 6 j, Nat.pow_add]; ring
@@ -1359,7 +1357,7 @@ lemma LH_partial_D_start (j k : ℕ) (l : zB) (hk : k + 24 = 2 ^ (6 + j)) (hl : 
   rw [hsplit] at hstep1
   exact (LH_add hstep1 (LH_partial_D j)).congr (by omega) rfl rfl
 
-lemma LH_partial_D_recover (j : ℕ) :
+theorem LH_partial_D_recover (j : ℕ) :
     LH (2 ^ (4 + j) + 12)
       (z0 +> (v +> (z0 +> (v +> (z1 +> (z0 +> (z1 ^ j +> (z0 +> ([0] +> (z1 +> default))))))))))
       (z0 +> (v +> (z0 +> (v +> (z0 +> (z0 +> (z0 ^ j +> (z0 +> (v +> default))))))))) := by
@@ -1387,7 +1385,7 @@ lemma LH_partial_D_recover (j : ℕ) :
   have houter := LH_zero (LH_word (LH_zero (LH_word hmid)))
   exact houter.congr (by rw [hp4]; omega) rfl rfl
 
-lemma LH_partial_D_finish (j : ℕ) (hj : 2 ≤ j) :
+theorem LH_partial_D_finish (j : ℕ) (hj : 2 ≤ j) :
     ∃ l', LC (2 ^ (4 + j) - 19) [1, 1, 3 + j] l' ∧
       LH (2 ^ (5 + j) - 5)
         ([0] +> (z0 +> (z1 +> (z0 +> (v +> (z1 +> (z0 +> (z1 ^ j +> (z0 +> ([0] +> (z1 +> default))))))))))) l' := by
@@ -1419,7 +1417,7 @@ lemma LH_partial_D_finish (j : ℕ) (hj : 2 ≤ j) :
     LH_zero (LH_absorb _)
   exact (LH_add hstep1 (LH_add (LH_partial_D_recover j) hrun)).congr (by omega) rfl rfl
 
-lemma G_partial (j n : ℕ) (hn : n + 5 = 2 ^ (1 + j)) (l r : zB) (hd : Denote (RootG n) l r) :
+theorem G_partial (j n : ℕ) (hn : n + 5 = 2 ^ (1 + j)) (l r : zB) (hd : Denote (RootG n) l r) :
     ∃ l' r', Denote (.st (2 ^ j - 1) [0, 1 + j] (n + 1) .t7) l' r' ∧
       (l {{E}}> r) [tm]⊢⁺ (l' {{E}}> r') := by
   have hp1 : 2 ^ (1 + j) = 2 * 2 ^ j := by rw [Nat.add_comm 1 j, Nat.pow_succ]; ring
@@ -1446,7 +1444,7 @@ lemma G_partial (j n : ℕ) (hn : n + 5 = 2 ^ (1 + j)) (l r : zB) (hd : Denote (
   rcases Phase hr1 hlast with ⟨r', hr', hphase2⟩
   exact ⟨l', r', ⟨hl', hr'⟩, stepPlus_trans hdrop (stepPlus_trans hphase1 hphase2)⟩
 
-lemma D6_partial (j n : ℕ) (hj : 2 ≤ j) (hn : n + 14 = 2 ^ (5 + j)) (l r : zB) (hd : Denote (RootD 6 n) l r) :
+theorem D6_partial (j n : ℕ) (hj : 2 ≤ j) (hn : n + 14 = 2 ^ (5 + j)) (l r : zB) (hd : Denote (RootD 6 n) l r) :
     ∃ l' r', Denote (RootD (2 + j) (n + 8)) l' r' ∧
       (l {{E}}> r) [tm]⊢⁺ (l' {{E}}> r') := by
   have hp5 : 2 ^ (5 + j) = 32 * 2 ^ j := by rw [Nat.add_comm 5 j, Nat.pow_add]; ring
@@ -1488,7 +1486,7 @@ lemma D6_partial (j n : ℕ) (hj : 2 ≤ j) (hn : n + 14 = 2 ^ (5 + j)) (l r : z
   rcases Steps_spec htail l1 r2 ⟨hl1, hr2⟩ with ⟨l', r', hd', hrun3⟩
   exact ⟨l', r', hd', stepStar_stepPlus_trans hrun0 (stepPlus_trans hrun1 (stepPlus_stepStar_trans hrun2 hrun3))⟩
 
-lemma G_large_tail (a n : ℕ) (hlow : 2 ^ 15 * 2 ^ a ≤ n + 5) (hmod : n % 8 = 3) :
+theorem G_large_tail (a n : ℕ) (hlow : 2 ^ 15 * 2 ^ a ≤ n + 5) (hmod : n % 8 = 3) :
     Steps (.st (n * 2 + 9 - 3 * 2 ^ 14 * 2 ^ a) [0, 15 + a] (n + 1) .t7)
       (RootD (1 + a) (n + 15)) := by
   have h1 : 1 ≤ 2 ^ a := Nat.one_le_pow a 2 (by decide)
@@ -1514,7 +1512,7 @@ lemma G_large_tail (a n : ℕ) (hlow : 2 ^ 15 * 2 ^ a ≤ n + 5) (hmod : n % 8 =
   phase_with (n * 2 + 37 - 3 * 2 ^ a) (n + 15) { rodd (q * 8 + 21 - 3 * 2 ^ a) [(a + 1)] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_2 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 16 = 3) :
+private theorem G_small_tail_2 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 16 = 3) :
     Steps (.st (n * 2 + 9 - 12) [0, 3] (n + 1) .t7) (RootG (n + 8)) := by
   set q := n / 16
   have hq : n = q * 16 + 3 := by omega
@@ -1527,7 +1525,7 @@ private lemma G_small_tail_2 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 16 = 3) :
   phase_with (n * 2 + 23) (n + 8) { rodd (q * 16 + 14) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_3 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 32 = 11) :
+private theorem G_small_tail_3 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 32 = 11) :
     Steps (.st (n * 2 + 9 - 24) [0, 4] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 32
   have hq : n = q * 32 + 11 := by omega
@@ -1548,7 +1546,7 @@ private lemma G_small_tail_3 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 32 = 11) :
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 32 + 30) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_4 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 64 = 27) :
+private theorem G_small_tail_4 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 64 = 27) :
     Steps (.st (n * 2 + 9 - 48) [0, 5] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 64
   have hq : n = q * 64 + 27 := by omega
@@ -1569,7 +1567,7 @@ private lemma G_small_tail_4 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 64 = 27) :
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 64 + 46) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_5 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 128 = 59) :
+private theorem G_small_tail_5 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 128 = 59) :
     Steps (.st (n * 2 + 9 - 96) [0, 6] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 128
   have hq : n = q * 128 + 59 := by omega
@@ -1590,7 +1588,7 @@ private lemma G_small_tail_5 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 128 = 59) :
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 128 + 78) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_6 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 256 = 123) :
+private theorem G_small_tail_6 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 256 = 123) :
     Steps (.st (n * 2 + 9 - 192) [0, 7] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 256
   have hq : n = q * 256 + 123 := by omega
@@ -1611,7 +1609,7 @@ private lemma G_small_tail_6 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 256 = 123) :
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 256 + 142) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_7 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 512 = 251) :
+private theorem G_small_tail_7 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 512 = 251) :
     Steps (.st (n * 2 + 9 - 384) [0, 8] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 512
   have hq : n = q * 512 + 251 := by omega
@@ -1632,7 +1630,7 @@ private lemma G_small_tail_7 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 512 = 251) :
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 512 + 270) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_8 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 1024 = 507) :
+private theorem G_small_tail_8 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 1024 = 507) :
     Steps (.st (n * 2 + 9 - 768) [0, 9] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 1024
   have hq : n = q * 1024 + 507 := by omega
@@ -1653,7 +1651,7 @@ private lemma G_small_tail_8 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 1024 = 507) :
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 1024 + 526) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_9 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 2048 = 1019) :
+private theorem G_small_tail_9 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 2048 = 1019) :
     Steps (.st (n * 2 + 9 - 1536) [0, 10] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 2048
   have hq : n = q * 2048 + 1019 := by omega
@@ -1674,7 +1672,7 @@ private lemma G_small_tail_9 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 2048 = 1019) 
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 2048 + 1038) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_10 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 4096 = 2043) :
+private theorem G_small_tail_10 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 4096 = 2043) :
     Steps (.st (n * 2 + 9 - 3072) [0, 11] (n + 1) .t7) (RootG (n + 16)) := by
   set q := n / 4096
   have hq : n = q * 4096 + 2043 := by omega
@@ -1695,7 +1693,7 @@ private lemma G_small_tail_10 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 4096 = 2043)
   phase_with (n * 2 + 39) (n + 16) { rodd (q * 4096 + 2062) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_11 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 8192 = 4091) :
+private theorem G_small_tail_11 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 8192 = 4091) :
     Steps (.st (n * 2 + 9 - 6144) [0, 12] (n + 1) .t7) (RootG (n + 24)) := by
   set q := n / 8192
   have hq : n = q * 8192 + 4091 := by omega
@@ -1724,7 +1722,7 @@ private lemma G_small_tail_11 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 8192 = 4091)
   phase_with (n * 2 + 55) (n + 24) { rodd (q * 8192 + 4118) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_12 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 16384 = 8187) :
+private theorem G_small_tail_12 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 16384 = 8187) :
     Steps (.st (n * 2 + 9 - 12288) [0, 13] (n + 1) .t7) (RootG (n + 24)) := by
   set q := n / 16384
   have hq : n = q * 16384 + 8187 := by omega
@@ -1753,7 +1751,7 @@ private lemma G_small_tail_12 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 16384 = 8187
   phase_with (n * 2 + 55) (n + 24) { rodd (q * 16384 + 8214) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-private lemma G_small_tail_13 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 32768 = 16379) :
+private theorem G_small_tail_13 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 32768 = 16379) :
     Steps (.st (n * 2 + 9 - 24576) [0, 14] (n + 1) .t7) (RootG (n + 24)) := by
   set q := n / 32768
   have hq : n = q * 32768 + 16379 := by omega
@@ -1782,7 +1780,7 @@ private lemma G_small_tail_13 (n : ℕ) (hn : 11 ≤ n) (hmod : n % 32768 = 1637
   phase_with (n * 2 + 55) (n + 24) { rodd (q * 32768 + 16406) [] }
   exact (Steps.Done _).congr (by congr 1; omega) rfl
 
-lemma G_small_tail (j n : ℕ) (hj1 : 2 ≤ j) (hj2 : j ≤ 13) (hn : 11 ≤ n)
+theorem G_small_tail (j n : ℕ) (hj1 : 2 ≤ j) (hj2 : j ≤ 13) (hn : 11 ≤ n)
     (hmod : n % 2 ^ (j + 2) = 2 ^ (j + 1) - 5) :
     Steps (.st (n * 2 + 9 - 3 * 2 ^ j) [0, 1 + j] (n + 1) .t7)
       (RootG (n + 8 * ((j + 13) / 8))) := by
@@ -1805,7 +1803,7 @@ lemma G_small_tail (j n : ℕ) (hj1 : 2 ≤ j) (hj2 : j ≤ 13) (hn : 11 ≤ n)
 def Forward (s s' : State) : Prop :=
   ∀ l r, Denote s l r → ∃ l' r', Denote s' l' r' ∧ (l {{E}}> r) [tm]⊢⁺ (l' {{E}}> r')
 
-lemma Steps_forward {s s' : State} (hneq : s ≠ s') (hsteps : Steps s s') :
+theorem Steps_forward {s s' : State} (hneq : s ≠ s') (hsteps : Steps s s') :
     Forward s s' := by
   intro l r hd
   cases hsteps with
@@ -1815,14 +1813,14 @@ lemma Steps_forward {s s' : State} (hneq : s ≠ s') (hsteps : Steps s s') :
     rcases Steps_spec hrest l0 r0 hd0 with ⟨l', r', hd', hrun'⟩
     exact ⟨l', r', hd', stepPlus_stepStar_trans hrun0 hrun'⟩
 
-lemma Forward_steps {s t u : State} (h0 : Forward s t) (h1 : Steps t u) :
+theorem Forward_steps {s t u : State} (h0 : Forward s t) (h1 : Steps t u) :
     Forward s u := by
   intro l r hd
   rcases h0 l r hd with ⟨l0, r0, hd0, hrun0⟩
   rcases Steps_spec h1 l0 r0 hd0 with ⟨l', r', hd', hrun'⟩
   exact ⟨l', r', hd', stepPlus_stepStar_trans hrun0 hrun'⟩
 
-lemma factor2 (n : ℕ) (hn : 0 < n) : ∃ i u, n = (u * 2 + 1) * 2 ^ i := by
+theorem factor2 (n : ℕ) (hn : 0 < n) : ∃ i u, n = (u * 2 + 1) * 2 ^ i := by
   induction n using Nat.strong_induction_on with
   | h n ih =>
     by_cases hodd : n % 2 = 1
@@ -1832,7 +1830,7 @@ lemma factor2 (n : ℕ) (hn : 0 < n) : ∃ i u, n = (u * 2 + 1) * 2 ^ i := by
       rw [Nat.pow_succ, ← Nat.mul_assoc]
       omega
 
-lemma G_begin (j u n : ℕ) (hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 1) * 2 ^ (1 + j)) :
+theorem G_begin (j u n : ℕ) (hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 1) * 2 ^ (1 + j)) :
     Forward (RootG n) (.st (n * 2 + 9 - 3 * 2 ^ j) [0, 1 + j] (n + 1) .t7) := by
   rcases u with _ | u
   · have hval' : n + 5 = 2 ^ (1 + j) := by simpa using hval
@@ -1853,7 +1851,7 @@ inductive Ready : State → Prop where
   | ReadyE (n : ℕ) : 64 ≤ n → n % 8 = 2 → Ready (RootE n)
   | ReadyF (n : ℕ) : 64 ≤ n → n % 8 = 1 → Ready (RootF n)
 
-lemma G_ready (n : ℕ) (hn : 11 ≤ n) (hmod : n % 8 = 3) :
+theorem G_ready (n : ℕ) (hn : 11 ≤ n) (hmod : n % 8 = 3) :
     ∃ s, Ready s ∧ Forward (RootG n) s := by
   rcases factor2 ((n + 5) / 8) (by omega) with ⟨i, u, hu⟩
   have hval : n + 5 = (u * 2 + 1) * 2 ^ (1 + (2 + i)) := by
@@ -1899,7 +1897,7 @@ lemma G_ready (n : ℕ) (hn : 11 ≤ n) (hmod : n % 8 = 3) :
         rw [show 2 + i = 14 + a by omega, Nat.pow_add]
       rw [hpow2, show 15 + a = 1 + (2 + i) by omega, ← Nat.mul_assoc]
 
-lemma D6_ready (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
+theorem D6_ready (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
     ∃ s, Ready s ∧ Forward (RootD 6 n) s := by
   by_cases he : n % 16 = 10
   · refine ⟨RootE (n + 8), .ReadyE (n + 8) (by omega) (by omega), ?_⟩
@@ -1937,7 +1935,7 @@ lemma D6_ready (n : ℕ) (hn : 64 ≤ n) (hmod : n % 8 = 2) :
         unfold RootD
         intro h; injection h with _ _ hn_eq; omega
 
-lemma D_ready (h n : ℕ) (hh : 1 ≤ h) (hn : 64 ≤ n) (hmod : n % 8 = 2)
+theorem D_ready (h n : ℕ) (hh : 1 ≤ h) (hn : 64 ≤ n) (hmod : n % 8 = 2)
     (hbound : 3 * 2 ^ (h - 1) ≤ n * 2) :
     ∃ s, Ready s ∧ Forward (RootD h n) s := by
   by_cases hlarge : 9 ≤ h
@@ -1971,7 +1969,7 @@ lemma D_ready (h n : ℕ) (hh : 1 ≤ h) (hn : 64 ≤ n) (hmod : n % 8 = 2)
         · unfold RootD RootE; intro heq; injection heq with _ _ hn_eq; omega
         · change 3 * 128 ≤ n * 2 at hbound; omega
 
-lemma Ready_step {s : State} (hs : Ready s) :
+theorem Ready_step {s : State} (hs : Ready s) :
     ∃ s', Ready s' ∧ Forward s s' := by
   cases hs with
   | ReadyG n hn hmod => exact G_ready n hn hmod
@@ -1988,14 +1986,14 @@ lemma Ready_step {s : State} (hs : Ready s) :
 def Inv (c : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ s l r, Ready s ∧ Denote s l r ∧ c = (l {{E}}> r)
 
-lemma Inv_step (c : Cfg (Fin 2) (Fin 6)) (hc : Inv c) :
+theorem Inv_step (c : Cfg (Fin 2) (Fin 6)) (hc : Inv c) :
     ∃ c', (c [tm]⊢⁺ c') ∧ Inv c' := by
   rcases hc with ⟨s, l, r, hs, hd, rfl⟩
   rcases Ready_step hs with ⟨s', hs', hstep⟩
   rcases hstep l r hd with ⟨l', r', hd', hrun⟩
   exact ⟨l' {{E}}> r', hrun, s', l', r', hs', hd', rfl⟩
 
-lemma init_to_rootG :
+theorem init_to_rootG :
     ∃ l r, Denote (RootG 11) l r ∧ (init []) [tm]⊢* (l {{E}}> r) := by
   refine ⟨decodeHalf 17891608, decodeHalf 202949321582694304249789, ⟨?_, ?_⟩, ?_⟩
   · have hL : LC 29 [0] (v +> (z1 +> (z0 +> (z1 +> (z1 +> (z1 +> default)))))) :=
@@ -2033,7 +2031,7 @@ lemma init_to_rootG :
     rw [toCfg_zero (K := 6), hcfg] at hsteps
     exact ⟨11347, hsteps⟩
 
-lemma neverHaltsFrom_of_reachesStar {M : Machine (Fin 2) (Fin 6)} {c₁ c₀ : Cfg (Fin 2) (Fin 6)}
+theorem neverHaltsFrom_of_reachesStar {M : Machine (Fin 2) (Fin 6)} {c₁ c₀ : Cfg (Fin 2) (Fin 6)}
     (hinit : c₁ [M]⊢* c₀) (h_never : NeverHaltsFrom M c₀) : NeverHaltsFrom M c₁ := by
   obtain ⟨k₀, hk₀⟩ := hinit
   intro cfg ⟨k, hk⟩
@@ -2051,7 +2049,7 @@ lemma neverHaltsFrom_of_reachesStar {M : Machine (Fin 2) (Fin 6)} {c₁ c₀ : C
     rw [hsplit, BusyBeaver.multiStep_add, hk₀, Option.bind_some] at hk
     exact h_never cfg ⟨k - k₀, hk⟩
 
-lemma neverHaltsFrom_tm : NeverHaltsFrom tm (init []) := by
+theorem neverHaltsFrom_tm : NeverHaltsFrom tm (init []) := by
   rcases init_to_rootG with ⟨l, r, hd, hrun⟩
   refine neverHaltsFrom_of_reachesStar hrun ?_
   refine NeverHaltsFrom.of_reachesPlus_invariant Inv_step ?_

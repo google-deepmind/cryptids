@@ -623,6 +623,87 @@ open WordCalculus Word
 local notation "zW" => List Word
 local notation "zR" => List.replicate
 
+abbrev zDg := WordCalculus.DigitVal
+abbrev zDg.nil := WordCalculus.DigitVal.nil
+abbrev zDg.zero := @WordCalculus.DigitVal.zero
+abbrev zDg.one := @WordCalculus.DigitVal.one
+abbrev z0X := @WordCalculus.digitVal_not_cons_V
+
+def z1e : List Word -> Rat
+  | [] => 0
+  | Word.V :: v => z1e v * (1 / 2)
+  | _ :: v => 1 + z1e v * 2
+
+def z1f : List Word -> Rat
+  | [] => 0
+  | Word.V :: v => z1f v * (1 / 2)
+  | Word.K :: v => 1 + z1f v * 2
+  | Word.Q :: v => z1f v * 2
+
+def z1g : List Word -> Rat
+  | [] => 0
+  | Word.V :: v => z1g v * (1 / 2)
+  | Word.K :: v => z1g v * 2
+  | Word.Q :: v => 1 + z1g v * 2
+
+def z1h : List Word -> Rat
+  | [] => 1
+  | Word.V :: v => z1h v * (1 / 2)
+  | _ :: v => z1h v * 2
+
+theorem z1h_eq_wordScale : z1h = wordScale := by
+  funext u; induction u with
+  | nil => rfl
+  | cons a u ih => cases a <;> (dsimp [z1h, wordScale]; rw [ih])
+
+theorem z1e_eq_wordMass : z1e = wordMass := by
+  funext u; induction u with
+  | nil => rfl
+  | cons a u ih => cases a <;> (dsimp [z1e, wordMass]; rw [ih])
+
+theorem z1f_eq_wordMassK : z1f = wordMassK := by
+  funext u; induction u with
+  | nil => rfl
+  | cons a u ih => cases a <;> (dsimp [z1f, wordMassK]; rw [ih])
+
+theorem z1g_eq_wordMassQ : z1g = wordMassQ := by
+  funext u; induction u with
+  | nil => rfl
+  | cons a u ih => cases a <;> (dsimp [z1g, wordMassQ]; rw [ih])
+
+theorem zSp (u : List Word) : 0 < z1h u := by
+  rw [z1h_eq_wordScale]; exact wordScale_pos u
+
+theorem z1k (u v : List Word) : z1f (u ++ v) = z1f u + z1h u * z1f v := by
+  rw [z1f_eq_wordMassK, z1h_eq_wordScale]; exact wordMassK_append u v
+
+theorem z1v {A H : Nat} {u : List Word} (h : DigitVal A H u) :
+    TailDefect (u ++ [Word.K]) (z1f u) := by
+  rw [z1f_eq_wordMassK]; exact tailDefect_append_K_of_digitVal h
+
+theorem z1x {a : Nat} {u : List Word} {b : Nat} {v : List Word} {l : Rat}
+    (h : Scan a u b v l) {z : Rat} (hT : TailDefect u z) :
+    z1e v <= 1 + z * 2 /\ l <= 1 + z * 2 /\
+    (∀ n, a = 1 + n * 2 -> z1e v <= z * 2 /\ l <= (1 / 2) + z * 2) := by
+  rw [z1e_eq_wordMass]
+  exact scan_tailDefect_bound h hT
+
+abbrev zSz := @not_scan_odd_cons_K
+abbrev zSo := @not_scan_odd_even_Q_K
+abbrev zS1 := @scan_odd_Q_K_inv
+abbrev z19 := @WordCalculus.digitVal_append
+abbrev z0W := @wordPrefix_true_and_cases
+abbrev z0Y := @hasQKSubword
+abbrev z11 := @notEndsWithQ_append_singleton
+abbrev zD0 := @WordCalculus.digitVal_cons_K_inv
+abbrev zD1 := @WordCalculus.digitVal_cons_Q_inv
+abbrev zP2 := @pow_two_one_add
+
+abbrev zTs := WordCalculus.evalWords
+
+abbrev zHn := @heightShift
+abbrev z2f := @splitLastVRev
+
 def zQK : Nat -> zW -> zW
   | 0,u => u
   | r + 1,u => Q :: K :: zQK r u
@@ -638,16 +719,16 @@ lemma zTs_R (r_ch : Nat) (r : zB) :
   induction r_ch with
   | zero => rfl
   | succ r_ch ih =>
-    simp only [List.replicate,zTs,ih,zLp,append_assoc]
+    simp only [List.replicate,WordCalculus.evalWords,ih,zLp,append_assoc]
 
 lemma zTs_QK (r_ch : Nat) (r : zB) :
     zTs (zQK r_ch [V]) r = ((d1 ++ d0) ^ r_ch ++ [1,1]) +> (d0 +> r) := by
   induction r_ch with
   | zero =>
-    simp only [zQK,zTs,z05,t,d0,List.nil_append,List.cons_append,append_cons,append_nil]
+    simp only [zQK,WordCalculus.evalWords,z05,t,d0,List.nil_append,List.cons_append,append_cons,append_nil]
   | succ r_ch ih =>
     rw [zLp (d1 ++ d0) r_ch]
-    simp only [zQK,zTs,ih,d1,d0,List.cons_append,List.nil_append,append_cons,append_nil]
+    simp only [zQK,WordCalculus.evalWords,ih,d1,d0,List.cons_append,List.nil_append,append_cons,append_nil]
 
 inductive BRIncs : Bool -> Nat -> zB -> zB -> Prop where
   | zero (r : zB) : BRIncs false 0 r (one +> r)
@@ -1118,7 +1199,7 @@ lemma loc_z2p {r r' : zB} (hI : BRIncs false 128 r r') :
   simp only [append_nil] at hC
   have hW := zW_full hC
   have heq : (t ++ t ++ d1 ++ t) +> r' = zTs [V,V,Q,V] r' := by
-    simp only [zTs,t,d1,List.cons_append,List.nil_append,append_cons,append_nil]
+    simp only [WordCalculus.evalWords,t,d1,List.cons_append,List.nil_append,append_cons,append_nil]
   rwa [heq] at hW
 
 -- Section 7A: Binary, Digits (zDg), Weights (z0Y..z11, z0W), z0L, zHn
@@ -1223,7 +1304,7 @@ lemma zDg_pos_z0L {A H : Nat} {w : zW} (hD : zDg A H w) (hPos : 0 < A) :
     | zero _ => rfl
     | one _ => rfl
 
-def loc_z0W : zW -> Rat
+@[simp] def loc_z0W : zW -> Rat
   | [] => 0
   | V :: v => loc_z0W v * (1 / 2)
   | K :: v => (11 / 8) + loc_z0W v * 2
@@ -1924,5 +2005,136 @@ lemma zHi_bscan {m k' : Nat} {w0 y : zW} {l : Rat} {A0 H0 : Nat}
   · dsimp [z1f]; linarith
   · linarith
 
+
+abbrev startsWithQKOrQQ := z0L
+abbrev powHalf := zIv
+abbrev powFour := zP4
+abbrev powHalf_and_powFour_bounds := @zIv_P4
+abbrev prependQK := zQK
+abbrev prependQK_append := @zQK_append
+abbrev brIncs_of_binary := @z0H
+abbrev digitVal_unique_canon := @loc_z0X
+
+theorem exists_heightShift_canon (v : List Word) (H : Nat) (hY : wordMass v < ((2 ^ H : Nat) : Rat)) :
+    ∃ J, heightShift v H = some J := by
+  have hY' : z1e v < ((2 ^ H : Nat) : Rat) := by rwa [z1e_eq_wordMass]
+  exact loc_z1B v H hY'
+
+abbrev digitVal_mod_four_one_prefix := @loc_z1K
+abbrev startsWithQKOrQQ_append_right := @loc_z1I
+abbrev d0_append_default := @zDd
+abbrev wordWeightCanon := loc_z0W
+abbrev wordWeightCanon_nonneg := @loc_zWn
+abbrev stepPlus_of_brIncs_128 := @loc_z2p
+abbrev cfgCanon := zCf
+abbrev cfgLeft := zCL
+abbrev cfgRight := zCR
+abbrev stepPlus_of_multiStep := @zMa
+abbrev multiStep_trans_canon := @zMt
+abbrev stepPlus_trans_canon := @zPt
+abbrev multiStep_succ_canon := @zMs
+abbrev zero_cons_default_canon := @z00
+abbrev side_append := @z08
+abbrev numSide_of_brIncs := @loc_z2o
+abbrev list_pow_one_canon := @z06
+abbrev seg_comp_words := @zS0
+abbrev seg_ch_pow_t := @zS3
+abbrev side_of_seg := @zSc
+abbrev seg_word_s1 := @zW_s1
+abbrev seg_word_s2 := @zW_s2
+abbrev seg_word_s3 := @zW_s3
+abbrev seg_word_s4 := @zW_s4
+abbrev seg_word_s5 := @zW_s5
+abbrev seg_word_s6 := @zW_s6
+abbrev seg_word_s7 := @zW_s7
+abbrev seg_ch_even_d0 := @zH_d0_even
+abbrev seg_ch_odd_d0 := @zH_d0_odd
+abbrev seg_ch_even_d1 := @zH_d1_even
+abbrev stepPlus_word_turn := @zW_turn
+abbrev list_pow_one_add_canon := @zLp'
+abbrev seg_append_calls := @zSg
+abbrev seg_ch_d1 := @zH4
+abbrev seg_ch_double_pow := @zSa
+abbrev seg_ch_two_d0 := @z0k
+abbrev seg_ch_t_one := @zH2
+
+theorem wordScale_prependQK (r : Nat) (u : List Word) :
+    wordScale (prependQK r u) = powFour r * wordScale u := by
+  simpa only [z1h_eq_wordScale] using z11_QK r u
+
+theorem wordScale_replicate_V_append (r : Nat) (u : List Word) :
+    wordScale (List.replicate r V ++ u) = powHalf r * wordScale u := by
+  simpa only [z1h_eq_wordScale] using z11_R r u
+
+theorem bScan_loss_bounds {s : Bool} {k : Nat} {u : List Word} {k' : Nat} {v : List Word} {a b : Rat}
+    (h : BScan s k u k' v a b) :
+    (s = false ->
+      wordWeightCanon v <= (66 / 19) * wordWeightCanon u /\
+      a - b <= (64 / 11) * wordWeightCanon u /\
+      b - a <= (1 / 2) * wordWeightCanon u) /\
+    (s = true ->
+      wordWeightCanon v <= (33 / 38) * wordWeightCanon u - (11 / 16) /\
+      a - b <= (16 / 11) * wordWeightCanon u - (3 / 2) /\
+      b - a <= (1 / 8) * wordWeightCanon u + (3 / 8)) /\
+    (s = true -> (∃ m, k = 1 + m * 4) ->
+      wordWeightCanon v <= (33 / 38) * wordWeightCanon u - (33 / 38)) :=
+  loc_z1j h
+
+theorem bScan_budget_eq {s : Bool} {k : Nat} {u : List Word} {k' : Nat} {v : List Word} {a b : Rat}
+    (h : BScan s k u k' v a b) :
+    (k : Rat) - 3 = ((k' : Rat) - 3) * wordScale v + 2 * (a - b) := by
+  simpa only [z1h_eq_wordScale] using loc_z1i h
+
+theorem bScan_append {s : Bool} {k : Nat} {u : List Word} {k' : Nat} {v : List Word} {a b : Rat}
+    (h1 : BScan s k u k' v a b) :
+    ∀ {w : List Word} {k'' : Nat} {x : List Word} {c d : Rat},
+      BScan false k' w k'' x c d ->
+      ∃ a' b', BScan s k (u ++ w) k'' (v ++ x) a' b' /\
+        a' = a + wordScale v * c /\ b' = b + wordScale v * d := by
+  intro w k'' x c d h2
+  simpa only [z1h_eq_wordScale] using loc_z1k h1 h2
+
+theorem bScan_high_digits {m k' : Nat} {w0 y : List Word} {l : Rat} {A0 H0 : Nat}
+    (hS : Scan (m * 2) (w0 ++ [Q, Q, K]) k' y l)
+    (hD0 : DigitVal A0 H0 w0) :
+    ∃ a b, BScan false (1 + m) ((Q :: K :: w0) ++ [Q, Q, K]) k' (V :: y) a b /\
+      wordMass (V :: y) <= (1 / 4) * wordMassK (Q :: K :: w0) /\
+      a - b <= (7 / 8) * wordMassK (Q :: K :: w0) /\
+      b - a <= 1 := by
+  simpa only [z1e_eq_wordMass, z1f_eq_wordMassK] using zHi_bscan hS hD0
+
+theorem scan_qqk_inv {a : Nat} {u : List Word} {b : Nat} {v : List Word} {l : Rat}
+    (h : Scan a u b v l) :
+    ∀ (w0 : List Word), u = w0 ++ [Q, Q, K] ->
+      wordScale v <= (1 / 8) * wordScale u /\
+      (startsWithQKOrQQ (w0 ++ [K]) = true -> wordScale v <= (1 / 64) * wordScale u) /\
+      (∃ n, b = n * 4) /\
+      (∃ v0, v = v0 ++ [V]) := by
+  simpa only [z1h_eq_wordScale] using zScan_qqk h
+
+theorem startsWithQKOrQQ_of_digitVal_pos {A H : Nat} {w : List Word}
+    (hD : DigitVal A H w) (hPos : 0 < A) :
+    startsWithQKOrQQ (w ++ [K]) = true :=
+  zDg_pos_z0L hD hPos
+
+theorem wordWeightCanon_bounds (u : List Word) :
+    wordMass u <= wordWeightCanon u /\ wordWeightCanon u <= (11 / 8) * wordMass u := by
+  simpa only [z1e_eq_wordMass] using zWY u
+
+theorem wordWeightCanon_append (u v : List Word) :
+    wordWeightCanon (u ++ v) = wordWeightCanon u + wordScale u * wordWeightCanon v := by
+  simpa only [z1h_eq_wordScale] using z13W u v
+
+theorem wordWeightCanon_prependQK (r : Nat) (u : List Word) :
+    wordWeightCanon (prependQK r u) = (5 / 4) * (powFour r - 1) + powFour r * wordWeightCanon u :=
+  z0W_QK r u
+
+theorem loc_z0W_prependQK (r : Nat) (u : List Word) :
+    loc_z0W (prependQK r u) = (5 / 4) * (powFour r - 1) + powFour r * loc_z0W u :=
+  z0W_QK r u
+
+theorem wordWeightCanon_replicate_V_append (r : Nat) (u : List Word) :
+    wordWeightCanon (List.replicate r V ++ u) = powHalf r * wordWeightCanon u :=
+  z0W_R r u
 
 end BusyBeaver.WordCanonBR

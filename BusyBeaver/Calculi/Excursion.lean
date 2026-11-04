@@ -1,13 +1,14 @@
 /-
 Copyright (c) 2026 Google LLC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
--/
+ -/
 module
 
 public import BusyBeaver.Calculi.Counter
 
 /-!
-# Decreasing Halt-Budget Calculus, Conjugate-Shift Excursion Algebra & Arithmetic Views (`BusyBeaver.Calculi.Excursion`)
+# Decreasing Halt-Budget Calculus, Conjugate-Shift Excursion Algebra & Arithmetic Views
+    (`BusyBeaver.Calculi.Excursion`)
 
 Ported from the Coq BB(6) verification suite (`ccz181078/busycoq`, branch `BB6`):
 - `Queue_v1.v`: Decreasing halt-budget non-halting calculus (`HaltsIn`, `Leads`, `Advances`,
@@ -26,7 +27,7 @@ Ported from the Coq BB(6) verification suite (`ccz181078/busycoq`, branch `BB6`)
 
 All declarations live in `namespace BusyBeaver.Excursion` with `@[scoped simp]` attributes so that
 importing `BusyBeaver.Basic` does not alter the default `simp` set of existing proofs.
--/
+ -/
 
 @[expose] public section
 
@@ -34,8 +35,8 @@ open Mathlib Relation Nat Turing BusyBeaver BusyBeaver.Counter
 
 namespace BusyBeaver.Excursion
 
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
+
+
 
 -- ============================================================================
 -- 1. Decreasing Halt-Budget Calculus (`HaltsIn`, `Leads`, `Advances`)
@@ -45,8 +46,9 @@ section HaltBudgetCalculus
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
-/-- `M` reaches a halting configuration from `c` in exactly `n` steps (`halts_in` in `Queue_v1.v`). -/
-@[expose] def HaltsIn (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) : Prop :=
+/-- `M` reaches a halting configuration from `c` in exactly `n` steps (`halts_in` in `Queue_v1.v`).
+-/
+def HaltsIn (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : ℕ) : Prop :=
   ∃ cfg : Cfg Γ Λ, (c [M]⊢^{n} cfg) ∧ (step M cfg).isNone
 
 theorem haltsIn_zero_iff {M : Machine Γ Λ} {c : Cfg Γ Λ} :
@@ -140,12 +142,12 @@ theorem haltsIn_reduce_stepPlus {M : Machine Γ Λ} {c₁ c₂ : Cfg Γ Λ} {n :
 /-- `Leads M c P` (`leads` in `Queue_v1.v`): if `M` halts from `c` in `n` steps, then `M`
     reaches some configuration `d` satisfying `P d` that halts in `m ≤ n` steps.
     Crucially, if a branch never halts (`¬ HaltsIn M c n`), `Leads M c P` holds vacuously! -/
-@[expose] def Leads (M : Machine Γ Λ) (c : Cfg Γ Λ) (P : Cfg Γ Λ → Prop) : Prop :=
+def Leads (M : Machine Γ Λ) (c : Cfg Γ Λ) (P : Cfg Γ Λ → Prop) : Prop :=
   ∀ n, HaltsIn M c n → ∃ m d, m ≤ n ∧ P d ∧ HaltsIn M d m
 
 /-- `Advances M c P` (`advances` in `Queue_v1.v`): if `M` halts from `c` in `n` steps, then `M`
     reaches some configuration `d` satisfying `P d` that halts in strictly fewer (`m < n`) steps. -/
-@[expose] def Advances (M : Machine Γ Λ) (c : Cfg Γ Λ) (P : Cfg Γ Λ → Prop) : Prop :=
+def Advances (M : Machine Γ Λ) (c : Cfg Γ Λ) (P : Cfg Γ Λ → Prop) : Prop :=
   ∀ n, HaltsIn M c n → ∃ m d, m < n ∧ P d ∧ HaltsIn M d m
 
 theorem Leads.here {M : Machine Γ Λ} {c : Cfg Γ Λ} {P : Cfg Γ Λ → Prop}
@@ -248,7 +250,8 @@ theorem Advances.or_elim {M : Machine Γ Λ} {c : Cfg Γ Λ} {P Q R : Cfg Γ Λ 
   h.trans (fun d hd => hd.elim (hP d) (hQ d))
 
 /-- Well-foundedness of halt-budget descent: if every configuration satisfying `P` advances to
-    `P` with strictly smaller remaining halt budget, then no `P`-configuration can halt in `n` steps. -/
+    `P` with strictly smaller remaining halt budget, then no `P`-configuration can halt in `n`
+      steps. -/
 theorem not_haltsIn_of_advances {M : Machine Γ Λ} {P : Cfg Γ Λ → Prop}
     (h_adv : ∀ c, P c → Advances M c P) :
     ∀ (n : ℕ) (c : Cfg Γ Λ), P c → ¬ HaltsIn M c n := by
@@ -361,17 +364,17 @@ theorem ConjWord.excursion_plus {M : Machine Γ Λ} {qF qB : Λ} {u w x y : List
 omit [Inhabited Γ] in
 private theorem list_pow_add_local (l : List Γ) (m n : ℕ) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
-  | zero => simp [pow_zero_list]
+  | zero => simp
   | succ m ih =>
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
-/-- Periodic RLE commutation lemma (`commute_pow` in `ChaoticBell1Halt.v`):
+/-- Periodic RLE commutation theorem (`commute_pow` in `ChaoticBell1Halt.v`):
     if `x ++ v ^ a = w ^ b ++ x`, then `x ++ v ^ (a * k) = w ^ (b * k) ++ x` for all `k`. -/
 theorem commute_pow {x v w : List Γ} {a b : ℕ}
     (h : x ++ v ^ a = w ^ b ++ x) :
     ∀ (k : ℕ), x ++ v ^ (a * k) = w ^ (b * k) ++ x
-  | 0 => by simp [pow_zero_list]
+  | 0 => by simp
   | k + 1 => by
     rw [Nat.mul_succ, Nat.mul_succ, list_pow_add_local, list_pow_add_local,
       ← List.append_assoc, commute_pow h k, List.append_assoc, h, ← List.append_assoc]
@@ -387,7 +390,7 @@ omit [Inhabited Γ] in
 theorem commute_pow_single {x v w : List Γ}
     (h : x ++ v = w ++ x) :
     ∀ (k : ℕ), x ++ v ^ k = w ^ k ++ x
-  | 0 => by simp [pow_zero_list]
+  | 0 => by simp
   | k + 1 => by
     rw [pow_succ_list, pow_succ_list, ← List.append_assoc, h, List.append_assoc,
       commute_pow_single h k, ← List.append_assoc]
@@ -497,7 +500,8 @@ def mod6 (n : ℕ) : DivMod6 n :=
   else
     .eq5 (n / 6) (by omega)
 
-/-- Dependent subtraction view (`Sub` in `DivModCases.v`): splits `(a, b)` into `a = b + c` vs `a < b`. -/
+/-- Dependent subtraction view (`Sub` in `DivModCases.v`): splits `(a, b)` into `a = b + c` vs `a <
+    b`. -/
 inductive SubView (a b : ℕ) : Type where
   | ge (c : ℕ) (h : a = b + c) : SubView a b
   | lt (h : a < b) : SubView a b
@@ -562,7 +566,8 @@ private theorem haltsIn_of_collatzHalts {M : Machine Γ Λ} {S : Type*}
       rcases h.step_some s s' hnext with ⟨d, _, hd⟩
       exact ⟨d + m, haltsIn_of_multiStep hd hm⟩
 
-/-- Constructive (excluded-middle-free) characterization of `IsHalt M` via `CollatzHalts next start`. -/
+/-- Constructive (excluded-middle-free) characterization of `IsHalt M` via `CollatzHalts next
+    start`. -/
 theorem IsValidAcceleration.isHalt_iff_constructive {M : Machine Γ Λ} {S : Type*}
     {start : S} {encode : S → Cfg Γ Λ} {next : S → Option S}
     (h : IsValidAcceleration M start encode next) :
@@ -577,7 +582,8 @@ theorem IsValidAcceleration.isHalt_iff_constructive {M : Machine Γ Λ} {S : Typ
     rcases haltsIn_of_collatzHalts h hs with ⟨m, hm⟩
     exact ⟨k + m, haltsIn_of_multiStep hk hm⟩
 
-/-- Constructive (excluded-middle-free) characterization of `IsDoesNotHalt M` via `¬ CollatzHalts next start`. -/
+/-- Constructive (excluded-middle-free) characterization of `IsDoesNotHalt M` via `¬ CollatzHalts
+    next start`. -/
 theorem IsValidAcceleration.isDoesNotHalt_iff {M : Machine Γ Λ} {S : Type*}
     {start : S} {encode : S → Cfg Γ Λ} {next : S → Option S}
     (h : IsValidAcceleration M start encode next) :

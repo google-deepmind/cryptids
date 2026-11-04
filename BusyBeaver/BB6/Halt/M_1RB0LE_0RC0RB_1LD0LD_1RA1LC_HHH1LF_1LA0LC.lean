@@ -30,12 +30,8 @@ abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
 
 noncomputable section
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
 set_option linter.deprecated false
 set_option linter.dupNamespace false
-set_option linter.unreachableTactic false
-set_option linter.unusedTactic false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 8000000
