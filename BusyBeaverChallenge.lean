@@ -17,6 +17,27 @@ meta import Lean.Elab.Term
 namespace ConjectureMachines
 open Turing
 
+scoped instance (priority := 10000) instZeroNatConstructive : Zero ℕ := ⟨0⟩
+scoped instance (priority := 10000) instLTNatConstructive : LT ℕ := instLTNat
+
+theorem pos_of_neZero (n : ℕ) [h : NeZero n] : 0 < n :=
+  Nat.casesOn (motive := fun k => NeZero k → 0 < k) n
+    (fun h0 => False.elim (h0.out rfl))
+    (fun k _ => Nat.zero_lt_succ k)
+    h
+
+scoped instance (priority := 10000) instOfNatFinConstructive (n : ℕ) [NeZero n] (i : ℕ) :
+    OfNat (Fin n) i :=
+  ⟨⟨i % n, Nat.mod_lt i (pos_of_neZero n)⟩⟩
+scoped instance (priority := 10000) instInhabitedFinConstructive (n : ℕ) [NeZero n] :
+    Inhabited (Fin n) :=
+  ⟨0⟩
+
+def listGetD {α : Type*} : List α → ℕ → α → α
+  | [], _, d => d
+  | a :: _, 0, _ => a
+  | _ :: xs, n + 1, d => listGetD xs n d
+
 /-- A Turing machine transition table over `states` states and `symbols` symbols. -/
 structure Machine (states symbols : ℕ) where
   transition : Fin states → Fin symbols → Option (Fin symbols × Dir × Fin states)
@@ -25,7 +46,7 @@ variable {states symbols : ℕ} [NeZero states] [NeZero symbols]
 
 /-- Build a `Machine states symbols` from a list of per-state transition rows. -/
 def Machine.ofRows (rows : List (List (Option (Fin symbols × Dir × Fin states)))) :
-    Machine states symbols := ⟨fun q a => (rows.getD q.val []).getD a.val none⟩
+    Machine states symbols := ⟨fun q a => listGetD (listGetD rows q.val []) a.val none⟩
 
 end ConjectureMachines
 end

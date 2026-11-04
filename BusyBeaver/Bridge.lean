@@ -104,28 +104,88 @@ variable {states symbols : ℕ} [NeZero states] [NeZero symbols]
 
 /-- Embed `ConjectureMachines.ListBlank Γ` into Mathlib's `Turing.ListBlank Γ`. -/
 def ListBlank.toTuring {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : Turing.ListBlank Γ :=
-  l.liftOn Turing.ListBlank.mk fun _ _ h => Quotient.sound' (Or.inl h)
+  Turing.ListBlank.mk l.toList
+
+private theorem ListBlank.not_isTrimmed_replicate {Γ : Type*} [Inhabited Γ] :
+    ∀ i : ℕ, 1 ≤ i → ¬ ListBlank.IsTrimmed (List.replicate i (default : Γ))
+  | 0, h => absurd h (Nat.not_succ_le_zero 0)
+  | 1, _ => fun ht => ht rfl
+  | i + 2, _ => fun ht => ListBlank.not_isTrimmed_replicate (i + 1) (Nat.succ_pos i) ht
+
+private theorem ListBlank.eq_of_isTrimmed_blankExtends {Γ : Type*} [Inhabited Γ] :
+    ∀ {xs ys : List Γ}, ListBlank.IsTrimmed xs → ListBlank.IsTrimmed ys →
+      Turing.BlankExtends xs ys → xs = ys
+  | [], [], _, _, _ => rfl
+  | [], [b], _, hy, ⟨i, hi⟩ => by
+    cases i with
+    | zero => cases hi
+    | succ j =>
+      simp only [List.nil_append, List.replicate_succ] at hi
+      injection hi with hb _
+      exact False.elim (hy hb)
+  | [], b :: c :: ys, _, hy, ⟨i, hi⟩ => by
+    cases i with
+    | zero => cases hi
+    | succ j =>
+      simp only [List.nil_append] at hi
+      exact False.elim (ListBlank.not_isTrimmed_replicate (j + 1) (Nat.succ_pos j) (hi ▸ hy))
+  | _ :: _, [], _, _, ⟨_, hi⟩ => by cases hi
+  | [a], [b], _, _, ⟨i, hi⟩ => by
+    cases i with
+    | zero =>
+      simp only [List.replicate_zero, List.append_nil] at hi
+      exact hi.symm
+    | succ j =>
+      simp only [List.singleton_append, List.replicate_succ] at hi
+      injection hi with _ hnil
+      cases hnil
+  | [_], _ :: c :: ys, _, hy, ⟨i, hi⟩ => by
+    simp only [List.singleton_append] at hi
+    injection hi with _ htl
+    cases i with
+    | zero => cases htl
+    | succ j =>
+      exact False.elim (ListBlank.not_isTrimmed_replicate (j + 1) (Nat.succ_pos j) (htl ▸ hy))
+  | _ :: _ :: _, [_], _, _, ⟨_, hi⟩ => by
+    injection hi with _ htl
+    cases htl
+  | _ :: b :: xs, c :: d :: ys, hx, hy, ⟨i, hi⟩ => by
+    injection hi with hac htl
+    rw [← hac]
+    exact congrArg (c :: ·) (ListBlank.eq_of_isTrimmed_blankExtends hx hy ⟨i, htl⟩)
 
 @[simp]
 theorem ListBlank.toTuring_inj {Γ : Type*} [Inhabited Γ] {l₁ l₂ : ListBlank Γ} :
-    l₁.toTuring = l₂.toTuring ↔ l₁ = l₂ :=
-  ⟨l₁.induction_on fun _ => l₂.induction_on fun _ h => Quot.sound (Quotient.exact' h),
-   congrArg _⟩
+    l₁.toTuring = l₂.toTuring ↔ l₁ = l₂ := by
+  constructor
+  · intro h
+    apply ListBlank.ext
+    rcases Quotient.exact' h with h₁ | h₂
+    · exact ListBlank.eq_of_isTrimmed_blankExtends l₁.isTrimmed l₂.isTrimmed h₁
+    · exact (ListBlank.eq_of_isTrimmed_blankExtends l₂.isTrimmed l₁.isTrimmed h₂).symm
+  · exact congrArg _
 
 @[simp]
 theorem ListBlank.toTuring_head {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) :
     l.toTuring.head = l.head :=
-  l.induction_on fun _ => rfl
+  rfl
 
 @[simp]
 theorem ListBlank.toTuring_tail {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) :
     l.toTuring.tail = l.tail.toTuring :=
-  l.induction_on fun _ => rfl
+  rfl
 
 @[simp]
-theorem ListBlank.toTuring_cons {Γ : Type*} [Inhabited Γ] (a : Γ) (l : ListBlank Γ) :
-    l.toTuring.cons a = (l.cons a).toTuring :=
-  l.induction_on fun _ => rfl
+theorem ListBlank.toTuring_cons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    (a : Γ) (l : ListBlank Γ) :
+    l.toTuring.cons a = (l.cons a).toTuring := by
+  rcases l with ⟨_ | ⟨b, xs⟩, _⟩
+  · change Turing.ListBlank.mk [a] = Turing.ListBlank.mk (if a = default then [] else [a])
+    by_cases ha : a = default
+    · rw [ite_eq_left ha, ha]
+      exact Quotient.sound' (Or.inr ⟨1, rfl⟩)
+    · rw [ite_eq_right ha]
+  · rfl
 
 /-- Embed `ConjectureMachines.Tape Γ` into Mathlib's `Turing.Tape Γ`. -/
 def Tape.toTuring {Γ : Type*} [Inhabited Γ] (T : Tape Γ) : Turing.Tape Γ :=
