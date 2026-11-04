@@ -33,9 +33,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Free runner disk space and install bubblewrap
+      - name: Free runner disk space, set up swap, and install bubblewrap
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost
+          sudo fallocate -l 12G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=12288
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
           sudo apt-get update -qq >/dev/null
           sudo apt-get install -y -qq bubblewrap >/dev/null
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
