@@ -36,16 +36,16 @@ def rawRoot98 (pad : Nat) (w : List (Fin 2)) (bank : List Nat) : Cfg 98 2 :=
     0] ++ encodeRegs bank) default)⟩
 
 theorem swap_incLeaf (r : Fin 5) :
-    Renaming.swap (PhysicalRaw.incLeaf98 r) = incLeaf98 r := by fin_cases r <;> rfl
+    Renaming.swap (PhysicalRaw.incLeaf98 r) = incLeaf98 r := by revert r; decide
 
 theorem swap_decLeaf (r : Fin 5) :
-    Renaming.swap (PhysicalRaw.decLeaf98 r) = decLeaf98 r := by fin_cases r <;> rfl
+    Renaming.swap (PhysicalRaw.decLeaf98 r) = decLeaf98 r := by revert r; decide
 
 theorem rename_rawRoot (pad : Nat) (word : List (Fin 2)) (bank : List Nat) :
     Renaming.renameCfg (PhysicalRaw.rawRoot98 pad word bank) = rawRoot98 pad word bank := rfl
 
 theorem swap_fence (k : Fin 2) :
-    Renaming.swap (if k = 0 then 9 else 63) = (if k = 0 then 9 else 63) := by fin_cases k <;> rfl
+    Renaming.swap (if k = 0 then 9 else 63) = (if k = 0 then 9 else 63) := by revert k; decide
 
 theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (hpos : 0 <
   bank.getD r.val 0) (L : ListBlank (Fin 2)) : ∃ s ≥ 1, nSteps s ⟨decLeaf98 r, Tape.mk' L

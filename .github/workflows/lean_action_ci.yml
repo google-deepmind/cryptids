@@ -46,14 +46,17 @@ jobs:
           sudo apt-get install -y -qq bubblewrap >/dev/null
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6 # v1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
         with:
           build-args: "Cryptids Challenge"
         env:
           LEAN_NUM_THREADS: "1"
 
-      - name: Verify constructive reductions and ZF proof-search equivalences (no Classical.choice)
+      - name: Verify zero-axiom state counts and PA consistency (no axioms)
+        run: lake comparator --config comparator/zero_axioms.json
+
+      - name: Verify constructive reductions, ZF proof-search, and PA adequacy (no Classical.choice)
         run: lake comparator --config comparator/constructive.json
 
       - name: Verify all theorems against Challenge with comparator
