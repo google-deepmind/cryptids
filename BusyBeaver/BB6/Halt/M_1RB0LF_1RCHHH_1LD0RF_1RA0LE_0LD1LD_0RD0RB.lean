@@ -539,9 +539,6 @@ end Solution
 Halting theorem for Suspect 158 (Holdout #707):
 The machine halts when started on the blank tape.
 -/
-
-
-
 theorem is_halt : IsHalt target := (Solution.sol_is_halt True.intro)
 
 end BusyBeaver.M_1RB0LF_1RCHHH_1LD0RF_1RA0LE_0LD1LD_0RD0RB

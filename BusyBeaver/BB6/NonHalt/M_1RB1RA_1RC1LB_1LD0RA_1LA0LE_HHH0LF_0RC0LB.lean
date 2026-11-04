@@ -81,8 +81,6 @@ theorem multiStep_trans (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : 
 
 omit [Inhabited Γ] in
 @[simp]
-
-
 theorem listblank_append_pow_add (s : ListBlank (Fin 2)) (n m : ℕ) :
     (s <+ (([1] : List (Fin 2)) ^ n)) <+ (([1] : List (Fin 2)) ^ m) =
     s <+ (([1] : List (Fin 2)) ^ (n + m)) := by

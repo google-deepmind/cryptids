@@ -445,9 +445,9 @@ def checkEntryThreePieces (q : Nat) (av high : WordList) (lim : Nat)
   | some rest1, some _u3_init_rev, some h1', some h2', some H' =>
     if h1' == h1 && h2' == h2 && H' == H && decide (29 <= H) then
       if H == (da1 ++ da2).length && (da1 ++ da2).all isDigitWord then
-        let (c1', eff1) := evalEffect 0 u1
-        let (c2', eff2) := evalEffect c1 u2
-        let (c3', eff3) := evalEffect c2 u3
+        let (c1', _) := evalEffect 0 u1
+        let (c2', _) := evalEffect c1 u2
+        let (c3', _) := evalEffect c2 u3
         let (cda', db1) := evalEffect carry da1
         let (last_c, db2) := evalEffect cda da2
         if c1' == c1 && c2' == c2 && c3' == carry && cda' == cda && last_c == 1 then

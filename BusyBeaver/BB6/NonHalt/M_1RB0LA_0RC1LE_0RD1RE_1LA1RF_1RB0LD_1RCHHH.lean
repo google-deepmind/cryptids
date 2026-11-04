@@ -68,8 +68,6 @@ set_option maxHeartbeats 8000000
 
 omit [Inhabited Γ] in
 @[simp]
-
-
 theorem list_pow_append_one (u : List (Fin 2)) (k : Nat) :
     u^k ++ u = u^(k + 1) := by
   have h := list_pow_add_comm u k 1
