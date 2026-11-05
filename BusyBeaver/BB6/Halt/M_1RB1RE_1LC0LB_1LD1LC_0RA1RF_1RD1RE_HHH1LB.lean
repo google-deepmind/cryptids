@@ -1334,7 +1334,6 @@ def st_10 : RTape := (RTape.cons true 1 (RTape.cons false 4177236263720042510692
 
 set_option Elab.async false
 
-set_option maxHeartbeats 10000000
 macro "fast_rfl" : tactic => `(tactic| decide +kernel)
 
 theorem step_0 : is_running_eq (run_chunk 8 st_0) st_1 = true := by fast_rfl
@@ -1349,17 +1348,28 @@ theorem step_8 : is_running_eq (run_chunk 8 st_8) st_9 = true := by fast_rfl
 theorem step_9 : is_running_eq (run_chunk 8 st_9) st_10 = true := by fast_rfl
 theorem step_10 : is_halted (run_chunk 8 st_10) = true := by fast_rfl
 
-theorem halt_10 {tail : zB} (ht : @Valid tail st_10) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_10) := finish_chunk step_10 ht
-theorem halt_9 {tail : zB} (ht : @Valid tail st_9) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_9) := chain_chunk step_9 halt_10 ht
-theorem halt_8 {tail : zB} (ht : @Valid tail st_8) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_8) := chain_chunk step_8 halt_9 ht
-theorem halt_7 {tail : zB} (ht : @Valid tail st_7) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_7) := chain_chunk step_7 halt_8 ht
-theorem halt_6 {tail : zB} (ht : @Valid tail st_6) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_6) := chain_chunk step_6 halt_7 ht
-theorem halt_5 {tail : zB} (ht : @Valid tail st_5) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_5) := chain_chunk step_5 halt_6 ht
-theorem halt_4 {tail : zB} (ht : @Valid tail st_4) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_4) := chain_chunk step_4 halt_5 ht
-theorem halt_3 {tail : zB} (ht : @Valid tail st_3) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_3) := chain_chunk step_3 halt_4 ht
-theorem halt_2 {tail : zB} (ht : @Valid tail st_2) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_2) := chain_chunk step_2 halt_3 ht
-theorem halt_1 {tail : zB} (ht : @Valid tail st_1) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_1) := chain_chunk step_1 halt_2 ht
-theorem halt_0 {tail : zB} (ht : @Valid tail st_0) : IsHaltFrom (default <{{C}} denote_tape_tail tail st_0) := chain_chunk step_0 halt_1 ht
+theorem halt_10 {tail : zB} (ht : @Valid tail st_10) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_10) := finish_chunk step_10 ht
+theorem halt_9 {tail : zB} (ht : @Valid tail st_9) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_9) := chain_chunk step_9 halt_10 ht
+theorem halt_8 {tail : zB} (ht : @Valid tail st_8) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_8) := chain_chunk step_8 halt_9 ht
+theorem halt_7 {tail : zB} (ht : @Valid tail st_7) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_7) := chain_chunk step_7 halt_8 ht
+theorem halt_6 {tail : zB} (ht : @Valid tail st_6) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_6) := chain_chunk step_6 halt_7 ht
+theorem halt_5 {tail : zB} (ht : @Valid tail st_5) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_5) := chain_chunk step_5 halt_6 ht
+theorem halt_4 {tail : zB} (ht : @Valid tail st_4) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_4) := chain_chunk step_4 halt_5 ht
+theorem halt_3 {tail : zB} (ht : @Valid tail st_3) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_3) := chain_chunk step_3 halt_4 ht
+theorem halt_2 {tail : zB} (ht : @Valid tail st_2) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_2) := chain_chunk step_2 halt_3 ht
+theorem halt_1 {tail : zB} (ht : @Valid tail st_1) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_1) := chain_chunk step_1 halt_2 ht
+theorem halt_0 {tail : zB} (ht : @Valid tail st_0) :
+    IsHaltFrom (default <{{C}} denote_tape_tail tail st_0) := chain_chunk step_0 halt_1 ht
 
 end
 

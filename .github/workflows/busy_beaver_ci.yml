@@ -44,6 +44,8 @@ jobs:
       - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1
         with:
           build-args: "BusyBeaver BusyBeaverChallenge"
+        env:
+          LEAN_NUM_THREADS: "1"
 
       - name: Verify BusyBeaver against BusyBeaverChallenge with comparator
         run: lake comparator --config comparator/busy_beaver.json
