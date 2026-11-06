@@ -235,6 +235,11 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
+/-- Rows of `brocard41`. -/
+def brocard41Rows : List (List (Option (Fin 2 × Dir × Fin 41))) :=
+  load_machine_rows% "artifacts/brocard_41/machine.txt"
+/-- 41-state Brocard machine. -/
+def brocard41 : Machine 41 2 := Machine.ofRows brocard41Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff
