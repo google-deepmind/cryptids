@@ -172,6 +172,21 @@ def IsNotHalt (M : Machine Γ Λ) : Prop :=
 /-- Alias for `IsNotHalt`. -/
 abbrev IsDoesNotHalt (M : Machine Γ Λ) : Prop := IsNotHalt M
 
+/-- Atomic `NeZero (k + 2)` instance for alphabet size `Fin (k + 2)`.
+Ensures `HasStackReduction` and `HasOdometerReduction` synthesize an atomic constant
+rather than composite proof `instNeZeroNatHAdd_1 k 2`, avoiding per-module `_proof_1`
+auxiliary definitions that break cross-module AST equality in the comparator.
+Priority `default + 1` is required because at default priority Lean prioritizes
+Mathlib's composite `instNeZeroNatHAdd_1`. -/
+instance (priority := default + 1) instNeZeroK2 (k : ℕ) : @NeZero ℕ Zero.ofOfNat0 (k + 2) :=
+  ⟨Nat.succ_ne_zero (k + 1)⟩
+
+/-- Atomic `NeZero 2` instance with higher priority than `instNeZeroK2`.
+Ensures literal `Fin 2` does not match `instNeZeroK2 0`, which would embed a dependency
+on `0` into the typeclass instance and break `generalize 0 = n` in downstream proofs. -/
+instance (priority := default + 2) instNeZeroTwoLit : @NeZero ℕ Zero.ofOfNat0 2 :=
+  ⟨Nat.succ_ne_zero 1⟩
+
 /-- Parametric regular-expression half-tape expressions for `HasCollatzReduction`. -/
 inductive TapeExpr (Γ : Type*) where
   | default : TapeExpr Γ
