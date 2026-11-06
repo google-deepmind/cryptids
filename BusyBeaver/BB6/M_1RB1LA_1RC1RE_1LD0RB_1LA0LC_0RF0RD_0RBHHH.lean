@@ -6,6 +6,7 @@ module
 
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
+import BusyBeaver.BB6.Pomme.NonHalt
 
 /-!
 # Busy Beaver Holdout `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---` (Resolved Non-Halting)
@@ -6050,5 +6051,10 @@ theorem isHalt_iff_highLevel_acceleration :
 theorem acceleration_iff_highLevel_acceleration :
     CollatzHalts next start ↔ CollatzHalts highLevelNext highLevelStart :=
   is_valid_acceleration.collatzHalts_iff is_valid_highLevel_acceleration
+
+
+/-- Main non-halting theorem for `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`. -/
+theorem is_not_halt : IsNotHalt target :=
+  Pomme.NonHalt.is_not_halt
 
 end BusyBeaver.M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH

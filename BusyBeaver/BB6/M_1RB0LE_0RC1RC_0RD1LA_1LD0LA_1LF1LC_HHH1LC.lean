@@ -238,7 +238,7 @@ def ps : TapePatternSet (Fin 2) (Fin 6) :=
   [(pat_D, .not (.ge_const 2 2))]
 
 def D_cfg (a b c d : Nat) : Cfg (Fin 2) (Fin 6) :=
-  default {{D}}>
+  Cfg.headRight D default
     (([1, 0] : List (Fin 2))^a +>
       (([1, 1, 0] : List (Fin 2))^b +>
         (([0] : List (Fin 2))^c +>
@@ -259,7 +259,8 @@ private theorem closes_of_in_ps {c_1 : Cfg (Fin 2) (Fin 6)} {a b c d : Nat}
   StepsToClosed.of_isInPatternSet h₁ (in_ps_D a b c d hc)
 
 def A_ones (a k b d : Nat) : Cfg (Fin 2) (Fin 6) :=
-  ((default <+ ([0, 1] : List (Fin 2))^a) <+ ([1] : List (Fin 2))^(k + 1)) <{{A}}
+  Cfg.headLeft A
+    ((default <+ ([0, 1] : List (Fin 2))^a) <+ ([1] : List (Fin 2))^(k + 1))
     (([1, 1, 0] : List (Fin 2))^b +> (([0] : List (Fin 2)) +> (([1] : List (Fin 2))^d +> default)))
 
 private theorem step_A_ones_k2 (a b d : Nat) :
@@ -345,7 +346,8 @@ private theorem step_A_ones_ksucc3 (a k b d : Nat) :
   bb_steps
 
 def H_mid (a b m : Nat) : Cfg (Fin 2) (Fin 6) :=
-  ((((default <+ ([0, 1] : List (Fin 2))^a) <+ [1]) <+ ([1, 1, 1] : List (Fin 2))^b) <+ [0]) {{D}}>
+  Cfg.headRight D
+    ((((default <+ ([0, 1] : List (Fin 2))^a) <+ [1]) <+ ([1, 1, 1] : List (Fin 2))^b) <+ [0])
     (([1] : List (Fin 2))^m +> default)
 
 private theorem step_H_mid_a0_m1 (b : Nat) :
@@ -634,7 +636,8 @@ private theorem closes_H_mid (a : Nat) :
           (ih a' (by omega) (b + 2) m')
 
 def B_mid (a k b d : Nat) : Cfg (Fin 2) (Fin 6) :=
-  ((default <+ ([0, 1] : List (Fin 2))^a) <+ ([1] : List (Fin 2))^k) {{B}}>
+  Cfg.headRight B
+    ((default <+ ([0, 1] : List (Fin 2))^a) <+ ([1] : List (Fin 2))^k)
     ([0, 0] +> (([1, 1, 0] : List (Fin 2))^b +> (([0] : List (Fin 2)) +> (([1] : List (Fin 2))^d +>
     default))))
 

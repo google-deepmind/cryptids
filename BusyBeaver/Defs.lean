@@ -63,11 +63,11 @@ structure Cfg (Γ Λ : Type*) [Inhabited Γ] where
 instance Cfg.inhabited : Inhabited (Cfg Γ Λ) := ⟨⟨default, default⟩⟩
 
 /-- Configuration in state `q` with the tape head reading the first symbol of `r`. -/
-def Cfg.headRight {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
+@[reducible] def Cfg.headRight {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
   ⟨some q, ⟨r.head, l, r.tail⟩⟩
 
 /-- Configuration in state `q` with the tape head reading the first symbol of `l`. -/
-def Cfg.headLeft {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
+@[reducible] def Cfg.headLeft {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
   ⟨some q, ⟨l.head, l.tail, r⟩⟩
 
 /-- Single-step execution semantics of a `BusyBeaver.Machine`. -/
@@ -95,6 +95,20 @@ def ReachesStar (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) : Prop :=
 /-- Non-empty transitive multi-step reachability (`∃ n > 0, multiStep M c₁ n = some c₂`). -/
 def ReachesPlus (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) : Prop :=
   ∃ n > 0, multiStep M c₁ n = some c₂
+
+scoped notation3 c₁ " [" M "]⊢ " c₂ => step M c₁ = some c₂
+scoped notation3 c₁ " [" M "]⊢^{" n "} " c₂ => multiStep M c₁ n = some c₂
+scoped notation3 c₁ " [" M "]⊢* " c₂ => ReachesStar M c₁ c₂
+scoped notation3 c₁ " [" M "]⊢⁺ " c₂ => ReachesPlus M c₁ c₂
+
+scoped notation l " {{" s "}} " r => (⟨s, l, r⟩ : Tape _)
+scoped notation:67 s:67 " << " a:68 => ListBlank.cons a s
+scoped infixr:67 " >> " => ListBlank.cons
+scoped notation:67 s:67 " <+ " l:68 => ListBlank.append l s
+scoped infixr:67 " +> " => ListBlank.append
+scoped notation3 l " {{" q "}}> " r => (⟨some q, ⟨ListBlank.head r, l, ListBlank.tail r⟩⟩ : Cfg _ _)
+scoped notation3 l " <{{" q "}} " r => (⟨some q, ⟨ListBlank.head l, ListBlank.tail l, r⟩⟩ : Cfg _ _)
+
 
 /-- Repeat finite list `l` `n` times (`l ^ n`). -/
 instance instHPowListNat : HPow (List Γ) ℕ (List Γ) :=
@@ -681,5 +695,8 @@ def HasTransducerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
           ReachesPlus M
             (evalTransducerCfg m_rl L (List.replicate (s₃ * (n + 1)) tR' ++ R))
             (evalTransducerCfg m_rl (List.replicate (s₄ * (n + 1)) tL' ++ L) R)))
+
+
+
 
 end BusyBeaver

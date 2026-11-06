@@ -72,8 +72,9 @@ def start : State := .A 2 0 0
 @[simp]
 def encode : State → Cfg (Fin 3) (Fin 3)
   | .A a b c =>
-      (((default <+ ([2, 1] : List (Fin 3)) ^ a) <+ ([1] : List (Fin 3)) ^ (2 * b + 2)) <{{A}}
-        (([1] : List (Fin 3)) ^ (2 * (c + 2)) +> default))
+      Cfg.headLeft A
+        (((default <+ ([2, 1] : List (Fin 3)) ^ a) <+ ([1] : List (Fin 3)) ^ (2 * b + 2)))
+        (([1] : List (Fin 3)) ^ (2 * (c + 2)) +> default)
 
 /-- Ligocki and savask's 7-rule mod-6 Collatz-like map for Bigfoot (`none` indicates halting at
 $a = 0, b \equiv 1 \pmod 6$). -/

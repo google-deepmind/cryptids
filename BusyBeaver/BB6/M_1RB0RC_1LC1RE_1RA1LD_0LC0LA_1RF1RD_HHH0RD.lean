@@ -172,7 +172,7 @@ private def cfg_D (a b : Nat) : Cfg (Fin 2) (Fin 6) :=
       default))
 
 abbrev cfg_A (l : ListBlank (Fin 2)) (k j c : Nat) : Cfg (Fin 2) (Fin 6) :=
-  (l <+ ([1] : List (Fin 2)) ^ k) {{D}}>
+  Cfg.headRight D (l <+ ([1] : List (Fin 2)) ^ k)
     ([1, 1] +> (([0, 1] : List (Fin 2)) ^ j +> (([1] : List (Fin 2)) ^ c +> default)))
 
 abbrev l_hat : ListBlank (Fin 2) :=
@@ -182,7 +182,7 @@ abbrev l_ones3 : ListBlank (Fin 2) :=
   (default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ 3
 
 abbrev cfg_C001 (l : ListBlank (Fin 2)) (a b : Nat) : Cfg (Fin 2) (Fin 6) :=
-  l {{C}}> ([0, 0, 1] +> (([0, 1] : List (Fin 2)) ^ a +> (([1] : List (Fin 2)) ^ b +> default)))
+  Cfg.headRight C l ([0, 0, 1] +> (([0, 1] : List (Fin 2)) ^ a +> (([1] : List (Fin 2)) ^ b +> default)))
 
 def pat_A : TapePattern (Fin 2) (Fin 6) :=
   { left  := .rep [1] 0 (.rep [0, 1, 1, 1] 1 .default)

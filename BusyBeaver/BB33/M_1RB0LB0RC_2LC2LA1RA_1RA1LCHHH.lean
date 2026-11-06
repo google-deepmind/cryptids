@@ -55,8 +55,9 @@ def start : State := .A 1 1
 /-- Encoding of `State` into Turing machine configurations. -/
 def encode : State → Cfg (Fin 3) (Fin 3)
   | .A a c =>
-    ((default <+ ([1, 0] : List (Fin 3)) ^ c) {{A}}>
-      (([1] : List (Fin 3)) ^ a +> ((2 : Fin 3) >> default)))
+    Cfg.headRight A
+      (default <+ ([1, 0] : List (Fin 3)) ^ c)
+      (([1] : List (Fin 3)) ^ a +> ((2 : Fin 3) >> default))
 
 /-- Accelerated transition function on `State` (`none` indicates halting). -/
 def next : State → Option State
