@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'BusyBeaver/**'
+      - '!BusyBeaver/**/*.md'
+      - '!BusyBeaver/*.md'
       - 'BusyBeaver.lean'
       - 'BusyBeaverChallenge.lean'
       - 'Cryptids/Machines.lean'
@@ -15,6 +17,8 @@ on:
   pull_request:
     paths:
       - 'BusyBeaver/**'
+      - '!BusyBeaver/**/*.md'
+      - '!BusyBeaver/*.md'
       - 'BusyBeaver.lean'
       - 'BusyBeaverChallenge.lean'
       - 'Cryptids/Machines.lean'
