@@ -20,20 +20,33 @@ reflective architecture and verification procedure.
 
 ## Behavioral Predicates ([`Defs.lean`](./Defs.lean))
 
-All proofs in `BusyBeaver/` target machine-checked behavioral predicates over the Post-Turing execution model `BusyBeaver.Machine Γ Λ` starting from the all-blank tape (`BusyBeaver.init []`), capturing both **Level A** (explicit closed `TapePatternSet` or `StackPatternSet` invariants) and **Level B** (explicit accelerated transition systems):
+The definition surface is partitioned into modular submodules under [`BusyBeaver/Defs/`](./Defs/) and re-exported through the umbrella module [`BusyBeaver/Defs.lean`](./Defs.lean):
 
-| Predicate | Meaning |
-| :--- | :--- |
-| `IsHalt M` | `M` eventually reaches a halting configuration (`(step M cfg).isNone`) from `init []`. |
-| `IsNotHalt M` (`IsDoesNotHalt M`) | Every configuration reachable from `init []` has a well-defined successor (`(step M cfg).isSome`). |
-| `IsClosedPatternSet M ps` | **Level A (Counter)**: `M`'s blank-tape trajectory enters the explicit `TapePatternSet` `ps`, and every member configuration advances (`ReachesPlus`) either to another member of `ps` or to a halting configuration. |
-| `HasCollatzReduction M` | `∃ ps, IsClosedPatternSet M ps`. |
-| `IsClosedStackPatternSet M ps` | **Level A (Stacked)**: `ps` is well-formed (`IsWellFormedStackPatternSet ps`: non-empty, blank-free block vocabularies, and single-sided stack configuration with at most one `.word` segment), `M`'s blank-tape trajectory enters `ps`, and every member configuration advances (`ReachesPlus`) either to another member of `ps` or to a halting configuration. |
-| `HasStackedCollatzReduction M` | `∃ ps, IsClosedStackPatternSet M ps` (an existential summary that is always paired in `BusyBeaverChallenge.lean` with a concrete `ps` and an explicit Level B finite-state transducer acceleration). |
-| `HasStackReduction M` | **Level A (Two-Sided Stack)**: `M`'s blank-tape trajectory enters a closed two-sided variable-length digit-stack system (`StackTuple`, `IsValidStackModes`) with bounded-prefix views, blank-tape multi-digit stack reachability, and an arbitrary-depth stack-frame transfer transition. |
-| `HasOdometerReduction M` | **Level A (Odometer)**: `M`'s blank-tape trajectory enters a closed mixed-radix odometer stack + bit-stream system (`evalOdomR` / `evalOdomL`) with non-trivial odometer stack reachability, certified decrement, zero-capacity drain, reflection, and unconditional push/reflect/halt closure. |
-| `HasTransducerReduction M` | **Level A (Transducer)**: `M`'s blank-tape trajectory enters a closed bidirectional macro-word transducer (`IsValidTransducerModes`, `iterTransducerMacro`) over strict-sub-Kraft block alphabets with a halting-verified exit gate and unbounded sweeps in both directions. |
-| `IsValidAcceleration M start encode next` | **Level B**: `encode : S → Cfg Γ Λ` and `next : S → Option S` form a certified acceleration of `M` from `start : S` (`init []` reaches `encode start`, `next s = some s'` implies `ReachesPlus M (encode s) (encode s')`, and `next s = none` implies halting from `encode s`), yielding `IsHalt M ↔ CollatzHalts next start`. |
+- **[`Defs/Core.lean`](./Defs/Core.lean)** — Post-Turing execution model (`Stmt`, `Machine`, `Cfg`), reachability relations (`step`, `init`, `multiStep`, `ReachesIn`, `ReachesStar`, `ReachesPlus`), and foundational halting predicates (`IsHalt`, `IsNotHalt`, `IsDoesNotHalt`).
+- **[`Defs/Patterns.lean`](./Defs/Patterns.lean)** — Regular-expression tape patterns (`TapeExpr`, `TapePattern`, `VarCond`), pattern set closure (`IsClosedPatternSet`, `HasCollatzReduction`), abstract acceleration halting (`CollatzHalts`, `IsValidAcceleration`), and rule-bounded cryptids (`IsCryptid`).
+- **[`Defs/Stack.lean`](./Defs/Stack.lean)** — Stack-word tape patterns (`StackSeg`, `StackExpr`, `StackPattern`), stacked Collatz reductions (`IsClosedStackPatternSet`, `HasStackedCollatzReduction`), bounded half-tape views (`HalfTapeView`, `applyView`), and 2nd-order digit-stack reductions (`HasStackReduction`).
+- **[`Defs/Odometer.lean`](./Defs/Odometer.lean)** — Mixed-radix odometer stack and bitstream systems (`OdomSide`, `evalOdomR`, `evalOdomL`, `HasOdometerReduction`).
+- **[`Defs/Transducer.lean`](./Defs/Transducer.lean)** — Bidirectional word-stack transducers (`IsValidTransducerModes`, `kraftSum`, `iterTransducerMacro`, `HasTransducerReduction`).
+- **[`Defs/WordRun.lean`](./Defs/WordRun.lean)** — Invariant-relative word-run stack systems with accumulator registers (`WordStackSpec`, `IsWordRunCryptid`).
+- **[`Defs/Segmented.lean`](./Defs/Segmented.lean)** — Partitioned segmented half-tape schemas (`SegRegionKind`, `IsSegmentedCryptid`).
+
+All proofs in `BusyBeaver/` target machine-checked behavioral predicates starting from the all-blank tape (`BusyBeaver.init []`):
+
+| Predicate | Defining Module | Meaning |
+| :--- | :--- | :--- |
+| `IsHalt M` | `Defs/Core.lean` | `M` eventually reaches a halting configuration (`(step M cfg).isNone`) from `init []`. |
+| `IsNotHalt M` (`IsDoesNotHalt M`) | `Defs/Core.lean` | Every configuration reachable from `init []` has a well-defined successor (`(step M cfg).isSome`). |
+| `IsClosedPatternSet M ps` | `Defs/Patterns.lean` | **Level A (Counter)**: `M`'s blank-tape trajectory enters the explicit `TapePatternSet` `ps`, and every member configuration advances (`ReachesPlus`) either to another member of `ps` or to a halting configuration. |
+| `HasCollatzReduction M` | `Defs/Patterns.lean` | `∃ ps, IsClosedPatternSet M ps`. |
+| `IsCryptid M` | `Defs/Patterns.lean` | `M` admits an invariant certificate with at most 16 patterns and 32 rules over alphabet size `k + 2`. |
+| `IsClosedStackPatternSet M ps` | `Defs/Stack.lean` | **Level A (Stacked)**: `ps` is well-formed (`IsWellFormedStackPatternSet ps`: non-empty, blank-free block vocabularies, and single-sided stack configuration with at most one `.word` segment), `M`'s blank-tape trajectory enters `ps`, and every member configuration advances (`ReachesPlus`) either to another member of `ps` or to a halting configuration. |
+| `HasStackedCollatzReduction M` | `Defs/Stack.lean` | `∃ ps, IsClosedStackPatternSet M ps` (an existential summary paired in `BusyBeaverChallenge.lean` with a concrete `ps` and an explicit Level B finite-state transducer acceleration). |
+| `HasStackReduction M` | `Defs/Stack.lean` | **Level A (Two-Sided Stack)**: `M`'s blank-tape trajectory enters a closed two-sided variable-length digit-stack system (`StackTuple`, `IsValidStackModes`) with bounded-prefix views, blank-tape multi-digit stack reachability, and an arbitrary-depth stack-frame transfer transition. |
+| `HasOdometerReduction M` | `Defs/Odometer.lean` | **Level A (Odometer)**: `M`'s blank-tape trajectory enters a closed mixed-radix odometer stack + bit-stream system (`evalOdomR` / `evalOdomL`) with non-trivial odometer stack reachability, certified decrement, zero-capacity drain, reflection, and unconditional push/reflect/halt closure. |
+| `HasTransducerReduction M` | `Defs/Transducer.lean` | **Level A (Transducer)**: `M`'s blank-tape trajectory enters a closed bidirectional macro-word transducer (`IsValidTransducerModes`, `iterTransducerMacro`) over strict-sub-Kraft block alphabets with a halting-verified exit gate and unbounded sweeps in both directions. |
+| `IsWordRunCryptid M` | `Defs/WordRun.lean` | `M`'s blank-tape trajectory enters a closed invariant-relative word-run stack system with bottom accumulator registers. |
+| `IsSegmentedCryptid M` | `Defs/Segmented.lean` | `M`'s blank-tape trajectory enters a closed segmented schema over partitioned half-tapes with register, word-run, finite-word, and gadget regions. |
+| `IsValidAcceleration M start encode next` | `Defs/Patterns.lean` | **Level B**: `encode : S → Cfg Γ Λ` and `next : S → Option S` form a certified acceleration of `M` from `start : S` (`init []` reaches `encode start`, `next s = some s'` implies `ReachesPlus M (encode s) (encode s')`, and `next s = none` implies halting from `encode s`), yielding `IsHalt M ↔ CollatzHalts next start`. |
 
 ## Foundational Lemmas ([`Basic.lean`](./Basic.lean))
 
