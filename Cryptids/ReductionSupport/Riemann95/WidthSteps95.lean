@@ -33,45 +33,45 @@ def halfCfg (k : Fin 3) (d : Nat) (s : Fin 8) (m v a x other : Nat) : Cfg :=
 theorem half_step0 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 0 m v a x other) =
       some (halfCfg k d (if a = 0 then 4 else 1) m v (a-1) x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 
 theorem half_step1 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 1 m v a x other) =
       some (halfCfg k d (if a = 0 then 4 else 2) m v (a-1) x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 
 theorem half_step2 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 2 m v a x other) = some (halfCfg k d 3 m (v+1) a x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 
 theorem half_step3 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 3 m v a x other) = some (halfCfg k d 0 m v a x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 
 theorem half_step4 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 4 m v a x other) =
       some (halfCfg k d (if v = 0 then 7 else 5) m (v-1) a x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 
 theorem half_step5 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 5 m v a x other) = some (halfCfg k d 6 m v (a+1) x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 
 theorem half_step6 (k : Fin 3) (d : Nat) (m v a x other : Nat) :
     step (halfCfg k d 6 m v a x other) = some (halfCfg k d 4 m v a x other) := by
-  fin_cases k <;> rcases d with _ | (_ | d) <;>
+  rcases k with ⟨kv, hkv⟩; interval_cases kv <;> rcases d with _ | (_ | d) <;>
     by_cases ha : a = 0 <;> by_cases hv : v = 0 <;>
       simp [step, instruction, localInstr, halfCfg, halfWord, ha, hv]
 

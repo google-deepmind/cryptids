@@ -15,6 +15,7 @@
     "ConjectureMachines.Riemann104.candidate_fewer_states",
     "ConjectureMachines.Riemann104.candidate_equivalent",
     "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.Riemann95.candidate_equivalent",
     "ConjectureMachines.ErdosTernary14.candidate_fewer_states",
     "ConjectureMachines.ErdosTernary14.candidate_equivalent"
   ],

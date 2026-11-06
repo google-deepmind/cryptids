@@ -336,18 +336,21 @@ theorem root_local (d : Nat) (s : Fin 22) (target : Word)
       some ⟨target, bank⟩ := by rw [h]; rfl
   have hg := (Control.decoded_next_noThree (.local d s) bank _ hnext).2
   have hp := localWalk_parse d s
-  fin_cases s <;> first
+  rcases s with ⟨sv, hsv⟩
+  interval_cases sv <;> first
     | (solve | cases h)
     | skip
-  case «3» =>
-    have ht : target = callerPrefix d ++ [1] := by
+  · have ht : target = callerPrefix d ++ [1] := by
       simpa [Control.rawInstr, Control.effect, Control.localEffects, Control.walked,
         Control.returned, localWalk, localWalkSuffix, localWalkSuffixes,
         Riemann120.Layer2.popContinueRev, List.reverse_append] using h.symm
     subst target
-    have hsuf : suffix (⟨3, by decide⟩ : Fin 22) = [1, 0, 0, 1, 1, 1] := by decide +kernel
-    have hw : localWalkSuffix (⟨3, by decide⟩ : Fin 22) = [1, 0, 0, 1, 1] := by decide +kernel
-    have hq : localTerminal (⟨3, by decide⟩ : Fin 22) = 43 := by decide +kernel
+    have hsuf : suffix ⟨3, hsv⟩ = [1, 0, 0, 1, 1, 1] :=
+      (by decide +kernel : suffix 3 = [1, 0, 0, 1, 1, 1])
+    have hw : localWalkSuffix ⟨3, hsv⟩ = [1, 0, 0, 1, 1] :=
+      (by decide +kernel : localWalkSuffix 3 = [1, 0, 0, 1, 1])
+    have hq : localTerminal ⟨3, hsv⟩ = 43 :=
+      (by decide +kernel : localTerminal 3 = 43)
     have hp' : walkInternal 15 ((callerPrefix d) ++ [1, 0, 0, 1, 1]) = some 43 := by
       simpa only [localWalk, hw, hq, List.append_assoc, List.cons_append,
         List.nil_append] using hp
@@ -359,15 +362,17 @@ theorem root_local (d : Nat) (s : Fin 22) (target : Word)
         List.cons_append, List.nil_append] using hpad
     simpa only [word, hsuf, List.append_assoc, List.cons_append, List.nil_append] using
       root43 (callerPrefix d) pad bank hp' hg' hpad'
-  case «6» =>
-    have ht : target = callerPrefix d ++ [1, 0, 1] := by
+  · have ht : target = callerPrefix d ++ [1, 0, 1] := by
       simpa [Control.rawInstr, Control.effect, Control.localEffects, Control.walked,
         Control.returned, localWalk, localWalkSuffix, localWalkSuffixes,
         Riemann120.Layer2.popContinueRev, List.reverse_append] using h.symm
     subst target
-    have hsuf : suffix (⟨6, by decide⟩ : Fin 22) = [1, 0, 1, 1, 1] := by decide +kernel
-    have hw : localWalkSuffix (⟨6, by decide⟩ : Fin 22) = [1, 0, 1, 1] := by decide +kernel
-    have hq : localTerminal (⟨6, by decide⟩ : Fin 22) = 59 := by decide +kernel
+    have hsuf : suffix ⟨6, hsv⟩ = [1, 0, 1, 1, 1] :=
+      (by decide +kernel : suffix 6 = [1, 0, 1, 1, 1])
+    have hw : localWalkSuffix ⟨6, hsv⟩ = [1, 0, 1, 1] :=
+      (by decide +kernel : localWalkSuffix 6 = [1, 0, 1, 1])
+    have hq : localTerminal ⟨6, hsv⟩ = 59 :=
+      (by decide +kernel : localTerminal 6 = 59)
     have hp' : walkInternal 15 ((callerPrefix d ++ [1, 0]) ++ [1, 1]) = some 59 := by
       simpa only [localWalk, hw, hq, List.append_assoc, List.cons_append,
         List.nil_append] using hp
@@ -380,15 +385,17 @@ theorem root_local (d : Nat) (s : Fin 22) (target : Word)
         List.cons_append, List.nil_append] using hpad
     simpa only [word, hsuf, List.append_assoc, List.cons_append, List.nil_append] using
       root59 (callerPrefix d ++ [1, 0]) pad bank hp' hg' hpad'
-  case «10» =>
-    have ht : target = callerPrefix d ++ [1, 1] := by
+  · have ht : target = callerPrefix d ++ [1, 1] := by
       simpa [Control.rawInstr, Control.effect, Control.localEffects, Control.walked,
         Control.returned, localWalk, localWalkSuffix, localWalkSuffixes,
         Riemann120.Layer2.popContinueRev, List.reverse_append] using h.symm
     subst target
-    have hsuf : suffix (⟨10, by decide⟩ : Fin 22) = [1, 1, 0, 0, 1, 1, 1] := by decide +kernel
-    have hw : localWalkSuffix (⟨10, by decide⟩ : Fin 22) = [1, 1, 0, 0, 1, 1] := by decide +kernel
-    have hq : localTerminal (⟨10, by decide⟩ : Fin 22) = 43 := by decide +kernel
+    have hsuf : suffix ⟨10, hsv⟩ = [1, 1, 0, 0, 1, 1, 1] :=
+      (by decide +kernel : suffix 10 = [1, 1, 0, 0, 1, 1, 1])
+    have hw : localWalkSuffix ⟨10, hsv⟩ = [1, 1, 0, 0, 1, 1] :=
+      (by decide +kernel : localWalkSuffix 10 = [1, 1, 0, 0, 1, 1])
+    have hq : localTerminal ⟨10, hsv⟩ = 43 :=
+      (by decide +kernel : localTerminal 10 = 43)
     have hp' : walkInternal 15 ((callerPrefix d ++ [1]) ++ [1, 0, 0, 1, 1]) = some 43 := by
       simpa only [localWalk, hw, hq, List.append_assoc, List.cons_append,
         List.nil_append] using hp
@@ -401,15 +408,17 @@ theorem root_local (d : Nat) (s : Fin 22) (target : Word)
         List.cons_append, List.nil_append] using hpad
     simpa only [word, hsuf, List.append_assoc, List.cons_append, List.nil_append] using
       root43 (callerPrefix d ++ [1]) pad bank hp' hg' hpad'
-  case «13» =>
-    have ht : target = callerPrefix d ++ [1, 1, 0, 1] := by
+  · have ht : target = callerPrefix d ++ [1, 1, 0, 1] := by
       simpa [Control.rawInstr, Control.effect, Control.localEffects, Control.walked,
         Control.returned, localWalk, localWalkSuffix, localWalkSuffixes,
         Riemann120.Layer2.popContinueRev, List.reverse_append] using h.symm
     subst target
-    have hsuf : suffix (⟨13, by decide⟩ : Fin 22) = [1, 1, 0, 1, 1, 1] := by decide +kernel
-    have hw : localWalkSuffix (⟨13, by decide⟩ : Fin 22) = [1, 1, 0, 1, 1] := by decide +kernel
-    have hq : localTerminal (⟨13, by decide⟩ : Fin 22) = 59 := by decide +kernel
+    have hsuf : suffix ⟨13, hsv⟩ = [1, 1, 0, 1, 1, 1] :=
+      (by decide +kernel : suffix 13 = [1, 1, 0, 1, 1, 1])
+    have hw : localWalkSuffix ⟨13, hsv⟩ = [1, 1, 0, 1, 1] :=
+      (by decide +kernel : localWalkSuffix 13 = [1, 1, 0, 1, 1])
+    have hq : localTerminal ⟨13, hsv⟩ = 59 :=
+      (by decide +kernel : localTerminal 13 = 59)
     have hp' : walkInternal 15 ((callerPrefix d ++ [1, 1, 0]) ++ [1, 1]) = some 59 := by
       simpa only [localWalk, hw, hq, List.append_assoc, List.cons_append,
         List.nil_append] using hp
@@ -422,16 +431,17 @@ theorem root_local (d : Nat) (s : Fin 22) (target : Word)
         List.cons_append, List.nil_append] using hpad
     simpa only [word, hsuf, List.append_assoc, List.cons_append, List.nil_append] using
       root59 (callerPrefix d ++ [1, 1, 0]) pad bank hp' hg' hpad'
-  case «17» =>
-    have ht : target = callerPrefix d ++ [1, 1, 1] := by
+  · have ht : target = callerPrefix d ++ [1, 1, 1] := by
       simpa [Control.rawInstr, Control.effect, Control.localEffects, Control.walked,
         Control.returned, localWalk, localWalkSuffix, localWalkSuffixes,
         Riemann120.Layer2.popContinueRev, List.reverse_append] using h.symm
     subst target
-    have hsuf : suffix (⟨17, by decide⟩ : Fin 22) = [1, 1, 1, 0, 0, 1, 1, 1] := by decide +kernel
-    have hw : localWalkSuffix (⟨17, by decide⟩ : Fin 22) = [1, 1, 1, 0, 0, 1, 1] := by
-      decide +kernel
-    have hq : localTerminal (⟨17, by decide⟩ : Fin 22) = 43 := by decide +kernel
+    have hsuf : suffix ⟨17, hsv⟩ = [1, 1, 1, 0, 0, 1, 1, 1] :=
+      (by decide +kernel : suffix 17 = [1, 1, 1, 0, 0, 1, 1, 1])
+    have hw : localWalkSuffix ⟨17, hsv⟩ = [1, 1, 1, 0, 0, 1, 1] :=
+      (by decide +kernel : localWalkSuffix 17 = [1, 1, 1, 0, 0, 1, 1])
+    have hq : localTerminal ⟨17, hsv⟩ = 43 :=
+      (by decide +kernel : localTerminal 17 = 43)
     have hp' : walkInternal 15 ((callerPrefix d ++ [1, 1]) ++ [1, 0, 0, 1, 1]) = some 43 := by
       simpa only [localWalk, hw, hq, List.append_assoc, List.cons_append,
         List.nil_append] using hp
@@ -444,15 +454,17 @@ theorem root_local (d : Nat) (s : Fin 22) (target : Word)
         List.cons_append, List.nil_append] using hpad
     simpa only [word, hsuf, List.append_assoc, List.cons_append, List.nil_append] using
       root43 (callerPrefix d ++ [1, 1]) pad bank hp' hg' hpad'
-  case «20» =>
-    have ht : target = callerPrefix d ++ [1, 1, 1, 0, 1] := by
+  · have ht : target = callerPrefix d ++ [1, 1, 1, 0, 1] := by
       simpa [Control.rawInstr, Control.effect, Control.localEffects, Control.walked,
         Control.returned, localWalk, localWalkSuffix, localWalkSuffixes,
         Riemann120.Layer2.popContinueRev, List.reverse_append] using h.symm
     subst target
-    have hsuf : suffix (⟨20, by decide⟩ : Fin 22) = [1, 1, 1, 0, 1, 1, 1] := by decide +kernel
-    have hw : localWalkSuffix (⟨20, by decide⟩ : Fin 22) = [1, 1, 1, 0, 1, 1] := by decide +kernel
-    have hq : localTerminal (⟨20, by decide⟩ : Fin 22) = 19 := by decide +kernel
+    have hsuf : suffix ⟨20, hsv⟩ = [1, 1, 1, 0, 1, 1, 1] :=
+      (by decide +kernel : suffix 20 = [1, 1, 1, 0, 1, 1, 1])
+    have hw : localWalkSuffix ⟨20, hsv⟩ = [1, 1, 1, 0, 1, 1] :=
+      (by decide +kernel : localWalkSuffix 20 = [1, 1, 1, 0, 1, 1])
+    have hq : localTerminal ⟨20, hsv⟩ = 19 :=
+      (by decide +kernel : localTerminal 20 = 19)
     have hp' : walkInternal 15 ((callerPrefix d ++ [1, 1, 1, 0]) ++ [1, 1]) = some 19 := by
       simpa only [localWalk, hw, hq, List.append_assoc, List.cons_append,
         List.nil_append] using hp

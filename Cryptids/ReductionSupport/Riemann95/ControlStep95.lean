@@ -342,12 +342,13 @@ theorem entry_instruction_words (d : Nat) :
 theorem local_instruction_words (d : Nat) (s : Fin 22) :
     rawInstr (.local d s) = toRhInstr (instruction (.local d s)) := by
   cases d with
-  | zero => fin_cases s <;> rfl
+  | zero => revert s; decide
   | succ d =>
     cases d with
-    | zero => fin_cases s <;> rfl
+    | zero => revert s; decide
     | succ d =>
-      fin_cases s <;>
+      rcases s with ⟨sv, hsv⟩
+      interval_cases sv <;>
         simp [rawInstr,effect,walked,instruction,localInstr,toRhInstr,returned,
           word,localWalk,localWalkSuffix,localWalkSuffixes,suffix,suffixes,localEffects,
           callerPrefix,popBreakRev,popContinueRev,

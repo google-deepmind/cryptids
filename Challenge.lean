@@ -18,30 +18,32 @@ meta import Lean.Elab.Term
 
 Self-contained specification module audited against `Cryptids` by `leanprover/comparator`:
 
+- **Zero-axiom gate (`comparator/zero_axioms.json`; `permitted_axioms = []`):**
+  Specification definitions (`ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `candidate`,
+  `reference`, `PAProvable`) are quotient-free and axiom-free (`ListBlank` stores a canonical
+  blank-trimmed `List Γ`), and all five `candidate_fewer_states` theorems together with syntactic
+  `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
 - **Constructive gate (`comparator/constructive.json`, `goldbach_21.json`, `zf_380.json`,
-  `riemann_104.json`; `permitted_axioms = ["propext", "Quot.sound"]`):**
-  The direct simulation state reductions (`Goldbach21`, `Zf380`, `Riemann104`), the `ErdosTernary14`
-  reduction, all five `candidate_fewer_states` theorems (including
-  `Riemann95.candidate_fewer_states`), all ZF
-  machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`,
+  `riemann_104.json`, `riemann_95_reduction.json`;
+  `permitted_axioms = ["propext", "Quot.sound"]`):**
+  All five state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`),
+  all ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`,
   `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`)
-  are verified **without `Classical.choice`** (`ListBlank` uses primitive `Quot` rather than
-  `Quotient` so `Halts` is choice-free). Because `Zf/Soundness.lean` proves `not_zfInconsistent`
-  via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without choice
-  (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
+  are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
+  `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
+  choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
   `Halts M ↔ ZFInconsistent`, while deeply embedded `PAProvable` provides a weak first-order
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 34 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
-  via `Nat.Prime`), classical `PA` and `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰` Goldbach
-  (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic `RiemannHypothesis`
-  equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences with
-  `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture` also
-  uses Markov's Principle).
+  Audits all 34 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
+  `RiemannHypothesis` equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences
+  with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
+  also uses Markov's Principle).
 -/
 
 meta section
@@ -79,6 +81,28 @@ open Turing (Dir)
 open StateTransition
 export Turing (Dir)
 
+scoped instance (priority := 10000) instZeroNatConstructive : Zero ℕ := ⟨0⟩
+scoped instance (priority := 10000) instLTNatConstructive : LT ℕ := instLTNat
+scoped instance (priority := 10000) instLENatConstructive : LE ℕ := instLENat
+scoped instance (priority := 10000) instDecidableLTNatConstructive : DecidableLT ℕ :=
+  fun a b => Nat.decLt a b
+scoped instance (priority := 10000) instDecidableLENatConstructive : DecidableLE ℕ :=
+  fun a b => Nat.decLe a b
+
+theorem pos_of_neZero (n : ℕ) [h : NeZero n] : 0 < n :=
+  Nat.casesOn (motive := fun k => NeZero k → 0 < k) n
+    (fun h0 => False.elim (h0.out rfl))
+    (fun k _ => Nat.zero_lt_succ k)
+    h
+
+scoped instance (priority := 10000) instNeZeroSuccConstructive (n : ℕ) : NeZero (n + 1) :=
+  ⟨fun h => Nat.noConfusion h⟩
+scoped instance (priority := 10000) instOfNatFinConstructive (n : ℕ) [NeZero n] (i : ℕ) :
+    OfNat (Fin n) i :=
+  ⟨⟨i % n, Nat.mod_lt i (pos_of_neZero n)⟩⟩
+scoped instance (priority := 10000) instInhabitedFinConstructive (n : ℕ) [NeZero n] :
+    Inhabited (Fin n) :=
+  ⟨0⟩
 scoped instance (priority := 10000) instLTFinConstructive (n : ℕ) : LT (Fin n) := instLTFin
 scoped instance (priority := 10000) instLEFinConstructive (n : ℕ) : LE (Fin n) := instLEFin
 scoped instance (priority := 10000) instDecidableEqFinConstructive (n : ℕ) : DecidableEq (Fin n) :=
@@ -106,42 +130,80 @@ scoped instance (priority := 10000) instLinearOrderFinConstructive (n : ℕ) :
   compare a b := compareOfLessAndEq a b
   compare_eq_compareOfLessAndEq _ _ := rfl
 
-/-- Half-tape of a Turing machine, quotienting `List Γ` by trailing blank symbols
-(`Turing.BlankRel`) via Lean's primitive `Quot` rather than `Quotient (BlankRel.setoid Γ)` so that
-`ListBlank`, `Tape`, and `Halts` carry zero `Classical.choice` dependency. -/
-def ListBlank (Γ : Type*) [Inhabited Γ] :=
-  Quot (@Turing.BlankRel Γ _)
+/-- Predicate that a `List Γ` has no trailing blank (`default`) symbol. -/
+def ListBlank.IsTrimmed {Γ : Type*} [Inhabited Γ] : List Γ → Prop
+  | [] => True
+  | [a] => a ≠ default
+  | _ :: b :: xs => ListBlank.IsTrimmed (b :: xs)
+
+/-- Prepend `a` onto a blank-trimmed `List Γ`, dropping `a` iff `a = default` on `[]`. -/
+def ListBlank.trimCons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ) : List Γ → List Γ
+  | [] => if a = default then [] else [a]
+  | b :: xs => a :: b :: xs
+
+/-- Half-tape of a Turing machine, represented concretely as a `List Γ` in canonical blank-trimmed
+normal form (no trailing `default` symbols) so `ListBlank`, `Tape`, and `Halts` require zero
+axioms (`Quot`, `Quot.sound`, `propext`, and `Classical.choice` are all avoided). -/
+structure ListBlank (Γ : Type*) [Inhabited Γ] where
+  ofTrimmed ::
+  toList : List Γ
+  isTrimmed : ListBlank.IsTrimmed toList
 
 instance ListBlank.inhabited {Γ : Type*} [Inhabited Γ] : Inhabited (ListBlank Γ) :=
-  ⟨Quot.mk _ []⟩
-
-/-- Quotient map turning a `List Γ` into a `ListBlank Γ`. -/
-def ListBlank.mk {Γ : Type*} [Inhabited Γ] : List Γ → ListBlank Γ :=
-  Quot.mk _
+  ⟨⟨[], trivial⟩⟩
 
 /-- Lift a blank-extension-invariant function from `List Γ` to `ListBlank Γ`. -/
 protected abbrev ListBlank.liftOn {Γ : Type*} [Inhabited Γ] {α : Sort*} (l : ListBlank Γ)
-    (f : List Γ → α) (H : ∀ a b, Turing.BlankExtends a b → f a = f b) : α :=
-  Quot.liftOn l f fun a b h => h.elim (H a b) fun h' => (H b a h').symm
+    (f : List Γ → α) (_H : ∀ a b, Turing.BlankExtends a b → f a = f b) : α :=
+  f l.toList
 
 /-- Head symbol of a `ListBlank`. -/
 def ListBlank.head {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : Γ :=
-  l.liftOn List.headI <| by
-    rintro (_ | _) _ ⟨_ | _, rfl⟩ <;> rfl
+  l.toList.headI
+
+theorem ListBlank.isTrimmed_tail {Γ : Type*} [Inhabited Γ] {l : List Γ} :
+    ListBlank.IsTrimmed l → ListBlank.IsTrimmed l.tail :=
+  List.casesOn (motive := fun xs => ListBlank.IsTrimmed xs → ListBlank.IsTrimmed xs.tail) l
+    (fun _ => trivial)
+    (fun a tl =>
+      List.casesOn (motive := fun ys => ListBlank.IsTrimmed (a :: ys) → ListBlank.IsTrimmed ys) tl
+        (fun _ => trivial)
+        (fun _ _ h => h))
 
 /-- Tail of a `ListBlank`. -/
 def ListBlank.tail {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : ListBlank Γ :=
-  l.liftOn (fun l => ListBlank.mk l.tail) <| by
-    rintro (_ | _) _ ⟨i, rfl⟩
-    · rcases i with - | i <;>
-        [exact Quot.sound (Or.inl ⟨0, rfl⟩); exact Quot.sound (Or.inl ⟨i, rfl⟩)]
-    · exact Quot.sound (Or.inl ⟨i, rfl⟩)
+  ⟨l.toList.tail, ListBlank.isTrimmed_tail l.isTrimmed⟩
+
+theorem ListBlank.isTrimmed_trimCons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ)
+    {l : List Γ} : ListBlank.IsTrimmed l → ListBlank.IsTrimmed (ListBlank.trimCons a l) :=
+  List.casesOn (motive := fun xs =>
+      ListBlank.IsTrimmed xs → ListBlank.IsTrimmed (ListBlank.trimCons a xs)) l
+    (fun _ => by
+      change ListBlank.IsTrimmed (if a = default then [] else [a])
+      by_cases h : a = default
+      · rw [ite_eq_left h]; exact trivial
+      · rw [ite_eq_right h]; exact h)
+    (fun b tl =>
+      List.casesOn (motive := fun ys =>
+          ListBlank.IsTrimmed (b :: ys) → ListBlank.IsTrimmed (a :: b :: ys)) tl
+        (fun h => h)
+        (fun _ _ h => h))
 
 /-- Prepend a symbol onto a `ListBlank`. -/
-def ListBlank.cons {Γ : Type*} [Inhabited Γ] (a : Γ) (l : ListBlank Γ) : ListBlank Γ :=
-  l.liftOn (fun l => ListBlank.mk (a :: l)) <| by
-    rintro _ _ ⟨i, rfl⟩
-    exact Quot.sound (Or.inl ⟨i, rfl⟩)
+def ListBlank.cons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ) (l : ListBlank Γ) :
+    ListBlank Γ :=
+  ⟨ListBlank.trimCons a l.toList, ListBlank.isTrimmed_trimCons a l.isTrimmed⟩
+
+/-- Prepend a finite `List` of symbols onto a `ListBlank`. -/
+@[simp]
+def ListBlank.append {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] :
+    List Γ → ListBlank Γ → ListBlank Γ
+  | [], L => L
+  | a :: l, L => ListBlank.cons a (ListBlank.append l L)
+
+/-- Canonical map turning a `List Γ` into a `ListBlank Γ` by trimming trailing blanks. -/
+def ListBlank.mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : List Γ) : ListBlank Γ :=
+  ListBlank.append l default
 
 /-- Bidirectional Turing machine tape over alphabet `Γ`. -/
 structure Tape (Γ : Type*) [Inhabited Γ] where
@@ -153,7 +215,7 @@ instance Tape.inhabited {Γ : Type*} [Inhabited Γ] : Inhabited (Tape Γ) :=
   ⟨⟨default, default, default⟩⟩
 
 /-- Shift the tape in response to a head movement `Dir.left` or `Dir.right`. -/
-def Tape.move {Γ : Type*} [Inhabited Γ] : Dir → Tape Γ → Tape Γ
+def Tape.move {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] : Dir → Tape Γ → Tape Γ
   | Dir.left, ⟨a, L, R⟩ => ⟨L.head, L.tail, R.cons a⟩
   | Dir.right, ⟨a, L, R⟩ => ⟨R.head, L.cons a, R.tail⟩
 
@@ -166,12 +228,17 @@ def Tape.mk' {Γ : Type*} [Inhabited Γ] (L R : ListBlank Γ) : Tape Γ :=
   ⟨R.head, L, R.tail⟩
 
 /-- Construct a tape from left and inclusive-right `List`s. -/
-def Tape.mk₂ {Γ : Type*} [Inhabited Γ] (L R : List Γ) : Tape Γ :=
+def Tape.mk₂ {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (L R : List Γ) : Tape Γ :=
   Tape.mk' (ListBlank.mk L) (ListBlank.mk R)
 
 /-- Construct a tape with `l` starting at the head and blanks to the left. -/
-def Tape.mk₁ {Γ : Type*} [Inhabited Γ] (l : List Γ) : Tape Γ :=
+def Tape.mk₁ {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : List Γ) : Tape Γ :=
   Tape.mk₂ [] l
+
+def listGetD {α : Type*} : List α → ℕ → α → α
+  | [], _, d => d
+  | a :: _, 0, _ => a
+  | _ :: xs, n + 1, d => listGetD xs n d
 
 /-- A Turing machine transition table over `states` states and `symbols` symbols. -/
 structure Machine (states symbols : ℕ) where
@@ -197,7 +264,7 @@ def Halts (M : Machine states symbols) : Prop := (StateTransition.eval (step M) 
 
 /-- Build a `Machine states symbols` from a list of per-state transition rows. -/
 def Machine.ofRows (rows : List (List (Option (Fin symbols × Dir × Fin states)))) :
-    Machine states symbols := ⟨fun q a => (rows.getD q.val []).getD a.val none⟩
+    Machine states symbols := ⟨fun q a => listGetD (listGetD rows q.val []) a.val none⟩
 end
 
 /-- A Turing machine over `symbols` tape symbols bundled with its non-zero state count. -/
@@ -210,7 +277,10 @@ attribute [instance] BundledMachine.neZeroStates
 
 /-- Bundle a `Machine (states + 1) symbols` into a `BundledMachine symbols`. -/
 abbrev Machine.bundle {states symbols : ℕ} (M : Machine (states + 1) symbols) :
-    BundledMachine symbols := ⟨states + 1, M⟩
+    BundledMachine symbols :=
+  { states := states + 1
+    neZeroStates := ⟨fun h => Nat.noConfusion h⟩
+    toMachine := M }
 
 /-- `M` halts when started in state `0` on the all-blank tape. -/
 abbrev BundledMachine.Halts {symbols : ℕ} [NeZero symbols] (M : BundledMachine symbols) : Prop :=

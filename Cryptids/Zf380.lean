@@ -1347,10 +1347,8 @@ theorem mkL_cons_eq_mk'_cons (l : Fin 2) (L R : ListBlank (Fin 2)) :
   simp [Tape.mkL, Tape.mk']
 
 theorem default_cons_zero :
-    (default : ListBlank (Fin 2)).cons 0 = default := by
-  change ListBlank.cons 0 (ListBlank.mk []) = ListBlank.mk []
-  rw [ListBlank.cons_mk]
-  exact Quot.sound (Or.inr ⟨1, rfl⟩)
+    (default : ListBlank (Fin 2)).cons 0 = default :=
+  ListBlank.cons_default_default
 
 theorem step_mk'_none {N : ℕ} [NeZero N] {M : Machine N 2} {q : Fin N} {a : Fin 2}
     (h : M.transition q a = none) (L R : ListBlank (Fin 2)) :

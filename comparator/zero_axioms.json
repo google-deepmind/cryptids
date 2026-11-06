@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids",
+  "theorem_names": [
+    "ConjectureMachines.Goldbach21.candidate_fewer_states",
+    "ConjectureMachines.Zf380.candidate_fewer_states",
+    "ConjectureMachines.Riemann104.candidate_fewer_states",
+    "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.ErdosTernary14.candidate_fewer_states",
+    "ConjectureMachines.Semantics.PA.not_paProvable_false"
+  ],
+  "permitted_axioms": []
+}
