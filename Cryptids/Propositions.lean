@@ -10,6 +10,7 @@ public import Mathlib.Algebra.GCDMonoid.Finset
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
 public import Mathlib.SetTheory.ZFC.Basic
+public import Mathlib.Data.Nat.Digits.Defs
 public import Cryptids.Machines
 
 /-!
@@ -35,6 +36,8 @@ constructions and halting proofs:
      `10fcf152b3`), which differs from `ZFProvable` in clauses `B6a`, `B8a`, and `B8c` due to a
      register-restoration bug in `B6a` (`main().n_140.1` restoring `scratch1` into `param1` instead
      of `param3`).
+4. **Erdős's Ternary Conjecture** (`ErdosTernaryConjecture`):
+   For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
 -/
 
 @[expose] public section
@@ -692,5 +695,15 @@ def paZFInconsistent : PAFormula :=
       (.ex 4
         (.and (paBetaEq (.var 1) (.var 2) (.var 0) (.var 4))
           ((pzMem (.const 0) (.const 0)).eqFormula (.var 4) 10))))))
+
+/-! ## 5. Erdős's Ternary Conjecture -/
+
+/-- **Erdős's ternary conjecture** (Erdős 1979): for every `n > 8`, the base-3
+expansion of `2 ^ n` contains the digit `2`. This is `Arxiv.«2107.12475».CollatzLike` in
+[formal-conjectures](https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/Arxiv/2107.12475/CollatzLike.lean),
+and it implies Erdős Problem 406
+([`ErdosProblems/406.lean`](https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/ErdosProblems/406.lean)). -/
+def ErdosTernaryConjecture : Prop :=
+  ∀ n : ℕ, 8 < n → 2 ∈ Nat.digits 3 (2 ^ n)
 
 end ConjectureMachines

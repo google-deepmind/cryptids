@@ -10,6 +10,7 @@ public import Mathlib.Algebra.GCDMonoid.Finset
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
 public import Mathlib.SetTheory.ZFC.Basic
+public import Mathlib.Data.Nat.Digits.Defs
 meta import Lean.Elab.Term
 
 /-!
@@ -19,8 +20,9 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
 
 - **Constructive gate (`comparator/constructive.json`, `goldbach_21.json`, `zf_380.json`,
   `riemann_104.json`; `permitted_axioms = ["propext", "Quot.sound"]`):**
-  The direct simulation state reductions (`Goldbach21`, `Zf380`, `Riemann104`), all four
-  `candidate_fewer_states` theorems (including `Riemann95.candidate_fewer_states`), all ZF
+  The direct simulation state reductions (`Goldbach21`, `Zf380`, `Riemann104`), the `ErdosTernary14`
+  reduction, all five `candidate_fewer_states` theorems (including
+  `Riemann95.candidate_fewer_states`), all ZF
   machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`,
   `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and first-order Peano Arithmetic (`PA`)
@@ -34,10 +36,12 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 26 theorems, including `Riemann95.candidate_equivalent` (which uses
-  `Classical.choice` via `Nat.Prime`), classical `PA` and `ZFSet.{0}` soundness/non-halting,
-  negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), and analytic
-  `RiemannHypothesis` equivalences.
+  Audits all 34 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
+  via `Nat.Prime`), classical `PA` and `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰` Goldbach
+  (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic `RiemannHypothesis`
+  equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences with
+  `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture` also
+  uses Markov's Principle).
 -/
 
 meta section
@@ -242,6 +246,16 @@ namespace Machines
 /-- Rows of `riemann95`. -/ def riemann95Rows : List (List (Option (Fin 2 × Dir × Fin 95))) :=
   load_machine_rows% "artifacts/riemann_95/machine.txt"
 /-- 95-state RH candidate. -/ def riemann95 : Machine 95 2 := Machine.ofRows riemann95Rows
+/-- Rows of `erdosTernary15`. -/
+def erdosTernary15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
+  load_machine_rows% "baselines/tables/erdos_ternary_15.txt"
+/-- 15-state Erdős machine. -/
+def erdosTernary15 : Machine 15 2 := Machine.ofRows erdosTernary15Rows
+/-- Rows of `erdosTernary14`. -/
+def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
+  load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
+/-- 14-state Erdős candidate. -/
+def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -725,6 +739,14 @@ def paZFInconsistent : PAFormula :=
         (.and (paBetaEq (.var 1) (.var 2) (.var 0) (.var 4))
           ((pzMem (.const 0) (.const 0)).eqFormula (.var 4) 10))))))
 
+/-- **Erdős's ternary conjecture** (Erdős 1979): for every `n > 8`, the base-3
+expansion of `2 ^ n` contains the digit `2`. This is `Arxiv.«2107.12475».CollatzLike` in
+[formal-conjectures](https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/Arxiv/2107.12475/CollatzLike.lean),
+and it implies Erdős Problem 406
+([`ErdosProblems/406.lean`](https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/ErdosProblems/406.lean)). -/
+def ErdosTernaryConjecture : Prop :=
+  ∀ n : ℕ, 8 < n → 2 ∈ Nat.digits 3 (2 ^ n)
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -823,5 +845,27 @@ theorem halts_candidate_iff_not_riemannHypothesis :
     Halts candidate ↔ ¬ RiemannHypothesis := by sorry
 end Semantics
 end Riemann95
+
+namespace ErdosTernary15
+/-- 15-state Erdős ternary machine (`erdos_ternary_15`, Stérin & Woods 2021). -/
+abbrev erdosTernary15 : Machine 15 2 := Machines.erdosTernary15
+theorem halts_erdosTernary15_iff_exists_counterexample :
+    ConjectureMachines.Halts erdosTernary15 ↔ ∃ n : ℕ, 8 < n ∧ 2 ∉ Nat.digits 3 (2 ^ n) := by sorry
+theorem halts_erdosTernary15_iff_not_erdosTernary :
+    ConjectureMachines.Halts erdosTernary15 ↔ ¬ ErdosTernaryConjecture := by sorry
+end ErdosTernary15
+
+namespace ErdosTernary14
+/-- 15-state Erdős ternary reference machine (`erdos_ternary_15`, Stérin & Woods 2021). -/
+abbrev reference : BundledMachine 2 := Machines.erdosTernary15.bundle
+/-- 14-state Erdős ternary candidate machine (`erdos_ternary_14`, Stérin 2026). -/
+abbrev candidate : BundledMachine 2 := Machines.erdosTernary14.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_not_erdosTernary :
+    Halts candidate ↔ ¬ ErdosTernaryConjecture := by sorry
+end Semantics
+end ErdosTernary14
 
 end ConjectureMachines

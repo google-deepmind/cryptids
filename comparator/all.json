@@ -30,7 +30,12 @@
     "ConjectureMachines.Riemann104.Semantics.halts_candidate_iff_not_riemannHypothesis",
     "ConjectureMachines.Riemann95.candidate_fewer_states",
     "ConjectureMachines.Riemann95.candidate_equivalent",
-    "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis"
+    "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis",
+    "ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_exists_counterexample",
+    "ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_not_erdosTernary",
+    "ConjectureMachines.ErdosTernary14.candidate_fewer_states",
+    "ConjectureMachines.ErdosTernary14.candidate_equivalent",
+    "ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary"
   ],
   "permitted_axioms": [
     "propext",
