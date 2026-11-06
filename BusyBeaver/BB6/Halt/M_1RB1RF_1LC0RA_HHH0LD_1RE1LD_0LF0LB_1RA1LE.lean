@@ -7,16 +7,20 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 def A : Fin 6 := 0
@@ -2056,8 +2060,10 @@ theorem holdout_halt_of_runPow (h_halt : runPow 13 s0 = HState.halted) : IsHalt 
 set_option maxHeartbeats 10000000 in
 theorem reaches_halt : runPow 13 s0 = HState.halted := by decide +kernel
 
-
+public section
 
 theorem is_halt : IsHalt target := holdout_halt_of_runPow reaches_halt
+
+end
 
 end BusyBeaver.M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE

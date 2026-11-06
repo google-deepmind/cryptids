@@ -9,18 +9,22 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
@@ -2429,6 +2433,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     rcases step_inv a G r1 St hinv with ⟨a', G', r1', St', hstep, hinv'⟩
     exact ⟨KX a' G' r1' St', hstep, a', G', r1', St', rfl, hinv'⟩
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB

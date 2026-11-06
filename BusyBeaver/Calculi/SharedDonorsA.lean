@@ -1,8 +1,19 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Excursion
+
+/-!
+# Shared Donor Machine Proofs A (`BusyBeaver.Calculi.SharedDonorsA`)
+
+Common donor machine reductions and shared inductive invariant certificates
+used across related BB(6) non-halting machines.
+-/
 
 @[expose] public section
 

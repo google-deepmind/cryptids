@@ -7,18 +7,22 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
@@ -913,6 +917,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
       ⟨shift true u, hw'_high, by omega, by omega, rfl⟩, ?_⟩
     exact stepPlus_trans (hstep []) (step_modeB_reparse (evalW_shift true u hdu).symm)
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA

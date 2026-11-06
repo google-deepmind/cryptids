@@ -8,16 +8,20 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Longitudinal
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 200000
@@ -1268,6 +1272,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [isNotHalt_iff_neverHaltsFrom_init]
   exact neverHaltsFrom_of_reachesStar (opening open_ok_true) (nh_Z1 2)
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD

@@ -7,6 +7,13 @@ module
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.RleCarryEngine
 
+/-!
+# Run-Length Encoded Carry Data (`BusyBeaver.Calculi.RleCarryData`)
+
+Precomputed run-length encoded tape patterns and check-point configurations
+for multi-digit carry-propagation engines.
+-/
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver

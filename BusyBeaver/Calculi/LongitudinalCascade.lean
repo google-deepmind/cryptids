@@ -9,6 +9,13 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
+/-!
+# Longitudinal Cascade Transitions (`BusyBeaver.Calculi.LongitudinalCascade`)
+
+Cascade tile-transition theorems and composite sweep rules extending
+`BusyBeaver.Calculi.Longitudinal` for multi-stage space-time diagrams.
+-/
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState

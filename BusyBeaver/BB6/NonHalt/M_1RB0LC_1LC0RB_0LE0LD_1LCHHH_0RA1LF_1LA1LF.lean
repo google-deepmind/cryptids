@@ -7,16 +7,20 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxHeartbeats 2000000
@@ -3873,6 +3877,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   obtain ⟨n', hplus⟩ := sqReachesPlus_to_tm (R_odd_sound s s' hP5.1.1 hr) n
   exact ⟨_, hplus, n', s', hP5', rfl⟩
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF

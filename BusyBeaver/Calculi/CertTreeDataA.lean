@@ -6,6 +6,13 @@ module
 
 public import BusyBeaver.Calculi.CertTree
 
+/-!
+# Certified Search Tree Data Bank A (`BusyBeaver.Calculi.CertTreeDataA`)
+
+Precomputed node and branch data tables supporting tree-structured certificates
+in `BusyBeaver.Calculi.CertTree`.
+-/
+
 @[expose] public section
 
 namespace BusyBeaver.CertTreeEngine

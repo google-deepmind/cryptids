@@ -6,6 +6,13 @@ module
 
 public import BusyBeaver.Calculi.CertTreeDataA
 
+/-!
+# Certified Search Tree Data Bank B (`BusyBeaver.Calculi.CertTreeDataB`)
+
+Second partition of precomputed node and transition tables for tree-structured
+certificates in `BusyBeaver.Calculi.CertTree`.
+-/
+
 @[expose] public section
 
 open BusyBeaver SixState

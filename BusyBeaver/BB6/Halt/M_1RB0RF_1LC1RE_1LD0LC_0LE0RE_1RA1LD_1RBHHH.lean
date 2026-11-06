@@ -7,16 +7,20 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
@@ -2215,7 +2219,7 @@ theorem z37 : (init []) [target_tm]⊢* (z2P Forward13.seed) := by
 
 end Solution
 
-
+public section
 
 set_option linter.deprecated false
 set_option linter.dupNamespace false
@@ -2225,5 +2229,7 @@ set_option maxHeartbeats 8000000
 open Solution in
 theorem is_halt : IsHalt target := by
   exact z2p z37 (z36 175 Forward13.seed Forward13.numerical_halt)
+
+end
 
 end BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH

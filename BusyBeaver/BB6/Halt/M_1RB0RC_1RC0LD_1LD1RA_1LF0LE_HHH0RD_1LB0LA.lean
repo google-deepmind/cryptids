@@ -7,18 +7,22 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RC_1RC0LD_1LD1RA_1LF0LE_HHH0RD_1LB0LA
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RC_1RC0LD_1LD1RA_1LF0LE_HHH0RD_1LB0LA"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 4000000
@@ -2443,7 +2447,7 @@ theorem runPhase3_sound : ∀ (fuel : ℕ) (s : RLEStack),
       rw [hsim] at h
       simp at h
 
-
+public section
 
 theorem is_halt : IsHalt target := by
   obtain ⟨ks₀, hks₀, h_p1⟩ := phase1_reach
@@ -2452,5 +2456,7 @@ theorem is_halt : IsHalt target := by
   rw [← evalRLE_bodyStackRLE 1 21090] at h_p2
   obtain ⟨cfg, h_p3, h_none⟩ := runPhase3_sound 186 (bodyStackRLE 1 21090) runPhase3_eq ks₁ hks₁
   exact ⟨cfg, stepStar_trans h_p1 (stepStar_trans h_p2 h_p3), h_none⟩
+
+end
 
 end BusyBeaver.M_1RB0RC_1RC0LD_1LD1RA_1LF0LE_HHH0RD_1LB0LA

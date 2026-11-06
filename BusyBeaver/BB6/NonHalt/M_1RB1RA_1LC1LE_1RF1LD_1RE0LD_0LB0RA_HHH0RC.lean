@@ -9,16 +9,20 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RA_1LC1LE_1RF1LD_1RE0LD_0LB0RA_HHH0RC
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RA_1LC1LE_1RF1LD_1RE0LD_0LB0RA_HHH0RC"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 local notation "zB" => ListBlank (Fin 2)
@@ -1043,6 +1047,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rcases closed hSafe with ⟨b', r', hSafe', hStep⟩
   exact ⟨K b' r', hStep, b', r', rfl, hSafe'⟩
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB1RA_1LC1LE_1RF1LD_1RE0LD_0LB0RA_HHH0RC

@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
 public import BusyBeaver.Bridge
@@ -5,20 +9,19 @@ import BusyBeaver.Calculi.SharedDonorsA
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
-@[expose] public section
 
 namespace BusyBeaver.M_1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF
+
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-end BusyBeaver.M_1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF
-
 end
 
-namespace BusyBeaver.M_1RB1LE_1LC1RD_0LA1LA_HHH1RE_1LF0LA_0LC0RF
 
 open BusyBeaver.Counter
 open TM1Donor

@@ -7,16 +7,20 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
@@ -2579,9 +2583,369 @@ theorem eqOptPair_iff {o : Option (Nat × List Bool)} {m : Nat} {ys : List Bool}
     simp only [eqOptPair, Bool.and_eq_true, beq_iff_eq, eqLB_iff, Option.some.injEq, Prod.mk.injEq]
 def segTable : TArr (List Bool) := (zTN 7 (zTN 3 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF]) (zTN 1 (zTL [zT,zT,zT,zF]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF]))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF])))) (zTN 3 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF]) (zTL [zT,zT,zF,zF,zT,zT,zF]))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF])))))
 def segBits (i : Nat) : List Bool := segTable.get i []
-def stateTable : TArr (List Bool) := (zTN 79 (zTN 39 (zTN 19 (zTN 9 (zTN 4 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))) (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))))) (zTN 40 (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))))) (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 5 (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 2 (zTN 1 (zTL [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])))))))))
+def stateTable : TArr (List Bool) := (zTN 79 (zTN 39 (zTN 19 (zTN 9 (zTN 4 (zTN 2 (zTN 1
+    (zTL [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL
+    [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))) (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))
+    (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN
+    1 (zTL [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))))
+    (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))))
+    (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))))
+    (zTN 40 (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))
+    (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])))))))
+    (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))
+    (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 5 (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 2 (zTN 1 (zTL
+    [zT,zT,zF,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT])))))))))
+
 def stateBits (i : Nat) : List Bool := stateTable.get i []
-def fbTable : TArr (List Bool) := (zTN 13 (zTN 6 (zTN 3 (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))) (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))) (zTN 3 (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))) (zTN 2 (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))) (zTN 7 (zTN 3 (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))) (zTN 2 (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])) (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))) (zTN 3 (zTN 1 (zTL [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))) (zTN 2 (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])) (zTN 1 (zTL [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))
+def fbTable : TArr (List Bool) := (zTN 13 (zTN 6 (zTN 3 (zTN 1 (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]) (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))) (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN 1
+    (zTL [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))
+    (zTN 3 (zTN 1 (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]) (zTN
+    1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))
+    (zTN 2 (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])))))
+    (zTN 7 (zTN 3 (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])))
+    (zTN 2 (zTN 1 (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT])
+    (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT]))))
+    (zTN 3 (zTN 1 (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])))
+    (zTN 2 (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT]))
+    (zTN 1 (zTL
+    [zF,zT,zT,zF,zT,zT,zF,zF,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zF,zT,zT,zF,zT])
+    (zTL
+    [zF,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zF,zT,zT,zT,zF,zT,zT,zF,zT,zF,zT,zT,zF,zT]))))))
+
 def fbBits (i : Nat) : List Bool := fbTable.get i []
 inductive CAct where
   | push (seg : Nat) (s_rem : Nat)
@@ -2591,7 +2955,68 @@ inductive CAct where
 inductive FbAct where
   | fb (dn : Nat) (is_c : Bool) (out_id : Nat)
   | none
-def cActTable : TArr CAct := (zTN 79 (zTN 39 (zTN 19 (zTN 9 (zTN 4 (zTN 2 (zTN 1 (zTL (.mac 2 1)) (zTL (.popExit [] (some 1)))) (zTN 1 (zTL (.mac 2 3)) (zTL (.popExit [] (some 3))))) (zTN 2 (zTN 1 (zTL (.mac 12 5)) (zTL (.popExit [(3,25),(6,39)] (some 5)))) (zTN 1 (zTL (.mac 32 7)) (zTN 1 (zTL (.popExit [(0,11),(1,17),(4,27),(5,48),(7,41),(10,68),(12,84)] (some 7))) (zTL (.mac 2 9)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 0 10)) (zTL (.mac 29 7))) (zTN 1 (zTL (.mac 1 12)) (zTN 1 (zTL (.popExit [(0,29),(1,43),(8,50),(11,70),(13,86)] (some 9))) (zTL (.push 0 14))))) (zTN 2 (zTN 1 (zTL (.mac 14 15)) (zTL (.push 1 16))) (zTN 1 (zTL (.mac 17 7)) (zTN 1 (zTL (.mac 1 18)) (zTL (.popExit [(0,19),(1,35)] none))))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 5 20)) (zTL (.push 2 21))) (zTN 1 (zTL (.mac 6 22)) (zTN 1 (zTL (.popExit [(2,23),(5,37)] none)) (zTL (.mac 8 24))))) (zTN 2 (zTN 1 (zTL (.push 3 4)) (zTL (.mac 2 26))) (zTN 1 (zTL (.push 4 6)) (zTN 1 (zTL (.mac 2 28)) (zTL (.push 0 8)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 1 30)) (zTL (.popExit [(3,72),(6,88),(9,52)] (some 11)))) (zTN 1 (zTL (.push 0 32)) (zTN 1 (zTL (.mac 2 33)) (zTL (.push 1 34))))) (zTN 2 (zTN 1 (zTL (.mac 12 15)) (zTL (.mac 5 36))) (zTN 1 (zTL (.push 5 21)) (zTN 1 (zTL (.mac 8 38)) (zTL (.push 6 4)))))))) (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 40)) (zTL (.push 7 6))) (zTN 1 (zTL (.mac 2 42)) (zTN 1 (zTL (.push 1 8)) (zTL (.mac 1 44))))) (zTN 2 (zTN 1 (zTL (.popExit [(0,45),(2,65),(5,82)] none)) (zTL (.mac 1 46))) (zTN 1 (zTL (.push 5 47)) (zTN 1 (zTL (.mac 30 7)) (zTL (.mac 2 49)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 8 8)) (zTL (.mac 2 51))) (zTN 1 (zTL (.push 9 13)) (zTN 1 (zTL (.mac 1 53)) (zTL (.popExit [(0,57),(1,61),(4,74),(5,97),(7,90),(10,123),(12,139)] (some 13)))))) (zTN 2 (zTN 1 (zTL (.push 0 55)) (zTL (.push 0 56))) (zTN 1 (zTL (.mac 1 33)) (zTN 1 (zTL (.mac 1 58)) (zTL (.popExit [(0,76),(1,92),(8,99),(11,125),(13,141)] (some 15)))))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.push 0 60)) (zTL (.push 1 55))) (zTN 1 (zTL (.mac 1 62)) (zTN 1 (zTL (.popExit [(0,63),(1,80)] none)) (zTL (.mac 1 64))))) (zTN 2 (zTN 1 (zTL (.push 2 33)) (zTL (.mac 1 66))) (zTN 1 (zTL (.push 10 67)) (zTN 1 (zTL (.mac 31 7)) (zTL (.mac 2 69)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 11 8)) (zTL (.mac 2 71))) (zTN 1 (zTL (.push 3 13)) (zTN 1 (zTL (.mac 2 73)) (zTL (.push 4 31))))) (zTN 2 (zTN 1 (zTL (.mac 2 75)) (zTL (.push 0 54))) (zTN 1 (zTL (.mac 1 77)) (zTN 1 (zTL (.popExit [(3,127),(6,143),(9,101)] (some 17))) (zTL (.push 0 79))))))))) (zTN 40 (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.push 1 60)) (zTL (.mac 1 81))) (zTN 1 (zTL (.push 5 33)) (zTN 1 (zTL (.mac 1 83)) (zTL (.push 12 67))))) (zTN 2 (zTN 1 (zTL (.mac 2 85)) (zTL (.push 13 8))) (zTN 1 (zTL (.mac 2 87)) (zTN 1 (zTL (.push 6 13)) (zTL (.mac 2 89)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 7 31)) (zTL (.mac 2 91))) (zTN 1 (zTL (.push 1 54)) (zTN 1 (zTL (.mac 1 93)) (zTL (.popExit [(0,94),(2,121),(5,137)] none))))) (zTN 2 (zTN 1 (zTL (.mac 1 95)) (zTL (.push 5 96))) (zTN 1 (zTL (.push 0 33)) (zTN 1 (zTL (.mac 2 98)) (zTL (.push 8 54))))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 100)) (zTL (.push 9 59))) (zTN 1 (zTL (.mac 1 102)) (zTN 1 (zTL (.popExit [(0,107),(1,111),(4,129),(5,152),(7,145)] (some 19))) (zTL (.push 0 104))))) (zTN 2 (zTN 1 (zTL (.push 0 105)) (zTL (.push 1 106))) (zTN 1 (zTL (.push 1 96)) (zTN 1 (zTL (.mac 1 108)) (zTL (.popExit [(0,131),(1,147),(8,154)] (some 21))))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 0 110)) (zTL (.push 1 104))) (zTN 1 (zTL (.mac 1 112)) (zTN 1 (zTL (.popExit [(0,113),(1,135)] none)) (zTL (.mac 1 114))))) (zTN 2 (zTN 1 (zTL (.push 2 115)) (zTL (.push 1 116))) (zTN 1 (zTL (.push 1 117)) (zTN 1 (zTL (.push 0 118)) (zTL (.mac 2 119)))))))) (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.push 1 120)) (zTL (.mac 9 15))) (zTN 1 (zTL (.mac 1 122)) (zTN 1 (zTL (.push 10 55)) (zTL (.mac 2 124))))) (zTN 2 (zTN 1 (zTL (.push 11 54)) (zTL (.mac 2 126))) (zTN 1 (zTL (.push 3 59)) (zTN 1 (zTL (.mac 2 128)) (zTL (.push 4 78)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 130)) (zTL (.push 0 103))) (zTN 1 (zTL (.mac 1 132)) (zTN 1 (zTL (.popExit [(9,156)] (some 23))) (zTL (.push 0 134))))) (zTN 2 (zTN 1 (zTL (.push 1 110)) (zTL (.mac 1 136))) (zTN 1 (zTL (.push 5 115)) (zTN 1 (zTL (.mac 1 138)) (zTL (.push 12 55))))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 140)) (zTL (.push 13 54))) (zTN 1 (zTL (.mac 2 142)) (zTN 1 (zTL (.push 6 59)) (zTL (.mac 2 144))))) (zTN 2 (zTN 1 (zTL (.push 7 78)) (zTL (.mac 2 146))) (zTN 1 (zTL (.push 1 103)) (zTN 1 (zTL (.mac 1 148)) (zTL (.popExit [(0,149)] none)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 1 150)) (zTL (.push 5 151))) (zTN 1 (zTL (.push 0 115)) (zTN 1 (zTL (.mac 2 153)) (zTL (.push 8 103))))) (zTN 2 (zTN 1 (zTL (.mac 2 155)) (zTL (.push 9 109))) (zTN 1 (zTL (.mac 1 157)) (zTN 1 (zTL (.popExit [] (some 25))) (zTL (.popExit [] none))))))))))
+def cActTable : TArr CAct := (zTN 79 (zTN 39 (zTN 19 (zTN 9 (zTN 4 (zTN 2 (zTN 1 (zTL
+    (.mac 2 1)) (zTL (.popExit [] (some 1)))) (zTN 1 (zTL (.mac 2 3)) (zTL
+    (.popExit [] (some 3))))) (zTN 2 (zTN 1 (zTL (.mac 12 5)) (zTL
+    (.popExit [(3,25),(6,39)] (some 5)))) (zTN 1 (zTL (.mac 32 7)) (zTN 1 (zTL
+    (.popExit [(0,11),(1,17),(4,27),(5,48),(7,41),(10,68),(12,84)] (some 7))) (zTL
+    (.mac 2 9)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 0 10)) (zTL (.mac 29 7))) (zTN 1 (zTL
+    (.mac 1 12)) (zTN 1 (zTL (.popExit [(0,29),(1,43),(8,50),(11,70),(13,86)] (some 9)))
+    (zTL (.push 0 14))))) (zTN 2 (zTN 1 (zTL (.mac 14 15)) (zTL (.push 1 16))) (zTN 1 (zTL
+    (.mac 17 7)) (zTN 1 (zTL (.mac 1 18)) (zTL (.popExit [(0,19),(1,35)] none))))))) (zTN
+    10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 5 20)) (zTL (.push 2 21))) (zTN 1 (zTL (.mac 6 22))
+    (zTN 1 (zTL (.popExit [(2,23),(5,37)] none)) (zTL (.mac 8 24))))) (zTN 2 (zTN 1 (zTL
+    (.push 3 4)) (zTL (.mac 2 26))) (zTN 1 (zTL (.push 4 6)) (zTN 1 (zTL (.mac 2 28)) (zTL
+    (.push 0 8)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 1 30)) (zTL
+    (.popExit [(3,72),(6,88),(9,52)] (some 11)))) (zTN 1 (zTL (.push 0 32)) (zTN 1 (zTL
+    (.mac 2 33)) (zTL (.push 1 34))))) (zTN 2 (zTN 1 (zTL (.mac 12 15)) (zTL (.mac 5 36)))
+    (zTN 1 (zTL (.push 5 21)) (zTN 1 (zTL (.mac 8 38)) (zTL (.push 6 4)))))))) (zTN 20
+    (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 40)) (zTL (.push 7 6))) (zTN 1 (zTL
+    (.mac 2 42)) (zTN 1 (zTL (.push 1 8)) (zTL (.mac 1 44))))) (zTN 2 (zTN 1 (zTL
+    (.popExit [(0,45),(2,65),(5,82)] none)) (zTL (.mac 1 46))) (zTN 1 (zTL (.push 5 47))
+    (zTN 1 (zTL (.mac 30 7)) (zTL (.mac 2 49)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 8 8))
+    (zTL (.mac 2 51))) (zTN 1 (zTL (.push 9 13)) (zTN 1 (zTL (.mac 1 53)) (zTL
+    (.popExit [(0,57),(1,61),(4,74),(5,97),(7,90),(10,123),(12,139)] (some 13)))))) (zTN 2
+    (zTN 1 (zTL (.push 0 55)) (zTL (.push 0 56))) (zTN 1 (zTL (.mac 1 33)) (zTN 1 (zTL
+    (.mac 1 58)) (zTL (.popExit [(0,76),(1,92),(8,99),(11,125),(13,141)] (some 15))))))))
+    (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.push 0 60)) (zTL (.push 1 55))) (zTN 1 (zTL
+    (.mac 1 62)) (zTN 1 (zTL (.popExit [(0,63),(1,80)] none)) (zTL (.mac 1 64))))) (zTN 2
+    (zTN 1 (zTL (.push 2 33)) (zTL (.mac 1 66))) (zTN 1 (zTL (.push 10 67)) (zTN 1 (zTL
+    (.mac 31 7)) (zTL (.mac 2 69)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 11 8)) (zTL
+    (.mac 2 71))) (zTN 1 (zTL (.push 3 13)) (zTN 1 (zTL (.mac 2 73)) (zTL (.push 4 31)))))
+    (zTN 2 (zTN 1 (zTL (.mac 2 75)) (zTL (.push 0 54))) (zTN 1 (zTL (.mac 1 77)) (zTN 1
+    (zTL (.popExit [(3,127),(6,143),(9,101)] (some 17))) (zTL (.push 0 79))))))))) (zTN 40
+    (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.push 1 60)) (zTL (.mac 1 81))) (zTN 1 (zTL
+    (.push 5 33)) (zTN 1 (zTL (.mac 1 83)) (zTL (.push 12 67))))) (zTN 2 (zTN 1 (zTL
+    (.mac 2 85)) (zTL (.push 13 8))) (zTN 1 (zTL (.mac 2 87)) (zTN 1 (zTL (.push 6 13))
+    (zTL (.mac 2 89)))))) (zTN 5 (zTN 2 (zTN 1 (zTL (.push 7 31)) (zTL (.mac 2 91))) (zTN
+    1 (zTL (.push 1 54)) (zTN 1 (zTL (.mac 1 93)) (zTL
+    (.popExit [(0,94),(2,121),(5,137)] none))))) (zTN 2 (zTN 1 (zTL (.mac 1 95)) (zTL
+    (.push 5 96))) (zTN 1 (zTL (.push 0 33)) (zTN 1 (zTL (.mac 2 98)) (zTL
+    (.push 8 54))))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 100)) (zTL (.push 9 59)))
+    (zTN 1 (zTL (.mac 1 102)) (zTN 1 (zTL
+    (.popExit [(0,107),(1,111),(4,129),(5,152),(7,145)] (some 19))) (zTL (.push 0 104)))))
+    (zTN 2 (zTN 1 (zTL (.push 0 105)) (zTL (.push 1 106))) (zTN 1 (zTL (.push 1 96)) (zTN
+    1 (zTL (.mac 1 108)) (zTL (.popExit [(0,131),(1,147),(8,154)] (some 21))))))) (zTN 5
+    (zTN 2 (zTN 1 (zTL (.push 0 110)) (zTL (.push 1 104))) (zTN 1 (zTL (.mac 1 112)) (zTN
+    1 (zTL (.popExit [(0,113),(1,135)] none)) (zTL (.mac 1 114))))) (zTN 2 (zTN 1 (zTL
+    (.push 2 115)) (zTL (.push 1 116))) (zTN 1 (zTL (.push 1 117)) (zTN 1 (zTL
+    (.push 0 118)) (zTL (.mac 2 119)))))))) (zTN 20 (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL
+    (.push 1 120)) (zTL (.mac 9 15))) (zTN 1 (zTL (.mac 1 122)) (zTN 1 (zTL (.push 10 55))
+    (zTL (.mac 2 124))))) (zTN 2 (zTN 1 (zTL (.push 11 54)) (zTL (.mac 2 126))) (zTN 1
+    (zTL (.push 3 59)) (zTN 1 (zTL (.mac 2 128)) (zTL (.push 4 78)))))) (zTN 5 (zTN 2 (zTN
+    1 (zTL (.mac 2 130)) (zTL (.push 0 103))) (zTN 1 (zTL (.mac 1 132)) (zTN 1 (zTL
+    (.popExit [(9,156)] (some 23))) (zTL (.push 0 134))))) (zTN 2 (zTN 1 (zTL
+    (.push 1 110)) (zTL (.mac 1 136))) (zTN 1 (zTL (.push 5 115)) (zTN 1 (zTL
+    (.mac 1 138)) (zTL (.push 12 55))))))) (zTN 10 (zTN 5 (zTN 2 (zTN 1 (zTL (.mac 2 140))
+    (zTL (.push 13 54))) (zTN 1 (zTL (.mac 2 142)) (zTN 1 (zTL (.push 6 59)) (zTL
+    (.mac 2 144))))) (zTN 2 (zTN 1 (zTL (.push 7 78)) (zTL (.mac 2 146))) (zTN 1 (zTL
+    (.push 1 103)) (zTN 1 (zTL (.mac 1 148)) (zTL (.popExit [(0,149)] none)))))) (zTN 5
+    (zTN 2 (zTN 1 (zTL (.mac 1 150)) (zTL (.push 5 151))) (zTN 1 (zTL (.push 0 115)) (zTN
+    1 (zTL (.mac 2 153)) (zTL (.push 8 103))))) (zTN 2 (zTN 1 (zTL (.mac 2 155)) (zTL
+    (.push 9 109))) (zTN 1 (zTL (.mac 1 157)) (zTN 1 (zTL (.popExit [] (some 25))) (zTL
+    (.popExit [] none))))))))))
+
 def fbActTable : TArr FbAct := (.node 13 (.node 6 (.node 3 (.node 1 (.leaf (.fb 0 true 0)) (.node 1 (.leaf (.fb 2 false 2)) (.leaf (.fb 0 true 2)))) (.node 1 (.leaf (.fb 2 false 4)) (.node 1 (.leaf (.fb 0 true 4)) (.leaf (.fb 2 false 6))))) (.node 3 (.node 1 (.leaf (.fb 0 true 6)) (.node 1 (.leaf (.fb 2 false 8)) (.leaf (.fb 0 true 8)))) (.node 2 (.node 1 (.leaf (.fb 2 false 10)) (.leaf (.fb 0 true 13))) (.node 1 (.leaf (.fb 2 false 12)) (.leaf (.fb 0 true 31)))))) (.node 7 (.node 3 (.node 1 (.leaf (.fb 2 false 14)) (.node 1 (.leaf (.fb 0 true 54)) (.leaf (.fb 2 false 16)))) (.node 2 (.node 1 (.leaf (.fb 0 true 59)) (.leaf (.fb 2 false 18))) (.node 1 (.leaf (.fb 0 true 78)) (.leaf (.fb 2 false 20))))) (.node 3 (.node 1 (.leaf (.fb 0 true 103)) (.node 1 (.leaf (.fb 2 false 22)) (.leaf (.fb 0 true 109)))) (.node 2 (.node 1 (.leaf (.fb 2 false 24)) (.leaf (.fb 0 true 133))) (.node 1 (.leaf (.fb 2 false 26)) (.leaf (.fb 0 true 158)))))))
 def lookupPop : List (Nat × Nat) → Nat → Option Nat
   | [], _ => none
@@ -2972,6 +3397,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [hst]
   rfl
 
+public section
+
 theorem is_not_halt : IsNotHalt target := by rw [target_eq]; exact is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC

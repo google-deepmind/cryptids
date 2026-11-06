@@ -7,11 +7,11 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC
+
 
 local macro "normalize" : tactic => `(tactic| (
   try simp only [ListBlank.append_cons, ListBlank.append_nil,
@@ -21,10 +21,14 @@ local macro "normalize" : tactic => `(tactic| (
     list_pow_zero, list_pow_succ,
     List.nil_append, List.cons_append, List.append_nil,
     Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
@@ -5233,8 +5237,10 @@ theorem full_halt : HaltsFrom target_tm (init []) := by
 end
 end Solution
 
-
+public section
 
 theorem is_halt : IsHalt target := (isHalt_iff_haltsFrom_init target_tm).mpr Solution.full_halt
+
+end
 
 end BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC

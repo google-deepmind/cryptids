@@ -7,18 +7,22 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 /-- Mirrored machine `1LB0LD_1RC0LA_---1LD_1LA1RE_1LC0RF_1RE0RB` from `Sk1Class2_v4.v` (`TM12`). -/
@@ -3191,10 +3195,11 @@ theorem c342_halts : haltsFrom (denoteCfg (.ntl 1 1) [] (.z0 (.mk [.mk 0 3] []) 
 
 end Solution
 
-
+public section
 
 theorem is_halt : IsHalt target :=
   Solution.haltsFrom_init_to_IsHalt (Solution.haltsFrom_stepStar Solution.init_to_c342 Solution.c342_halts)
 
+end
 
 end BusyBeaver.M_1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB

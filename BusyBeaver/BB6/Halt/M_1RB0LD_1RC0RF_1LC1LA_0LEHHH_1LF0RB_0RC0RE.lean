@@ -7,16 +7,20 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 def A : Fin 6 := 0
@@ -670,10 +674,12 @@ theorem tower_halts : ReachHalt (G 5 0) := by
     exact G_drain (a15 / 4) 0 (G_halt (MSeq (a15 / 4)))
   exact r1 (r2 (r3 (r4 (r5 (r6 (r7 (r8 (r9 (r10 (r11 (r12 (r13 (r14 (r15 hfin))))))))))))))
 
-
+public section
 
 theorem is_halt : IsHalt target := by
   rw [IsHalt, init_eq_cfg]
   exact ReachHalt.to_isHalt (init_to_G5 tower_halts)
+
+end
 
 end BusyBeaver.M_1RB0LD_1RC0RF_1LC1LA_0LEHHH_1LF0RB_0RC0RE

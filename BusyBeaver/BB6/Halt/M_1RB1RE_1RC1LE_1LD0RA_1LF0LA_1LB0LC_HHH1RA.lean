@@ -9,18 +9,22 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Excursion
 public import BusyBeaver.Calculi.Longitudinal
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 namespace Solution
@@ -2626,7 +2630,7 @@ theorem init_eq_cfg_0 : cfg_0.denote=init []:=rfl
 
 end Solution
 
-
+public section
 
 set_option linter.deprecated false
 set_option linter.dupNamespace false
@@ -2660,5 +2664,7 @@ theorem is_halt : IsHalt target := by
   refine q0 (q1 chunk_20_ok) ?_
   refine q0 (q1 chunk_21_ok) ?_
   exact ⟨0,rfl⟩
+
+end
 
 end BusyBeaver.M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA

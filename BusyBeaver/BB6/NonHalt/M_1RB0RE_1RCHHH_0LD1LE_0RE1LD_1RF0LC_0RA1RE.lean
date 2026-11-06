@@ -8,18 +8,22 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 200000
@@ -994,6 +998,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   · rintro _ ⟨k, b, rfl⟩
     exact ⟨S_inv (k + 2) (b + 2), epoch_step k b, k + 2, b + 2, rfl⟩
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE

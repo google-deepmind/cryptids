@@ -13,6 +13,8 @@ open BusyBeaver.M_1RB0RA_1LC0RC_1LE0LD_1LC1LF_1RA1LC_1LBHHH
 
 namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_1RDHHH
 
+
+
 @[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -21,6 +23,7 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 end
+
 
 section
 
@@ -59,7 +62,7 @@ theorem step_init_1rdhhh :
 
 end
 
-@[expose] public section
+public section
 
 theorem is_not_halt : IsNotHalt target :=
   does_not_halt_of_seg_rules segRules_1rdhhh step_ca_1rdhhh step_ch_1rdhhh .kindB step_init_1rdhhh

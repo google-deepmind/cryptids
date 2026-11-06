@@ -9,16 +9,20 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.WordCalculusF
 public import BusyBeaver.Calculi.WordCalculusG
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 variable {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
@@ -2300,6 +2304,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [multiStep_succ_vkq, hn] at h_some
   exact h_some
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH

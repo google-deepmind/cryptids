@@ -11,16 +11,20 @@ public import BusyBeaver.Calculi.WordCalculusF
 public import BusyBeaver.Calculi.WordCalculusG
 public import BusyBeaver.Calculi.WordCalculusH
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LB0LB_0RBHHH
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LB0LB_0RBHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
@@ -905,6 +909,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [multiStep_succ_vkq, hn] at h_some
   exact h_some
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_1LB0LB_0RBHHH

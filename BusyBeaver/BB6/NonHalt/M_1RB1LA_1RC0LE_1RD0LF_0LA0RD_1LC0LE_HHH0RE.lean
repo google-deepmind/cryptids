@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
 public import BusyBeaver.Bridge
@@ -5,20 +9,19 @@ import BusyBeaver.Calculi.SharedDonorsA
 
 open Mathlib Relation Nat Turing BusyBeaver
 
-@[expose] public section
 
 namespace BusyBeaver.M_1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE
+
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-end BusyBeaver.M_1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE
-
 end
 
-namespace BusyBeaver.M_1RB1LA_1RC0LE_1RD0LF_0LA0RD_1LC0LE_HHH0RE
 
 open TM24Donor Records Stack Cap
 

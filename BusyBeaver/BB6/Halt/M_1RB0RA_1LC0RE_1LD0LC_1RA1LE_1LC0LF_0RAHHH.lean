@@ -7,18 +7,22 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option linter.deprecated false
@@ -3776,7 +3780,7 @@ set_option quotPrecheck false
 set_option maxRecDepth 4000000
 set_option maxHeartbeats 800000
 
-
+public section
 
 open Solution in
 theorem is_halt : IsHalt target := by
@@ -3788,5 +3792,7 @@ theorem is_halt : IsHalt target := by
     rfl
   · rw [step_map_0365, is_halt_m_sound cfg_end halt_cfg_end]
     rfl
+
+end
 
 end BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH

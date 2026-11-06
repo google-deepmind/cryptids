@@ -11,20 +11,19 @@ import BusyBeaver.BB6.NonHalt.M_1RB0LD_1RC0RE_1LD0RE_1LA0LA_1RB1RF_1RBHHH
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
-@[expose] public section
 
 namespace BusyBeaver.M_1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH
+
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
-end BusyBeaver.M_1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH
-
 end
 
-namespace BusyBeaver.M_1RB0RB_1LC0RA_1LE0LD_1LC1LF_1RA0LD_1LCHHH
 
 def stateMap_m0457 : Fin 6 → Fin 6
   | 0 => 1 -- m0457 state A

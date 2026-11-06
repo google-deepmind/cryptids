@@ -9,6 +9,13 @@ import Mathlib.Data.List.Induction
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Linarith
 
+/-!
+# Word Calculus Engine A (`BusyBeaver.Calculi.WordCalculusA`)
+
+Formal word-rewriting calculus for structured tape transformations,
+providing verified macro-step reductions and tile segment chains for family A.
+-/
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver

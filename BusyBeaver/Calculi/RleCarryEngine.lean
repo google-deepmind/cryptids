@@ -8,6 +8,13 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
+/-!
+# Run-Length Encoded Carry Engine (`BusyBeaver.Calculi.RleCarryEngine`)
+
+Verification engine for unbounded carry propagation using run-length
+compressed tape blocks and inductive checkpoint stepping.
+-/
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver Counter

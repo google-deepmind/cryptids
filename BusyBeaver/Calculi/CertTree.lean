@@ -8,6 +8,13 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
+/-!
+# Certified Search Tree Calculus (`BusyBeaver.Calculi.CertTree`)
+
+Compact tree-structured inductive certificates for finite reachability
+and halting/non-halting state exploration in complex Busy Beaver machines.
+-/
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState

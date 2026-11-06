@@ -8,6 +8,13 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
+/-!
+# Shared Halting Proof Infrastructure (`BusyBeaver.Calculi.HaltShared`)
+
+Common lemmas, bounded-reachability lemmas, and step-reduction tactics
+shared across multiple Busy Beaver halting machine proofs.
+-/
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver

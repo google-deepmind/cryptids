@@ -8,16 +8,18 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
-@[expose] public section
-
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open Counter
@@ -2273,14 +2275,13 @@ theorem runCarry_2605 : runCarry 2605 initRle 1 = true := rfl
 
 
 
-set_option linter.deprecated false
-set_option linter.dupNamespace false
-set_option quotPrecheck false
-set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
+public section
+
 open Solution in
 theorem is_halt : IsHalt target := by
   rcases runCarry_sound 2605 initRle 1 runCarry_2605 with ⟨cfg', hstep, hnone⟩
   exact ⟨cfg', stepStar_trans init_to_initRle hstep, hnone⟩
+
+end
 
 end BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH

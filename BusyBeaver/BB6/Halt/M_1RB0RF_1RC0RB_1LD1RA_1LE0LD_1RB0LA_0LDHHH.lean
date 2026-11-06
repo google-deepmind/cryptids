@@ -7,18 +7,22 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH
 
+
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
 
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option autoImplicit true
@@ -4480,7 +4484,7 @@ private theorem reach_0 : MReach cfg_0 cfg_end := mreach_step_fast step_ckpt_0 r
 
 private theorem halt_cfg_end : is_halt_m cfg_end = true := by decide +kernel
 
-
+public section
 
 theorem is_halt : IsHalt target := by
   rcases reach_0 with ⟨fuel, hfuel⟩
@@ -4492,5 +4496,6 @@ theorem is_halt : IsHalt target := by
   · rw [step_map_0155, is_halt_m_sound cfg_end halt_cfg_end]
     rfl
 
+end
 
 end BusyBeaver.M_1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH

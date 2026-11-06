@@ -9,16 +9,20 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB
 
+
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open BusyBeaver.Longitudinal
@@ -2066,6 +2070,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
   rw [step_flipTM] at hsome
   cases hst : step target_tm cfg <;> simp_all
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB

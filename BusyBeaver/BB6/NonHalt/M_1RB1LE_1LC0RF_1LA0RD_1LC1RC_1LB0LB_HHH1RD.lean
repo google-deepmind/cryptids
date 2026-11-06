@@ -9,11 +9,11 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
-@[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD
+
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
@@ -25,10 +25,14 @@ local macro "normalize" : tactic => `(tactic| (
     list_pow_zero, list_pow_succ,
     List.nil_append, List.cons_append, List.append_nil,
     Nat.mul_zero, Nat.mul_add, Nat.mul_one]))
+@[expose] public section
+
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD"
 
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 open BusyBeaver.Longitudinal
@@ -1839,6 +1843,10 @@ theorem is_does_not_halt : IsNotHalt target_tm := by
     I_step_target a b u,
     b, e a b, family_prefix a +> u, rfl⟩
 
+public section
+
 theorem is_not_halt : IsNotHalt target := is_does_not_halt
+
+end
 
 end BusyBeaver.M_1RB1LE_1LC0RF_1LA0RD_1LC1RC_1LB0LB_HHH1RD
