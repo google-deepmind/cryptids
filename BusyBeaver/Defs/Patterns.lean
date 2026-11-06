@@ -110,6 +110,20 @@ member configuration steps in `ReachesPlus` either to another member or to a hal
 def HasCollatzReduction (M : Machine Γ Λ) : Prop :=
   ∃ ps : TapePatternSet Γ Λ, IsClosedPatternSet M ps
 
+/--
+Trusted Definition (`IsCryptid`):
+The long-term behavior of `M` is governed by a compact closed accelerated pattern set `ps`
+(`ps.length ≤ 16`) containing a reachable initial configuration, where every pattern in `ps`
+transitions in `ReachesPlus` (`n ≥ 1` steps) to another pattern in `ps` or to a halting state.
+-/
+def IsCryptid (M : Machine Γ Λ) : Prop :=
+  ∃ (ps : TapePatternSet Γ Λ),
+    ps.length ≤ 16 ∧
+    (∃ cfg₀, ReachesStar M (init []) cfg₀ ∧ IsInPatternSet ps cfg₀) ∧
+    (∀ cfg, IsInPatternSet ps cfg →
+      ∃ cfg', ReachesPlus M cfg cfg' ∧
+               (IsInPatternSet ps cfg' ∨ (step M cfg').isNone))
+
 /-- An abstract partial transition system `next : S → Option S` halts from `s₀ : S` if iterating
 `next` from `some s₀` eventually produces `none`. -/
 def CollatzHalts {S : Type*} (next : S → Option S) (s₀ : S) : Prop :=

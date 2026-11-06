@@ -9,6 +9,8 @@ public import BusyBeaver.Defs.Patterns
 public import BusyBeaver.Defs.Stack
 public import BusyBeaver.Defs.Odometer
 public import BusyBeaver.Defs.Transducer
+public import BusyBeaver.Defs.WordRun
+public import BusyBeaver.Defs.Segmented
 
 /-!
 # Busy Beaver Holdout Definitions (`BusyBeaver.Defs`)
@@ -24,6 +26,7 @@ goal predicates for Busy Beaver holdouts.
 - `BusyBeaver.Defs.Patterns`:
   - `HasCollatzReduction` — `M` is governed by a closed accelerated regular-expression tape
     pattern set.
+  - `IsCryptid` — `M` is governed by a compact (length ≤ 16) closed accelerated tape pattern set.
 - `BusyBeaver.Defs.Stack`:
   - `HasStackedCollatzReduction` — `M` is governed by a closed accelerated stack-word tape
     pattern set.
@@ -32,4 +35,8 @@ goal predicates for Busy Beaver holdouts.
   - `HasOdometerReduction` — `M` is governed by a closed mixed-radix odometer-word hub.
 - `BusyBeaver.Defs.Transducer`:
   - `HasTransducerReduction` — `M` is governed by a closed bidirectional word-stack transducer.
+- `BusyBeaver.Defs.WordRun`:
+  - `IsWordRunCryptid` — `M` is governed by a closed invariant-relative word-run stack system.
+- `BusyBeaver.Defs.Segmented`:
+  - `IsSegmentedCryptid` — `M` is governed by a unifying ≤ 3-region segmented tape schema.
 -/

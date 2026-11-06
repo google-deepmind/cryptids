@@ -51,7 +51,7 @@ def wOf : ℕ → List (Fin 2) :=
 def familyCfg (k : ℕ) : Cfg (Fin 2) (Fin 6) :=
   evalAffCfg qOf wOf k initReturnCfg
 
-private def repList (n : ℕ) (xs : List α) : List α :=
+private def repList {α : Type*} (n : ℕ) (xs : List α) : List α :=
   match n with
   | 0 => []
   | n + 1 => xs ++ repList n xs
