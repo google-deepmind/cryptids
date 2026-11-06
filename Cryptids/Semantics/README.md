@@ -643,3 +643,37 @@ with `candidate = erdosTernary14` and `reference = erdosTernary15`.
 2. **Semantics (`Semantics/ErdosTernary14.lean`)**: Composes `candidate_equivalent` with
    `halts_erdosTernary15_iff_not_erdosTernary` (`Classical.choice` through `Nat.digits`, and
    Markov's Principle via `not_forall`, as in Section 7).
+
+## 9. A 41-State Brocard Machine ([`Brocard41.lean`](./Brocard41.lean))
+
+In [`Cryptids/Brocard41.lean`](../Brocard41.lean) and [`Cryptids/Semantics/Brocard41.lean`](./Brocard41.lean),
+we formalize a new 41-state binary Turing machine for Brocard's problem (`brocard_41`, Daniel Veljjanoski with
+Claude (Anthropic) as assistant, November 2026):
+
+```lean
+theorem halts_brocard41_iff_exists_tri :
+    ConjectureMachines.Halts brocard41 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)
+
+theorem halts_brocard41_iff_exists_square :
+    ConjectureMachines.Halts brocard41 ↔ ∃ n, 7 < n ∧ IsSquare (n.factorial + 1)
+
+theorem halts_brocard41_iff_not_brocard :
+    ConjectureMachines.Halts brocard41 ↔ ¬ BrocardConjecture
+```
+
+with `V n = n.factorial / 8` and `IsTri x ↔ ∃ k, x = 1 + 2 + ⋯ + k`.
+
+1. **Machine (`Brocard41.lean`)**: The tape holds `n` cells and `n! / 8` cells in unary. A round
+   multiplies the second block by `n + 1` (a hole walks through the first block, one copy per cell,
+   and the return trip of the copy loop grows the first block by one cell), then tests the result
+   by subtracting `1, 2, 3, …` with a chunk block whose hole walks left; the blank beyond the chunk
+   block acts as its hole, so each wrap grows it for free. A success counts the cells of the first
+   block: fewer than eight (the known solutions `n = 5, 7`) returns to the next round, eight halts.
+   One lemma per routine (copy step and loop, counter step and loop, merge, unit, chunk loop by
+   strong induction, fail, wrap, success, gate, start) gives `halts_brocard41_iff_exists_tri` with
+   `propext` and `Quot.sound` only.
+2. **Semantics (`Semantics/Brocard41.lean`)**: `n! + 1 = m ^ 2` with `n ≥ 4` forces `m = 2k + 1`
+   and `n! / 8 = k (k + 1) / 2`, so `IsSquare (n! + 1) ↔ IsTri (n! / 8)` (`isSquare_iff_isTri`,
+   constructive), which gives `halts_brocard41_iff_exists_square` without `Classical.choice`;
+   `halts_brocard41_iff_not_brocard` uses Markov's Principle via `by_contra` (as with `not_forall`
+   in Section 7).

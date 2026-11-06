@@ -38,6 +38,8 @@ constructions and halting proofs:
      of `param3`).
 4. **Erdős's Ternary Conjecture** (`ErdosTernaryConjecture`):
    For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
+5. **Brocard's Problem** (`BrocardConjecture`):
+   `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_41`).
 -/
 
 @[expose] public section
@@ -705,5 +707,13 @@ and it implies Erdős Problem 406
 ([`ErdosProblems/406.lean`](https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/ErdosProblems/406.lean)). -/
 def ErdosTernaryConjecture : Prop :=
   ∀ n : ℕ, 8 < n → 2 ∈ Nat.digits 3 (2 ^ n)
+
+/-! ## 6. Brocard's Problem -/
+
+/-- **Brocard's problem** (Brocard 1876, 1885; Ramanujan 1913): `n! + 1` is a perfect square
+only for `n = 4, 5, 7` (`5 ^ 2`, `11 ^ 2`, `71 ^ 2`). Erdős conjectured that there are no other
+solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
+def BrocardConjecture : Prop :=
+  ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
 end ConjectureMachines
