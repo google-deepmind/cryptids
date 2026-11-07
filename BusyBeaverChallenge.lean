@@ -8100,6 +8100,13 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_halt : IsHalt target := by sorry
 end BusyBeaver.M_1RB0RE_1RC0RA_0LD0LB_0LA1LE_1LC1LF_0LAHHH
 
+namespace BusyBeaver.M_1RB0RE_1RC0RA_0LD0RB_1LA0LE_1LC1LF_0LCHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC0RA_0LD0RB_1LA0LE_1LC1LF_0LCHHH"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_halt : IsHalt target := by sorry
+end BusyBeaver.M_1RB0RE_1RC0RA_0LD0RB_1LA0LE_1LC1LF_0LCHHH
+
 namespace BusyBeaver.M_1RB0RF_0RC1RD_0LDHHH_1LE1RA_1LA0LF_0RD0RC
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RF_0RC1RD_0LDHHH_1LE1RA_1LA0LF_0RD0RC"
@@ -8275,6 +8282,13 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0LC_1LC0RE_1LA1LD_1LA1LF_0RB1RA_1LCHHH
 
+namespace BusyBeaver.M_1RB0LC_1RC0RA_1RD0RF_0LEHHH_1LB1LA_1LD1RA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1RC0RA_1RD0RF_0LEHHH_1LB1LA_1LD1RA"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LC_1RC0RA_1RD0RF_0LEHHH_1LB1LA_1LD1RA
+
 namespace BusyBeaver.M_1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0LD_1LC1RB_0LA0LD_1LE0RB_1RF0RE_HHH0RD"
@@ -8337,6 +8351,13 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0LE_1RC1LA_1LD1RE_1LB0LD_1RF0RC_1RBHHH
+
+namespace BusyBeaver.M_1RB0LE_1RCHHH_0RD0RB_1RE0LA_1RF0LF_1LD1RF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1RCHHH_0RD0RB_1RE0LA_1RF0LF_1LD1RF"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LE_1RCHHH_0RD0RB_1RE0LA_1RF0LF_1LD1RF
 
 namespace BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -8443,6 +8464,13 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0RA_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH
 
+namespace BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA0LB_1RA0RF_1LEHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1LC0RE_1LD0LC_1RA0LB_1RA0RF_1LEHHH"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA0LB_1RA0RF_1LEHHH
+
 namespace BusyBeaver.M_1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH"
@@ -8463,6 +8491,13 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0RA_1RC0RC_1LD0LE_1RA1LC_1LC1LF_0LCHHH
+
+namespace BusyBeaver.M_1RB0RA_1RC0RC_1LD1RF_HHH1LE_1RF0LF_1RA0LE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_1RC0RC_1LD1RF_HHH1LE_1RF0LF_1RA0LE"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RA_1RC0RC_1LD1RF_HHH1LE_1RF0LF_1RA0LE
 
 namespace BusyBeaver.M_1RB0RA_1RC0RD_1LD1LE_1LF0LC_0LDHHH_1RA1LD
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -8533,6 +8568,13 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0RC_1LC1RA_0RF0LD_1LE0RB_1LB0LD_HHH1RD
+
+namespace BusyBeaver.M_1RB0RC_1LC1RB_0RE1LD_0LC1LA_1RF1RA_HHH0RB
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC1RB_0RE1LD_0LC1LA_1RF1RA_HHH0RB"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RC_1LC1RB_0RE1LD_0LC1LA_1RF1RA_HHH0RB
 
 namespace BusyBeaver.M_1RB0RC_1LC1RD_1RA1LE_1LA0RD_0LE1RF_1LBHHH
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -8695,6 +8737,13 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE
 
+namespace BusyBeaver.M_1RB0RF_0LCHHH_1LE1LD_1RE0LA_1RA0RD_1LB1RD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_0LCHHH_1LE1LD_1RE0LA_1RA0RD_1LB1RD"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RF_0LCHHH_1LE1LD_1RE0LA_1RA0RD_1LB1RD
+
 namespace BusyBeaver.M_1RB0RF_1LC0LF_1LD0LC_0LE0LA_1LFHHH_1RA1RF
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB0RF_1LC0LF_1LD0LC_0LE0LA_1LFHHH_1RA1RF"
@@ -8736,6 +8785,13 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB0RF_1LC1RA_1LD0LC_1LE0LA_1LFHHH_1RA1RF
+
+namespace BusyBeaver.M_1RB0RF_1RC0RB_1LD0RA_1LE0LD_1RB0LC_1LAHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1RC0RB_1LD0RA_1LE0LD_1RB0LC_1LAHHH"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RF_1RC0RB_1LD0RA_1LE0LD_1RB0LC_1LAHHH
 
 namespace BusyBeaver.M_1RB0RF_1RC0RE_1LD1RA_1LA0LD_1RAHHH_0RA0LB
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -8905,6 +8961,13 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB1LF_0RC0RB_0LD1LA_1LC0LE_0LAHHH_1LA1LF
 
+namespace BusyBeaver.M_1RB1LF_0RCHHH_1RD1RF_1LE0LF_1LB0LA_1LD0RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_0RCHHH_1RD1RF_1LE0LF_1LB0LA_1LD0RE"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB1LF_0RCHHH_1RD1RF_1LE0LF_1LB0LA_1LD0RE
+
 namespace BusyBeaver.M_1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH
 def machine : ConjectureMachines.Machine 6 2 :=
   load_rle_machine% "1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH"
@@ -8925,6 +8988,13 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB1LF_1RC0RB_1RD0RF_1REHHH_1LF1LE_1LA0LE
+
+namespace BusyBeaver.M_1RB1RA_0LC0RA_1RC1LD_0LB1LE_1LF0RC_HHH0LD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RA_0LC0RA_1RC1LD_0LB1LE_1LF0RC_HHH0LD"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB1RA_0LC0RA_1RC1LD_0LB1LE_1LF0RC_HHH0LD
 
 namespace BusyBeaver.M_1RB1RA_1LC1LE_0LD0LB_0RA0RF_0LC0RA_1RDHHH
 def machine : ConjectureMachines.Machine 6 2 :=
@@ -9156,6 +9226,13 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF
+
+namespace BusyBeaver.M_1RBHHH_1LC0LA_1LD0LC_1RE0LB_1RF0RE_1LC0RD
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RBHHH_1LC0LA_1LD0LC_1RE0LB_1RF0RE_1LC0RD"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RBHHH_1LC0LA_1LD0LC_1RE0LB_1RF0RE_1LC0RD
 
 namespace BusyBeaver.M_1RBHHH_1LC0LF_1RD1LB_1RE0RD_1LB0RB_1LB0LA
 def machine : ConjectureMachines.Machine 6 2 :=
