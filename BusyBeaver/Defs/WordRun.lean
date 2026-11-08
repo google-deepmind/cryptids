@@ -37,7 +37,8 @@ def encRegsAux {Γ : Type*} [Inhabited Γ] :
     (m : ℕ) → (Fin m → List Γ) → (Fin m → ℕ) → ListBlank Γ → ListBlank Γ
   | 0, _, _, tail => tail
   | m + 1, rw, r, tail =>
-      ListBlank.append ((rw 0) ^ (r 0)) (encRegsAux m (fun i => rw i.succ) (fun i => r i.succ) tail)
+      ListBlank.append ((rw 0) ^ (r 0))
+        (encRegsAux m (fun i => rw i.succ) (fun i => r i.succ) tail)
 
 /-- Encodes the bottom accumulator registers + `base` of a `WordStackSpec`. -/
 def encRegs {Γ Tok : Type*} [Inhabited Γ] {numRegs : ℕ}
@@ -77,10 +78,13 @@ def regsBitLenAux {Γ : Type*} : (m : ℕ) → (Fin m → List Γ) → (Fin m �
   | 0, _, _ => 0
   | m + 1, rw, r => (rw 0).length * r 0 + regsBitLenAux m (fun i => rw i.succ) (fun i => r i.succ)
 
+section
+universe u
+
 /-- Prefix length of a `HalfTapeView`. -/
-def viewPrefixLen {Γ : Type*} : HalfTapeView Γ → ℕ
-  | .id p => p.length
-  | .tail p => p.length
+def viewPrefixLen {Γ : Type u} (v : HalfTapeView Γ) : ℕ :=
+  v.casesOn (fun p => p.length) (fun p => p.length)
+end
 
 /-- Full symbolic state of a two-sided word-run stack + accumulator system. -/
 structure WordSysState (Mode TokL TokR : Type*) (numRegsL numRegsR : ℕ) where
@@ -143,7 +147,8 @@ def DrainsTop {Γ Tok : Type*} {numRegs : ℕ}
     (spec : WordStackSpec Γ Tok numRegs) (xs xs' : List (Tok × ℕ)) : Prop :=
   ¬ PreservesOrGrows spec xs xs'
 
-/-- `PopsTop xs xs'` holds when the active top frame `f` of `xs = f :: xs'` is completely popped. -/
+/-- `PopsTop xs xs'` holds when the active top frame `f` of `xs = f :: xs'` is
+    completely popped. -/
 def PopsTop {Tok : Type*} (xs xs' : List (Tok × ℕ)) : Prop :=
   ∃ f, xs = f :: xs'
 

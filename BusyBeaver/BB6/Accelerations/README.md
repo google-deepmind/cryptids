@@ -1,9 +1,10 @@
 # `BB(6)` Stacked, Odometer, and Transducer Accelerations (`BusyBeaver/BB6/Accelerations/`)
 
-This directory contains formal Lean 4 specifications and kernel-verified reductions for 35 `BB(6)` (6-state, 2-symbol) holdout Turing machines whose blank-tape dynamics evolve over unbounded digit stacks, mixed-radix odometers, or bidirectional finite-state word transducers rather than fixed-dimension counter tuples:
+This directory contains formal Lean 4 specifications and kernel-verified reductions for 56 `BB(6)` (6-state, 2-symbol) holdout Turing machines whose blank-tape dynamics evolve over unbounded digit stacks, mixed-radix odometers, or bidirectional finite-state word transducers rather than fixed-dimension counter tuples:
 
 1. **15 Structural Stack, Odometer, and Transducer Reductions** formalized under the three structural reduction predicates defined in [`BusyBeaver/Defs.lean`](../../Defs.lean)—`HasStackReduction` (12 machines: 9 `bbchallenge` Wiki machines and 3 Halving Tower holdouts), `HasOdometerReduction` (2 machines: Beaver Math Olympiad Problems 10 and 11), and `HasTransducerReduction` (1 machine: *Bell eats counter*).
 2. **20 Open `BB(6)` Acceleration Problems** certified via `IsValidAcceleration` and `IsHalt target ↔ CollatzHalts next start` (with [`1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---`](./M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean) additionally proved under `HasOdometerReduction`). Each open problem states a self-contained initial state $s_0$ (`start`) and accelerated transition map $T$ (`next`) over finite sequences and non-negative integers: the corresponding Turing machine halts from the blank tape if and only if iterating $T$ from $s_0$ eventually reaches $\mathrm{Halt}$ (`none`). For **13** of the 20 machines, we additionally prove a **higher-level Poincaré / epoch acceleration** $(s_{0,\mathrm{HL}}, T_{\mathrm{HL}})$ (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) that eliminates an entire stack, mixed-radix odometer, or auxiliary mode by restricting to a canonical return section or contracting full multi-bounce epochs.
+3. **21 Hard Holdout Cryptid Machines** formalized under `IsSegmentedCryptid` (10 machines), `IsStackCryptid` (9 machines), and `IsOdometerCryptid` (2 machines), capturing the full remaining frontier of BB(6) hard holdouts.
 
 > **Hardness & Formal Evidence.** The Collatz-like stacked cryptids among these machines (`#391`, `#129`, `#660`/`#659`/`#209`/`#680`/`#480`, `#549`/`#80`, `#33`, `#85`/`#285`/`#490`/`#500`) are classified, with heuristic hazards and the resolved case `#72`, in [`../Hardness.lean`](../Hardness.lean) (`BusyBeaver.BB6.Hardness`), and kernel-checked live-hazard witnesses and halting residue classes for the accelerated problems are proved in [`../HardnessEvidence.lean`](../HardnessEvidence.lean) (`BusyBeaver.BB6.HardnessEvidence`).
 
@@ -827,3 +828,31 @@ T(M_0(L, R)) = \begin{cases}
 $$
 
 where $\mathcal{D}$ (`stepD`) peels $[(0, 1), (0, 1)]$ pairs on $L$ and, on $[(0, 1), (1, 4)] \cdot L_2$ with $L_2 \ne \varepsilon$, invokes the 6-state carry transducer `evalStage3` over $\mathcal{F} = \lbrace f_{00}, \dots, f_{05} \rbrace$ (halting at `stepD` or `evalQ0Aux` on any head block $[(a, s)] \cdot X$ with $a \ge 2$, and at `stepBit1` on carry state $f_{05}$); see [`M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean) for full definitions.
+
+## 4. Hard Holdout Cryptid Machines (21 Machines)
+
+The remaining frontier of hard holdout Turing machines in BB(6) whose blank-tape trajectories enter closed dynamic schemas over partitioned half-tapes (`IsSegmentedCryptid`), multi-layer stack systems (`IsStackCryptid`), or mixed-radix odometer bitstreams (`IsOdometerCryptid`):
+
+| Machine (`bbchallenge` RLE) | Predicate | Lean 4 Proof |
+| :--- | :--- | :--- |
+| `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` | `IsSegmentedCryptid` | [`M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH.lean`](./M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH.lean) |
+| `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` | `IsSegmentedCryptid` | [`M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH.lean`](./M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH.lean) |
+| `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---` | `IsOdometerCryptid` | [`M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH.lean`](./M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH.lean) |
+| `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---` | `IsStackCryptid` | [`M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH.lean`](./M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH.lean) |
+| `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` | `IsSegmentedCryptid` | [`M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH.lean`](./M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH.lean) |
+| `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH.lean) |
+| `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` | `IsSegmentedCryptid` | [`M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE.lean`](./M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE.lean) |
+| `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` | `IsSegmentedCryptid` | [`M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH.lean`](./M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH.lean) |
+| `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` | `IsSegmentedCryptid` | [`M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF.lean`](./M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF.lean) |
+| `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` | `IsSegmentedCryptid` | [`M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA.lean`](./M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA.lean) |
+| `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` | `IsSegmentedCryptid` | [`M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA.lean`](./M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA.lean) |
+| `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` | `IsSegmentedCryptid` | [`M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH.lean`](./M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH.lean) |
+| `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` | `IsSegmentedCryptid` | [`M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD.lean`](./M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD.lean) |
+| `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` | `IsSegmentedCryptid` | [`M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE.lean`](./M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE.lean) |
+| `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA` | `IsOdometerCryptid` | [`M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA.lean`](./M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA.lean) |

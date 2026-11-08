@@ -535,6 +535,45 @@ def HasStackReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ cfg, IsInStackSystem cfg →
       ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
 
+/-- Unifying 2nd-Order Digit-Stack Schema (`IsStackCryptid`). -/
+def IsStackCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (StackMode : Type)
+    (dSym sSym : Fin (k + 2))
+    (encLeft encRight : List (StackTuple (k + 2)) → ListBlank (Fin (k + 2)))
+    (evalStackCfg :
+      StackMode → List (StackTuple (k + 2)) → List (StackTuple (k + 2)) → Cfg (Fin (k + 2)) Λ)
+    (IsInStackSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    IsValidStackPolarity dSym sSym ∧
+    encLeft [] = default ∧
+    encRight [] = default ∧
+    (∀ a b L, (encLeft ((a, b) :: L)).head = dSym) ∧
+    (∀ d b R, (encRight ((d, b) :: R)).head = dSym) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ L : List (StackTuple (k + 2)), encLeft L ≠ t) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ R : List (StackTuple (k + 2)), encRight R ≠ t) ∧
+    (∃ strideL offsetL sepL maxSepL strideR offsetR sepR maxSepR : ℕ,
+      strideL > 0 ∧ offsetL > 0 ∧ sepL > 0 ∧ 1 ≤ maxSepL ∧ maxSepL ≤ 4 ∧
+      strideR > 0 ∧ offsetR > 0 ∧ sepR > 0 ∧ 1 ≤ maxSepR ∧ maxSepR ≤ 4 ∧
+      (∀ a b L, encLeft ((a, b) :: L) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideL * a + offsetL))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepL maxSepL b))
+            (encLeft L))) ∧
+      (∀ d b R, encRight ((d, b) :: R) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideR * d + offsetR))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepR maxSepR b))
+            (encRight R)))) ∧
+    (∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes) ∧
+    IsValidStackModes encLeft encRight evalStackCfg ∧
+    (∀ cfg, IsInStackSystem cfg ↔ ∃ m L R, cfg = evalStackCfg m L R) ∧
+    (∀ m L R, IsInStackSystem (evalStackCfg m L R)) ∧
+    (∃ cfg₀, ReachesPlus M (init []) cfg₀ ∧ IsInStackSystem cfg₀) ∧
+    (∀ cfg, IsInStackSystem cfg →
+      ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
+
 /-- Tape orientation for a mixed-radix odometer-word system (`HasOdometerReduction`). -/
 inductive OdomSide where
   /-- Odometer stack on the left half-tape and active word on the right half-tape. -/
@@ -549,8 +588,12 @@ def evalOdomR {Γ Λ : Type*} [Inhabited Γ]
     (side : OdomSide) (q_R : Λ) (pfx_R : List Γ)
     (encOdom : ListBlank Γ) (w : ListBlank Γ) : Cfg Γ Λ :=
   match side with
-  | .leftOdom => Cfg.headRight q_R (ListBlank.append pfx_R encOdom) w
-  | .rightOdom => Cfg.headLeft q_R w (ListBlank.append pfx_R encOdom)
+  | .leftOdom =>
+    (⟨some q_R, ⟨(w : ListBlank Γ).head,
+      ListBlank.append pfx_R encOdom, (w : ListBlank Γ).tail⟩⟩ : Cfg Γ Λ)
+  | .rightOdom =>
+    (⟨some q_R, ⟨(w : ListBlank Γ).head,
+      (w : ListBlank Γ).tail, ListBlank.append pfx_R encOdom⟩⟩ : Cfg Γ Λ)
 
 /-- Evaluate the inward-facing odometer entry configuration (head at `q_L` facing the odometer
 stack `encOdom` across fixed boundary prefix `pfx_L`). -/
@@ -559,8 +602,12 @@ def evalOdomL {Γ Λ : Type*} [Inhabited Γ]
     (side : OdomSide) (q_L : Λ) (pfx_L : List Γ)
     (encOdom : ListBlank Γ) (w : ListBlank Γ) : Cfg Γ Λ :=
   match side with
-  | .leftOdom => Cfg.headLeft q_L encOdom (ListBlank.append pfx_L w)
-  | .rightOdom => Cfg.headRight q_L (ListBlank.append pfx_L w) encOdom
+  | .leftOdom =>
+    (⟨some q_L, ⟨(encOdom : ListBlank Γ).head,
+      (encOdom : ListBlank Γ).tail, ListBlank.append pfx_L w⟩⟩ : Cfg Γ Λ)
+  | .rightOdom =>
+    (⟨some q_L, ⟨(encOdom : ListBlank Γ).head,
+      ListBlank.append pfx_L w, (encOdom : ListBlank Γ).tail⟩⟩ : Cfg Γ Λ)
 
 /-- The blank-tape trajectory of `M` enters a closed outward-facing odometer-word hub coupled with
 a non-surjective multi-bit mixed-radix odometer stack (`OdomTok`, `cap`, `dec`, `drain`) supporting
@@ -637,6 +684,80 @@ def HasOdometerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ stk w,
       ∃ cfg', ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
         (IsInOdomSystem cfg' ∨ (step M cfg').isNone))
+
+/-- Closed mixed-radix odometer-word hub system (`IsOdometerCryptid`). -/
+def IsOdometerCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (OdomTok : Type)
+    (side : OdomSide)
+    (q_R : List OdomTok → Λ)
+    (q_L : Λ)
+    (pfx_R pfx_L odomBase : List (Fin (k + 2)))
+    (odomWord : OdomTok → List (Fin (k + 2)))
+    (encOdom : List OdomTok → ListBlank (Fin (k + 2)))
+    (cap : List OdomTok → ℕ)
+    (dec : List OdomTok → List OdomTok)
+    (decPfx : List OdomTok → List (Fin (k + 2)))
+    (drain : List OdomTok → List (Fin (k + 2)))
+    (IsInOdomSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    (∃ toks : List OdomTok, 2 ≤ toks.length ∧ toks.length ≤ 6 ∧ ∀ t : OdomTok, t ∈ toks) ∧
+    odomBase ≠ [] ∧
+    (∀ t : OdomTok, 2 ≤ (odomWord t).length) ∧
+    encOdom [] = ListBlank.append odomBase default ∧
+    (∀ t stk, encOdom (t :: stk) = ListBlank.append (odomWord t) (encOdom stk)) ∧
+    (∃ t : ListBlank (Fin (k + 2)), ∀ stk : List OdomTok, encOdom stk ≠ t) ∧
+    cap [] = 0 ∧
+    (∃ (t_inc t_even t_div : OdomTok) (b : ℕ) (blk_inc blk_div : List (Fin (k + 2))),
+      2 ≤ b ∧ 2 ≤ blk_inc.length ∧ 2 ≤ blk_div.length ∧
+      (∀ stk, cap (t_inc :: stk) = 2 * cap stk + 1) ∧
+      (∀ stk, cap (t_even :: stk) = 2 * cap stk) ∧
+      (∀ stk, cap (t_div :: stk) = cap stk / b) ∧
+      (∀ stk w,
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.append blk_inc w))
+          (evalOdomR side (q_R (t_inc :: stk)) pfx_R (encOdom (t_inc :: stk)) w)) ∧
+      (∀ stk w,
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.append blk_div w))
+          (evalOdomR side (q_R (t_div :: stk)) pfx_R (encOdom (t_div :: stk)) w))) ∧
+    (∀ stk, (dec stk).length = stk.length) ∧
+    (∀ stk, cap stk ≥ 1 → cap (dec stk) = cap stk - 1) ∧
+    (∀ stk w, cap stk ≥ 1 →
+      ReachesPlus M
+        (evalOdomL side q_L pfx_L (encOdom stk) w)
+        (evalOdomR side (q_R (dec stk)) pfx_R (encOdom (dec stk))
+          (ListBlank.append (decPfx stk) w))) ∧
+    (∀ stk, cap stk = 0 → drain stk ≠ []) ∧
+    (∀ stk w, cap stk = 0 →
+      ReachesPlus M
+        (evalOdomL side q_L pfx_L (encOdom stk) w)
+        (evalOdomR side (q_R []) pfx_R (encOdom []) (ListBlank.append (drain stk) w))) ∧
+    (∀ stk w,
+      ReachesPlus M
+        (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.cons (0 : Fin (k + 2)) w))
+        (evalOdomL side q_L pfx_L (encOdom stk) (ListBlank.cons (1 : Fin (k + 2)) w))) ∧
+    (∀ stk w,
+      w.head = 0 ∨ (w.tail.head = 0 ∧ (w.tail.tail.head = 0 ∨ w.tail.tail.tail.head = 0)) →
+        (∃ t w',
+          ReachesPlus M
+            (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
+            (evalOdomR side (q_R (t :: stk)) pfx_R (encOdom (t :: stk)) w')) ∨
+        (∃ w',
+          ReachesPlus M
+            (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
+            (evalOdomL side q_L pfx_L (encOdom stk) w')) ∨
+        (∃ cfg',
+          ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
+            (step M cfg').isNone)) ∧
+    (∀ cfg, IsInOdomSystem cfg ↔
+      ∃ stk w, cfg = evalOdomR side (q_R stk) pfx_R (encOdom stk) w) ∧
+    (∃ (stk₀ : List OdomTok) (w₀ : ListBlank (Fin (k + 2))),
+      ReachesPlus M (init []) (evalOdomR side (q_R stk₀) pfx_R (encOdom stk₀) w₀) ∧
+      2 ≤ stk₀.length ∧ 1 ≤ cap stk₀) ∧
+    (∀ stk w,
+      w.head = 0 ∨ (w.tail.head = 0 ∧ (w.tail.tail.head = 0 ∨ w.tail.tail.tail.head = 0)) →
+        ∃ cfg', ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
+          (IsInOdomSystem cfg' ∨ (step M cfg').isNone))
 
 /-- Every `TransducerMode` evaluates `(L, R)` as a fixed control state `q` and fixed bounded
 `HalfTapeView`s `vL, vR` (`≤ 8`-symbol prefixes) of `encLeft L` and `encRight R` (either scanning
@@ -797,7 +918,8 @@ def encRegsAux {Γ : Type*} [Inhabited Γ] :
     (m : ℕ) → (Fin m → List Γ) → (Fin m → ℕ) → ListBlank Γ → ListBlank Γ
   | 0, _, _, tail => tail
   | m + 1, rw, r, tail =>
-      ListBlank.append ((rw 0) ^ (r 0)) (encRegsAux m (fun i => rw i.succ) (fun i => r i.succ) tail)
+      ListBlank.append ((rw 0) ^ (r 0))
+        (encRegsAux m (fun i => rw i.succ) (fun i => r i.succ) tail)
 
 /-- Encodes the bottom accumulator registers + `base` of a `WordStackSpec`. -/
 def encRegs {Γ Tok : Type*} [Inhabited Γ] {numRegs : ℕ}
@@ -837,10 +959,13 @@ def regsBitLenAux {Γ : Type*} : (m : ℕ) → (Fin m → List Γ) → (Fin m �
   | 0, _, _ => 0
   | m + 1, rw, r => (rw 0).length * r 0 + regsBitLenAux m (fun i => rw i.succ) (fun i => r i.succ)
 
+section
+universe u
+
 /-- Prefix length of a `HalfTapeView`. -/
-def viewPrefixLen {Γ : Type*} : HalfTapeView Γ → ℕ
-  | .id p => p.length
-  | .tail p => p.length
+def viewPrefixLen {Γ : Type u} (v : HalfTapeView Γ) : ℕ :=
+  v.casesOn (fun p => p.length) (fun p => p.length)
+end
 
 /-- Full symbolic state of a two-sided word-run stack + accumulator system. -/
 structure WordSysState (Mode TokL TokR : Type*) (numRegsL numRegsR : ℕ) where
@@ -903,7 +1028,8 @@ def DrainsTop {Γ Tok : Type*} {numRegs : ℕ}
     (spec : WordStackSpec Γ Tok numRegs) (xs xs' : List (Tok × ℕ)) : Prop :=
   ¬ PreservesOrGrows spec xs xs'
 
-/-- `PopsTop xs xs'` holds when the active top frame `f` of `xs = f :: xs'` is completely popped. -/
+/-- `PopsTop xs xs'` holds when the active top frame `f` of `xs = f :: xs'` is
+    completely popped. -/
 def PopsTop {Tok : Type*} (xs xs' : List (Tok × ℕ)) : Prop :=
   ∃ f, xs = f :: xs'
 
@@ -1097,15 +1223,17 @@ def IsWordRunCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
             (∃ s', stepMacro (s_fam d) = some s' ∧ PopsTop (s_fam d).R s'.R ∧
               topFrameBitLen specR (s_fam d).R ≤ totalSystemBitLen specL specR s' + 8))))
 
+universe u v
+
 /-- Segmented Half-Tape Region Descriptor (`SegRegionKind`). -/
-inductive SegRegionKind (Γ : Type*) where
+inductive SegRegionKind (Γ : Type u) where
   | reg (blk : List Γ) (val : ℕ)
   | wordRun (frames : List (List Γ × ℕ))
   | finWord (words : List (List Γ))
   | gadget (w : List Γ)
 
 /-- Evaluates a single `SegRegionKind Γ` into its `List Γ` bit-segment. -/
-def evalSegRegion {Γ : Type*} : SegRegionKind Γ → List Γ
+def evalSegRegion {Γ : Type u} : SegRegionKind Γ → List Γ
   | .reg blk v => blk ^ v
   | .wordRun [] => []
   | .wordRun ((w, m) :: rest) => (w ^ m) ++ evalSegRegion (.wordRun rest)
@@ -1114,7 +1242,7 @@ def evalSegRegion {Γ : Type*} : SegRegionKind Γ → List Γ
   | .gadget w => w
 
 /-- Evaluates a `≤ 3`-region segmented half-tape `List (SegRegionKind Γ)` onto `default`. -/
-def evalSegmentedHalf {Γ : Type*} [Inhabited Γ] : List (SegRegionKind Γ) → ListBlank Γ
+def evalSegmentedHalf {Γ : Type u} [Inhabited Γ] : List (SegRegionKind Γ) → ListBlank Γ
   | [] => default
   | reg :: rest => ListBlank.append (evalSegRegion reg) (evalSegmentedHalf rest)
 
@@ -1123,20 +1251,20 @@ def evalSegmentedHalf {Γ : Type*} [Inhabited Γ] : List (SegRegionKind Γ) → 
     valid state encodes, i.e. the image has empty interior in the prefix topology. A
     bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
     certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
-def IsNowhereDenseFamily {Γ S : Type*} [Inhabited Γ]
+def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
     (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
   ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
     (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
 
 /-- `IsNowhereDenseFamily` for the evaluated segmented half-tapes `evalSegmentedHalf (segs s)`. -/
-def IsNowhereDenseHalf {Γ S : Type*} [Inhabited Γ]
+def IsNowhereDenseHalf {Γ : Type u} {S : Type v} [Inhabited Γ]
     (Valid : S → Prop) (segs : S → List (SegRegionKind Γ)) : Prop :=
   IsNowhereDenseFamily Valid (fun s => evalSegmentedHalf (segs s))
 
 /-- Unifying `≤ 3`-Region Segmented Schema (`IsSegmentedCryptid`). At least one half-tape must
     be `IsNowhereDenseHalf`; a half-tape that is not must be boundary-aligned (no hidden view
     prefix). -/
-def IsSegmentedCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+def IsSegmentedCryptid {k : ℕ} {Λ : Type u} [Inhabited Λ]
     (M : Machine (Fin (k + 2)) Λ) : Prop :=
   ∃ (SegState : Type)
     (Mode : Type)
@@ -9769,3 +9897,465 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF
+
+namespace BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 0, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
+  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 4, Stmt.write 1 Dir.right)
+  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 3, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 5, 1 => none
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH
+
+namespace BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 0, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
+  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 4, Stmt.write 1 Dir.right)
+  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 3, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 5, 1 => none
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH
+
+namespace BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.right)
+  | 3, 0 => some (some 1, Stmt.write 0 Dir.right)
+  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
+  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
+  | 5, 1 => none
+
+theorem is_odometer_cryptid : IsOdometerCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH
+
+namespace BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.right)
+  | 3, 0 => some (some 1, Stmt.write 0 Dir.right)
+  | 3, 1 => some (some 5, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 0, Stmt.write 1 Dir.left)
+  | 5, 0 => some (some 1, Stmt.write 0 Dir.right)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH
+
+namespace BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
+  | 1, 1 => some (some 3, Stmt.write 1 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 0, Stmt.write 1 Dir.right)
+  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 0, Stmt.write 0 Dir.left)
+  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 5, 1 => none
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 4, Stmt.write 0 Dir.right)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 1, Stmt.write 0 Dir.left)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 4, Stmt.write 0 Dir.left)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 0, Stmt.write 0 Dir.left)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 4, Stmt.write 1 Dir.left)
+  | 5, 1 => none
+
+theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH
+
+namespace BusyBeaver.M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 0, Stmt.write 0 Dir.right)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 4, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
+  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
+  | 3, 1 => none
+  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 1 => some (some 2, Stmt.write 0 Dir.left)
+  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
+  | 5, 1 => some (some 4, Stmt.write 1 Dir.left)
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 0, Stmt.write 1 Dir.right)
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 4, Stmt.write 0 Dir.right)
+  | 3, 1 => some (some 0, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 0, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
+  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 5, 1 => none
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH
+
+namespace BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
+  | 1, 1 => none
+  | 2, 0 => some (some 3, Stmt.write 0 Dir.right)
+  | 2, 1 => some (some 2, Stmt.write 0 Dir.right)
+  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 0 => some (some 3, Stmt.write 1 Dir.left)
+  | 4, 1 => some (some 0, Stmt.write 1 Dir.right)
+  | 5, 0 => some (some 2, Stmt.write 1 Dir.right)
+  | 5, 1 => some (some 5, Stmt.write 0 Dir.left)
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
+
+namespace BusyBeaver.M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 5, Stmt.write 0 Dir.right)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => none
+  | 2, 0 => some (some 5, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
+  | 3, 0 => some (some 4, Stmt.write 1 Dir.right)
+  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.right)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 5, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA
+
+namespace BusyBeaver.M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA
+open Turing BusyBeaver
+
+/-- Transition function for `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 5, Stmt.write 0 Dir.right)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => none
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
+  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 4, Stmt.write 0 Dir.right)
+  | 3, 1 => some (some 3, Stmt.write 0 Dir.right)
+  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
+  | 4, 1 => some (some 2, Stmt.write 1 Dir.left)
+  | 5, 0 => some (some 4, Stmt.write 1 Dir.left)
+  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH
+open Turing BusyBeaver
+
+/-- Transition function for `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 5, Stmt.write 1 Dir.right)
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
+  | 1, 1 => some (some 0, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 1, Stmt.write 1 Dir.right)
+  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
+  | 4, 0 => some (some 0, Stmt.write 0 Dir.right)
+  | 4, 1 => some (some 1, Stmt.write 0 Dir.left)
+  | 5, 0 => some (some 1, Stmt.write 0 Dir.right)
+  | 5, 1 => none
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH
+
+namespace BusyBeaver.M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD
+open Turing BusyBeaver
+
+/-- Transition function for `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => none
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
+  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
+  | 2, 1 => some (some 4, Stmt.write 1 Dir.left)
+  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 5, Stmt.write 1 Dir.right)
+  | 4, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
+  | 5, 1 => some (some 3, Stmt.write 0 Dir.right)
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD
+
+namespace BusyBeaver.M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE
+open Turing BusyBeaver
+
+/-- Transition function for `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => none
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
+  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
+  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
+  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
+  | 3, 0 => some (some 4, Stmt.write 1 Dir.right)
+  | 3, 1 => some (some 1, Stmt.write 1 Dir.right)
+  | 4, 0 => some (some 3, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
+  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
+  | 5, 1 => some (some 4, Stmt.write 0 Dir.left)
+
+theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+end BusyBeaver.M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE
+
+namespace BusyBeaver.M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA
+open Turing BusyBeaver
+
+/-- Transition function for `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => none
+  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
+  | 1, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
+  | 2, 1 => some (some 5, Stmt.write 0 Dir.right)
+  | 3, 0 => some (some 1, Stmt.write 1 Dir.left)
+  | 3, 1 => some (some 4, Stmt.write 0 Dir.right)
+  | 4, 0 => some (some 2, Stmt.write 0 Dir.right)
+  | 4, 1 => some (some 4, Stmt.write 0 Dir.left)
+  | 5, 0 => some (some 3, Stmt.write 1 Dir.right)
+  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+
+theorem is_odometer_cryptid : IsOdometerCryptid target_tm := by sorry
+end BusyBeaver.M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA
+
+namespace BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE
+open Turing BusyBeaver
+
+/-- Transition function for `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE`. -/
+def target_tm : Machine (Fin 2) (Fin 6)
+  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
+  | 0, 1 => some (some 4, Stmt.write 1 Dir.left)
+  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
+  | 1, 1 => some (some 1, Stmt.write 0 Dir.left)
+  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
+  | 2, 1 => some (some 2, Stmt.write 1 Dir.left)
+  | 3, 0 => some (some 3, Stmt.write 1 Dir.right)
+  | 3, 1 => some (some 0, Stmt.write 1 Dir.right)
+  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
+  | 4, 1 => some (some 0, Stmt.write 0 Dir.left)
+  | 5, 0 => none
+  | 5, 1 => some (some 4, Stmt.write 1 Dir.right)
+
+theorem is_cryptid : IsCryptid target_tm := by sorry
+end BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE

@@ -254,4 +254,43 @@ def HasStackReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ cfg, IsInStackSystem cfg →
       ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
 
+/-- Unifying 2nd-Order Digit-Stack Schema (`IsStackCryptid`). -/
+def IsStackCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (StackMode : Type)
+    (dSym sSym : Fin (k + 2))
+    (encLeft encRight : List (StackTuple (k + 2)) → ListBlank (Fin (k + 2)))
+    (evalStackCfg :
+      StackMode → List (StackTuple (k + 2)) → List (StackTuple (k + 2)) → Cfg (Fin (k + 2)) Λ)
+    (IsInStackSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    IsValidStackPolarity dSym sSym ∧
+    encLeft [] = default ∧
+    encRight [] = default ∧
+    (∀ a b L, (encLeft ((a, b) :: L)).head = dSym) ∧
+    (∀ d b R, (encRight ((d, b) :: R)).head = dSym) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ L : List (StackTuple (k + 2)), encLeft L ≠ t) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ R : List (StackTuple (k + 2)), encRight R ≠ t) ∧
+    (∃ strideL offsetL sepL maxSepL strideR offsetR sepR maxSepR : ℕ,
+      strideL > 0 ∧ offsetL > 0 ∧ sepL > 0 ∧ 1 ≤ maxSepL ∧ maxSepL ≤ 4 ∧
+      strideR > 0 ∧ offsetR > 0 ∧ sepR > 0 ∧ 1 ≤ maxSepR ∧ maxSepR ≤ 4 ∧
+      (∀ a b L, encLeft ((a, b) :: L) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideL * a + offsetL))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepL maxSepL b))
+            (encLeft L))) ∧
+      (∀ d b R, encRight ((d, b) :: R) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideR * d + offsetR))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepR maxSepR b))
+            (encRight R)))) ∧
+    (∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes) ∧
+    IsValidStackModes encLeft encRight evalStackCfg ∧
+    (∀ cfg, IsInStackSystem cfg ↔ ∃ m L R, cfg = evalStackCfg m L R) ∧
+    (∀ m L R, IsInStackSystem (evalStackCfg m L R)) ∧
+    (∃ cfg₀, ReachesPlus M (init []) cfg₀ ∧ IsInStackSystem cfg₀) ∧
+    (∀ cfg, IsInStackSystem cfg →
+      ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
+
 end BusyBeaver

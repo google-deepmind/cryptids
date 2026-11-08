@@ -24,15 +24,17 @@ namespace BusyBeaver
 
 open Relation Turing
 
+universe u v
+
 /-- Segmented Half-Tape Region Descriptor (`SegRegionKind`). -/
-inductive SegRegionKind (Γ : Type*) where
+inductive SegRegionKind (Γ : Type u) where
   | reg (blk : List Γ) (val : ℕ)
   | wordRun (frames : List (List Γ × ℕ))
   | finWord (words : List (List Γ))
   | gadget (w : List Γ)
 
 /-- Evaluates a single `SegRegionKind Γ` into its `List Γ` bit-segment. -/
-def evalSegRegion {Γ : Type*} : SegRegionKind Γ → List Γ
+def evalSegRegion {Γ : Type u} : SegRegionKind Γ → List Γ
   | .reg blk v => blk ^ v
   | .wordRun [] => []
   | .wordRun ((w, m) :: rest) => (w ^ m) ++ evalSegRegion (.wordRun rest)
@@ -41,7 +43,7 @@ def evalSegRegion {Γ : Type*} : SegRegionKind Γ → List Γ
   | .gadget w => w
 
 /-- Evaluates a `≤ 3`-region segmented half-tape `List (SegRegionKind Γ)` onto `default`. -/
-def evalSegmentedHalf {Γ : Type*} [Inhabited Γ] : List (SegRegionKind Γ) → ListBlank Γ
+def evalSegmentedHalf {Γ : Type u} [Inhabited Γ] : List (SegRegionKind Γ) → ListBlank Γ
   | [] => default
   | reg :: rest => ListBlank.append (evalSegRegion reg) (evalSegmentedHalf rest)
 
@@ -50,20 +52,20 @@ def evalSegmentedHalf {Γ : Type*} [Inhabited Γ] : List (SegRegionKind Γ) → 
     valid state encodes, i.e. the image has empty interior in the prefix topology. A
     bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
     certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
-def IsNowhereDenseFamily {Γ S : Type*} [Inhabited Γ]
+def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
     (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
   ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
     (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
 
 /-- `IsNowhereDenseFamily` for the evaluated segmented half-tapes `evalSegmentedHalf (segs s)`. -/
-def IsNowhereDenseHalf {Γ S : Type*} [Inhabited Γ]
+def IsNowhereDenseHalf {Γ : Type u} {S : Type v} [Inhabited Γ]
     (Valid : S → Prop) (segs : S → List (SegRegionKind Γ)) : Prop :=
   IsNowhereDenseFamily Valid (fun s => evalSegmentedHalf (segs s))
 
 /-- Unifying `≤ 3`-Region Segmented Schema (`IsSegmentedCryptid`). At least one half-tape must
     be `IsNowhereDenseHalf`; a half-tape that is not must be boundary-aligned (no hidden view
     prefix). -/
-def IsSegmentedCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+def IsSegmentedCryptid {k : ℕ} {Λ : Type u} [Inhabited Λ]
     (M : Machine (Fin (k + 2)) Λ) : Prop :=
   ∃ (SegState : Type)
     (Mode : Type)
