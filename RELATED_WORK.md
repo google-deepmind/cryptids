@@ -70,7 +70,7 @@ Enumerates positive integers $n$ and tests an elementary arithmetic inequality e
 
 ### 5. Brocard's Problem (`brocard`)
 
-Enumerates `n = 8, 9, …` and halts if and only if `n! + 1` is a perfect square for some such `n`, i.e. if Brocard's problem (Brocard 1876, 1885; Ramanujan 1913) has a solution beyond `n = 4, 5, 7`. Erdős conjectured that there is none; none exists for `n ≤ 10^12` (Matson 2017). `brocard_34` keeps `n! / 8` in unary, since `n! + 1 = m^2` forces `m = 2k + 1` and `n! / 8 = k (k + 1) / 2`, and tests it for triangularity by subtracting `1, 2, 3, …`.
+Enumerates `n = 8, 9, …` and halts if and only if `n! + 1` is a perfect square for some such `n`, i.e. if Brocard's problem (Brocard 1876, 1885; Ramanujan 1913) has a solution beyond `n = 4, 5, 7`. Erdős conjectured that there is none; none exists for `n ≤ 10^12` (Matson 2017). `brocard_34` keeps `n! / 8` in unary, since `n! + 1 = m^2` forces `m = 2k + 1` and `n! / 8 = k (k + 1) / 2`, and tests it for triangularity by subtracting `1, 2, 3, …`. William Gasarch's SIGACT News Open Problems Column ([vol. 57, no. 3, Sept 2026](https://doi.org/10.1145/3848065.3848068), Open Problem 6.2) asks to improve the 43-state count and reports Jonathan Brown's conjecture that about 30 states may suffice; `brocard_34` improves the count to 34.
 
 | Year | Authors / Source | States (`(Q, 2)`) | Construction / Reduction Method | Formal Proof |
 | :--- | :--- | :--- | :--- | :--- |

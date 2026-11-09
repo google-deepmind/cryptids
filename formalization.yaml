@@ -189,6 +189,17 @@ sources:
     note: >-
       Describes a Turing machine for Brocard's problem with an upper bound of 43
       states (May 2026), without a machine-checked proof.
+  - title: "Relationships Between the Busy Beaver Function and Mathematics II: Small Turing Machines and Open Problems (SIGACT News Open Problems Column)"
+    authors:
+      - "William Gasarch"
+    id: "https://doi.org/10.1145/3848065.3848068"
+    type: "article"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      SIGACT News 57(3), September 2026. Open Problem 6.2 asks to improve the
+      43-state count for Brocard's problem and reports Jonathan Brown's conjecture
+      that about 30 states may suffice. brocard_34 improves the count to 34.
   - title: "A 34-state Turing machine for Brocard's problem with Lean 4 proofs (brocard_34)"
     authors:
       - "Daniel Veljjanoski"

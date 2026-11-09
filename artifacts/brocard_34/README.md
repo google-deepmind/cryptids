@@ -11,7 +11,10 @@ The machine was designed by Daniel Veljjanoski, with Claude (Anthropic) as assis
 machines for the same problem: Charlie Reams's 61-state machine with a Lean proof
 ([`calr3/tinycryptids`](https://github.com/calr3/tinycryptids), November 2026) and a 43-state table
 without a machine-checked proof in Tandi, Gonzalez-Hendrix and Brown, *Measuring Decidability as Related to Busy
-Beaver Numbers* ([arXiv:2605.20215](https://arxiv.org/abs/2605.20215)).
+Beaver Numbers* ([arXiv:2605.20215](https://arxiv.org/abs/2605.20215)). Improving that 43-state count is
+Open Problem 6.2 of William Gasarch's SIGACT News Open Problems Column ([vol. 57, no. 3, September
+2026](https://doi.org/10.1145/3848065.3848068)), which reports Jonathan Brown's conjecture that about
+30 states may suffice; 34 improves the count.
 
 ## How it works
 
