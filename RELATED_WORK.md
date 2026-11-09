@@ -21,7 +21,7 @@ Community records for conjecture-checking and ZFC-independent Turing machines ar
 - **Goldbach (`goldbach_21`):** Reduces `goldbach_25` (`25 -> 21` states).
 - **ZF Consistency (`zf_380`, `zf_393`, `zf_432`) and Riemann Hypothesis (`riemann_104`, `riemann_120`, `riemann_744`):** Compiler and algorithmic reworks by Andrew Wade (`zf_393`, `393` states for ZF, Aug 2026) and Joseph M. Shunia (`riemann_120`, `120` states for RH, Sept 2026) improved over `zf_432` (`432` states, 2025) and `riemann_744` (`744` states, 2016); `zf_380` (`393 -> 380` states) and `riemann_104` (`120 -> 104` states) further reduce both record baselines. This repository provides Lean 4 end-to-end semantics proofs across all of `goldbach_21`, `goldbach_25`, `zf_380`, `zf_393`, `zf_432`, `riemann_104`, `riemann_120`, and `riemann_744`.
 - **Erdős's ternary conjecture (`erdos_ternary_15`, `erdos_ternary_14`):** Tristan Stérin and Damien Woods's 15-state machine (2021) and Tristan Stérin's 14-state machine (Oct 2026), with Lean 4 semantics proofs in this repository.
-- **Brocard's problem (`brocard_41`):** a new 41-state machine (Nov 2026) with Lean 4 semantics proofs, after Charlie Reams's 61-state machine (Nov 2026) and a 43-state table without a machine-checked proof (May 2026).
+- **Brocard's problem (`brocard_34`):** a new 34-state machine (Nov 2026) with Lean 4 semantics proofs, after Charlie Reams's 61-state machine (Nov 2026) and a 43-state table without a machine-checked proof (May 2026).
 
 ### 1. Goldbach's Conjecture (`goldbach`)
 
@@ -70,10 +70,10 @@ Enumerates positive integers $n$ and tests an elementary arithmetic inequality e
 
 ### 5. Brocard's Problem (`brocard`)
 
-Enumerates `n = 8, 9, …` and halts if and only if `n! + 1` is a perfect square for some such `n`, i.e. if Brocard's problem (Brocard 1876, 1885; Ramanujan 1913) has a solution beyond `n = 4, 5, 7`. Erdős conjectured that there is none; none exists for `n ≤ 10^12` (Matson 2017). `brocard_41` keeps `n! / 8` in unary, since `n! + 1 = m^2` forces `m = 2k + 1` and `n! / 8 = k (k + 1) / 2`, and tests it for triangularity by subtracting `1, 2, 3, …`.
+Enumerates `n = 8, 9, …` and halts if and only if `n! + 1` is a perfect square for some such `n`, i.e. if Brocard's problem (Brocard 1876, 1885; Ramanujan 1913) has a solution beyond `n = 4, 5, 7`. Erdős conjectured that there is none; none exists for `n ≤ 10^12` (Matson 2017). `brocard_34` keeps `n! / 8` in unary, since `n! + 1 = m^2` forces `m = 2k + 1` and `n! / 8 = k (k + 1) / 2`, and tests it for triangularity by subtracting `1, 2, 3, …`.
 
 | Year | Authors / Source | States (`(Q, 2)`) | Construction / Reduction Method | Formal Proof |
 | :--- | :--- | :--- | :--- | :--- |
 | 2026 | Gurpreet Tandi, Josue Gonzalez-Hendrix & Jonathan Brown ([`arXiv:2605.20215`](https://arxiv.org/abs/2605.20215), May 2026) | `≤ 43` (claimed) | Unary factorial, square test by subtracting odd numbers; the state count is an upper bound obtained by merging states, with the table in the appendix | None |
 | 2026 | Charlie Reams ([`calr3/tinycryptids`](https://github.com/calr3/tinycryptids) `brocard/`, Nov 2026) | `61` | 98-state hand design (unary factorial by copying, odd-number square test, 7-round warm-up) merged to 61 states by exact SAT | Lean 4 proof in `tinycryptids` (`TM.Brocard.M61.halts_iff`, core Lean) |
-| 2026 | Daniel Veljjanoski, with Claude (Anthropic) as assistant (`brocard_41`) | `41` | Triangularity test of `n! / 8` with a free `+1` per wrap (the blank beyond the chunk block acts as its hole), in-place multiply with the counter grown by the return trip, and an 8-cell count as the warm-up gate | Lean 4 proofs ([`Cryptids/Brocard41.lean`](Cryptids/Brocard41.lean), [`Cryptids/Semantics/Brocard41.lean`](Cryptids/Semantics/Brocard41.lean)) |
+| 2026 | Daniel Veljjanoski, with Claude (Anthropic) as assistant (`brocard_34`) | `34` | Triangularity test of `n! / 8` with a free `+1` per wrap (the blank beyond the chunk block acts as its hole), in-place multiply with the counter grown by the return trip, and an 8-cell count as the warm-up gate | Lean 4 proofs ([`Cryptids/Brocard34.lean`](Cryptids/Brocard34.lean), [`Cryptids/Semantics/Brocard34.lean`](Cryptids/Semantics/Brocard34.lean)) |

@@ -47,8 +47,8 @@ It independently:
      `2^k` and the count of powers without a digit 2 (`Cryptids/ErdosTernary15.lean`).
    - Erdos (14 states): at every entry to the division state `D` the tape is
      the configuration predicted by `Cryptids/ErdosTernary14.lean`.
-   - Brocard (41 states): at every entry to the test state `TLx` the tape holds
-     `n` cells of `N` and `n!/8 + 1` cells of `B` (`Cryptids/Brocard41.lean`), and
+   - Brocard (34 states): at every entry to the test state `TLx` the tape holds
+     `n` cells of `N` and `n!/8 + 1` cells of `B` (`Cryptids/Brocard34.lean`), and
      from a prepared tape a triangular `B` with eight cells of `N` halts in `C8`.
 """
 
@@ -262,19 +262,19 @@ CANDIDATES = [
 
 # A new machine with no reference: checked like a candidate (table, SHA-256, Lean
 # definitions in `Machines.lean` and `Challenge.lean`) plus its own stage simulation.
-BROCARD_41 = {
-    "id": "brocard_41",
-    "path": "artifacts/brocard_41",
+BROCARD_34 = {
+    "id": "brocard_34",
+    "path": "artifacts/brocard_34",
     "lean_file": "Cryptids/Machines.lean",
-    "lean_def": "brocard41",
-    "proof_path": "Cryptids/Brocard41.lean",
+    "lean_def": "brocard34",
+    "proof_path": "Cryptids/Brocard34.lean",
     "challenge_path": "Challenge.lean",
-    "states": 41,
+    "states": 34,
     "machine_sha256": (
-        "891479e1d4d53551a862eb3f04a1848cfba1e0873f263a1eee28045edac83549"
+        "968e9a0b446a2399df62fbf245e21527f5e6fc7a84fe3744072dfb9b2f357c61"
     ),
     "table_file_sha256": (
-        "891479e1d4d53551a862eb3f04a1848cfba1e0873f263a1eee28045edac83549"
+        "968e9a0b446a2399df62fbf245e21527f5e6fc7a84fe3744072dfb9b2f357c61"
     ),
 }
 
@@ -909,28 +909,29 @@ def verify_erdos_ternary_14_stages(machine: Machine, steps: int) -> dict[str, ob
   }
 
 
-def verify_brocard_41(machine: Machine, steps: int) -> dict[str, object]:
-  """Checks the round layout of `Cryptids/Brocard41.lean`.
+def verify_brocard_34(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the round layout of `Cryptids/Brocard34.lean`.
 
-  On the blank tape, every time `brocard_41` enters state 19 (`TLx`, the start of a
-  test) the head is on cell `p` with `B = n!/8 + 1` ones on cells `p, ..., p+B-1`,
+  On the blank tape, every time `brocard_34` enters state 0 (`TLx`, the start of a
+  test; the machine also starts there, which does not count as an entry) the head is
+  on cell `p` with `B = n!/8 + 1` ones on cells `p, ..., p+B-1`,
   a `0` on `p-1`, the `n` cells of `N` on `p-n-1, ..., p-2`, and nothing else; the
   first entry is at step 300 with `n = 5`. Then, from a prepared tape with eight
-  cells of `N` and `1 + T_10 = 56` cells of `B` in state 19, the machine halts in
-  state 38 (`C8`); with `2 + T_10` cells it reaches the next test with `9` cells
+  cells of `N` and `1 + T_10 = 56` cells of `B` in state 0, the machine halts in
+  state 30 (`C8`); with `2 + T_10` cells it reaches the next test with `9` cells
   of `N` and `9 * 56 + 1` cells of `B`.
   """
-  proof_text = (ROOT / "Cryptids/Brocard41.lean").read_text(encoding="utf-8")
-  assert "theorem halts_brocard41_iff_exists_tri" in proof_text
+  proof_text = (ROOT / "Cryptids/Brocard34.lean").read_text(encoding="utf-8")
+  assert "theorem halts_brocard34_iff_exists_tri" in proof_text
   halting = [
       (q, sym)
       for q, row in enumerate(machine.table)
       for sym, tr in enumerate(row)
       if tr is None
   ]
-  # The eight start states never read a `1`, `TLx` never reads a `0`; only `C8` on `1` halts.
-  assert halting == [(q, 1) for q in range(8)] + [(19, 0), (38, 1)], (
-      f"brocard_41 halting entries: {halting}"
+  # Only `C8` (state 30) on `1` halts; the start state `A` (33) never reads a `1`.
+  assert halting == [(30, 1), (33, 1)], (
+      f"brocard_34 halting entries: {halting}"
   )
 
   def run(ones: set[int], head: int, state: int, limit: int, stop_state: int):
@@ -959,32 +960,32 @@ def verify_brocard_41(machine: Machine, steps: int) -> dict[str, object]:
   ones: set[int] = set()
   head, state, total, n, tests = 0, 0, 0, 4, 0
   while True:
-    status, state, head, t = run(ones, head, state, steps - total, 19)
+    status, state, head, t = run(ones, head, state, steps - total, 0)
     total += t
     if status != "stop":
-      assert status == "limit", f"brocard_41 halted at step {total}"
+      assert status == "limit", f"brocard_34 halted at step {total}"
       break
     n += 1
     b = factorial(n) // 8 + 1
     expected = {head + i for i in range(b)} | {head - 2 - i for i in range(n)}
-    assert ones == expected, f"brocard_41 test n={n}: tape mismatch at step {total}"
+    assert ones == expected, f"brocard_34 test n={n}: tape mismatch at step {total}"
     tests += 1
     if tests == 1:
-      assert total == 300, f"brocard_41 first test at step {total}"
+      assert total == 300, f"brocard_34 first test at step {total}"
   if steps >= 8_000:
-    assert tests >= 2, f"brocard_41: only {tests} tests in {steps} steps"
+    assert tests >= 2, f"brocard_34: only {tests} tests in {steps} steps"
 
   # Planted tests at a live round (eight cells of N): T_10 = 55.
   def planted(b: int):
     cells = {i for i in range(b)} | {-2 - i for i in range(8)}
-    return run(cells, 0, 19, 3_000_000, 19), cells
+    return run(cells, 0, 0, 3_000_000, 0), cells
 
   (status, state, _, _), _ = planted(1 + 55)
-  assert (status, state) == ("halt", 38), f"brocard_41 planted square: {status} in {state}"
+  assert (status, state) == ("halt", 30), f"brocard_34 planted square: {status} in {state}"
   (status, state, head, _), cells = planted(2 + 55)
-  assert status == "stop", f"brocard_41 planted non-square: {status}"
+  assert status == "stop", f"brocard_34 planted non-square: {status}"
   expected = {head + i for i in range(9 * 56 + 1)} | {head - 2 - i for i in range(9)}
-  assert cells == expected, "brocard_41 planted non-square: wrong next tape"
+  assert cells == expected, "brocard_34 planted non-square: wrong next tape"
   return {
       "steps_simulated": total,
       "tests_verified": tests,
@@ -1303,15 +1304,15 @@ def run_verification(
     )
 
   # Brocard: table, SHA-256, Lean definitions, and simulation.
-  bspec = BROCARD_41
+  bspec = BROCARD_34
   b_text = (ROOT / str(bspec["path"]) / "machine.txt").read_text(encoding="utf-8")
   assert sha256_bytes(b_text.encode("utf-8")) == bspec["table_file_sha256"], (
-      "brocard_41 table file SHA-256 mismatch"
+      "brocard_34 table file SHA-256 mismatch"
   )
   bm = parse_canonical_machine(b_text)
-  assert bm.states == bspec["states"], f"brocard_41 state count mismatch: {bm.states}"
+  assert bm.states == bspec["states"], f"brocard_34 state count mismatch: {bm.states}"
   assert bm.sha256 == bspec["machine_sha256"], (
-      f"brocard_41 machine SHA-256 mismatch: {bm.sha256}"
+      f"brocard_34 machine SHA-256 mismatch: {bm.sha256}"
   )
   for lean_path in (bspec["lean_file"], bspec["challenge_path"]):
     assert (
@@ -1321,19 +1322,19 @@ def run_verification(
             expected_table_path=f"{bspec['path']}/machine.txt",
         ).table
         == bm.table
-    ), f"{lean_path} brocard_41 table mismatch"
-  assert "theorem halts_brocard41_iff_exists_square" in (
+    ), f"{lean_path} brocard_34 table mismatch"
+  assert "theorem halts_brocard34_iff_exists_square" in (
       ROOT / "Challenge.lean"
   ).read_text(encoding="utf-8")
-  brocard_sim = verify_brocard_41(bm, steps)
-  report["candidates"]["brocard_41"] = {
+  brocard_sim = verify_brocard_34(bm, steps)
+  report["candidates"]["brocard_34"] = {
       "states": bm.states,
       "machine_sha256": bm.sha256,
   }
-  report["simulations"]["brocard_41"] = brocard_sim
+  report["simulations"]["brocard_34"] = brocard_sim
   if verbose:
     print(
-        f"[PASS] Brocard 41 ({bm.states} states, SHA-256 {bm.sha256[:16]}...):"
+        f"[PASS] Brocard 34 ({bm.states} states, SHA-256 {bm.sha256[:16]}...):"
         f" {brocard_sim['tests_verified']} tests verified on the blank tape"
         f" ({brocard_sim['steps_simulated']:,} steps, up to n = {brocard_sim['last_n']});"
         " planted square halts in C8"

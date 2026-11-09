@@ -28,7 +28,7 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
-  and the `brocard_41` equivalence `Brocard41.halts_brocard41_iff_exists_square`
+  and the `brocard_34` equivalence `Brocard34.halts_brocard34_iff_exists_square`
   are verified **without `Classical.choice`** (`ListBlank` uses primitive `Quot` rather than
   `Quotient` so `Halts` is choice-free). Because `Zf/Soundness.lean` proves `not_zfInconsistent`
   via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without choice
@@ -42,7 +42,7 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic `RiemannHypothesis`
   equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences with
   `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture` also
-  uses Markov's Principle), and the `brocard_41` equivalence with `¬ BrocardConjecture` (Markov's
+  uses Markov's Principle), and the `brocard_34` equivalence with `¬ BrocardConjecture` (Markov's
   Principle).
 -/
 
@@ -258,11 +258,11 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
-/-- Rows of `brocard41`. -/
-def brocard41Rows : List (List (Option (Fin 2 × Dir × Fin 41))) :=
-  load_machine_rows% "artifacts/brocard_41/machine.txt"
-/-- 41-state Brocard machine. -/
-def brocard41 : Machine 41 2 := Machine.ofRows brocard41Rows
+/-- Rows of `brocard34`. -/
+def brocard34Rows : List (List (Option (Fin 2 × Dir × Fin 34))) :=
+  load_machine_rows% "artifacts/brocard_34/machine.txt"
+/-- 34-state Brocard machine. -/
+def brocard34 : Machine 34 2 := Machine.ofRows brocard34Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -881,13 +881,13 @@ theorem halts_candidate_iff_not_erdosTernary :
 end Semantics
 end ErdosTernary14
 
-namespace Brocard41
-/-- 41-state Brocard machine (`brocard_41`, Veljjanoski 2026). -/
-abbrev brocard41 : Machine 41 2 := Machines.brocard41
-theorem halts_brocard41_iff_exists_square :
-    ConjectureMachines.Halts brocard41 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
-theorem halts_brocard41_iff_not_brocard :
-    ConjectureMachines.Halts brocard41 ↔ ¬ BrocardConjecture := by sorry
-end Brocard41
+namespace Brocard34
+/-- 34-state Brocard machine (`brocard_34`, Veljjanoski 2026). -/
+abbrev brocard34 : Machine 34 2 := Machines.brocard34
+theorem halts_brocard34_iff_exists_square :
+    ConjectureMachines.Halts brocard34 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
+theorem halts_brocard34_iff_not_brocard :
+    ConjectureMachines.Halts brocard34 ↔ ¬ BrocardConjecture := by sorry
+end Brocard34
 
 end ConjectureMachines
