@@ -644,36 +644,38 @@ with `candidate = erdosTernary14` and `reference = erdosTernary15`.
    `halts_erdosTernary15_iff_not_erdosTernary` (`Classical.choice` through `Nat.digits`, and
    Markov's Principle via `not_forall`, as in Section 7).
 
-## 9. A 34-State Brocard Machine ([`Brocard34.lean`](./Brocard34.lean))
+## 9. A 28-State Brocard Machine ([`Brocard28.lean`](./Brocard28.lean))
 
-In [`Cryptids/Brocard34.lean`](../Brocard34.lean) and [`Cryptids/Semantics/Brocard34.lean`](./Brocard34.lean),
-we formalize a new 34-state binary Turing machine for Brocard's problem (`brocard_34`, Daniel Veljjanoski with
+In [`Cryptids/Brocard28.lean`](../Brocard28.lean) and [`Cryptids/Semantics/Brocard28.lean`](./Brocard28.lean),
+we formalize a new 28-state binary Turing machine for Brocard's problem (`brocard_28`, Daniel Veljjanoski with
 Claude (Anthropic) as assistant, November 2026):
 
 ```lean
-theorem halts_brocard34_iff_exists_tri :
-    ConjectureMachines.Halts brocard34 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)
+theorem halts_brocard28_iff_exists_tri :
+    ConjectureMachines.Halts brocard28 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)
 
-theorem halts_brocard34_iff_exists_square :
-    ConjectureMachines.Halts brocard34 ↔ ∃ n, 7 < n ∧ IsSquare (n.factorial + 1)
+theorem halts_brocard28_iff_exists_square :
+    ConjectureMachines.Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n.factorial + 1)
 
-theorem halts_brocard34_iff_not_brocard :
-    ConjectureMachines.Halts brocard34 ↔ ¬ BrocardConjecture
+theorem halts_brocard28_iff_not_brocard :
+    ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture
 ```
 
 with `V n = n.factorial / 8` and `IsTri x ↔ ∃ k, x = 1 + 2 + ⋯ + k`.
 
-1. **Machine (`Brocard34.lean`)**: The tape holds `n` cells and `n! / 8` cells in unary. A round
-   multiplies the second block by `n + 1` (a hole walks through the first block, one copy per cell,
-   and the return trip of the copy loop grows the first block by one cell), then tests the result
-   by subtracting `1, 2, 3, …` with a chunk block whose hole walks left; the blank beyond the chunk
-   block acts as its hole, so each wrap grows it for free. A success counts the cells of the first
-   block: fewer than eight (the known solutions `n = 5, 7`) returns to the next round, eight halts.
+1. **Machine (`Brocard28.lean`)**: The tape holds `n` cells and `n! / 8` cells in unary. A round
+   multiplies the second block by `n + 1` (a hole walks through the first block, one copy per
+   cell, and at the start of each round `LN0`/`LN1` write one cell left of the first block), then
+   tests the result by subtracting `1, 2, 3, …` with a chunk block whose hole walks left; the
+   blank beyond the chunk block acts as its hole, so each wrap grows it for free. A success
+   counts the ones of the second block modulo `4` on the way back: residue `0` halts, which by
+   `32 ∣ n!` is exactly the case `n ≥ 8`; the known solutions give `15 ≡ 3` and `630 ≡ 2 (mod 4)`
+   and return to the next round.
    One lemma per routine (copy step and loop, counter step and loop, merge, unit, chunk loop by
-   strong induction, fail, wrap, success, gate, start) gives `halts_brocard34_iff_exists_tri` with
+   strong induction, fail, wrap, success, gate, start) gives `halts_brocard28_iff_exists_tri` with
    `propext` and `Quot.sound` only.
-2. **Semantics (`Semantics/Brocard34.lean`)**: `n! + 1 = m ^ 2` with `n ≥ 4` forces `m = 2k + 1`
+2. **Semantics (`Semantics/Brocard28.lean`)**: `n! + 1 = m ^ 2` with `n ≥ 4` forces `m = 2k + 1`
    and `n! / 8 = k (k + 1) / 2`, so `IsSquare (n! + 1) ↔ IsTri (n! / 8)` (`isSquare_iff_isTri`,
-   constructive), which gives `halts_brocard34_iff_exists_square` without `Classical.choice`;
-   `halts_brocard34_iff_not_brocard` uses Markov's Principle via `by_contra` (as with `not_forall`
+   constructive), which gives `halts_brocard28_iff_exists_square` without `Classical.choice`;
+   `halts_brocard28_iff_not_brocard` uses Markov's Principle via `by_contra` (as with `not_forall`
    in Section 7).

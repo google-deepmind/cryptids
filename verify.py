@@ -47,9 +47,10 @@ It independently:
      `2^k` and the count of powers without a digit 2 (`Cryptids/ErdosTernary15.lean`).
    - Erdos (14 states): at every entry to the division state `D` the tape is
      the configuration predicted by `Cryptids/ErdosTernary14.lean`.
-   - Brocard (34 states): at every entry to the test state `TLx` the tape holds
-     `n` cells of `N` and `n!/8 + 1` cells of `B` (`Cryptids/Brocard34.lean`), and
-     from a prepared tape a triangular `B` with eight cells of `N` halts in `C8`.
+   - Brocard (28 states): the 46-step start writes `1111 0 111`, then at every entry to the
+     test state `TLx` the tape holds `n` cells of `N` and `n!/8 + 1` cells of `B`
+     (`Cryptids/Brocard28.lean`), and from a prepared tape a triangular `B` with a
+     multiple of `4` cells halts in `M0`.
 """
 
 from __future__ import annotations
@@ -262,19 +263,19 @@ CANDIDATES = [
 
 # A new machine with no reference: checked like a candidate (table, SHA-256, Lean
 # definitions in `Machines.lean` and `Challenge.lean`) plus its own stage simulation.
-BROCARD_34 = {
-    "id": "brocard_34",
-    "path": "artifacts/brocard_34",
+BROCARD_28 = {
+    "id": "brocard_28",
+    "path": "artifacts/brocard_28",
     "lean_file": "Cryptids/Machines.lean",
-    "lean_def": "brocard34",
-    "proof_path": "Cryptids/Brocard34.lean",
+    "lean_def": "brocard28",
+    "proof_path": "Cryptids/Brocard28.lean",
     "challenge_path": "Challenge.lean",
-    "states": 34,
+    "states": 28,
     "machine_sha256": (
-        "968e9a0b446a2399df62fbf245e21527f5e6fc7a84fe3744072dfb9b2f357c61"
+        "957e52ef4b8f40da12c9d840ea4a28369f76cbf10c384fb65012f121edc03d39"
     ),
     "table_file_sha256": (
-        "968e9a0b446a2399df62fbf245e21527f5e6fc7a84fe3744072dfb9b2f357c61"
+        "957e52ef4b8f40da12c9d840ea4a28369f76cbf10c384fb65012f121edc03d39"
     ),
 }
 
@@ -909,32 +910,31 @@ def verify_erdos_ternary_14_stages(machine: Machine, steps: int) -> dict[str, ob
   }
 
 
-def verify_brocard_34(machine: Machine, steps: int) -> dict[str, object]:
-  """Checks the round layout of `Cryptids/Brocard34.lean`.
+def verify_brocard_28(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the round layout of `Cryptids/Brocard28.lean`.
 
-  On the blank tape, every time `brocard_34` enters state 0 (`TLx`, the start of a
-  test; the machine also starts there, which does not count as an entry) the head is
-  on cell `p` with `B = n!/8 + 1` ones on cells `p, ..., p+B-1`,
-  a `0` on `p-1`, the `n` cells of `N` on `p-n-1, ..., p-2`, and nothing else; the
-  first entry is at step 300 with `n = 5`. Then, from a prepared tape with eight
-  cells of `N` and `1 + T_10 = 56` cells of `B` in state 0, the machine halts in
-  state 30 (`C8`); with `2 + T_10` cells it reaches the next test with `9` cells
-  of `N` and `9 * 56 + 1` cells of `B`.
+  On the blank tape, the first 46 steps (the start, which passes through the test state
+  twice) write `1111 0 111` and end in state 3 (`LN1`) on the blank left of `N`. After
+  that, every time `brocard_28` enters state 1 (`TLx`, the start of a test) the head is
+  on cell `p` with `B = n!/8 + 1` ones on cells `p, ..., p+B-1`, a `0` on `p-1`, the `n`
+  cells of `N` on `p-n-1, ..., p-2`, and nothing else; the first entry is at step 318
+  with `n = 5`. Then, from a prepared tape with eight cells of `N` and `1 + T_8 = 37`
+  cells of `B` in state 1 (`36 = T_8` is triangular and a multiple of `4`), the machine
+  halts in state 23 (`M0`); with `2 + T_8` cells it reaches the next test with `9` cells
+  of `N` and `9 * 37 + 1` cells of `B`.
   """
-  proof_text = (ROOT / "Cryptids/Brocard34.lean").read_text(encoding="utf-8")
-  assert "theorem halts_brocard34_iff_exists_tri" in proof_text
+  proof_text = (ROOT / "Cryptids/Brocard28.lean").read_text(encoding="utf-8")
+  assert "theorem halts_brocard28_iff_exists_tri" in proof_text
   halting = [
       (q, sym)
       for q, row in enumerate(machine.table)
       for sym, tr in enumerate(row)
       if tr is None
   ]
-  # Only `C8` (state 30) on `1` halts; the start state `A` (33) never reads a `1`.
-  assert halting == [(30, 1), (33, 1)], (
-      f"brocard_34 halting entries: {halting}"
-  )
+  # Only `M0` (state 23) on `0` halts.
+  assert halting == [(23, 0)], f"brocard_28 halting entries: {halting}"
 
-  def run(ones: set[int], head: int, state: int, limit: int, stop_state: int):
+  def run(ones: set[int], head: int, state: int, limit: int, stop_state: int | None):
     """Runs until `stop_state` is entered (after a step), a halt, or `limit` steps."""
     for t in range(limit):
       tr = machine.table[state][int(head in ones)]
@@ -956,43 +956,48 @@ def verify_brocard_34(machine: Machine, steps: int) -> dict[str, object]:
       f *= i
     return f
 
-  # Blank-tape rounds: n = 5, 6, ... as far as `steps` allows.
+  # The start: 46 steps, no stop.
   ones: set[int] = set()
-  head, state, total, n, tests = 0, 0, 0, 4, 0
+  status, state, head, total = run(ones, 0, 0, 46, None)
+  assert status == "limit" and state == 3, f"brocard_28 start: {status} in state {state}"
+  seed = {head + 1 + i for i in range(4)} | {head + 6 + i for i in range(3)}
+  assert ones == seed, "brocard_28 start: tape is not 1111 0 111"
+
+  # Blank-tape rounds: n = 5, 6, ... as far as `steps` allows.
+  n, tests = 4, 0
   while True:
-    status, state, head, t = run(ones, head, state, steps - total, 0)
+    status, state, head, t = run(ones, head, state, steps - total, 1)
     total += t
     if status != "stop":
-      assert status == "limit", f"brocard_34 halted at step {total}"
+      assert status == "limit", f"brocard_28 halted at step {total}"
       break
     n += 1
     b = factorial(n) // 8 + 1
     expected = {head + i for i in range(b)} | {head - 2 - i for i in range(n)}
-    assert ones == expected, f"brocard_34 test n={n}: tape mismatch at step {total}"
+    assert ones == expected, f"brocard_28 test n={n}: tape mismatch at step {total}"
     tests += 1
     if tests == 1:
-      assert total == 300, f"brocard_34 first test at step {total}"
+      assert total == 318, f"brocard_28 first test at step {total}"
   if steps >= 8_000:
-    assert tests >= 2, f"brocard_34: only {tests} tests in {steps} steps"
+    assert tests >= 2, f"brocard_28: only {tests} tests in {steps} steps"
 
-  # Planted tests at a live round (eight cells of N): T_10 = 55.
+  # Planted tests at a live round (eight cells of N): T_8 = 36 = 4 * 9.
   def planted(b: int):
     cells = {i for i in range(b)} | {-2 - i for i in range(8)}
-    return run(cells, 0, 0, 3_000_000, 0), cells
+    return run(cells, 0, 1, 3_000_000, 1), cells
 
-  (status, state, _, _), _ = planted(1 + 55)
-  assert (status, state) == ("halt", 30), f"brocard_34 planted square: {status} in {state}"
-  (status, state, head, _), cells = planted(2 + 55)
-  assert status == "stop", f"brocard_34 planted non-square: {status}"
-  expected = {head + i for i in range(9 * 56 + 1)} | {head - 2 - i for i in range(9)}
-  assert cells == expected, "brocard_34 planted non-square: wrong next tape"
+  (status, state, _, _), _ = planted(1 + 36)
+  assert (status, state) == ("halt", 23), f"brocard_28 planted square: {status} in {state}"
+  (status, state, head, _), cells = planted(2 + 36)
+  assert status == "stop", f"brocard_28 planted non-square: {status}"
+  expected = {head + i for i in range(9 * 37 + 1)} | {head - 2 - i for i in range(9)}
+  assert cells == expected, "brocard_28 planted non-square: wrong next tape"
   return {
       "steps_simulated": total,
       "tests_verified": tests,
       "last_n": n,
       "planted_square_halts": True,
   }
-
 
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
@@ -1304,15 +1309,15 @@ def run_verification(
     )
 
   # Brocard: table, SHA-256, Lean definitions, and simulation.
-  bspec = BROCARD_34
+  bspec = BROCARD_28
   b_text = (ROOT / str(bspec["path"]) / "machine.txt").read_text(encoding="utf-8")
   assert sha256_bytes(b_text.encode("utf-8")) == bspec["table_file_sha256"], (
-      "brocard_34 table file SHA-256 mismatch"
+      "brocard_28 table file SHA-256 mismatch"
   )
   bm = parse_canonical_machine(b_text)
-  assert bm.states == bspec["states"], f"brocard_34 state count mismatch: {bm.states}"
+  assert bm.states == bspec["states"], f"brocard_28 state count mismatch: {bm.states}"
   assert bm.sha256 == bspec["machine_sha256"], (
-      f"brocard_34 machine SHA-256 mismatch: {bm.sha256}"
+      f"brocard_28 machine SHA-256 mismatch: {bm.sha256}"
   )
   for lean_path in (bspec["lean_file"], bspec["challenge_path"]):
     assert (
@@ -1322,22 +1327,22 @@ def run_verification(
             expected_table_path=f"{bspec['path']}/machine.txt",
         ).table
         == bm.table
-    ), f"{lean_path} brocard_34 table mismatch"
-  assert "theorem halts_brocard34_iff_exists_square" in (
+    ), f"{lean_path} brocard_28 table mismatch"
+  assert "theorem halts_brocard28_iff_exists_square" in (
       ROOT / "Challenge.lean"
   ).read_text(encoding="utf-8")
-  brocard_sim = verify_brocard_34(bm, steps)
-  report["candidates"]["brocard_34"] = {
+  brocard_sim = verify_brocard_28(bm, steps)
+  report["candidates"]["brocard_28"] = {
       "states": bm.states,
       "machine_sha256": bm.sha256,
   }
-  report["simulations"]["brocard_34"] = brocard_sim
+  report["simulations"]["brocard_28"] = brocard_sim
   if verbose:
     print(
-        f"[PASS] Brocard 34 ({bm.states} states, SHA-256 {bm.sha256[:16]}...):"
+        f"[PASS] Brocard 28 ({bm.states} states, SHA-256 {bm.sha256[:16]}...):"
         f" {brocard_sim['tests_verified']} tests verified on the blank tape"
         f" ({brocard_sim['steps_simulated']:,} steps, up to n = {brocard_sim['last_n']});"
-        " planted square halts in C8"
+        " planted square halts in M0"
     )
 
   # 5. Concrete blank-tape lockstep simulations

@@ -39,7 +39,7 @@ constructions and halting proofs:
 4. **Erdős's Ternary Conjecture** (`ErdosTernaryConjecture`):
    For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
 5. **Brocard's Problem** (`BrocardConjecture`):
-   `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_34`).
+   `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_28`).
 -/
 
 @[expose] public section
