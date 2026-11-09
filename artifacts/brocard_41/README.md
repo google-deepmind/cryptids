@@ -32,7 +32,9 @@ that holds `n!/8` cells between rounds (`3` at `n = 4`). `n! + 1` is a square if
   solutions `n = 5, 7`; `n = 6` fails) returns to the next round, eight halts.
 * **Start** (states `0`–`7`): writes `1111 0 111`.
 
-In bbchallenge standard text (states `A`–`Z`, then `a`–`o`):
+As a one-line table in the style of the bbchallenge standard format, with the states `0`–`25`
+written `A`–`Z` and `26`–`40` written `a`–`o` (the standard format itself covers only 26 states,
+and the bbchallenge.org viewer ignores case, so this string is for reading, not for that viewer):
 
 ```
 1LB---_1LC---_1LD---_0LE---_1LF---_1LG---_1LH---_1Rn---_0LJ1LI_1RK1LJ_0RR0RL_0RQ1RL_0RN1RM_1LO1RN_0LP1LO_1RQ1LP_0LI0RM_1RS1RR_0RT1LS_---0RU_0RV1RU_1LW1RV_0LX0LY_0Le1RU_0LZ1LY_1Ra1LZ_0Rb0RU_0Rc0Rb_0Ld0Rc_0Ld0LI_0Lf1Le_0Rn1Lg_0Rn1Lh_0Rn1Li_0Rn1Lj_0Rn1Lk_0Rn1Ll_0Rn1Lm_0Rn---_0Ro1Rn_1Rb1Ro
