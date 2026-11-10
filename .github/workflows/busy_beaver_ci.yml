@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'BusyBeaver/**'
+      - '!BusyBeaver/**/*.md'
+      - '!BusyBeaver/*.md'
       - 'BusyBeaver.lean'
       - 'BusyBeaverChallenge.lean'
       - 'Cryptids/Machines.lean'
@@ -15,6 +17,8 @@ on:
   pull_request:
     paths:
       - 'BusyBeaver/**'
+      - '!BusyBeaver/**/*.md'
+      - '!BusyBeaver/*.md'
       - 'BusyBeaver.lean'
       - 'BusyBeaverChallenge.lean'
       - 'Cryptids/Machines.lean'
@@ -41,7 +45,7 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-      - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1
+      - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
         with:
           build-args: "BusyBeaver BusyBeaverChallenge"
         env:
