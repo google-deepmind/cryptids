@@ -274,7 +274,7 @@ theorem advCfg_solid (n a r p : ℕ) :
     advCfg n a r p 0 = ⟨13, Tape.mk' (ones r ((ones a (NL n)).cons 0)) ((ones p B0).cons 0)⟩ := by
   simp only [advCfg, ones_zero_B0, B0_cons_zero]
 
-/-! ## Multiply (States `8`–`17`) -/
+/-! ## Multiply (States `2`–`11`) -/
 
 /-- One copy step: the cursor moves one cell right and `M` gains a cell. -/
 theorem copy_step (a b u v m : ℕ) :
@@ -471,7 +471,7 @@ theorem multiply (n v : ℕ) (hn : 1 ≤ n) :
     · exact h
   omega
 
-/-! ## Test (States `18`–`26`) -/
+/-! ## Test and Fail (States `1`, `12`–`22`) -/
 
 /-- `k` zeros followed by `L`. -/
 def zeros (k : ℕ) (L : ListBlank (Fin 2)) : ListBlank (Fin 2) :=
