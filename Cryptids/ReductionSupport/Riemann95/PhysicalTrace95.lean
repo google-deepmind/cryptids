@@ -36,7 +36,7 @@ theorem physical_arithmetic_step (c : ControlWord) (regs extra : List Nat)
   have hr : r.val < regs.length := by omega
   have hrbank : r.val < (regs ++ extra).length := by simp only [List.length_append]; omega
   obtain ⟨n,hn,hsteps⟩ := Dispatch.root_native c r inc he P (regs ++ extra) hrbank (by omega)
-  simp only [List.getD_append regs extra 0 r.val hr] at hsteps
+  simp only [ConjectureMachines.list_getD_append_left regs extra 0 r.val hr] at hsteps
   have strict (k : Fin 2) (hk : k.val ≤ (walked c).count 0)
       (hempty : (popBreakRev k.val (walked c).reverse).reverse = []) :
       P + 1 ≤ Physical.exactPad k (walked c) (P - (walked c).length) := by

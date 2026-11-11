@@ -1548,10 +1548,14 @@ theorem halts_riemann120_iff_halts_riemann121 :
 
 
 
+/-- Constructive trial-division primality test for `p : ℕ` avoiding `Classical.choice`. -/
+def isPrimeBool (p : ℕ) : Bool :=
+  decide (2 ≤ p) && (List.range p).all fun d => decide (d < 2) || (p % d != 0)
+
 /-- Product of all primes `p ≤ n`. -/
 def primorial : ℕ → ℕ
   | 0 => 1
-  | n + 1 => if Nat.Prime (n + 1) then (n + 1) * primorial n else primorial n
+  | n + 1 => if isPrimeBool (n + 1) then (n + 1) * primorial n else primorial n
 
 /-- Self-sieving sequence `A_n = n! * P(n)`. -/
 def shuniaProd (n : ℕ) : ℕ :=

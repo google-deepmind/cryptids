@@ -133,14 +133,14 @@ private theorem stepPState_sound (s s' : PState) (l_tail : ListBlank (Fin 2))
     (try omega) <;>
     (try {
       dsimp [stepPState, target, machine, ConjectureMachines.Machine.toBB,
-        ConjectureMachines.Machine.ofRows] at h
+        ConjectureMachines.Machine.ofRows, ConjectureMachines.listGetD] at h
       cases h }) <;>
     (try {
       dsimp [stepPState, target, machine, ConjectureMachines.Machine.toBB,
-        ConjectureMachines.Machine.ofRows] at h
+        ConjectureMachines.Machine.ofRows, ConjectureMachines.listGetD] at h
       cases h
       simp [toCfg, step, target, machine, ConjectureMachines.Machine.toBB,
-        ConjectureMachines.Machine.ofRows, Tape.write, Tape.move] })
+        ConjectureMachines.Machine.ofRows, ConjectureMachines.listGetD, Tape.write, Tape.move] })
 
 private theorem runPState_sound (n : ℕ) (s s' : PState) (l_tail : ListBlank (Fin 2))
     (h : runPState n s = some s') :
@@ -197,7 +197,7 @@ private theorem runPStateFast_halt (chunk k rem : ℕ) (h_pos : chunk * k + rem 
   refine ⟨toCfg s' l_tail,
     ⟨chunk * k + rem, h_pos, runPStateFast_sound chunk k rem s s' l_tail h_run⟩, ?_⟩
   simp [toCfg, step, h_q, h_h, target, machine, ConjectureMachines.Machine.toBB,
-    ConjectureMachines.Machine.ofRows]
+    ConjectureMachines.Machine.ofRows, ConjectureMachines.listGetD]
 
 private theorem checkHalt_sound (chunk k rem : ℕ) (h_pos : chunk * k + rem > 0)
     (s : PState) (l_tail : ListBlank (Fin 2))

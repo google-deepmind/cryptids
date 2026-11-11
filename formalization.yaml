@@ -189,31 +189,32 @@ related_formalizations:
 
 status:
   scope: >-
-    All three ZF machine-to-proof-search equivalences (zf_393, zf_380, zf_432)
-    and the state-reduction halting equivalences for goldbach_21, zf_380,
-    riemann_104, and erdos_ternary_14 (along with all five candidate_fewer_states
-    theorems, 12 theorems total) are proved constructively using only propext and Quot.sound
-    (zero Classical.choice, audited via comparator/constructive.json so
-    classical Con(ZF) shortcuts such as Soundness.lean's not_zfInconsistent are
-    excluded; this establishes a constructive meta-level correspondence in Lean
-    rather than internalizing the reduction inside PA/ZF). The classical
-    end-to-end
-    semantics—unconditional ZF non-halting via soundness in Mathlib's ZFSet.{0}
-    (Cryptids/Semantics/Zf/Soundness.lean), negated-Pi_1^0 Goldbach semantics
-    (Cryptids/Semantics/Goldbach.lean), and complex-analytic Riemann Hypothesis
-    semantics for riemann_744 (Cryptids/Semantics/Riemann.lean), Shunia's
-    120-state machine riemann_120, riemann_104
-    (Cryptids/Semantics/Riemann120.lean), and the 95-state arithmetic-stage
-    reduction riemann_95 (Cryptids/Riemann95.lean,
-    Cryptids/Semantics/Riemann95.lean)—are proved with zero sorrys. The
-    15-state machine erdos_ternary_15 satisfies Halts erdosTernary15 <-> ∃ n, 8 < n ∧ 2 ∉ pw n
+    Specification definitions (ListBlank, Tape, Halts, Machine, BundledMachine,
+    PAProvable), all five candidate_fewer_states theorems, and syntactic
+    first-order Peano Arithmetic consistency (not_paProvable_false) depend on
+    zero axioms ([], audited via comparator/zero_axioms.json). All five
+    state-reduction halting equivalences (goldbach_21, zf_380, riemann_104,
+    riemann_95, erdos_ternary_14), all three ZF machine-to-proof-search
+    equivalences (zf_393, zf_380, zf_432), and Sigma_1^0 PA standard-model
+    adequacy (16 theorems total) are proved constructively using at most
+    propext and Quot.sound (zero Classical.choice, audited via
+    comparator/constructive.json). Object-level first-order PA provability of
+    the zf_380 and zf_393 halting equivalences (PAProvable,
+    Cryptids/Semantics/PA/), unconditional ZF non-halting in Mathlib's
+    ZFSet.{0} (Cryptids/Semantics/Zf/Soundness.lean), negated-Pi_1^0 Goldbach
+    semantics (Cryptids/Semantics/Goldbach.lean), and complex-analytic Riemann
+    Hypothesis semantics for riemann_744, riemann_120, riemann_104, and
+    riemann_95 are all proved with zero sorrys. The 15-state machine
+    erdos_ternary_15 satisfies Halts erdosTernary15 <-> ∃ n, 8 < n ∧ 2 ∉ pw n
     constructively (Cryptids/ErdosTernary15.lean, pw = base-3 digits of 2^n by
-    repeated doubling) and Halts erdosTernary15 <-> ¬ ErdosTernaryConjecture via
-    Mathlib's Nat.digits (Cryptids/Semantics/ErdosTernary15.lean). The 14-state
-    machine erdos_ternary_14 satisfies Halts erdosTernary14 <-> ∃ n, 8 < n ∧ 2 ∉ pw n and
-    hence Halts candidate <-> Halts reference against erdos_ternary_15 constructively
-    (Cryptids/ErdosTernary14.lean), and Halts candidate <-> ¬
-    ErdosTernaryConjecture (Cryptids/Semantics/ErdosTernary14.lean).
+    repeated doubling) and Halts erdosTernary15 <-> ¬ ErdosTernaryConjecture
+    via Mathlib's Nat.digits (Cryptids/Semantics/ErdosTernary15.lean). The
+    14-state machine erdos_ternary_14 satisfies
+    Halts erdosTernary14 <-> ∃ n, 8 < n ∧ 2 ∉ pw n and hence
+    Halts candidate <-> Halts reference against erdos_ternary_15 constructively
+    (Cryptids/ErdosTernary14.lean), and
+    Halts candidate <-> ¬ ErdosTernaryConjecture
+    (Cryptids/Semantics/ErdosTernary14.lean).
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -224,8 +225,8 @@ status:
     - declaration: "ConjectureMachines.Goldbach21.candidate_fewer_states"
       file: "Cryptids/Goldbach21.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/goldbach_21.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Goldbach21.candidate_equivalent"
       file: "Cryptids/Goldbach21.lean"
       sorry_count: 0
@@ -254,8 +255,8 @@ status:
     - declaration: "ConjectureMachines.Zf380.candidate_fewer_states"
       file: "Cryptids/Zf380.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/zf_380.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Zf380.candidate_equivalent"
       file: "Cryptids/Zf380.lean"
       sorry_count: 0
@@ -286,6 +287,41 @@ status:
       sorry_count: 0
       axioms: ["propext", "Quot.sound"]
       comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Semantics.PA.not_paProvable_false"
+      file: "Cryptids/Semantics/PA/Syntax.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paHalts_holds_iff_halts"
+      file: "Cryptids/Semantics/PA/Adequacy.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent"
+      file: "Cryptids/Semantics/PA/Adequacy.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_sound_nat"
+      file: "Cryptids/Semantics/PA/Syntax.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zf393"
+      file: "Cryptids/Semantics/PA/Zf380.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_halts_zf393_iff_zfInconsistent"
+      file: "Cryptids/Semantics/PA/Zf393/Soundness.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zfInconsistent"
+      file: "Cryptids/Semantics/PA/Zf393/Soundness.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
     - declaration: "ConjectureMachines.Semantics.Riemann.halts_riemann744_iff_exists_counterexample"
       file: "Cryptids/Semantics/Riemann.lean"
       sorry_count: 0
@@ -304,8 +340,8 @@ status:
     - declaration: "ConjectureMachines.Riemann104.candidate_fewer_states"
       file: "Cryptids/Riemann104.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/riemann_104.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Riemann104.candidate_equivalent"
       file: "Cryptids/Riemann104.lean"
       sorry_count: 0
@@ -319,13 +355,13 @@ status:
     - declaration: "ConjectureMachines.Riemann95.candidate_fewer_states"
       file: "Cryptids/Riemann95.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/constructive.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Riemann95.candidate_equivalent"
       file: "Cryptids/Riemann95.lean"
       sorry_count: 0
-      axioms: ["propext", "Classical.choice", "Quot.sound"]
-      comparator_config: "comparator/riemann_95.json"
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/riemann_95_reduction.json"
     - declaration: "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis"
       file: "Cryptids/Semantics/Riemann95.lean"
       sorry_count: 0
@@ -344,8 +380,8 @@ status:
     - declaration: "ConjectureMachines.ErdosTernary14.candidate_fewer_states"
       file: "Cryptids/ErdosTernary14.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/constructive.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.ErdosTernary14.candidate_equivalent"
       file: "Cryptids/ErdosTernary14.lean"
       sorry_count: 0
@@ -460,6 +496,34 @@ alignment:
     - source: "zf_432 <-> WadeZFInconsistent"
       lean: "ConjectureMachines.Semantics.Zf.halts_zf432_iff_wadeZFInconsistent"
       module: "Cryptids.Semantics.Zf"
+      status: "proved"
+    - source: "Syntactic consistency of first-order PA (¬ PAProvable ⊥)"
+      lean: "ConjectureMachines.Semantics.PA.not_paProvable_false"
+      module: "Cryptids.Semantics.PA.Syntax"
+      status: "proved"
+    - source: "Sigma_1^0 adequacy of paHalts M on ℕ"
+      lean: "ConjectureMachines.Semantics.PA.paHalts_holds_iff_halts"
+      module: "Cryptids.Semantics.PA.Adequacy"
+      status: "proved"
+    - source: "Sigma_1^0 adequacy of paZFInconsistent on ℕ"
+      lean: "ConjectureMachines.Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent"
+      module: "Cryptids.Semantics.PA.Adequacy"
+      status: "proved"
+    - source: "Standard-model soundness of PAProvable on ℕ"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_sound_nat"
+      module: "Cryptids.Semantics.PA.Syntax"
+      status: "proved"
+    - source: "Object-level PA proof: PA |- Halts(zf_380) <-> Halts(zf_393)"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zf393"
+      module: "Cryptids.Semantics.PA.Zf380"
+      status: "proved"
+    - source: "Object-level PA proof: PA |- Halts(zf_393) <-> ~Con(ZF)"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_halts_zf393_iff_zfInconsistent"
+      module: "Cryptids.Semantics.PA.Zf393.Soundness"
+      status: "proved"
+    - source: "Object-level PA proof: PA |- Halts(zf_380) <-> ~Con(ZF)"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zfInconsistent"
+      module: "Cryptids.Semantics.PA.Zf393.Soundness"
       status: "proved"
     - source: "riemann_744 <-> ∃ x, MatiyasevichRiemannCounterexample x"
       lean: "ConjectureMachines.Semantics.Riemann.halts_riemann744_iff_exists_counterexample"

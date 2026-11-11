@@ -35,22 +35,29 @@ that:
 1. Every target theorem and all of its transitive definition dependencies match identically between
    the challenge module and the solution module.
 2. Only the permitted axioms for that configuration are used:
+   - **`[]` (strictly zero axioms — pure CIC kernel terms):** enforced on
+     [`zero_axioms.json`](./zero_axioms.json), covering all five `candidate_fewer_states` theorems
+     (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`) and syntactic first-order
+     `PA` consistency (`Semantics.PA.not_paProvable_false`). Specification definitions (`ListBlank`,
+     `Tape`, `Halts`, `Machine`, `BundledMachine`, `candidate`, `reference`, `PAProvable`) represent
+     half-tapes as canonical blank-trimmed lists rather than quotients so they depend on zero
+     axioms.
    - **`["propext", "Quot.sound"]` (strictly constructive — no `Classical.choice`):** enforced on
      [`constructive.json`](./constructive.json), [`goldbach_21.json`](./goldbach_21.json),
-     [`zf_380.json`](./zf_380.json), and [`riemann_104.json`](./riemann_104.json), covering all
-     three ZF machine-to-proof-search equivalences (`halts_zf393_iff_zfInconsistent`,
+     [`zf_380.json`](./zf_380.json), [`riemann_104.json`](./riemann_104.json), and
+     [`riemann_95_reduction.json`](./riemann_95_reduction.json), covering **all five** state
+     reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`), all three ZF
+     machine-to-proof-search equivalences (`halts_zf393_iff_zfInconsistent`,
      `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
-     `halts_zf432_iff_wadeZFInconsistent`), first-order `PA` consistency and $\Sigma_1^0$
+     `halts_zf432_iff_wadeZFInconsistent`), and first-order `PA` consistency and $\Sigma_1^0$
      adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`,
-     `paZFInconsistent_holds_iff_zfInconsistent`), the direct simulation reductions (`Goldbach21`,
-     `Zf380`, `Riemann104`), the `ErdosTernary14` reduction, and all five `candidate_fewer_states`
-     theorems (15 theorems total).
-     Disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts (`not_zfInconsistent` in
-     `ZFSet.{0}` or `Classical.em` + `digama0/ConZF`) for `Halts M ↔ ZFInconsistent`, while deeply
-     embedded `PAProvable` provides a weak first-order metatheory strictly below `ZF` (see
+     `paZFInconsistent_holds_iff_zfInconsistent`) (16 theorems total). Disallowing
+     `Classical.choice` blocks classical `Con(ZF)` shortcuts (`not_zfInconsistent` in `ZFSet.{0}` or
+     `Classical.em` + `digama0/ConZF`) for `Halts M ↔ ZFInconsistent`, while deeply embedded
+     `PAProvable` provides a weak first-order metatheory strictly below `ZF` (see
      [`Cryptids/Semantics/README.md`](../Cryptids/Semantics/README.md#foundational-note-conzf-in-lean-and-constructive-equivalence)).
    - **`["propext", "Quot.sound", "Classical.choice"]`:** allowed in [`all.json`](./all.json),
-     [`busy_beaver.json`](./busy_beaver.json), and the classical model-theoretic / arithmetic-stage /
+     [`busy_beaver.json`](./busy_beaver.json), and the classical model-theoretic /
      analytic configs (`pa_semantics.json`, `zf_393.json`, `zf_semantics.json`,
      `goldbach_semantics.json`, `riemann_95.json`, `riemann_120.json`, `riemann_semantics.json`,
      `erdos_ternary_15.json`, `erdos_ternary_14.json`).
@@ -60,7 +67,8 @@ that:
 
 | Config File | Challenge Module | Solution Module | Permitted Axioms | Verified Theorems |
 | :--- | :--- | :--- | :--- | :--- |
-| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 15 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), `Riemann95.candidate_fewer_states`, and the `ErdosTernary14` reduction |
+| [`zero_axioms.json`](./zero_axioms.json) | `Challenge` | `Cryptids` | *(none)* (`[]`) | All 6 zero-axiom theorems: all 5 `candidate_fewer_states` theorems (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`) and syntactic `PA` consistency (`not_paProvable_false`) |
+| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 16 constructive theorems: all 5 state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`), all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), and first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`) |
 | [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 34 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
 | [`pa_semantics.json`](./pa_semantics.json) | `Challenge` | `Cryptids.Semantics.PA` | `propext`, `Quot.sound`, `Classical.choice` | `not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`, `paProvable_sound_nat`, `paProvable_halts_zf380_iff_zf393`, `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent` |
 | [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 506 `BB(6)` and `BB(3, 3)` holdout Level A, Level B, equivalence, A6 `is_not_halt`, and hardness-evidence theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`, `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, `HardnessEvidence.*`) |
@@ -71,6 +79,7 @@ that:
 | [`zf_393.json`](./zf_393.json) | `Challenge` | `Cryptids.Semantics.Zf393` | `propext`, `Quot.sound`, `Classical.choice` | `halts_zf393_iff_zfInconsistent`, `not_halts_zf393`, `halts_candidate_iff_zfInconsistent`, `not_halts_candidate` |
 | [`zf_semantics.json`](./zf_semantics.json) | `Challenge` | `Cryptids.Semantics.Zf` | `propext`, `Quot.sound`, `Classical.choice` | `zfProvable_sound_zfSet`, `not_zfInconsistent`, `halts_zf432_iff_wadeZFInconsistent` |
 | [`riemann_104.json`](./riemann_104.json) | `Challenge` | `Cryptids.Riemann104` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
+| [`riemann_95_reduction.json`](./riemann_95_reduction.json) | `Challenge` | `Cryptids.Riemann95` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`riemann_95.json`](./riemann_95.json) | `Challenge` | `Cryptids.Semantics.Riemann95` | `propext`, `Quot.sound`, `Classical.choice` | `candidate_fewer_states`, `candidate_equivalent`, `halts_candidate_iff_not_riemannHypothesis` |
 | [`riemann_120.json`](./riemann_120.json) | `Challenge` | `Cryptids.Semantics.Riemann120` | `propext`, `Quot.sound`, `Classical.choice` | `halts_riemann120_iff_not_riemannHypothesis`, `halts_candidate_iff_not_riemannHypothesis` |
 | [`riemann_semantics.json`](./riemann_semantics.json) | `Challenge` | `Cryptids.Semantics.Riemann` | `propext`, `Quot.sound`, `Classical.choice` | `halts_riemann744_iff_exists_counterexample`, `halts_riemann744_iff_not_riemannHypothesis` |
@@ -88,6 +97,7 @@ From the repository root (with `bwrap` installed):
 
 ```bash
 lake exe cache get
+lake comparator --config comparator/zero_axioms.json
 lake comparator --config comparator/constructive.json
 lake comparator --config comparator/all.json
 lake comparator --config comparator/busy_beaver.json

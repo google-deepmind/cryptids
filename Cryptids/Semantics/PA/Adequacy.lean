@@ -431,16 +431,18 @@ def decodeHalf (n : ℕ) : ListBlank (Fin 2) :=
   ListBlank.mk (decodeListBin n)
 
 @[simp]
-theorem encodeHalf_mk (xs : List (Fin 2)) : encodeHalf (ListBlank.mk xs) = encodeListBin xs :=
-  rfl
+theorem encodeHalf_mk (xs : List (Fin 2)) : encodeHalf (ListBlank.mk xs) = encodeListBin xs := by
+  unfold encodeHalf
+  exact ListBlank.liftOn_mk xs encodeListBin _
 
 @[simp]
 theorem encodeHalf_default : encodeHalf default = 0 := rfl
 
 @[simp]
 theorem encodeHalf_cons (l : ListBlank (Fin 2)) (a : Fin 2) :
-    encodeHalf (l.cons a) = 2 * encodeHalf l + a.val :=
-  l.induction_on fun _ ↦ rfl
+    encodeHalf (l.cons a) = 2 * encodeHalf l + a.val := by
+  refine l.induction_on fun xs ↦ ?_
+  rw [ListBlank.cons_mk, encodeHalf_mk, encodeHalf_mk, encodeListBin]
 
 theorem encodeHalf_eq_tail_head (l : ListBlank (Fin 2)) :
     encodeHalf l = 2 * encodeHalf l.tail + l.head.val := by
@@ -459,8 +461,9 @@ private theorem encodeListBin_decodeListBin (n : ℕ) : encodeListBin (decodeLis
       omega
 
 @[simp]
-theorem encodeHalf_decodeHalf (n : ℕ) : encodeHalf (decodeHalf n) = n :=
-  encodeListBin_decodeListBin n
+theorem encodeHalf_decodeHalf (n : ℕ) : encodeHalf (decodeHalf n) = n := by
+  rw [decodeHalf, encodeHalf_mk]
+  exact encodeListBin_decodeListBin n
 
 private theorem mk_decodeListBin_encodeListBin (xs : List (Fin 2)) :
     ListBlank.mk (decodeListBin (encodeListBin xs)) = ListBlank.mk xs := by
@@ -480,7 +483,7 @@ private theorem mk_decodeListBin_encodeListBin (xs : List (Fin 2)) :
       have hcons : ListBlank.mk ((default : Fin 2) :: xs) =
           (ListBlank.mk xs).cons default := rfl
       rw [hcons, ← ih]
-      exact Quot.sound (Or.inl ⟨1, rfl⟩)
+      exact ListBlank.cons_default_default.symm
     · obtain ⟨k, hk⟩ := Nat.exists_eq_succ_of_ne_zero hne
       rw [hk, decodeListBin]
       have hdiv : (k + 1) / 2 = encodeListBin xs := by
@@ -495,7 +498,9 @@ private theorem mk_decodeListBin_encodeListBin (xs : List (Fin 2)) :
 
 @[simp]
 theorem decodeHalf_encodeHalf (l : ListBlank (Fin 2)) : decodeHalf (encodeHalf l) = l :=
-  l.induction_on mk_decodeListBin_encodeListBin
+  l.induction_on fun xs ↦ by
+    rw [decodeHalf, encodeHalf_mk]
+    exact mk_decodeListBin_encodeListBin xs
 
 theorem encodeHalf_injective {l₁ l₂ : ListBlank (Fin 2)} (h : encodeHalf l₁ = encodeHalf l₂) :
     l₁ = l₂ := by

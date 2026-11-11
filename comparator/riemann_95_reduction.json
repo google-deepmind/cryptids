@@ -1,0 +1,12 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Riemann95",
+  "theorem_names": [
+    "ConjectureMachines.Riemann95.candidate_fewer_states",
+    "ConjectureMachines.Riemann95.candidate_equivalent"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound"
+  ]
+}
