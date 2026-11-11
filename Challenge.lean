@@ -28,7 +28,8 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
-  and the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`
+  the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`, and the
+  `legendre_21` equivalence `Legendre21.halts_legendre21_iff_exists_gap`
   are verified **without `Classical.choice`** (`ListBlank` uses primitive `Quot` rather than
   `Quotient` so `Halts` is choice-free). Because `Zf/Soundness.lean` proves `not_zfInconsistent`
   via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without choice
@@ -37,13 +38,13 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 36 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
+  Audits all 38 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
   via `Nat.Prime`), classical `PA` and `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰` Goldbach
   (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic `RiemannHypothesis`
   equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences with
   `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture` also
-  uses Markov's Principle), and the `brocard_28` equivalence with `¬ BrocardConjecture` (Markov's
-  Principle).
+  uses Markov's Principle), and the `brocard_28` and `legendre_21` equivalences with
+  `¬ BrocardConjecture` and `¬ LegendreConjecture` (Markov's Principle).
 -/
 
 meta section
@@ -263,6 +264,11 @@ def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
   load_machine_rows% "artifacts/brocard_28/machine.txt"
 /-- 28-state Brocard machine. -/
 def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `legendre21`. -/
+def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
+  load_machine_rows% "artifacts/legendre_21/machine.txt"
+/-- 21-state Legendre machine. -/
+def legendre21 : Machine 21 2 := Machine.ofRows legendre21Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -760,6 +766,11 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
+/-- **Legendre's conjecture** (one of Landau's four problems, 1912): for every `n ≥ 1` there is
+a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
+def LegendreConjecture : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -889,5 +900,15 @@ theorem halts_brocard28_iff_exists_square :
 theorem halts_brocard28_iff_not_brocard :
     ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by sorry
 end Brocard28
+
+namespace Legendre21
+/-- 21-state Legendre machine (`legendre_21`, Veljjanoski 2026). -/
+abbrev legendre21 : Machine 21 2 := Machines.legendre21
+theorem halts_legendre21_iff_exists_gap :
+    ConjectureMachines.Halts legendre21 ↔
+      ∃ n : ℕ, 1 ≤ n ∧ ∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2) := by sorry
+theorem halts_legendre21_iff_not_legendre :
+    ConjectureMachines.Halts legendre21 ↔ ¬ LegendreConjecture := by sorry
+end Legendre21
 
 end ConjectureMachines
