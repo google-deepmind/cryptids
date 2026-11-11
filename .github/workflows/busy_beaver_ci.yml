@@ -14,6 +14,7 @@ on:
       - 'lake-manifest.json'
       - 'lean-toolchain'
       - '.github/workflows/busy_beaver_ci.yml'
+      - '.github/scripts/busy_beaver_ci_shards.py'
   pull_request:
     paths:
       - 'BusyBeaver/**'
@@ -27,14 +28,207 @@ on:
       - 'lake-manifest.json'
       - 'lean-toolchain'
       - '.github/workflows/busy_beaver_ci.yml'
+      - '.github/scripts/busy_beaver_ci_shards.py'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: busy-beaver-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  NUM_SHARDS: "8"
+  LEAN_NUM_THREADS: "1"
+
 jobs:
-  build:
+  foundation:
+    name: Build shared foundation
     runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost
+
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Plan foundation module graph
+        id: plan
+        run: |
+          python3 .github/scripts/busy_beaver_ci_shards.py plan \
+            --num-shards "$NUM_SHARDS" \
+            --targets-out "${RUNNER_TEMP}/foundation_targets.txt"
+
+      - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
+        with:
+          build: false
+          test: false
+          lint: false
+          use-github-cache: "false"
+
+      - name: Restore foundation cache
+        id: cache-restore
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .lake/shard-cache/foundation.tar.zst
+          key: bb-foundation-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.plan.outputs.foundation_hash }}
+          restore-keys: |
+            bb-foundation-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-
+
+      - name: Unpack restored foundation cache
+        if: steps.cache-restore.outputs.cache-matched-key != ''
+        run: tar --zstd -xf .lake/shard-cache/foundation.tar.zst
+
+      - name: Compile foundation & shared donor modules
+        id: compile
+        timeout-minutes: 150
+        run: |
+          mapfile -t targets < "${RUNNER_TEMP}/foundation_targets.txt"
+          echo "Compiling ${#targets[@]} foundation module(s)..."
+          lake build "${targets[@]}"
+
+      - name: Pack foundation artifacts
+        if: ${{ !cancelled() && (success() || steps.compile.outcome == 'failure') }}
+        run: |
+          python3 .github/scripts/busy_beaver_ci_shards.py pack \
+            --num-shards "$NUM_SHARDS" \
+            --group foundation \
+            --out .lake/shard-cache/foundation.tar.zst \
+            ${{ steps.compile.outcome == 'failure' && '--allow-partial' || '' }}
+
+      - name: Save foundation cache
+        if: >-
+          ${{ !cancelled() &&
+              steps.cache-restore.outputs.cache-hit != 'true' &&
+              hashFiles('.lake/shard-cache/foundation.tar.zst') != '' &&
+              (success() || steps.compile.outcome == 'failure') }}
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .lake/shard-cache/foundation.tar.zst
+          key: >-
+            bb-foundation-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.compile.outcome == 'success' && steps.plan.outputs.foundation_hash || format('partial-{0}', github.run_id) }}
+
+      - name: Upload foundation artifact for shards
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bb-foundation
+          path: .lake/shard-cache/foundation.tar.zst
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  shards:
+    name: Build leaf shard ${{ matrix.shard }}
+    needs: foundation
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+
+    steps:
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost
+
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Plan shard ${{ matrix.shard }} targets
+        id: plan
+        run: |
+          python3 .github/scripts/busy_beaver_ci_shards.py plan \
+            --num-shards "$NUM_SHARDS" \
+            --shard "${{ matrix.shard }}" \
+            --targets-out "${RUNNER_TEMP}/shard_targets.txt"
+
+      - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
+        if: steps.plan.outputs.shard_count != '0'
+        with:
+          build: false
+          test: false
+          lint: false
+          use-github-cache: "false"
+
+      - name: Download & unpack foundation artifacts
+        if: steps.plan.outputs.shard_count != '0'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: bb-foundation
+          path: .lake/foundation-in
+
+      - name: Unpack foundation tarball
+        if: steps.plan.outputs.shard_count != '0'
+        run: |
+          tar --zstd -xf .lake/foundation-in/foundation.tar.zst
+          rm -rf .lake/foundation-in
+
+      - name: Restore shard ${{ matrix.shard }} cache
+        id: cache-restore
+        if: steps.plan.outputs.shard_count != '0'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .lake/shard-cache/shard.tar.zst
+          key: bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-${{ steps.plan.outputs.foundation_hash }}-${{ steps.plan.outputs.shard_hash }}
+          restore-keys: |
+            bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-${{ steps.plan.outputs.foundation_hash }}-
+            bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-
+
+      - name: Unpack restored shard cache
+        if: steps.plan.outputs.shard_count != '0' && steps.cache-restore.outputs.cache-matched-key != ''
+        run: tar --zstd -xf .lake/shard-cache/shard.tar.zst
+
+      - name: Compile leaf shard ${{ matrix.shard }}
+        id: compile
+        if: steps.plan.outputs.shard_count != '0'
+        timeout-minutes: 150
+        run: |
+          mapfile -t targets < "${RUNNER_TEMP}/shard_targets.txt"
+          echo "Compiling ${#targets[@]} leaf module(s) in shard ${{ matrix.shard }}..."
+          lake build "${targets[@]}"
+
+      - name: Pack shard ${{ matrix.shard }} artifacts
+        if: >-
+          ${{ steps.plan.outputs.shard_count != '0' &&
+              !cancelled() &&
+              (success() || steps.compile.outcome == 'failure') }}
+        run: |
+          python3 .github/scripts/busy_beaver_ci_shards.py pack \
+            --num-shards "$NUM_SHARDS" \
+            --group "${{ matrix.shard }}" \
+            --out .lake/shard-cache/shard.tar.zst \
+            ${{ steps.compile.outcome == 'failure' && '--allow-partial' || '' }}
+
+      - name: Save shard ${{ matrix.shard }} cache
+        if: >-
+          ${{ steps.plan.outputs.shard_count != '0' &&
+              !cancelled() &&
+              steps.cache-restore.outputs.cache-hit != 'true' &&
+              hashFiles('.lake/shard-cache/shard.tar.zst') != '' &&
+              (success() || steps.compile.outcome == 'failure') }}
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .lake/shard-cache/shard.tar.zst
+          key: >-
+            bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-${{ steps.plan.outputs.foundation_hash }}-${{ steps.compile.outcome == 'success' && steps.plan.outputs.shard_hash || format('partial-{0}', github.run_id) }}
+
+      - name: Upload shard ${{ matrix.shard }} artifact
+        if: steps.plan.outputs.shard_count != '0'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bb-shard-${{ matrix.shard }}
+          path: .lake/shard-cache/shard.tar.zst
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  build:
+    needs: [foundation, shards]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
 
     steps:
       - name: Free runner disk space and install bubblewrap
@@ -45,11 +239,28 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
       - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
         with:
-          build-args: "BusyBeaver BusyBeaverChallenge"
-        env:
-          LEAN_NUM_THREADS: "1"
+          build: false
+          test: false
+          lint: false
+          use-github-cache: "false"
+
+      - name: Download foundation & leaf shard artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: bb-*
+          path: .lake/artifacts-in
+
+      - name: Assemble `.lake/build` and compile `BusyBeaver` root
+        run: |
+          for archive in .lake/artifacts-in/*/*.tar.zst; do
+            echo "Unpacking $archive..."
+            tar --zstd -xf "$archive"
+          done
+          rm -rf .lake/artifacts-in
+          lake build BusyBeaver BusyBeaverChallenge
 
       - name: Verify BusyBeaver against BusyBeaverChallenge with comparator
         run: lake comparator --config comparator/busy_beaver.json
