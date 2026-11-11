@@ -9,11 +9,6 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.PairStack
 
-set_option linter.style.longLine false
-set_option linter.style.setOption false
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
-
 
 -- ============================================================================
 -- Section 1: Tape & List Algebra Helpers
@@ -24,7 +19,8 @@ variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 theorem pow_zero_list (u : List (Fin 2)) : u ^ (0 : Nat) = [] := rfl
 theorem pow_succ_list (u : List (Fin 2)) (n : Nat) : u ^ (n + 1) = u ++ u ^ n := rfl
 theorem nil_append_list (l : List (Fin 2)) : ([] : List (Fin 2)) ++ l = l := rfl
-theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) : (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
+theorem cons_append_list (x : Fin 2) (xs ys : List (Fin 2)) :
+    (x :: xs) ++ ys = x :: (xs ++ ys) := rfl
 theorem append_nil_list (l : List (Fin 2)) : l ++ [] = l := List.append_nil l
 
 attribute [scoped simp]
@@ -43,22 +39,24 @@ omit [Inhabited Γ] in
 theorem list_pow_add (l : List Γ) (n m : Nat) : l^(n + m) = l^n ++ l^m :=
   BusyBeaver.list_pow_add l n m
 
-lemma listblank_append_right_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
+theorem listblank_append_right_assoc (l₁ l₂ : List Γ) (s : ListBlank Γ) :
     (l₁ ++ l₂) +> s = l₁ +> (l₂ +> s) := by
   induction l₁ with
   | nil => rfl
   | cons x xs ih =>
     simp only [List.cons_append, ListBlank.append, ih]
 
-lemma listblank_eq_one_cons_tail {Z : ListBlank (Fin 2)} (hZ : Z.head = 1) :
+theorem listblank_eq_one_cons_tail {Z : ListBlank (Fin 2)} (hZ : Z.head = 1) :
     Z = (1 : Fin 2) >> Z.tail := by
   rw [← hZ, Turing.ListBlank.cons_head_tail]
 
-@[simp] lemma zeros_append_default (n : ℕ) :
+@[simp] theorem zeros_append_default (n : ℕ) :
     (([0] : List (Fin 2)) ^ n) +> (default : ListBlank (Fin 2)) = default := by
   induction n with
   | zero => rfl
-  | succ k ih => simp only [pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons, ih, zero_cons_default]
+  | succ k ih =>
+    simp only [pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons,
+      ih, zero_cons_default]
 
 -- ============================================================================
 -- Section 2: Universal Stack Combinators
@@ -80,7 +78,8 @@ def ensureNonEmpty : List (ℕ × ℕ) → List (ℕ × ℕ)
   | p :: R => p :: R
 
 @[simp] theorem bumpN_zero (L : List (ℕ × ℕ)) : bumpN 0 L = L := rfl
-@[simp] theorem bumpN_succ (n : ℕ) (L : List (ℕ × ℕ)) : bumpN (n + 1) L = bumpHead (bumpN n L) := rfl
+@[simp] theorem bumpN_succ (n : ℕ) (L : List (ℕ × ℕ)) :
+    bumpN (n + 1) L = bumpHead (bumpN n L) := rfl
 
 theorem bumpHead_ne_nil (L : List (ℕ × ℕ)) : bumpHead L ≠ [] := by
   rcases L with _ | ⟨⟨a, b⟩, L'⟩ <;> simp [bumpHead]
@@ -96,7 +95,8 @@ theorem ensureNonEmpty_ne_nil (R : List (ℕ × ℕ)) : ensureNonEmpty R ≠ [] 
 -- ============================================================================
 
 /-- Generic parametric left stack encoding:
-    `encLeft ((a, b) :: L) = encLeft L <+ (sSym ^ (sep + b % maxSep)) <+ (dSym ^ (stride * a + offset))`. -/
+    `encLeft ((a, b) :: L) =
+      encLeft L <+ (sSym ^ (sep + b % maxSep)) <+ (dSym ^ (stride * a + offset))`. -/
 def encLeftParam (dSym sSym : Fin 2) (stride offset sep maxSep : ℕ) :
     List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
@@ -106,7 +106,8 @@ def encLeftParam (dSym sSym : Fin 2) (stride offset sep maxSep : ℕ) :
         (([dSym] : List (Fin 2)) ^ (stride * a + offset))
 
 /-- Generic parametric right stack encoding:
-    `encRight ((d, b) :: R) = (dSym ^ (stride * d + offset)) +> ((sSym ^ (sep + b % maxSep)) +> encRight R)`. -/
+    `encRight ((d, b) :: R) =
+      (dSym ^ (stride * d + offset)) +> ((sSym ^ (sep + b % maxSep)) +> encRight R)`. -/
 def encRightParam (dSym sSym : Fin 2) (stride offset sep maxSep : ℕ) :
     List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
@@ -219,9 +220,9 @@ theorem encRightParam_bumpN (dSym : Fin 2) (sep maxSep : ℕ)
 -- Section 5: Modulo & Canonical Shorthands
 -- ============================================================================
 
-lemma mod2_cases (b : ℕ) : b % 2 = 0 ∨ b % 2 = 1 := by omega
-lemma mod3_cases (b : ℕ) : b % 3 = 0 ∨ b % 3 = 1 ∨ b % 3 = 2 := by omega
-lemma mod4_cases (b : ℕ) : b % 4 = 0 ∨ b % 4 = 1 ∨ b % 4 = 2 ∨ b % 4 = 3 := by omega
+theorem mod2_cases (b : ℕ) : b % 2 = 0 ∨ b % 2 = 1 := by omega
+theorem mod3_cases (b : ℕ) : b % 3 = 0 ∨ b % 3 = 1 ∨ b % 3 = 2 := by omega
+theorem mod4_cases (b : ℕ) : b % 4 = 0 ∨ b % 4 = 1 ∨ b % 4 = 2 ∨ b % 4 = 3 := by omega
 
 theorem encLeftParam_mod (dSym sSym : Fin 2) (stride offset sep maxSep : ℕ)
     (a b : ℕ) (L : List (ℕ × ℕ)) :
@@ -255,7 +256,8 @@ theorem encLeftParam_norm (dSym sSym : Fin 2) (stride offset sep maxSep : ℕ)
   | nil => rfl
   | cons p L' ih =>
     rcases p with ⟨a, b⟩
-    change encLeftParam dSym sSym stride offset sep maxSep ((a, b % maxSep) :: normStack maxSep L') =
+    change encLeftParam dSym sSym stride offset sep maxSep
+      ((a, b % maxSep) :: normStack maxSep L') =
       encLeftParam dSym sSym stride offset sep maxSep ((a, b) :: L')
     simp only [encLeftParam_cons, Nat.mod_mod, ih]
 
@@ -267,7 +269,8 @@ theorem encRightParam_norm (dSym sSym : Fin 2) (stride offset sep maxSep : ℕ)
   | nil => rfl
   | cons p R' ih =>
     rcases p with ⟨d, b⟩
-    change encRightParam dSym sSym stride offset sep maxSep ((d, b % maxSep) :: normStack maxSep R') =
+    change encRightParam dSym sSym stride offset sep maxSep
+      ((d, b % maxSep) :: normStack maxSep R') =
       encRightParam dSym sSym stride offset sep maxSep ((d, b) :: R')
     simp only [encRightParam_cons, Nat.mod_mod, ih]
 
@@ -345,20 +348,22 @@ theorem blockEncodingParam
         (encLeftParam dSym sSym strideL offsetL sepL maxSepL L <+
           (([sSym] : List (Fin 2)) ^ (stackSepLen sepL' maxSepL' b))) <+
             (([dSym] : List (Fin 2)) ^ (strideL' * a + offsetL'))) ∧
-      (∀ d (b : StackTuple 1) R, encRightParam dSym sSym strideR offsetR sepR maxSepR ((d, b) :: R) =
+      (∀ d (b : StackTuple 1) R,
+        encRightParam dSym sSym strideR offsetR sepR maxSepR ((d, b) :: R) =
         (([dSym] : List (Fin 2)) ^ (strideR' * d + offsetR')) +>
           ((([sSym] : List (Fin 2)) ^ (stackSepLen sepR' maxSepR' b)) +>
             encRightParam dSym sSym strideR offsetR sepR maxSepR R)) :=
   ⟨strideL, offsetL, sepL, maxSepL, strideR, offsetR, sepR, maxSepR,
    h_sL, h_oL, h_sepL, h_m1L, h_m2L,
    h_sR, h_oR, h_sepR, h_m1R, h_m2R,
-   fun a b L => rfl, fun d b R => rfl⟩
+   fun _ _ _ => rfl, fun _ _ _ => rfl⟩
 
 -- ============================================================================
 -- Section 9: 1-Digit Stack Lift Infrastructure
 -- ============================================================================
 
-/-- Lift a 1-digit stack `List ℕ` to a 2-digit stack `List (ℕ × ℕ)` by appending `0` second components. -/
+/-- Lift a 1-digit stack `List ℕ` to a 2-digit stack `List (ℕ × ℕ)` by appending `0` second
+    components. -/
 def liftPairList : List ℕ → List (ℕ × ℕ)
   | [] => []
   | x :: xs => (x, 0) :: liftPairList xs
@@ -403,13 +408,16 @@ theorem lift_one_digit_prop {Λ : Type*} [Inhabited Λ]
     (encLeft1 encRight1 : List ℕ → ListBlank (Fin 2))
     (evalStackCfg1 : StackMode → List ℕ → List ℕ → Cfg (Fin 2) Λ)
     (IsInStackSystem1 : Cfg (Fin 2) Λ → Prop)
-    (h : OneDigitStackCryptidProp target_tm StackMode encLeft1 encRight1 evalStackCfg1 IsInStackSystem1) :
+    (h : OneDigitStackCryptidProp target_tm StackMode encLeft1 encRight1
+      evalStackCfg1 IsInStackSystem1) :
     IsStackCryptid target_tm := by
   refine ⟨StackMode, 1, 0,
     fun (L : List (ℕ × ℕ)) => encLeft1 (L.map Prod.fst),
     fun (R : List (ℕ × ℕ)) => encRight1 (R.map Prod.fst),
-    fun (m : StackMode) (L R : List (ℕ × ℕ)) => evalStackCfg1 m (L.map Prod.fst) (R.map Prod.fst),
-    fun (cfg : Cfg (Fin 2) Λ) => ∃ (m : StackMode) (L R : List (ℕ × ℕ)), cfg = evalStackCfg1 m (L.map Prod.fst) (R.map Prod.fst),
+    fun (m : StackMode) (L R : List (ℕ × ℕ)) =>
+      evalStackCfg1 m (L.map Prod.fst) (R.map Prod.fst),
+    fun (cfg : Cfg (Fin 2) Λ) => ∃ (m : StackMode) (L R : List (ℕ × ℕ)),
+      cfg = evalStackCfg1 m (L.map Prod.fst) (R.map Prod.fst),
     ?_⟩
   rcases h with ⟨hnilL, hnilR, hheadL, hheadR, ⟨tL, htL, hnsL⟩, ⟨tR, htR, hnsR⟩,
     ⟨sL, oL, sepL, sR, oR, sepR, hsL, hoL, hsepL, hsR, hoR, hsepR, hblkL, hblkR⟩,

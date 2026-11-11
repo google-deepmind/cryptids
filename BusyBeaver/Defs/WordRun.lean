@@ -79,11 +79,22 @@ def regsBitLenAux {Γ : Type*} : (m : ℕ) → (Fin m → List Γ) → (Fin m �
   | m + 1, rw, r => (rw 0).length * r 0 + regsBitLenAux m (fun i => rw i.succ) (fun i => r i.succ)
 
 section
-universe u
+universe u v
 
 /-- Prefix length of a `HalfTapeView`. -/
 def viewPrefixLen {Γ : Type u} (v : HalfTapeView Γ) : ℕ :=
-  v.casesOn (fun p => p.length) (fun p => p.length)
+  HalfTapeView.casesOn (motive := fun _ => ℕ) v List.length List.length
+
+/-- Prefix-extensible non-surjectivity of a family of half-tapes `enc s` (`s` ranging over the
+    valid states): every finite window of every valid half-tape extends to a half-tape that no
+    valid state encodes, i.e. the image has empty interior in the prefix topology. A
+    bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
+    certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
+def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
+    (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
+  ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
+    (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
+
 end
 
 /-- Full symbolic state of a two-sided word-run stack + accumulator system. -/
@@ -273,10 +284,8 @@ def IsWordRunCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ s, ValidState s →
       MergedRunFrames specL s.L ∧ MergedRunFrames specR s.R ∧
       AnchoredFrames specL s.L ∧ AnchoredFrames specR s.R) ∧
-    ((∃ badL : ListBlank (Fin (k + 2)), ∀ s, ValidState s → encHalf specL s.regsL s.L ≠ badL) ∨
-      IsBoundaryAlignedSide .leftSide specL specR ValidState evalCfg) ∧
-    ((∃ badR : ListBlank (Fin (k + 2)), ∀ s, ValidState s → encHalf specR s.regsR s.R ≠ badR) ∨
-      IsBoundaryAlignedSide .rightSide specL specR ValidState evalCfg) ∧
+    IsNowhereDenseFamily ValidState (fun s => encHalf specL s.regsL s.L) ∧
+    IsNowhereDenseFamily ValidState (fun s => encHalf specR s.regsR s.R) ∧
     (∀ s s', ValidState s → stepMacro s = some s' →
       ValidState s' ∧ ∃ n, StrictFrameProgress specL specR s s' n ∧
         ReachesIn M n (evalCfg s) (evalCfg s')) ∧

@@ -17,11 +17,6 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.WordRunStack
 
-set_option linter.style.longLine false
-set_option linter.style.setOption false
-set_option linter.unusedVariables false
-set_option linter.unusedSimpArgs false
-
 variable {Γ : Type*} [Inhabited Γ]
 
 theorem append_assoc_blank (u v : List Γ) (lb : ListBlank Γ) :

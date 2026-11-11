@@ -960,11 +960,22 @@ def regsBitLenAux {Γ : Type*} : (m : ℕ) → (Fin m → List Γ) → (Fin m �
   | m + 1, rw, r => (rw 0).length * r 0 + regsBitLenAux m (fun i => rw i.succ) (fun i => r i.succ)
 
 section
-universe u
+universe u v
 
 /-- Prefix length of a `HalfTapeView`. -/
 def viewPrefixLen {Γ : Type u} (v : HalfTapeView Γ) : ℕ :=
-  v.casesOn (fun p => p.length) (fun p => p.length)
+  HalfTapeView.casesOn (motive := fun _ => ℕ) v List.length List.length
+
+/-- Prefix-extensible non-surjectivity of a family of half-tapes `enc s` (`s` ranging over the
+    valid states): every finite window of every valid half-tape extends to a half-tape that no
+    valid state encodes, i.e. the image has empty interior in the prefix topology. A
+    bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
+    certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
+def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
+    (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
+  ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
+    (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
+
 end
 
 /-- Full symbolic state of a two-sided word-run stack + accumulator system. -/
@@ -1154,10 +1165,8 @@ def IsWordRunCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ s, ValidState s →
       MergedRunFrames specL s.L ∧ MergedRunFrames specR s.R ∧
       AnchoredFrames specL s.L ∧ AnchoredFrames specR s.R) ∧
-    ((∃ badL : ListBlank (Fin (k + 2)), ∀ s, ValidState s → encHalf specL s.regsL s.L ≠ badL) ∨
-      IsBoundaryAlignedSide .leftSide specL specR ValidState evalCfg) ∧
-    ((∃ badR : ListBlank (Fin (k + 2)), ∀ s, ValidState s → encHalf specR s.regsR s.R ≠ badR) ∨
-      IsBoundaryAlignedSide .rightSide specL specR ValidState evalCfg) ∧
+    IsNowhereDenseFamily ValidState (fun s => encHalf specL s.regsL s.L) ∧
+    IsNowhereDenseFamily ValidState (fun s => encHalf specR s.regsR s.R) ∧
     (∀ s s', ValidState s → stepMacro s = some s' →
       ValidState s' ∧ ∃ n, StrictFrameProgress specL specR s s' n ∧
         ReachesIn M n (evalCfg s) (evalCfg s')) ∧
@@ -1246,59 +1255,73 @@ def evalSegmentedHalf {Γ : Type u} [Inhabited Γ] : List (SegRegionKind Γ) →
   | [] => default
   | reg :: rest => ListBlank.append (evalSegRegion reg) (evalSegmentedHalf rest)
 
-/-- Prefix-extensible non-surjectivity of a family of half-tapes `enc s` (`s` ranging over the
-    valid states): every finite window of every valid half-tape extends to a half-tape that no
-    valid state encodes, i.e. the image has empty interior in the prefix topology. A
-    bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
-    certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
-def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
-    (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
-  ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
-    (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
+/-- Structural well-formedness for a `SegRegionKind`: non-empty periodic/word blocks, bounded
+    `.gadget` literals (`w.length ≤ 16`), and no full single-symbol raw alphabet wrapping inside
+    `.wordRun` / `.finWord`. -/
+def SegRegionKind.WellFormed {Γ : Type u} : SegRegionKind Γ → Prop
+  | .reg blk _ => blk ≠ []
+  | .wordRun frames =>
+      (∀ p ∈ frames, p.1 ≠ []) ∧ ¬ ∀ b : Γ, ∃ p ∈ frames, p.1 = [b]
+  | .finWord words =>
+      (∀ w ∈ words, w ≠ []) ∧ ¬ ∀ b : Γ, [b] ∈ words
+  | .gadget w => w.length ≤ 16
 
 /-- `IsNowhereDenseFamily` for the evaluated segmented half-tapes `evalSegmentedHalf (segs s)`. -/
 def IsNowhereDenseHalf {Γ : Type u} {S : Type v} [Inhabited Γ]
     (Valid : S → Prop) (segs : S → List (SegRegionKind Γ)) : Prop :=
   IsNowhereDenseFamily Valid (fun s => evalSegmentedHalf (segs s))
 
+/-- Closed `≤ 3`-region segmented transition system on an explicit `(SegState, Mode)` carrier. -/
+def IsClosedSegmentedSystem {k : ℕ} {Λ : Type u} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ)
+    {SegState Mode : Type}
+    (modes : List Mode)
+    (ValidSeg : SegState → Prop)
+    (modeOf : SegState → Mode)
+    (segsL segsR : SegState → List (SegRegionKind (Fin (k + 2))))
+    (evalCfg : SegState → Cfg (Fin (k + 2)) Λ) : Prop :=
+  1 ≤ modes.length ∧ modes.length ≤ 8 ∧ (∀ m : Mode, m ∈ modes) ∧
+  (∀ s, ValidSeg s →
+    (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3 ∧
+    (∀ r ∈ segsL s, r.WellFormed) ∧ (∀ r ∈ segsR s, r.WellFormed)) ∧
+  (∀ m : Mode, ∃ (q : Λ) (vL vR : HalfTapeView (Fin (k + 2))),
+    viewPrefixLen vL ≤ 8 ∧ viewPrefixLen vR ≤ 8 ∧
+    ∀ s, ValidSeg s → modeOf s = m →
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)),
+        applyView vL (evalSegmentedHalf (segsL s)),
+        applyView vR (evalSegmentedHalf (segsR s))⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q (applyView vL (evalSegmentedHalf (segsL s)))
+        (applyView vR (evalSegmentedHalf (segsR s)))) ∨
+      (evalCfg s = Cfg.headRight q (applyView vL (evalSegmentedHalf (segsL s)))
+        (applyView vR (evalSegmentedHalf (segsR s))))) ∧
+  (IsNowhereDenseHalf ValidSeg segsL ∨ IsNowhereDenseHalf ValidSeg segsR) ∧
+  (IsNowhereDenseHalf ValidSeg segsL ∨
+    (∀ s, ValidSeg s → ∃ (q : Λ) (vR : ListBlank (Fin (k + 2))),
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), evalSegmentedHalf (segsL s), vR⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q (evalSegmentedHalf (segsL s)) vR) ∨
+      (evalCfg s = Cfg.headRight q (evalSegmentedHalf (segsL s)) vR))) ∧
+  (IsNowhereDenseHalf ValidSeg segsR ∨
+    (∀ s, ValidSeg s → ∃ (q : Λ) (vL : ListBlank (Fin (k + 2))),
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), vL, evalSegmentedHalf (segsR s)⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q vL (evalSegmentedHalf (segsR s))) ∨
+      (evalCfg s = Cfg.headRight q vL (evalSegmentedHalf (segsR s))))) ∧
+  (∃ s₀, ValidSeg s₀ ∧ ReachesPlus M (init []) (evalCfg s₀)) ∧
+  (∀ s, ValidSeg s →
+    ∃ cfg', ReachesPlus M (evalCfg s) cfg' ∧
+      ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step M cfg').isNone))
+
 /-- Unifying `≤ 3`-Region Segmented Schema (`IsSegmentedCryptid`). At least one half-tape must
     be `IsNowhereDenseHalf`; a half-tape that is not must be boundary-aligned (no hidden view
-    prefix). -/
+    prefix), and all regions must be `SegRegionKind.WellFormed`. -/
 def IsSegmentedCryptid {k : ℕ} {Λ : Type u} [Inhabited Λ]
     (M : Machine (Fin (k + 2)) Λ) : Prop :=
-  ∃ (SegState : Type)
-    (Mode : Type)
+  ∃ (SegState Mode : Type)
+    (modes : List Mode)
     (ValidSeg : SegState → Prop)
     (modeOf : SegState → Mode)
     (segsL segsR : SegState → List (SegRegionKind (Fin (k + 2))))
     (evalCfg : SegState → Cfg (Fin (k + 2)) Λ),
-    (∃ modes : List Mode, 1 ≤ modes.length ∧ modes.length ≤ 8 ∧ ∀ m : Mode, m ∈ modes) ∧
-    (∀ s, ValidSeg s → (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3) ∧
-    (∀ m : Mode, ∃ (q : Λ) (vL vR : HalfTapeView (Fin (k + 2))),
-      viewPrefixLen vL ≤ 8 ∧ viewPrefixLen vR ≤ 8 ∧
-      ∀ s, ValidSeg s → modeOf s = m →
-        (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)),
-          applyView vL (evalSegmentedHalf (segsL s)),
-          applyView vR (evalSegmentedHalf (segsR s))⟩⟩) ∨
-        (evalCfg s = Cfg.headLeft q (applyView vL (evalSegmentedHalf (segsL s)))
-          (applyView vR (evalSegmentedHalf (segsR s)))) ∨
-        (evalCfg s = Cfg.headRight q (applyView vL (evalSegmentedHalf (segsL s)))
-          (applyView vR (evalSegmentedHalf (segsR s))))) ∧
-    (IsNowhereDenseHalf ValidSeg segsL ∨ IsNowhereDenseHalf ValidSeg segsR) ∧
-    (IsNowhereDenseHalf ValidSeg segsL ∨
-      (∀ s, ValidSeg s → ∃ (q : Λ) (vR : ListBlank (Fin (k + 2))),
-        (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), evalSegmentedHalf (segsL s), vR⟩⟩) ∨
-        (evalCfg s = Cfg.headLeft q (evalSegmentedHalf (segsL s)) vR) ∨
-        (evalCfg s = Cfg.headRight q (evalSegmentedHalf (segsL s)) vR))) ∧
-    (IsNowhereDenseHalf ValidSeg segsR ∨
-      (∀ s, ValidSeg s → ∃ (q : Λ) (vL : ListBlank (Fin (k + 2))),
-        (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), vL, evalSegmentedHalf (segsR s)⟩⟩) ∨
-        (evalCfg s = Cfg.headLeft q vL (evalSegmentedHalf (segsR s))) ∨
-        (evalCfg s = Cfg.headRight q vL (evalSegmentedHalf (segsR s))))) ∧
-    (∃ s₀, ValidSeg s₀ ∧ ReachesPlus M (init []) (evalCfg s₀)) ∧
-    (∀ s, ValidSeg s →
-      ∃ cfg', ReachesPlus M (evalCfg s) cfg' ∧
-        ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step M cfg').isNone))
+    IsClosedSegmentedSystem M modes ValidSeg modeOf segsL segsR evalCfg
 
 namespace SixState
 
@@ -9901,461 +9924,921 @@ end BusyBeaver.M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF
 namespace BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{0}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH
 
 namespace BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{0}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft L)) {{3}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft L)) {{3}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH
 
 namespace BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 5, 1 => none
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---"
 
-theorem is_odometer_cryptid : IsOdometerCryptid target_tm := by sorry
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_odometer_cryptid : IsOdometerCryptid target := by sorry
 end BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH
 
 namespace BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH
 
 namespace BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 3, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+/-- `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAR
+  | mA0R
+  | mEL
+deriving DecidableEq, Repr
+
+def onesSep0 (d : ℕ) : List (Fin 2) :=
+  Nat.rec [0] (fun _ acc => 1 :: acc) d
+
+def lWord (d : ℕ) : List (Fin 2) := 1 :: onesSep0 d
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun d _ acc => lWord d +> acc) S
+
+def rWord (z : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) z
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => rWord z +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAR, .mA0R, .mEL]
+
+def evalSegCfg : SegMode → List ℕ → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mA0R, L, R => (applyView (.id [0]) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mEL, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id []) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 1, Stmt.write 0 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 5, 1 => none
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---"
 
-theorem is_stack_cryptid : IsStackCryptid target_tm := by sorry
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
 end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH
 
 namespace BusyBeaver.M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.left)
-  | 3, 1 => none
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 5, 1 => some (some 4, Stmt.write 1 Dir.left)
+/-- `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mCL
+  | mAR
+  | mA0
+deriving DecidableEq, Repr
+
+def lWord (p : ℕ × Bool) : List (Fin 2) :=
+  Bool.casesOn p.2
+    (Nat.rec [1, 0] (fun _ acc => 1 :: acc) p.1)
+    (Nat.rec [1, 0, 0] (fun _ acc => 1 :: 1 :: acc) p.1)
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def encLeft (S : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) S
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => zWord z +> acc) S
+
+abbrev SegState := SegMode × List (ℕ × Bool) × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def modes : List SegMode := [.mCL, .mAR, .mA0]
+
+def evalSegCfg : SegMode → List (ℕ × Bool) → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encRight R)) {{0}}> (applyView (.id []) (encLeft L))
+  | .mAR, L, R => (applyView (.id []) (encRight R)) <{{4}} (applyView (.id []) (encLeft L))
+  | .mA0, L, R => (applyView (.id []) (encRight R)) <{{4}} (applyView (.id [0]) (encLeft L))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE
 
 namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+/-- `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mCL
+  | mAR
+  | mA0
+deriving DecidableEq, Repr
+
+def lWord (p : ℕ × Bool) : List (Fin 2) :=
+  Bool.casesOn p.2
+    (Nat.rec [1, 0] (fun _ acc => 1 :: acc) p.1)
+    (Nat.rec [1, 0, 0] (fun _ acc => 1 :: 1 :: acc) p.1)
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def encLeft (S : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) S
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => zWord z +> acc) S
+
+abbrev SegState := SegMode × List (ℕ × Bool) × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map zWord)]
+
+def modes : List SegMode := [.mCL, .mAR, .mA0]
+
+def evalSegCfg : SegMode → List (ℕ × Bool) → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id []) (encRight R))
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mA0, L, R => (applyView (.id [0]) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH
 
 namespace BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => none
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.right)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 5, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 5, 1 => some (some 5, Stmt.write 0 Dir.left)
+/-- `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{5}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{2}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{4}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{4}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
 
 namespace BusyBeaver.M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => none
-  | 2, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 3, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 5, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+/-- `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{4}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft L)) {{5}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft L)) {{5}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA
 
 namespace BusyBeaver.M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA
 open Turing BusyBeaver
 
-/-- Transition function for `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => none
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 0 Dir.right)
-  | 3, 1 => some (some 3, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.left)
-  | 4, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+/-- `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{3}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{5}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{5}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA
 
 namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH
 open Turing BusyBeaver
 
-/-- Transition function for `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 0, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 1, Stmt.write 1 Dir.right)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 3, Stmt.write 0 Dir.left)
-  | 4, 0 => some (some 0, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 1, Stmt.write 0 Dir.right)
-  | 5, 1 => none
+/-- `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mCL
+  | mAR
+  | mA0
+deriving DecidableEq, Repr
+
+def lWord (p : ℕ × Bool) : List (Fin 2) :=
+  Bool.casesOn p.2
+    (Nat.rec [1, 0] (fun _ acc => 1 :: acc) p.1)
+    (Nat.rec [1, 0, 0] (fun _ acc => 1 :: 1 :: acc) p.1)
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def encLeft (S : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) S
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => zWord z +> acc) S
+
+abbrev SegState := SegMode × List (ℕ × Bool) × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map zWord)]
+
+def modes : List SegMode := [.mCL, .mAR, .mA0]
+
+def evalSegCfg : SegMode → List (ℕ × Bool) → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id []) (encRight R))
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mA0, L, R => (applyView (.id [0]) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH
 
 namespace BusyBeaver.M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD
 open Turing BusyBeaver
 
-/-- Transition function for `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => none
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.left)
-  | 2, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.right)
-  | 5, 1 => some (some 3, Stmt.write 0 Dir.right)
+/-- `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD
 
 namespace BusyBeaver.M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE
 open Turing BusyBeaver
 
-/-- Transition function for `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => none
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.right)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 2, Stmt.write 0 Dir.left)
-  | 3, 0 => some (some 4, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 1, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 5, Stmt.write 1 Dir.left)
-  | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
-  | 5, 1 => some (some 4, Stmt.write 0 Dir.left)
+/-- `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE"
 
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by sorry
+/-- `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encRight R)) {{1}}> (applyView (.id []) (encLeft L))
+  | .mB0, L, R => (applyView (.id []) (encRight R)) <{{2}} (applyView (.id []) (encLeft L))
+  | .mD0, L, R => (applyView (.id []) (encRight R)) <{{4}} (applyView (.id []) (encLeft (1 :: L)))
+  | .mD1, L, R => (applyView (.id [1]) (encRight R)) <{{4}} (applyView (.id []) (encLeft (1 :: L)))
+  | .mCL, L, R => (applyView (.id [1, 1]) (encRight R)) {{3}}> (applyView (.id []) (encLeft L))
+  | .mCL1, L, R => (applyView (.id [1]) (encRight R)) {{3}}> (applyView (.id []) (encLeft L))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE
 
 namespace BusyBeaver.M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA
 open Turing BusyBeaver
 
-/-- Transition function for `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => none
-  | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
-  | 1, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 3, Stmt.write 0 Dir.left)
-  | 2, 1 => some (some 5, Stmt.write 0 Dir.right)
-  | 3, 0 => some (some 1, Stmt.write 1 Dir.left)
-  | 3, 1 => some (some 4, Stmt.write 0 Dir.right)
-  | 4, 0 => some (some 2, Stmt.write 0 Dir.right)
-  | 4, 1 => some (some 4, Stmt.write 0 Dir.left)
-  | 5, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 5, 1 => some (some 0, Stmt.write 1 Dir.right)
+/-- `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA"
 
-theorem is_odometer_cryptid : IsOdometerCryptid target_tm := by sorry
+/-- `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_odometer_cryptid : IsOdometerCryptid target := by sorry
 end BusyBeaver.M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA
 
 namespace BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE
-open Turing BusyBeaver
+open SixState Turing BusyBeaver
 
-/-- Transition function for `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
-  | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
-  | 0, 1 => some (some 4, Stmt.write 1 Dir.left)
-  | 1, 0 => some (some 2, Stmt.write 0 Dir.left)
-  | 1, 1 => some (some 1, Stmt.write 0 Dir.left)
-  | 2, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 2, 1 => some (some 2, Stmt.write 1 Dir.left)
-  | 3, 0 => some (some 3, Stmt.write 1 Dir.right)
-  | 3, 1 => some (some 0, Stmt.write 1 Dir.right)
-  | 4, 0 => some (some 5, Stmt.write 1 Dir.right)
-  | 4, 1 => some (some 0, Stmt.write 0 Dir.left)
-  | 5, 0 => none
-  | 5, 1 => some (some 4, Stmt.write 1 Dir.right)
+/-- `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE"
 
-theorem is_cryptid : IsCryptid target_tm := by sorry
+/-- `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left := .rep [1] 0 .default
+    head := some A
+    right := .rep [1, 0] 1 (.sym 1 (.rep [1] 2 .default)) }
+
+def pat_Run : TapePattern (Fin 2) (Fin 6) :=
+  { left := .rep [1] 0 .default
+    head := some D
+    right := .default }
+
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .true), (pat_Run, .true)]
+
+inductive State where
+  | A (a c d : ℕ)
+  | Run (a : ℕ)
+  deriving DecidableEq, Repr
+
+def start : State := .A 2 0 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .A a c d =>
+      Cfg.headRight A (([1] : List (Fin 2)) ^ a +> default)
+        (([1, 0] : List (Fin 2)) ^ c +>
+          ((1 : Fin 2) >> (([1] : List (Fin 2)) ^ d +> default)))
+  | .Run a =>
+      Cfg.headRight D (([1] : List (Fin 2)) ^ a +> default) default
+
+def next : State → Option State
+  | .Run a => some (.Run (a + 1))
+  | .A (a + 2) c d => some (.A a (c + 1) d)
+  | .A 0 _ 0 => none
+  | .A 0 c 1 => some (.A (2 * c + 1) 0 0)
+  | .A 0 c (d + 2) => some (.A (2 * c + 1) 1 d)
+  | .A 1 c 0 =>
+      if c % 2 = 0 then some (.Run 1) else some (.A 2 0 (3 * c + 4))
+  | .A 1 c 1 =>
+      if c % 2 = 0 then some (.A 2 0 (3 * c + 6)) else some (.A (3 * c + 5) 0 0)
+  | .A 1 c (d + 2) =>
+      if c % 2 = 0 then some (.A (3 * c + 7) 0 d) else some (.A (3 * c + 5) 0 (d + 1))
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+theorem is_cryptid : IsCryptid target := by sorry
 end BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE

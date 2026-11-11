@@ -47,58 +47,72 @@ def evalSegmentedHalf {Γ : Type u} [Inhabited Γ] : List (SegRegionKind Γ) →
   | [] => default
   | reg :: rest => ListBlank.append (evalSegRegion reg) (evalSegmentedHalf rest)
 
-/-- Prefix-extensible non-surjectivity of a family of half-tapes `enc s` (`s` ranging over the
-    valid states): every finite window of every valid half-tape extends to a half-tape that no
-    valid state encodes, i.e. the image has empty interior in the prefix topology. A
-    bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
-    certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
-def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
-    (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
-  ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
-    (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
+/-- Structural well-formedness for a `SegRegionKind`: non-empty periodic/word blocks, bounded
+    `.gadget` literals (`w.length ≤ 16`), and no full single-symbol raw alphabet wrapping inside
+    `.wordRun` / `.finWord`. -/
+def SegRegionKind.WellFormed {Γ : Type u} : SegRegionKind Γ → Prop
+  | .reg blk _ => blk ≠ []
+  | .wordRun frames =>
+      (∀ p ∈ frames, p.1 ≠ []) ∧ ¬ ∀ b : Γ, ∃ p ∈ frames, p.1 = [b]
+  | .finWord words =>
+      (∀ w ∈ words, w ≠ []) ∧ ¬ ∀ b : Γ, [b] ∈ words
+  | .gadget w => w.length ≤ 16
 
 /-- `IsNowhereDenseFamily` for the evaluated segmented half-tapes `evalSegmentedHalf (segs s)`. -/
 def IsNowhereDenseHalf {Γ : Type u} {S : Type v} [Inhabited Γ]
     (Valid : S → Prop) (segs : S → List (SegRegionKind Γ)) : Prop :=
   IsNowhereDenseFamily Valid (fun s => evalSegmentedHalf (segs s))
 
+/-- Closed `≤ 3`-region segmented transition system on an explicit `(SegState, Mode)` carrier. -/
+def IsClosedSegmentedSystem {k : ℕ} {Λ : Type u} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ)
+    {SegState Mode : Type}
+    (modes : List Mode)
+    (ValidSeg : SegState → Prop)
+    (modeOf : SegState → Mode)
+    (segsL segsR : SegState → List (SegRegionKind (Fin (k + 2))))
+    (evalCfg : SegState → Cfg (Fin (k + 2)) Λ) : Prop :=
+  1 ≤ modes.length ∧ modes.length ≤ 8 ∧ (∀ m : Mode, m ∈ modes) ∧
+  (∀ s, ValidSeg s →
+    (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3 ∧
+    (∀ r ∈ segsL s, r.WellFormed) ∧ (∀ r ∈ segsR s, r.WellFormed)) ∧
+  (∀ m : Mode, ∃ (q : Λ) (vL vR : HalfTapeView (Fin (k + 2))),
+    viewPrefixLen vL ≤ 8 ∧ viewPrefixLen vR ≤ 8 ∧
+    ∀ s, ValidSeg s → modeOf s = m →
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)),
+        applyView vL (evalSegmentedHalf (segsL s)),
+        applyView vR (evalSegmentedHalf (segsR s))⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q (applyView vL (evalSegmentedHalf (segsL s)))
+        (applyView vR (evalSegmentedHalf (segsR s)))) ∨
+      (evalCfg s = Cfg.headRight q (applyView vL (evalSegmentedHalf (segsL s)))
+        (applyView vR (evalSegmentedHalf (segsR s))))) ∧
+  (IsNowhereDenseHalf ValidSeg segsL ∨ IsNowhereDenseHalf ValidSeg segsR) ∧
+  (IsNowhereDenseHalf ValidSeg segsL ∨
+    (∀ s, ValidSeg s → ∃ (q : Λ) (vR : ListBlank (Fin (k + 2))),
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), evalSegmentedHalf (segsL s), vR⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q (evalSegmentedHalf (segsL s)) vR) ∨
+      (evalCfg s = Cfg.headRight q (evalSegmentedHalf (segsL s)) vR))) ∧
+  (IsNowhereDenseHalf ValidSeg segsR ∨
+    (∀ s, ValidSeg s → ∃ (q : Λ) (vL : ListBlank (Fin (k + 2))),
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), vL, evalSegmentedHalf (segsR s)⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q vL (evalSegmentedHalf (segsR s))) ∨
+      (evalCfg s = Cfg.headRight q vL (evalSegmentedHalf (segsR s))))) ∧
+  (∃ s₀, ValidSeg s₀ ∧ ReachesPlus M (init []) (evalCfg s₀)) ∧
+  (∀ s, ValidSeg s →
+    ∃ cfg', ReachesPlus M (evalCfg s) cfg' ∧
+      ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step M cfg').isNone))
+
 /-- Unifying `≤ 3`-Region Segmented Schema (`IsSegmentedCryptid`). At least one half-tape must
     be `IsNowhereDenseHalf`; a half-tape that is not must be boundary-aligned (no hidden view
-    prefix). -/
+    prefix), and all regions must be `SegRegionKind.WellFormed`. -/
 def IsSegmentedCryptid {k : ℕ} {Λ : Type u} [Inhabited Λ]
     (M : Machine (Fin (k + 2)) Λ) : Prop :=
-  ∃ (SegState : Type)
-    (Mode : Type)
+  ∃ (SegState Mode : Type)
+    (modes : List Mode)
     (ValidSeg : SegState → Prop)
     (modeOf : SegState → Mode)
     (segsL segsR : SegState → List (SegRegionKind (Fin (k + 2))))
     (evalCfg : SegState → Cfg (Fin (k + 2)) Λ),
-    (∃ modes : List Mode, 1 ≤ modes.length ∧ modes.length ≤ 8 ∧ ∀ m : Mode, m ∈ modes) ∧
-    (∀ s, ValidSeg s → (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3) ∧
-    (∀ m : Mode, ∃ (q : Λ) (vL vR : HalfTapeView (Fin (k + 2))),
-      viewPrefixLen vL ≤ 8 ∧ viewPrefixLen vR ≤ 8 ∧
-      ∀ s, ValidSeg s → modeOf s = m →
-        (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)),
-          applyView vL (evalSegmentedHalf (segsL s)),
-          applyView vR (evalSegmentedHalf (segsR s))⟩⟩) ∨
-        (evalCfg s = Cfg.headLeft q (applyView vL (evalSegmentedHalf (segsL s)))
-          (applyView vR (evalSegmentedHalf (segsR s)))) ∨
-        (evalCfg s = Cfg.headRight q (applyView vL (evalSegmentedHalf (segsL s)))
-          (applyView vR (evalSegmentedHalf (segsR s))))) ∧
-    (IsNowhereDenseHalf ValidSeg segsL ∨ IsNowhereDenseHalf ValidSeg segsR) ∧
-    (IsNowhereDenseHalf ValidSeg segsL ∨
-      (∀ s, ValidSeg s → ∃ (q : Λ) (vR : ListBlank (Fin (k + 2))),
-        (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), evalSegmentedHalf (segsL s), vR⟩⟩) ∨
-        (evalCfg s = Cfg.headLeft q (evalSegmentedHalf (segsL s)) vR) ∨
-        (evalCfg s = Cfg.headRight q (evalSegmentedHalf (segsL s)) vR))) ∧
-    (IsNowhereDenseHalf ValidSeg segsR ∨
-      (∀ s, ValidSeg s → ∃ (q : Λ) (vL : ListBlank (Fin (k + 2))),
-        (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), vL, evalSegmentedHalf (segsR s)⟩⟩) ∨
-        (evalCfg s = Cfg.headLeft q vL (evalSegmentedHalf (segsR s))) ∨
-        (evalCfg s = Cfg.headRight q vL (evalSegmentedHalf (segsR s))))) ∧
-    (∃ s₀, ValidSeg s₀ ∧ ReachesPlus M (init []) (evalCfg s₀)) ∧
-    (∀ s, ValidSeg s →
-      ∃ cfg', ReachesPlus M (evalCfg s) cfg' ∧
-        ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step M cfg').isNone))
+    IsClosedSegmentedSystem M modes ValidSeg modeOf segsL segsR evalCfg
 
 end BusyBeaver

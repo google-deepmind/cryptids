@@ -12,30 +12,26 @@ public import BusyBeaver.WordRunStack
 
 @[expose] public section
 
-set_option linter.style.longLine false
-set_option linter.style.setOption false
-set_option linter.style.multiGoal false
-set_option linter.deprecated false
-set_option linter.flexible false
 
 /-!
-# Busy Beaver Machine `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` — `is_stack_cryptid` (`IsStackCryptid target_tm`)
+# Busy Beaver Machine `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` (`IsStackCryptid`)
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---`. Do not modify the trusted
-definitions section or the goal theorem signature.
+Formal `IsStackCryptid` proof for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` (`target`).
 -/
 
 open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+/-- The `(6, 2)` Turing machine in `ConjectureMachines.Machine` form. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+/-- The `(6, 2)` Turing machine in `BusyBeaver.Machine` form. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
 
-/-- Transition function for `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
+private def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
   | 0, 1 => some (some 4, Stmt.write 0 Dir.left)
   | 1, 0 => some (some 2, Stmt.write 1 Dir.left)
@@ -49,19 +45,19 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 0, Stmt.write 1 Dir.left)
   | 5, 1 => none
 
--- END TRUSTED DEFINITIONS
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-
-def A : Fin 6 := 0
-def B : Fin 6 := 1
-def C : Fin 6 := 2
-def D : Fin 6 := 3
-def E : Fin 6 := 4
-def F : Fin 6 := 5
+private theorem target_eq_target_tm : target = target_tm := by
+  funext q s
+  fin_cases q <;> fin_cases s <;> rfl
+private def A : Fin 6 := 0
+private def B : Fin 6 := 1
+private def C : Fin 6 := 2
+private def D : Fin 6 := 3
+private def E : Fin 6 := 4
+private def F : Fin 6 := 5
 
 open BusyBeaver.PairStack Counter
 
-lemma zero_pow_one_add (n : ℕ) :
+private theorem zero_pow_one_add (n : ℕ) :
     (([0] : List (Fin 2)) ^ (1 + n)) = (0 : Fin 2) :: (([0] : List (Fin 2)) ^ n) := by
   rw [Nat.add_comm 1 n, pow_succ_list, cons_append_list, nil_append_list]
 
@@ -69,204 +65,216 @@ lemma zero_pow_one_add (n : ℕ) :
 -- 2nd-Order Digit-Stack Encodings (`pol = 0, maxSepL = 4, maxSepR = 4`)
 -- ============================================================================
 
-def encLeft : List (ℕ × ℕ) → ListBlank (Fin 2)
+private def encLeft : List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
-  | (a, b) :: L => (encLeft L <+ (([0] : List (Fin 2)) ^ (1 + b % 4))) <+ (([1] : List (Fin 2)) ^ (1 * a + 1))
+  | (a, b) :: L =>
+    (encLeft L <+ (([0] : List (Fin 2)) ^ (1 + b % 4))) <+ (([1] : List (Fin 2)) ^ (1 * a + 1))
 
-def encRight : List (ℕ × ℕ) → ListBlank (Fin 2)
+private def encRight : List (ℕ × ℕ) → ListBlank (Fin 2)
   | [] => default
-  | (d, b) :: R => (([1] : List (Fin 2)) ^ (1 * d + 1)) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight R)
+  | (d, b) :: R =>
+    (([1] : List (Fin 2)) ^ (1 * d + 1)) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight R)
 
-def encTail (S : List (ℕ × ℕ)) : ListBlank (Fin 2) := (encRight S).tail
+private def encTail (S : List (ℕ × ℕ)) : ListBlank (Fin 2) := (encRight S).tail
 
-@[simp] lemma encLeft_nil : encLeft [] = default := rfl
-@[simp] lemma encLeft_cons (a b : ℕ) (L : List (ℕ × ℕ)) :
-    encLeft ((a, b) :: L) = (encLeft L <+ (([0] : List (Fin 2)) ^ (1 + b % 4))) <+ (([1] : List (Fin 2)) ^ (1 * a + 1)) := rfl
-@[simp] lemma encRight_nil : encRight [] = default := rfl
-@[simp] lemma encRight_cons (d b : ℕ) (R : List (ℕ × ℕ)) :
-    encRight ((d, b) :: R) = (([1] : List (Fin 2)) ^ (1 * d + 1)) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight R) := rfl
+@[simp] private theorem encLeft_nil : encLeft [] = default := rfl
+@[simp] private theorem encLeft_cons (a b : ℕ) (L : List (ℕ × ℕ)) :
+    encLeft ((a, b) :: L) = (encLeft L <+ (([0] : List (Fin 2)) ^ (1 + b % 4))) <+
+      (([1] : List (Fin 2)) ^ (1 * a + 1)) := rfl
+@[simp] private theorem encRight_nil : encRight [] = default := rfl
+@[simp] private theorem encRight_cons (d b : ℕ) (R : List (ℕ × ℕ)) :
+    encRight ((d,
+      b) :: R) = (([1] : List (Fin 2)) ^ (1 * d + 1)) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +>
+        encRight R) := rfl
 
-lemma encLeft_eq_encRight (S : List (ℕ × ℕ)) : encLeft S = encRight S := by
+private theorem encLeft_eq_encRight (S : List (ℕ × ℕ)) : encLeft S = encRight S := by
   induction S with
   | nil => rfl
   | cons p S' ih =>
     rcases p with ⟨a, b⟩
     simp only [encLeft, encRight, ih]
 
-@[simp] lemma encLeft_tail (S : List (ℕ × ℕ)) : (encLeft S).tail = encTail S := by
+@[simp] private theorem encLeft_tail (S : List (ℕ × ℕ)) : (encLeft S).tail = encTail S := by
   rw [encLeft_eq_encRight]; rfl
 
-lemma encRight_tail (S : List (ℕ × ℕ)) : (encRight S).tail = encTail S := rfl
+private theorem encRight_tail (S : List (ℕ × ℕ)) : (encRight S).tail = encTail S := rfl
 
-@[simp] lemma encTail_nil : encTail [] = default := rfl
+@[simp] private theorem encTail_nil : encTail [] = default := rfl
 
-lemma encRight_cons_simp (d b : ℕ) (R : List (ℕ × ℕ)) :
-    encRight ((d, b) :: R) = (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ d) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight R)) := by
+private theorem encRight_cons_simp (d b : ℕ) (R : List (ℕ × ℕ)) :
+    encRight ((d,
+      b) :: R) = (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ d) +>
+        ((([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight R)) := by
   simp only [encRight_cons, Nat.one_mul]
   rw [Nat.add_comm d 1, list_pow_add, listblank_append_right_assoc]
   rfl
 
-lemma encRight_succ (d b : ℕ) (R : List (ℕ × ℕ)) :
+private theorem encRight_succ (d b : ℕ) (R : List (ℕ × ℕ)) :
     encRight ((d + 1, b) :: R) = (1 : Fin 2) >> encRight ((d, b) :: R) := by
   simp only [encRight_cons, Nat.one_mul]
   rw [Nat.add_comm (d + 1) 1, list_pow_add, listblank_append_right_assoc]
   rfl
 
-lemma encTail_cons (a b : ℕ) (S : List (ℕ × ℕ)) :
-    encTail ((a, b) :: S) = (([1] : List (Fin 2)) ^ a) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight S) := by
+private theorem encTail_cons (a b : ℕ) (S : List (ℕ × ℕ)) :
+    encTail ((a, b) :: S) = (([1] : List (Fin 2)) ^ a) +> ((([0] : List (Fin 2)) ^ (1 + b % 4)) +>
+      encRight S) := by
   unfold encTail
   rw [encRight_cons_simp, Turing.ListBlank.tail_cons]
 
-lemma encRight_cons_eq_one_cons_encTail (a b : ℕ) (S : List (ℕ × ℕ)) :
+private theorem encRight_cons_eq_one_cons_encTail (a b : ℕ) (S : List (ℕ × ℕ)) :
     encRight ((a, b) :: S) = (1 : Fin 2) >> encTail ((a, b) :: S) := by
   unfold encTail
   rw [encRight_cons_simp, Turing.ListBlank.tail_cons]
 
-lemma encTail_zero (b : ℕ) (S : List (ℕ × ℕ)) :
+private theorem encTail_zero (b : ℕ) (S : List (ℕ × ℕ)) :
     encTail ((0, b) :: S) = (([0] : List (Fin 2)) ^ (1 + b % 4)) +> encRight S := by
   rw [encTail_cons]; rfl
 
-lemma encTail_succ (a b : ℕ) (S : List (ℕ × ℕ)) :
+private theorem encTail_succ (a b : ℕ) (S : List (ℕ × ℕ)) :
     encTail ((a + 1, b) :: S) = (1 : Fin 2) >> encTail ((a, b) :: S) := by
   unfold encTail
   rw [encRight_succ, Turing.ListBlank.tail_cons, encRight_cons_simp, Turing.ListBlank.tail_cons]
 
-lemma mod4_cases (b : ℕ) : b % 4 = 0 ∨ b % 4 = 1 ∨ b % 4 = 2 ∨ b % 4 = 3 := by
+private theorem mod4_cases (b : ℕ) : b % 4 = 0 ∨ b % 4 = 1 ∨ b % 4 = 2 ∨ b % 4 = 3 := by
   have := Nat.mod_lt b (by decide : 0 < 4)
   omega
 
-def bumpHead : List (ℕ × ℕ) → List (ℕ × ℕ)
+private def bumpHead : List (ℕ × ℕ) → List (ℕ × ℕ)
   | [] => [(0, 0)]
   | (a, b) :: S => (a + 1, b) :: S
 
-def tailAsRight : List (ℕ × ℕ) → List (ℕ × ℕ)
+private def tailAsRight : List (ℕ × ℕ) → List (ℕ × ℕ)
   | [] => [(0, 0)]
   | (a, b) :: S => (a, b) :: S
 
-def rightAsTail : List (ℕ × ℕ) → List (ℕ × ℕ)
+private def rightAsTail : List (ℕ × ℕ) → List (ℕ × ℕ)
   | [] => []
   | (a, b) :: S => (a + 1, b) :: S
 
-def pushZeroSep (b : ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
+private def pushZeroSep (b : ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
   | [] => []
   | (a, b') :: S => (0, b) :: (a, b') :: S
 
-def peelSep (k : ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
+private def peelSep (k : ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
   | [] => []
   | (a, b') :: S =>
     if k % 4 = 0 then (a + 1, b') :: S
     else (0, k % 4 - 1) :: (a, b') :: S
 
-def peelInner (b : ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
+private def peelInner (b : ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
   | [] => [(0, 0)]
   | (a₂, b₂) :: rs =>
     if b % 4 = 1 then (a₂ + 1, b₂) :: rs
     else if b % 4 = 2 then (0, 0) :: (a₂, b₂) :: rs
     else (0, 1) :: (a₂, b₂) :: rs
 
-lemma encRight_bumpHead (S : List (ℕ × ℕ)) :
+private theorem encRight_bumpHead (S : List (ℕ × ℕ)) :
     encRight (bumpHead S) = (1 : Fin 2) >> encRight S := by
   rcases S with _ | ⟨⟨a, b⟩, S'⟩
   · simp [bumpHead]
   · exact encRight_succ a b S'
 
-lemma encRight_tailAsRight (S : List (ℕ × ℕ)) :
+private theorem encRight_tailAsRight (S : List (ℕ × ℕ)) :
     encRight (tailAsRight S) = (1 : Fin 2) >> encTail S := by
   rcases S with _ | ⟨⟨a, b⟩, S'⟩
   · simp [tailAsRight]
   · exact encRight_cons_eq_one_cons_encTail a b S'
 
-lemma encTail_rightAsTail (S : List (ℕ × ℕ)) :
+private theorem encTail_rightAsTail (S : List (ℕ × ℕ)) :
     encTail (rightAsTail S) = encRight S := by
   rcases S with _ | ⟨⟨a, b⟩, S'⟩
   · rfl
   · unfold encTail rightAsTail
     rw [encRight_succ, Turing.ListBlank.tail_cons]
 
-lemma encTail_pushZeroSep (b : ℕ) (hb : b < 4) (S : List (ℕ × ℕ)) :
+private theorem encTail_pushZeroSep (b : ℕ) (hb : b < 4) (S : List (ℕ × ℕ)) :
     encTail (pushZeroSep b S) = (([0] : List (Fin 2)) ^ (1 + b)) +> encRight S := by
   rcases S with _ | ⟨⟨a, b'⟩, S'⟩
   · simp [pushZeroSep]
   · rw [pushZeroSep, encTail_zero, Nat.mod_eq_of_lt hb]
 
-lemma encTail_peelSep (k : ℕ) (S : List (ℕ × ℕ)) :
+private theorem encTail_peelSep (k : ℕ) (S : List (ℕ × ℕ)) :
     encTail (peelSep k S) = (([0] : List (Fin 2)) ^ (k % 4)) +> encRight S := by
   rcases S with _ | ⟨⟨a, b'⟩, S'⟩
   · simp [peelSep]
   · rcases mod4_cases k with h0 | h1 | h2 | h3
-    · rw [peelSep, if_pos h0, h0, encTail_succ, encRight_cons_eq_one_cons_encTail]
+    · rw [peelSep, ite_eq_left h0, h0, encTail_succ, encRight_cons_eq_one_cons_encTail]
       rfl
     · simp [peelSep, h1, encTail_zero]
     · simp [peelSep, h2, encTail_zero]
     · simp [peelSep, h3, encTail_zero]
 
-lemma peelInner_ne_nil (b : ℕ) (S : List (ℕ × ℕ)) : peelInner b S ≠ [] := by
+private theorem peelInner_ne_nil (b : ℕ) (S : List (ℕ × ℕ)) : peelInner b S ≠ [] := by
   rcases S with _ | ⟨⟨a₂, b₂⟩, rs⟩
   · simp [peelInner]
   · dsimp [peelInner]
     split_ifs <;> simp
 
-lemma encRight_zero_peelInner (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 ≠ 0) :
-    encRight ((0, b) :: S) = (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encTail (peelInner b S) := by
+private theorem encRight_zero_peelInner (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 ≠ 0) :
+    encRight ((0,
+      b) :: S) = (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encTail (peelInner b S) := by
   rcases S with _ | ⟨⟨a₂, b₂⟩, rs⟩
   · simp [peelInner, encTail_zero]
   · rcases mod4_cases b with h0 | h1 | h2 | h3
     · rcases h with hnil | hne
       · contradiction
       · exact False.elim (hne h0)
-    · rw [peelInner, if_pos h1, encRight_cons_simp 0 b, h1, encTail_succ,
+    · rw [peelInner, ite_eq_left h1, encRight_cons_simp 0 b, h1, encTail_succ,
         encRight_cons_eq_one_cons_encTail]
       rfl
     · have h1 : b % 4 ≠ 1 := by omega
-      rw [peelInner, if_neg h1, if_pos h2, encRight_cons_simp 0 b, h2, encTail_zero]
+      rw [peelInner, ite_eq_right h1, ite_eq_left h2, encRight_cons_simp 0 b, h2, encTail_zero]
       rfl
     · have h1 : b % 4 ≠ 1 := by omega
       have h2 : b % 4 ≠ 2 := by omega
-      rw [peelInner, if_neg h1, if_neg h2, encRight_cons_simp 0 b, h3, encTail_zero]
+      rw [peelInner, ite_eq_right h1, ite_eq_right h2, encRight_cons_simp 0 b, h3, encTail_zero]
       rfl
 
-lemma encRight_one_peelInner (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 ≠ 0) :
-    encRight ((1, b) :: S) = (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encTail (peelInner b S) := by
+private theorem encRight_one_peelInner (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 ≠ 0) :
+    encRight ((1,
+      b) :: S) = (1 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+        encTail (peelInner b S) := by
   rw [encRight_succ 0 b S, encRight_zero_peelInner b S h]
 
 -- ============================================================================
 -- Stack System Definition & Witness Checks
 -- ============================================================================
 
-def cfg_M0 (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+private def cfg_M0 (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
   ⟨some A, ⟨0, (encLeft L).tail, (encRight R).tail⟩⟩
 
-inductive StackMode
+private inductive StackMode
   | M0
 deriving DecidableEq
 
-def evalStackCfg : StackMode → List (ℕ × ℕ) → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+private def evalStackCfg : StackMode → List (ℕ × ℕ) → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
   | .M0, L, R => cfg_M0 L R
 
-def IsInStackSystem (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
+private def IsInStackSystem (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ m L R, cfg = evalStackCfg m L R
 
-lemma cfg_M0_eq (L R : List (ℕ × ℕ)) :
+private theorem cfg_M0_eq (L R : List (ℕ × ℕ)) :
     cfg_M0 L R = ⟨some A, ⟨0, encTail L, encTail R⟩⟩ := by
   simp [cfg_M0, encRight_tail]
 
-lemma valid_stack_modes : IsValidStackModes encLeft encRight evalStackCfg := by
+private theorem valid_stack_modes : IsValidStackModes encLeft encRight evalStackCfg := by
   intro m
   cases m with
   | M0 => exact ⟨A, .tail [], .tail [], by decide, by decide, Or.inl (fun _ _ => rfl)⟩
 
-theorem audit_encRight_head (d b : ℕ) (R : List (ℕ × ℕ)) :
+private theorem audit_encRight_head (d b : ℕ) (R : List (ℕ × ℕ)) :
     (encRight ((d, b) :: R)).head = 1 := by
   rw [encRight_cons_simp, Turing.ListBlank.head_cons]
 
-theorem audit_encLeft_head (a b : ℕ) (L : List (ℕ × ℕ)) :
+private theorem audit_encLeft_head (a b : ℕ) (L : List (ℕ × ℕ)) :
     (encLeft ((a, b) :: L)).head = 1 := by
   rw [encLeft_eq_encRight]
   exact audit_encRight_head a b L
 
-theorem audit_encRight_not_surjective :
+private theorem audit_encRight_not_surjective :
     ∃ t : ListBlank (Fin 2), t.head = 1 ∧ ∀ R : List (ℕ × ℕ), encRight R ≠ t := by
-  refine ⟨(1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default, rfl, ?_⟩
+  refine ⟨(1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+    (0 : Fin 2) >> (1 : Fin 2) >> default, rfl, ?_⟩
   intro R h
   rcases R with _ | ⟨⟨_ | d, b⟩, R'⟩
   · have h1 := congrArg (fun s => s.head) h
@@ -305,7 +313,7 @@ theorem audit_encRight_not_surjective :
     simp only [Turing.ListBlank.tail_cons, Turing.ListBlank.head_cons, audit_encRight_head] at hc
     contradiction
 
-theorem audit_encLeft_not_surjective :
+private theorem audit_encLeft_not_surjective :
     ∃ t : ListBlank (Fin 2), t.head = 1 ∧ ∀ L : List (ℕ × ℕ), encLeft L ≠ t := by
   obtain ⟨t, ht, hR⟩ := audit_encRight_not_surjective
   exact ⟨t, ht, fun L hL => hR L (by rwa [← encLeft_eq_encRight])⟩
@@ -337,12 +345,12 @@ macro "execute" n:num : tactic => `(tactic| (
   iterate $n step
   finish))
 
-lemma F_halt_on_one (tL rD : ListBlank (Fin 2)) :
+private theorem F_halt_on_one (tL rD : ListBlank (Fin 2)) :
     (step target_tm (((1 : Fin 2) >> tL) <{{F}} rD)).isNone = true := by
   unfold step
   simp only [Turing.ListBlank.head_cons, F, target_tm, Option.map_none, Option.isNone_none]
 
-theorem init_reaches_stack_system :
+private theorem init_reaches_stack_system :
     ∃ cfg₀, ((init []) [target_tm]⊢⁺ cfg₀) ∧ IsInStackSystem cfg₀ := by
   refine ⟨cfg_M0 [] [(1, 0), (0, 0)], ?_, ⟨.M0, [], [(1, 0), (0, 0)], rfl⟩⟩
   rw [init_nil, cfg_M0_eq, encTail_nil, encTail_succ, encTail_zero, encRight_cons_simp]
@@ -354,73 +362,78 @@ theorem init_reaches_stack_system :
 -- Intermediate Configurations (`cfg_D`, `wall`, `P_cfg`, `F_cfg`)
 -- ============================================================================
 
-def cfg_D (c : ℕ) (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+private def cfg_D (c : ℕ) (L R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
   (encTail L) <{{D}} ((([0] : List (Fin 2)) ^ (1 + c)) +> ((1 : Fin 2) >> encTail R))
 
-def wall (L'' : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
-  (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail L''
+private def wall (L'' : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >>
+    encTail L''
 
-def P_cfg (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 6) :=
+private def P_cfg (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ))
+    : Cfg (Fin 2) (Fin 6) :=
   ⟨some A, ⟨0, W +> wall L'', encRight R⟩⟩
 
-inductive FState
+private inductive FState
   | F00 | F01 | F02 | F03 | F04 | F05 | F06
 deriving DecidableEq
 
-def F_cfg : FState → List (ℕ × ℕ) → List (Fin 2) → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+private def F_cfg : FState → List (ℕ × ℕ) → List (Fin 2) → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
   | .F00, L'', W, R => (W +> wall L'') <{{E}} ((0 : Fin 2) >> encRight R)
   | .F01, L'', W, R => (W +> wall L'') <{{C}} ((0 : Fin 2) >> (0 : Fin 2) >> encRight R)
   | .F02, L'', W, R => (W +> wall L'') <{{A}} ((1 : Fin 2) >> (0 : Fin 2) >> encRight R)
-  | .F03, L'', W, R => (W +> wall L'') <{{D}} ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R)
-  | .F04, L'', W, R => (W +> wall L'') <{{A}} ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R)
-  | .F05, L'', W, R => (W +> wall L'') <{{F}} ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R)
+  | .F03, L'', W, R =>
+    (W +> wall L'') <{{D}} ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R)
+  | .F04, L'', W, R =>
+    (W +> wall L'') <{{A}} ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R)
+  | .F05, L'', W, R =>
+    (W +> wall L'') <{{F}} ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R)
   | .F06, L'', W, R => (W +> wall L'') <{{A}} encRight R
 
 -- Stage 2: `cfg_D c L R` (`c < 4`) -> `cfg_M0`, Halt, or `P_cfg`
 -- ============================================================================
 
-lemma RD_eq_encRight (c : ℕ) (hc : c < 4) (R : List (ℕ × ℕ)) :
+private theorem RD_eq_encRight (c : ℕ) (hc : c < 4) (R : List (ℕ × ℕ)) :
     (1 : Fin 2) >> ((([0] : List (Fin 2)) ^ (1 + c)) +> ((1 : Fin 2) >> encTail R)) =
       encRight ((0, c) :: tailAsRight R) := by
   rw [encRight_cons_simp, Nat.mod_eq_of_lt hc, encRight_tailAsRight]
   rfl
 
-lemma RD_eq_encTail_one (c : ℕ) (hc : c < 4) (R : List (ℕ × ℕ)) :
+private theorem RD_eq_encTail_one (c : ℕ) (hc : c < 4) (R : List (ℕ × ℕ)) :
     (1 : Fin 2) >> ((([0] : List (Fin 2)) ^ (1 + c)) +> ((1 : Fin 2) >> encTail R)) =
       encTail ((1, c) :: tailAsRight R) := by
   rw [encTail_succ, encTail_zero, Nat.mod_eq_of_lt hc, encRight_tailAsRight]
 
-lemma one_cons_RD_eq (c : ℕ) (hc : c < 4) (R : List (ℕ × ℕ)) :
+private theorem one_cons_RD_eq (c : ℕ) (hc : c < 4) (R : List (ℕ × ℕ)) :
     (1 : Fin 2) >> ((([0] : List (Fin 2)) ^ (1 + c)) +> ((1 : Fin 2) >> encTail R)) =
       (1 : Fin 2) >> encTail ((0, c) :: tailAsRight R) := by
   rw [encTail_zero, Nat.mod_eq_of_lt hc, encRight_tailAsRight]
 
-lemma D_leaf_00 (tL rD : ListBlank (Fin 2)) :
+private theorem D_leaf_00 (tL rD : ListBlank (Fin 2)) :
     (((0 : Fin 2) >> (0 : Fin 2) >> tL) <{{D}} rD) [target_tm]⊢⁺
       ⟨some A, ⟨0, tL, (1 : Fin 2) >> rD⟩⟩ := by
   execute 1
 
-lemma D_leaf_0100 (tL rD : ListBlank (Fin 2)) :
+private theorem D_leaf_0100 (tL rD : ListBlank (Fin 2)) :
     (((0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> tL) <{{D}} rD) [target_tm]⊢⁺
       ⟨some A, ⟨0, (0 : Fin 2) >> tL, (0 : Fin 2) >> (1 : Fin 2) >> rD⟩⟩ := by
   execute 4
 
-lemma D_leaf_0101 (tL rD : ListBlank (Fin 2)) :
+private theorem D_leaf_0101 (tL rD : ListBlank (Fin 2)) :
     (((0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> tL) <{{D}} rD) [target_tm]⊢⁺
       (tL <{{D}} ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> rD)) := by
   execute 4
 
-lemma D_leaf_011 (tL rD : ListBlank (Fin 2)) :
+private theorem D_leaf_011 (tL rD : ListBlank (Fin 2)) :
     (((0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> tL) <{{D}} rD) [target_tm]⊢⁺
       ⟨some A, ⟨0, (0 : Fin 2) >> tL, (1 : Fin 2) >> rD⟩⟩ := by
   execute 5
 
-lemma D_leaf_11 (tL rD : ListBlank (Fin 2)) :
+private theorem D_leaf_11 (tL rD : ListBlank (Fin 2)) :
     (((1 : Fin 2) >> (1 : Fin 2) >> tL) <{{D}} rD) [target_tm]⊢⁺
       (((1 : Fin 2) >> tL) <{{F}} ((1 : Fin 2) >> rD)) := by
   execute 1
 
-lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
+private theorem D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
     ∃ cfg', ((cfg_D c L R) [target_tm]⊢⁺ cfg') ∧
       (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone ∨
        (∃ L'' R_P, R_P ≠ [] ∧ cfg' = P_cfg L'' [] R_P) ∨
@@ -429,7 +442,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
   set rD := (([0] : List (Fin 2)) ^ (1 + c)) +> ((1 : Fin 2) >> encTail R)
   have hrD_right : (1 : Fin 2) >> rD = encRight ((0, c) :: tailAsRight R) := RD_eq_encRight c hc R
   have hrD_tail : (1 : Fin 2) >> rD = encTail ((1, c) :: tailAsRight R) := RD_eq_encTail_one c hc R
-  have hrD_one : (1 : Fin 2) >> rD = (1 : Fin 2) >> encTail ((0, c) :: tailAsRight R) := one_cons_RD_eq c hc R
+  have hrD_one : (1 : Fin 2) >> rD = (1 : Fin 2) >> encTail ((0, c) :: tailAsRight R) :=
+    one_cons_RD_eq c hc R
   have hrD_one_right : (1 : Fin 2) >> (1 : Fin 2) >> rD = encRight ((1, c) :: tailAsRight R) := by
     rw [hrD_tail, ← encRight_cons_eq_one_cons_encTail]
   have hrD_two : (1 : Fin 2) >> (1 : Fin 2) >> rD = encTail ((2, c) :: tailAsRight R) := by
@@ -448,7 +462,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
         have hL : encTail [(0, b₁)] = (0 : Fin 2) >> (0 : Fin 2) >> encTail [] := by
           simp [encTail_zero]
         rw [hL]
-        refine ⟨cfg_M0 [] ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, [], (1, c) :: tailAsRight R, rfl⟩⟩
+        refine ⟨cfg_M0 [] ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, [], (1,
+          c) :: tailAsRight R, rfl⟩⟩
         rw [cfg_M0_eq, ← hrD_tail]
         exact D_leaf_00 (encTail []) rD
       · rcases mod4_cases b₁ with hb0 | hb1 | hb2 | hb3
@@ -469,72 +484,95 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
             · rcases mod4_cases b₂ with h20 | h21 | h22 | h23
               · -- b₂ % 4 = 0 -> cfg_D 2 ((a₃, b₃) :: L''') ((0, c) :: tailAsRight R)
                 have hL : encTail ((0, b₁) :: (0, b₂) :: (a₃, b₃) :: L''') =
-                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail ((a₃, b₃) :: L''') := by
+                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail ((a₃,
+                      b₃) :: L''') := by
                   rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_zero, h20,
                     encRight_cons_eq_one_cons_encTail]
                   rfl
                 rw [hL]
                 refine ⟨cfg_D 2 ((a₃, b₃) :: L''') ((0, c) :: tailAsRight R), ?_,
-                  Or.inr (Or.inr (Or.inr ⟨2, (a₃, b₃) :: L''', (0, c) :: tailAsRight R, by decide, by simp, rfl⟩))⟩
+                  Or.inr (Or.inr (Or.inr ⟨2, (a₃, b₃) :: L''', (0, c) :: tailAsRight R,
+                    by decide, by simp, rfl⟩))⟩
                 unfold cfg_D
                 dsimp only [pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
                   listblank_append_cons, listblank_append_nil]
                 rw [← hrD_one]
                 exact D_leaf_0101 (encTail ((a₃, b₃) :: L''')) rD
-              · -- b₂ % 4 = 1 -> cfg_M0 ((0, 0) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R)
+              · -- b₂ % 4 = 1 -> cfg_M0 ((0, 0) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) ::
+                -- tailAsRight R)
                 have hL : encTail ((0, b₁) :: (0, b₂) :: (a₃, b₃) :: L''') =
-                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight ((a₃, b₃) :: L''') := by
+                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight ((a₃,
+                      b₃) :: L''') := by
                   rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_zero, h21]
                   rfl
                 rw [hL]
-                refine ⟨cfg_M0 ((0, 0) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
-                rw [cfg_M0_eq, encTail_zero 0 ((a₃, b₃) :: L'''), encTail_zero 0 ((0, c) :: tailAsRight R)]
+                refine ⟨cfg_M0 ((0, 0) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R),
+                  ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+                rw [cfg_M0_eq, encTail_zero 0 ((a₃, b₃) :: L'''), encTail_zero 0 ((0,
+                  c) :: tailAsRight R)]
                 simpa [hrD_right] using D_leaf_0100 (encRight ((a₃, b₃) :: L''')) rD
-              · -- b₂ % 4 = 2 -> cfg_M0 ((0, 1) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R)
+              · -- b₂ % 4 = 2 -> cfg_M0 ((0, 1) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) ::
+                -- tailAsRight R)
                 have hL : encTail ((0, b₁) :: (0, b₂) :: (a₃, b₃) :: L''') =
-                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> ((0 : Fin 2) >> encRight ((a₃, b₃) :: L''')) := by
+                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> ((0 : Fin 2) >>
+                      encRight ((a₃, b₃) :: L''')) := by
                   rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_zero, h22]
                   rfl
                 rw [hL]
-                refine ⟨cfg_M0 ((0, 1) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
-                rw [cfg_M0_eq, encTail_zero 1 ((a₃, b₃) :: L'''), encTail_zero 0 ((0, c) :: tailAsRight R)]
+                refine ⟨cfg_M0 ((0, 1) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R),
+                  ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+                rw [cfg_M0_eq, encTail_zero 1 ((a₃, b₃) :: L'''), encTail_zero 0 ((0,
+                  c) :: tailAsRight R)]
                 simpa [hrD_right] using D_leaf_0100 ((0 : Fin 2) >> encRight ((a₃, b₃) :: L''')) rD
-              · -- b₂ % 4 = 3 -> cfg_M0 ((0, 2) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R)
+              · -- b₂ % 4 = 3 -> cfg_M0 ((0, 2) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) ::
+                -- tailAsRight R)
                 have hL : encTail ((0, b₁) :: (0, b₂) :: (a₃, b₃) :: L''') =
-                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >> encRight ((a₃, b₃) :: L''')) := by
+                    (0 : Fin 2) >> (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> ((0 : Fin 2) >>
+                      (0 : Fin 2) >> encRight ((a₃, b₃) :: L''')) := by
                   rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_zero, h23]
                   rfl
                 rw [hL]
-                refine ⟨cfg_M0 ((0, 2) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
-                rw [cfg_M0_eq, encTail_zero 2 ((a₃, b₃) :: L'''), encTail_zero 0 ((0, c) :: tailAsRight R)]
-                simpa [hrD_right] using D_leaf_0100 ((0 : Fin 2) >> (0 : Fin 2) >> encRight ((a₃, b₃) :: L''')) rD
+                refine ⟨cfg_M0 ((0, 2) :: (a₃, b₃) :: L''') ((0, 0) :: (0, c) :: tailAsRight R),
+                  ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+                rw [cfg_M0_eq, encTail_zero 2 ((a₃, b₃) :: L'''), encTail_zero 0 ((0,
+                  c) :: tailAsRight R)]
+                simpa [hrD_right] using D_leaf_0100 ((0 : Fin 2) >> (0 : Fin 2) >>
+                  encRight ((a₃, b₃) :: L''')) rD
           · -- a₂ = 1
             rcases mod4_cases b₂ with h20 | h21 | h22 | h23
             · -- b₂ % 4 = 0 -> pushZeroSep 1 L''
               have hL : encTail ((0, b₁) :: (1, b₂) :: L'') =
                   (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> encRight L'') := by
-                rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ, encTail_zero, h20]
+                rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ,
+                  encTail_zero, h20]
                 rfl
               rw [hL]
-              refine ⟨cfg_M0 (pushZeroSep 1 L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+              refine ⟨cfg_M0 (pushZeroSep 1 L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _,
+                _, rfl⟩⟩
               rw [cfg_M0_eq, encTail_pushZeroSep 1 (by decide) L'', ← hrD_tail]
               simpa using D_leaf_011 ((0 : Fin 2) >> encRight L'') rD
             · -- b₂ % 4 = 1 -> pushZeroSep 2 L''
               have hL : encTail ((0, b₁) :: (1, b₂) :: L'') =
-                  (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >> encRight L'') := by
-                rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ, encTail_zero, h21]
+                  (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >>
+                    encRight L'') := by
+                rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ,
+                  encTail_zero, h21]
                 rfl
               rw [hL]
-              refine ⟨cfg_M0 (pushZeroSep 2 L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+              refine ⟨cfg_M0 (pushZeroSep 2 L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _,
+                _, rfl⟩⟩
               rw [cfg_M0_eq, encTail_pushZeroSep 2 (by decide) L'', ← hrD_tail]
               simpa using D_leaf_011 ((0 : Fin 2) >> (0 : Fin 2) >> encRight L'') rD
             · -- b₂ % 4 = 2 -> pushZeroSep 3 L''
               have hL : encTail ((0, b₁) :: (1, b₂) :: L'') =
-                  (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight L'') := by
-                rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ, encTail_zero, h22]
+                  (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >>
+                    (0 : Fin 2) >> encRight L'') := by
+                rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ,
+                  encTail_zero, h22]
                 rfl
               rw [hL]
-              refine ⟨cfg_M0 (pushZeroSep 3 L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+              refine ⟨cfg_M0 (pushZeroSep 3 L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _,
+                _, rfl⟩⟩
               rw [cfg_M0_eq, encTail_pushZeroSep 3 (by decide) L'', ← hrD_tail]
               simpa using D_leaf_011 ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight L'') rD
             · -- b₂ % 4 = 3: split L'' = [] vs (a₃, b₃) :: L'''
@@ -549,24 +587,30 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
               · -- P_cfg ((a₃, b₃) :: L''') [] ((0, c) :: tailAsRight R)
                 have hL : encTail ((0, b₁) :: (1, b₂) :: (a₃, b₃) :: L''') =
                     (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
-                      ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail ((a₃, b₃) :: L''')) := by
+                      ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >>
+                        encTail ((a₃, b₃) :: L''')) := by
                   rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ,
                     encTail_zero, h23, encRight_cons_eq_one_cons_encTail]
                   rfl
                 rw [hL]
                 refine ⟨P_cfg ((a₃, b₃) :: L''') [] ((0, c) :: tailAsRight R), ?_,
-                  Or.inr (Or.inr (Or.inl ⟨(a₃, b₃) :: L''', (0, c) :: tailAsRight R, by simp, rfl⟩))⟩
+                  Or.inr (Or.inr (Or.inl ⟨(a₃, b₃) :: L''', (0, c) :: tailAsRight R, by simp,
+                    rfl⟩))⟩
                 unfold P_cfg wall
                 rw [listblank_append_nil, ← hrD_right]
                 exact D_leaf_011 _ rD
           · -- a₂ = a₂' + 2 -> cfg_M0 ((0, 0) :: (a₂', b₂) :: L'') ((1, c) :: tailAsRight R)
             have hL : encTail ((0, b₁) :: (a₂' + 2, b₂) :: L'') =
-                (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((1 : Fin 2) >> encTail ((a₂', b₂) :: L'')) := by
-              rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ (a₂' + 1), encTail_succ a₂']
+                (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((1 : Fin 2) >> encTail ((a₂',
+                  b₂) :: L'')) := by
+              rw [encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ (a₂' + 1),
+                encTail_succ a₂']
               rfl
             rw [hL]
-            refine ⟨cfg_M0 ((0, 0) :: (a₂', b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
-            rw [cfg_M0_eq, encTail_zero 0 ((a₂', b₂) :: L''), encRight_cons_eq_one_cons_encTail, ← hrD_tail]
+            refine ⟨cfg_M0 ((0, 0) :: (a₂', b₂) :: L'') ((1, c) :: tailAsRight R), ?_,
+              Or.inl ⟨.M0, _, _, rfl⟩⟩
+            rw [cfg_M0_eq, encTail_zero 0 ((a₂', b₂) :: L''), encRight_cons_eq_one_cons_encTail,
+              ← hrD_tail]
             simpa using D_leaf_011 ((1 : Fin 2) >> encTail ((a₂', b₂) :: L'')) rD
         · -- b₁ % 4 = 1 -> Leaf 00, L' = (a₂ + 1, b₂) :: L''
           have hL : encTail ((0, b₁) :: (a₂, b₂) :: L'') =
@@ -574,7 +618,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
             rw [encTail_zero, hb1, encTail_succ, encRight_cons_eq_one_cons_encTail]
             rfl
           rw [hL]
-          refine ⟨cfg_M0 ((a₂ + 1, b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+          refine ⟨cfg_M0 ((a₂ + 1, b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _,
+            rfl⟩⟩
           rw [cfg_M0_eq, ← hrD_tail]
           exact D_leaf_00 _ rD
         · -- b₁ % 4 = 2 -> Leaf 00, L' = (0, 0) :: (a₂, b₂) :: L''
@@ -583,7 +628,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
             rw [encTail_zero, hb2, encTail_zero]
             rfl
           rw [hL]
-          refine ⟨cfg_M0 ((0, 0) :: (a₂, b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+          refine ⟨cfg_M0 ((0, 0) :: (a₂, b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+            _, _, rfl⟩⟩
           rw [cfg_M0_eq, ← hrD_tail]
           exact D_leaf_00 _ rD
         · -- b₁ % 4 = 3 -> Leaf 00, L' = (0, 1) :: (a₂, b₂) :: L''
@@ -592,7 +638,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
             rw [encTail_zero, hb3, encTail_zero]
             rfl
           rw [hL]
-          refine ⟨cfg_M0 ((0, 1) :: (a₂, b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+          refine ⟨cfg_M0 ((0, 1) :: (a₂, b₂) :: L'') ((1, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+            _, _, rfl⟩⟩
           rw [cfg_M0_eq, ← hrD_tail]
           exact D_leaf_00 _ rD
     · -- a₁ = 1 (for #301: F0 = 1LA)
@@ -623,7 +670,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
                   rfl
                 rw [hL]
                 refine ⟨cfg_D 2 ((a₃, b₃) :: L''') ((1, c) :: tailAsRight R), ?_,
-                  Or.inr (Or.inr (Or.inr ⟨2, (a₃, b₃) :: L''', (1, c) :: tailAsRight R, by decide, by simp, rfl⟩))⟩
+                  Or.inr (Or.inr (Or.inr ⟨2, (a₃, b₃) :: L''', (1, c) :: tailAsRight R,
+                    by decide, by simp, rfl⟩))⟩
                 unfold cfg_D
                 dsimp only [pow_succ_list, pow_zero_list, cons_append_list, nil_append_list,
                   listblank_append_cons, listblank_append_nil]
@@ -662,31 +710,41 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
                     (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> rD⟩⟩)
           · -- a₂ = a₂' + 1
             have h1011 : ∀ (tL : ListBlank (Fin 2)),
-                (((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> tL) <{{D}} rD) [target_tm]⊢⁺
+                (((1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
+                  tL) <{{D}} rD) [target_tm]⊢⁺
                   ⟨some A, ⟨0, (0 : Fin 2) >> tL, (1 : Fin 2) >> (1 : Fin 2) >> rD⟩⟩ := by
               intro tL; execute 6
             rcases a₂' with _ | a₂''
             · -- a₂ = 1: split b₂ % 4
               rcases mod4_cases b₂ with h20 | h21 | h22 | h23
               · have hL : encTail ((1, b₁) :: (1, b₂) :: L'') =
-                    (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> encRight L'') := by
-                  rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ, encTail_zero, h20]; rfl
+                    (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >>
+                      encRight L'') := by
+                  rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail,
+                    encTail_succ, encTail_zero, h20]; rfl
                 rw [hL]
-                refine ⟨cfg_M0 (pushZeroSep 1 L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+                refine ⟨cfg_M0 (pushZeroSep 1 L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+                  _, _, rfl⟩⟩
                 rw [cfg_M0_eq, encTail_pushZeroSep 1 (by decide) L'', ← hrD_two]
                 simpa using h1011 ((0 : Fin 2) >> encRight L'')
               · have hL : encTail ((1, b₁) :: (1, b₂) :: L'') =
-                    (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >> encRight L'') := by
-                  rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ, encTail_zero, h21]; rfl
+                    (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >>
+                      (0 : Fin 2) >> encRight L'') := by
+                  rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail,
+                    encTail_succ, encTail_zero, h21]; rfl
                 rw [hL]
-                refine ⟨cfg_M0 (pushZeroSep 2 L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+                refine ⟨cfg_M0 (pushZeroSep 2 L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+                  _, _, rfl⟩⟩
                 rw [cfg_M0_eq, encTail_pushZeroSep 2 (by decide) L'', ← hrD_two]
                 simpa using h1011 ((0 : Fin 2) >> (0 : Fin 2) >> encRight L'')
               · have hL : encTail ((1, b₁) :: (1, b₂) :: L'') =
-                    (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight L'') := by
-                  rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ, encTail_zero, h22]; rfl
+                    (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((0 : Fin 2) >>
+                      (0 : Fin 2) >> (0 : Fin 2) >> encRight L'') := by
+                  rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail,
+                    encTail_succ, encTail_zero, h22]; rfl
                 rw [hL]
-                refine ⟨cfg_M0 (pushZeroSep 3 L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+                refine ⟨cfg_M0 (pushZeroSep 3 L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+                  _, _, rfl⟩⟩
                 rw [cfg_M0_eq, encTail_pushZeroSep 3 (by decide) L'', ← hrD_two]
                 simpa using h1011 ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight L'')
               · rcases L'' with _ | ⟨⟨a₃, b₃⟩, L'''⟩
@@ -699,29 +757,37 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
                   simpa using h1011 default
                 · have hL : encTail ((1, b₁) :: (1, b₂) :: (a₃, b₃) :: L''') =
                       (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >>
-                        ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail ((a₃, b₃) :: L''')) := by
+                        ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+                          (1 : Fin 2) >> encTail ((a₃, b₃) :: L''')) := by
                     rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail,
                       encTail_succ, encTail_zero, h23, encRight_cons_eq_one_cons_encTail]; rfl
                   rw [hL]
                   refine ⟨P_cfg ((a₃, b₃) :: L''') [] ((1, c) :: tailAsRight R), ?_,
-                    Or.inr (Or.inr (Or.inl ⟨(a₃, b₃) :: L''', (1, c) :: tailAsRight R, by simp, rfl⟩))⟩
+                    Or.inr (Or.inr (Or.inl ⟨(a₃, b₃) :: L''', (1, c) :: tailAsRight R, by simp,
+                      rfl⟩))⟩
                   unfold P_cfg wall
                   rw [listblank_append_nil, ← hrD_one_right]
                   exact h1011 _
             · -- a₂ = a₂'' + 2
               have hL : encTail ((1, b₁) :: (a₂'' + 2, b₂) :: L'') =
-                  (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((1 : Fin 2) >> encTail ((a₂'', b₂) :: L'')) := by
-                rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail, encTail_succ (a₂'' + 1), encTail_succ a₂'']; rfl
+                  (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> (1 : Fin 2) >> ((1 : Fin 2) >>
+                    encTail ((a₂'', b₂) :: L'')) := by
+                rw [encTail_succ, encTail_zero, hb0, encRight_cons_eq_one_cons_encTail,
+                  encTail_succ (a₂'' + 1), encTail_succ a₂'']; rfl
               rw [hL]
-              refine ⟨cfg_M0 ((0, 0) :: (a₂'', b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
-              rw [cfg_M0_eq, encTail_zero 0 ((a₂'', b₂) :: L''), encRight_cons_eq_one_cons_encTail, ← hrD_two]
+              refine ⟨cfg_M0 ((0, 0) :: (a₂'', b₂) :: L'') ((2, c) :: tailAsRight R), ?_,
+                Or.inl ⟨.M0, _, _, rfl⟩⟩
+              rw [cfg_M0_eq, encTail_zero 0 ((a₂'', b₂) :: L''),
+                encRight_cons_eq_one_cons_encTail, ← hrD_two]
               simpa using h1011 ((1 : Fin 2) >> encTail ((a₂'', b₂) :: L''))
         · -- b₁ % 4 = 1
           have hL : encTail ((1, b₁) :: (a₂, b₂) :: L'') =
               (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encTail ((a₂ + 1, b₂) :: L'') := by
-            rw [encTail_succ, encTail_zero, hb1, encTail_succ, encRight_cons_eq_one_cons_encTail]; rfl
+            rw [encTail_succ, encTail_zero, hb1, encTail_succ,
+              encRight_cons_eq_one_cons_encTail]; rfl
           rw [hL]
-          refine ⟨cfg_M0 ((a₂ + 1, b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+          refine ⟨cfg_M0 ((a₂ + 1, b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _,
+            rfl⟩⟩
           rw [cfg_M0_eq, ← hrD_two]
           exact h100 (encTail ((a₂ + 1, b₂) :: L''))
         · -- b₁ % 4 = 2
@@ -729,7 +795,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
               (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encTail ((0, 0) :: (a₂, b₂) :: L'') := by
             rw [encTail_succ, encTail_zero, hb2, encTail_zero]; rfl
           rw [hL]
-          refine ⟨cfg_M0 ((0, 0) :: (a₂, b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+          refine ⟨cfg_M0 ((0, 0) :: (a₂, b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+            _, _, rfl⟩⟩
           rw [cfg_M0_eq, ← hrD_two]
           exact h100 (encTail ((0, 0) :: (a₂, b₂) :: L''))
         · -- b₁ % 4 = 3
@@ -737,7 +804,8 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
               (1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encTail ((0, 1) :: (a₂, b₂) :: L'') := by
             rw [encTail_succ, encTail_zero, hb3, encTail_zero]; rfl
           rw [hL]
-          refine ⟨cfg_M0 ((0, 1) :: (a₂, b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0, _, _, rfl⟩⟩
+          refine ⟨cfg_M0 ((0, 1) :: (a₂, b₂) :: L'') ((2, c) :: tailAsRight R), ?_, Or.inl ⟨.M0,
+            _, _, rfl⟩⟩
           rw [cfg_M0_eq, ← hrD_two]
           exact h100 (encTail ((0, 1) :: (a₂, b₂) :: L''))
     · -- a₁ = a₁' + 2 -> Leaf 11 -> Halts in 1 step!
@@ -748,7 +816,7 @@ lemma D_step_one (c : ℕ) (hc : c < 4) (L R : List (ℕ × ℕ)) :
       refine ⟨((1 : Fin 2) >> encTail ((a₁', b₁) :: L')) <{{F}} ((1 : Fin 2) >> rD),
         D_leaf_11 _ rD, Or.inr (Or.inl (F_halt_on_one _ _))⟩
 
-theorem stage2_closed (n : ℕ) :
+private theorem stage2_closed (n : ℕ) :
     ∀ L, L.length ≤ n → ∀ c < 4, ∀ R,
       ∃ cfg', ((cfg_D c L R) [target_tm]⊢⁺ cfg') ∧
         (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone ∨
@@ -776,14 +844,14 @@ theorem stage2_closed (n : ℕ) :
 -- Stage 3: Pushdown Induction & Universal Wipe Helpers
 -- ============================================================================
 
-lemma zero_pow_append_zero (n : ℕ) (r : ListBlank (Fin 2)) :
+private theorem zero_pow_append_zero (n : ℕ) (r : ListBlank (Fin 2)) :
     (([0] : List (Fin 2)) ^ n) +> ((0 : Fin 2) >> r) = (([0] : List (Fin 2)) ^ (n + 1)) +> r := by
   induction n with
   | zero => rfl
   | succ n' ih =>
     simp only [pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons, ih]
 
-lemma zero_pow_wall (k : ℕ) (L : List (ℕ × ℕ)) :
+private theorem zero_pow_wall (k : ℕ) (L : List (ℕ × ℕ)) :
     (([0] : List (Fin 2)) ^ (k + 5)) +> ((1 : Fin 2) >> encTail L) =
       (([0] : List (Fin 2)) ^ k) +> wall L := by
   induction k with
@@ -793,59 +861,67 @@ lemma zero_pow_wall (k : ℕ) (L : List (ℕ × ℕ)) :
     rw [hsucc, pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons, ih,
       pow_succ_list, cons_append_list, nil_append_list, listblank_append_cons]
 
-lemma E_wipe_ones_right : ∀ (k : ℕ) (l tR : ListBlank (Fin 2)),
-    (⟨some E, ⟨(1 : Fin 2), l, ((([1] : List (Fin 2)) ^ k) +> ((0 : Fin 2) >> tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
+private theorem E_wipe_ones_right : ∀ (k : ℕ) (l tR : ListBlank (Fin 2)),
+    (⟨some E, ⟨(1 : Fin 2), l,
+      ((([1] : List (Fin 2)) ^ k) +> ((0 : Fin 2) >> tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺ ⟨some A, ⟨0, (([0] : List (Fin 2)) ^ (k + 1)) +> l, tR⟩⟩
   | 0, l, tR => by execute 3
   | k + 1, l, tR => by
-    have h1 : (⟨some E, ⟨(1 : Fin 2), l, ((([1] : List (Fin 2)) ^ (k + 1)) +> ((0 : Fin 2) >> tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
-        [target_tm]⊢⁺ ⟨some E, ⟨(1 : Fin 2), (0 : Fin 2) >> l, ((([1] : List (Fin 2)) ^ k) +> ((0 : Fin 2) >> tR))⟩⟩ := by
+    have h1 : (⟨some E, ⟨(1 : Fin 2), l,
+      ((([1] : List (Fin 2)) ^ (k + 1)) +> ((0 : Fin 2) >> tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
+        [target_tm]⊢⁺ ⟨some E, ⟨(1 : Fin 2), (0 : Fin 2) >> l,
+          ((([1] : List (Fin 2)) ^ k) +> ((0 : Fin 2) >> tR))⟩⟩ := by
       execute 1
     have h2 := E_wipe_ones_right k ((0 : Fin 2) >> l) tR
     rw [zero_pow_append_zero (k + 1) l] at h2
     exact stepPlus_trans h1 h2
 
-lemma A_wipe_ones (n : ℕ) (tL tR : ListBlank (Fin 2)) :
-    (⟨some A, ⟨0, tL, (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (n + 1)) +> ((0 : Fin 2) >> tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
+private theorem A_wipe_ones (n : ℕ) (tL tR : ListBlank (Fin 2)) :
+    (⟨some A, ⟨0, tL,
+      (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (n + 1)) +> ((0 : Fin 2) >>
+        tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺ ⟨some A, ⟨0, (([0] : List (Fin 2)) ^ (n + 2)) +> ((1 : Fin 2) >> tL), tR⟩⟩ := by
-  have h1 : (⟨some A, ⟨0, tL, (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (n + 1)) +> ((0 : Fin 2) >> tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
-      [target_tm]⊢⁺ ⟨some E, ⟨(1 : Fin 2), (0 : Fin 2) >> (1 : Fin 2) >> tL, ((([1] : List (Fin 2)) ^ n) +> ((0 : Fin 2) >> tR))⟩⟩ := by
+  have h1 : (⟨some A, ⟨0, tL,
+    (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (n + 1)) +> ((0 : Fin 2) >>
+      tR))⟩⟩ : Cfg (Fin 2) (Fin 6))
+      [target_tm]⊢⁺ ⟨some E, ⟨(1 : Fin 2), (0 : Fin 2) >> (1 : Fin 2) >> tL,
+        ((([1] : List (Fin 2)) ^ n) +> ((0 : Fin 2) >> tR))⟩⟩ := by
     execute 2
   have h2 := E_wipe_ones_right n ((0 : Fin 2) >> (1 : Fin 2) >> tL) tR
   rw [zero_pow_append_zero (n + 1) ((1 : Fin 2) >> tL)] at h2
   exact stepPlus_trans h1 h2
 
-lemma encTail_zero_eq_zero_cons_peelSep (b : ℕ) (S : List (ℕ × ℕ)) :
+private theorem encTail_zero_eq_zero_cons_peelSep (b : ℕ) (S : List (ℕ × ℕ)) :
     encTail ((0, b) :: S) = (0 : Fin 2) >> encTail (peelSep b S) := by
   rcases S with _ | ⟨⟨a, b'⟩, S'⟩
   · simp [peelSep, encTail_zero]
   · rw [encTail_zero, zero_pow_one_add (b % 4), listblank_append_cons,
       ← encTail_peelSep b ((a, b') :: S')]
 
-def w : List (ℕ × ℕ) → ℕ
+private def w : List (ℕ × ℕ) → ℕ
   | [] => 0
   | [(a, _)] => a
   | (a, b) :: r₂ :: rs => a + b % 2 + w (r₂ :: rs)
 
-def C0 : FState → ℕ
+private def C0 : FState → ℕ
   | .F00 => 0 | .F01 => 1 | .F02 => 1 | .F03 => 0 | .F04 => 1 | .F05 => 1 | .F06 => 1
 
-def C1 : FState → ℕ
+private def C1 : FState → ℕ
   | .F00 => 1 | .F01 => 0 | .F02 => 0 | .F03 => 1 | .F04 => 0 | .F05 => 0 | .F06 => 0
 
-lemma C0_le_C1_succ (s : FState) : C0 s ≤ C1 s + 1 := by
+private theorem C0_le_C1_succ (s : FState) : C0 s ≤ C1 s + 1 := by
   cases s <;> decide
 
-lemma C1_le_C0_succ (s : FState) : C1 s ≤ C0 s + 1 := by
+private theorem C1_le_C0_succ (s : FState) : C1 s ≤ C0 s + 1 := by
   cases s <;> decide
 
-lemma w_cons_nonempty (a b : ℕ) (R : List (ℕ × ℕ)) (hR : R ≠ []) :
+private theorem w_cons_nonempty (a b : ℕ) (R : List (ℕ × ℕ)) (hR : R ≠ []) :
     w ((a, b) :: R) = a + b % 2 + w R := by
   rcases R with _ | ⟨r₂, rs⟩
   · contradiction
   · rfl
 
-lemma w_bumpHead (R : List (ℕ × ℕ)) (hR : R ≠ []) :
+private theorem w_bumpHead (R : List (ℕ × ℕ)) (hR : R ≠ []) :
     w (bumpHead R) = 1 + w R := by
   rcases R with _ | ⟨⟨a, b⟩, rs⟩
   · contradiction
@@ -853,7 +929,7 @@ lemma w_bumpHead (R : List (ℕ × ℕ)) (hR : R ≠ []) :
     · simp [bumpHead, w]; omega
     · simp [bumpHead, w]; omega
 
-lemma w_peelInner_zero (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 ≠ 0) :
+private theorem w_peelInner_zero (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 ≠ 0) :
     w ((0, 0) :: peelInner b S) = w ((0, b) :: S) := by
   rcases S with _ | ⟨⟨a₂, b₂⟩, rs⟩
   · rfl
@@ -863,26 +939,27 @@ lemma w_peelInner_zero (b : ℕ) (S : List (ℕ × ℕ)) (h : S = [] ∨ b % 4 �
       · exact False.elim (hne h0)
     · have hb2 : b % 2 = 1 := by omega
       have hne : ((a₂ + 1, b₂) :: rs) ≠ [] := by simp
-      rw [peelInner, if_pos h1, w_cons_nonempty 0 0 _ hne, w_cons_nonempty 0 b _ (by simp)]
-      have hbmp : w ((a₂ + 1, b₂) :: rs) = 1 + w ((a₂, b₂) :: rs) := w_bumpHead ((a₂, b₂) :: rs) (by simp)
+      rw [peelInner, ite_eq_left h1, w_cons_nonempty 0 0 _ hne, w_cons_nonempty 0 b _ (by simp)]
+      have hbmp : w ((a₂ + 1, b₂) :: rs) = 1 + w ((a₂, b₂) :: rs) :=
+        w_bumpHead ((a₂, b₂) :: rs) (by simp)
       rw [hbmp, hb2]; omega
     · have hb2 : b % 2 = 0 := by omega
       have h1 : b % 4 ≠ 1 := by omega
-      rw [peelInner, if_neg h1, if_pos h2]
+      rw [peelInner, ite_eq_right h1, ite_eq_left h2]
       simp [w, hb2]
     · have hb2 : b % 2 = 1 := by omega
       have h1 : b % 4 ≠ 1 := by omega
       have h2 : b % 4 ≠ 2 := by omega
-      rw [peelInner, if_neg h1, if_neg h2]
+      rw [peelInner, ite_eq_right h1, ite_eq_right h2]
       simp [w, hb2]
 
-lemma w_add_ge1 (k b : ℕ) (S : List (ℕ × ℕ)) :
+private theorem w_add_ge1 (k b : ℕ) (S : List (ℕ × ℕ)) :
     w ((0, b) :: S) + (k + 1) = w ((k + 1, b) :: S) := by
   rcases S with _ | ⟨r₂, rs⟩
   · simp [w]
   · simp [w]; omega
 
-lemma P_step_0_rec (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (b : ℕ) (hb : b % 4 = 0)
+private theorem P_step_0_rec (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (b : ℕ) (hb : b % 4 = 0)
     (R_tail : List (ℕ × ℕ)) (hR : R_tail ≠ []) :
     (P_cfg L'' W ((0, b) :: R_tail)) [target_tm]⊢⁺ P_cfg L'' (0 :: 1 :: W) R_tail := by
   rcases R_tail with _ | ⟨⟨a₂, b₂⟩, rs⟩
@@ -891,9 +968,10 @@ lemma P_step_0_rec (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (b : ℕ) (hb : 
     rw [encRight_cons_simp, hb, encRight_cons_eq_one_cons_encTail]
     execute 4
 
-lemma P_step_0_other (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (b : ℕ)
+private theorem P_step_0_other (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (b : ℕ)
     (R_tail : List (ℕ × ℕ)) (h : R_tail = [] ∨ b % 4 ≠ 0) :
-    (P_cfg L'' W ((0, b) :: R_tail)) [target_tm]⊢⁺ F_cfg .F00 L'' W ((0, 0) :: peelInner b R_tail) := by
+    (P_cfg L'' W ((0, b) :: R_tail)) [target_tm]⊢⁺ F_cfg .F00 L'' W ((0,
+      0) :: peelInner b R_tail) := by
   dsimp only [P_cfg, F_cfg]
   rw [encRight_zero_peelInner b R_tail h]
   rcases h_in : peelInner b R_tail with _ | ⟨⟨ai, bi⟩, rsi⟩
@@ -901,12 +979,14 @@ lemma P_step_0_other (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (b : ℕ)
   · rw [encRight_cons_simp 0 0, encRight_cons_eq_one_cons_encTail ai bi rsi]
     execute 9
 
-lemma P_step_ge1_pre (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (k b : ℕ) (R_tail : List (ℕ × ℕ)) :
+private theorem P_step_ge1_pre (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (k b : ℕ) (R_tail :
+  List (ℕ × ℕ)) :
     (P_cfg L'' W ((k + 1, b) :: R_tail)) [target_tm]⊢⁺
       ⟨some A, ⟨0, ((([0] : List (Fin 2)) ^ (k + 2)) ++ (1 :: W)) +> wall L'',
         encTail (peelSep b R_tail)⟩⟩ := by
   have henc : encRight ((k + 1, b) :: R_tail) =
-      (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (k + 1)) +> ((0 : Fin 2) >> encTail (peelSep b R_tail))) := by
+      (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (k + 1)) +> ((0 : Fin 2) >>
+        encTail (peelSep b R_tail))) := by
     rw [encRight_cons_eq_one_cons_encTail (k + 1) b R_tail, encTail_cons (k + 1) b R_tail,
       zero_pow_one_add (b % 4), listblank_append_cons, ← encTail_peelSep]
   unfold P_cfg
@@ -915,71 +995,71 @@ lemma P_step_ge1_pre (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (k b : ℕ) (R
   rw [listblank_append_right_assoc, listblank_append_cons]
   exact hwipe
 
-lemma A_peel_two_zeros (tL_rest tP : ListBlank (Fin 2)) :
+private theorem A_peel_two_zeros (tL_rest tP : ListBlank (Fin 2)) :
     (⟨some A, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> tL_rest, (0 : Fin 2) >> tP⟩⟩ : Cfg (Fin 2) (Fin 6))
       [target_tm]⊢⁺ ⟨some A, ⟨0, tL_rest, (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> tP⟩⟩ := by
   execute 4
 
-lemma F00_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F00_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F00 L'' (0 :: W) R) [target_tm]⊢⁺ F_cfg .F01 L'' W R := by
   dsimp only [F_cfg]; execute 1
-lemma F01_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F01_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F01 L'' (0 :: W) R) [target_tm]⊢⁺ F_cfg .F02 L'' W (bumpHead R) := by
   dsimp only [F_cfg]; rw [encRight_bumpHead]; execute 5
-lemma F02_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F02_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F02 L'' (0 :: W) R) [target_tm]⊢⁺ P_cfg L'' (0 :: 1 :: W) R := by
   dsimp only [F_cfg, P_cfg]; execute 4
-lemma F03_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F03_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F03 L'' (0 :: W) R) [target_tm]⊢⁺ F_cfg .F04 L'' W R := by
   dsimp only [F_cfg]; execute 1
-lemma F04_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F04_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F04 L'' (0 :: W) R) [target_tm]⊢⁺ F_cfg .F00 L'' W ((0, 0) :: (0, 0) :: R) := by
   dsimp only [F_cfg]; rw [encRight_cons_simp 0 0, encRight_cons_simp 0 0]; execute 9
-lemma F05_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F05_bit0 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F05 L'' (0 :: W) R) [target_tm]⊢⁺ F_cfg .F06 L'' W ((1, 2) :: R) := by
   dsimp only [F_cfg]; rw [encRight_cons_simp 1 2]; execute 1
-lemma F06_eq_P_cfg (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F06_eq_P_cfg (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     F_cfg .F06 L'' (0 :: W) R = P_cfg L'' W R := by
   simp [F_cfg, P_cfg]
 
-lemma F00_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F00_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F00 L'' (1 :: W) R) [target_tm]⊢⁺ P_cfg L'' (0 :: W) R := by
   dsimp only [F_cfg, P_cfg]; execute 3
-lemma F01_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F01_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F01 L'' (1 :: W) R) [target_tm]⊢⁺ F_cfg .F03 L'' W R := by
   dsimp only [F_cfg]; execute 1
-lemma F02_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F02_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F02 L'' (1 :: W) R) [target_tm]⊢⁺ F_cfg .F00 L'' W ((0, 0) :: R) := by
   dsimp only [F_cfg]; rw [encRight_cons_simp 0 0]; execute 1
-lemma F03_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F03_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F03 L'' (1 :: W) R) [target_tm]⊢⁺ F_cfg .F05 L'' W R := by
   dsimp only [F_cfg]; execute 1
-lemma F04_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F04_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F04 L'' (1 :: W) R) [target_tm]⊢⁺ F_cfg .F00 L'' W ((0, 2) :: R) := by
   dsimp only [F_cfg]; rw [encRight_cons_simp 0 2]; execute 1
-lemma F05_bit1_halt (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F05_bit1_halt (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (step target_tm (F_cfg .F05 L'' (1 :: W) R)).isNone = true := by
   dsimp only [F_cfg]; rw [listblank_append_cons]; exact F_halt_on_one _ _
-lemma F06_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
+private theorem F06_bit1 (L'' : List (ℕ × ℕ)) (W : List (Fin 2)) (R : List (ℕ × ℕ)) :
     (F_cfg .F06 L'' (1 :: W) R) [target_tm]⊢⁺ F_cfg .F00 L'' W R := by
   dsimp only [F_cfg]; execute 1
 
-def Stage3Out (start : Cfg (Fin 2) (Fin 6)) (L'' : List (ℕ × ℕ)) (W_out : List (Fin 2))
+private def Stage3Out (start : Cfg (Fin 2) (Fin 6)) (L'' : List (ℕ × ℕ)) (W_out : List (Fin 2))
     (W_bound : ℕ) (C : FState → ℕ) : Prop :=
   (∃ cfg', (start [target_tm]⊢⁺ cfg') ∧ (step target_tm cfg').isNone) ∨
   (∃ s R_out, R_out ≠ [] ∧ w R_out + C s ≤ W_bound ∧
     (start [target_tm]⊢⁺ F_cfg s L'' W_out R_out))
 
-def Q0 (R : List (ℕ × ℕ)) : Prop :=
+private def Q0 (R : List (ℕ × ℕ)) : Prop :=
   ∀ L'' W_base, Stage3Out (P_cfg L'' W_base R) L'' W_base (w R) C0
 
-def Qz (R : List (ℕ × ℕ)) : Prop :=
+private def Qz (R : List (ℕ × ℕ)) : Prop :=
   ∀ L'' W_base, Stage3Out (P_cfg L'' (0 :: W_base) R) L'' W_base (w R) C1
 
-def Qz1 (R : List (ℕ × ℕ)) : Prop :=
+private def Qz1 (R : List (ℕ × ℕ)) : Prop :=
   ∀ L'' W_base, Stage3Out (P_cfg L'' (0 :: 1 :: W_base) R) L'' W_base (w R) C0
 
-lemma step_bit0 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out : List (Fin 2)}
+private theorem step_bit0 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out : List (Fin 2)}
     {W_bound : ℕ} {s : FState} {R₁ : List (ℕ × ℕ)}
     (h_reach : start [target_tm]⊢⁺ F_cfg s L'' (0 :: W_out) R₁)
     (hR₁ : R₁ ≠ []) (hw₁ : w R₁ + C0 s ≤ W_bound)
@@ -987,9 +1067,13 @@ lemma step_bit0 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out :
     (ih_z1 : ∀ R', R' ≠ [] → w R' < W_bound → Qz1 R') :
     Stage3Out start L'' W_out W_bound C1 := by
   cases s with
-  | F00 => exact Or.inr ⟨.F01, R₁, hR₁, by dsimp [C0, C1] at hw₁ ⊢; omega, stepPlus_trans h_reach (F00_bit0 L'' W_out R₁)⟩
+  | F00 => exact Or.inr ⟨.F01, R₁, hR₁, by dsimp [C0, C1] at hw₁ ⊢; omega,
+    stepPlus_trans h_reach (F00_bit0 L'' W_out R₁)⟩
   | F01 =>
-    have hne_0 : (bumpHead R₁) ≠ [] := by rcases R₁ with _ | ⟨⟨_, _⟩, _⟩; exact False.elim (hR₁ rfl); simp [bumpHead]
+    have hne_0 : (bumpHead R₁) ≠ [] := by
+      rcases R₁ with _ | ⟨_, _⟩
+      · exact False.elim (hR₁ rfl)
+      · simp [bumpHead]
     have hw_op_0 : w (bumpHead R₁) = 1 + w (R₁) := w_bumpHead (R₁) hR₁
     refine Or.inr ⟨.F02, bumpHead R₁, hne_0, ?_, stepPlus_trans h_reach (F01_bit0 L'' W_out R₁)⟩
     dsimp [C0, C1] at hw₁ ⊢; omega
@@ -1000,13 +1084,16 @@ lemma step_bit0 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out :
     · exact Or.inl ⟨cfg', stepPlus_trans h_p h1, h2⟩
     · have hc := C1_le_C0_succ s'
       exact Or.inr ⟨s', R_out, hne, by dsimp [C0] at hw₁; omega, stepPlus_trans h_p h1⟩
-  | F03 => exact Or.inr ⟨.F04, R₁, hR₁, by dsimp [C0, C1] at hw₁ ⊢; omega, stepPlus_trans h_reach (F03_bit0 L'' W_out R₁)⟩
+  | F03 => exact Or.inr ⟨.F04, R₁, hR₁, by dsimp [C0, C1] at hw₁ ⊢; omega,
+    stepPlus_trans h_reach (F03_bit0 L'' W_out R₁)⟩
   | F04 =>
     have hne_0 : ((0, 0) :: R₁) ≠ [] := by simp
     have hw_op_0 : w ((0, 0) :: R₁) = 0 + w (R₁) := by rw [w_cons_nonempty 0 0 (R₁) hR₁]; try omega
     have hne_1 : ((0, 0) :: (0, 0) :: R₁) ≠ [] := by simp
-    have hw_op_1 : w ((0, 0) :: (0, 0) :: R₁) = 0 + w ((0, 0) :: R₁) := by rw [w_cons_nonempty 0 0 ((0, 0) :: R₁) hne_0]; try omega
-    refine Or.inr ⟨.F00, (0, 0) :: (0, 0) :: R₁, hne_1, ?_, stepPlus_trans h_reach (F04_bit0 L'' W_out R₁)⟩
+    have hw_op_1 : w ((0, 0) :: (0, 0) :: R₁) = 0 + w ((0, 0) :: R₁) := by
+      rw [w_cons_nonempty 0 0 ((0, 0) :: R₁) hne_0]; try omega
+    refine Or.inr ⟨.F00, (0, 0) :: (0, 0) :: R₁, hne_1, ?_,
+      stepPlus_trans h_reach (F04_bit0 L'' W_out R₁)⟩
     dsimp [C0, C1] at hw₁ ⊢; omega
   | F05 =>
     have hne_0 : ((1, 2) :: R₁) ≠ [] := by simp
@@ -1021,7 +1108,7 @@ lemma step_bit0 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out :
     · have hc := C1_le_C0_succ s'
       exact Or.inr ⟨s', R_out, hne, by dsimp [C0] at hw₁; omega, stepPlus_trans h_reach h1⟩
 
-lemma step_bit1 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out : List (Fin 2)}
+private theorem step_bit1 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out : List (Fin 2)}
     {W_bound : ℕ} {s : FState} {R₁ : List (ℕ × ℕ)}
     (h_reach : start [target_tm]⊢⁺ F_cfg s L'' (1 :: W_out) R₁)
     (hR₁ : R₁ ≠ []) (hw₁ : w R₁ + C1 s ≤ W_bound)
@@ -1035,22 +1122,25 @@ lemma step_bit1 {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)} {W_out :
     · exact Or.inl ⟨cfg', stepPlus_trans h_p h1, h2⟩
     · have hc := C0_le_C1_succ s'
       exact Or.inr ⟨s', R_out, hne, by dsimp [C1] at hw₁; omega, stepPlus_trans h_p h1⟩
-  | F01 => exact Or.inr ⟨.F03, R₁, hR₁, by dsimp [C1, C0] at hw₁ ⊢; omega, stepPlus_trans h_reach (F01_bit1 L'' W_out R₁)⟩
+  | F01 => exact Or.inr ⟨.F03, R₁, hR₁, by dsimp [C1, C0] at hw₁ ⊢; omega,
+    stepPlus_trans h_reach (F01_bit1 L'' W_out R₁)⟩
   | F02 =>
     have hne_0 : ((0, 0) :: R₁) ≠ [] := by simp
     have hw_op_0 : w ((0, 0) :: R₁) = 0 + w (R₁) := by rw [w_cons_nonempty 0 0 (R₁) hR₁]; try omega
     refine Or.inr ⟨.F00, (0, 0) :: R₁, hne_0, ?_, stepPlus_trans h_reach (F02_bit1 L'' W_out R₁)⟩
     dsimp [C0, C1] at hw₁ ⊢; omega
-  | F03 => exact Or.inr ⟨.F05, R₁, hR₁, by dsimp [C1, C0] at hw₁ ⊢; omega, stepPlus_trans h_reach (F03_bit1 L'' W_out R₁)⟩
+  | F03 => exact Or.inr ⟨.F05, R₁, hR₁, by dsimp [C1, C0] at hw₁ ⊢; omega,
+    stepPlus_trans h_reach (F03_bit1 L'' W_out R₁)⟩
   | F04 =>
     have hne_0 : ((0, 2) :: R₁) ≠ [] := by simp
     have hw_op_0 : w ((0, 2) :: R₁) = 0 + w (R₁) := by rw [w_cons_nonempty 0 2 (R₁) hR₁]; try omega
     refine Or.inr ⟨.F00, (0, 2) :: R₁, hne_0, ?_, stepPlus_trans h_reach (F04_bit1 L'' W_out R₁)⟩
     dsimp [C0, C1] at hw₁ ⊢; omega
   | F05 => exact Or.inl ⟨F_cfg .F05 L'' (1 :: W_out) R₁, h_reach, F05_bit1_halt L'' W_out R₁⟩
-  | F06 => exact Or.inr ⟨.F00, R₁, hR₁, by dsimp [C1, C0] at hw₁ ⊢; omega, stepPlus_trans h_reach (F06_bit1 L'' W_out R₁)⟩
+  | F06 => exact Or.inr ⟨.F00, R₁, hR₁, by dsimp [C1, C0] at hw₁ ⊢; omega,
+    stepPlus_trans h_reach (F06_bit1 L'' W_out R₁)⟩
 
-lemma step_zeros_c1 : ∀ (m : ℕ) {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)}
+private theorem step_zeros_c1 : ∀ (m : ℕ) {start : Cfg (Fin 2) (Fin 6)} {L'' : List (ℕ × ℕ)}
     {W_rest : List (Fin 2)} {B W_max : ℕ} {s : FState} {R₁ : List (ℕ × ℕ)},
     (start [target_tm]⊢⁺ F_cfg s L'' ((([0] : List (Fin 2)) ^ m) ++ W_rest) R₁) →
     R₁ ≠ [] → w R₁ + C1 s ≤ B → B + m ≤ W_max →
@@ -1074,7 +1164,7 @@ lemma step_zeros_c1 : ∀ (m : ℕ) {start : Cfg (Fin 2) (Fin 6)} {L'' : List (�
       · exact Or.inl ⟨cfg', g1, g2⟩
       · exact Or.inr ⟨sf, Rf, hRf, by omega, g1⟩
 
-theorem stage3_ind (W_val : ℕ) :
+private theorem stage3_ind (W_val : ℕ) :
     ∀ R, R ≠ [] → w R = W_val → Q0 R ∧ Qz R ∧ Qz1 R := by
   induction W_val using Nat.strong_induction_on with
   | h W_val ih_w =>
@@ -1129,16 +1219,19 @@ theorem stage3_ind (W_val : ℕ) :
               rcases R_tail with _ | ⟨⟨a₂, b₂⟩, rs⟩
               · contradiction
               · unfold P_cfg at hpre ⊢
-                rw [peelSep, if_pos hb0, encTail_succ, ← encRight_cons_eq_one_cons_encTail] at hpre
+                rw [peelSep, ite_eq_left hb0, encTail_succ,
+                  ← encRight_cons_eq_one_cons_encTail] at hpre
                 exact hpre
             have hw_tail : w R_tail + (k + 1) = W_val := by
               rw [← hw_ab, ← w_add_ge1 k b R_tail, w_cons_nonempty 0 b R_tail hne_tail]
               have : b % 2 = 0 := by omega
               omega
-            rcases ih_z R_tail hne_tail (by omega) L'' ((([0] : List (Fin 2)) ^ (k + 1)) ++ (1 :: W_base)) with
+            rcases ih_z R_tail hne_tail (by omega) L'' ((([0] :
+              List (Fin 2)) ^ (k + 1)) ++ (1 :: W_base)) with
               ⟨cfg', h1, h2⟩ | ⟨s1, R1, hR1, hw1, h1⟩
             · exact Or.inl ⟨cfg', stepPlus_trans h_p h1, h2⟩
-            · rcases step_zeros_c1 (k + 1) (stepPlus_trans h_p h1) hR1 hw1 (by omega : w R_tail + (k + 1) ≤ W_val) ih_0 ih_z1 with
+            · rcases step_zeros_c1 (k + 1) (stepPlus_trans h_p h1) hR1 hw1 (by omega :
+                w R_tail + (k + 1) ≤ W_val) ih_0 ih_z1 with
                 ⟨cfg', h2, h3⟩ | ⟨s2, R2, hR2, hw2, h2⟩
               · exact Or.inl ⟨cfg', h2, h3⟩
               · rw [hw_tail] at hw2
@@ -1151,16 +1244,19 @@ theorem stage3_ind (W_val : ℕ) :
             have hR1 : R1 ≠ [] := by simp [R1]
             have hz : encTail (peelSep b R_tail) = (0 : Fin 2) >> encTail (peelInner b R_tail) := by
               have hl := encRight_zero_peelInner b R_tail hcond
-              rw [encRight_cons_eq_one_cons_encTail 0 b R_tail, encTail_zero_eq_zero_cons_peelSep] at hl
+              rw [encRight_cons_eq_one_cons_encTail 0 b R_tail,
+                encTail_zero_eq_zero_cons_peelSep] at hl
               simpa only [Turing.ListBlank.tail_cons] using congrArg (fun t => t.tail.tail) hl
-            have hpost : ⟨some A, ⟨0, ((([0] : List (Fin 2)) ^ (k + 2)) ++ (1 :: W_base)) +> wall L'',
+            have hpost : ⟨some A, ⟨0,
+              ((([0] : List (Fin 2)) ^ (k + 2)) ++ (1 :: W_base)) +> wall L'',
                 encTail (peelSep b R_tail)⟩⟩ [target_tm]⊢⁺
                 P_cfg L'' ((([0] : List (Fin 2)) ^ k) ++ (1 :: W_base)) R1 := by
               unfold P_cfg
               rw [hz]
               rcases h_in : peelInner b R_tail with _ | ⟨⟨ai, bi⟩, rsi⟩
               · exact False.elim (peelInner_ne_nil b R_tail h_in)
-              · have hr1 : encRight R1 = (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail ((ai, bi) :: rsi) := by
+              · have hr1 : encRight R1 = (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >>
+                  encTail ((ai, bi) :: rsi) := by
                   rw [show R1 = (0, 0) :: (ai, bi) :: rsi from congrArg ((0, 0) :: ·) h_in,
                     encRight_cons_simp 0 0, encRight_cons_eq_one_cons_encTail]
                   rfl
@@ -1177,7 +1273,8 @@ theorem stage3_ind (W_val : ℕ) :
             · have hc1 : w R_out1 + C1 s1 ≤ w R1 + 1 := by
                 have := C1_le_C0_succ s1
                 omega
-              rcases step_zeros_c1 k (stepPlus_trans h_p h1) hne1 hc1 (by omega : (w R1 + 1) + k ≤ W_val) ih_0 ih_z1 with
+              rcases step_zeros_c1 k (stepPlus_trans h_p h1) hne1 hc1 (by omega :
+                (w R1 + 1) + k ≤ W_val) ih_0 ih_z1 with
                 ⟨cfg', h2, h3⟩ | ⟨s2, R_out2, hne2, hw_out2, h2⟩
               · exact Or.inl ⟨cfg', h2, h3⟩
               · have hw2 : w R_out2 + C1 s2 ≤ W_val := by omega
@@ -1196,37 +1293,46 @@ theorem stage3_ind (W_val : ℕ) :
           exact step_bit1 h1 hR1 hw1 ih_z
       exact ⟨hQ0, hQz, hQz1⟩
 
-lemma F00_exit (L'' R : List (ℕ × ℕ)) :
+private theorem F00_exit (L'' R : List (ℕ × ℕ)) :
     (F_cfg .F00 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 3) :: tailAsRight L'') ((0, 0) :: R) := by
-  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 3, encRight_tailAsRight, encTail_zero 0]; execute 2
+  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 3,
+    encRight_tailAsRight, encTail_zero 0]; execute 2
 
-lemma F01_exit (L'' R : List (ℕ × ℕ)) :
-    (F_cfg .F01 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 2) :: tailAsRight L'') ((1, 0) :: bumpHead R) := by
-  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 2, encRight_tailAsRight, encTail_succ 0, encTail_zero 0, encRight_bumpHead]; execute 5
+private theorem F01_exit (L'' R : List (ℕ × ℕ)) :
+    (F_cfg .F01 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 2) :: tailAsRight L'') ((1,
+      0) :: bumpHead R) := by
+  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 2,
+    encRight_tailAsRight, encTail_succ 0, encTail_zero 0, encRight_bumpHead]; execute 5
 
-lemma F02_exit (L'' R : List (ℕ × ℕ)) :
-    (F_cfg .F02 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 0) :: (0, 3) :: tailAsRight L'') (rightAsTail R) := by
-  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 0, encRight_cons_simp 0 3, encRight_tailAsRight, encTail_rightAsTail]; execute 4
+private theorem F02_exit (L'' R : List (ℕ × ℕ)) :
+    (F_cfg .F02 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 0) :: (0,
+      3) :: tailAsRight L'') (rightAsTail R) := by
+  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 0,
+    encRight_cons_simp 0 3, encRight_tailAsRight, encTail_rightAsTail]; execute 4
 
-lemma F03_exit (L'' R : List (ℕ × ℕ)) :
+private theorem F03_exit (L'' R : List (ℕ × ℕ)) :
     (F_cfg .F03 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 2) :: tailAsRight L'') ((1, 2) :: R) := by
-  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 2, encRight_tailAsRight, encTail_succ 0, encTail_zero 2]; execute 1
+  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 2,
+    encRight_tailAsRight, encTail_succ 0, encTail_zero 2]; execute 1
 
-lemma F04_exit (L'' R : List (ℕ × ℕ)) :
-    (F_cfg .F04 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 0) :: (0, 3) :: tailAsRight L'') ((0, 1) :: R) := by
-  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 0, encRight_cons_simp 0 3, encRight_tailAsRight, encTail_zero 1]; execute 4
+private theorem F04_exit (L'' R : List (ℕ × ℕ)) :
+    (F_cfg .F04 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 0) :: (0, 3) :: tailAsRight L'') ((0,
+      1) :: R) := by
+  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 0,
+    encRight_cons_simp 0 3, encRight_tailAsRight, encTail_zero 1]; execute 4
 
-lemma F05_exit (L'' R : List (ℕ × ℕ)) :
+private theorem F05_exit (L'' R : List (ℕ × ℕ)) :
     (F_cfg .F05 L'' [] R) [target_tm]⊢⁺ cfg_M0 ((0, 2) :: tailAsRight L'') ((2, 2) :: R) := by
-  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 2, encRight_tailAsRight, encTail_succ 1, encTail_succ 0, encTail_zero 2]; execute 1
+  dsimp only [F_cfg, wall]; rw [cfg_M0_eq, listblank_append_nil, encTail_zero 2,
+    encRight_tailAsRight, encTail_succ 1, encTail_succ 0, encTail_zero 2]; execute 1
 
-lemma F06_exit_eq (L'' R : List (ℕ × ℕ)) :
+private theorem F06_exit_eq (L'' R : List (ℕ × ℕ)) :
     F_cfg .F06 L'' [] R = cfg_M0 ((0, 3) :: tailAsRight L'') (rightAsTail R) := by
   dsimp only [F_cfg, wall]
   rw [cfg_M0_eq, listblank_append_nil, encTail_zero 3, encRight_tailAsRight, encTail_rightAsTail]
   simp
 
-lemma F_empty_closed {start : Cfg (Fin 2) (Fin 6)} (s : FState) (L'' R : List (ℕ × ℕ))
+private theorem F_empty_closed {start : Cfg (Fin 2) (Fin 6)} (s : FState) (L'' R : List (ℕ × ℕ))
     (_hR : R ≠ []) (h_reach : start [target_tm]⊢⁺ F_cfg s L'' [] R) :
     ∃ cfg', (start [target_tm]⊢⁺ cfg') ∧
       (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone) := by
@@ -1241,7 +1347,7 @@ lemma F_empty_closed {start : Cfg (Fin 2) (Fin 6)} (s : FState) (L'' R : List (�
     rw [F06_exit_eq] at h_reach
     exact ⟨cfg_M0 _ _, h_reach, Or.inl ⟨.M0, _, _, rfl⟩⟩
 
-theorem stage3_closed (L'' R : List (ℕ × ℕ)) (hR : R ≠ []) :
+private theorem stage3_closed (L'' R : List (ℕ × ℕ)) (hR : R ≠ []) :
     ∃ cfg', ((P_cfg L'' [] R) [target_tm]⊢⁺ cfg') ∧
       (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone) := by
   have hQ0 : Q0 R := (stage3_ind (w R) R hR rfl).1
@@ -1253,7 +1359,7 @@ theorem stage3_closed (L'' R : List (ℕ × ℕ)) (hR : R ≠ []) :
 -- Stage 1: Unified `cfg_M0 L R` -> `cfg_M0`, `cfg_D 0`, or Halt
 -- ============================================================================
 
-lemma P_drain_zeros : ∀ (k : ℕ) {start : Cfg (Fin 2) (Fin 6)} (L'' R : List (ℕ × ℕ)),
+private theorem P_drain_zeros : ∀ (k : ℕ) {start : Cfg (Fin 2) (Fin 6)} (L'' R : List (ℕ × ℕ)),
     R ≠ [] → (start [target_tm]⊢⁺ P_cfg L'' (([0] : List (Fin 2)) ^ k) R) →
     ∃ cfg', (start [target_tm]⊢⁺ cfg') ∧
       (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone)
@@ -1275,50 +1381,53 @@ lemma P_drain_zeros : ∀ (k : ℕ) {start : Cfg (Fin 2) (Fin 6)} (L'' R : List 
       · exact ⟨cfg', h2, Or.inr h3⟩
       · exact F_empty_closed s2 L'' R2 hR2 h2
 
-lemma M0_nil (L : List (ℕ × ℕ)) :
+private theorem M0_nil (L : List (ℕ × ℕ)) :
     (cfg_M0 L []) [target_tm]⊢⁺ cfg_D 0 L [] := by
   rw [cfg_M0_eq, cfg_D, encTail_nil]
   execute 3
 
-lemma M0_zero (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_zero (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
     (cfg_M0 L ((0, bR) :: R')) [target_tm]⊢⁺ cfg_D 0 L (peelSep bR R') := by
   rw [cfg_M0_eq, cfg_D, encTail_zero, zero_pow_one_add (bR % 4),
     listblank_append_cons, ← encTail_peelSep]
   execute 3
 
-lemma M0_one (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_one (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
     (cfg_M0 L ((1, bR) :: R')) [target_tm]⊢⁺ cfg_M0 ((0, 0) :: tailAsRight L) (peelSep bR R') := by
   rw [cfg_M0_eq, cfg_M0_eq, encTail_succ, encTail_zero, encTail_zero 0 (tailAsRight L),
     encRight_tailAsRight, zero_pow_one_add (bR % 4), listblank_append_cons,
     ← encTail_peelSep]
   execute 4
 
-lemma M0_two (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_two (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
     (cfg_M0 L ((2, bR) :: R')) [target_tm]⊢⁺ cfg_M0 ((0, 1) :: tailAsRight L) (peelSep bR R') := by
   rw [cfg_M0_eq, cfg_M0_eq, encTail_succ 1, encTail_succ 0, encTail_zero bR,
     encTail_zero 1 (tailAsRight L), encRight_tailAsRight, zero_pow_one_add (bR % 4),
     listblank_append_cons, ← encTail_peelSep]
   execute 5
 
-lemma M0_three (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_three (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
     (cfg_M0 L ((3, bR) :: R')) [target_tm]⊢⁺ cfg_M0 ((0, 2) :: tailAsRight L) (peelSep bR R') := by
   rw [cfg_M0_eq, cfg_M0_eq, encTail_succ 2, encTail_succ 1, encTail_succ 0,
-    encTail_zero bR, encTail_zero 2 (tailAsRight L), encRight_tailAsRight, zero_pow_one_add (bR % 4),
+    encTail_zero bR, encTail_zero 2 (tailAsRight L), encRight_tailAsRight,
+      zero_pow_one_add (bR % 4),
     listblank_append_cons, ← encTail_peelSep]
   execute 6
 
-lemma M0_four (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_four (L : List (ℕ × ℕ)) (bR : ℕ) (R' : List (ℕ × ℕ)) :
     (cfg_M0 L ((4, bR) :: R')) [target_tm]⊢⁺ cfg_M0 ((0, 3) :: tailAsRight L) (peelSep bR R') := by
   rw [cfg_M0_eq, cfg_M0_eq, encTail_succ 3, encTail_succ 2, encTail_succ 1, encTail_succ 0,
-    encTail_zero bR, encTail_zero 3 (tailAsRight L), encRight_tailAsRight, zero_pow_one_add (bR % 4),
+    encTail_zero bR, encTail_zero 3 (tailAsRight L), encRight_tailAsRight,
+      zero_pow_one_add (bR % 4),
     listblank_append_cons, ← encTail_peelSep]
   execute 7
 
-lemma M0_add5_pre (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_add5_pre (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ)) :
     (cfg_M0 L ((k + 5, bR) :: R')) [target_tm]⊢⁺
       ⟨some A, ⟨0, (([0] : List (Fin 2)) ^ k) +> wall L, encTail (peelSep bR R')⟩⟩ := by
   have htail : encTail ((k + 5, bR) :: R') =
-      (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (k + 4)) +> ((0 : Fin 2) >> encTail (peelSep bR R'))) := by
+      (1 : Fin 2) >> ((([1] : List (Fin 2)) ^ (k + 4)) +> ((0 : Fin 2) >>
+        encTail (peelSep bR R'))) := by
     rw [encTail_succ (k + 4), encTail_cons (k + 4) bR R',
       zero_pow_one_add (bR % 4), listblank_append_cons, ← encTail_peelSep]
   rw [cfg_M0_eq, htail]
@@ -1326,7 +1435,7 @@ lemma M0_add5_pre (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ)) 
   rw [zero_pow_wall k L] at hw
   exact hw
 
-lemma M0_add5_closed (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ)) :
+private theorem M0_add5_closed (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ)) :
     ∃ cfg', ((cfg_M0 L ((k + 5, bR) :: R')) [target_tm]⊢⁺ cfg') ∧
       (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone) := by
   have hpre := M0_add5_pre L k bR R'
@@ -1337,7 +1446,7 @@ lemma M0_add5_closed (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ
     · have hpost : (cfg_M0 L ((k + 5, bR) :: (a₂, b₂) :: R'')) [target_tm]⊢⁺
           P_cfg L (([0] : List (Fin 2)) ^ k) ((a₂, b₂) :: R'') := by
         unfold P_cfg
-        rw [peelSep, if_pos hb0, encTail_succ, ← encRight_cons_eq_one_cons_encTail] at hpre
+        rw [peelSep, ite_eq_left hb0, encTail_succ, ← encRight_cons_eq_one_cons_encTail] at hpre
         exact hpre
       exact P_drain_zeros k L ((a₂, b₂) :: R'') (by simp) hpost
   · have hcond : R' = [] ∨ bR % 4 ≠ 0 := by
@@ -1355,7 +1464,8 @@ lemma M0_add5_closed (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ
         refine ⟨cfg_M0 ((0, 2) :: tailAsRight L) ((1, 0) :: (ai, bi) :: rsi), ?_,
           Or.inl ⟨.M0, _, _, rfl⟩⟩
         rw [hz, h_in] at hpre
-        have hp2 := A_peel_two_zeros ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail L)
+        have hp2 :=
+          A_peel_two_zeros ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail L)
           (encTail ((ai, bi) :: rsi))
         have hrhs : cfg_M0 ((0, 2) :: tailAsRight L) ((1, 0) :: (ai, bi) :: rsi) =
             ⟨some A, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail L,
@@ -1369,10 +1479,13 @@ lemma M0_add5_closed (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ
         refine ⟨cfg_M0 ((0, 3) :: tailAsRight L) ((1, 0) :: (ai, bi) :: rsi), ?_,
           Or.inl ⟨.M0, _, _, rfl⟩⟩
         rw [hz, h_in] at hpre
-        have hp2 := A_peel_two_zeros ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail L)
+        have hp2 :=
+          A_peel_two_zeros ((0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+            (1 : Fin 2) >> encTail L)
           (encTail ((ai, bi) :: rsi))
         have hrhs : cfg_M0 ((0, 3) :: tailAsRight L) ((1, 0) :: (ai, bi) :: rsi) =
-            ⟨some A, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail L,
+            ⟨some A, ⟨0, (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >>
+              (1 : Fin 2) >> encTail L,
               (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> encTail ((ai, bi) :: rsi)⟩⟩ := by
           rw [cfg_M0_eq, encTail_zero 3 (tailAsRight L), encRight_tailAsRight,
             encTail_succ 0, encTail_zero 0 ((ai, bi) :: rsi), encRight_cons_eq_one_cons_encTail]
@@ -1387,10 +1500,11 @@ lemma M0_add5_closed (L : List (ℕ × ℕ)) (k bR : ℕ) (R' : List (ℕ × ℕ
           rw [encRight_cons_simp 0 0, encRight_cons_eq_one_cons_encTail ai bi rsi]
           dsimp only [pow_zero_list, pow_succ_list, nil_append_list, cons_append_list,
             listblank_append_nil, listblank_append_cons] at hpre ⊢
-          exact stepPlus_trans hpre (A_peel_two_zeros ((([0] : List (Fin 2)) ^ k') +> wall L) (encTail ((ai, bi) :: rsi)))
+          exact stepPlus_trans hpre (A_peel_two_zeros ((([0] : List (Fin 2)) ^ k') +>
+            wall L) (encTail ((ai, bi) :: rsi)))
         exact P_drain_zeros k' L ((0, 0) :: (ai, bi) :: rsi) (by simp) hp2
 
-theorem stage1_step_all (L R : List (ℕ × ℕ)) :
+private theorem stage1_step_all (L R : List (ℕ × ℕ)) :
     ∃ cfg', ((cfg_M0 L R) [target_tm]⊢⁺ cfg') ∧
       (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone ∨ ∃ L' R', cfg' = cfg_D 0 L' R') := by
   rcases R with _ | ⟨⟨d, bR⟩, R'⟩
@@ -1406,7 +1520,7 @@ theorem stage1_step_all (L R : List (ℕ × ℕ)) :
       · exact ⟨cfg', h, Or.inl hM⟩
       · exact ⟨cfg', h, Or.inr (Or.inl hH)⟩
 
-theorem stack_system_closed :
+private theorem stack_system_closed :
     ∀ cfg, IsInStackSystem cfg →
       ∃ cfg', (cfg [target_tm]⊢⁺ cfg') ∧
               (IsInStackSystem cfg' ∨ (step target_tm cfg').isNone) := by
@@ -1425,11 +1539,9 @@ theorem stack_system_closed :
       · obtain ⟨cfg₃, h₃, hout₃⟩ := stage3_closed L'' R_P hRP
         exact ⟨cfg₃, stepPlus_trans (stepPlus_trans h₁ h₂) h₃, hout₃⟩
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
 
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
-
-theorem is_stack_cryptid : IsStackCryptid target_tm := by
+theorem is_stack_cryptid : IsStackCryptid target := by
+  rw [target_eq_target_tm]
   refine ⟨StackMode, 1, 0, encLeft, encRight, evalStackCfg, IsInStackSystem,
     Or.inl ⟨rfl, rfl⟩,
     rfl, rfl, audit_encLeft_head, audit_encRight_head,

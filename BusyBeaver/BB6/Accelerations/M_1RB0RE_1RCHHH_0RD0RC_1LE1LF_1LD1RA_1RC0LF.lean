@@ -12,30 +12,26 @@ public import BusyBeaver.WordRunStack
 
 @[expose] public section
 
-set_option linter.style.longLine false
-set_option linter.style.setOption false
-set_option linter.style.multiGoal false
-set_option linter.deprecated false
-set_option linter.flexible false
-
 /-!
-# Busy Beaver Machine `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` — `is_segmented_cryptid` (`IsSegmentedCryptid target_tm`)
+# Busy Beaver Machine `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` (`IsSegmentedCryptid`)
 
-This file imports shared trusted definitions from `BusyBeaver.Basic`
-and defines `target_tm` for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. Do not modify the trusted
-definitions section or the goal theorem signature.
+Formal `IsClosedSegmentedSystem` and `IsSegmentedCryptid` proofs for
+`1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` (`target`).
 -/
 
 open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
 
--- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
+/-- The `(6, 2)` Turing machine in `ConjectureMachines.Machine` form. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF"
 
-variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+/-- The `(6, 2)` Turing machine in `BusyBeaver.Machine` form. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
 
-/-- Transition function for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. -/
-def target_tm : Machine (Fin 2) (Fin 6)
+private def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
   | 0, 1 => some (some 4, Stmt.write 0 Dir.right)
   | 1, 0 => some (some 2, Stmt.write 1 Dir.right)
@@ -49,23 +45,19 @@ def target_tm : Machine (Fin 2) (Fin 6)
   | 5, 0 => some (some 2, Stmt.write 1 Dir.right)
   | 5, 1 => some (some 5, Stmt.write 0 Dir.left)
 
--- END TRUSTED DEFINITIONS
-
--- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+private theorem target_eq_target_tm : target = target_tm := by
+  funext q s
+  fin_cases q <;> fin_cases s <;> rfl
 
 local notation "zB" => ListBlank (Fin 2)
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unusedVariables false
-set_option maxHeartbeats 400000
-set_option maxRecDepth 10000
 
 open Counter
 
 local macro "finish" : tactic => `(tactic| exists 0 <;> fail)
 local macro "gstep" : tactic =>
   `(tactic| (try refine stepPlus_stepStar ?_) <;>
-    refine step_stepStar_stepPlus (by (try simp only [Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
+    refine step_stepStar_stepPlus
+      (by (try simp only [Turing.ListBlank.head_cons, default_head]); rfl) ?_ <;>
     simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write,
       zero_cons_default, default_head, default_tail])
 local macro "step1" : tactic => `(tactic| try (any_goals (first | finish | gstep)))
@@ -83,32 +75,40 @@ inductive SegMode where
 deriving DecidableEq, Repr
 
 /-- Left half-tape parameterized zero-run word `0^k ++ [1]`. -/
-@[simp]
-def zWord : ℕ → List (Fin 2)
-  | 0 => [1]
-  | k + 1 => 0 :: zWord k
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+@[simp] private theorem zWord_zero : zWord 0 = [1] := rfl
+@[simp] private theorem zWord_succ (k : ℕ) : zWord (k + 1) = 0 :: zWord k := rfl
 
 /-- Right half-tape `1`-run word `1^(o+2)` of length at least `2`. -/
-@[simp]
-def oRun : ℕ → List (Fin 2)
-  | 0 => [1, 1]
-  | o + 1 => 1 :: oRun o
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+@[simp] private theorem oRun_zero : oRun 0 = [1, 1] := rfl
+@[simp] private theorem oRun_succ (o : ℕ) : oRun (o + 1) = 1 :: oRun o := rfl
 
 /-- Right half-tape word `0^z ++ 1^(o+2)` avoiding isolated `1`s (`010`). -/
-@[simp]
-def rWord : ℕ × ℕ → List (Fin 2)
-  | (0, o) => oRun o
-  | (z + 1, o) => 0 :: rWord (z, o)
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
 
-@[simp]
-def encLeft : List ℕ → zB
-  | [] => default
-  | k :: L => zWord k +> encLeft L
+@[simp] private theorem rWord_zero (o : ℕ) : rWord (0, o) = oRun o := rfl
+@[simp] private theorem rWord_succ (z o : ℕ) :
+    rWord (z + 1, o) = 0 :: rWord (z, o) := rfl
 
-@[simp]
-def encRight : List (ℕ × ℕ) → zB
-  | [] => default
-  | p :: R => rWord p +> encRight R
+def encLeft (S : List ℕ) : zB :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+@[simp] private theorem encLeft_nil : encLeft [] = default := rfl
+@[simp] private theorem encLeft_cons (k : ℕ) (S : List ℕ) :
+    encLeft (k :: S) = zWord k +> encLeft S := rfl
+
+def encRight (S : List (ℕ × ℕ)) : zB :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+@[simp] private theorem encRight_nil : encRight [] = default := rfl
+@[simp] private theorem encRight_cons (p : (ℕ × ℕ)) (S : List (ℕ × ℕ)) :
+    encRight (p :: S) = rWord p +> encRight S := rfl
 
 abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
 
@@ -132,91 +132,146 @@ def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
 def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
   [.finWord (s.2.2.map rWord)]
 
-lemma append_assoc_blank (a b : List (Fin 2)) (s : zB) :
+private theorem append_assoc_blank (a b : List (Fin 2)) (s : zB) :
     (a ++ b) +> s = a +> (b +> s) := by
   induction a with
   | nil => rfl
   | cons x xs ih => simp only [List.cons_append, ListBlank.append, ih]
 
-lemma evalSegRegion_zWord (L : List ℕ) :
+private theorem evalSegRegion_zWord (L : List ℕ) :
     evalSegRegion (.finWord (L.map zWord)) +> (default : zB) = encLeft L := by
   induction L with
-  | nil => simp [evalSegRegion, encLeft, listblank_append_nil]
+  | nil => simp [evalSegRegion, encLeft_nil]
   | cons k rest ih =>
-    simp only [List.map_cons, evalSegRegion, encLeft, ← ih]
+    simp only [List.map_cons, evalSegRegion, encLeft_cons, ← ih]
     exact append_assoc_blank (zWord k) (evalSegRegion (.finWord (rest.map zWord))) default
 
-lemma evalSegRegion_rWord (R : List (ℕ × ℕ)) :
+private theorem evalSegRegion_rWord (R : List (ℕ × ℕ)) :
     evalSegRegion (.finWord (R.map rWord)) +> (default : zB) = encRight R := by
   induction R with
-  | nil => simp [evalSegRegion, encRight, listblank_append_nil]
+  | nil => simp [evalSegRegion, encRight_nil]
   | cons p rest ih =>
-    simp only [List.map_cons, evalSegRegion, encRight, ← ih]
+    simp only [List.map_cons, evalSegRegion, encRight_cons, ← ih]
     exact append_assoc_blank (rWord p) (evalSegRegion (.finWord (rest.map rWord))) default
 
 @[simp]
-lemma evalSegmentedHalf_segsL (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem evalSegmentedHalf_segsL (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)) :
     evalSegmentedHalf (segsL (m, L, R)) = encLeft (leftList m L) :=
   evalSegRegion_zWord (leftList m L)
 
 @[simp]
-lemma evalSegmentedHalf_segsR (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem evalSegmentedHalf_segsR (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)) :
     evalSegmentedHalf (segsR (m, L, R)) = encRight R :=
   evalSegRegion_rWord R
 
-lemma oRun_nth_one (o : ℕ) (t : zB) : (oRun o +> t).nth 1 = 1 := by
+private theorem oRun_nth_one (o : ℕ) (t : zB) : (oRun o +> t).nth 1 = 1 := by
   cases o with
   | zero =>
-    simp only [oRun, ListBlank.append, WordRunStack.nth_cons_succ, WordRunStack.nth_cons_zero]
+    simp only [oRun_zero, ListBlank.append, WordRunStack.nth_cons_succ,
+      WordRunStack.nth_cons_zero]
   | succ o =>
     cases o <;>
-      simp only [oRun, ListBlank.append, WordRunStack.nth_cons_succ, WordRunStack.nth_cons_zero]
+      simp only [oRun_zero, oRun_succ, ListBlank.append, WordRunStack.nth_cons_succ,
+        WordRunStack.nth_cons_zero]
 
-lemma noFactor_010_oRun (o : ℕ) (t : zB) (ht : WordRunStack.NoFactor [0, 1, 0] t) :
+private theorem noFactor_010_oRun (o : ℕ) (t : zB) (ht : WordRunStack.NoFactor [0, 1, 0] t) :
     WordRunStack.NoFactor [0, 1, 0] (oRun o +> t) := by
   induction o with
   | zero =>
-    simp only [oRun, ListBlank.append]
+    simp only [oRun_zero, ListBlank.append]
     have h1 := WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (1 : Fin 2) t ht 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
     exact WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (1 : Fin 2) _ h1 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
   | succ o ih =>
-    simp only [oRun, ListBlank.append]
+    simp only [oRun_zero, oRun_succ, ListBlank.append]
     exact WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (1 : Fin 2) _ ih 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
 
-lemma noFactor_010_rWord (z o : ℕ) (t : zB) (ht : WordRunStack.NoFactor [0, 1, 0] t) :
+private theorem noFactor_010_rWord (z o : ℕ) (t : zB) (ht : WordRunStack.NoFactor [0, 1, 0] t) :
     WordRunStack.NoFactor [0, 1, 0] (rWord (z, o) +> t) := by
   induction z with
   | zero =>
-    simp only [rWord]
+    simp only [rWord_zero]
     exact noFactor_010_oRun o t ht
   | succ z ih =>
     cases z with
     | zero =>
-      simp only [rWord, ListBlank.append] at ih ⊢
+      simp only [rWord_zero, rWord_succ, ListBlank.append] at ih ⊢
       refine WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (0 : Fin 2) _ ih 2 (by decide) ?_
       rw [WordRunStack.nth_cons_succ, oRun_nth_one]
       decide
     | succ z =>
-      simp only [rWord, ListBlank.append] at ih ⊢
+      simp only [rWord_zero, rWord_succ, ListBlank.append] at ih ⊢
       refine WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (0 : Fin 2) _ ih 1 (by decide) ?_
       simp only [WordRunStack.nth_cons_succ, WordRunStack.nth_cons_zero]
       decide
 
-lemma noFactor_010_encRight :
+private theorem noFactor_010_encRight :
     ∀ R : List (ℕ × ℕ), WordRunStack.NoFactor [0, 1, 0] (encRight R)
   | [] => WordRunStack.noFactor_default [0, 1, 0] 1 (by decide) (by decide)
   | (z, o) :: R => noFactor_010_rWord z o _ (noFactor_010_encRight R)
 
-lemma segsR_nowhere_dense : IsNowhereDenseHalf ValidSeg segsR :=
+theorem segsR_nowhere_dense : IsNowhereDenseHalf ValidSeg segsR :=
   WordRunStack.isNowhereDenseHalf_of_noFactor ValidSeg segsR [0, 1, 0]
     (fun ⟨_, _, R⟩ _ => by rw [evalSegmentedHalf_segsR]; exact noFactor_010_encRight R)
 
-lemma segs_len_le_three (s : SegState) (_ : ValidSeg s) :
-    (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3 := by
-  simp [segsL, segsR]
+/-- Canonical mode enumeration for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. -/
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+private theorem zWord_ne_nil (k : ℕ) : zWord k ≠ [] := by
+  cases k <;> simp [zWord_zero, zWord_succ]
+
+private theorem zWord_ne_zero : ∀ k : ℕ, zWord k ≠ [(0 : Fin 2)]
+  | 0 => by simp [zWord_zero]
+  | n + 1 => fun h => by
+      dsimp only [zWord_zero, zWord_succ] at h
+      exact zWord_ne_nil n (List.cons.inj h).2
+
+private theorem oRun_len (o : ℕ) : 2 ≤ (oRun o).length := by
+  induction o with
+  | zero => decide
+  | succ _ ih => simp [oRun_zero, oRun_succ]; omega
+
+private theorem rWord_len : ∀ p : ℕ × ℕ, 2 ≤ (rWord p).length
+  | (0, o) => by simp only [rWord_zero]; exact oRun_len o
+  | (z + 1, o) => by
+      have ih := rWord_len (z, o)
+      simp only [rWord_zero, rWord_succ, List.length_cons]
+      omega
+
+private theorem rWord_ne_nil (p : ℕ × ℕ) : rWord p ≠ [] := by
+  intro h
+  have := rWord_len p
+  simp [h] at this
+
+private theorem rWord_ne_zero (p : ℕ × ℕ) : rWord p ≠ [(0 : Fin 2)] := by
+  intro h
+  have := rWord_len p
+  simp [h] at this
+
+private theorem segs_wf (s : SegState) (_ : ValidSeg s) :
+    (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3 ∧
+    (∀ r ∈ segsL s, r.WellFormed) ∧ (∀ r ∈ segsR s, r.WellFormed) := by
+  refine ⟨by simp [segsL], by simp [segsR], ?_, ?_⟩
+  · simp only [segsL, List.mem_singleton]
+    rintro _ rfl
+    refine ⟨?_, ?_⟩
+    · rintro _ hw
+      rcases List.mem_map.mp hw with ⟨x, _, rfl⟩
+      exact zWord_ne_nil x
+    · intro h
+      rcases List.mem_map.mp (h 0) with ⟨x, _, hx⟩
+      exact zWord_ne_zero x hx
+  · simp only [segsR, List.mem_singleton]
+    rintro _ rfl
+    refine ⟨?_, ?_⟩
+    · rintro _ hw
+      rcases List.mem_map.mp hw with ⟨x, _, rfl⟩
+      exact rWord_ne_nil x
+    · intro h
+      rcases List.mem_map.mp (h 0) with ⟨x, _, hx⟩
+      exact rWord_ne_zero x hx
 
 @[simp]
 def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
@@ -231,7 +286,7 @@ def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin
 def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
   evalSegCfg s.1 s.2.1 s.2.2
 
-lemma valid_seg_modes :
+theorem valid_seg_modes :
     ∀ m : SegMode, ∃ (q : Fin 6) (vL vR : HalfTapeView (Fin 2)),
       viewPrefixLen vL ≤ 8 ∧ viewPrefixLen vR ≤ 8 ∧
       ∀ s : SegState, ValidSeg s → modeOf s = m →
@@ -275,7 +330,7 @@ lemma valid_seg_modes :
     rw [evalSegmentedHalf_segsL, evalSegmentedHalf_segsR]
     exact Or.inr (Or.inl rfl)
 
-lemma segsL_boundary_aligned :
+theorem segsL_boundary_aligned :
     ∀ s : SegState, ValidSeg s → ∃ q vR,
       (evalCfg s = ⟨some q, ⟨0, evalSegmentedHalf (segsL s), vR⟩⟩) ∨
       (evalCfg s = (evalSegmentedHalf (segsL s)) <{{q}} vR) ∨
@@ -312,57 +367,57 @@ def cfgHalt (L : List ℕ) (o : ℕ) (R : List (ℕ × ℕ)) : Cfg (Fin 2) (Fin 
 @[simp]
 def s₀ : SegState := (.mB0, [0, 0], [])
 
-lemma init_reaches_segmented_system :
+private theorem init_reaches_segmented_system :
     (init []) [target_tm]⊢⁺ evalSegCfg .mB0 [0, 0] [] := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = ((default : zB) {{0}}> (default : zB)) := rfl
   rw [h_init]
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]
+  simp only [evalSegCfg, applyView, encLeft_nil, encLeft_cons, encRight_nil, 
+    zWord_zero, 
+    ListBlank.append,
+   default_head, default_tail]
   execute
 
-lemma step_mAL_nil (R : List (ℕ × ℕ)) :
+private theorem step_mAL_nil (R : List (ℕ × ℕ)) :
     (evalSegCfg .mAL [] R) [target_tm]⊢⁺ evalSegCfg .mB0 [0] R := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_nil, encLeft_cons, zWord_zero, 
+    ListBlank.append,
+   default_head, default_tail]; execute
 
-lemma step_mAL_0 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mAL_0 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mAL (0 :: L) R) [target_tm]⊢⁺ evalSegCfg .mAL L (push0R R) := by
   rcases R with _ | ⟨⟨z, o⟩, R⟩ <;> (
-    simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, push0R,
-      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-      zero_cons_default, default_head, default_tail]; execute)
+    simp only [evalSegCfg, applyView, encLeft_cons, encRight_nil, encRight_cons,
+      zWord_zero, rWord_succ, push0R,
+      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute)
 
-lemma step_mAL_succ (k : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mAL_succ (k : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mAL ((k + 1) :: L) R) [target_tm]⊢⁺ evalSegCfg .mB0 (0 :: k :: L) R := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, zWord_zero, zWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mB0_nil (L : List ℕ) :
+private theorem step_mB0_nil (L : List ℕ) :
     (evalSegCfg .mB0 L []) [target_tm]⊢⁺ evalSegCfg .mCL L [] := by
-  simp only [evalSegCfg, applyView, encLeft, encRight,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encRight_nil, 
+    ListBlank.append,
+   default_head, default_tail]; execute
 
-lemma step_mB0_0_base (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mB0_0_base (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mB0 L ((0, 0) :: R)) [target_tm]⊢⁺
       evalSegCfg .mB0 (push0L (push0L L)) R := by
   cases L <;> (
-    simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun, push0L,
-      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-      zero_cons_default, default_head, default_tail]; execute)
+    simp only [evalSegCfg, applyView, encLeft_nil, encLeft_cons, encRight_cons,
+     zWord_succ, rWord_zero, oRun_zero, push0L,
+      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute)
 
-lemma step_mB0_0_step (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mB0_0_step (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mB0 L ((0, o + 1) :: R)) [target_tm]⊢⁺
       evalSegCfg .mB0 (push0L L) ((0, o) :: R) := by
   cases L <;> (
-    simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun, push0L,
-      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-      zero_cons_default, default_head, default_tail]; execute)
+    simp only [evalSegCfg, applyView, encLeft_nil, encLeft_cons, encRight_cons,
+     zWord_succ, rWord_zero, oRun_succ, push0L,
+      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute)
 
-lemma step_mB0_0_sweep (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mB0_0_sweep (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mB0 L ((0, o) :: R)) [target_tm]⊢⁺
       evalSegCfg .mB0 (push0IterL (o + 2) L) R := by
   induction o generalizing L with
@@ -370,143 +425,145 @@ lemma step_mB0_0_sweep (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     simp only [push0IterL]
     exact step_mB0_0_base L R
   | succ o ih =>
-    simp only [Nat.succ_add, push0IterL]
+    simp only [push0IterL]
     exact stepPlus_trans (step_mB0_0_step o L R) (ih (push0L L))
 
-lemma step_mB0_1 (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mB0_1 (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mB0 L ((1, o) :: R)) [target_tm]⊢⁺
       evalSegCfg .mB0 (0 :: L) ((0, o) :: R) := by
   cases o <;> (
-    simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-      zero_cons_default, default_head, default_tail]; execute)
+    simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+      zWord_zero, rWord_zero, rWord_succ, oRun_zero, oRun_succ,
+      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute)
 
-lemma step_mB0_succ2 (z o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mB0_succ2 (z o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mB0 L ((z + 2, o) :: R)) [target_tm]⊢⁺
       evalSegCfg .mCL L ((z, o) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encRight_cons, rWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mCL_nil (R : List (ℕ × ℕ)) :
+private theorem step_mCL_nil (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL [] R) [target_tm]⊢⁺ evalSegCfg .mCL [] ((0, 0) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_nil, encRight_cons,
+    rWord_zero, oRun_zero, 
+    ListBlank.append,
+   default_head, default_tail]; execute
 
-lemma step_mCL_0 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mCL_0 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL (0 :: L) R) [target_tm]⊢⁺ evalSegCfg .mAL L ((0, 1) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, rWord_zero, oRun_zero, oRun_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mCL_1 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mCL_1 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL (1 :: L) R) [target_tm]⊢⁺ evalSegCfg .mD0 L ((0, 0) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_zero, oRun_zero, 
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mCL_succ2 (k : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mCL_succ2 (k : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL ((k + 2) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mCL (k :: L) ((0, 0) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+   zWord_succ, rWord_zero, oRun_zero, 
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mCL1_nil (R : List (ℕ × ℕ)) :
+private theorem step_mCL1_nil (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL1 [] R) [target_tm]⊢⁺ evalSegCfg .mCL1 [] ((0, 0) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_nil, encRight_cons,
+    rWord_zero, oRun_zero, 
+    ListBlank.append,
+   default_head, default_tail]; execute
 
-lemma step_mCL1_0 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mCL1_0 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL1 (0 :: L) R) [target_tm]⊢⁺ evalSegCfg .mAL L ((0, 0) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, rWord_zero, oRun_zero, 
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mCL1_1 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mCL1_1 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL1 (1 :: L) R) [target_tm]⊢⁺ evalSegCfg .mD1 L R := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, zWord_zero, zWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mCL1_succ2 (k : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mCL1_succ2 (k : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mCL1 ((k + 2) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mCL1 (k :: L) ((0, 0) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+   zWord_succ, rWord_zero, oRun_zero, 
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD0_nil (L : List ℕ) :
+private theorem step_mD0_nil (L : List ℕ) :
     (evalSegCfg .mD0 L []) [target_tm]⊢⁺ evalSegCfg .mCL1 (1 :: L) [] := by
-  simp only [evalSegCfg, applyView, encLeft, encRight,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_nil, 
+    ListBlank.append,
+   default_head, default_tail]; execute
 
-lemma step_mD0_00 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD0_00 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD0 L ((0, 0) :: R)) [target_tm]⊢⁺ evalSegCfg .mD0 (1 :: L) R := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_zero, oRun_zero, 
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD0_01 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD0_01 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD0 L ((0, 1) :: R)) [target_tm]⊢⁺ evalSegCfg .mD1 (1 :: L) R := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_zero, oRun_zero, oRun_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD0_0_succ2 (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD0_0_succ2 (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD0 L ((0, o + 2) :: R)) [target_tm]⊢⁺
       evalSegCfg .mD0 (1 :: L) ((0, o) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_zero, oRun_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD0_succ (z o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD0_succ (z o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD0 L ((z + 1, o) :: R)) [target_tm]⊢⁺
       evalSegCfg .mCL1 (1 :: L) ((z, o) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD1_nil (L : List ℕ) :
+private theorem step_mD1_nil (L : List ℕ) :
     (evalSegCfg .mD1 L []) [target_tm]⊢⁺ evalSegCfg .mB0 (0 :: 0 :: 0 :: 1 :: L) [] := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_nil, 
+    zWord_zero, zWord_succ,
     ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+   default_head, default_tail]; execute
 
-lemma step_mD1_00 (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD1_00 (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD1 L ((0, 0) :: R)) [target_tm]⊢⁺ evalSegCfg .mD1 (1 :: L) R := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_zero, oRun_zero, 
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD1_0_succ (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD1_0_succ (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD1 L ((0, o + 1) :: R)) [target_tm]⊢⁺
       evalSegCfg .mD0 (1 :: L) ((0, o) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_zero, oRun_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_mD1_1_to_halt (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD1_1_to_halt (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD1 L ((1, o) :: R)) [target_tm]⊢⁺ cfgHalt (1 :: L) o R := by
-  simp only [evalSegCfg, cfgHalt, applyView, encLeft, encRight, zWord, rWord,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, cfgHalt, applyView, encLeft_cons, 
+    encRight_cons, zWord_zero, zWord_succ, rWord_zero, rWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-lemma step_cfgHalt_isNone (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_cfgHalt_isNone (o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (step target_tm (cfgHalt L o R)).isNone := by
-  cases o <;> simp [cfgHalt, oRun, ListBlank.append, Turing.ListBlank.head_cons, step, target_tm]
+  cases o <;> simp [cfgHalt, oRun_zero, oRun_succ, ListBlank.append, Turing.ListBlank.head_cons,
+    step, target_tm]
 
-lemma step_mD1_succ2 (z o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem step_mD1_succ2 (z o : ℕ) (L : List ℕ) (R : List (ℕ × ℕ)) :
     (evalSegCfg .mD1 L ((z + 2, o) :: R)) [target_tm]⊢⁺
       evalSegCfg .mB0 (0 :: 0 :: 0 :: 1 :: L) ((z, o) :: R) := by
-  simp only [evalSegCfg, applyView, encLeft, encRight, zWord, rWord, oRun,
-    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons,
-    zero_cons_default, default_head, default_tail]; execute
+  simp only [evalSegCfg, applyView, encLeft_cons, encRight_cons,
+    zWord_zero, zWord_succ, rWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]; execute
 
-theorem segmented_step_sound (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)) :
+private theorem segmented_step_sound (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)) :
     ∃ cfg', ((evalSegCfg m L R) [target_tm]⊢⁺ cfg') ∧
       ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step target_tm cfg').isNone) := by
   cases m with
@@ -573,23 +630,24 @@ theorem segmented_step_sound (m : SegMode) (L : List ℕ) (R : List (ℕ × ℕ)
     · exact ⟨evalCfg (.mB0, 0 :: 0 :: 0 :: 1 :: L, (z, o) :: R), step_mD1_succ2 z o L R,
         Or.inl ⟨(.mB0, 0 :: 0 :: 0 :: 1 :: L, (z, o) :: R), trivial, rfl⟩⟩
 
-theorem segmented_system_closed (s : SegState) (_ : ValidSeg s) :
+private theorem segmented_system_closed (s : SegState) (_ : ValidSeg s) :
     ∃ cfg', ((evalCfg s) [target_tm]⊢⁺ cfg') ∧
       ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step target_tm cfg').isNone) :=
   segmented_step_sound s.1 s.2.1 s.2.2
 
--- END EXPLORATORY DEFINITIONS AND LEMMAS
-
--- BEGIN GOAL STATEMENT (DO NOT MODIFY SIGNATURE)
-
-theorem is_segmented_cryptid : IsSegmentedCryptid target_tm := by
-  exact ⟨SegState, SegMode, ValidSeg, modeOf, segsL, segsR, evalCfg,
-    ⟨[.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1], by decide, by decide, fun m => by cases m <;> simp⟩,
-    segs_len_le_three,
-    valid_seg_modes,
+/-- Explicit `IsClosedSegmentedSystem` witness for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. -/
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  rw [target_eq_target_tm]
+  exact ⟨by decide, by decide, fun m => by cases m <;> simp [modes],
+    segs_wf, valid_seg_modes,
     Or.inr segsR_nowhere_dense,
     Or.inr segsL_boundary_aligned,
     Or.inl segsR_nowhere_dense,
     ⟨s₀, trivial, init_reaches_segmented_system⟩,
     segmented_system_closed⟩
+
+/-- Segmented cryptid certificate for `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF`. -/
+theorem is_segmented_cryptid : IsSegmentedCryptid target :=
+  ⟨SegState, SegMode, modes, ValidSeg, modeOf, segsL, segsR, evalCfg, is_closed_segmented_system⟩
 end BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
