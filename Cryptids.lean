@@ -23,6 +23,8 @@ public import Cryptids.ErdosTernary15
 public import Cryptids.Semantics.ErdosTernary15
 public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
+public import Cryptids.Brocard28
+public import Cryptids.Semantics.Brocard28
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -30,7 +32,8 @@ public import Cryptids.Semantics.ErdosTernary14
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
 Hypothesis** (`120 → 104 → 95` states), and **Erdős's ternary conjecture** (`15 → 14`
-states), as well as complete Lean 4 formalizations of all publicly
+states), a 28-state machine for **Brocard's problem** (`brocard_28`), as well as complete
+Lean 4 formalizations of all publicly
 known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
@@ -73,6 +76,11 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   `Halts erdosTernary14 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` and `Halts candidate ↔ Halts reference` relative to
   `erdosTernary15`, and
   `ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary`.
+- `Cryptids.Brocard28`, `Cryptids.Semantics.Brocard28` — A 28-state machine for Brocard's problem
+  (`brocard28`), with constructive proofs of `Halts brocard28 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)`
+  (`V n = n! / 8`) and `ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square`
+  (`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
+  `ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

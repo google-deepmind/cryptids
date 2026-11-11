@@ -11,7 +11,7 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   defines all conjecture-checking baseline and candidate machines (`reference` and `candidate`),
   states the target mathematical propositions (`GoldbachConjecture`,
   `MatiyasevichRiemannCounterexample`, `ZFProvable`, `WadeZFProvable`, `PAProvable`, `paHalts`,
-  `paZFInconsistent`, `ErdosTernaryConjecture`, etc.), and states all 34 target
+  `paZFInconsistent`, `ErdosTernaryConjecture`, etc.), and states all 36 target
   state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics
   theorems with `sorry`.
 - [`BusyBeaverChallenge.lean`](../BusyBeaverChallenge.lean) imports **only** Mathlib and Lean core
@@ -43,8 +43,9 @@ that:
      `halts_zf432_iff_wadeZFInconsistent`), first-order `PA` consistency and $\Sigma_1^0$
      adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`,
      `paZFInconsistent_holds_iff_zfInconsistent`), the direct simulation reductions (`Goldbach21`,
-     `Zf380`, `Riemann104`), the `ErdosTernary14` reduction, and all five `candidate_fewer_states`
-     theorems (15 theorems total).
+     `Zf380`, `Riemann104`), the `ErdosTernary14` reduction, all five `candidate_fewer_states`
+     theorems, and the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`
+     (16 theorems total).
      Disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts (`not_zfInconsistent` in
      `ZFSet.{0}` or `Classical.em` + `digama0/ConZF`) for `Halts M ↔ ZFInconsistent`, while deeply
      embedded `PAProvable` provides a weak first-order metatheory strictly below `ZF` (see
@@ -53,15 +54,15 @@ that:
      [`busy_beaver.json`](./busy_beaver.json), and the classical model-theoretic / arithmetic-stage /
      analytic configs (`pa_semantics.json`, `zf_393.json`, `zf_semantics.json`,
      `goldbach_semantics.json`, `riemann_95.json`, `riemann_120.json`, `riemann_semantics.json`,
-     `erdos_ternary_15.json`, `erdos_ternary_14.json`).
+     `erdos_ternary_15.json`, `erdos_ternary_14.json`, `brocard_28.json`).
 3. The exported proof terms are accepted by the Lean default kernel.
 
 ## Configurations
 
 | Config File | Challenge Module | Solution Module | Permitted Axioms | Verified Theorems |
 | :--- | :--- | :--- | :--- | :--- |
-| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 15 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), `Riemann95.candidate_fewer_states`, and the `ErdosTernary14` reduction |
-| [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 34 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
+| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 16 constructive theorems: all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), direct state reductions (`Goldbach21`, `Zf380`, `Riemann104`), `Riemann95.candidate_fewer_states`, and the `ErdosTernary14` reduction, and `Brocard28.halts_brocard28_iff_exists_square` |
+| [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 36 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
 | [`pa_semantics.json`](./pa_semantics.json) | `Challenge` | `Cryptids.Semantics.PA` | `propext`, `Quot.sound`, `Classical.choice` | `not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`, `paProvable_sound_nat`, `paProvable_halts_zf380_iff_zf393`, `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent` |
 | [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 506 `BB(6)` and `BB(3, 3)` holdout Level A, Level B, equivalence, A6 `is_not_halt`, and hardness-evidence theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`, `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, `HardnessEvidence.*`) |
 | [`a6.json`](./a6.json) | `BusyBeaverChallenge` | `BusyBeaver.BB6.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH` | `propext`, `Quot.sound`, `Classical.choice` | A6 `is_not_halt` |
@@ -76,6 +77,7 @@ that:
 | [`riemann_semantics.json`](./riemann_semantics.json) | `Challenge` | `Cryptids.Semantics.Riemann` | `propext`, `Quot.sound`, `Classical.choice` | `halts_riemann744_iff_exists_counterexample`, `halts_riemann744_iff_not_riemannHypothesis` |
 | [`erdos_ternary_15.json`](./erdos_ternary_15.json) | `Challenge` | `Cryptids.Semantics.ErdosTernary15` | `propext`, `Quot.sound`, `Classical.choice` | `halts_erdosTernary15_iff_exists_counterexample`, `halts_erdosTernary15_iff_not_erdosTernary` |
 | [`erdos_ternary_14.json`](./erdos_ternary_14.json) | `Challenge` | `Cryptids.Semantics.ErdosTernary14` | `propext`, `Quot.sound`, `Classical.choice` | `candidate_fewer_states`, `candidate_equivalent`, `halts_candidate_iff_not_erdosTernary` |
+| [`brocard_28.json`](./brocard_28.json) | `Challenge` | `Cryptids.Semantics.Brocard28` | `propext`, `Quot.sound`, `Classical.choice` | `halts_brocard28_iff_exists_square`, `halts_brocard28_iff_not_brocard` |
 
 The focused [`a6.json`](a6.json) configuration checks the A6 `IsNotHalt`
 theorem against `BusyBeaverChallenge`, using only its machine module as the

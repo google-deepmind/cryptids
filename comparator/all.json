@@ -35,7 +35,9 @@
     "ConjectureMachines.ErdosTernary15.halts_erdosTernary15_iff_not_erdosTernary",
     "ConjectureMachines.ErdosTernary14.candidate_fewer_states",
     "ConjectureMachines.ErdosTernary14.candidate_equivalent",
-    "ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary"
+    "ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary",
+    "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square",
+    "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
   ],
   "permitted_axioms": [
     "propext",

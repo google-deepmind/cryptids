@@ -12,7 +12,8 @@ project:
     the 2016 744-state machine riemann_744), and Erdős's ternary conjecture
     (15 -> 14 states: Tristan Stérin and Damien Woods's 2021 15-state
     machine erdos_ternary_15 and Tristan Stérin's October 2026 14-state machine
-    erdos_ternary_14),
+    erdos_ternary_14), and Brocard's problem (a new 28-state machine brocard_28,
+    November 2026),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -165,6 +166,49 @@ sources:
       First Lean 4 proof that erdos_ternary_14 halts iff erdos_ternary_15 halts, and hence iff
       Erdős's ternary conjecture is false (Cryptids/ErdosTernary14.lean,
       Cryptids/Semantics/ErdosTernary14.lean).
+  - title: "A Turing machine for Brocard's problem (tinycryptids, brocard_61)"
+    authors:
+      - "Charlie Reams"
+    id: "https://github.com/calr3/tinycryptids"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 61-state, 2-symbol machine (a 98-state design merged by exact SAT) with a
+      Lean proof TM.Brocard.M61.halts_iff in core Lean, published in November 2026;
+      an earlier machine for the problem, with a Lean proof. Not used by brocard_28.
+  - title: "Measuring Decidability as Related to Busy Beaver Numbers"
+    authors:
+      - "Gurpreet Tandi"
+      - "Josue Gonzalez-Hendrix"
+      - "Jonathan Brown"
+    id: "https://arxiv.org/abs/2605.20215"
+    type: "article"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      Describes a Turing machine for Brocard's problem with an upper bound of 43
+      states (May 2026), without a machine-checked proof.
+  - title: "Relationships Between the Busy Beaver Function and Mathematics II: Small Turing Machines and Open Problems (SIGACT News Open Problems Column)"
+    authors:
+      - "William Gasarch"
+    id: "https://doi.org/10.1145/3848065.3848068"
+    type: "article"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      SIGACT News 57(3), September 2026. Open Problem 6.2 asks to improve the
+      43-state count for Brocard's problem and reports Jonathan Brown's conjecture
+      that about 30 states may suffice. brocard_28 improves the count to 28.
+  - title: "A 28-state Turing machine for Brocard's problem with Lean 4 proofs (brocard_28)"
+    authors:
+      - "Daniel Veljjanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      New machine (artifacts/brocard_28/machine.txt) and first Lean 4 proofs that it halts
+      iff n! + 1 is a perfect square for some n > 7 (Cryptids/Brocard28.lean,
+      Cryptids/Semantics/Brocard28.lean).
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -213,7 +257,11 @@ status:
     machine erdos_ternary_14 satisfies Halts erdosTernary14 <-> ∃ n, 8 < n ∧ 2 ∉ pw n and
     hence Halts candidate <-> Halts reference against erdos_ternary_15 constructively
     (Cryptids/ErdosTernary14.lean), and Halts candidate <-> ¬
-    ErdosTernaryConjecture (Cryptids/Semantics/ErdosTernary14.lean).
+    ErdosTernaryConjecture (Cryptids/Semantics/ErdosTernary14.lean). The 28-state
+    machine brocard_28 satisfies Halts brocard28 <-> ∃ n, 8 ≤ n ∧ IsTri (n! / 8) and
+    Halts brocard28 <-> ∃ n, 7 < n ∧ IsSquare (n! + 1) constructively
+    (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean), and
+    Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -356,6 +404,16 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/erdos_ternary_14.json"
+    - declaration: "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square"
+      file: "Cryptids/Semantics/Brocard28.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
+      file: "Cryptids/Semantics/Brocard28.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/brocard_28.json"
 
 automation:
   methods:
@@ -377,15 +435,18 @@ automation:
       prompting_notes: >-
         Used as assistant for the erdos_ternary_15 and erdos_ternary_14 proofs
         (Cryptids/ErdosTernary15.lean, Cryptids/Semantics/ErdosTernary15.lean,
-        Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean).
+        Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean) and for
+        the design, simulation checks and proofs of brocard_28
+        (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean).
   spend_usd: ""
   notes: >-
     Candidate state reductions and halting-equivalence proofs were discovered
     using Gemini Argon with an experimental harness; end-to-end
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_ternary_15 machine is by Tristan Stérin and Damien Woods and the erdos_ternary_14
-    machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs were written
-    by Daniel Veljjanoski with Claude (Anthropic) as assistant.
+    machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs, and the
+    brocard_28 machine and proofs, were written by Daniel Veljjanoski with Claude
+    (Anthropic) as assistant.
 
 fidelity:
   divergences: >-
@@ -516,6 +577,18 @@ alignment:
     - source: "erdos_ternary_14 <-> ¬ ErdosTernaryConjecture"
       lean: "ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary"
       module: "Cryptids.Semantics.ErdosTernary14"
+      status: "proved"
+    - source: "brocard_28 <-> ∃ n ≥ 8, n! / 8 triangular"
+      lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_tri"
+      module: "Cryptids.Brocard28"
+      status: "proved"
+    - source: "brocard_28 <-> ∃ n > 7, IsSquare (n! + 1)"
+      lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square"
+      module: "Cryptids.Semantics.Brocard28"
+      status: "proved"
+    - source: "brocard_28 <-> ¬ BrocardConjecture"
+      lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
+      module: "Cryptids.Semantics.Brocard28"
       status: "proved"
 
 acknowledgements: >-

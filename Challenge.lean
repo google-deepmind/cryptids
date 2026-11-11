@@ -27,7 +27,8 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
-  `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`)
+  `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
+  and the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`
   are verified **without `Classical.choice`** (`ListBlank` uses primitive `Quot` rather than
   `Quotient` so `Halts` is choice-free). Because `Zf/Soundness.lean` proves `not_zfInconsistent`
   via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without choice
@@ -36,12 +37,13 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 34 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
+  Audits all 36 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
   via `Nat.Prime`), classical `PA` and `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰` Goldbach
   (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic `RiemannHypothesis`
   equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences with
   `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture` also
-  uses Markov's Principle).
+  uses Markov's Principle), and the `brocard_28` equivalence with `¬ BrocardConjecture` (Markov's
+  Principle).
 -/
 
 meta section
@@ -256,6 +258,11 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
+/-- Rows of `brocard28`. -/
+def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
+  load_machine_rows% "artifacts/brocard_28/machine.txt"
+/-- 28-state Brocard machine. -/
+def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -747,6 +754,12 @@ and it implies Erdős Problem 406
 def ErdosTernaryConjecture : Prop :=
   ∀ n : ℕ, 8 < n → 2 ∈ Nat.digits 3 (2 ^ n)
 
+/-- **Brocard's problem** (Brocard 1876, 1885; Ramanujan 1913): `n! + 1` is a perfect square
+only for `n = 4, 5, 7` (`5 ^ 2`, `11 ^ 2`, `71 ^ 2`). Erdős conjectured that there are no other
+solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
+def BrocardConjecture : Prop :=
+  ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -867,5 +880,14 @@ theorem halts_candidate_iff_not_erdosTernary :
     Halts candidate ↔ ¬ ErdosTernaryConjecture := by sorry
 end Semantics
 end ErdosTernary14
+
+namespace Brocard28
+/-- 28-state Brocard machine (`brocard_28`, Veljjanoski 2026). -/
+abbrev brocard28 : Machine 28 2 := Machines.brocard28
+theorem halts_brocard28_iff_exists_square :
+    ConjectureMachines.Halts brocard28 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
+theorem halts_brocard28_iff_not_brocard :
+    ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by sorry
+end Brocard28
 
 end ConjectureMachines
