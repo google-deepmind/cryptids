@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.Legendre21",
+  "theorem_names": [
+    "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap",
+    "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

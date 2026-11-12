@@ -12,7 +12,8 @@ project:
     the 2016 744-state machine riemann_744), and Erdős's ternary conjecture
     (15 -> 14 states: Tristan Stérin and Damien Woods's 2021 15-state
     machine erdos_ternary_15 and Tristan Stérin's October 2026 14-state machine
-    erdos_ternary_14), and Brocard's problem (a new 28-state machine brocard_28,
+    erdos_ternary_14), Brocard's problem (a new 28-state machine brocard_28,
+    November 2026), and Legendre's conjecture (a new 21-state machine legendre_21,
     November 2026),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
@@ -209,6 +210,41 @@ sources:
       New machine (artifacts/brocard_28/machine.txt) and first Lean 4 proofs that it halts
       iff n! + 1 is a perfect square for some n > 7 (Cryptids/Brocard28.lean,
       Cryptids/Semantics/Brocard28.lean).
+  - title: "Legendre's conjecture (busybeaver, problems/legendre)"
+    authors:
+      - "Joseph Jabbour"
+      - "Ralph Razzouk"
+    id: "https://github.com/ralphrazzouk/busybeaver/tree/master/problems/legendre"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 26-state, 2-symbol machine (after a 29-state one) with Lean 4 proofs
+      BBRank.Legendre26.halts_iff_not_legendre and BBRank.Legendre29.halts_iff_not_legendre,
+      published in September 2026; an earlier machine for the conjecture. Not used by
+      legendre_21.
+  - title: "A Turing machine for Legendre's conjecture (tinycryptids, legendre_44)"
+    authors:
+      - "Charlie Reams"
+    id: "https://github.com/calr3/tinycryptids/tree/main/legendre"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 44-state, 2-symbol machine (reduced from a 71-state design) with a Lean proof
+      TM.Legendre.M44.halts_iff of an equivalent statement, published in November 2026;
+      an earlier machine for the conjecture. Not used by legendre_21.
+  - title: "A 21-state Turing machine for Legendre's conjecture with Lean 4 proofs (legendre_21)"
+    authors:
+      - "Daniel Veljjanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      New machine (artifacts/legendre_21/machine.txt) built on the primality test of
+      goldbach_21, and first Lean 4 proofs that it halts iff some n >= 1 has no prime
+      strictly between n^2 and (n+1)^2 (Cryptids/Legendre21.lean,
+      Cryptids/Semantics/Legendre21.lean). The proof uses the lemmas of
+      Cryptids/Goldbach21.lean for the test.
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -261,7 +297,11 @@ status:
     machine brocard_28 satisfies Halts brocard28 <-> ∃ n, 8 ≤ n ∧ IsTri (n! / 8) and
     Halts brocard28 <-> ∃ n, 7 < n ∧ IsSquare (n! + 1) constructively
     (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean), and
-    Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle.
+    Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle. The 21-state
+    machine legendre_21 satisfies Halts legendre21 <-> ∃ n, 1 ≤ n ∧ ∀ p, p.Prime ->
+    ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2) constructively (Cryptids/Legendre21.lean,
+    Cryptids/Semantics/Legendre21.lean), and Halts legendre21 <-> ¬ LegendreConjecture
+    with Markov's Principle.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -414,6 +454,16 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/brocard_28.json"
+    - declaration: "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap"
+      file: "Cryptids/Semantics/Legendre21.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre"
+      file: "Cryptids/Semantics/Legendre21.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/legendre_21.json"
 
 automation:
   methods:
@@ -437,7 +487,8 @@ automation:
         (Cryptids/ErdosTernary15.lean, Cryptids/Semantics/ErdosTernary15.lean,
         Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean) and for
         the design, simulation checks and proofs of brocard_28
-        (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean).
+        (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean) and of legendre_21
+        (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean).
   spend_usd: ""
   notes: >-
     Candidate state reductions and halting-equivalence proofs were discovered
@@ -445,7 +496,7 @@ automation:
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_ternary_15 machine is by Tristan Stérin and Damien Woods and the erdos_ternary_14
     machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs, and the
-    brocard_28 machine and proofs, were written by Daniel Veljjanoski with Claude
+    brocard_28 and legendre_21 machines and proofs, were written by Daniel Veljjanoski with Claude
     (Anthropic) as assistant.
 
 fidelity:
@@ -589,6 +640,18 @@ alignment:
     - source: "brocard_28 <-> ¬ BrocardConjecture"
       lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
       module: "Cryptids.Semantics.Brocard28"
+      status: "proved"
+    - source: "legendre_21 <-> ∃ n ≥ 1, no IsPrime x with n * n < x < (n + 1) * (n + 1)"
+      lean: "ConjectureMachines.Legendre21.halts_legendre21_iff"
+      module: "Cryptids.Legendre21"
+      status: "proved"
+    - source: "legendre_21 <-> ∃ n ≥ 1, no prime p with n ^ 2 < p < (n + 1) ^ 2"
+      lean: "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap"
+      module: "Cryptids.Semantics.Legendre21"
+      status: "proved"
+    - source: "legendre_21 <-> ¬ LegendreConjecture"
+      lean: "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre"
+      module: "Cryptids.Semantics.Legendre21"
       status: "proved"
 
 acknowledgements: >-

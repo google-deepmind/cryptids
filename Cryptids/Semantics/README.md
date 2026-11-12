@@ -679,3 +679,42 @@ with `V n = n.factorial / 8` and `IsTri x ↔ ∃ k, x = 1 + 2 + ⋯ + k`.
    constructive), which gives `halts_brocard28_iff_exists_square` without `Classical.choice`;
    `halts_brocard28_iff_not_brocard` uses Markov's Principle via `by_contra` (as with `not_forall`
    in Section 7).
+
+## 10. A 21-State Legendre Machine ([`Legendre21.lean`](./Legendre21.lean))
+
+In [`Cryptids/Legendre21.lean`](../Legendre21.lean) and [`Cryptids/Semantics/Legendre21.lean`](./Legendre21.lean),
+we formalize a new 21-state binary Turing machine for Legendre's conjecture (`legendre_21`, Daniel Veljjanoski with
+Claude (Anthropic) as assistant, November 2026):
+
+```lean
+theorem halts_legendre21_iff :
+    ConjectureMachines.Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ EmptyInterval n
+
+theorem halts_legendre21_iff_exists_gap :
+    ConjectureMachines.Halts legendre21 ↔
+      ∃ n : ℕ, 1 ≤ n ∧ ∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2)
+
+theorem halts_legendre21_iff_not_legendre :
+    ConjectureMachines.Halts legendre21 ↔ ¬ LegendreConjecture
+```
+
+with `EmptyInterval n ↔ ∀ x, n * n < x → x < (n + 1) * (n + 1) → ¬ IsPrime x` and `IsPrime` the
+predicate of `Cryptids/Goldbach21.lean`.
+
+1. **Machine (`Legendre21.lean`)**: The tape holds the number under test in unary, a separator, a
+   flag cell and a walker area. The primality test is the one of `goldbach_21`; sixteen of the 21
+   states are its states. The machine is embedded into the 25-state numbering of
+   `Goldbach21.edited` (`leg25`), so the step and scan lemmas and the machine-generic pass lemmas
+   of `Goldbach21.lean` apply unchanged, and the lemmas stated there for `edited` only are proved
+   again; `test_eval` says that from a test event the machine reaches the exit that decides
+   `IsPrime t` with the block restored. After each test the hole of the walker area moves one cell
+   left. Interval `n` (`n ^ 2, …, n ^ 2 + 2 n`) starts with `2 n` ones in the walker area; its
+   first prime sets the flag and is tested twice; the hole reaches the left end at the last
+   number, with the flag set (`cycle_adv`: the next interval starts with `2 n + 2` ones) or clear
+   (`cycle_halt`: the machine halts). The first `17` steps are run concretely, and interval `1`
+   follows from the general lemmas. This gives `halts_legendre21_iff` with `propext` and
+   `Quot.sound` only.
+2. **Semantics (`Semantics/Legendre21.lean`)**: `isPrime_iff_prime` (`Semantics/Goldbach.lean`) and
+   `Nat.pow_two`
+   give `halts_legendre21_iff_exists_gap` without `Classical.choice`;
+   `halts_legendre21_iff_not_legendre` uses Markov's Principle via `by_contra` (as in Section 9).

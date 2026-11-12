@@ -25,6 +25,8 @@ public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
 public import Cryptids.Brocard28
 public import Cryptids.Semantics.Brocard28
+public import Cryptids.Legendre21
+public import Cryptids.Semantics.Legendre21
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -32,7 +34,8 @@ public import Cryptids.Semantics.Brocard28
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
 Hypothesis** (`120 → 104 → 95` states), and **Erdős's ternary conjecture** (`15 → 14`
-states), a 28-state machine for **Brocard's problem** (`brocard_28`), as well as complete
+states), a 28-state machine for **Brocard's problem** (`brocard_28`), a 21-state machine for
+**Legendre's conjecture** (`legendre_21`), as well as complete
 Lean 4 formalizations of all publicly
 known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
@@ -81,6 +84,12 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   (`V n = n! / 8`) and `ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square`
   (`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
   `ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard`.
+- `Cryptids.Legendre21`, `Cryptids.Semantics.Legendre21` — A 21-state machine for Legendre's
+  conjecture (`legendre21`), built on the primality test of `goldbach_21`, with constructive
+  proofs of `Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ EmptyInterval n` and
+  `ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap`
+  (`Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ ∀ p, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2)`), and
+  `ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).
