@@ -54,8 +54,9 @@ this start reaches 11, during the test of round `4`. Versions with 41 and 34 sta
 counted the cells of `N`, are in the history of pull request 27.
 
 As a one-line table in the style of the bbchallenge standard format, with the states `0`–`25`
-written `A`–`Z` and `26` written `a` (the standard format itself covers only 26 states, and the
-bbchallenge.org viewer ignores case, so this string is for reading, not for that viewer):
+written `A`–`Z` and `26` written `a`. This is not the standard format itself, which supports at
+most 25 states and often writes the halting state as `Z`; here `Z` is the ordinary state `25`.
+The string is for reading, not for tools that expect the standard format:
 
 ```
 1LB0RM_0LC1LB_1RD1LC_0RK0RE_0RJ1RE_0RG1RF_1LH1RG_0LI1LH_1RJ1LI_0LB0RF_1RL1RK_0RA1LL_0RN1RM_1LO1RN_0LP0LQ_0LW1RM_0LR1LQ_1RS1LR_0RT0RM_0RU0RT_0LV0RU_0LV0LB_---1LX_0Ra1LY_0Ra1LZ_0Ra1LW_1RT1Ra
