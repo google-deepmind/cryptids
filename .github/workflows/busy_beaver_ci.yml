@@ -13,6 +13,8 @@ on:
       - 'lakefile.toml'
       - 'lake-manifest.json'
       - 'lean-toolchain'
+      - 'tools/**'
+      - 'CORE_MANIFEST.json'
       - '.github/workflows/busy_beaver_ci.yml'
   pull_request:
     paths:
@@ -26,6 +28,8 @@ on:
       - 'lakefile.toml'
       - 'lake-manifest.json'
       - 'lean-toolchain'
+      - 'tools/**'
+      - 'CORE_MANIFEST.json'
       - '.github/workflows/busy_beaver_ci.yml'
   workflow_dispatch:
 
@@ -45,6 +49,10 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Check BusyBeaverChallenge is synchronized with Defs
+        run: python3 tools/render_challenge.py --check
+      - name: Verify core manifest
+        run: python3 tools/check_manifest.py
       - uses: leanprover/lean-action@fe408643ea7367d8c0404a8be3975bb145f5fb64 # v1.7.0
         with:
           build-args: "BusyBeaver BusyBeaverChallenge"

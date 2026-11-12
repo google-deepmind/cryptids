@@ -120,11 +120,11 @@ structure Cfg (Γ Λ : Type*) [Inhabited Γ] where
 instance Cfg.inhabited : Inhabited (Cfg Γ Λ) := ⟨⟨default, default⟩⟩
 
 /-- Configuration in state `q` with the tape head reading the first symbol of `r`. -/
-def Cfg.headRight {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
+@[reducible] def Cfg.headRight {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
   ⟨some q, ⟨r.head, l, r.tail⟩⟩
 
 /-- Configuration in state `q` with the tape head reading the first symbol of `l`. -/
-def Cfg.headLeft {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
+@[reducible] def Cfg.headLeft {Γ Λ : Type*} [Inhabited Γ] (q : Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
   ⟨some q, ⟨l.head, l.tail, r⟩⟩
 
 /-- Single-step execution semantics of a `BusyBeaver.Machine`. -/
@@ -153,6 +153,19 @@ def ReachesStar (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) : Prop :=
 def ReachesPlus (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) : Prop :=
   ∃ n > 0, multiStep M c₁ n = some c₂
 
+scoped notation3 c₁ " [" M "]⊢ " c₂ => step M c₁ = some c₂
+scoped notation3 c₁ " [" M "]⊢^{" n "} " c₂ => multiStep M c₁ n = some c₂
+scoped notation3 c₁ " [" M "]⊢* " c₂ => ReachesStar M c₁ c₂
+scoped notation3 c₁ " [" M "]⊢⁺ " c₂ => ReachesPlus M c₁ c₂
+
+scoped notation l " {{" s "}} " r => (⟨s, l, r⟩ : Tape _)
+scoped notation:67 s:67 " << " a:68 => ListBlank.cons a s
+scoped infixr:67 " >> " => ListBlank.cons
+scoped notation:67 s:67 " <+ " l:68 => ListBlank.append l s
+scoped infixr:67 " +> " => ListBlank.append
+scoped notation3 l " {{" q "}}> " r => (⟨some q, ⟨ListBlank.head r, l, ListBlank.tail r⟩⟩ : Cfg _ _)
+scoped notation3 l " <{{" q "}} " r => (⟨some q, ⟨ListBlank.head l, ListBlank.tail l, r⟩⟩ : Cfg _ _)
+
 /-- Repeat finite list `l` `n` times (`l ^ n`). -/
 instance instHPowListNat : HPow (List Γ) ℕ (List Γ) :=
   ⟨fun l n => (List.replicate n l).flatten⟩
@@ -172,10 +185,30 @@ def IsNotHalt (M : Machine Γ Λ) : Prop :=
 /-- Alias for `IsNotHalt`. -/
 abbrev IsDoesNotHalt (M : Machine Γ Λ) : Prop := IsNotHalt M
 
+
+
+/-- Atomic `NeZero (k + 2)` instance for alphabet size `Fin (k + 2)`.
+Ensures `HasStackReduction` and `HasOdometerReduction` synthesize an atomic constant
+rather than composite proof `instNeZeroNatHAdd_1 k 2`, avoiding per-module `_proof_1`
+auxiliary definitions that break cross-module AST equality in the comparator.
+Priority `default + 1` is required because at default priority Lean prioritizes
+Mathlib's composite `instNeZeroNatHAdd_1`. -/
+instance (priority := default + 1) instNeZeroK2 (k : ℕ) : @NeZero ℕ Zero.ofOfNat0 (k + 2) :=
+  ⟨Nat.succ_ne_zero (k + 1)⟩
+
+/-- Atomic `NeZero 2` instance with higher priority than `instNeZeroK2`.
+Ensures literal `Fin 2` does not match `instNeZeroK2 0`, which would embed a dependency
+on `0` into the typeclass instance and break `generalize 0 = n` in downstream proofs. -/
+instance (priority := default + 2) instNeZeroTwoLit : @NeZero ℕ Zero.ofOfNat0 2 :=
+  ⟨Nat.succ_ne_zero 1⟩
+
 /-- Parametric regular-expression half-tape expressions for `HasCollatzReduction`. -/
 inductive TapeExpr (Γ : Type*) where
+  /-- All-blank tail (`default : ListBlank Γ`). -/
   | default : TapeExpr Γ
+  /-- Single symbol `a` followed by `rest`. -/
   | sym (a : Γ) (rest : TapeExpr Γ)
+  /-- Finite block `blk` repeated `vars var_idx` times followed by `rest`. -/
   | rep (blk : List Γ) (var_idx : ℕ) (rest : TapeExpr Γ)
 
 /-- Evaluate a `TapeExpr Γ` under variable assignment `vars : ℕ → ℕ`. -/
@@ -186,8 +219,11 @@ def evalTapeExpr {Γ : Type*} [Inhabited Γ] : TapeExpr Γ → (ℕ → ℕ) →
 
 /-- Parametric full-tape configuration pattern. -/
 structure TapePattern (Γ Λ : Type*) where
+  /-- Left half-tape expression. -/
   left : TapeExpr Γ
+  /-- Control state (`some q` or `none`). -/
   head : Option Λ
+  /-- Right half-tape expression (whose head is under the tape head). -/
   right : TapeExpr Γ
 
 /-- Evaluate a `TapePattern Γ Λ` under variable assignment `vars : ℕ → ℕ`. -/
@@ -198,11 +234,17 @@ def evalTapePattern {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
 
 /-- Guard condition over `ℕ`-valued pattern variables. -/
 inductive VarCond where
+  /-- `vars idx ≥ val`. -/
   | ge_const (idx : ℕ) (val : ℕ)
+  /-- `vars idx1 ≥ vars idx2`. -/
   | ge_var (idx1 idx2 : ℕ)
+  /-- Conjunction of conditions. -/
   | and (c1 c2 : VarCond)
+  /-- Disjunction of conditions. -/
   | or (c1 c2 : VarCond)
+  /-- Negation of a condition. -/
   | not (c : VarCond)
+  /-- Trivially satisfied condition. -/
   | true
 
 /-- Evaluate a `VarCond` under variable assignment `vars : ℕ → ℕ`. -/
@@ -236,6 +278,20 @@ def IsClosedPatternSet (M : Machine Γ Λ) (ps : TapePatternSet Γ Λ) : Prop :=
 member configuration steps in `ReachesPlus` either to another member or to a halting state. -/
 def HasCollatzReduction (M : Machine Γ Λ) : Prop :=
   ∃ ps : TapePatternSet Γ Λ, IsClosedPatternSet M ps
+
+/--
+Trusted Definition (`IsCryptid`):
+The long-term behavior of `M` is governed by a compact closed accelerated pattern set `ps`
+(`ps.length ≤ 16`) containing a reachable initial configuration, where every pattern in `ps`
+transitions in `ReachesPlus` (`n ≥ 1` steps) to another pattern in `ps` or to a halting state.
+-/
+def IsCryptid (M : Machine Γ Λ) : Prop :=
+  ∃ (ps : TapePatternSet Γ Λ),
+    ps.length ≤ 16 ∧
+    (∃ cfg₀, ReachesStar M (init []) cfg₀ ∧ IsInPatternSet ps cfg₀) ∧
+    (∀ cfg, IsInPatternSet ps cfg →
+      ∃ cfg', ReachesPlus M cfg cfg' ∧
+               (IsInPatternSet ps cfg' ∨ (step M cfg').isNone))
 
 /-- An abstract partial transition system `next : S → Option S` halts from `s₀ : S` if iterating
 `next` from `some s₀` eventually produces `none`. -/
@@ -479,6 +535,45 @@ def HasStackReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ cfg, IsInStackSystem cfg →
       ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
 
+/-- Unifying 2nd-Order Digit-Stack Schema (`IsStackCryptid`). -/
+def IsStackCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (StackMode : Type)
+    (dSym sSym : Fin (k + 2))
+    (encLeft encRight : List (StackTuple (k + 2)) → ListBlank (Fin (k + 2)))
+    (evalStackCfg :
+      StackMode → List (StackTuple (k + 2)) → List (StackTuple (k + 2)) → Cfg (Fin (k + 2)) Λ)
+    (IsInStackSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    IsValidStackPolarity dSym sSym ∧
+    encLeft [] = default ∧
+    encRight [] = default ∧
+    (∀ a b L, (encLeft ((a, b) :: L)).head = dSym) ∧
+    (∀ d b R, (encRight ((d, b) :: R)).head = dSym) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ L : List (StackTuple (k + 2)), encLeft L ≠ t) ∧
+    (∃ t : ListBlank (Fin (k + 2)),
+      t.head = dSym ∧ ∀ R : List (StackTuple (k + 2)), encRight R ≠ t) ∧
+    (∃ strideL offsetL sepL maxSepL strideR offsetR sepR maxSepR : ℕ,
+      strideL > 0 ∧ offsetL > 0 ∧ sepL > 0 ∧ 1 ≤ maxSepL ∧ maxSepL ≤ 4 ∧
+      strideR > 0 ∧ offsetR > 0 ∧ sepR > 0 ∧ 1 ≤ maxSepR ∧ maxSepR ≤ 4 ∧
+      (∀ a b L, encLeft ((a, b) :: L) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideL * a + offsetL))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepL maxSepL b))
+            (encLeft L))) ∧
+      (∀ d b R, encRight ((d, b) :: R) =
+        ListBlank.append (([dSym] : List (Fin (k + 2))) ^ (strideR * d + offsetR))
+          (ListBlank.append
+            (([sSym] : List (Fin (k + 2))) ^ (stackSepLen (n := k + 1) sepR maxSepR b))
+            (encRight R)))) ∧
+    (∃ modes : List StackMode, modes.length ≤ 6 ∧ ∀ m : StackMode, m ∈ modes) ∧
+    IsValidStackModes encLeft encRight evalStackCfg ∧
+    (∀ cfg, IsInStackSystem cfg ↔ ∃ m L R, cfg = evalStackCfg m L R) ∧
+    (∀ m L R, IsInStackSystem (evalStackCfg m L R)) ∧
+    (∃ cfg₀, ReachesPlus M (init []) cfg₀ ∧ IsInStackSystem cfg₀) ∧
+    (∀ cfg, IsInStackSystem cfg →
+      ∃ cfg', ReachesPlus M cfg cfg' ∧ (IsInStackSystem cfg' ∨ (step M cfg').isNone))
+
 /-- Tape orientation for a mixed-radix odometer-word system (`HasOdometerReduction`). -/
 inductive OdomSide where
   /-- Odometer stack on the left half-tape and active word on the right half-tape. -/
@@ -493,8 +588,12 @@ def evalOdomR {Γ Λ : Type*} [Inhabited Γ]
     (side : OdomSide) (q_R : Λ) (pfx_R : List Γ)
     (encOdom : ListBlank Γ) (w : ListBlank Γ) : Cfg Γ Λ :=
   match side with
-  | .leftOdom => Cfg.headRight q_R (ListBlank.append pfx_R encOdom) w
-  | .rightOdom => Cfg.headLeft q_R w (ListBlank.append pfx_R encOdom)
+  | .leftOdom =>
+    (⟨some q_R, ⟨(w : ListBlank Γ).head,
+      ListBlank.append pfx_R encOdom, (w : ListBlank Γ).tail⟩⟩ : Cfg Γ Λ)
+  | .rightOdom =>
+    (⟨some q_R, ⟨(w : ListBlank Γ).head,
+      (w : ListBlank Γ).tail, ListBlank.append pfx_R encOdom⟩⟩ : Cfg Γ Λ)
 
 /-- Evaluate the inward-facing odometer entry configuration (head at `q_L` facing the odometer
 stack `encOdom` across fixed boundary prefix `pfx_L`). -/
@@ -503,8 +602,12 @@ def evalOdomL {Γ Λ : Type*} [Inhabited Γ]
     (side : OdomSide) (q_L : Λ) (pfx_L : List Γ)
     (encOdom : ListBlank Γ) (w : ListBlank Γ) : Cfg Γ Λ :=
   match side with
-  | .leftOdom => Cfg.headLeft q_L encOdom (ListBlank.append pfx_L w)
-  | .rightOdom => Cfg.headRight q_L (ListBlank.append pfx_L w) encOdom
+  | .leftOdom =>
+    (⟨some q_L, ⟨(encOdom : ListBlank Γ).head,
+      (encOdom : ListBlank Γ).tail, ListBlank.append pfx_L w⟩⟩ : Cfg Γ Λ)
+  | .rightOdom =>
+    (⟨some q_L, ⟨(encOdom : ListBlank Γ).head,
+      ListBlank.append pfx_L w, (encOdom : ListBlank Γ).tail⟩⟩ : Cfg Γ Λ)
 
 /-- The blank-tape trajectory of `M` enters a closed outward-facing odometer-word hub coupled with
 a non-surjective multi-bit mixed-radix odometer stack (`OdomTok`, `cap`, `dec`, `drain`) supporting
@@ -581,6 +684,80 @@ def HasOdometerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
     (∀ stk w,
       ∃ cfg', ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
         (IsInOdomSystem cfg' ∨ (step M cfg').isNone))
+
+/-- Closed mixed-radix odometer-word hub system (`IsOdometerCryptid`). -/
+def IsOdometerCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (OdomTok : Type)
+    (side : OdomSide)
+    (q_R : List OdomTok → Λ)
+    (q_L : Λ)
+    (pfx_R pfx_L odomBase : List (Fin (k + 2)))
+    (odomWord : OdomTok → List (Fin (k + 2)))
+    (encOdom : List OdomTok → ListBlank (Fin (k + 2)))
+    (cap : List OdomTok → ℕ)
+    (dec : List OdomTok → List OdomTok)
+    (decPfx : List OdomTok → List (Fin (k + 2)))
+    (drain : List OdomTok → List (Fin (k + 2)))
+    (IsInOdomSystem : Cfg (Fin (k + 2)) Λ → Prop),
+    (∃ toks : List OdomTok, 2 ≤ toks.length ∧ toks.length ≤ 6 ∧ ∀ t : OdomTok, t ∈ toks) ∧
+    odomBase ≠ [] ∧
+    (∀ t : OdomTok, 2 ≤ (odomWord t).length) ∧
+    encOdom [] = ListBlank.append odomBase default ∧
+    (∀ t stk, encOdom (t :: stk) = ListBlank.append (odomWord t) (encOdom stk)) ∧
+    (∃ t : ListBlank (Fin (k + 2)), ∀ stk : List OdomTok, encOdom stk ≠ t) ∧
+    cap [] = 0 ∧
+    (∃ (t_inc t_even t_div : OdomTok) (b : ℕ) (blk_inc blk_div : List (Fin (k + 2))),
+      2 ≤ b ∧ 2 ≤ blk_inc.length ∧ 2 ≤ blk_div.length ∧
+      (∀ stk, cap (t_inc :: stk) = 2 * cap stk + 1) ∧
+      (∀ stk, cap (t_even :: stk) = 2 * cap stk) ∧
+      (∀ stk, cap (t_div :: stk) = cap stk / b) ∧
+      (∀ stk w,
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.append blk_inc w))
+          (evalOdomR side (q_R (t_inc :: stk)) pfx_R (encOdom (t_inc :: stk)) w)) ∧
+      (∀ stk w,
+        ReachesPlus M
+          (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.append blk_div w))
+          (evalOdomR side (q_R (t_div :: stk)) pfx_R (encOdom (t_div :: stk)) w))) ∧
+    (∀ stk, (dec stk).length = stk.length) ∧
+    (∀ stk, cap stk ≥ 1 → cap (dec stk) = cap stk - 1) ∧
+    (∀ stk w, cap stk ≥ 1 →
+      ReachesPlus M
+        (evalOdomL side q_L pfx_L (encOdom stk) w)
+        (evalOdomR side (q_R (dec stk)) pfx_R (encOdom (dec stk))
+          (ListBlank.append (decPfx stk) w))) ∧
+    (∀ stk, cap stk = 0 → drain stk ≠ []) ∧
+    (∀ stk w, cap stk = 0 →
+      ReachesPlus M
+        (evalOdomL side q_L pfx_L (encOdom stk) w)
+        (evalOdomR side (q_R []) pfx_R (encOdom []) (ListBlank.append (drain stk) w))) ∧
+    (∀ stk w,
+      ReachesPlus M
+        (evalOdomR side (q_R stk) pfx_R (encOdom stk) (ListBlank.cons (0 : Fin (k + 2)) w))
+        (evalOdomL side q_L pfx_L (encOdom stk) (ListBlank.cons (1 : Fin (k + 2)) w))) ∧
+    (∀ stk w,
+      w.head = 0 ∨ (w.tail.head = 0 ∧ (w.tail.tail.head = 0 ∨ w.tail.tail.tail.head = 0)) →
+        (∃ t w',
+          ReachesPlus M
+            (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
+            (evalOdomR side (q_R (t :: stk)) pfx_R (encOdom (t :: stk)) w')) ∨
+        (∃ w',
+          ReachesPlus M
+            (evalOdomR side (q_R stk) pfx_R (encOdom stk) w)
+            (evalOdomL side q_L pfx_L (encOdom stk) w')) ∨
+        (∃ cfg',
+          ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
+            (step M cfg').isNone)) ∧
+    (∀ cfg, IsInOdomSystem cfg ↔
+      ∃ stk w, cfg = evalOdomR side (q_R stk) pfx_R (encOdom stk) w) ∧
+    (∃ (stk₀ : List OdomTok) (w₀ : ListBlank (Fin (k + 2))),
+      ReachesPlus M (init []) (evalOdomR side (q_R stk₀) pfx_R (encOdom stk₀) w₀) ∧
+      2 ≤ stk₀.length ∧ 1 ≤ cap stk₀) ∧
+    (∀ stk w,
+      w.head = 0 ∨ (w.tail.head = 0 ∧ (w.tail.tail.head = 0 ∨ w.tail.tail.tail.head = 0)) →
+        ∃ cfg', ReachesPlus M (evalOdomR side (q_R stk) pfx_R (encOdom stk) w) cfg' ∧
+          (IsInOdomSystem cfg' ∨ (step M cfg').isNone))
 
 /-- Every `TransducerMode` evaluates `(L, R)` as a fixed control state `q` and fixed bounded
 `HalfTapeView`s `vL, vR` (`≤ 8`-symbol prefixes) of `encLeft L` and `encRight R` (either scanning
@@ -726,6 +903,425 @@ def HasTransducerReduction {k : ℕ} {Λ : Type*} [Inhabited Λ]
           ReachesPlus M
             (evalTransducerCfg m_rl L (List.replicate (s₃ * (n + 1)) tR' ++ R))
             (evalTransducerCfg m_rl (List.replicate (s₄ * (n + 1)) tL' ++ L) R)))
+
+/-- Specification for one half-tape of a word-run stack with `numRegs` (`≤ 2`) bottom
+    accumulator registers. -/
+structure WordStackSpec (Γ Tok : Type*) (numRegs : ℕ) where
+  word : Tok → List Γ
+  stride : Tok → ℕ
+  offset : Tok → ℕ
+  base : List Γ
+  regWord : Fin numRegs → List Γ
+
+/-- Encodes `m` accumulator registers `(rw 0 ^ r 0) +> ... +> tail`. -/
+def encRegsAux {Γ : Type*} [Inhabited Γ] :
+    (m : ℕ) → (Fin m → List Γ) → (Fin m → ℕ) → ListBlank Γ → ListBlank Γ
+  | 0, _, _, tail => tail
+  | m + 1, rw, r, tail =>
+      ListBlank.append ((rw 0) ^ (r 0))
+        (encRegsAux m (fun i => rw i.succ) (fun i => r i.succ) tail)
+
+/-- Encodes the bottom accumulator registers + `base` of a `WordStackSpec`. -/
+def encRegs {Γ Tok : Type*} [Inhabited Γ] {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) (regs : Fin numRegs → ℕ) : ListBlank Γ :=
+  encRegsAux numRegs spec.regWord regs (ListBlank.append spec.base default)
+
+/-- Encodes a word-run stack `List (Tok × ℕ)` on top of `encRegs spec regs`:
+    `encHalf spec regs ((t, d) :: rest) =
+      ListBlank.append ((word t)^(stride t * d + offset t)) (encHalf spec regs rest)`. -/
+def encHalf {Γ Tok : Type*} [Inhabited Γ] {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) (regs : Fin numRegs → ℕ) :
+    List (Tok × ℕ) → ListBlank Γ
+  | [] => encRegs spec regs
+  | (t, d) :: rest =>
+      ListBlank.append ((spec.word t) ^ (spec.stride t * d + spec.offset t))
+        (encHalf spec regs rest)
+
+/-- Exact encoded symbol length of a single word-run frame `(t, d)`. -/
+def frameBitLen {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) (f : Tok × ℕ) : ℕ :=
+  (spec.word f.1).length * (spec.stride f.1 * f.2 + spec.offset f.1)
+
+/-- Encoded symbol length of the active top frame (`0` on empty stack `[]`). -/
+def topFrameBitLen {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) : List (Tok × ℕ) → ℕ
+  | [] => 0
+  | f :: _ => frameBitLen spec f
+
+/-- Total encoded symbol length across all frames of `xs`. -/
+def stackBitLen {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) : List (Tok × ℕ) → ℕ
+  | [] => 0
+  | f :: rest => frameBitLen spec f + stackBitLen spec rest
+
+/-- Total encoded symbol length of the bottom accumulator registers. -/
+def regsBitLenAux {Γ : Type*} : (m : ℕ) → (Fin m → List Γ) → (Fin m → ℕ) → ℕ
+  | 0, _, _ => 0
+  | m + 1, rw, r => (rw 0).length * r 0 + regsBitLenAux m (fun i => rw i.succ) (fun i => r i.succ)
+
+section
+universe u v
+
+/-- Prefix length of a `HalfTapeView`. -/
+def viewPrefixLen {Γ : Type u} (v : HalfTapeView Γ) : ℕ :=
+  HalfTapeView.casesOn (motive := fun _ => ℕ) v List.length List.length
+
+/-- Prefix-extensible non-surjectivity of a family of half-tapes `enc s` (`s` ranging over the
+    valid states): every finite window of every valid half-tape extends to a half-tape that no
+    valid state encodes, i.e. the image has empty interior in the prefix topology. A
+    bounded-prefix restriction such as "the head cell is `0`" never satisfies it, so a family
+    certified by it carries a genuine unbounded grammar rather than a renaming of the raw tape. -/
+def IsNowhereDenseFamily {Γ : Type u} {S : Type v} [Inhabited Γ]
+    (Valid : S → Prop) (enc : S → ListBlank Γ) : Prop :=
+  ∀ s, Valid s → ∀ n : ℕ, ∃ bad : ListBlank Γ,
+    (∀ i, i < n → bad.nth i = (enc s).nth i) ∧ ∀ s', Valid s' → enc s' ≠ bad
+
+end
+
+/-- Full symbolic state of a two-sided word-run stack + accumulator system. -/
+structure WordSysState (Mode TokL TokR : Type*) (numRegsL numRegsR : ℕ) where
+  mode : Mode
+  regsL : Fin numRegsL → ℕ
+  regsR : Fin numRegsR → ℕ
+  L : List (TokL × ℕ)
+  R : List (TokR × ℕ)
+
+/-- Total active bit-length of both stacks and registers in `s`. -/
+def totalSystemBitLen {Γ Mode TokL TokR : Type*} {numRegsL numRegsR : ℕ}
+    (specL : WordStackSpec Γ TokL numRegsL)
+    (specR : WordStackSpec Γ TokR numRegsR)
+    (s : WordSysState Mode TokL TokR numRegsL numRegsR) : ℕ :=
+  stackBitLen specL s.L + stackBitLen specR s.R +
+    regsBitLenAux numRegsL specL.regWord s.regsL +
+    regsBitLenAux numRegsR specR.regWord s.regsR
+
+/-- Every `Mode` evaluates `s` as a fixed control state `q` and bounded `HalfTapeView`s
+    (`≤ 8`-symbol prefixes) of `encHalf specL s.regsL s.L` and `encHalf specR s.regsR s.R`. -/
+def IsValidWordModes {Γ Λ Mode TokL TokR : Type*} [Inhabited Γ] [OfNat Γ 0]
+    {numRegsL numRegsR : ℕ}
+    (specL : WordStackSpec Γ TokL numRegsL)
+    (specR : WordStackSpec Γ TokR numRegsR)
+    (evalCfg : WordSysState Mode TokL TokR numRegsL numRegsR → Cfg Γ Λ) : Prop :=
+  ∀ m : Mode, ∃ (q : Λ) (vL vR : HalfTapeView Γ),
+    viewPrefixLen vL ≤ 8 ∧
+    viewPrefixLen vR ≤ 8 ∧
+    ((∀ rL rR L R,
+        evalCfg ⟨m, rL, rR, L, R⟩ =
+          ⟨some q, ⟨(0 : Γ), applyView vL (encHalf specL rL L),
+            applyView vR (encHalf specR rR R)⟩⟩) ∨
+     (∀ rL rR L R,
+        evalCfg ⟨m, rL, rR, L, R⟩ =
+          Cfg.headLeft q (applyView vL (encHalf specL rL L)) (applyView vR (encHalf specR rR R))) ∨
+     (∀ rL rR L R,
+        evalCfg ⟨m, rL, rR, L, R⟩ =
+          Cfg.headRight q (applyView vL (encHalf specL rL L)) (applyView vR (encHalf specR rR R))))
+
+/-- Iterates a partial macro-transition `stepMacro : S → Option S` for `k` macro-steps. -/
+def iterWordMacro {S : Type*} (stepMacro : S → Option S) : ℕ → S → Option S
+  | 0, s => some s
+  | k + 1, s =>
+      match stepMacro s with
+      | none => none
+      | some s' => iterWordMacro stepMacro k s'
+
+/-- `PreservesOrGrows spec xs xs'` holds when `xs` is NOT net-drained above a shared suffix `rest`:
+    `xs = u ++ rest` and `xs' = pfx ++ rest` with `stackBitLen spec u ≤ stackBitLen spec pfx`. -/
+def PreservesOrGrows {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) (xs xs' : List (Tok × ℕ)) : Prop :=
+  ∃ u pfx rest,
+    xs = u ++ rest ∧
+    xs' = pfx ++ rest ∧
+    stackBitLen spec u ≤ stackBitLen spec pfx
+
+/-- `DrainsTop spec xs xs'` holds whenever the transition `xs ↦ xs'` net-drains encoded bits
+    from the stack (`¬ PreservesOrGrows spec xs xs'`). -/
+def DrainsTop {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) (xs xs' : List (Tok × ℕ)) : Prop :=
+  ¬ PreservesOrGrows spec xs xs'
+
+/-- `PopsTop xs xs'` holds when the active top frame `f` of `xs = f :: xs'` is
+    completely popped. -/
+def PopsTop {Tok : Type*} (xs xs' : List (Tok × ℕ)) : Prop :=
+  ∃ f, xs = f :: xs'
+
+/-- `DrainsTopFrame spec xs xs'` holds when the active top frame `f` of `xs = f :: rest`
+    is popped or replaced by at most an `8`-bit remainder prefix `pfx` (`xs' = pfx ++ rest`). -/
+def DrainsTopFrame {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) (xs xs' : List (Tok × ℕ)) : Prop :=
+  ∃ f pfx rest,
+    xs = f :: rest ∧
+    xs' = pfx ++ rest ∧
+    stackBitLen spec pfx ≤ 8
+
+/-- Strict frame-length progress law over `WordSysState`. -/
+def StrictFrameProgress {Γ Mode TokL TokR : Type*} {numRegsL numRegsR : ℕ}
+    (specL : WordStackSpec Γ TokL numRegsL)
+    (specR : WordStackSpec Γ TokR numRegsR)
+    (s s' : WordSysState Mode TokL TokR numRegsL numRegsR) (n : ℕ) : Prop :=
+  1 ≤ n ∧
+  (DrainsTop specL s.L s'.L → 2 ≤ topFrameBitLen specL s.L → 2 ≤ n) ∧
+  (DrainsTop specR s.R s'.R → 2 ≤ topFrameBitLen specR s.R → 2 ≤ n) ∧
+  (PopsTop s.L s'.L → topFrameBitLen specL s.L ≤ n) ∧
+  (PopsTop s.R s'.R → topFrameBitLen specR s.R ≤ n)
+
+/-- Side selector (`leftSide` vs `rightSide`) for orbit-exercised run-drain witnesses. -/
+inductive StackSide
+  | leftSide
+  | rightSide
+
+/-- Every pair of adjacent frames on the stack has distinct token constructors (`t₁ ≠ t₂`). -/
+def AdjacentDistinctTok {Tok : Type*} : List (Tok × ℕ) → Prop
+  | [] => True
+  | [_] => True
+  | (t₁, _) :: (t₂, d₂) :: rest => t₁ ≠ t₂ ∧ AdjacentDistinctTok ((t₂, d₂) :: rest)
+
+/-- Canonical merged word-run frame discipline. -/
+def MergedRunFrames {Γ Tok : Type*} {numRegs : ℕ}
+    (spec : WordStackSpec Γ Tok numRegs) : List (Tok × ℕ) → Prop
+  | [] => True
+  | [(t, d)] => spec.stride t = 0 → d = 0
+  | (t₁, d₁) :: (t₂, d₂) :: rest =>
+      (spec.stride t₁ = 0 → d₁ = 0) ∧
+      (1 ≤ spec.stride t₁ → t₁ ≠ t₂) ∧
+      MergedRunFrames spec ((t₂, d₂) :: rest)
+
+/-- Non-blank bottom-anchor discipline. -/
+def AnchoredFrames {k numRegs : ℕ} {Tok : Type*}
+    (spec : WordStackSpec (Fin (k + 2)) Tok numRegs) : List (Tok × ℕ) → Prop
+  | [] => True
+  | [(t, _)] => (∃ x ∈ spec.word t, x ≠ 0) ∨ (∃ x ∈ spec.base, x ≠ 0)
+  | _ :: f₂ :: rest => AnchoredFrames spec (f₂ :: rest)
+
+/-- Boundary-aligned H4 run-pair side discipline when `encHalf` is universal (`kraftSum = B^M`). -/
+def IsBoundaryAlignedSide {Γ Λ Mode TokL TokR : Type*} [Inhabited Γ] [OfNat Γ 0]
+    {numRegsL numRegsR : ℕ}
+    (side : StackSide)
+    (specL : WordStackSpec Γ TokL numRegsL)
+    (specR : WordStackSpec Γ TokR numRegsR)
+    (ValidState : WordSysState Mode TokL TokR numRegsL numRegsR → Prop)
+    (evalCfg : WordSysState Mode TokL TokR numRegsL numRegsR → Cfg Γ Λ) : Prop :=
+  match side with
+  | .leftSide =>
+      numRegsL = 0 ∧
+      specL.base = [] ∧
+      (∀ t : TokL, (specL.word t).length = 1 ∧ specL.stride t = 1 ∧ specL.offset t = 1) ∧
+      (∀ s, ValidState s → AdjacentDistinctTok s.L) ∧
+      (∀ m : Mode, ∃ (q : Λ) (vR : HalfTapeView Γ),
+        viewPrefixLen vR ≤ 8 ∧
+        ((∀ rL rR L R, evalCfg ⟨m, rL, rR, L, R⟩ =
+            ⟨some q, ⟨(0 : Γ), encHalf specL rL L, applyView vR (encHalf specR rR R)⟩⟩) ∨
+         (∀ rL rR L R, evalCfg ⟨m, rL, rR, L, R⟩ =
+            Cfg.headLeft q (encHalf specL rL L) (applyView vR (encHalf specR rR R))) ∨
+         (∀ rL rR L R, evalCfg ⟨m, rL, rR, L, R⟩ =
+            Cfg.headRight q (encHalf specL rL L) (applyView vR (encHalf specR rR R)))))
+  | .rightSide =>
+      numRegsR = 0 ∧
+      specR.base = [] ∧
+      (∀ t : TokR, (specR.word t).length = 1 ∧ specR.stride t = 1 ∧ specR.offset t = 1) ∧
+      (∀ s, ValidState s → AdjacentDistinctTok s.R) ∧
+      (∀ m : Mode, ∃ (q : Λ) (vL : HalfTapeView Γ),
+        viewPrefixLen vL ≤ 8 ∧
+        ((∀ rL rR L R, evalCfg ⟨m, rL, rR, L, R⟩ =
+            ⟨some q, ⟨(0 : Γ), applyView vL (encHalf specL rL L), encHalf specR rR R⟩⟩) ∨
+         (∀ rL rR L R, evalCfg ⟨m, rL, rR, L, R⟩ =
+            Cfg.headLeft q (applyView vL (encHalf specL rL L)) (encHalf specR rR R)) ∨
+         (∀ rL rR L R, evalCfg ⟨m, rL, rR, L, R⟩ =
+            Cfg.headRight q (applyView vL (encHalf specL rL L)) (encHalf specR rR R))))
+
+/-- Closed Invariant-Relative Word-Run Stack Cryptid (`IsWordRunCryptid`). -/
+def IsWordRunCryptid {k : ℕ} {Λ : Type*} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (Mode TokL TokR : Type)
+    (numRegsL numRegsR : ℕ)
+    (specL : WordStackSpec (Fin (k + 2)) TokL numRegsL)
+    (specR : WordStackSpec (Fin (k + 2)) TokR numRegsR)
+    (ValidState : WordSysState Mode TokL TokR numRegsL numRegsR → Prop)
+    (evalCfg : WordSysState Mode TokL TokR numRegsL numRegsR → Cfg (Fin (k + 2)) Λ)
+    (stepMacro : WordSysState Mode TokL TokR numRegsL numRegsR →
+      Option (WordSysState Mode TokL TokR numRegsL numRegsR)),
+    numRegsL ≤ 2 ∧ numRegsR ≤ 2 ∧
+    specL.base.length ≤ 8 ∧ specR.base.length ≤ 8 ∧
+    Function.Injective specL.word ∧ Function.Injective specR.word ∧
+    (∀ i : Fin numRegsL, 1 ≤ (specL.regWord i).length ∧ (specL.regWord i).length ≤ 8 ∧
+      (∃ x ∈ specL.regWord i, x ≠ 0)) ∧
+    (∀ i : Fin numRegsR, 1 ≤ (specR.regWord i).length ∧ (specR.regWord i).length ≤ 8 ∧
+      (∃ x ∈ specR.regWord i, x ≠ 0)) ∧
+    (∃ modes : List Mode,
+      modes.Nodup ∧ 1 ≤ modes.length ∧ modes.length ≤ 8 ∧ ∀ m : Mode, m ∈ modes) ∧
+    (∃ (toksL : List TokL) (toksR : List TokR),
+      toksL.Nodup ∧ toksR.Nodup ∧
+      1 ≤ toksL.length ∧ toksL.length ≤ 8 ∧
+      1 ≤ toksR.length ∧ toksR.length ≤ 8 ∧
+      3 ≤ toksL.length + toksR.length ∧
+      (∀ t : TokL, t ∈ toksL ∧ 1 ≤ (specL.word t).length ∧ (specL.word t).length ≤ 8 ∧
+        1 ≤ specL.offset t ∧ specL.stride t ≤ 8 ∧ specL.offset t ≤ 2 ∧
+        (specL.stride t = 0 → specL.offset t = 1) ∧
+        (1 ≤ specL.stride t → ∃ x ∈ specL.word t, x ≠ 0)) ∧
+      (∀ t : TokR, t ∈ toksR ∧ 1 ≤ (specR.word t).length ∧ (specR.word t).length ≤ 8 ∧
+        1 ≤ specR.offset t ∧ specR.stride t ≤ 8 ∧ specR.offset t ≤ 2 ∧
+        (specR.stride t = 0 → specR.offset t = 1) ∧
+        (1 ≤ specR.stride t → ∃ x ∈ specR.word t, x ≠ 0))) ∧
+    IsValidWordModes specL specR evalCfg ∧
+    (∀ s, ValidState s →
+      MergedRunFrames specL s.L ∧ MergedRunFrames specR s.R ∧
+      AnchoredFrames specL s.L ∧ AnchoredFrames specR s.R) ∧
+    IsNowhereDenseFamily ValidState (fun s => encHalf specL s.regsL s.L) ∧
+    IsNowhereDenseFamily ValidState (fun s => encHalf specR s.regsR s.R) ∧
+    (∀ s s', ValidState s → stepMacro s = some s' →
+      ValidState s' ∧ ∃ n, StrictFrameProgress specL specR s s' n ∧
+        ReachesIn M n (evalCfg s) (evalCfg s')) ∧
+    (∀ s, ValidState s → stepMacro s = none →
+      ∃ (n_h : ℕ) (cfg_h : Cfg (Fin (k + 2)) Λ),
+        1 ≤ n_h ∧ n_h ≤ 32 ∧ ReachesIn M n_h (evalCfg s) cfg_h ∧ (step M cfg_h).isNone) ∧
+    (∃ s_depth : ℕ → WordSysState Mode TokL TokR numRegsL numRegsR,
+      ∀ D : ℕ, ValidState (s_depth D) ∧ D ≤ (s_depth D).L.length + (s_depth D).R.length) ∧
+    ∃ s₀ : WordSysState Mode TokL TokR numRegsL numRegsR,
+      ValidState s₀ ∧
+      s₀.L.length + s₀.R.length ≤ 4 ∧
+      ReachesPlus M (init []) (evalCfg s₀) ∧
+      (∃ (n_grow1 n_grow2 : ℕ) (s_g1 s_g2 : WordSysState Mode TokL TokR numRegsL numRegsR),
+        64 ≤ n_grow1 ∧ n_grow1 < n_grow2 ∧ n_grow2 ≤ 2048 ∧
+        iterWordMacro stepMacro n_grow1 s₀ = some s_g1 ∧
+        iterWordMacro stepMacro n_grow2 s₀ = some s_g2 ∧
+        32 ≤ totalSystemBitLen specL specR s_g1 ∧
+        totalSystemBitLen specL specR s_g1 + 32 ≤ totalSystemBitLen specL specR s_g2 ∧
+        2 ≤ s_g1.L.length + s_g1.R.length ∧
+        4 ≤ s_g1.L.length + s_g1.R.length + numRegsL + numRegsR) ∧
+      (∃ (k_d1 k_d2 b₁ b₂ : ℕ)
+          (s_d1 s_d1' s_d2 s_d2' : WordSysState Mode TokL TokR numRegsL numRegsR),
+        64 ≤ k_d1 ∧ k_d1 < k_d2 ∧ k_d2 ≤ 2048 ∧
+        26 ≤ b₁ ∧ b₁ < b₂ ∧
+        iterWordMacro stepMacro k_d1 s₀ = some s_d1 ∧ stepMacro s_d1 = some s_d1' ∧
+        iterWordMacro stepMacro k_d2 s₀ = some s_d2 ∧ stepMacro s_d2 = some s_d2' ∧
+        ((s_d1'.regsL = s_d1.regsL ∧ PopsTop s_d1.L s_d1'.L ∧ b₁ = topFrameBitLen specL s_d1.L) ∨
+         (s_d1'.regsR = s_d1.regsR ∧ PopsTop s_d1.R s_d1'.R ∧ b₁ = topFrameBitLen specR s_d1.R)) ∧
+        ((s_d2'.regsL = s_d2.regsL ∧ PopsTop s_d2.L s_d2'.L ∧ b₂ = topFrameBitLen specL s_d2.L) ∨
+         (s_d2'.regsR = s_d2.regsR ∧ PopsTop s_d2.R s_d2'.R ∧ b₂ = topFrameBitLen specR s_d2.R))) ∧
+      (numRegsL = 0 → ∃ (k_L : ℕ) (s_L s_L' : WordSysState Mode TokL TokR numRegsL numRegsR),
+        64 ≤ k_L ∧ k_L ≤ 2048 ∧
+        iterWordMacro stepMacro k_L s₀ = some s_L ∧ stepMacro s_L = some s_L' ∧
+        s_L'.regsL = s_L.regsL ∧ PopsTop s_L.L s_L'.L ∧ 18 ≤ topFrameBitLen specL s_L.L) ∧
+      (numRegsR = 0 → ∃ (k_R : ℕ) (s_R s_R' : WordSysState Mode TokL TokR numRegsL numRegsR),
+        64 ≤ k_R ∧ k_R ≤ 2048 ∧
+        iterWordMacro stepMacro k_R s₀ = some s_R ∧ stepMacro s_R = some s_R' ∧
+        s_R'.regsR = s_R.regsR ∧ PopsTop s_R.R s_R'.R ∧ 18 ≤ topFrameBitLen specR s_R.R) ∧
+      (∀ i : Fin numRegsL, ∃ (n_reg : ℕ) (s_reg : WordSysState Mode TokL TokR numRegsL numRegsR),
+        n_reg ≤ 2048 ∧ iterWordMacro stepMacro n_reg s₀ = some s_reg ∧ 2 ≤ s_reg.regsL i) ∧
+      (∀ i : Fin numRegsR, ∃ (n_reg : ℕ) (s_reg : WordSysState Mode TokL TokR numRegsL numRegsR),
+        n_reg ≤ 2048 ∧ iterWordMacro stepMacro n_reg s₀ = some s_reg ∧ 2 ≤ s_reg.regsR i) ∧
+      (∀ m : Mode, ∃ (n_m : ℕ) (s_m : WordSysState Mode TokL TokR numRegsL numRegsR),
+        n_m ≤ 256 ∧ iterWordMacro stepMacro n_m s₀ = some s_m ∧ s_m.mode = m) ∧
+      (∀ t : TokL, ∃ (n_t : ℕ) (s_t : WordSysState Mode TokL TokR numRegsL numRegsR) (d : ℕ),
+        n_t ≤ 2048 ∧ iterWordMacro stepMacro n_t s₀ = some s_t ∧ (t, d) ∈ s_t.L) ∧
+      (∀ t : TokR, ∃ (n_t : ℕ) (s_t : WordSysState Mode TokL TokR numRegsL numRegsR) (d : ℕ),
+        n_t ≤ 2048 ∧ iterWordMacro stepMacro n_t s₀ = some s_t ∧ (t, d) ∈ s_t.R) ∧
+      ((∃ (t_run : TokL) (s_fam : ℕ → WordSysState Mode TokL TokR numRegsL numRegsR),
+          1 ≤ specL.stride t_run ∧
+          (∃ n_r s_r d_r, n_r ≤ 2048 ∧ iterWordMacro stepMacro n_r s₀ = some s_r ∧
+            1 ≤ d_r ∧ (t_run, d_r) ∈ s_r.L) ∧
+          (∀ d : ℕ, ValidState (s_fam d) ∧
+            (∃ d₀ rest, d ≤ d₀ ∧ (s_fam d).L = (t_run, d₀) :: rest) ∧
+            (∃ s', stepMacro (s_fam d) = some s' ∧ PopsTop (s_fam d).L s'.L ∧
+              topFrameBitLen specL (s_fam d).L ≤ totalSystemBitLen specL specR s' + 8))) ∨
+       (∃ (t_run : TokR) (s_fam : ℕ → WordSysState Mode TokL TokR numRegsL numRegsR),
+          1 ≤ specR.stride t_run ∧
+          (∃ n_r s_r d_r, n_r ≤ 2048 ∧ iterWordMacro stepMacro n_r s₀ = some s_r ∧
+            1 ≤ d_r ∧ (t_run, d_r) ∈ s_r.R) ∧
+          (∀ d : ℕ, ValidState (s_fam d) ∧
+            (∃ d₀ rest, d ≤ d₀ ∧ (s_fam d).R = (t_run, d₀) :: rest) ∧
+            (∃ s', stepMacro (s_fam d) = some s' ∧ PopsTop (s_fam d).R s'.R ∧
+              topFrameBitLen specR (s_fam d).R ≤ totalSystemBitLen specL specR s' + 8))))
+
+universe u v
+
+/-- Segmented Half-Tape Region Descriptor (`SegRegionKind`). -/
+inductive SegRegionKind (Γ : Type u) where
+  | reg (blk : List Γ) (val : ℕ)
+  | wordRun (frames : List (List Γ × ℕ))
+  | finWord (words : List (List Γ))
+  | gadget (w : List Γ)
+
+/-- Evaluates a single `SegRegionKind Γ` into its `List Γ` bit-segment. -/
+def evalSegRegion {Γ : Type u} : SegRegionKind Γ → List Γ
+  | .reg blk v => blk ^ v
+  | .wordRun [] => []
+  | .wordRun ((w, m) :: rest) => (w ^ m) ++ evalSegRegion (.wordRun rest)
+  | .finWord [] => []
+  | .finWord (w :: ws) => w ++ evalSegRegion (.finWord ws)
+  | .gadget w => w
+
+/-- Evaluates a `≤ 3`-region segmented half-tape `List (SegRegionKind Γ)` onto `default`. -/
+def evalSegmentedHalf {Γ : Type u} [Inhabited Γ] : List (SegRegionKind Γ) → ListBlank Γ
+  | [] => default
+  | reg :: rest => ListBlank.append (evalSegRegion reg) (evalSegmentedHalf rest)
+
+/-- Structural well-formedness for a `SegRegionKind`: non-empty periodic/word blocks, bounded
+    `.gadget` literals (`w.length ≤ 16`), and no full single-symbol raw alphabet wrapping inside
+    `.wordRun` / `.finWord`. -/
+def SegRegionKind.WellFormed {Γ : Type u} : SegRegionKind Γ → Prop
+  | .reg blk _ => blk ≠ []
+  | .wordRun frames =>
+      (∀ p ∈ frames, p.1 ≠ []) ∧ ¬ ∀ b : Γ, ∃ p ∈ frames, p.1 = [b]
+  | .finWord words =>
+      (∀ w ∈ words, w ≠ []) ∧ ¬ ∀ b : Γ, [b] ∈ words
+  | .gadget w => w.length ≤ 16
+
+/-- `IsNowhereDenseFamily` for the evaluated segmented half-tapes `evalSegmentedHalf (segs s)`. -/
+def IsNowhereDenseHalf {Γ : Type u} {S : Type v} [Inhabited Γ]
+    (Valid : S → Prop) (segs : S → List (SegRegionKind Γ)) : Prop :=
+  IsNowhereDenseFamily Valid (fun s => evalSegmentedHalf (segs s))
+
+/-- Closed `≤ 3`-region segmented transition system on an explicit `(SegState, Mode)` carrier. -/
+def IsClosedSegmentedSystem {k : ℕ} {Λ : Type u} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ)
+    {SegState Mode : Type}
+    (modes : List Mode)
+    (ValidSeg : SegState → Prop)
+    (modeOf : SegState → Mode)
+    (segsL segsR : SegState → List (SegRegionKind (Fin (k + 2))))
+    (evalCfg : SegState → Cfg (Fin (k + 2)) Λ) : Prop :=
+  1 ≤ modes.length ∧ modes.length ≤ 8 ∧ (∀ m : Mode, m ∈ modes) ∧
+  (∀ s, ValidSeg s →
+    (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3 ∧
+    (∀ r ∈ segsL s, r.WellFormed) ∧ (∀ r ∈ segsR s, r.WellFormed)) ∧
+  (∀ m : Mode, ∃ (q : Λ) (vL vR : HalfTapeView (Fin (k + 2))),
+    viewPrefixLen vL ≤ 8 ∧ viewPrefixLen vR ≤ 8 ∧
+    ∀ s, ValidSeg s → modeOf s = m →
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)),
+        applyView vL (evalSegmentedHalf (segsL s)),
+        applyView vR (evalSegmentedHalf (segsR s))⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q (applyView vL (evalSegmentedHalf (segsL s)))
+        (applyView vR (evalSegmentedHalf (segsR s)))) ∨
+      (evalCfg s = Cfg.headRight q (applyView vL (evalSegmentedHalf (segsL s)))
+        (applyView vR (evalSegmentedHalf (segsR s))))) ∧
+  (IsNowhereDenseHalf ValidSeg segsL ∨ IsNowhereDenseHalf ValidSeg segsR) ∧
+  (IsNowhereDenseHalf ValidSeg segsL ∨
+    (∀ s, ValidSeg s → ∃ (q : Λ) (vR : ListBlank (Fin (k + 2))),
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), evalSegmentedHalf (segsL s), vR⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q (evalSegmentedHalf (segsL s)) vR) ∨
+      (evalCfg s = Cfg.headRight q (evalSegmentedHalf (segsL s)) vR))) ∧
+  (IsNowhereDenseHalf ValidSeg segsR ∨
+    (∀ s, ValidSeg s → ∃ (q : Λ) (vL : ListBlank (Fin (k + 2))),
+      (evalCfg s = ⟨some q, ⟨(0 : Fin (k + 2)), vL, evalSegmentedHalf (segsR s)⟩⟩) ∨
+      (evalCfg s = Cfg.headLeft q vL (evalSegmentedHalf (segsR s))) ∨
+      (evalCfg s = Cfg.headRight q vL (evalSegmentedHalf (segsR s))))) ∧
+  (∃ s₀, ValidSeg s₀ ∧ ReachesPlus M (init []) (evalCfg s₀)) ∧
+  (∀ s, ValidSeg s →
+    ∃ cfg', ReachesPlus M (evalCfg s) cfg' ∧
+      ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (step M cfg').isNone))
+
+/-- Unifying `≤ 3`-Region Segmented Schema (`IsSegmentedCryptid`). At least one half-tape must
+    be `IsNowhereDenseHalf`; a half-tape that is not must be boundary-aligned (no hidden view
+    prefix), and all regions must be `SegRegionKind.WellFormed`. -/
+def IsSegmentedCryptid {k : ℕ} {Λ : Type u} [Inhabited Λ]
+    (M : Machine (Fin (k + 2)) Λ) : Prop :=
+  ∃ (SegState Mode : Type)
+    (modes : List Mode)
+    (ValidSeg : SegState → Prop)
+    (modeOf : SegState → Mode)
+    (segsL segsR : SegState → List (SegRegionKind (Fin (k + 2))))
+    (evalCfg : SegState → Cfg (Fin (k + 2)) Λ),
+    IsClosedSegmentedSystem M modes ValidSeg modeOf segsL segsR evalCfg
 
 namespace SixState
 
@@ -9324,3 +9920,925 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF
+
+namespace BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH
+open Turing BusyBeaver
+
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---"
+
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{0}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH
+
+namespace BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH
+open Turing BusyBeaver
+
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---"
+
+/-- `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{0}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft L)) {{3}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft L)) {{3}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH
+
+namespace BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH
+open Turing BusyBeaver
+
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---"
+
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_odometer_cryptid : IsOdometerCryptid target := by sorry
+end BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH
+
+namespace BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH
+open Turing BusyBeaver
+
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---"
+
+/-- `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH
+
+namespace BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
+open Turing BusyBeaver
+
+/-- `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---"
+
+/-- `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAR
+  | mA0R
+  | mEL
+deriving DecidableEq, Repr
+
+def onesSep0 (d : ℕ) : List (Fin 2) :=
+  Nat.rec [0] (fun _ acc => 1 :: acc) d
+
+def lWord (d : ℕ) : List (Fin 2) := 1 :: onesSep0 d
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun d _ acc => lWord d +> acc) S
+
+def rWord (z : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) z
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => rWord z +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAR, .mA0R, .mEL]
+
+def evalSegCfg : SegMode → List ℕ → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mA0R, L, R => (applyView (.id [0]) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mEL, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id []) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LAHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LC---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_0LCHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH
+
+namespace BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH
+open Turing BusyBeaver
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---"
+
+/-- `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_stack_cryptid : IsStackCryptid target := by sorry
+end BusyBeaver.M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH
+
+namespace BusyBeaver.M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE
+open Turing BusyBeaver
+
+/-- `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE"
+
+/-- `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mCL
+  | mAR
+  | mA0
+deriving DecidableEq, Repr
+
+def lWord (p : ℕ × Bool) : List (Fin 2) :=
+  Bool.casesOn p.2
+    (Nat.rec [1, 0] (fun _ acc => 1 :: acc) p.1)
+    (Nat.rec [1, 0, 0] (fun _ acc => 1 :: 1 :: acc) p.1)
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def encLeft (S : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) S
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => zWord z +> acc) S
+
+abbrev SegState := SegMode × List (ℕ × Bool) × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def modes : List SegMode := [.mCL, .mAR, .mA0]
+
+def evalSegCfg : SegMode → List (ℕ × Bool) → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encRight R)) {{0}}> (applyView (.id []) (encLeft L))
+  | .mAR, L, R => (applyView (.id []) (encRight R)) <{{4}} (applyView (.id []) (encLeft L))
+  | .mA0, L, R => (applyView (.id []) (encRight R)) <{{4}} (applyView (.id [0]) (encLeft L))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE
+
+namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH
+open Turing BusyBeaver
+
+/-- `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---"
+
+/-- `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mCL
+  | mAR
+  | mA0
+deriving DecidableEq, Repr
+
+def lWord (p : ℕ × Bool) : List (Fin 2) :=
+  Bool.casesOn p.2
+    (Nat.rec [1, 0] (fun _ acc => 1 :: acc) p.1)
+    (Nat.rec [1, 0, 0] (fun _ acc => 1 :: 1 :: acc) p.1)
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def encLeft (S : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) S
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => zWord z +> acc) S
+
+abbrev SegState := SegMode × List (ℕ × Bool) × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map zWord)]
+
+def modes : List SegMode := [.mCL, .mAR, .mA0]
+
+def evalSegCfg : SegMode → List (ℕ × Bool) → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id []) (encRight R))
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mA0, L, R => (applyView (.id [0]) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH
+
+namespace BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
+open Turing BusyBeaver
+
+/-- `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF"
+
+/-- `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{5}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{2}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{4}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{4}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF
+
+namespace BusyBeaver.M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA
+open Turing BusyBeaver
+
+/-- `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA"
+
+/-- `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{4}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft L)) {{5}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft L)) {{5}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA
+
+namespace BusyBeaver.M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA
+open Turing BusyBeaver
+
+/-- `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA"
+
+/-- `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{3}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{5}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{5}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA
+
+namespace BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH
+open Turing BusyBeaver
+
+/-- `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---"
+
+/-- `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mCL
+  | mAR
+  | mA0
+deriving DecidableEq, Repr
+
+def lWord (p : ℕ × Bool) : List (Fin 2) :=
+  Bool.casesOn p.2
+    (Nat.rec [1, 0] (fun _ acc => 1 :: acc) p.1)
+    (Nat.rec [1, 0, 0] (fun _ acc => 1 :: 1 :: acc) p.1)
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def encLeft (S : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) S
+
+def encRight (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun z _ acc => zWord z +> acc) S
+
+abbrev SegState := SegMode × List (ℕ × Bool) × List ℕ
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map zWord)]
+
+def modes : List SegMode := [.mCL, .mAR, .mA0]
+
+def evalSegCfg : SegMode → List (ℕ × Bool) → List ℕ → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id []) (encRight R))
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mA0, L, R => (applyView (.id [0]) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH
+
+namespace BusyBeaver.M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD
+open Turing BusyBeaver
+
+/-- `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD"
+
+/-- `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encLeft L)) <{{4}} (applyView (.id []) (encRight R))
+  | .mB0, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+  | .mD0, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id []) (encRight R))
+  | .mD1, L, R => (applyView (.id []) (encLeft (1 :: L))) {{3}}> (applyView (.id [1]) (encRight R))
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1, 1]) (encRight R))
+  | .mCL1, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id [1]) (encRight R))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD
+
+namespace BusyBeaver.M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE
+open Turing BusyBeaver
+
+/-- `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE"
+
+/-- `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+inductive SegMode where
+  | mAL
+  | mB0
+  | mD0
+  | mD1
+  | mCL
+  | mCL1
+deriving DecidableEq, Repr
+
+def zWord (k : ℕ) : List (Fin 2) :=
+  Nat.rec [1] (fun _ acc => 0 :: acc) k
+
+def oRun (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 1] (fun _ acc => 1 :: acc) o
+
+def rWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oRun p.2) (fun _ acc => 0 :: acc) p.1
+
+def encLeft (S : List ℕ) : ListBlank (Fin 2) :=
+  List.rec default (fun k _ acc => zWord k +> acc) S
+
+def encRight (S : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) S
+
+abbrev SegState := SegMode × List ℕ × List (ℕ × ℕ)
+
+def modeOf (s : SegState) : SegMode := s.1
+
+def ValidSeg (_ : SegState) : Prop := True
+
+def leftList : SegMode → List ℕ → List ℕ
+  | .mD0, L => 1 :: L
+  | .mD1, L => 1 :: L
+  | _, L => L
+
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.map rWord)]
+
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord ((leftList s.1 s.2.1).map zWord)]
+
+def modes : List SegMode := [.mAL, .mB0, .mD0, .mD1, .mCL, .mCL1]
+
+def evalSegCfg : SegMode → List ℕ → List (ℕ × ℕ) → Cfg (Fin 2) (Fin 6)
+  | .mAL, L, R => (applyView (.id []) (encRight R)) {{1}}> (applyView (.id []) (encLeft L))
+  | .mB0, L, R => (applyView (.id []) (encRight R)) <{{2}} (applyView (.id []) (encLeft L))
+  | .mD0, L, R => (applyView (.id []) (encRight R)) <{{4}} (applyView (.id []) (encLeft (1 :: L)))
+  | .mD1, L, R => (applyView (.id [1]) (encRight R)) <{{4}} (applyView (.id []) (encLeft (1 :: L)))
+  | .mCL, L, R => (applyView (.id [1, 1]) (encRight R)) {{3}}> (applyView (.id []) (encLeft L))
+  | .mCL1, L, R => (applyView (.id [1]) (encRight R)) {{3}}> (applyView (.id []) (encLeft L))
+
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 s.2.2
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
+theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
+end BusyBeaver.M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE
+
+namespace BusyBeaver.M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA
+open Turing BusyBeaver
+
+/-- `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA"
+
+/-- `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+theorem is_odometer_cryptid : IsOdometerCryptid target := by sorry
+end BusyBeaver.M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA
+
+namespace BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE
+open SixState Turing BusyBeaver
+
+/-- `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` as a `ConjectureMachines.Machine`. -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE"
+
+/-- `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` as a `BusyBeaver.Machine`. -/
+abbrev target : Machine (Fin 2) (Fin 6) :=
+  machine.toBB
+
+def pat_A : TapePattern (Fin 2) (Fin 6) :=
+  { left := .rep [1] 0 .default
+    head := some A
+    right := .rep [1, 0] 1 (.sym 1 (.rep [1] 2 .default)) }
+
+def pat_Run : TapePattern (Fin 2) (Fin 6) :=
+  { left := .rep [1] 0 .default
+    head := some D
+    right := .default }
+
+def ps : TapePatternSet (Fin 2) (Fin 6) :=
+  [(pat_A, .true), (pat_Run, .true)]
+
+inductive State where
+  | A (a c d : ℕ)
+  | Run (a : ℕ)
+  deriving DecidableEq, Repr
+
+def start : State := .A 2 0 1
+
+def encode : State → Cfg (Fin 2) (Fin 6)
+  | .A a c d =>
+      Cfg.headRight A (([1] : List (Fin 2)) ^ a +> default)
+        (([1, 0] : List (Fin 2)) ^ c +>
+          ((1 : Fin 2) >> (([1] : List (Fin 2)) ^ d +> default)))
+  | .Run a =>
+      Cfg.headRight D (([1] : List (Fin 2)) ^ a +> default) default
+
+def next : State → Option State
+  | .Run a => some (.Run (a + 1))
+  | .A (a + 2) c d => some (.A a (c + 1) d)
+  | .A 0 _ 0 => none
+  | .A 0 c 1 => some (.A (2 * c + 1) 0 0)
+  | .A 0 c (d + 2) => some (.A (2 * c + 1) 1 d)
+  | .A 1 c 0 =>
+      if c % 2 = 0 then some (.Run 1) else some (.A 2 0 (3 * c + 4))
+  | .A 1 c 1 =>
+      if c % 2 = 0 then some (.A 2 0 (3 * c + 6)) else some (.A (3 * c + 5) 0 0)
+  | .A 1 c (d + 2) =>
+      if c % 2 = 0 then some (.A (3 * c + 7) 0 d) else some (.A (3 * c + 5) 0 (d + 1))
+
+theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
+theorem is_valid_acceleration : IsValidAcceleration target start encode next := by sorry
+theorem isHalt_iff_acceleration : IsHalt target ↔ CollatzHalts next start := by sorry
+theorem is_cryptid : IsCryptid target := by sorry
+end BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE
