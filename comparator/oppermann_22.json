@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.Oppermann22",
+  "theorem_names": [
+    "ConjectureMachines.Oppermann22.halts_oppermann22_iff_exists_gap",
+    "ConjectureMachines.Oppermann22.halts_oppermann22_iff_not_oppermann"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

@@ -240,6 +240,11 @@ def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
   load_machine_rows% "artifacts/brocard_28/machine.txt"
 /-- 28-state Brocard machine. -/
 def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `oppermann22`. -/
+def oppermann22Rows : List (List (Option (Fin 2 × Dir × Fin 22))) :=
+  load_machine_rows% "artifacts/oppermann_22/machine.txt"
+/-- 22-state Oppermann machine. -/
+def oppermann22 : Machine 22 2 := Machine.ofRows oppermann22Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff
