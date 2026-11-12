@@ -111,7 +111,7 @@ def insFuel {α : Type} : ℕ → NatTrie α → ℕ → α → NatTrie α
 
 /-- Insert `(k, val)` into radix trie `t` (supports keys up to `2^32 - 1`). -/
 def insert {α : Type} (t : NatTrie α) (k : ℕ) (val : α) : NatTrie α :=
-  insFuel 32 t k val
+  insFuel 33 t k val
 
 /-- Check predicate `p key val` on every stored entry in `t`, reconstructing keys as
 `keyPrefix + localKey * bitMul`. -/

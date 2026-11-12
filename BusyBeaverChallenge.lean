@@ -34,11 +34,10 @@ meta section
 namespace BusyBeaver
 open Lean Elab Term
 
-private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
+private def parseRleBlock (numStates numSymbols : Nat) (block : String) : TermElabM (TSyntax `term) := do
   let chars := block.toList
-  if chars.length == 0 || chars.length % 3 != 0 then
+  if numSymbols == 0 || chars.length != 3 * numSymbols then
     throwError "Invalid RLE state block length: {block}"
-  let numSymbols := chars.length / 3
   let mut cellStxs : Array (TSyntax `term) := #[]
   for i in [:numSymbols] do
     let wChar := chars[3 * i]!
@@ -50,6 +49,8 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
     else
       if !wChar.isDigit then
         throwError "Invalid symbol character '{wChar}' in RLE block: {block}"
+      if wChar.toNat - '0'.toNat >= numSymbols then
+        throwError "Out-of-range symbol in RLE block: {block}"
       let wLit := Syntax.mkNumLit (String.singleton wChar)
       let dirStx ← match dChar with
         | 'L' => `(Turing.Dir.left)
@@ -58,27 +59,27 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
       if sChar < 'A' || sChar > 'Z' then
         throwError "Invalid state letter '{sChar}' in RLE block: {block}"
       let stateIdx := sChar.toNat - 'A'.toNat
+      if stateIdx >= numStates then
+        throwError "Out-of-range state in RLE block: {block}"
       let sLit := Syntax.mkNumLit (toString stateIdx)
       cellStxs := cellStxs.push (← `(some ($wLit, $dirStx, $sLit)))
   `([$cellStxs,*])
 
-elab "load_rle_rows% " rle:str : term <= expectedType? => do
-  let blocks := rle.getString.trimAscii.toString.splitOn "_"
-  if blocks.isEmpty then
-    throwError "Empty RLE string"
+private def parseRleRows (rle : String) : TermElabM (TSyntax `term) := do
+  let blocks := rle.trimAscii.toString.splitOn "_"
+  let numSymbols := (blocks.headD "").length / 3
   let mut rowStxs : Array (TSyntax `term) := #[]
   for b in blocks do
-    rowStxs := rowStxs.push (← parseRleBlock b)
-  elabTerm (← `([$rowStxs,*])) expectedType?
+    rowStxs := rowStxs.push (← parseRleBlock blocks.length numSymbols b)
+  let states := Syntax.mkNumLit (toString blocks.length)
+  let symbols := Syntax.mkNumLit (toString numSymbols)
+  `(([$rowStxs,*] : List (List (Option (Fin $symbols × Turing.Dir × Fin $states)))))
+
+elab "load_rle_rows% " rle:str : term <= expectedType? => do
+  elabTerm (← parseRleRows rle.getString) expectedType?
 
 elab "load_rle_machine% " rle:str : term <= expectedType? => do
-  let blocks := rle.getString.trimAscii.toString.splitOn "_"
-  if blocks.isEmpty then
-    throwError "Empty RLE string"
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for b in blocks do
-    rowStxs := rowStxs.push (← parseRleBlock b)
-  elabTerm (← `(ConjectureMachines.Machine.ofRows [$rowStxs,*])) expectedType?
+  elabTerm (← `(ConjectureMachines.Machine.ofRows $(← parseRleRows rle.getString))) expectedType?
 
 end BusyBeaver
 end

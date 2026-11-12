@@ -10,7 +10,7 @@
     "BusyBeaver/Defs/WordRun.lean": "4eb9a109d509ed5af3311806ac9807e3cb3bded4462d10de2ade20272c91d5b9",
     "BusyBeaver/Defs/Segmented.lean": "40f9ba866be37c7b373f4d06ebdf5cab03638181ddb8b2de52801f4a8034be84",
     "BusyBeaver/Basic.lean": "35cf96b7db7ce0dbd629af00540121d4f64eb18755774356a4309eee9a6a0c4e",
-    "BusyBeaver/WordRLE.lean": "b819bc8e072a8b2274f60c3cae72f61dbb9057ef9481facbc68801dd4b2ce803",
+    "BusyBeaver/WordRLE.lean": "59f994eda8bf3e68e9717e5ce67a97a2002688edd57e69ab5a02917facff3df9",
     "BusyBeaver/AffRLE.lean": "8434da7a25f766df93481813f0b17286337df21f35ed55f43845ca93b6903e95",
     "BusyBeaver/Cert.lean": "9d23a26b5279bb83b1140920c7b62add4053e01f1f488ef98588363c4cff9496"
   }
