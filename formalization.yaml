@@ -210,6 +210,19 @@ sources:
       New machine (artifacts/brocard_28/machine.txt) and first Lean 4 proofs that it halts
       iff n! + 1 is a perfect square for some n > 7 (Cryptids/Brocard28.lean,
       Cryptids/Semantics/Brocard28.lean).
+  - title: "Legendre's conjecture (busybeaver, problems/legendre)"
+    authors:
+      - "Joseph Jabbour"
+      - "Ralph Razzouk"
+    id: "https://github.com/ralphrazzouk/busybeaver/tree/master/problems/legendre"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 26-state, 2-symbol machine (after a 29-state one) with Lean 4 proofs
+      BBRank.Legendre26.halts_iff_not_legendre and BBRank.Legendre29.halts_iff_not_legendre,
+      published in September 2026; an earlier machine for the conjecture. Not used by
+      legendre_21.
   - title: "A Turing machine for Legendre's conjecture (tinycryptids, legendre_44)"
     authors:
       - "Charlie Reams"

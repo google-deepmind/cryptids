@@ -9,12 +9,19 @@ The machine was designed by Daniel Veljjanoski, with Claude (Anthropic) as assis
 primality test is the one of the Goldbach machines: the anonymous 2016 machine, Andrew Yao and
 Yijun Leng's `goldbach_25`, and [`goldbach_21`](../goldbach_21/README.md) by Maxence Faldor and Moritz
 Firsching. Sixteen of the 21 states are states of that test, with seven of their cells changed,
-and the Lean proof uses the lemmas of [`Goldbach21.lean`](../../Cryptids/Goldbach21.lean). An
-earlier machine for the same conjecture is Charlie Reams's 44-state machine with a Lean proof of
-an equivalent statement ([`calr3/tinycryptids`](https://github.com/calr3/tinycryptids/tree/main/legendre),
-November 2026). That machine also tracks the interval with a register of cells with a hole and a
-flag set by a prime; here the register needs no rebuild between intervals, and the primality
-test is a different one.
+and the Lean proof uses the lemmas of [`Goldbach21.lean`](../../Cryptids/Goldbach21.lean).
+
+Earlier machines for the same conjecture, both with Lean proofs:
+
+- Joseph Jabbour and Ralph Razzouk, 26 states ([`ralphrazzouk/busybeaver`](https://github.com/ralphrazzouk/busybeaver/tree/master/problems/legendre), September
+  2026; a 29-state version before it). Its primality test also comes from the 25-state Goldbach
+  machine. It counts the numbers left in the interval down, leaves the interval at its first
+  prime, and rebuilds the count for the next interval by a copy loop.
+- Charlie Reams, 44 states, with a proof of an equivalent statement
+  ([`calr3/tinycryptids`](https://github.com/calr3/tinycryptids/tree/main/legendre), November
+  2026). That machine also tracks the interval with a register of cells with a hole and a flag
+  set by a prime; here the register needs no rebuild between intervals, and the primality test
+  is a different one.
 
 ## How it works
 

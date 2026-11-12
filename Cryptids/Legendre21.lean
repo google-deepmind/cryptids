@@ -17,9 +17,10 @@ conjecture fails: some `n ≥ 1` has no prime strictly between `n ^ 2` and `(n +
 The machine and the proofs are by Daniel Veljjanoski, with Claude (Anthropic) as assistant
 (November 2026). The primality test is the one of the Goldbach machines: the anonymous 2016
 machine, Andrew Yao and Yijun Leng's `goldbach_25` (2024), and `goldbach_21` of Maxence Faldor
-and Moritz Firsching (2026), whose lemmas in `Cryptids/Goldbach21.lean` this file uses. An
-earlier machine for the same conjecture is Charlie Reams's 44-state machine with a Lean proof
-(`calr3/tinycryptids`, November 2026).
+and Moritz Firsching (2026), whose lemmas in `Cryptids/Goldbach21.lean` this file uses.
+Earlier machines for the same conjecture, both with Lean proofs: the 26-state machine of Joseph
+Jabbour and Ralph Razzouk (`ralphrazzouk/busybeaver`, September 2026) and Charlie Reams's
+44-state machine (`calr3/tinycryptids`, November 2026).
 
 ## Machine Layout
 
