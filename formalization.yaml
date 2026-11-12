@@ -17,8 +17,9 @@ project:
     (75 -> 41 -> 27 -> 17 -> 16 -> 15 states: weak_collatz_75, weak_collatz_41,
     weak_collatz_27, weak_collatz_17, weak_collatz_16, and weak_collatz_15),
     Legendre's conjecture (a new 21-state machine legendre_21, November 2026),
-    and Kurepa's left factorial conjecture (a new 19-state machine kurepa_19,
-    November 2026),
+    Kurepa's left factorial conjecture (a new 19-state machine kurepa_19,
+    November 2026), and Oppermann's conjecture (a new 22-state machine
+    oppermann_22, November 2026),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -306,6 +307,42 @@ sources:
       New machine (artifacts/kurepa_19/machine.txt) and first Lean 4 proofs that it halts
       iff some n > 2 divides the left factorial !n = 0! + 1! + ... + (n - 1)!
       (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
+  - title: "Oppermann's conjecture (busybeaver, problems/oppermann)"
+    authors:
+      - "Joseph Jabbour"
+      - "Ralph Razzouk"
+    id: "https://github.com/ralphrazzouk/busybeaver/tree/master/problems/oppermann"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 28-state, 2-symbol machine (after a 29-state one) with Lean 4 proofs
+      BBRank.Oppermann28.halts_iff_not_oppermann and BBRank.Oppermann29.halts_iff_not_oppermann,
+      published in September 2026; an earlier machine for the conjecture. Not used by
+      oppermann_22.
+  - title: "A Turing machine for Oppermann's conjecture (tinycryptids, oppermann_45)"
+    authors:
+      - "Charlie Reams"
+    id: "https://github.com/calr3/tinycryptids/tree/main/oppermann"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 45-state, 2-symbol machine (reduced from a 74-state design) with a Lean proof
+      TM.Oppermann.M45.halts_iff, published in November 2026; an earlier machine for the
+      conjecture, with an interval register whose hole moves two cells per number. Not used
+      by oppermann_22.
+  - title: "A 22-state Turing machine for Oppermann's conjecture with Lean 4 proofs (oppermann_22)"
+    authors:
+      - "Daniel Veljjanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      New machine (artifacts/oppermann_22/machine.txt) built on the primality test of
+      goldbach_21, and first Lean 4 proofs that it halts iff some n >= 2 has no prime
+      strictly between n^2 - n and n^2 or none strictly between n^2 and n^2 + n
+      (Cryptids/Oppermann22.lean, Cryptids/Semantics/Oppermann22.lean). The proof uses the
+      lemmas of Cryptids/Goldbach21.lean for the test.
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -341,8 +378,9 @@ status:
     PA standard-model adequacy, the brocard_27 square equivalence, the
     weak_collatz_75, weak_collatz_41, weak_collatz_27, weak_collatz_17,
     weak_collatz_16, and weak_collatz_15 nontrivial-cycle and Böhm-Sontacchi
-    Diophantine equivalences, the legendre_21 gap equivalence, and the kurepa_19
-    divisibility equivalence (41 theorems total) are
+    Diophantine equivalences, the legendre_21 gap equivalence, the kurepa_19
+    divisibility equivalence, and the oppermann_22 gap equivalence (42 theorems
+    total) are
     proved constructively using at most
     propext and Quot.sound (zero Classical.choice, audited via
     comparator/constructive.json). Object-level first-order PA provability of
@@ -375,7 +413,11 @@ status:
     legendre21 <-> ¬ LegendreConjecture with Markov's Principle. The 19-state
     machine kurepa_19 satisfies Halts kurepa19 <-> ∃ n, 2 < n ∧ n ∣ leftFactorial n
     constructively (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean), and
-    Halts kurepa19 <-> ¬ KurepaConjecture with Markov's Principle.
+    Halts kurepa19 <-> ¬ KurepaConjecture with Markov's Principle. The 22-state
+    machine oppermann_22 satisfies Halts oppermann22 <-> ∃ n, 2 ≤ n ∧ ((∀ p, p.Prime ->
+    ¬ (n ^ 2 - n < p ∧ p < n ^ 2)) ∨ (∀ p, p.Prime -> ¬ (n ^ 2 < p ∧ p < n ^ 2 + n)))
+    constructively (Cryptids/Oppermann22.lean, Cryptids/Semantics/Oppermann22.lean), and
+    Halts oppermann22 <-> ¬ OppermannConjecture with Markov's Principle.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -723,6 +765,16 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/kurepa_19.json"
+    - declaration: "ConjectureMachines.Oppermann22.halts_oppermann22_iff_exists_gap"
+      file: "Cryptids/Semantics/Oppermann22.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Oppermann22.halts_oppermann22_iff_not_oppermann"
+      file: "Cryptids/Semantics/Oppermann22.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/oppermann_22.json"
 
 automation:
   methods:
@@ -747,8 +799,9 @@ automation:
         Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean) and for
         the design, simulation checks and proofs of brocard_27
         (Cryptids/Brocard27.lean, Cryptids/Semantics/Brocard27.lean), of legendre_21
-        (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean), and of kurepa_19
-        (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
+        (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean), of kurepa_19
+        (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean), and of oppermann_22
+        (Cryptids/Oppermann22.lean, Cryptids/Semantics/Oppermann22.lean).
   spend_usd: ""
   notes: >-
     Candidate state reductions and halting-equivalence proofs were discovered
@@ -756,7 +809,7 @@ automation:
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_ternary_15 machine is by Tristan Stérin and Damien Woods and the erdos_ternary_14
     machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs, and the
-    brocard_27, legendre_21, and kurepa_19 machines and proofs, were written by Daniel Veljjanoski with Claude
+    brocard_27, legendre_21, kurepa_19, and oppermann_22 machines and proofs, were written by Daniel Veljjanoski with Claude
     (Anthropic) as assistant.
 
 fidelity:
@@ -1024,6 +1077,18 @@ alignment:
     - source: "kurepa_19 <-> ¬ KurepaConjecture"
       lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
       module: "Cryptids.Semantics.Kurepa19"
+      status: "proved"
+    - source: "oppermann_22 <-> ∃ n ≥ 2, no IsPrime x with n * n - n < x < n * n, or none with n * n < x < n * n + n"
+      lean: "ConjectureMachines.Oppermann22.halts_oppermann22_iff"
+      module: "Cryptids.Oppermann22"
+      status: "proved"
+    - source: "oppermann_22 <-> ∃ n ≥ 2, no prime p with n ^ 2 - n < p < n ^ 2, or none with n ^ 2 < p < n ^ 2 + n"
+      lean: "ConjectureMachines.Oppermann22.halts_oppermann22_iff_exists_gap"
+      module: "Cryptids.Semantics.Oppermann22"
+      status: "proved"
+    - source: "oppermann_22 <-> ¬ OppermannConjecture"
+      lean: "ConjectureMachines.Oppermann22.halts_oppermann22_iff_not_oppermann"
+      module: "Cryptids.Semantics.Oppermann22"
       status: "proved"
 
 acknowledgements: >-

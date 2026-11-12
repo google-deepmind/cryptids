@@ -362,7 +362,7 @@ Care is required when interpreting a Lean theorem of type `Halts M ↔ ZFInconsi
 2. **Zero-axiom specification & constructive proof-search equivalence (enforced by `comparator`):**
    To eliminate quotient axioms from the specification layer itself and rule out classical shortcuts through `Classical.choice`, `Classical.em`, or `not_zfInconsistent`:
    - **Quotient-free, zero-axiom specification (`comparator/zero_axioms.json`, `permitted_axioms = []`):** `ConjectureMachines.ListBlank` represents half-tapes concretely as canonical blank-trimmed lists (`structure ListBlank (Γ : Type*) [Inhabited Γ] where ofTrimmed ::`, `Challenge.lean`, `Cryptids/Machines.lean`), so `ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `PAProvable`, all ten `candidate_fewer_states` theorems, and syntactic `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
-   - **Constructive equivalences (`comparator/constructive.json`, `permitted_axioms = ["propext", "Quot.sound"]`):** **All ten** state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`, `Riemann95.candidate_equivalent`, `ErdosTernary14.candidate_equivalent`, `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, `WeakCollatz17.candidate_equivalent`, `WeakCollatz16.candidate_equivalent`, `WeakCollatz15.candidate_equivalent`), **all three** ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), $\Sigma_1^0$ `PA` standard-model adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard27.halts_brocard27_iff_exists_square`, the `WeakCollatz{75,41,27,17,16,15}` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences, `Legendre21.halts_legendre21_iff_exists_gap`, and `Kurepa19.halts_kurepa19_iff_exists_dvd` (41 theorems total) are proved **constructively in Lean** with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
+   - **Constructive equivalences (`comparator/constructive.json`, `permitted_axioms = ["propext", "Quot.sound"]`):** **All ten** state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`, `Riemann95.candidate_equivalent`, `ErdosTernary14.candidate_equivalent`, `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, `WeakCollatz17.candidate_equivalent`, `WeakCollatz16.candidate_equivalent`, `WeakCollatz15.candidate_equivalent`), **all three** ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), $\Sigma_1^0$ `PA` standard-model adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard27.halts_brocard27_iff_exists_square`, the `WeakCollatz{75,41,27,17,16,15}` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences, `Legendre21.halts_legendre21_iff_exists_gap`, `Kurepa19.halts_kurepa19_iff_exists_dvd`, and `Oppermann22.halts_oppermann22_iff_exists_gap` (42 theorems total) are proved **constructively in Lean** with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
    - **Forward completeness (`ZFInconsistent → Halts M`):** Given a finite derivation tree `d : ZFProvable (zfMem 0 0)`, structural induction extracts an explicit step count `s` and halting configuration `c` with `nSteps M s init = some c ∧ step M c = none` (no `by_contra` / unbounded search).
    - **Backward soundness (`Halts M → ZFInconsistent`):** Given `h : Halts M`, constructive induction along `StateTransition.evalInduction'` extracts the finite execution trace from `init` and decodes a valid `ZFProvable (zfMem 0 0)` derivation.
    - **Comparator gate:** [`comparator/zero_axioms.json`](../../comparator/zero_axioms.json) (`[]`), [`comparator/constructive.json`](../../comparator/constructive.json), [`comparator/zf_380.json`](../../comparator/zf_380.json), [`comparator/goldbach_21.json`](../../comparator/goldbach_21.json), [`comparator/riemann_104.json`](../../comparator/riemann_104.json), [`comparator/riemann_95_reduction.json`](../../comparator/riemann_95_reduction.json), [`comparator/weak_collatz_41_reduction.json`](../../comparator/weak_collatz_41_reduction.json), [`comparator/weak_collatz_27_reduction.json`](../../comparator/weak_collatz_27_reduction.json), [`comparator/weak_collatz_17_reduction.json`](../../comparator/weak_collatz_17_reduction.json), [`comparator/weak_collatz_16_reduction.json`](../../comparator/weak_collatz_16_reduction.json), and [`comparator/weak_collatz_15_reduction.json`](../../comparator/weak_collatz_15_reduction.json) (`["propext", "Quot.sound"]`) enforce these axiom bounds in CI, automatically rejecting any proof that invokes `Classical.choice` (including `not_zfInconsistent` in [`Zf/Soundness.lean`](./Zf/Soundness.lean) or `Classical.em` + [`digama0/ConZF`](https://github.com/digama0/ConZF)).
@@ -829,3 +829,49 @@ function in `Cryptids/Kurepa19.lean`).
    `halts_kurepa19_iff_exists_dvd` without `Classical.choice`; `halts_kurepa19_iff_not_kurepa` uses
    Markov's Principle via `by_contra` (as in Section 9). `halts_kurepa19_iff_exists_prime` is the form
    with odd primes, and `leftFactorial_eq_sum` relates `leftFactorial` to Mathlib's `Finset.sum`.
+
+---
+
+## 13. A 22-State Oppermann Machine ([`Oppermann22.lean`](./Oppermann22.lean))
+
+In [`Cryptids/Oppermann22.lean`](../Oppermann22.lean) and [`Cryptids/Semantics/Oppermann22.lean`](./Oppermann22.lean),
+we formalize a new 22-state binary Turing machine for Oppermann's conjecture (`oppermann_22`, Daniel Veljjanoski with
+Claude (Anthropic) as assistant, November 2026):
+
+```lean
+theorem halts_oppermann22_iff :
+    ConjectureMachines.Halts oppermann22 ↔ ∃ n, 2 ≤ n ∧ (EmptyLeft n ∨ EmptyRight n)
+
+theorem halts_oppermann22_iff_exists_gap :
+    ConjectureMachines.Halts oppermann22 ↔
+      ∃ n : ℕ, 2 ≤ n ∧
+        ((∀ p : ℕ, p.Prime → ¬ (n ^ 2 - n < p ∧ p < n ^ 2)) ∨
+         (∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < n ^ 2 + n)))
+
+theorem halts_oppermann22_iff_not_oppermann :
+    ConjectureMachines.Halts oppermann22 ↔ ¬ OppermannConjecture
+```
+
+with `EmptyLeft n ↔ ∀ x, n * n - n < x → x < n * n → ¬ IsPrime x`,
+`EmptyRight n ↔ ∀ x, n * n < x → x < n * n + n → ¬ IsPrime x`, and `IsPrime` the predicate of
+`Cryptids/Goldbach21.lean`.
+
+1. **Machine (`Oppermann22.lean`)**: The tape holds the number under test in unary, a separator, a
+   flag cell and a walker area. The primality test is the one of `goldbach_21`; sixteen of the 22
+   states are its states. The machine is embedded into the 25-state numbering of
+   `Goldbach21.edited` (`opp25`), so the step and scan lemmas and the machine-generic pass lemmas
+   of `Goldbach21.lean` apply unchanged, and the lemmas stated there for `edited` only are proved
+   again; `test_eval` says that from a test event the machine reaches the exit that decides
+   `IsPrime t` with the block restored. After each test the hole of the walker area moves two
+   cells left. Block `j` (`qs j, …, qs (j + 1) - 1` with `qs j = ⌊j² / 4⌋`) starts with `j - 1`
+   ones in the walker area; a prime sets the flag; at the last number the hole would land on the
+   flag cell or pass it, with the flag set (`block_adv`: the next block starts with `j` ones) or
+   clear (`block_halt`: the machine halts, for even `j` one number later, where
+   `not_isPrime_qs` says that a quarter-square is not prime). The first `9` steps are run
+   concretely, and the tests of `0, …, 11` follow from the general lemmas and bring the machine
+   to the start of block `7` (`boot_block`); `small_cases` covers `n = 2, 3`. This gives
+   `halts_oppermann22_iff` with `propext` and `Quot.sound` only.
+2. **Semantics (`Semantics/Oppermann22.lean`)**: `isPrime_iff_prime` (`Semantics/Goldbach.lean`) and
+   `Nat.pow_two`
+   give `halts_oppermann22_iff_exists_gap` without `Classical.choice`;
+   `halts_oppermann22_iff_not_oppermann` uses Markov's Principle via `by_contra` (as in Section 9).
