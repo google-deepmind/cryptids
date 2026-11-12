@@ -1,0 +1,17 @@
+{
+  "core_version": 1,
+  "files": {
+    "BusyBeaver/Defs.lean": "6bc7f0bec3703ae922c392a5e5ab161f52aee87109efacd85de84d005082a607",
+    "BusyBeaver/Defs/Core.lean": "a9a861b14e2fb24df3fce94bdb625d612f9f158a21b8c5abe6261a26460818e5",
+    "BusyBeaver/Defs/Patterns.lean": "1c3aa83bb4584233d7d4cecc40742e06bd1baf5b3c9397e96361ef4c1421c5c5",
+    "BusyBeaver/Defs/Stack.lean": "c72377cfde8df4bf3634467bbfa5ead837f818beff11a78540fc19b3c5f16b2b",
+    "BusyBeaver/Defs/Odometer.lean": "447c59d8748a6913f6c345e238fac56975092075c0c4bcd8ee8aea6cab36f4e4",
+    "BusyBeaver/Defs/Transducer.lean": "12cd7052d69b41417bad77228111411b98c3dd6ec513ae7b6440eb7c23831e9f",
+    "BusyBeaver/Defs/WordRun.lean": "4eb9a109d509ed5af3311806ac9807e3cb3bded4462d10de2ade20272c91d5b9",
+    "BusyBeaver/Defs/Segmented.lean": "40f9ba866be37c7b373f4d06ebdf5cab03638181ddb8b2de52801f4a8034be84",
+    "BusyBeaver/Basic.lean": "35cf96b7db7ce0dbd629af00540121d4f64eb18755774356a4309eee9a6a0c4e",
+    "BusyBeaver/WordRLE.lean": "b819bc8e072a8b2274f60c3cae72f61dbb9057ef9481facbc68801dd4b2ce803",
+    "BusyBeaver/AffRLE.lean": "8434da7a25f766df93481813f0b17286337df21f35ed55f43845ca93b6903e95",
+    "BusyBeaver/Cert.lean": "9d23a26b5279bb83b1140920c7b62add4053e01f1f488ef98588363c4cff9496"
+  }
+}

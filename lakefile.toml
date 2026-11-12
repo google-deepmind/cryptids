@@ -28,6 +28,7 @@ name = "Challenge"
 
 [[lean_lib]]
 name = "BusyBeaver"
+leanOptions = { autoImplicit = false }
 
 [[lean_lib]]
 name = "BusyBeaverChallenge"

@@ -1025,6 +1025,8 @@ private theorem iterate_bind_none {S : Type*} (next : S → Option S) (n : ℕ) 
   | succ n ih =>
     rw [Function.iterate_succ_apply, Option.bind_none, ih]
 
+variable {S : Type*}
+
 private theorem CollatzReachesIn.head {next : S → Option S} {n : ℕ} {s₁ s₂ s₃ : S}
     (h₁ : next s₁ = some s₂) (h₂ : CollatzReachesIn next n s₂ s₃) :
     CollatzReachesIn next (n + 1) s₁ s₃ := by
