@@ -40,6 +40,9 @@ constructions and halting proofs:
    For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
 5. **Brocard's Problem** (`BrocardConjecture`):
    `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_28`).
+6. **Oppermann's Conjecture** (`OppermannConjecture`):
+   For every `n ≥ 2` there is a prime strictly between `n ^ 2 - n` and `n ^ 2` and one strictly
+   between `n ^ 2` and `n ^ 2 + n` (`oppermann_22`).
 -/
 
 @[expose] public section
@@ -715,5 +718,14 @@ only for `n = 4, 5, 7` (`5 ^ 2`, `11 ^ 2`, `71 ^ 2`). Erdős conjectured that th
 solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
+
+/-! ## 7. Oppermann's Conjecture -/
+
+/-- **Oppermann's conjecture** (Ludvig Oppermann, 1877): for every `n ≥ 2` there is a prime `p`
+with `n ^ 2 - n < p < n ^ 2` and a prime `p` with `n ^ 2 < p < n ^ 2 + n`. -/
+def OppermannConjecture : Prop :=
+  ∀ n : ℕ, 2 ≤ n →
+    (∃ p : ℕ, p.Prime ∧ n ^ 2 - n < p ∧ p < n ^ 2) ∧
+    (∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < n ^ 2 + n)
 
 end ConjectureMachines

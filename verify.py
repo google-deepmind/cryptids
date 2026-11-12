@@ -51,6 +51,10 @@ It independently:
      test state `TLx` the tape holds `n` cells of `N` and `n!/8 + 1` cells of `B`
      (`Cryptids/Brocard28.lean`), and from a prepared tape a triangular `B` with a
      multiple of `4` cells halts in `M0`.
+   - Oppermann (22 states): the first test events are at steps 9 and 12, and at every test
+     event (`q16` reading `0`) the tape is the block, separator, flag and walker area of
+     `Cryptids/Oppermann22.lean`; from a prepared tape a block in which no prime was seen
+     halts in `X`.
 """
 
 from __future__ import annotations
@@ -276,6 +280,24 @@ BROCARD_28 = {
     ),
     "table_file_sha256": (
         "957e52ef4b8f40da12c9d840ea4a28369f76cbf10c384fb65012f121edc03d39"
+    ),
+}
+
+
+# A new machine with no reference, checked like `brocard_28`.
+OPPERMANN_22 = {
+    "id": "oppermann_22",
+    "path": "artifacts/oppermann_22",
+    "lean_file": "Cryptids/Machines.lean",
+    "lean_def": "oppermann22",
+    "proof_path": "Cryptids/Oppermann22.lean",
+    "challenge_path": "Challenge.lean",
+    "states": 22,
+    "machine_sha256": (
+        "dfb9aff4c6a589692b32e5daece2a0eecab8e93b9595c579489da9b074b3314b"
+    ),
+    "table_file_sha256": (
+        "dfb9aff4c6a589692b32e5daece2a0eecab8e93b9595c579489da9b074b3314b"
     ),
 }
 
@@ -999,6 +1021,131 @@ def verify_brocard_28(machine: Machine, steps: int) -> dict[str, object]:
       "planted_square_halts": True,
   }
 
+
+def verify_oppermann_22(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the block layout of `Cryptids/Oppermann22.lean`.
+
+  State numbers are those of `machine.txt`: `1` is `q16` and `21` is `X`. A test event is
+  `q16` reading `0`. At a test event with the head on cell `p` the tape holds a block of
+  `t` ones on `p+1, ..., p+t` (the number under test), a `0` on `p+t+1` (the separator),
+  the flag `f` on `p+t+2`, and the walker area from `p+t+3` on: `h` ones, a hole, `r` ones;
+  nothing else. On the blank tape the events follow the model of the Lean proof: `t < 2`
+  goes to `t + 1`; a prime sets the flag; then the hole moves two cells left (`h - 2`,
+  `r + 2`) and `t` grows by one. With the flag set and `h < 2` the next block starts with
+  `f = 0`, the area full (`r + h + 1` ones) and `r = 0`. With the flag clear and `h = 1`
+  the hole moves to cell `0`; with the flag clear and `h = 0` the machine halts. The first
+  events are at steps 9 (`t = 0`) and 12 (`t = 1`), both with the walker area `0 1 1`.
+  Then, from prepared event tapes:
+  - `t = 15`, `f = 0`, `h = 0`, `r = 6` (the last number of the block `12, ..., 15` with no
+    prime seen): the machine halts in state `21` (`X`);
+  - `t = 55`, `f = 0`, `h = 1`, `r = 12` (the last number of the block `49, ..., 55` with no
+    prime seen): the hole moves to cell `0`, the machine reaches the test of `56`, and
+    halts in `X` after it;
+  - `t = 15`, `f = 1`, `h = 0`, `r = 6` (the tape the blank-tape run has at `15`): it
+    reaches the test of `16` with the flag clear and seven ones in the walker area.
+  """
+  proof_text = (ROOT / "Cryptids/Oppermann22.lean").read_text(encoding="utf-8")
+  assert "theorem halts_oppermann22_iff" in proof_text
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  # Only `X` (state 21) on `0` halts.
+  assert halting == [(21, 0)], f"oppermann_22 halting entries: {halting}"
+  q16 = 1
+
+  def is_prime(x: int) -> bool:
+    return x >= 2 and all(x % d for d in range(2, int(x**0.5) + 1))
+
+  def layout(p: int, t: int, f: int, h: int, r: int) -> set[int]:
+    a = p + t + 3
+    cells = {p + 1 + i for i in range(t)}
+    cells |= {a + i for i in range(h)} | {a + h + 1 + i for i in range(r)}
+    if f:
+      cells.add(p + t + 2)
+    return cells
+
+  def advance(t: int, f: int, h: int, r: int):
+    """The next test event by the model, or `None` for a halt."""
+    if t < 2:
+      return (t + 1, f, h, r)
+    if is_prime(t):
+      f = 1
+    if h >= 2:
+      return (t + 1, f, h - 2, r + 2)
+    if f == 1:
+      return (t + 1, 0, r + h + 1, 0)
+    if h == 1:
+      return (t + 1, 0, 0, r + 1)
+    return None
+
+  def run(ones: set[int], head: int, state: int, limit: int):
+    """Runs until the next test event (after a step), a halt, or `limit` steps."""
+    for t in range(limit):
+      tr = machine.table[state][int(head in ones)]
+      if tr is None:
+        return "halt", state, head, t
+      if tr.write:
+        ones.add(head)
+      else:
+        ones.discard(head)
+      head += tr.direction
+      state = tr.next_state
+      if state == q16 and head not in ones:
+        return "event", state, head, t + 1
+    return "limit", state, head, limit
+
+  # Blank tape: every test event as far as `steps` allows.
+  ones: set[int] = set()
+  head, state, total, events = 0, 0, 0, 0
+  model = (0, 0, 0, 2)
+  last = 0
+  while True:
+    status, state, head, t = run(ones, head, state, steps - total)
+    total += t
+    if model is None:
+      # The model says a block had no prime: the machine must halt, not go on.
+      assert status != "event", "oppermann_22: the model halts, the machine goes on"
+      break
+    if status != "event":
+      assert status == "limit", f"oppermann_22 halted at step {total}"
+      break
+    assert ones == layout(head, *model), (
+        f"oppermann_22 test event {events} (number {model[0]}): tape mismatch"
+        f" at step {total}"
+    )
+    if events < 2:
+      assert total == (9, 12)[events], f"oppermann_22 event {events} at step {total}"
+    last = model[0]
+    events += 1
+    model = advance(*model)
+  if steps >= 250_000:
+    assert events >= 40, f"oppermann_22: only {events} test events in {steps} steps"
+
+  # Planted: the end of a block with and without a prime seen.
+  cells = layout(0, 15, 0, 0, 6)
+  status, state, _, _ = run(cells, 0, q16, 100_000)
+  assert (status, state) == ("halt", 21), f"oppermann_22 planted gap: {status} in {state}"
+  cells = layout(0, 55, 0, 1, 12)
+  status, state, head, _ = run(cells, 0, q16, 100_000)
+  assert status == "event", f"oppermann_22 planted late gap: {status}"
+  assert cells == layout(head, 56, 0, 0, 13), "oppermann_22 planted late gap: wrong tape"
+  status, state, _, _ = run(cells, head, q16, 100_000)
+  assert (status, state) == ("halt", 21), f"oppermann_22 planted late gap: {status} in {state}"
+  cells = layout(0, 15, 1, 0, 6)
+  status, state, head, _ = run(cells, 0, q16, 100_000)
+  assert status == "event", f"oppermann_22 planted block end: {status}"
+  assert cells == layout(head, 16, 0, 7, 0), "oppermann_22 planted block end: wrong tape"
+  return {
+      "steps_simulated": total,
+      "events_verified": events,
+      "last_number": last,
+      "planted_gap_halts": True,
+  }
+
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -1343,6 +1490,43 @@ def run_verification(
         f" {brocard_sim['tests_verified']} tests verified on the blank tape"
         f" ({brocard_sim['steps_simulated']:,} steps, up to n = {brocard_sim['last_n']});"
         " planted square halts in M0"
+    )
+
+  # Oppermann: table, SHA-256, Lean definitions, and simulation.
+  ospec = OPPERMANN_22
+  o_text = (ROOT / str(ospec["path"]) / "machine.txt").read_text(encoding="utf-8")
+  assert sha256_bytes(o_text.encode("utf-8")) == ospec["table_file_sha256"], (
+      "oppermann_22 table file SHA-256 mismatch"
+  )
+  om = parse_canonical_machine(o_text)
+  assert om.states == ospec["states"], f"oppermann_22 state count mismatch: {om.states}"
+  assert om.sha256 == ospec["machine_sha256"], (
+      f"oppermann_22 machine SHA-256 mismatch: {om.sha256}"
+  )
+  for lean_path in (ospec["lean_file"], ospec["challenge_path"]):
+    assert (
+        parse_lean_machine_def(
+            (ROOT / str(lean_path)).read_text(encoding="utf-8"),
+            str(ospec["lean_def"]),
+            expected_table_path=f"{ospec['path']}/machine.txt",
+        ).table
+        == om.table
+    ), f"{lean_path} oppermann_22 table mismatch"
+  assert "theorem halts_oppermann22_iff_exists_gap" in (
+      ROOT / "Challenge.lean"
+  ).read_text(encoding="utf-8")
+  oppermann_sim = verify_oppermann_22(om, steps)
+  report["candidates"]["oppermann_22"] = {
+      "states": om.states,
+      "machine_sha256": om.sha256,
+  }
+  report["simulations"]["oppermann_22"] = oppermann_sim
+  if verbose:
+    print(
+        f"[PASS] Oppermann 22 ({om.states} states, SHA-256 {om.sha256[:16]}...):"
+        f" {oppermann_sim['events_verified']} test events verified on the blank tape"
+        f" ({oppermann_sim['steps_simulated']:,} steps, up to the number"
+        f" {oppermann_sim['last_number']}); planted gaps halt in X"
     )
 
   # 5. Concrete blank-tape lockstep simulations

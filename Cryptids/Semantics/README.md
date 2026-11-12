@@ -679,3 +679,47 @@ with `V n = n.factorial / 8` and `IsTri x ↔ ∃ k, x = 1 + 2 + ⋯ + k`.
    constructive), which gives `halts_brocard28_iff_exists_square` without `Classical.choice`;
    `halts_brocard28_iff_not_brocard` uses Markov's Principle via `by_contra` (as with `not_forall`
    in Section 7).
+
+## 10. A 22-State Oppermann Machine ([`Oppermann22.lean`](./Oppermann22.lean))
+
+In [`Cryptids/Oppermann22.lean`](../Oppermann22.lean) and [`Cryptids/Semantics/Oppermann22.lean`](./Oppermann22.lean),
+we formalize a new 22-state binary Turing machine for Oppermann's conjecture (`oppermann_22`, Daniel Veljjanoski with
+Claude (Anthropic) as assistant, November 2026):
+
+```lean
+theorem halts_oppermann22_iff :
+    ConjectureMachines.Halts oppermann22 ↔ ∃ n, 2 ≤ n ∧ (EmptyLeft n ∨ EmptyRight n)
+
+theorem halts_oppermann22_iff_exists_gap :
+    ConjectureMachines.Halts oppermann22 ↔
+      ∃ n : ℕ, 2 ≤ n ∧
+        ((∀ p : ℕ, p.Prime → ¬ (n ^ 2 - n < p ∧ p < n ^ 2)) ∨
+         (∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < n ^ 2 + n)))
+
+theorem halts_oppermann22_iff_not_oppermann :
+    ConjectureMachines.Halts oppermann22 ↔ ¬ OppermannConjecture
+```
+
+with `EmptyLeft n ↔ ∀ x, n * n - n < x → x < n * n → ¬ IsPrime x`,
+`EmptyRight n ↔ ∀ x, n * n < x → x < n * n + n → ¬ IsPrime x`, and `IsPrime` the predicate of
+`Cryptids/Goldbach21.lean`.
+
+1. **Machine (`Oppermann22.lean`)**: The tape holds the number under test in unary, a separator, a
+   flag cell and a walker area. The primality test is the one of `goldbach_21`; sixteen of the 22
+   states are its states. The machine is embedded into the 25-state numbering of
+   `Goldbach21.edited` (`opp25`), so the step and scan lemmas and the machine-generic pass lemmas
+   of `Goldbach21.lean` apply unchanged, and the lemmas stated there for `edited` only are proved
+   again; `test_eval` says that from a test event the machine reaches the exit that decides
+   `IsPrime t` with the block restored. After each test the hole of the walker area moves two
+   cells left. Block `j` (`qs j, …, qs (j + 1) - 1` with `qs j = ⌊j² / 4⌋`) starts with `j - 1`
+   ones in the walker area; a prime sets the flag; at the last number the hole would land on the
+   flag cell or pass it, with the flag set (`block_adv`: the next block starts with `j` ones) or
+   clear (`block_halt`: the machine halts, for even `j` one number later, where
+   `not_isPrime_qs` says that a quarter-square is not prime). The first `9` steps are run
+   concretely, and the tests of `0, …, 11` follow from the general lemmas and bring the machine
+   to the start of block `7` (`boot_block`); `small_cases` covers `n = 2, 3`. This gives
+   `halts_oppermann22_iff` with `propext` and `Quot.sound` only.
+2. **Semantics (`Semantics/Oppermann22.lean`)**: `isPrime_iff_prime` (`Semantics/Goldbach.lean`) and
+   `Nat.pow_two`
+   give `halts_oppermann22_iff_exists_gap` without `Classical.choice`;
+   `halts_oppermann22_iff_not_oppermann` uses Markov's Principle via `by_contra` (as in Section 9).
