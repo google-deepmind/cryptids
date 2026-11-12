@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.Brocard27",
+  "theorem_names": [
+    "ConjectureMachines.Brocard27.halts_brocard27_iff_exists_square",
+    "ConjectureMachines.Brocard27.halts_brocard27_iff_not_brocard"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}
