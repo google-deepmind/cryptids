@@ -17,7 +17,7 @@
     "ConjectureMachines.Riemann95.candidate_fewer_states",
     "ConjectureMachines.ErdosTernary14.candidate_fewer_states",
     "ConjectureMachines.ErdosTernary14.candidate_equivalent",
-    "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square"
+    "ConjectureMachines.Brocard27.halts_brocard27_iff_exists_square"
   ],
   "permitted_axioms": [
     "propext",

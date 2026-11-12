@@ -4,20 +4,20 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import Cryptids.Brocard28
+public import Cryptids.Brocard27
 public import Cryptids.Propositions
 
 /-!
-# Semantics of `brocard_28`
+# Semantics of `brocard_27`
 
-`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n ! + 1)`: the machine's triangular test of
+`Halts brocard27 ↔ ∃ n, 7 < n ∧ IsSquare (n ! + 1)`: the machine's triangular test of
 `n! / 8` is equivalent to `n! + 1` being a perfect square, since `n! + 1 = m ^ 2` forces `m` odd,
 `m = 2k + 1`, and then `n! / 8 = k (k + 1) / 2 = tri k`.
 -/
 
 @[expose] public section
 
-namespace ConjectureMachines.Brocard28
+namespace ConjectureMachines.Brocard27
 
 /-- `tri k = k * (k + 1) / 2`. -/
 theorem two_mul_tri (k : ℕ) : 2 * tri k = k * (k + 1) := by
@@ -51,22 +51,22 @@ theorem isSquare_iff_isTri {n : ℕ} (hn : 4 ≤ n) : IsSquare (n.factorial + 1)
     have h3 : (2 * k + 1) * (2 * k + 1) = 4 * (k * k) + 4 * k + 1 := by ring
     omega
 
-/-- The 28-state machine halts on the blank tape if and only if Brocard's problem has a
+/-- The 27-state machine halts on the blank tape if and only if Brocard's problem has a
 solution beyond `n = 4, 5, 7`. -/
-theorem halts_brocard28_iff_exists_square :
-    ConjectureMachines.Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n.factorial + 1) := by
-  rw [halts_brocard28_iff_exists_tri]
+theorem halts_brocard27_iff_exists_square :
+    ConjectureMachines.Halts brocard27 ↔ ∃ n, 7 < n ∧ IsSquare (n.factorial + 1) := by
+  rw [halts_brocard27_iff_exists_tri]
   constructor
   · rintro ⟨n, h8, hn⟩
     exact ⟨n, by omega, (isSquare_iff_isTri (by omega)).mpr hn⟩
   · rintro ⟨n, h7, hn⟩
     exact ⟨n, by omega, (isSquare_iff_isTri (by omega)).mp hn⟩
 
-/-- The 28-state machine halts if and only if Brocard's conjecture is false. -/
-theorem halts_brocard28_iff_not_brocard :
-    ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by
-  rw [halts_brocard28_iff_exists_square]
+/-- The 27-state machine halts if and only if Brocard's conjecture is false. -/
+theorem halts_brocard27_iff_not_brocard :
+    ConjectureMachines.Halts brocard27 ↔ ¬ BrocardConjecture := by
+  rw [halts_brocard27_iff_exists_square]
   exact ⟨fun ⟨n, h7, hn⟩ hB => hB n h7 hn,
     fun h => by_contra fun hne => h fun n h7 hn => hne ⟨n, h7, hn⟩⟩
 
-end ConjectureMachines.Brocard28
+end ConjectureMachines.Brocard27
