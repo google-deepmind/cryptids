@@ -28,7 +28,8 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
-  and the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`
+  the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`, and the
+  `kurepa_19` equivalence `Kurepa19.halts_kurepa19_iff_exists_dvd`
   are verified **without `Classical.choice`** (`ListBlank` uses primitive `Quot` rather than
   `Quotient` so `Halts` is choice-free). Because `Zf/Soundness.lean` proves `not_zfInconsistent`
   via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without choice
@@ -37,13 +38,13 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 36 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
+  Audits all 38 theorems, including `Riemann95.candidate_equivalent` (which uses `Classical.choice`
   via `Nat.Prime`), classical `PA` and `ZFSet.{0}` soundness/non-halting, negated-`Π₁⁰` Goldbach
   (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic `RiemannHypothesis`
   equivalences, and the `erdos_ternary_15` and `erdos_ternary_14` equivalences with
   `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture` also
-  uses Markov's Principle), and the `brocard_28` equivalence with `¬ BrocardConjecture` (Markov's
-  Principle).
+  uses Markov's Principle), and the `brocard_28` and `kurepa_19` equivalences with
+  `¬ BrocardConjecture` and `¬ KurepaConjecture` (Markov's Principle).
 -/
 
 meta section
@@ -263,6 +264,11 @@ def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
   load_machine_rows% "artifacts/brocard_28/machine.txt"
 /-- 28-state Brocard machine. -/
 def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `kurepa19`. -/
+def kurepa19Rows : List (List (Option (Fin 2 × Dir × Fin 19))) :=
+  load_machine_rows% "artifacts/kurepa_19/machine.txt"
+/-- 19-state Kurepa machine. -/
+def kurepa19 : Machine 19 2 := Machine.ofRows kurepa19Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -760,6 +766,17 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
+/-- The left factorial `!n = 0! + 1! + ⋯ + (n - 1)!`. -/
+def leftFactorial : ℕ → ℕ
+  | 0 => 0
+  | n + 1 => leftFactorial n + n.factorial
+
+/-- **Kurepa's left factorial conjecture** (Đuro Kurepa, 1971): for every `n > 2`, the left
+factorial `!n = 0! + 1! + ⋯ + (n - 1)!` is not divisible by `n`. Kurepa stated it as
+`gcd (!n, n!) = 2` for `n ≥ 2`; both forms are equivalent to: no odd prime `p` divides `!p`. -/
+def KurepaConjecture : Prop :=
+  ∀ n : ℕ, 2 < n → ¬ n ∣ leftFactorial n
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -889,5 +906,14 @@ theorem halts_brocard28_iff_exists_square :
 theorem halts_brocard28_iff_not_brocard :
     ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by sorry
 end Brocard28
+
+namespace Kurepa19
+/-- 19-state Kurepa machine (`kurepa_19`, Veljjanoski 2026). -/
+abbrev kurepa19 : Machine 19 2 := Machines.kurepa19
+theorem halts_kurepa19_iff_exists_dvd :
+    ConjectureMachines.Halts kurepa19 ↔ ∃ n : ℕ, 2 < n ∧ n ∣ leftFactorial n := by sorry
+theorem halts_kurepa19_iff_not_kurepa :
+    ConjectureMachines.Halts kurepa19 ↔ ¬ KurepaConjecture := by sorry
+end Kurepa19
 
 end ConjectureMachines

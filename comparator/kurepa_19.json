@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.Kurepa19",
+  "theorem_names": [
+    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd",
+    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

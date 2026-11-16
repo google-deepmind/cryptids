@@ -40,6 +40,9 @@ constructions and halting proofs:
    For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
 5. **Brocard's Problem** (`BrocardConjecture`):
    `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_28`).
+6. **Kurepa's Left Factorial Conjecture** (`KurepaConjecture`):
+   For every `n > 2`, the left factorial `!n = 0! + 1! + ⋯ + (n - 1)!` (`leftFactorial`) is not
+   divisible by `n` (`kurepa_19`).
 -/
 
 @[expose] public section
@@ -715,5 +718,18 @@ only for `n = 4, 5, 7` (`5 ^ 2`, `11 ^ 2`, `71 ^ 2`). Erdős conjectured that th
 solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
+
+/-! ## 7. Kurepa's Left Factorial Conjecture -/
+
+/-- The left factorial `!n = 0! + 1! + ⋯ + (n - 1)!`. -/
+def leftFactorial : ℕ → ℕ
+  | 0 => 0
+  | n + 1 => leftFactorial n + n.factorial
+
+/-- **Kurepa's left factorial conjecture** (Đuro Kurepa, 1971): for every `n > 2`, the left
+factorial `!n = 0! + 1! + ⋯ + (n - 1)!` is not divisible by `n`. Kurepa stated it as
+`gcd (!n, n!) = 2` for `n ≥ 2`; both forms are equivalent to: no odd prime `p` divides `!p`. -/
+def KurepaConjecture : Prop :=
+  ∀ n : ℕ, 2 < n → ¬ n ∣ leftFactorial n
 
 end ConjectureMachines

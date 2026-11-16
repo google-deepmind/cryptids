@@ -37,7 +37,9 @@
     "ConjectureMachines.ErdosTernary14.candidate_equivalent",
     "ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary",
     "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square",
-    "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
+    "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard",
+    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd",
+    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
   ],
   "permitted_axioms": [
     "propext",
