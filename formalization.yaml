@@ -12,8 +12,9 @@ project:
     the 2016 744-state machine riemann_744), and Erdős's ternary conjecture
     (15 -> 14 states: Tristan Stérin and Damien Woods's 2021 15-state
     machine erdos_ternary_15 and Tristan Stérin's October 2026 14-state machine
-    erdos_ternary_14), and Brocard's problem (a new 28-state machine brocard_28,
-    November 2026),
+    erdos_ternary_14), Brocard's problem (a new 28-state machine brocard_28,
+    November 2026), and Kurepa's left factorial conjecture (a new 19-state machine
+    kurepa_19, November 2026),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -209,6 +210,27 @@ sources:
       New machine (artifacts/brocard_28/machine.txt) and first Lean 4 proofs that it halts
       iff n! + 1 is a perfect square for some n > 7 (Cryptids/Brocard28.lean,
       Cryptids/Semantics/Brocard28.lean).
+  - title: "A Turing machine for Kurepa's conjecture (tinycryptids, kurepa_38)"
+    authors:
+      - "Charlie Reams"
+    id: "https://github.com/calr3/tinycryptids/tree/main/kurepa"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 38-state, 2-symbol machine (reduced from a 47-state design) with a Lean proof
+      TM.Kurepa.M38.halts_iff, published in October 2026; an earlier machine for the
+      conjecture. kurepa_19 keeps its scheme (unary modulus, running sum, factorial, two
+      holes, merge by a filled marker); its table and its proofs are not used.
+  - title: "A 19-state Turing machine for Kurepa's left factorial conjecture with Lean 4 proofs (kurepa_19)"
+    authors:
+      - "Daniel Veljjanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      New machine (artifacts/kurepa_19/machine.txt) and first Lean 4 proofs that it halts
+      iff some n > 2 divides the left factorial !n = 0! + 1! + ... + (n - 1)!
+      (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -261,7 +283,10 @@ status:
     machine brocard_28 satisfies Halts brocard28 <-> ∃ n, 8 ≤ n ∧ IsTri (n! / 8) and
     Halts brocard28 <-> ∃ n, 7 < n ∧ IsSquare (n! + 1) constructively
     (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean), and
-    Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle.
+    Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle. The 19-state
+    machine kurepa_19 satisfies Halts kurepa19 <-> ∃ n, 2 < n ∧ n ∣ leftFactorial n
+    constructively (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean), and
+    Halts kurepa19 <-> ¬ KurepaConjecture with Markov's Principle.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -414,6 +439,16 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/brocard_28.json"
+    - declaration: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd"
+      file: "Cryptids/Semantics/Kurepa19.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
+      file: "Cryptids/Semantics/Kurepa19.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/kurepa_19.json"
 
 automation:
   methods:
@@ -437,7 +472,8 @@ automation:
         (Cryptids/ErdosTernary15.lean, Cryptids/Semantics/ErdosTernary15.lean,
         Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean) and for
         the design, simulation checks and proofs of brocard_28
-        (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean).
+        (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean) and of kurepa_19
+        (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
   spend_usd: ""
   notes: >-
     Candidate state reductions and halting-equivalence proofs were discovered
@@ -445,7 +481,7 @@ automation:
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_ternary_15 machine is by Tristan Stérin and Damien Woods and the erdos_ternary_14
     machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs, and the
-    brocard_28 machine and proofs, were written by Daniel Veljjanoski with Claude
+    brocard_28 and kurepa_19 machines and proofs, were written by Daniel Veljjanoski with Claude
     (Anthropic) as assistant.
 
 fidelity:
@@ -589,6 +625,18 @@ alignment:
     - source: "brocard_28 <-> ¬ BrocardConjecture"
       lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
       module: "Cryptids.Semantics.Brocard28"
+      status: "proved"
+    - source: "kurepa_19 <-> ∃ S ≥ 2, 2 S ∣ !S"
+      lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff"
+      module: "Cryptids.Kurepa19"
+      status: "proved"
+    - source: "kurepa_19 <-> ∃ n > 2, n ∣ !n"
+      lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd"
+      module: "Cryptids.Semantics.Kurepa19"
+      status: "proved"
+    - source: "kurepa_19 <-> ¬ KurepaConjecture"
+      lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
+      module: "Cryptids.Semantics.Kurepa19"
       status: "proved"
 
 acknowledgements: >-

@@ -25,6 +25,8 @@ public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
 public import Cryptids.Brocard28
 public import Cryptids.Semantics.Brocard28
+public import Cryptids.Kurepa19
+public import Cryptids.Semantics.Kurepa19
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -32,7 +34,8 @@ public import Cryptids.Semantics.Brocard28
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
 Hypothesis** (`120 → 104 → 95` states), and **Erdős's ternary conjecture** (`15 → 14`
-states), a 28-state machine for **Brocard's problem** (`brocard_28`), as well as complete
+states), a 28-state machine for **Brocard's problem** (`brocard_28`), a 19-state machine for
+**Kurepa's left factorial conjecture** (`kurepa_19`), as well as complete
 Lean 4 formalizations of all publicly
 known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
@@ -81,6 +84,12 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   (`V n = n! / 8`) and `ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square`
   (`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
   `ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard`.
+- `Cryptids.Kurepa19`, `Cryptids.Semantics.Kurepa19` — A 19-state machine for Kurepa's left
+  factorial conjecture (`kurepa19`), with constructive proofs of
+  `Halts kurepa19 ↔ ∃ S, 2 ≤ S ∧ 2 * S ∣ leftFact S` and
+  `ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd`
+  (`Halts kurepa19 ↔ ∃ n, 2 < n ∧ n ∣ leftFactorial n`), and
+  `ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).
