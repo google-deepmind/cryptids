@@ -1,10 +1,10 @@
 # `BB(6)` Stacked, Odometer, and Transducer Accelerations (`BusyBeaver/BB6/Accelerations/`)
 
-This directory contains formal Lean 4 specifications and kernel-verified reductions for 56 `BB(6)` (6-state, 2-symbol) holdout Turing machines whose blank-tape dynamics evolve over unbounded digit stacks, mixed-radix odometers, or bidirectional finite-state word transducers rather than fixed-dimension counter tuples:
+This directory contains formal Lean 4 specifications and kernel-verified reductions for 57 `BB(6)` (6-state, 2-symbol) holdout Turing machines whose blank-tape dynamics evolve over unbounded digit stacks, mixed-radix odometers, or bidirectional finite-state word transducers rather than fixed-dimension counter tuples:
 
-1. **15 Structural Stack, Odometer, and Transducer Reductions** formalized under the three structural reduction predicates defined in [`BusyBeaver/Defs.lean`](../../Defs.lean)—`HasStackReduction` (12 machines: 9 `bbchallenge` Wiki machines and 3 Halving Tower holdouts), `HasOdometerReduction` (2 machines: Beaver Math Olympiad Problems 10 and 11), and `HasTransducerReduction` (1 machine: *Bell eats counter*).
-2. **20 Open `BB(6)` Acceleration Problems** certified via `IsValidAcceleration` and `IsHalt target ↔ CollatzHalts next start` (with [`1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---`](./M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean) additionally proved under `HasOdometerReduction`). Each open problem states a self-contained initial state $s_0$ (`start`) and accelerated transition map $T$ (`next`) over finite sequences and non-negative integers: the corresponding Turing machine halts from the blank tape if and only if iterating $T$ from $s_0$ eventually reaches $\mathrm{Halt}$ (`none`). For **13** of the 20 machines, we additionally prove a **higher-level Poincaré / epoch acceleration** $(s_{0,\mathrm{HL}}, T_{\mathrm{HL}})$ (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) that eliminates an entire stack, mixed-radix odometer, or auxiliary mode by restricting to a canonical return section or contracting full multi-bounce epochs.
-3. **21 Hard Holdout Cryptid Machines** formalized under `IsSegmentedCryptid` (11 machines, each also exporting its pinned `is_closed_segmented_system` theorem), `IsStackCryptid` (8 machines), and `IsOdometerCryptid` (2 machines), capturing the Hard holdout frontier alongside `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` in `BusyBeaver/BB6/`.
+1. **14 Structural Stack and Odometer Reductions** formalized under the structural reduction predicates defined in [`BusyBeaver/Defs.lean`](../../Defs.lean)—`HasStackReduction` (13 machines: 9 `bbchallenge` Wiki machines and 4 Halving Tower holdouts) and `HasOdometerReduction` (1 machine: Beaver Math Olympiad Problem 11).
+2. **18 Open `BB(6)` Acceleration Problems** certified via `IsValidAcceleration` and `IsHalt target ↔ CollatzHalts next start` (with [`1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---`](./M_1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LDHHH.lean) additionally proved under `HasOdometerReduction`). Each open problem states a self-contained initial state $s_0$ (`start`) and accelerated transition map $T$ (`next`) over finite sequences and non-negative integers: the corresponding Turing machine halts from the blank tape if and only if iterating $T$ from $s_0$ eventually reaches $\mathrm{Halt}$ (`none`). For **12** of the 18 machines, we additionally prove a **higher-level Poincaré / epoch acceleration** $(s_{0,\mathrm{HL}}, T_{\mathrm{HL}})$ (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`) that eliminates an entire stack, mixed-radix odometer, or auxiliary mode by restricting to a canonical return section or contracting full multi-bounce epochs.
+3. **25 Hard Holdout Cryptid Machines** formalized under `IsSegmentedCryptid` (15 machines, 12 exporting their pinned `is_closed_segmented_system` theorem), `IsStackCryptid` (8 machines), and `IsOdometerCryptid` (2 machines), capturing the Hard holdout frontier alongside `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` and `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` in `BusyBeaver/BB6/`.
 
 > **Hardness & Formal Evidence.** The Collatz-like stacked cryptids among these machines (`#391`, `#129`, `#660`/`#659`/`#209`/`#680`/`#480`, `#549`/`#80`, `#33`, `#85`/`#285`/`#490`/`#500`) are classified, with heuristic hazards and the resolved case `#72`, in [`../Hardness.lean`](../Hardness.lean) (`BusyBeaver.BB6.Hardness`), and kernel-checked live-hazard witnesses and halting residue classes for the accelerated problems are proved in [`../HardnessEvidence.lean`](../HardnessEvidence.lean) (`BusyBeaver.BB6.HardnessEvidence`).
 
@@ -16,7 +16,7 @@ This directory contains formal Lean 4 specifications and kernel-verified reducti
 | `HasOdometerReduction M` | Closed mixed-radix odometer stack and bit-stream system (`evalOdomR` / `evalOdomL`) with non-trivial odometer stack reachability (`stk.length ≥ 2`, `cap stk ≥ 1`), certified decrement (`cap (dec stk) = cap stk - 1`), zero-capacity drain (`drain`), reflection, and unconditional `ReachesPlus` closure from `init []`. |
 | `HasTransducerReduction M` | Closed bidirectional macro-word transducer (`IsValidTransducerModes`, `iterTransducerMacro`) over strict-sub-Kraft block alphabets (`kraftSum`) with a halting-verified multi-token exit gate, certified left-to-right and right-to-left unbounded sweeps, and `ReachesPlus` closure from `init []`. |
 
-## Structural Stack, Odometer, and Transducer Machines (15 Machines)
+## Structural Stack and Odometer Machines (14 Machines)
 
 | Machine (`bbchallenge` RLE) | Family | Proved Properties | Wiki / Notes | Lean 4 Proof |
 | :--- | :--- | :--- | :--- | :--- |
@@ -30,11 +30,10 @@ This directory contains formal Lean 4 specifications and kernel-verified reducti
 | `1RB0RE_0RC---_1LD1LE_1LE1LD_1RF0LC_1RA1RF` | Stacked | `HasStackReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RE_0RC---_1LD1LE_1LE1LD_1RF0LC_1RA1RF) | [`M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF.lean`](./M_1RB0RE_0RCHHH_1LD1LE_1LE1LD_1RF0LC_1RA1RF.lean) |
 | `1RB---_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD` | Stacked | `HasStackReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB---_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD) | [`M_1RBHHH_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD.lean`](./M_1RBHHH_0RC1RD_1LA0LA_1LE0RB_1LF1LE_1LC0LD.lean) |
 | `1RB0LC_1LC0RE_1LD1LC_1LA1RD_---0RF_0LB0RD` | Stacked | `HasStackReduction` | — (Halving Tower family, E1 sibling of `1RB1RA_1RC1LB_1LD0RA_---0LE_1LC0LF_1RE0LB`) | [`M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD.lean`](./M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD.lean) |
+| `1RB0LF_1RC1RB_0RD0RC_1LE1LF_1LD---_0LB1LA` | Stacked | `HasStackReduction` | — (Halving Tower family, bbchallenge #543) | [`M_1RB0LF_1RC1RB_0RD0RC_1LE1LF_1LDHHH_0LB1LA.lean`](./M_1RB0LF_1RC1RB_0RD0RC_1LE1LF_1LDHHH_0LB1LA.lean) |
 | `1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RA---_1RB1LF` | Stacked | `HasStackReduction` | — (Halving Tower family; busycoq `Eqv_Select4_E3E4.v` merges `1RB---_0RC1RF_1RD0LD_1LA1LE_0RA0LB_1RE1LC` into this class) | [`M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF.lean`](./M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF.lean) |
 | `1RB1RC_1LC0LE_1RD1RC_1LB0RA_---0LF_1RD1LF` | Stacked | `HasStackReduction` | — (Halving Tower family, E3 macro twin of `1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RA---_1RB1LF`) | [`M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF.lean`](./M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF.lean) |
-| `1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RC---` | Odometer | `HasOdometerReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RC---) ([BMO Problem 10](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad)) | [`M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH.lean`](./M_1RB0LB_0RC0LD_1LD1RE_0LA0RF_0RD1RF_0RCHHH.lean) |
 | `1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` | Odometer | `HasOdometerReduction` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_0LC0RE_1LA0RD_0RB0LC_1RC1RF_0LD---) ([BMO Problem 11](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad), macro-equivalent reflected holdout) | [`M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean`](./M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean) |
-| `1RB0LD_0RC---_0LD0RF_1LE1LD_0LA0RD_0RB1RA` | Transducer | `HasTransducerReduction` | [Wiki (`Bell_eats_counter`)](https://wiki.bbchallenge.org/wiki/Bell_eats_counter) (macro-equivalent holdout) | [`M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA.lean`](./M_1RB0LD_0RCHHH_0LD0RF_1LE1LD_0LA0RD_0RB1RA.lean) |
 
 ## Sequence and Stack Notation
 
@@ -54,7 +53,7 @@ $$
 
 and write $\beta_1^m$ for the $m$-fold iterate of $\beta_1$ (`bumpHead` in Lean).
 
-## Open `BB(6)` Acceleration Problems (20 Machines)
+## Open `BB(6)` Acceleration Problems (18 Machines)
 
 | Machine (`bbchallenge` RLE) | Family | State Space (Base $\to$ High-Level) | Initial State $s_0$ | Proved Properties | Lean 4 Proof |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -74,8 +73,6 @@ and write $\beta_1^m$ for the $m$-fold iterate of $\beta_1$ (`bumpHead` in Lean)
 | `1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD` | Odometer | $E_L, E_0 \to E_{L,\mathrm{HL}}(a, L, d, R)$ | $E_L(1, \varepsilon, 1, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD.lean`](./M_1RB1RF_1LC1LF_HHH1LD_1LE0RA_1RE1LB_1RD0LD.lean) |
 | `1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LF---_1LD1LF` | Transducer | $E(L, R) \in \mathbb{N}^{\ast} \times \mathbb{N}^{\ast}$ | $E([1], \varepsilon)$ | `IsValidAcceleration` | [`M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean`](./M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean) |
 | `1RB0RE_0RC1RE_1RD1LE_0LE---_1RA1LF_1RF0LC` | Transducer | $E(L, R) \to E_{\mathrm{HL}}(R) \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast}$ | $E([(1, 0)], [(0, 0)])$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC.lean`](./M_1RB0RE_0RC1RE_1RD1LE_0LEHHH_1RA1LF_1RF0LC.lean) |
-| `1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_---1LC` | Transducer | $B(L, d, R) \to B_{\mathrm{HL}}(R) \in \mathbb{N}^{\ast}$ | $B([0], 0, \varepsilon)$ | `IsValidAcceleration` (`State`, `HighLevelState`) | [`M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean`](./M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean) |
-| `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---` | Transducer | $D(L, R) \in \mathbb{N}^{\ast} \times \mathbb{N}^{\ast}$ | $D([1], \varepsilon)$ | `IsValidAcceleration` | [`M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean`](./M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean) |
 | `1RB1RE_1LC0RA_---1LD_1LA0LF_0LB0LC_1RB0LB` | Transducer | $D(L, R) \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast} \times (\mathbb{N} \times \lbrace 0, 1, 2 \rbrace)^{\ast}$ | $D(\varepsilon, [(1, 0)])$ | `IsValidAcceleration` | [`M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean) |
 | `1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA` | Transducer | $M_0(L, R) \in (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^{\ast} \times (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^{\ast}$ | $M_0([(0, 1), (0, 1)], [(1, 1)])$ | `IsValidAcceleration` | [`M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean) |
 
@@ -83,7 +80,7 @@ and write $\beta_1^m$ for the $m$-fold iterate of $\beta_1$ (`bumpHead` in Lean)
 
 ## 1. Stacked Reductions
 
-In a stacked reduction, both half-tapes organize into unbounded sequences $L, R \in \mathbb{N}^{\ast}$ of variable-length run blocks (such as $1^{a+1} 0^s$), so the machine's state space is an unbounded pair of integer stacks rather than a fixed-dimension tuple in $\mathbb{N}^d$. At each macro-step, the head performs modular arithmetic ($\bmod\ 2$, $\bmod\ 3$, or $\bmod\ 4$) on the active top counters adjacent to the head—incrementing stack tops or pushing fresh zero entries that increase stack depth—and periodically triggers a full-stack transfer sweep ($\tau$, $\sigma_D$, $\Delta$, $\tau_B$) that pours one stack onto the other in reverse order. This couples local Collatz-like residue branching at the head with arbitrarily deep historical memory stored across $L$ and $R$, while halting requires draining an entire stack down to $\varepsilon$ at a specific head residue. Twelve holdouts in the table above satisfy `HasStackReduction` (nine `bbchallenge` Wiki holdouts and three Halving Tower holdouts); the seven open problems below give explicit accelerated maps $(s_0, T)$ in this family.
+In a stacked reduction, both half-tapes organize into unbounded sequences $L, R \in \mathbb{N}^{\ast}$ of variable-length run blocks (such as $1^{a+1} 0^s$), so the machine's state space is an unbounded pair of integer stacks rather than a fixed-dimension tuple in $\mathbb{N}^d$. At each macro-step, the head performs modular arithmetic ($\bmod\ 2$, $\bmod\ 3$, or $\bmod\ 4$) on the active top counters adjacent to the head—incrementing stack tops or pushing fresh zero entries that increase stack depth—and periodically triggers a full-stack transfer sweep ($\tau$, $\sigma_D$, $\Delta$, $\tau_B$) that pours one stack onto the other in reverse order. This couples local Collatz-like residue branching at the head with arbitrarily deep historical memory stored across $L$ and $R$, while halting requires draining an entire stack down to $\varepsilon$ at a specific head residue. Thirteen holdouts in the table above satisfy `HasStackReduction` (nine `bbchallenge` Wiki holdouts and four Halving Tower holdouts); the seven open problems below give explicit accelerated maps $(s_0, T)$ in this family.
 
 ### 1.1 [`1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF`](./M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean)
 
@@ -339,7 +336,7 @@ $$
 
 ## 2. Odometer Reductions
 
-In an odometer reduction, one side of the tape acts as a positional or mixed-radix counter stack whose discrete capacity decrements by $1$ via recursive borrow propagation on each reflection from the active head, until reaching zero capacity triggers a global drain/reset sweep across the entire stack. Unlike classical periodic odometers in ergodic theory, each carry-propagation or zero-capacity drain (`drain`, $\Lambda$, $\Omega$, $\rho$) dynamically rewrites the active stream on the opposite half-tape, coupling numeration-system carries with variable-length prefix parsing across exponentially separated timescales. On the `bbchallenge` Wiki this class includes **Beaver Math Olympiad Problems 10 and 11** (formalized under `HasOdometerReduction` above); the seven open problems below include a direct ternary-alphabet odometer sibling (`1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---`, also proved under `HasOdometerReduction`) alongside six open carry-and-drain accelerations.
+In an odometer reduction, one side of the tape acts as a positional or mixed-radix counter stack whose discrete capacity decrements by $1$ via recursive borrow propagation on each reflection from the active head, until reaching zero capacity triggers a global drain/reset sweep across the entire stack. Unlike classical periodic odometers in ergodic theory, each carry-propagation or zero-capacity drain (`drain`, $\Lambda$, $\Omega$, $\rho$) dynamically rewrites the active stream on the opposite half-tape, coupling numeration-system carries with variable-length prefix parsing across exponentially separated timescales. On the `bbchallenge` Wiki this class includes **Beaver Math Olympiad Problem 11** (formalized under `HasOdometerReduction` above); the seven open problems below include a direct ternary-alphabet odometer sibling (`1RB1LD_0RC0LF_1LD1RE_0LA0RB_0RD1RB_0LD---`, also proved under `HasOdometerReduction`) alongside six open carry-and-drain accelerations.
 
 ### 2.1 [`1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_---1RA`](./M_1RB0RE_1RC1RE_1LD1LC_0RB0LC_1RF0RB_HHH1RA.lean)
 
@@ -625,7 +622,7 @@ $$
 
 ## 3. Transducer Reductions
 
-In a transducer reduction, neither half-tape acts as a dominant scalar counter: instead, both half-tapes are words over a finite or run-length block alphabet, and each macro-step sweeps a stateful finite-mode carry head (a sequential Mealy transducer) across an arbitrarily long prefix of blocks, rewriting every block in transit before reflecting at the blank boundary or an interior stop pattern. Halting reduces to the **iterated transducer mortality / forbidden-subword problem**—determining whether repeated bidirectional sweeps from $s_0$ ever synthesize a specific local halting block or carry state (such as a block of height $\ge 3$ or a designated halting carry mode). On the `bbchallenge` Wiki this class is exemplified by *Bell eats counter* (formalized under `HasTransducerReduction` above); the six open problems below capture pure zero-run, pair-block, and multi-separator bidirectional transducers in `BB(6)`.
+In a transducer reduction, neither half-tape acts as a dominant scalar counter: instead, both half-tapes are words over a finite or run-length block alphabet, and each macro-step sweeps a stateful finite-mode carry head (a sequential Mealy transducer) across an arbitrarily long prefix of blocks, rewriting every block in transit before reflecting at the blank boundary or an interior stop pattern. Halting reduces to the **iterated transducer mortality / forbidden-subword problem**—determining whether repeated bidirectional sweeps from $s_0$ ever synthesize a specific local halting block or carry state (such as a block of height $\ge 3$ or a designated halting carry mode). The four open problems below capture pure zero-run, pair-block, and multi-separator bidirectional transducers in `BB(6)`.
 
 ### 3.1 [`1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LF---_1LD1LF`](./M_1RB0LE_0RC0RA_1RD1RB_0LA0RB_1LFHHH_1LD1LF.lean)
 
@@ -705,109 +702,14 @@ T_{\mathrm{HL}}(E_{\mathrm{HL}}(R)) = \begin{cases}
 \end{cases}
 $$
 
-### 3.3 [`1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_---1LC`](./M_1RB1LB_1RC0RD_0LA1RE_0RF1LC_1LA0RB_HHH1LC.lean)
-
-Over states $B(L, d, R)$ with $L, R \in \mathbb{N}^{\ast}$ and $d \in \mathbb{N}$, define the parity-halving sweep $\chi$ by
-
-$$
-\begin{aligned}
-  \chi(\varepsilon, a_0, R) &= \begin{cases}
-    [0]^{a_0 / 2} \cdot R & \text{if } a_0 \text{ is even}, \\
-    \beta_2([0]^{\lfloor a_0 / 2 \rfloor} \cdot R) & \text{if } a_0 \text{ is odd},
-  \end{cases} \\
-  \chi([a_1] \cdot L_p, a_0, R) &= \chi(L_p,\ a_1 + (a_0 \bmod 2),\ \beta_2([0]^{\lfloor a_0 / 2 \rfloor} \cdot R)),
-\end{aligned}
-$$
-
-and, with $\hat{\beta}_2(\varepsilon) = (1, \varepsilon)$ and $\hat{\beta}_2([a] \cdot S) = (a + 2, S)$, define $\Gamma(b, L, R)$ by
-
-$$
-\Gamma(b, L, R) = \begin{cases}
-  B(\varepsilon, 0, \chi(L, b, [1])) & \text{if } R = \varepsilon, \\
-  B([b + 1] \cdot L, p_1, p_2) & \text{if } R = [0] \cdot R',\ (p_1, p_2) = \hat{\beta}_2(R'), \\
-  \Gamma(1, [b] \cdot L, R') & \text{if } R = [1] \cdot R', \\
-  \mathrm{Halt} & \text{if } R = [2], \\
-  B([0, 1, b] \cdot L, e, R') & \text{if } R = [2, e] \cdot R', \\
-  B([2, b] \cdot L, r - 3, R') & \text{if } R = [r] \cdot R' \text{ with } r \ge 3.
-\end{cases}
-$$
-
-Starting from $s_0 = B([0], 0, \varepsilon)$ (after 8 TM steps), let $L_1 = \beta_1^{3\lfloor d/3 \rfloor}(L)$; then
-
-$$
-T(B(L, d, R)) = \begin{cases}
-  B([0], p_1, p_2) & \text{if } d \equiv 0 \pmod{3},\ L_1 = \varepsilon,\ (p_1, p_2) = \hat{\beta}_2(R), \\
-  B(\varepsilon, 0, \chi(L_p, a_0, \beta_2(R))) & \text{if } d \equiv 0 \pmod{3},\ L_1 = [a_0] \cdot L_p, \\
-  \Gamma(q_1, q_2, R) & \text{if } d \equiv 1 \pmod{3},\ (q_1, q_2) = \hat{\beta}_2(L_1), \\
-  \mathrm{Halt} & \text{if } d \equiv 2 \pmod{3} \text{ and } R = \varepsilon, \\
-  B([0] \cdot \beta_2(L_1), e, R') & \text{if } d \equiv 2 \pmod{3} \text{ and } R = [e] \cdot R'.
-\end{cases}
-$$
-
-**High-level acceleration ($T_{\mathrm{HL}}$):** Restricting to $L = \varepsilon$ and $d = 0$ eliminates both the left stack $L$ and counter $d$ on $B_{\mathrm{HL}}(R) := B(\varepsilon, 0, R)$. Writing $a_1 = a + 3\lfloor d/3 \rfloor$, define $\mathcal{H}$ by
-
-$$
-\begin{aligned}
-  \mathcal{H}(\mathsf{t}, a, L_p, R) &= \begin{cases}
-    B_{\mathrm{HL}}(\chi(L_p, a, [1])) & \text{if } R = \varepsilon, \\
-    \mathcal{H}(\mathsf{f}, a + 1, L_p, 1, \varepsilon) & \text{if } R = [0], \\
-    \mathcal{H}(\mathsf{f}, a + 1, L_p, x + 2, R'') & \text{if } R = [0, x] \cdot R'', \\
-    \mathcal{H}(\mathsf{t}, 1, [a] \cdot L_p, R') & \text{if } R = [1] \cdot R', \\
-    \mathrm{Halt} & \text{if } R = [2], \\
-    \mathcal{H}(\mathsf{f}, 0, [1, a] \cdot L_p, e, R'') & \text{if } R = [2, e] \cdot R'', \\
-    \mathcal{H}(\mathsf{f}, 2, [a] \cdot L_p, r - 3, R') & \text{if } R = [r] \cdot R' \text{ with } r \ge 3,
-  \end{cases} \\
-  \mathcal{H}(\mathsf{f}, a, L_p, d, R) &= \begin{cases}
-    B_{\mathrm{HL}}(\chi(L_p, a_1, \beta_2(R))) & \text{if } d \equiv 0 \pmod{3}, \\
-    \mathcal{H}(\mathsf{t}, a_1 + 2, L_p, R) & \text{if } d \equiv 1 \pmod{3}, \\
-    \mathrm{Halt} & \text{if } d \equiv 2 \pmod{3} \text{ and } R = \varepsilon, \\
-    \mathcal{H}(\mathsf{f}, 0, [a_1 + 2] \cdot L_p, e, R') & \text{if } d \equiv 2 \pmod{3} \text{ and } R = [e] \cdot R'.
-  \end{cases}
-\end{aligned}
-$$
-
-Starting from $s_{0,\mathrm{HL}} = B_{\mathrm{HL}}([1])$ (1 `next` step from $s_0$), $T_{\mathrm{HL}}(B_{\mathrm{HL}}(R)) = \mathcal{H}(\mathsf{f}, 0, \varepsilon, p_1, p_2)$ where $(p_1, p_2) = \hat{\beta}_2(R)$.
-
-### 3.4 [`1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---`](./M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean)
-
-Over zero-run stacks $D(L, R)$ with $L, R \in \mathbb{N}^{\ast}$, define the right sweep $\sigma_B$ by
-
-$$
-\begin{aligned}
-  \sigma_B(L, \varepsilon) &= D(\iota(L), \varepsilon), &
-  \sigma_B(L, [0] \cdot R_t) &= \sigma_B(\iota(L), R_t), \\
-  \sigma_B(L, [1] \cdot R_t) &= \sigma_B([0] \cdot \iota(L), R_t), &
-  \sigma_B(L, [d + 2] \cdot R_t) &= D(\iota(L), [d + 1] \cdot R_t).
-\end{aligned}
-$$
-
-Starting from $s_0 = D([1], \varepsilon)$ (after 3 TM steps),
-
-$$
-T(D(L, R)) = \begin{cases}
-  \sigma_B([0], [1] \cdot R) & \text{if } L = \varepsilon, \\
-  \sigma_B(\varepsilon, \iota(\iota(R))) & \text{if } L = [0], \\
-  \sigma_B(L'', [0] \cdot \iota(R)) & \text{if } L = [0, 0] \cdot L'', \\
-  \sigma_B([k] \cdot L'', \iota(\iota(R))) & \text{if } L = [0, k + 1] \cdot L'', \\
-  D(\varepsilon, [1, 0] \cdot R) & \text{if } L = [1], \\
-  \sigma_B([0] \cdot L'', [0, 0] \cdot R) & \text{if } L = [1, 0] \cdot L'', \\
-  D([k] \cdot L'', [1, 0] \cdot R) & \text{if } L = [1, k + 1] \cdot L'', \\
-  \sigma_B(\varepsilon, [2, 1] \cdot R) & \text{if } L = [2], \\
-  \mathrm{Halt} & \text{if } L = [2, 0] \cdot L'', \\
-  \sigma_B(L'', [0, 1, 1] \cdot R) & \text{if } L = [2, 1] \cdot L'', \\
-  \sigma_B([k] \cdot L'', [2, 1] \cdot R) & \text{if } L = [2, k + 2] \cdot L'', \\
-  \sigma_B([0, k] \cdot L', [1] \cdot R) & \text{if } L = [k + 3] \cdot L'.
-\end{cases}
-$$
-
-### 3.5 [`1RB1RE_1LC0RA_---1LD_1LA0LF_0LB0LC_1RB0LB`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean)
+### 3.3 [`1RB1RE_1LC0RA_---1LD_1LA0LF_0LB0LC_1RB0LB`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean)
 
 Over asymmetric pair stacks $D(L, R)$ with $L \in (\mathbb{N} \times \lbrace 0, 1 \rbrace)^{\ast}$ and $R \in (\mathbb{N} \times \lbrace 0, 1, 2 \rbrace)^{\ast}$, starting from $s_0 = D(\varepsilon, [(1, 0)])$ (after 3 TM steps):
 
 - When $L = \varepsilon$, $T(D(\varepsilon, \varepsilon)) = D([(0, 0)], [(1, 0)])$ and $T(D(\varepsilon, [(d_1, c_1)] \cdot R')) = \mathrm{runBR}(0, \varepsilon, d_1 + 1, c_1, R')$.
 - When $L = [(a, b)] \cdot L'$, $T$ peels $q = \lfloor a/4 \rfloor$ blocks $[(2, 0)]^q$ onto $R$ to form $R_1 = [(2, 0)]^q \cdot R$ and branches on $(a \bmod 4, b)$, halting immediately when $a \equiv 2 \pmod{4}$ and either $L' = \varepsilon$ or $b = 1$, and otherwise invoking the left cascade `runB` or right cascade `runBR` defined in [`M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean`](./M_1RB1RE_1LC0RA_HHH1LD_1LA0LF_0LB0LC_1RB0LB.lean) (where `runB` also halts whenever it reaches top residue $a' = 2$ with $L'' = \varepsilon$, or $a' = 2$ and $b' = 1$ with non-empty $L''$).
 
-### 3.6 [`1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean)
+### 3.4 [`1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean)
 
 Over $(1, 4)$-separator stacks $M_0(L, R)$ with $L, R \in (\mathbb{N} \times \lbrace 1, 2, 3, 4 \rbrace)^{\ast}$, define $\tilde{\tau}(\varepsilon) = [(0, 1)]$ and $\tilde{\tau}(X) = X$ for $X \ne \varepsilon$, and for $s \in \lbrace 1, 2, 3, 4 \rbrace$ define $\pi_s$ by
 
@@ -829,17 +731,17 @@ $$
 
 where $\mathcal{D}$ (`stepD`) peels $[(0, 1), (0, 1)]$ pairs on $L$ and, on $[(0, 1), (1, 4)] \cdot L_2$ with $L_2 \ne \varepsilon$, invokes the 6-state carry transducer `evalStage3` over $\mathcal{F} = \lbrace f_{00}, \dots, f_{05} \rbrace$ (halting at `stepD` or `evalQ0Aux` on any head block $[(a, s)] \cdot X$ with $a \ge 2$, and at `stepBit1` on carry state $f_{05}$); see [`M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean) for full definitions.
 
-## 4. Hard Holdout Cryptid Machines (21 Machines)
+## 4. Hard Holdout Cryptid Machines (25 Machines)
 
-The remaining frontier of hard holdout Turing machines in BB(6) whose blank-tape trajectories enter closed dynamic schemas over partitioned half-tapes (`IsSegmentedCryptid`, 11 machines with explicit `is_closed_segmented_system` theorems), multi-layer stack systems (`IsStackCryptid`, 8 machines), or mixed-radix odometer bitstreams (`IsOdometerCryptid`, 2 machines), alongside `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` in [`BusyBeaver/BB6/`](../README.md):
+The remaining frontier of hard holdout Turing machines in BB(6) whose blank-tape trajectories enter closed dynamic schemas over partitioned half-tapes (`IsSegmentedCryptid`, 15 machines, 12 with explicit `is_closed_segmented_system` theorems), multi-layer stack systems (`IsStackCryptid`, 8 machines), or mixed-radix odometer bitstreams (`IsOdometerCryptid`, 2 machines), alongside `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` and `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` in [`BusyBeaver/BB6/`](../README.md):
 
 | Machine (`bbchallenge` RLE) | Predicate | Lean 4 Proof |
 | :--- | :--- | :--- |
 | `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` | `IsSegmentedCryptid` | [`M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH.lean`](./M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH.lean) |
 | `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` | `IsSegmentedCryptid` | [`M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH.lean`](./M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH.lean) |
+| `1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC` | `IsSegmentedCryptid` | [`M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC.lean`](./M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC.lean) |
 | `1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RA---` | `IsOdometerCryptid` | [`M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH.lean`](./M_1RB0LD_0LC0RE_1LA0RD_0RB0LD_1RC1RF_1RAHHH.lean) |
 | `1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RB---` | `IsStackCryptid` | [`M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH.lean`](./M_1RB0LD_0LC0RE_1LA0RD_0RB0LF_1RC1LA_0RBHHH.lean) |
-| `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` | `IsSegmentedCryptid` | [`M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH.lean`](./M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH.lean) |
 | `1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0RE---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA0LF_0LC0RA_0REHHH.lean) |
 | `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LB---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LBHHH.lean) |
 | `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LE---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RA_0LEHHH.lean) |
@@ -848,11 +750,15 @@ The remaining frontier of hard holdout Turing machines in BB(6) whose blank-tape
 | `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LA---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LAHHH.lean) |
 | `1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LE---` | `IsStackCryptid` | [`M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH.lean`](./M_1RB0LE_1LC0RE_0RA0LD_1LA1LF_0LC0RE_1LEHHH.lean) |
 | `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` | `IsSegmentedCryptid` | [`M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE.lean`](./M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE.lean) |
+| `1RB0RA_0LC0RF_0LB1RD_1LE---_1RA0LF_1LE0RC` | `IsSegmentedCryptid` | [`M_1RB0RA_0LC0RF_0LB1RD_1LEHHH_1RA0LF_1LE0RC.lean`](./M_1RB0RA_0LC0RF_0LB1RD_1LEHHH_1RA0LF_1LE0RC.lean) |
+| `1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_---0LB` | `IsSegmentedCryptid` | [`M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB.lean`](./M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB.lean) |
 | `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` | `IsSegmentedCryptid` | [`M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH.lean`](./M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH.lean) |
 | `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` | `IsSegmentedCryptid` | [`M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF.lean`](./M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF.lean) |
 | `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` | `IsSegmentedCryptid` | [`M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA.lean`](./M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA.lean) |
 | `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` | `IsSegmentedCryptid` | [`M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA.lean`](./M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA.lean) |
+| `1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_---0RE` | `IsSegmentedCryptid` | [`M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE.lean`](./M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE.lean) |
 | `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` | `IsSegmentedCryptid` | [`M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH.lean`](./M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH.lean) |
 | `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` | `IsSegmentedCryptid` | [`M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD.lean`](./M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD.lean) |
 | `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` | `IsSegmentedCryptid` | [`M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE.lean`](./M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE.lean) |
+| `1RB---_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE` | `IsSegmentedCryptid` | [`M_1RBHHH_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE.lean`](./M_1RBHHH_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE.lean) |
 | `1RB---_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA` | `IsOdometerCryptid` | [`M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA.lean`](./M_1RBHHH_1RC0LE_0LD0RF_1LB0RE_0RC0LE_1RD1RA.lean) |

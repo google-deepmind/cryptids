@@ -14,11 +14,9 @@ public import BusyBeaver.BB6.Accelerations.M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_
 public import BusyBeaver.BB6.M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA
 public import BusyBeaver.BB6.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA
 public import BusyBeaver.BB6.M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC
-public import BusyBeaver.BB6.M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
 public import BusyBeaver.BB6.M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA
 public import BusyBeaver.BB6.M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA
 public import BusyBeaver.BB6.M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD
-public import BusyBeaver.BB6.M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
 public import BusyBeaver.BB6.M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA
 public import BusyBeaver.BB6.M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD
 public import BusyBeaver.BB6.M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE
@@ -37,7 +35,7 @@ public import BusyBeaver.BB6.M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB
 
 Kernel-checked theorems certifying that the halting transitions discussed in
 `BusyBeaver.BB6.Hardness` are **live** and **arithmetically structured** on the certified
-accelerated state spaces (`State` / `HighLevelState`) of the 26 `BB(6)` machines in this
+accelerated state spaces (`State` / `HighLevelState`) of the 24 `BB(6)` machines in this
 repository that expose an explicit Collatz-like map `next` or `highLevelNext`:
 
 1. **Live hazard witnesses** (`halting_state_witness`): an explicit accelerated configuration `s`
@@ -246,50 +244,6 @@ theorem halting_residue_class (p : Bool) (j : ℕ) : highLevelNext (.E p (2 * j 
   split_ifs <;> first | rfl | omega
 
 end M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA
-
-namespace M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
-
-open BusyBeaver.M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
-
-/-- Live hazard witness for `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`: `A 4 0` halts in one
-high-level step. -/
-theorem halting_state_witness : highLevelNext (.A 4 0) = none := by
-  simp [highLevelNext]
-
-/-- Exact-equality halting family: `A (2 * (c / 2) + 4) c` halts for all `c`. -/
-theorem halting_residue_class (c : ℕ) : highLevelNext (.A (2 * (c / 2) + 4) c) = none := by
-  simp only [highLevelNext]
-  split_ifs <;> first | rfl | omega
-
-/-- Exact characterization: `A b c` halts in one high-level step iff `b = 2 * (c / 2) + 4`. -/
-theorem halting_residue_class_iff (b c : ℕ) :
-    highLevelNext (.A b c) = none ↔ b = 2 * (c / 2) + 4 := by
-  simp only [highLevelNext]
-  split_ifs <;> simp <;> omega
-
-end M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
-
-namespace M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
-
-open BusyBeaver.M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
-
-/-- Live hazard witness for `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`: `A 4 0` halts in one
-high-level step. -/
-theorem halting_state_witness : highLevelNext (.A 4 0) = none := by
-  simp [highLevelNext]
-
-/-- Exact-equality halting family: `A (2 * (c / 2) + 4) c` halts for all `c`. -/
-theorem halting_residue_class (c : ℕ) : highLevelNext (.A (2 * (c / 2) + 4) c) = none := by
-  simp only [highLevelNext]
-  split_ifs <;> first | rfl | omega
-
-/-- Exact characterization: `A b c` halts in one high-level step iff `b = 2 * (c / 2) + 4`. -/
-theorem halting_residue_class_iff (b c : ℕ) :
-    highLevelNext (.A b c) = none ↔ b = 2 * (c / 2) + 4 := by
-  simp only [highLevelNext]
-  split_ifs <;> simp <;> omega
-
-end M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC
 
 namespace M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE
 
