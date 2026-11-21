@@ -15,7 +15,7 @@ Lucy's Moonlight), applied uniformly to the machines formalized in this reposito
 cited here is kernel-verified (`HasCollatzReduction`, `HasStackReduction`, `IsValidAcceleration`),
 machine-level halting equivalences are proved in `BusyBeaver.BB6.Equivalences`, and kernel-checked
 live-hazard witnesses (`highLevelNext s = none` / `next s = none`) and parametric halting residue
-classes across 26 core machines (the 24 hard-core machines that have `IsValidAcceleration`,
+classes across 24 core machines (the 22 hard-core machines that have `IsValidAcceleration`,
 plus `#568` and `1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD`) are proved in
 `BusyBeaver.BB6.HardnessEvidence`; every hazard statement below is a *heuristic* computed from the
 certified rules by exact accelerated simulation and is marked as such. The full dossiers, with
@@ -103,11 +103,6 @@ has not been re-measured with the method of this page, so they carry no verdict 
 
 ### Shielded single-base exponential cascades
 
-* `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`
-  ([#79](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean)) (ours): Cascade; Single-Base
-  Exponential Cascade. Trigger EQ; growth super-exponential (two-stage $2^n$ doubling tower); shield
-  none. probviously non-halting. Status: cryptid; `HasCollatzReduction`; open (on the
-  2026-10-24 holdout list).
 * `1RB1LF_1RC1RF_0LD1RE_---1LC_0RB1RE_1LA0LE`
   ([#116](./M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE.lean)) (wiki): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential; shield see family. wiki rediscovery
@@ -123,10 +118,6 @@ has not been re-measured with the method of this page, so they carry no verdict 
   Exponential Cascade. Trigger EQ; growth exponential ($4^n$ inner cascades, $(4/3)^k$ sweeps);
   shield partial (odd-$a$ invariant kills 2 of 4 halting rules and 12 of 34 rules). probviously
   non-halting. Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
-* `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`
-  ([#590](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean)) (ours): Cascade; Single-Base
-  Exponential Cascade. Trigger EQ; growth super-exponential; shield none. probviously non-halting.
-  Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB`
   ([#614](./M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean)) (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ ($2^n$ remainder coincidence); growth exponential ($\times1.4069$
@@ -321,13 +312,6 @@ has not been re-measured with the method of this page, so they carry no verdict 
   ((3/2)^{\nu_2(k+4)} 2-adic bursts, the expanding dual of Tao's Syracuse step) alternating with
   even-$c$ subtraction drains; halts iff $c_j - 2k_j \in \lbrace -4,+2 \rbrace$
 
-### `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE` (#79, Cascade)
-
-* **Hazard:** $P(\text{halt}) \ll 10^{-600}$
-* **Simulated horizon:** $> 3.46\times10^{1204}$ TM steps in 12 cascades
-* **Why it is hard / what a proof needs:** coupled outer `D1` and inner `Modd` $2^n$ cascades; halts
-  iff $D_1(2,u,0)$
-
 ### `1RB1LF_1RC1RF_0LD1RE_---1LC_0RB1RE_1LA0LE` (#116, Cascade)
 
 * **Hazard:** not re-measured in our dossiers
@@ -348,14 +332,6 @@ has not been re-measured with the method of this page, so they carry no verdict 
 * **Simulated horizon:** exact rule simulation
 * **Why it is hard / what a proof needs:** remaining halts `rule_4/12_halt` need $c_{\text{rem}}=1$:
   a $(4/3)^k$ Mahler-type residue problem
-
-### `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC` (#590, Cascade)
-
-* **Hazard:** $P(\text{halt}) \ll 10^{-600}$
-* **Simulated horizon:** 10 cascades (exact; reaches $A(65490, 3)$)
-* **Why it is hard / what a proof needs:** shares the exact `highLevelNext` transition map with #79,
-  but starts from $A(4, 3)$ rather than $A(5, 2)$; the two orbits remain disjoint
-  (`(4,3) → (19,3) → (13,11) → (28,3)` vs. `(5,2) → (10,3) → (4,11) → (27,3)`)
 
 ### `1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB` (#614, Cascade)
 
