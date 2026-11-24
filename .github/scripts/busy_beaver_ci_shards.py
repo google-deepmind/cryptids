@@ -325,6 +325,10 @@ def cmd_docs_args(args: argparse.Namespace) -> None:
           seen.add(c)
           targets.append(c)
     elif lib:
+      if not ((root / f"{lib}.lean").is_file() or (root / lib).is_dir()):
+        raise SystemExit(
+            f"literate.toml target library {lib!r} matches no .lean root or directory"
+        )
       if not is_excluded(lib) and lib not in seen:
         seen.add(lib)
         targets.append(lib)

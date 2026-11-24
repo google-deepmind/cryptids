@@ -4,23 +4,29 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - '**/*.md'
-      - '.github/workflows/busy_beaver_ci.yml'
-      - '.github/workflows/lean_action_ci.yml'
-      - '.github/workflows/create-release.yml'
-      - '.github/workflows/update.yml'
-      - 'BusyBeaver/BB6/Halt/**'
-      - 'BusyBeaver/BB6/NonHalt/**'
-      - 'BusyBeaver/BB6/M_*.lean'
-      - 'BusyBeaver/BB6/Accelerations/M_*.lean'
-      - 'BusyBeaver/BB33/M_*.lean'
-      - 'BusyBeaver/Calculi/**'
-      - 'BusyBeaver.lean'
-      - 'BusyBeaverChallenge.lean'
-      - 'Challenge.lean'
-      - 'comparator/**'
-      - 'verify.py'
+    paths:
+      - '**'
+      - '!**/*.md'
+      - '!.github/workflows/busy_beaver_ci.yml'
+      - '!.github/workflows/lean_action_ci.yml'
+      - '!.github/workflows/create-release.yml'
+      - '!.github/workflows/update.yml'
+      - '!BusyBeaver/BB6/Halt/**'
+      - '!BusyBeaver/BB6/NonHalt/**'
+      - '!BusyBeaver/BB33/M_*.lean'
+      - '!BusyBeaver/Calculi/**'
+      - 'BusyBeaver/Calculi/Counter.lean'
+      - '!BusyBeaver.lean'
+      - '!BusyBeaverChallenge.lean'
+      - '!Challenge.lean'
+      - '!comparator/**'
+      - '!verify.py'
+  pull_request:
+    paths:
+      - 'literate.toml'
+      - 'literate-overrides.css'
+      - '.github/workflows/docs.yml'
+      - '.github/scripts/busy_beaver_ci_shards.py'
   workflow_dispatch:
 
 permissions:
@@ -31,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     concurrency:
-      group: docs-build
+      group: docs-build-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
 
     steps:
@@ -98,17 +104,21 @@ jobs:
             .lake/packages/MD4Lean/.lake/build
             .lake/packages/illuminate/.lake/build
             .lake/build/literate
-          key: verso-literate-v2-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'literate.toml') }}-${{ github.sha }}
+          key: >-
+            verso-literate-v2-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'literate.toml') }}-${{ steps.verso.outcome == 'success' && github.sha || format('partial-{0}-{1}-{2}', github.sha, github.run_id, github.run_attempt) }}
 
       - name: Reclaim build disk space before Pages upload
+        if: github.event_name != 'pull_request'
         run: rm -rf .lake/packages/mathlib .lake/build/lib .lake/build/ir
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
           path: ${{ steps.verso.outputs.path }}
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     permissions:

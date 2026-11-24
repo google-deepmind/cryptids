@@ -163,6 +163,7 @@ module = "BusyBeaver.BB33.WilyCoyote"
   "Cryptids.Riemann120",
   "Cryptids.Riemann104",
   "Cryptids.Riemann95",
+  "Cryptids.Riemann95Definition",
   "Cryptids.ErdosTernary15",
   "Cryptids.ErdosTernary14",
   "Cryptids.Brocard28",

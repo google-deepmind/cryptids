@@ -65,6 +65,9 @@ jobs:
       - name: Verify core manifest
         run: python3 tools/check_manifest.py
 
+      - name: Verify literate.toml target resolution
+        run: python3 .github/scripts/busy_beaver_ci_shards.py docs-args
+
       - name: Plan foundation module graph
         id: plan
         run: |
@@ -119,7 +122,7 @@ jobs:
         with:
           path: .lake/shard-cache/foundation.tar.zst
           key: >-
-            bb-foundation-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.compile.outcome == 'success' && steps.plan.outputs.foundation_hash || format('partial-{0}', github.run_id) }}
+            bb-foundation-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.compile.outcome == 'success' && steps.plan.outputs.foundation_hash || format('partial-{0}-{1}', github.run_id, github.run_attempt) }}
 
       - name: Upload foundation artifact for shards
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -163,6 +166,22 @@ jobs:
           lint: false
           use-github-cache: "false"
 
+      - name: Restore shard ${{ matrix.shard }} cache
+        id: cache-restore
+        if: steps.plan.outputs.shard_count != '0'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .lake/shard-cache/shard.tar.zst
+          key: >-
+            bb-shard-v1-${{ matrix.shard }}-of-${{ env.NUM_SHARDS }}-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.plan.outputs.foundation_hash }}-${{ steps.plan.outputs.shard_hash }}
+          restore-keys: |
+            bb-shard-v1-${{ matrix.shard }}-of-${{ env.NUM_SHARDS }}-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.plan.outputs.foundation_hash }}-
+            bb-shard-v1-${{ matrix.shard }}-of-${{ env.NUM_SHARDS }}-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-
+
+      - name: Unpack restored shard cache
+        if: steps.plan.outputs.shard_count != '0' && steps.cache-restore.outputs.cache-matched-key != ''
+        run: tar --zstd -xf .lake/shard-cache/shard.tar.zst
+
       - name: Download & unpack foundation artifacts
         if: steps.plan.outputs.shard_count != '0'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -175,21 +194,6 @@ jobs:
         run: |
           tar --zstd -xf .lake/foundation-in/foundation.tar.zst
           rm -rf .lake/foundation-in
-
-      - name: Restore shard ${{ matrix.shard }} cache
-        id: cache-restore
-        if: steps.plan.outputs.shard_count != '0'
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: .lake/shard-cache/shard.tar.zst
-          key: bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-${{ steps.plan.outputs.foundation_hash }}-${{ steps.plan.outputs.shard_hash }}
-          restore-keys: |
-            bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-${{ steps.plan.outputs.foundation_hash }}-
-            bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-
-
-      - name: Unpack restored shard cache
-        if: steps.plan.outputs.shard_count != '0' && steps.cache-restore.outputs.cache-matched-key != ''
-        run: tar --zstd -xf .lake/shard-cache/shard.tar.zst
 
       - name: Compile leaf shard ${{ matrix.shard }}
         id: compile
@@ -223,7 +227,7 @@ jobs:
         with:
           path: .lake/shard-cache/shard.tar.zst
           key: >-
-            bb-shard-v1-${{ matrix.shard }}-of-8-${{ runner.os }}-${{ steps.plan.outputs.foundation_hash }}-${{ steps.compile.outcome == 'success' && steps.plan.outputs.shard_hash || format('partial-{0}', github.run_id) }}
+            bb-shard-v1-${{ matrix.shard }}-of-${{ env.NUM_SHARDS }}-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml') }}-${{ steps.plan.outputs.foundation_hash }}-${{ steps.compile.outcome == 'success' && steps.plan.outputs.shard_hash || format('partial-{0}-{1}', github.run_id, github.run_attempt) }}
 
       - name: Upload shard ${{ matrix.shard }} artifact
         if: steps.plan.outputs.shard_count != '0'
