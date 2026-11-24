@@ -154,11 +154,6 @@ structure ListBlank (Γ : Type*) [Inhabited Γ] where
 instance ListBlank.inhabited {Γ : Type*} [Inhabited Γ] : Inhabited (ListBlank Γ) :=
   ⟨⟨[], trivial⟩⟩
 
-/-- Lift a blank-extension-invariant function from `List Γ` to `ListBlank Γ`. -/
-protected abbrev ListBlank.liftOn {Γ : Type*} [Inhabited Γ] {α : Sort*} (l : ListBlank Γ)
-    (f : List Γ → α) (_H : ∀ a b, Turing.BlankExtends a b → f a = f b) : α :=
-  f l.toList
-
 /-- Head symbol of a `ListBlank`. -/
 def ListBlank.head {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : Γ :=
   l.toList.headI
@@ -290,6 +285,10 @@ abbrev BundledMachine.Halts {symbols : ℕ} [NeZero symbols] (M : BundledMachine
   ConjectureMachines.Halts M.toMachine
 
 export BundledMachine (Halts)
+
+/-- info: 'ConjectureMachines.BundledMachine.Halts' does not depend on any axioms -/
+#guard_msgs in
+#print axioms ConjectureMachines.BundledMachine.Halts
 
 namespace Machines
 /-- Rows of `goldbach25`. -/ def goldbach25Rows : List (List (Option (Fin 2 × Dir × Fin 25))) :=

@@ -266,6 +266,10 @@ abbrev BundledMachine.Halts {symbols : ℕ} [NeZero symbols] (M : BundledMachine
 
 export BundledMachine (Halts)
 
+/-- info: 'ConjectureMachines.BundledMachine.Halts' does not depend on any axioms -/
+#guard_msgs in
+#print axioms ConjectureMachines.BundledMachine.Halts
+
 namespace Machines
 /-- Rows of `goldbach25`. -/ def goldbach25Rows : List (List (Option (Fin 2 × Dir × Fin 25))) :=
   load_machine_rows% "baselines/tables/goldbach_25.txt"
@@ -688,18 +692,6 @@ theorem list_length_five {α : Type*} : ∀ (l : List α), l.length = 5 →
   | [a, b, c, d, e], _ => ⟨a, b, c, d, e, rfl⟩
   | [], h | [_], h | [_, _], h | [_, _, _], h | [_, _, _, _], h
   | _ :: _ :: _ :: _ :: _ :: _ :: _, h => nomatch h
-
-theorem list_getD_eq_getElem {α : Type*} : ∀ (l : List α) (d : α) {i : ℕ} (hi : i < l.length),
-    l.getD i d = l[i]
-  | [], _, _, hi => absurd hi (Nat.not_lt_zero _)
-  | _ :: _, _, 0, _ => rfl
-  | _ :: xs, d, _ + 1, hi => list_getD_eq_getElem xs d (Nat.lt_of_succ_lt_succ hi)
-
-theorem list_getD_append_left {α : Type*} : ∀ (l₁ l₂ : List α) (d : α) (i : ℕ),
-    i < l₁.length → (l₁ ++ l₂).getD i d = l₁.getD i d
-  | [], _, _, _, hi => absurd hi (Nat.not_lt_zero _)
-  | _ :: _, _, _, 0, _ => rfl
-  | _ :: xs, l₂, d, n + 1, hi => list_getD_append_left xs l₂ d n (Nat.lt_of_succ_lt_succ hi)
 
 theorem reaches_eval' {σ : Type*} {f : σ → Option σ} {a b : σ} (ab : Reaches f a b) :
     eval f a = eval f b := by
