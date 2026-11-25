@@ -707,14 +707,18 @@
     "BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE.isHalt_iff_acceleration",
     "BusyBeaver.M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE.is_cryptid",
     "BusyBeaver.M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC.is_closed_pattern_set",
+    "BusyBeaver.M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC.has_collatz_reduction",
     "BusyBeaver.M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC.is_cryptid",
     "BusyBeaver.M_1RB0LF_1RC1RB_0RD0RC_1LE1LF_1LDHHH_0LB1LA.has_stack_reduction",
     "BusyBeaver.M_1RBHHH_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE.is_closed_segmented_system",
     "BusyBeaver.M_1RBHHH_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE.is_segmented_cryptid",
     "BusyBeaver.M_1RB0RA_0LC0RF_0LB1RD_1LEHHH_1RA0LF_1LE0RC.is_closed_segmented_system",
     "BusyBeaver.M_1RB0RA_0LC0RF_0LB1RD_1LEHHH_1RA0LF_1LE0RC.is_segmented_cryptid",
+    "BusyBeaver.M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE.is_closed_segmented_system",
     "BusyBeaver.M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE.is_segmented_cryptid",
+    "BusyBeaver.M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC.is_closed_segmented_system",
     "BusyBeaver.M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC.is_segmented_cryptid",
+    "BusyBeaver.M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB.is_closed_segmented_system",
     "BusyBeaver.M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB.is_segmented_cryptid"
   ],
   "permitted_axioms": [

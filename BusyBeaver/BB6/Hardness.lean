@@ -44,7 +44,7 @@ see the calibration case below.
 
 ## 2. The core
 
-Thirty-three classes of the 2026-10-24 holdout list (623 classes) are hard in this sense: the five
+Thirty-one classes of the 2026-10-24 holdout list (623 classes) are hard in this sense: the five
 first-order problems of the report, the shielded single-base exponential cascades, and the
 Collatz-like stacked cryptids. Eight were known to the community before our campaign; the rest are
 new. Problem S1 (`#72`) is listed last because the community has since **proved that it halts**.

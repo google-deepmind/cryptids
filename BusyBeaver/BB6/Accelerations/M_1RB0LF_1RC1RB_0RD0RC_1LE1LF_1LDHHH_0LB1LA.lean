@@ -187,13 +187,6 @@ private theorem encLeft_run_s3 (a : ℕ) (L : List (ℕ × ℕ)) :
   | zero => rfl
   | succ k ih => rw [encLeft_succ, ih]; normalize
 
-private theorem encLeft_run_cons (n a b : ℕ) (L : List (ℕ × ℕ)) :
-    (([1] : List (Fin 2)) ^ n) +> encLeft ((a, b) :: L) = encLeft ((a + n, b) :: L) := by
-  induction n with
-  | zero => rfl
-  | succ k ih => simp only [pow_succ_list, cons_append_list, nil_append_list,
-      listblank_append_cons, ih]; rw [← Nat.add_assoc, encLeft_succ]
-
 private theorem encRight_mod2 (a b : ℕ) (R : List (ℕ × ℕ)) :
     encRight ((a, b) :: R) = encRight ((a, b % 2) :: R) := by
   simp only [encRight_cons, Nat.mod_mod]
@@ -236,13 +229,6 @@ private theorem encRight_run_s1 (a : ℕ) (R : List (ℕ × ℕ)) :
   | zero => rfl
   | succ k ih => rw [encRight_succ, ih]; normalize
 
-private theorem encRight_run_cons (n a b : ℕ) (R : List (ℕ × ℕ)) :
-    (([1] : List (Fin 2)) ^ n) +> encRight ((a, b) :: R) = encRight ((a + n, b) :: R) := by
-  induction n with
-  | zero => rfl
-  | succ k ih => simp only [pow_succ_list, cons_append_list, nil_append_list,
-      listblank_append_cons, ih]; rw [← Nat.add_assoc, encRight_succ]
-
 private theorem mod2_cases (b : ℕ) : b % 2 = 0 ∨ b % 2 = 1 := by
   omega
 
@@ -262,13 +248,6 @@ private def bumpN : ℕ → List (ℕ × ℕ) → List (ℕ × ℕ)
   rcases L with _ | ⟨⟨a, b⟩, L'⟩
   · simp [bumpHead, encLeft]
   · exact (encLeft_succ a b L').symm
-
-private theorem encLeft_bumpN (n : ℕ) (L : List (ℕ × ℕ)) :
-    (([1] : List (Fin 2)) ^ n) +> encLeft L = encLeft (bumpN n L) := by
-  induction n with
-  | zero => rfl
-  | succ k ih => simp only [pow_succ_list, cons_append_list, nil_append_list,
-      listblank_append_cons, ih, bumpN, encLeft_cons_one]
 
 @[simp] private theorem encRight_cons_one (R : List (ℕ × ℕ)) :
     (1 : Fin 2) >> encRight R = encRight (bumpHead R) := by

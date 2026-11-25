@@ -10,8 +10,8 @@ public import BusyBeaver.Bridge
 /-!
 # Busy Beaver Holdout `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` (#1)
 
-Formal `IsClosedPatternSet` and `IsCryptid` proofs for the 6-state, 2-symbol Busy Beaver holdout
-`1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` (bbchallenge holdout #1).
+Formal `IsClosedPatternSet`, `HasCollatzReduction`, and `IsCryptid` proofs for the 6-state,
+2-symbol Busy Beaver holdout `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` (bbchallenge holdout #1).
 -/
 
 @[expose] public section
@@ -771,11 +771,6 @@ private def next : State → Option State
   | .c0 L R => nextC0 L R
   | .d0 L R => some (nextD0 L R)
   | .b1 L R => some (nextB1 L R)
-
-private def cost : State → ℕ
-  | .c0 L R => costC0 L R
-  | .d0 L R => costD0 L R
-  | .b1 L _ => costB1 L
 
 /-! ### Encoding into `Cfg (Fin 2) (Fin 6)` -/
 
@@ -3569,17 +3564,6 @@ private theorem nat_cases2 (n : ℕ) {P : ℕ → Prop}
   rcases h with h | h <;> rw [h]
   · exact h0 (n / 2)
   · exact h1 (n / 2)
-
-private theorem nat_cases4 (n : ℕ) {P : ℕ → Prop}
-    (h0 : ∀ q, P (4 * q)) (h1 : ∀ q, P (4 * q + 1))
-    (h2 : ∀ q, P (4 * q + 2)) (h3 : ∀ q, P (4 * q + 3)) : P n := by
-  have h : n = 4 * (n / 4) ∨ n = 4 * (n / 4) + 1 ∨
-      n = 4 * (n / 4) + 2 ∨ n = 4 * (n / 4) + 3 := by omega
-  rcases h with h | h | h | h <;> rw [h]
-  · exact h0 (n / 4)
-  · exact h1 (n / 4)
-  · exact h2 (n / 4)
-  · exact h3 (n / 4)
 
 private theorem nextLoopIIBridgeIII_eq (n0 p r0 q rm : ℕ) (rTail : List TokR)
     (hp : n0 / 2 = p) (hr0 : n0 % 2 = r0) (hq : (p + 1) / 2 = q) (hrm : (p + 1) % 2 = rm) :
@@ -34776,6 +34760,11 @@ theorem is_closed_pattern_set : IsClosedPatternSet target ps := by
   · rw [eval_pat3]; exact close_pat3 (vars 0) (vars 1) (vars 2) (vars 3)
   · rw [eval_pat4]; exact close_pat4 (vars 0) (vars 1) (vars 2) (vars 3)
   · rw [eval_pat5]; exact close_pat5 (vars 0) (vars 1) (vars 2)
+
+/-- Certified Level A `HasCollatzReduction` witness for
+    `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC`. -/
+theorem has_collatz_reduction : HasCollatzReduction target :=
+  ⟨ps, is_closed_pattern_set⟩
 
 /-- Compact closed 6-pattern `IsCryptid` certificate for
     `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC`. -/

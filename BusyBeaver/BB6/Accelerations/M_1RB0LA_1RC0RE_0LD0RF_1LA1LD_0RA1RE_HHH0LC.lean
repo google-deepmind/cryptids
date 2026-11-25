@@ -65,8 +65,8 @@ local macro "step1" : tactic => `(tactic| try (any_goals (first | finish | gstep
 local macro "execute" : tactic =>
   `(tactic| (step1; step1; step1; step1; step1; step1; step1; step1; step1; step1; step1; step1))
 
-/-- Five head modes of Active Holdout `797:#433` (`1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC`). -/
-private inductive SegMode where
+/-- Five head modes of Holdout `#433` (`1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC`). -/
+inductive SegMode where
   | mBR
   | mER0
   | mER1
@@ -75,36 +75,44 @@ private inductive SegMode where
 deriving DecidableEq, Repr
 
 /-- Left half-tape one-run suffix `1^(o+1) ++ [0]`. -/
-@[simp]
-private def oWord : ℕ → List (Fin 2)
-  | 0 => [1, 0]
-  | o + 1 => 1 :: oWord o
+def oWord (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 0] (fun _ acc => 1 :: acc) o
+
+@[simp] private theorem oWord_zero : oWord 0 = [1, 0] := rfl
+@[simp] private theorem oWord_succ (o : ℕ) : oWord (o + 1) = 1 :: oWord o := rfl
 
 /-- Left half-tape parameterized run-pair word `0^z ++ 1^(o+1) ++ [0]`. -/
-@[simp]
-private def lWord : ℕ × ℕ → List (Fin 2)
-  | (0, o) => oWord o
-  | (z + 1, o) => 0 :: lWord (z, o)
+def lWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oWord p.2) (fun _ acc => 0 :: acc) p.1
+
+@[simp] private theorem lWord_zero (o : ℕ) : lWord (0, o) = oWord o := rfl
+@[simp] private theorem lWord_succ (z o : ℕ) : lWord (z + 1, o) = 0 :: lWord (z, o) := rfl
 
 /-- Right half-tape word `1^(d+1) ++ (if b then [0, 0] else [0])`, forbidding `[0, 0, 0, 1]`. -/
-@[simp]
-private def rWord : ℕ × Bool → List (Fin 2)
-  | (0, false) => [1, 0]
-  | (0, true) => [1, 0, 0]
-  | (d + 1, b) => 1 :: rWord (d, b)
+def rWord (p : ℕ × Bool) : List (Fin 2) :=
+  Nat.rec (cond p.2 [1, 0, 0] [1, 0]) (fun _ acc => 1 :: acc) p.1
 
-@[simp]
-private def encLeft : List (ℕ × ℕ) → zB
-  | [] => default
-  | p :: L => lWord p +> encLeft L
+@[simp] private theorem rWord_zero_false : rWord (0, false) = [1, 0] := rfl
+@[simp] private theorem rWord_zero_true : rWord (0, true) = [1, 0, 0] := rfl
+@[simp] private theorem rWord_succ (d : ℕ) (b : Bool) :
+    rWord (d + 1, b) = 1 :: rWord (d, b) := rfl
 
-@[simp]
-private def encRight : List (ℕ × Bool) → zB
-  | [] => default
-  | p :: R => rWord p +> encRight R
+def encLeft (L : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) L
+
+@[simp] private theorem encLeft_nil : encLeft [] = default := rfl
+@[simp] private theorem encLeft_cons (p : ℕ × ℕ) (L : List (ℕ × ℕ)) :
+    encLeft (p :: L) = lWord p +> encLeft L := rfl
+
+def encRight (R : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) R
+
+@[simp] private theorem encRight_nil : encRight [] = default := rfl
+@[simp] private theorem encRight_cons (p : ℕ × Bool) (R : List (ℕ × Bool)) :
+    encRight (p :: R) = rWord p +> encRight R := rfl
 
 /-- Full right stack reconstructed from upper frames `Rs` and bottom accumulator `d_bot`. -/
-private def fullR (Rs : List (ℕ × Bool)) (d_bot : ℕ) : List (ℕ × Bool) :=
+def fullR (Rs : List (ℕ × Bool)) (d_bot : ℕ) : List (ℕ × Bool) :=
   Rs ++ [(d_bot, false)]
 
 @[simp]
@@ -197,97 +205,108 @@ private theorem push1LN_succ2_pos (d z o : ℕ) (L : List (ℕ × ℕ)) :
   change push1LN (d + 1) (push1L ((z + 1, o) :: L)) = (0, d + 1) :: (z, o) :: L
   simp only [push1L, push1LN_zero_cons, Nat.zero_add]
 
-private abbrev SegState := SegMode × List (ℕ × ℕ) × List (ℕ × Bool) × ℕ
+abbrev SegState := SegMode × List (ℕ × ℕ) × List (ℕ × Bool) × ℕ
 
 @[simp]
-private def modeOf (s : SegState) : SegMode := s.1
+def modeOf (s : SegState) : SegMode := s.1
 
 @[simp]
-private def headD : List (ℕ × Bool) → ℕ
-  | [] => 0
-  | (d, _) :: _ => d
+def headD (R : List (ℕ × Bool)) : ℕ :=
+  List.casesOn R 0 (fun p _ => p.1)
 
 @[simp]
-private def validLt : List (ℕ × ℕ) → Prop
-  | [] => True
-  | (_, o) :: Lt => o ≤ 6 ∧ validLt Lt
+def validLt (Lt : List (ℕ × ℕ)) : Prop :=
+  List.rec True (fun p _ acc => p.2 ≤ 6 ∧ acc) Lt
 
 @[simp]
-private def validR : List (ℕ × Bool) → Prop
-  | [] => False
-  | [(d, b)] => b = false ∧ d ≤ 1
-  | (d₁, true) :: (d₂, b₂) :: Rt => d₁ ≤ 1 ∧ d₂ = 0 ∧ validR ((d₂, b₂) :: Rt)
-  | (d₁, false) :: (d₂, b₂) :: Rt =>
-      d₁ ≤ 5 ∧ (2 ≤ d₁ → d₂ ≤ 1) ∧ (4 ≤ d₁ → d₂ = 0) ∧ validR ((d₂, b₂) :: Rt)
+def validR (R : List (ℕ × Bool)) : Prop :=
+  List.rec False (fun p tl acc =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 1)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 5 ∧ (2 ≤ p.1 → q.1 ≤ 1) ∧ (4 ≤ p.1 → q.1 = 0) ∧ acc)
+          (p.1 ≤ 1 ∧ q.1 = 0 ∧ acc))) R
 
 @[simp]
-private def validR_BR : List (ℕ × Bool) → Prop
-  | [] => False
-  | [(d, b)] => b = false ∧ d ≤ 2
-  | (d₁, true) :: (d₂, b₂) :: Rt => d₁ ≤ 2 ∧ d₂ = 0 ∧ validR ((d₂, b₂) :: Rt)
-  | (d₁, false) :: (d₂, b₂) :: Rt =>
-      d₁ ≤ 6 ∧ (3 ≤ d₁ → d₂ ≤ 1) ∧ (5 ≤ d₁ → d₂ = 0) ∧ validR ((d₂, b₂) :: Rt)
+def validR_BR (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 2)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 6 ∧ (3 ≤ p.1 → q.1 ≤ 1) ∧ (5 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (p.1 ≤ 2 ∧ q.1 = 0 ∧ validR tl)))
 
 @[simp]
-private def validR_DL : List (ℕ × Bool) → Prop
-  | [] => False
-  | [(d, b)] => b = false ∧ 1 ≤ d ∧ d ≤ 3
-  | (d₁, true) :: (d₂, b₂) :: Rt => 1 ≤ d₁ ∧ d₁ ≤ 3 ∧ d₂ = 0 ∧ validR ((d₂, b₂) :: Rt)
-  | (d₁, false) :: (d₂, b₂) :: Rt =>
-      1 ≤ d₁ ∧ d₁ ≤ 7 ∧ (4 ≤ d₁ → d₂ ≤ 1) ∧ (6 ≤ d₁ → d₂ = 0) ∧ validR ((d₂, b₂) :: Rt)
+def validR_DL (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ 1 ≤ p.1 ∧ p.1 ≤ 3)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (1 ≤ p.1 ∧ p.1 ≤ 7 ∧ (4 ≤ p.1 → q.1 ≤ 1) ∧ (6 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (1 ≤ p.1 ∧ p.1 ≤ 3 ∧ q.1 = 0 ∧ validR tl)))
 
 @[simp]
-private def ValidSeg : SegState → Prop
-  | (.mBR, L, Rs, d_bot) =>
-      let R := fullR Rs d_bot
-      validR_BR R ∧
-      match L with
-      | [] => True
-      | (0, o) :: Lt =>
-          validLt Lt ∧ o ≤ 6 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 2 ≤ o ∧ o ≤ 4))
-      | (1, o) :: Lt => validLt Lt ∧ o ≤ 8
-      | (_ + 2, o) :: Lt => validLt Lt ∧ o ≤ 6
-  | (.mER0, L, Rs, d_bot) =>
-      let R := fullR Rs d_bot
-      validR R ∧
-      match L with
-      | [] => headD R = 0
-      | (0, o) :: Lt =>
-          validLt Lt ∧ o ≤ 5 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 1 ≤ o ∧ o ≤ 3))
-      | (1, o) :: Lt => validLt Lt ∧ o ≤ 6 ∧ headD R ≤ 1
-      | (_ + 2, o) :: Lt => validLt Lt ∧ o ≤ 6 ∧ headD R = 0
-  | (.mER1, L, Rs, d_bot) =>
-      match Rs with
-      | [] => False
-      | (d₀, b₀) :: Rs' =>
-          let Rt := fullR Rs' d_bot
-          b₀ = false ∧ validR Rt ∧
-          match L with
-          | [] => d₀ ≤ 5 ∧ (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0)
-          | (0, o) :: Lt =>
-              validLt Lt ∧ o ≤ 4 ∧ d₀ = 0 ∧ headD Rt ≤ 1 ∧ (3 ≤ o → headD Rt = 0)
-          | (_ + 1, o) :: Lt =>
-              validLt Lt ∧ o ≤ 6 ∧ d₀ ≤ 5 ∧ (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0)
-  | (.mDL, L, Rs, d_bot) =>
-      validR_DL (fullR Rs d_bot) ∧
-      match L with
-      | [] => True
-      | (0, _) :: _ => False
-      | (_ + 1, o) :: Lt => validLt Lt ∧ o ≤ 6
-  | (.mAL, L, Rs, d_bot) =>
-      let R := fullR Rs d_bot
-      validR R ∧
-      match L with
-      | (0, o) :: Lt =>
-          validLt Lt ∧ 2 ≤ o ∧ o ≤ 8 ∧ (7 ≤ o → headD R = 0) ∧ (5 ≤ o → headD R ≤ 1)
-      | _ => False
+def ValidSeg (s : SegState) : Prop :=
+  Prod.casesOn s fun m rest =>
+    Prod.casesOn rest fun L rest2 =>
+      Prod.casesOn rest2 fun Rs d_bot =>
+        match m with
+        | .mBR =>
+            let R := fullR Rs d_bot
+            validR_BR R ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 6 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 2 ≤ o ∧ o ≤ 4)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 8) (fun _ => validLt Lt ∧ o ≤ 6)))
+        | .mER0 =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L (headD R = 0) (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 5 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 1 ≤ o ∧ o ≤ 3)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 6 ∧ headD R ≤ 1)
+                    (fun _ => validLt Lt ∧ o ≤ 6 ∧ headD R = 0)))
+        | .mER1 =>
+            List.casesOn Rs False (fun hd Rs' =>
+              Prod.casesOn hd fun d₀ b₀ =>
+                let Rt := fullR Rs' d_bot
+                b₀ = false ∧ validR Rt ∧
+                List.casesOn L
+                  (d₀ ≤ 5 ∧ (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))
+                  (fun p Lt =>
+                    Prod.casesOn p fun z o =>
+                      Nat.casesOn z
+                        (validLt Lt ∧ o ≤ 4 ∧ d₀ = 0 ∧ headD Rt ≤ 1 ∧ (3 ≤ o → headD Rt = 0))
+                        (fun _ => validLt Lt ∧ o ≤ 6 ∧ d₀ ≤ 5 ∧
+                          (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))))
+        | .mDL =>
+            validR_DL (fullR Rs d_bot) ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z False (fun _ => validLt Lt ∧ o ≤ 6))
+        | .mAL =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L False (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ 2 ≤ o ∧ o ≤ 8 ∧ (7 ≤ o → headD R = 0) ∧
+                    (5 ≤ o → headD R ≤ 1))
+                  (fun _ => False))
 
 @[simp]
-private def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
   [.finWord (s.2.2.1.map rWord), .reg [1] s.2.2.2, .gadget [1, 0]]
 
 @[simp]
-private def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
   [.finWord (s.2.1.map lWord)]
 
 private theorem append_assoc_blank (a b : List (Fin 2)) (s : zB) :
@@ -299,18 +318,19 @@ private theorem append_assoc_blank (a b : List (Fin 2)) (s : zB) :
 private theorem reg_gadget_eq_encRight_bot (d_bot : ℕ) :
     (([1] : List (Fin 2)) ^ d_bot) +> ([1, 0] +> (default : zB)) = encRight [(d_bot, false)] := by
   induction d_bot with
-  | zero => simp [encRight, rWord, ListBlank.append]
+  | zero => simp [ListBlank.append]
   | succ d ih =>
     rw [Counter.pow_succ_list, append_assoc_blank]
-    simp only [encRight, rWord, ListBlank.append] at ih ⊢
+    simp only [encRight_nil, encRight_cons, rWord_succ,
+      ListBlank.append] at ih ⊢
     exact congrArg ((1 : Fin 2) >> ·) ih
 
 private theorem evalSegRegion_lWord (L : List (ℕ × ℕ)) :
     evalSegRegion (.finWord (L.map lWord)) +> (default : zB) = encLeft L := by
   induction L with
-  | nil => simp [evalSegRegion, encLeft]
+  | nil => simp [evalSegRegion]
   | cons p rest ih =>
-    simp only [List.map_cons, evalSegRegion, encLeft, ← ih]
+    simp only [List.map_cons, evalSegRegion, encLeft_cons, ← ih]
     exact append_assoc_blank (lWord p) (evalSegRegion (.finWord (rest.map lWord))) default
 
 private theorem evalSegRegion_rWord_tail (Rs : List (ℕ × Bool)) (d_bot : ℕ) :
@@ -343,7 +363,8 @@ private theorem evalSegmentedHalf_segsR (m : SegMode) (L : List (ℕ × ℕ)) (R
 private theorem encRight_nth_zero (p : ℕ × Bool) (R : List (ℕ × Bool)) :
     (encRight (p :: R)).nth 0 = 1 := by
   rcases p with ⟨_ | d, _ | _⟩ <;>
-    simp only [encRight, rWord, ListBlank.append, WordRunStack.nth_cons_zero]
+    simp only [encRight_cons, rWord_zero_false, rWord_zero_true, rWord_succ,
+      ListBlank.append, WordRunStack.nth_cons_zero]
 
 private theorem noFactor_0001_rWord_nil (d : ℕ) (b : Bool) :
     WordRunStack.NoFactor [0, 0, 0, 1] (rWord (d, b) +> (default : zB)) := by
@@ -352,11 +373,11 @@ private theorem noFactor_0001_rWord_nil (d : ℕ) (b : Bool) :
   induction d with
   | zero =>
     cases b <;> (
-      simp only [rWord, ListBlank.append, zero_cons_default]
+      simp only [rWord_zero_false, rWord_zero_true, ListBlank.append, zero_cons_default]
       exact WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (1 : Fin 2) default hd 0
         (by decide) (by rw [WordRunStack.nth_cons_zero]; decide))
   | succ d ih =>
-    simp only [rWord, ListBlank.append]
+    simp only [rWord_succ, ListBlank.append]
     exact WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (1 : Fin 2) _ ih 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
 
@@ -367,14 +388,14 @@ private theorem noFactor_0001_rWord_cons (d : ℕ) (b : Bool) (t : zB) (ht0 : t.
   | zero =>
     cases b with
     | false =>
-      simp only [rWord, ListBlank.append]
+      simp only [rWord_zero_false, ListBlank.append]
       have h0 : WordRunStack.NoFactor [0, 0, 0, 1] ((0 : Fin 2) >> t) :=
         WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (0 : Fin 2) t ht 1 (by decide)
           (by rw [WordRunStack.nth_cons_succ, ht0]; decide)
       exact WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (1 : Fin 2) _ h0 0 (by decide)
         (by rw [WordRunStack.nth_cons_zero]; decide)
     | true =>
-      simp only [rWord, ListBlank.append]
+      simp only [rWord_zero_true, ListBlank.append]
       have h0 : WordRunStack.NoFactor [0, 0, 0, 1] ((0 : Fin 2) >> t) :=
         WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (0 : Fin 2) t ht 1 (by decide)
           (by rw [WordRunStack.nth_cons_succ, ht0]; decide)
@@ -384,7 +405,7 @@ private theorem noFactor_0001_rWord_cons (d : ℕ) (b : Bool) (t : zB) (ht0 : t.
       exact WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (1 : Fin 2) _ h00 0 (by decide)
         (by rw [WordRunStack.nth_cons_zero]; decide)
   | succ d ih =>
-    simp only [rWord, ListBlank.append]
+    simp only [rWord_succ, ListBlank.append]
     exact WordRunStack.noFactor_cons_of_nth_ne [0, 0, 0, 1] (1 : Fin 2) _ ih 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
 
@@ -409,9 +430,10 @@ private abbrev wOnes10 : List (Fin 2) := [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 private theorem oWord_nth_succ (o : ℕ) (t : zB) : (oWord o +> t).nth (o + 1) = 0 := by
   induction o with
   | zero =>
-    simp only [oWord, ListBlank.append, WordRunStack.nth_cons_succ, WordRunStack.nth_cons_zero]
+    simp only [oWord_zero, ListBlank.append, WordRunStack.nth_cons_succ,
+      WordRunStack.nth_cons_zero]
   | succ o ih =>
-    simp only [oWord, ListBlank.append]
+    simp only [oWord_succ, ListBlank.append]
     rw [WordRunStack.nth_cons_succ]
     exact ih
 
@@ -420,7 +442,7 @@ private theorem noFactor_wOnes10_oWord (o : ℕ) (ho : o ≤ 8) (t : zB)
     WordRunStack.NoFactor wOnes10 (oWord o +> t) := by
   induction o with
   | zero =>
-    simp only [oWord, ListBlank.append]
+    simp only [oWord_zero, ListBlank.append]
     have h0 : WordRunStack.NoFactor wOnes10 ((0 : Fin 2) >> t) :=
       WordRunStack.noFactor_cons_of_nth_ne wOnes10 0 t ht 0 (by decide)
         (by rw [WordRunStack.nth_cons_zero]; decide)
@@ -429,7 +451,7 @@ private theorem noFactor_wOnes10_oWord (o : ℕ) (ho : o ≤ 8) (t : zB)
   | succ o ih =>
     have ih' := ih (by omega)
     have hnth := oWord_nth_succ o t
-    simp only [oWord, ListBlank.append]
+    simp only [oWord_succ, ListBlank.append]
     rcases o with _ | _ | _ | _ | _ | _ | _ | _ | o
     · exact WordRunStack.noFactor_cons_of_nth_ne wOnes10 1 _ ih' 2 (by decide)
         (by rw [WordRunStack.nth_cons_succ, hnth]; decide)
@@ -453,9 +475,9 @@ private theorem noFactor_wOnes10_lWord (z o : ℕ) (ho : o ≤ 8) (t : zB)
     (ht : WordRunStack.NoFactor wOnes10 t) :
     WordRunStack.NoFactor wOnes10 (lWord (z, o) +> t) := by
   induction z with
-  | zero => simp only [lWord]; exact noFactor_wOnes10_oWord o ho t ht
+  | zero => simp only [lWord_zero]; exact noFactor_wOnes10_oWord o ho t ht
   | succ z ih =>
-    simp only [lWord, ListBlank.append]
+    simp only [lWord_succ, ListBlank.append]
     exact WordRunStack.noFactor_cons_of_nth_ne wOnes10 0 _ ih 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
 
@@ -514,14 +536,11 @@ private theorem segsR_nowhere_dense : IsNowhereDenseHalf ValidSeg segsR :=
       rw [evalSegmentedHalf_segsR]
       exact noFactor_wOnes10_encLeft L (validSeg_imp_allOLe8 (m, L, Rs, d_bot) hv))
 
-private theorem segs_len_le_three (s : SegState) (_ : ValidSeg s) :
-    (segsL s).length ≤ 3 ∧ (segsR s).length ≤ 3 := by
-  simp [segsL, segsR]
 
 -- 3. Mode Configuration Semantics
 
 @[simp]
-private def evalSegCfg : SegMode → List (ℕ × ℕ) → List (ℕ × Bool) → Cfg (Fin 2) (Fin 6)
+def evalSegCfg : SegMode → List (ℕ × ℕ) → List (ℕ × Bool) → Cfg (Fin 2) (Fin 6)
   | .mBR, L, R => (applyView (.id []) (encRight R)) {{1}}> (applyView (.id []) (encLeft L))
   | .mER0, L, R => (applyView (.id [0]) (encRight R)) {{4}}> (applyView (.id []) (encLeft L))
   | .mER1, L, R => (applyView (.id []) (encRight R)) {{4}}> (applyView (.id []) (encLeft L))
@@ -529,7 +548,7 @@ private def evalSegCfg : SegMode → List (ℕ × ℕ) → List (ℕ × Bool) �
   | .mAL, L, R => (applyView (.id []) (encRight R)) <{{0}} (applyView (.id []) (encLeft L))
 
 @[simp]
-private def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
   evalSegCfg s.1 s.2.1 (fullR s.2.2.1 s.2.2.2)
 
 private theorem valid_seg_modes :
@@ -576,28 +595,28 @@ private theorem valid_seg_modes :
 private theorem cons_one_encRight (R : List (ℕ × Bool)) :
     ((1 : Fin 2) >> encRight R) = encRight (bumpR R) := by
   rcases R with _ | ⟨⟨_ | d, b⟩, R⟩
-  · simp [bumpR, encRight, rWord, ListBlank.append]
-  · cases b <;> simp [bumpR, encRight, rWord, ListBlank.append]
-  · simp [bumpR, encRight, rWord, ListBlank.append]
+  · simp [bumpR, ListBlank.append]
+  · cases b <;> simp [bumpR, ListBlank.append]
+  · simp [bumpR, ListBlank.append]
 
 private theorem cons_100_encRight (R : List (ℕ × Bool)) :
     ((1 : Fin 2) >> (0 : Fin 2) >> (0 : Fin 2) >> encRight R) = encRight (push100R R) := by
   rcases R with _ | ⟨p, R⟩
-  · simp [push100R, encRight, rWord, ListBlank.append]
-  · simp [push100R, encRight, rWord, ListBlank.append]
+  · simp [push100R, ListBlank.append]
+  · simp [push100R, ListBlank.append]
 
 private theorem cons_zero_encLeft (L : List (ℕ × ℕ)) :
     ((0 : Fin 2) >> encLeft L) = encLeft (push0L L) := by
   rcases L with _ | ⟨⟨z, o⟩, L⟩
-  · simp [encLeft, push0L]
-  · simp [encLeft, push0L, lWord]
+  · simp [push0L]
+  · simp [push0L]
 
 private theorem cons_one_encLeft (L : List (ℕ × ℕ)) :
     ((1 : Fin 2) >> encLeft L) = encLeft (push1L L) := by
   rcases L with _ | ⟨⟨_ | z, o⟩, L⟩
-  · simp [encLeft, push1L, lWord, oWord, ListBlank.append]
-  · simp [encLeft, push1L, lWord, oWord]
-  · simp [encLeft, push1L, lWord, oWord, ListBlank.append]
+  · simp [push1L, ListBlank.append]
+  · simp [push1L]
+  · simp [push1L, ListBlank.append]
 
 @[simp]
 private def s₀ : SegState := (.mBR, [], [], 0)
@@ -608,38 +627,38 @@ private theorem validSeg_s₀ : ValidSeg s₀ := by
 private theorem step_mAL_nil (L : List (ℕ × ℕ)) :
     (evalSegCfg .mAL L []) [target_tm]⊢⁺ evalSegCfg .mBR L [(0, false)] := by
   dsimp only [evalSegCfg, applyView]
-  simp only [encRight, rWord, ListBlank.append, zero_cons_default, default_head,
-      default_tail]
+  simp only [encRight_nil, encRight_cons, rWord_zero_false,
+    ListBlank.append, zero_cons_default, default_head, default_tail]
   execute
 
 private theorem init_reaches_segmented_system :
     (init []) [target_tm]⊢⁺ evalCfg s₀ := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = ((default : zB) {{0}}> (default : zB)) := rfl
   rw [h_init]
-  simp only [evalCfg, s₀, fullR, List.nil_append, evalSegCfg, applyView, encLeft, encRight,
-    rWord, ListBlank.append, zero_cons_default, default_head, default_tail]
+  simp only [evalCfg, s₀, fullR, List.nil_append, evalSegCfg, applyView, encLeft_nil,
+    encRight_nil, encRight_cons, rWord_zero_false, ListBlank.append,
+    zero_cons_default, default_head, default_tail]
   execute
 
 private theorem step_mBR_nil (R : List (ℕ × Bool)) :
     (evalSegCfg .mBR [] R) [target_tm]⊢⁺ evalSegCfg .mDL [] (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight]
-  simp only [encLeft, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, default_head,
-      default_tail]
+  simp only [encLeft_nil, ListBlank.append, Turing.ListBlank.head_cons,
+    Turing.ListBlank.tail_cons, default_head, default_tail]
   execute
 
 private theorem step_mBR_0_0 (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mBR ((0, 0) :: L) R) [target_tm]⊢⁺ evalSegCfg .mER0 (push0L L) R := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_zero_encLeft]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, oWord_zero,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mBR_0_succ (o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mBR ((0, o + 1) :: L) R) [target_tm]⊢⁺ evalSegCfg .mER0 ((0, o) :: L) R := by
   dsimp only [evalSegCfg, applyView]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, oWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mBR_1_0_halts (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
@@ -647,8 +666,9 @@ private theorem step_mBR_1_0_halts (L : List (ℕ × ℕ)) (R : List (ℕ × Boo
       (step target_tm cfg_h).isNone := by
   have h1 : (evalSegCfg .mBR ((1, 0) :: L) R) [target_tm]⊢⁺
       (((0 : Fin 2) >> (1 : Fin 2) >> encRight R) {{5}}> ((0 : Fin 2) >> encLeft L)) := by
-    simp only [evalSegCfg, applyView, encLeft, lWord, oWord,
-      ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+    simp only [evalSegCfg, applyView, encLeft_cons, lWord_zero, lWord_succ,
+      oWord_zero, ListBlank.append, Turing.ListBlank.head_cons,
+      Turing.ListBlank.tail_cons]
     execute
   refine ⟨_, h1, ?_⟩
   simp [step, target_tm, Turing.ListBlank.head_cons]
@@ -658,38 +678,38 @@ private theorem step_mBR_1_1 (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
       evalSegCfg .mDL (push0L (push0L (push0L L))) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]
   rw [← cons_one_encRight, ← cons_zero_encLeft, ← cons_zero_encLeft, ← cons_zero_encLeft]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, lWord_succ, oWord_zero, oWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mBR_1_succ2 (o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mBR ((1, o + 2) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mDL ((2, o) :: L) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, lWord_succ, oWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mBR_succ2 (z o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mBR ((z + 2, o) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mDL ((z + 1, o) :: L) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight]
-  simp only [encLeft, lWord, ListBlank.append,
+  simp only [encLeft_cons, lWord_succ, ListBlank.append,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mER0_nil (R : List (ℕ × Bool)) :
     (evalSegCfg .mER0 [] R) [target_tm]⊢⁺ evalSegCfg .mBR [] (push100R R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_100_encRight]
-  simp only [encLeft, ListBlank.append, default_head,
-      default_tail]
+  simp only [encLeft_nil, ListBlank.append, default_head, default_tail]
   execute
 
 private theorem step_mER0_0_0 (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mER0 ((0, 0) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mER1 (push0L L) ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_zero_encLeft]
-  simp only [encLeft, encRight, lWord, rWord, oWord, ListBlank.append,
+  simp only [encLeft_cons, encRight_cons, lWord_zero,
+    rWord_zero_false, oWord_zero, ListBlank.append,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
@@ -697,7 +717,8 @@ private theorem step_mER0_0_succ (o : ℕ) (L : List (ℕ × ℕ)) (R : List (�
     (evalSegCfg .mER0 ((0, o + 1) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mER1 ((0, o) :: L) ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]
-  simp only [encLeft, encRight, lWord, rWord, oWord, ListBlank.append,
+  simp only [encLeft_cons, encRight_cons, lWord_zero,
+    rWord_zero_false, oWord_succ, ListBlank.append,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
@@ -705,7 +726,8 @@ private theorem step_mER0_1_0 (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mER0 ((1, 0) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mBR (push0L (push0L L)) ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_zero_encLeft, ← cons_zero_encLeft]
-  simp only [encLeft, encRight, lWord, rWord, oWord, ListBlank.append,
+  simp only [encLeft_cons, encRight_cons, lWord_zero, lWord_succ,
+    rWord_zero_false, oWord_zero, ListBlank.append,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
@@ -713,7 +735,8 @@ private theorem step_mER0_1_succ (o : ℕ) (L : List (ℕ × ℕ)) (R : List (�
     (evalSegCfg .mER0 ((1, o + 1) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mBR ((1, o) :: L) ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]
-  simp only [encLeft, encRight, lWord, rWord, oWord, ListBlank.append,
+  simp only [encLeft_cons, encRight_cons, lWord_zero, lWord_succ,
+    rWord_zero_false, oWord_succ, ListBlank.append,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
@@ -721,30 +744,30 @@ private theorem step_mER0_succ2 (z o : ℕ) (L : List (ℕ × ℕ)) (R : List (�
     (evalSegCfg .mER0 ((z + 2, o) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mBR ((z, o) :: L) (push100R R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_100_encRight]
-  simp only [encLeft, lWord, ListBlank.append,
+  simp only [encLeft_cons, lWord_succ, ListBlank.append,
     Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mER1_nil (R : List (ℕ × Bool)) :
     (evalSegCfg .mER1 [] R) [target_tm]⊢⁺ evalSegCfg .mBR [] ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]
-  simp only [encLeft, encRight, rWord, ListBlank.append, default_head,
-      default_tail]
+  simp only [encLeft_nil, encRight_cons, rWord_zero_false,
+    ListBlank.append, default_head, default_tail]
   execute
 
 private theorem step_mER1_0_0 (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mER1 ((0, 0) :: L) R) [target_tm]⊢⁺ evalSegCfg .mER1 (push0L L) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight, ← cons_zero_encLeft]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, oWord_zero,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mER1_0_succ (o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mER1 ((0, o + 1) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mER1 ((0, o) :: L) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, oWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mER1_sweep (o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
@@ -759,32 +782,33 @@ private theorem step_mER1_1_0 (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
       evalSegCfg .mBR (push0L (push0L L)) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]
   rw [← cons_one_encRight, ← cons_zero_encLeft, ← cons_zero_encLeft]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, lWord_succ, oWord_zero,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mER1_1_succ (o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mER1 ((1, o + 1) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mBR ((1, o) :: L) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight]
-  simp only [encLeft, lWord, oWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, lWord_zero, lWord_succ, oWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mER1_succ2 (z o : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mER1 ((z + 2, o) :: L) R) [target_tm]⊢⁺
       evalSegCfg .mBR ((z, o) :: L) ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]
-  simp only [encLeft, encRight, lWord, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encLeft_cons, encRight_cons, lWord_succ,
+    rWord_zero_false, ListBlank.append, Turing.ListBlank.head_cons,
+    Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mDL_0_false (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mDL L ((0, false) :: R)) [target_tm]⊢⁺
       evalSegCfg .mAL (push1L (push1L L)) R := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encLeft, ← cons_one_encLeft]
-  simp only [encRight, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encRight_cons, rWord_zero_false,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mDL_0_true (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
@@ -792,16 +816,16 @@ private theorem step_mDL_0_true (L : List (ℕ × ℕ)) (R : List (ℕ × Bool))
       evalSegCfg .mBR (push1L (push1L L)) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]
   rw [← cons_one_encRight, ← cons_one_encLeft, ← cons_one_encLeft]
-  simp only [encRight, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encRight_cons, rWord_zero_true,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mDL_succ (d : ℕ) (b : Bool) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mDL L ((d + 1, b) :: R)) [target_tm]⊢⁺
       evalSegCfg .mDL (push1L L) ((d, b) :: R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encLeft]
-  simp only [encRight, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encRight_cons, rWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mDL_sweep_false (d : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
@@ -822,24 +846,24 @@ private theorem step_mAL_0_false (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)
     (evalSegCfg .mAL L ((0, false) :: R)) [target_tm]⊢⁺
       evalSegCfg .mBR (push0L L) (bumpR R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_one_encRight, ← cons_zero_encLeft]
-  simp only [encRight, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encRight_cons, rWord_zero_false,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mAL_0_true (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mAL L ((0, true) :: R)) [target_tm]⊢⁺
       evalSegCfg .mBR (push0L L) ((0, false) :: R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_zero_encLeft]
-  simp only [encRight, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encRight_cons, rWord_zero_false, rWord_zero_true,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mAL_succ (d : ℕ) (b : Bool) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
     (evalSegCfg .mAL L ((d + 1, b) :: R)) [target_tm]⊢⁺
       evalSegCfg .mAL (push0L L) ((d, b) :: R) := by
   dsimp only [evalSegCfg, applyView]; rw [← cons_zero_encLeft]
-  simp only [encRight, rWord, ListBlank.append,
-    Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+  simp only [encRight_cons, rWord_succ,
+    ListBlank.append, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   execute
 
 private theorem step_mAL_sweep_false (d : ℕ) (L : List (ℕ × ℕ)) (R : List (ℕ × Bool)) :
@@ -997,8 +1021,8 @@ private def ltAfterDL : List (ℕ × ℕ) → List (ℕ × ℕ)
   | (z + 1, o) :: Lt => (z, o) :: Lt
 
 private theorem push1LN_ar_eq (d : ℕ) (L : List (ℕ × ℕ))
-    (hL : match L with | [] => True | (0, _) :: _ => False | (_ + 1, o) :: Lt => validLt Lt ∧
-      o ≤ 6) :
+    (hL : List.casesOn L True (fun hd Lt =>
+      Prod.casesOn hd fun z o => Nat.casesOn z False (fun _ => validLt Lt ∧ o ≤ 6))) :
     push1LN (d + 2) L = (0, d + 1) :: ltAfterDL L ∧ validLt (ltAfterDL L) := by
   rcases L with _ | ⟨⟨_ | z, o⟩, Lt⟩
   · exact ⟨push1LN_succ2_nil d, trivial⟩
@@ -1285,20 +1309,20 @@ private theorem segmented_system_closed (s : SegState) (hv : ValidSeg s) :
 
 private theorem lWord_ne_nil (p : ℕ × ℕ) : lWord p ≠ [] := by
   rcases p with ⟨_ | z, o⟩
-  · cases o <;> simp [lWord, oWord]
-  · simp [lWord]
+  · cases o <;> simp
+  · simp
 
 private theorem lWord_ne_zero : ∀ p : ℕ × ℕ, lWord p ≠ [(0 : Fin 2)]
-  | (0, o) => by cases o <;> simp [lWord, oWord]
+  | (0, o) => by cases o <;> simp
   | (z + 1, o) => by
       unfold lWord
       intro h
       exact lWord_ne_nil (z, o) (List.cons.inj h).2
 
 private theorem rWord_len : ∀ p : ℕ × Bool, 2 ≤ (rWord p).length
-  | (0, false) => by simp [rWord]
-  | (0, true) => by simp [rWord]
-  | (d + 1, b) => by have := rWord_len (d, b); simp only [rWord, List.length_cons]; omega
+  | (0, false) => by simp
+  | (0, true) => by simp
+  | (d + 1, b) => by have := rWord_len (d, b); simp only [    rWord_succ, List.length_cons]; omega
 
 private theorem rWord_ne_nil (p : ℕ × Bool) : rWord p ≠ [] := by
   intro h; have := rWord_len p; simp [h] at this
@@ -1327,14 +1351,21 @@ private theorem segs_wf (s : SegState) (_ : ValidSeg s) :
     · rcases List.mem_map.mp (h 0) with ⟨p, _, hp⟩
       exact lWord_ne_zero p hp
 
-/-- Segmented cryptid certificate for `1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC`. -/
-theorem is_segmented_cryptid : IsSegmentedCryptid target := by
+/-- Canonical mode list for `1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC`. -/
+def modes : List SegMode := [.mBR, .mER0, .mER1, .mDL, .mAL]
+
+/-- Explicit `IsClosedSegmentedSystem` witness for `1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC`. -/
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
   rw [target_eq_target_tm]
-  refine ⟨SegState, SegMode, [.mBR, .mER0, .mER1, .mDL, .mAL], ValidSeg, modeOf, segsL, segsR,
-    evalCfg,
-    by decide, by decide, fun m => by cases m <;> simp,
+  refine ⟨by decide, by decide, fun m => by cases m <;> simp [modes],
     segs_wf, valid_seg_modes, Or.inl segsL_nowhere_dense, Or.inl segsL_nowhere_dense,
       Or.inl segsR_nowhere_dense,
     ⟨s₀, validSeg_s₀, init_reaches_segmented_system⟩, segmented_system_closed⟩
+
+/-- Segmented cryptid certificate for `1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC`. -/
+theorem is_segmented_cryptid : IsSegmentedCryptid target :=
+  ⟨SegState, SegMode, modes, ValidSeg, modeOf, segsL, segsR, evalCfg,
+    is_closed_segmented_system⟩
 
 end BusyBeaver.M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC

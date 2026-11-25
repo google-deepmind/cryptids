@@ -10419,6 +10419,7 @@ def ps : TapePatternSet (Fin 2) (Fin 6) :=
   [(pat0, .true), (pat1, .true), (pat2, .true), (pat3, .true), (pat4, .true), (pat5, .true)]
 
 theorem is_closed_pattern_set : IsClosedPatternSet target ps := by sorry
+theorem has_collatz_reduction : HasCollatzReduction target := by sorry
 theorem is_cryptid : IsCryptid target := by sorry
 end BusyBeaver.M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC
 
@@ -10615,6 +10616,123 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) :=
   machine.toBB
 
+inductive SegMode where
+  | mCL
+  | mDL0
+  | mDL1
+  | mAR
+  | mBR
+deriving DecidableEq, Repr
+def oWord (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 0] (fun _ acc => 1 :: acc) o
+def lWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oWord p.2) (fun _ acc => 0 :: acc) p.1
+def rWord (p : ℕ × Bool) : List (Fin 2) :=
+  Nat.rec (cond p.2 [1, 0, 0] [1, 0]) (fun _ acc => 1 :: acc) p.1
+def encLeft (L : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) L
+def encRight (R : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) R
+def fullR (Rs : List (ℕ × Bool)) (d_bot : ℕ) : List (ℕ × Bool) :=
+  Rs ++ [(d_bot, false)]
+abbrev SegState := SegMode × List (ℕ × ℕ) × List (ℕ × Bool) × ℕ
+def modeOf (s : SegState) : SegMode := s.1
+def headD (R : List (ℕ × Bool)) : ℕ :=
+  List.casesOn R 0 (fun p _ => p.1)
+def validLt (Lt : List (ℕ × ℕ)) : Prop :=
+  List.rec True (fun p _ acc => p.2 ≤ 6 ∧ acc) Lt
+def validR (R : List (ℕ × Bool)) : Prop :=
+  List.rec False (fun p tl acc =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 1)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 5 ∧ (2 ≤ p.1 → q.1 ≤ 1) ∧ (4 ≤ p.1 → q.1 = 0) ∧ acc)
+          (p.1 ≤ 1 ∧ q.1 = 0 ∧ acc))) R
+def validR_CL (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 2)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 6 ∧ (3 ≤ p.1 → q.1 ≤ 1) ∧ (5 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (p.1 ≤ 2 ∧ q.1 = 0 ∧ validR tl)))
+def validR_AR (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ 1 ≤ p.1 ∧ p.1 ≤ 3)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (1 ≤ p.1 ∧ p.1 ≤ 7 ∧ (4 ≤ p.1 → q.1 ≤ 1) ∧ (6 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (1 ≤ p.1 ∧ p.1 ≤ 3 ∧ q.1 = 0 ∧ validR tl)))
+def ValidSeg (s : SegState) : Prop :=
+  Prod.casesOn s fun m rest =>
+    Prod.casesOn rest fun L rest2 =>
+      Prod.casesOn rest2 fun Rs d_bot =>
+        match m with
+        | .mCL =>
+            let R := fullR Rs d_bot
+            validR_CL R ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 6 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 2 ≤ o ∧ o ≤ 4)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 8) (fun _ => validLt Lt ∧ o ≤ 6)))
+        | .mDL0 =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L (headD R = 0) (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 5 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 1 ≤ o ∧ o ≤ 3)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 6 ∧ headD R ≤ 1)
+                    (fun _ => validLt Lt ∧ o ≤ 6 ∧ headD R = 0)))
+        | .mDL1 =>
+            List.casesOn Rs False (fun hd Rs' =>
+              Prod.casesOn hd fun d₀ b₀ =>
+                let Rt := fullR Rs' d_bot
+                b₀ = false ∧ validR Rt ∧
+                List.casesOn L
+                  (d₀ ≤ 5 ∧ (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))
+                  (fun p Lt =>
+                    Prod.casesOn p fun z o =>
+                      Nat.casesOn z
+                        (validLt Lt ∧ o ≤ 4 ∧ d₀ = 0 ∧ headD Rt ≤ 1 ∧ (3 ≤ o → headD Rt = 0))
+                        (fun _ => validLt Lt ∧ o ≤ 6 ∧ d₀ ≤ 5 ∧
+                          (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))))
+        | .mAR =>
+            validR_AR (fullR Rs d_bot) ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z False (fun _ => validLt Lt ∧ o ≤ 6))
+        | .mBR =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L False (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ 2 ≤ o ∧ o ≤ 8 ∧ (7 ≤ o → headD R = 0) ∧
+                    (5 ≤ o → headD R ≤ 1))
+                  (fun _ => False))
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.1.map rWord), .reg [1] s.2.2.2, .gadget [1, 0]]
+def evalSegCfg : SegMode → List (ℕ × ℕ) → List (ℕ × Bool) → Cfg (Fin 2) (Fin 6)
+  | .mCL, L, R => (applyView (.id []) (encLeft L)) <{{2}} (applyView (.id []) (encRight R))
+  | .mDL0, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id [0]) (encRight R))
+  | .mDL1, L, R => (applyView (.id []) (encLeft L)) <{{3}} (applyView (.id []) (encRight R))
+  | .mAR, L, R => (applyView (.id []) (encLeft L)) {{0}}> (applyView (.id []) (encRight R))
+  | .mBR, L, R => (applyView (.id []) (encLeft L)) {{1}}> (applyView (.id []) (encRight R))
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 (fullR s.2.2.1 s.2.2.2)
+def modes : List SegMode := [.mCL, .mDL0, .mDL1, .mAR, .mBR]
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
 theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE
 
@@ -10629,6 +10747,123 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) :=
   machine.toBB
 
+inductive SegMode where
+  | mBR
+  | mER0
+  | mER1
+  | mDL
+  | mAL
+deriving DecidableEq, Repr
+def oWord (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 0] (fun _ acc => 1 :: acc) o
+def lWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oWord p.2) (fun _ acc => 0 :: acc) p.1
+def rWord (p : ℕ × Bool) : List (Fin 2) :=
+  Nat.rec (cond p.2 [1, 0, 0] [1, 0]) (fun _ acc => 1 :: acc) p.1
+def encLeft (L : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) L
+def encRight (R : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) R
+def fullR (Rs : List (ℕ × Bool)) (d_bot : ℕ) : List (ℕ × Bool) :=
+  Rs ++ [(d_bot, false)]
+abbrev SegState := SegMode × List (ℕ × ℕ) × List (ℕ × Bool) × ℕ
+def modeOf (s : SegState) : SegMode := s.1
+def headD (R : List (ℕ × Bool)) : ℕ :=
+  List.casesOn R 0 (fun p _ => p.1)
+def validLt (Lt : List (ℕ × ℕ)) : Prop :=
+  List.rec True (fun p _ acc => p.2 ≤ 6 ∧ acc) Lt
+def validR (R : List (ℕ × Bool)) : Prop :=
+  List.rec False (fun p tl acc =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 1)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 5 ∧ (2 ≤ p.1 → q.1 ≤ 1) ∧ (4 ≤ p.1 → q.1 = 0) ∧ acc)
+          (p.1 ≤ 1 ∧ q.1 = 0 ∧ acc))) R
+def validR_BR (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 2)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 6 ∧ (3 ≤ p.1 → q.1 ≤ 1) ∧ (5 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (p.1 ≤ 2 ∧ q.1 = 0 ∧ validR tl)))
+def validR_DL (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ 1 ≤ p.1 ∧ p.1 ≤ 3)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (1 ≤ p.1 ∧ p.1 ≤ 7 ∧ (4 ≤ p.1 → q.1 ≤ 1) ∧ (6 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (1 ≤ p.1 ∧ p.1 ≤ 3 ∧ q.1 = 0 ∧ validR tl)))
+def ValidSeg (s : SegState) : Prop :=
+  Prod.casesOn s fun m rest =>
+    Prod.casesOn rest fun L rest2 =>
+      Prod.casesOn rest2 fun Rs d_bot =>
+        match m with
+        | .mBR =>
+            let R := fullR Rs d_bot
+            validR_BR R ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 6 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 2 ≤ o ∧ o ≤ 4)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 8) (fun _ => validLt Lt ∧ o ≤ 6)))
+        | .mER0 =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L (headD R = 0) (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 5 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 1 ≤ o ∧ o ≤ 3)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 6 ∧ headD R ≤ 1)
+                    (fun _ => validLt Lt ∧ o ≤ 6 ∧ headD R = 0)))
+        | .mER1 =>
+            List.casesOn Rs False (fun hd Rs' =>
+              Prod.casesOn hd fun d₀ b₀ =>
+                let Rt := fullR Rs' d_bot
+                b₀ = false ∧ validR Rt ∧
+                List.casesOn L
+                  (d₀ ≤ 5 ∧ (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))
+                  (fun p Lt =>
+                    Prod.casesOn p fun z o =>
+                      Nat.casesOn z
+                        (validLt Lt ∧ o ≤ 4 ∧ d₀ = 0 ∧ headD Rt ≤ 1 ∧ (3 ≤ o → headD Rt = 0))
+                        (fun _ => validLt Lt ∧ o ≤ 6 ∧ d₀ ≤ 5 ∧
+                          (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))))
+        | .mDL =>
+            validR_DL (fullR Rs d_bot) ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z False (fun _ => validLt Lt ∧ o ≤ 6))
+        | .mAL =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L False (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ 2 ≤ o ∧ o ≤ 8 ∧ (7 ≤ o → headD R = 0) ∧
+                    (5 ≤ o → headD R ≤ 1))
+                  (fun _ => False))
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.1.map rWord), .reg [1] s.2.2.2, .gadget [1, 0]]
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+def evalSegCfg : SegMode → List (ℕ × ℕ) → List (ℕ × Bool) → Cfg (Fin 2) (Fin 6)
+  | .mBR, L, R => (applyView (.id []) (encRight R)) {{1}}> (applyView (.id []) (encLeft L))
+  | .mER0, L, R => (applyView (.id [0]) (encRight R)) {{4}}> (applyView (.id []) (encLeft L))
+  | .mER1, L, R => (applyView (.id []) (encRight R)) {{4}}> (applyView (.id []) (encLeft L))
+  | .mDL, L, R => (applyView (.id []) (encRight R)) <{{3}} (applyView (.id []) (encLeft L))
+  | .mAL, L, R => (applyView (.id []) (encRight R)) <{{0}} (applyView (.id []) (encLeft L))
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 (fullR s.2.2.1 s.2.2.2)
+def modes : List SegMode := [.mBR, .mER0, .mER1, .mDL, .mAL]
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
 theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC
 
@@ -10643,5 +10878,122 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) :=
   machine.toBB
 
+inductive SegMode where
+  | mAR
+  | mER0
+  | mER1
+  | mCL
+  | mDL
+deriving DecidableEq, Repr
+def oWord (o : ℕ) : List (Fin 2) :=
+  Nat.rec [1, 0] (fun _ acc => 1 :: acc) o
+def lWord (p : ℕ × ℕ) : List (Fin 2) :=
+  Nat.rec (oWord p.2) (fun _ acc => 0 :: acc) p.1
+def rWord (p : ℕ × Bool) : List (Fin 2) :=
+  Nat.rec (cond p.2 [1, 0, 0] [1, 0]) (fun _ acc => 1 :: acc) p.1
+def encLeft (L : List (ℕ × ℕ)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => lWord p +> acc) L
+def encRight (R : List (ℕ × Bool)) : ListBlank (Fin 2) :=
+  List.rec default (fun p _ acc => rWord p +> acc) R
+def fullR (Rs : List (ℕ × Bool)) (d_bot : ℕ) : List (ℕ × Bool) :=
+  Rs ++ [(d_bot, false)]
+abbrev SegState := SegMode × List (ℕ × ℕ) × List (ℕ × Bool) × ℕ
+def modeOf (s : SegState) : SegMode := s.1
+def headD (R : List (ℕ × Bool)) : ℕ :=
+  List.casesOn R 0 (fun p _ => p.1)
+def validLt (Lt : List (ℕ × ℕ)) : Prop :=
+  List.rec True (fun p _ acc => p.2 ≤ 6 ∧ acc) Lt
+def validR (R : List (ℕ × Bool)) : Prop :=
+  List.rec False (fun p tl acc =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 1)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 5 ∧ (2 ≤ p.1 → q.1 ≤ 1) ∧ (4 ≤ p.1 → q.1 = 0) ∧ acc)
+          (p.1 ≤ 1 ∧ q.1 = 0 ∧ acc))) R
+def validR_AR (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ p.1 ≤ 2)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (p.1 ≤ 6 ∧ (3 ≤ p.1 → q.1 ≤ 1) ∧ (5 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (p.1 ≤ 2 ∧ q.1 = 0 ∧ validR tl)))
+def validR_CL (R : List (ℕ × Bool)) : Prop :=
+  List.casesOn R False (fun p tl =>
+    List.casesOn tl
+      (p.2 = false ∧ 1 ≤ p.1 ∧ p.1 ≤ 3)
+      (fun q _ =>
+        Bool.casesOn p.2
+          (1 ≤ p.1 ∧ p.1 ≤ 7 ∧ (4 ≤ p.1 → q.1 ≤ 1) ∧ (6 ≤ p.1 → q.1 = 0) ∧ validR tl)
+          (1 ≤ p.1 ∧ p.1 ≤ 3 ∧ q.1 = 0 ∧ validR tl)))
+def ValidSeg (s : SegState) : Prop :=
+  Prod.casesOn s fun m rest =>
+    Prod.casesOn rest fun L rest2 =>
+      Prod.casesOn rest2 fun Rs d_bot =>
+        match m with
+        | .mAR =>
+            let R := fullR Rs d_bot
+            validR_AR R ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 6 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 2 ≤ o ∧ o ≤ 4)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 8) (fun _ => validLt Lt ∧ o ≤ 6)))
+        | .mER0 =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L (headD R = 0) (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ o ≤ 5 ∧ (headD R = 0 ∨ (headD R = 1 ∧ 1 ≤ o ∧ o ≤ 3)))
+                  (fun z' => Nat.casesOn z'
+                    (validLt Lt ∧ o ≤ 6 ∧ headD R ≤ 1)
+                    (fun _ => validLt Lt ∧ o ≤ 6 ∧ headD R = 0)))
+        | .mER1 =>
+            List.casesOn Rs False (fun hd Rs' =>
+              Prod.casesOn hd fun d₀ b₀ =>
+                let Rt := fullR Rs' d_bot
+                b₀ = false ∧ validR Rt ∧
+                List.casesOn L
+                  (d₀ ≤ 5 ∧ (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))
+                  (fun p Lt =>
+                    Prod.casesOn p fun z o =>
+                      Nat.casesOn z
+                        (validLt Lt ∧ o ≤ 4 ∧ d₀ = 0 ∧ headD Rt ≤ 1 ∧ (3 ≤ o → headD Rt = 0))
+                        (fun _ => validLt Lt ∧ o ≤ 6 ∧ d₀ ≤ 5 ∧
+                          (2 ≤ d₀ → headD Rt ≤ 1) ∧ (4 ≤ d₀ → headD Rt = 0))))
+        | .mCL =>
+            validR_CL (fullR Rs d_bot) ∧
+            List.casesOn L True (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z False (fun _ => validLt Lt ∧ o ≤ 6))
+        | .mDL =>
+            let R := fullR Rs d_bot
+            validR R ∧
+            List.casesOn L False (fun hd Lt =>
+              Prod.casesOn hd fun z o =>
+                Nat.casesOn z
+                  (validLt Lt ∧ 2 ≤ o ∧ o ≤ 8 ∧ (7 ≤ o → headD R = 0) ∧
+                    (5 ≤ o → headD R ≤ 1))
+                  (fun _ => False))
+def segsL (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.2.1.map rWord), .reg [1] s.2.2.2, .gadget [1, 0]]
+def segsR (s : SegState) : List (SegRegionKind (Fin 2)) :=
+  [.finWord (s.2.1.map lWord)]
+def evalSegCfg : SegMode → List (ℕ × ℕ) → List (ℕ × Bool) → Cfg (Fin 2) (Fin 6)
+  | .mAR, L, R => (applyView (.id []) (encRight R)) {{0}}> (applyView (.id []) (encLeft L))
+  | .mER0, L, R => (applyView (.id [0]) (encRight R)) {{4}}> (applyView (.id []) (encLeft L))
+  | .mER1, L, R => (applyView (.id []) (encRight R)) {{4}}> (applyView (.id []) (encLeft L))
+  | .mCL, L, R => (applyView (.id []) (encRight R)) <{{2}} (applyView (.id []) (encLeft L))
+  | .mDL, L, R => (applyView (.id []) (encRight R)) <{{3}} (applyView (.id []) (encLeft L))
+def evalCfg (s : SegState) : Cfg (Fin 2) (Fin 6) :=
+  evalSegCfg s.1 s.2.1 (fullR s.2.2.1 s.2.2.2)
+def modes : List SegMode := [.mAR, .mER0, .mER1, .mCL, .mDL]
+
+theorem is_closed_segmented_system :
+    IsClosedSegmentedSystem target modes ValidSeg modeOf segsL segsR evalCfg := by
+  sorry
 theorem is_segmented_cryptid : IsSegmentedCryptid target := by sorry
 end BusyBeaver.M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB

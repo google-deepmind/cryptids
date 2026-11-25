@@ -191,27 +191,10 @@ theorem evalSegmentedHalf_finWord_gadget {Γ α : Type*} [Inhabited Γ]
   simp only [evalSegmentedHalf, evalSegRegion]
   exact evalSegRegion_finWord_map w xs (base +> default)
 
-/-- Non-empty `1`-run `1^(d+1)` defined by structural recursion. -/
-def oWord : ℕ → List (Fin 2)
-  | 0 => [1]
-  | d + 1 => 1 :: oWord d
-
-@[simp] theorem oWord_zero : oWord 0 = [1] := rfl
-@[simp] theorem oWord_succ (d : ℕ) : oWord (d + 1) = 1 :: oWord d := rfl
-
-/-- Zero-run word `0^k ++ [1]` defined by structural recursion. -/
-def zWord : ℕ → List (Fin 2)
-  | 0 => [1]
-  | k + 1 => 0 :: zWord k
-
-@[simp] theorem zWord_zero : zWord 0 = [1] := rfl
-@[simp] theorem zWord_succ (k : ℕ) : zWord (k + 1) = 0 :: zWord k := rfl
-
 /-- Head orientation for a segmented mode descriptor. -/
 inductive SegHeadDir
   | left
   | right
-  | mid
   deriving DecidableEq
 
 /-- Table entry describing the TM state, head orientation, and left/right `HalfTapeView`s
@@ -221,14 +204,6 @@ structure SegModeSpec (Γ Λ : Type*) where
   dir : SegHeadDir
   vL : HalfTapeView Γ := .id []
   vR : HalfTapeView Γ := .id []
-
-/-- Evaluates a `SegModeSpec` on encoded left and right half-tapes `l, r : ListBlank Γ`. -/
-@[reducible] def evalSegModeSpec {Γ Λ : Type*} [Inhabited Γ] [OfNat Γ 0]
-    (spec : SegModeSpec Γ Λ) (l r : ListBlank Γ) : Cfg Γ Λ :=
-  match spec.dir with
-  | .left => (applyView spec.vL l) <{{spec.q}} (applyView spec.vR r)
-  | .right => (applyView spec.vL l) {{spec.q}}> (applyView spec.vR r)
-  | .mid => ⟨some spec.q, ⟨(0 : Γ), applyView spec.vL l, applyView spec.vR r⟩⟩
 
 /-- `SegStepOut M ValidSeg evalCfg c`: from `c`, machine `M` advances in `⊢⁺` either to
     `evalCfg s'` for some valid `s'` (`ValidSeg s'`), or to a halting configuration. -/
@@ -251,13 +226,6 @@ theorem SegStepOut.halt {Γ Λ SegState : Type*} [Inhabited Γ] [Inhabited Λ]
     {c cfg_h : Cfg Γ Λ} (h : c [M]⊢⁺ cfg_h) (hhalt : (BusyBeaver.step M cfg_h).isNone) :
     SegStepOut M ValidSeg evalCfg c :=
   ⟨cfg_h, h, Or.inr hhalt⟩
-
-/-- Evaluates a pair-stack state `(m, L, R) : Mode × α × β` via `modeSpec` and encoders. -/
-@[reducible] def evalPairCfg {Γ Λ Mode α β : Type*} [Inhabited Γ] [OfNat Γ 0]
-    (modeSpec : Mode → SegModeSpec Γ Λ)
-    (encL : α → ListBlank Γ) (encR : β → ListBlank Γ)
-    (s : Mode × α × β) : Cfg Γ Λ :=
-  evalSegModeSpec (modeSpec s.1) (encL s.2.1) (encR s.2.2)
 
 /-- Transport `IsNowhereDenseFamily` along a pointwise description of evaluated segments. -/
 theorem isNowhereDenseHalf_of_family {S : Type*} {Valid : S → Prop}
