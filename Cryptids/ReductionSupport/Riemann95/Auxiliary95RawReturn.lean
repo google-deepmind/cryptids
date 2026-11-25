@@ -196,7 +196,7 @@ theorem run_return98_after_one (word : List (Fin 2))
         (stackLeftOf true word).tail R
   obtain ⟨s, hpos, hs⟩ := run_return98 word hok R
   cases s with
-  | zero => omega
+  | zero => cases hpos
   | succ s =>
     rw [nSteps_succ, hfirst, Option.bind_some] at hs
     have hnonzero : s ≠ 0 := by
@@ -204,7 +204,7 @@ theorem run_return98_after_one (word : List (Fin 2))
       rw [hz, nSteps_zero] at hs
       have heq := Option.some.inj hs
       have hbad : (5 : Fin 98) = 15 := congrArg Cfg.state heq
-      norm_num at hbad
-    exact ⟨s, by omega, hs⟩
+      exact absurd (congrArg Fin.val hbad) (by decide)
+    exact ⟨s, Nat.pos_of_ne_zero hnonzero, hs⟩
 
 end ConjectureMachines.Riemann95Auxiliary.ReturnRaw

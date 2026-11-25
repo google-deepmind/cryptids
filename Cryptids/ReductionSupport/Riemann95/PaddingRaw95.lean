@@ -35,7 +35,7 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
           ((ListBlank.append
             (List.replicate (rev.length - (popBreakRev j rev).length) 0) R).cons 1)⟩ := by
     induction rev generalizing j R with
-    | nil => simp only [List.count_nil] at hc; omega
+    | nil => simp only [List.count_nil] at hc; exact (Nat.not_lt_zero _ hc).elim
     | cons b xs ih =>
       rcases Semantics.Riemann.Layer1.fin2_cases b with rfl | rfl
       · cases j with
@@ -79,26 +79,26 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
       some ⟨(if k.val = 0 then 11 else 2), mkL (stackLeftOf true walked)
         (ListBlank.append (List.replicate fill 0) R)⟩ := by
     rcases Semantics.Riemann.Layer1.fin2_cases k with rfl | rfl
-    · obtain ⟨f, hf⟩ : ∃ f, fill = f + 1 := ⟨fill - 1, by omega⟩
-      subst fill
-      have h1 := step_mk'_left (q := 9) (q' := 11) (a := 0) (b := 1) (by rfl)
-        (ListBlank.append (List.replicate (f + 1) 1) (stackLeftOf true walked))
-        ((Semantics.Riemann.Layer1.regsTape bank).cons 0)
-      have h2 := step_mkL_left (q := 11) (q' := 11) (a := 1) (b := 0) (by rfl)
-        (ListBlank.append (List.replicate f 1) (stackLeftOf true walked)) R
-      have hscan := scanL (q := 11) (a := 1) (b := 0) (by rfl) f
-        (stackLeftOf true walked) (R.cons 0)
-      have ht := Semantics.Riemann.Layer1.step_nSteps h1
-        (Semantics.Riemann.Layer1.step_nSteps h2 hscan)
-      rw [Semantics.Riemann.Layer1.append_replicate_cons] at ht
-      refine ⟨f + 1 + 1, by omega, ?_⟩
-      simpa only [Fin.val_zero, ↓reduceIte, List.replicate_succ, ListBlank.append, R] using ht
+    · rcases fill with _ | f
+      · cases hfill
+      · have h1 := step_mk'_left (q := 9) (q' := 11) (a := 0) (b := 1) (by rfl)
+          (ListBlank.append (List.replicate (f + 1) 1) (stackLeftOf true walked))
+          ((Semantics.Riemann.Layer1.regsTape bank).cons 0)
+        have h2 := step_mkL_left (q := 11) (q' := 11) (a := 1) (b := 0) (by rfl)
+          (ListBlank.append (List.replicate f 1) (stackLeftOf true walked)) R
+        have hscan := scanL (q := 11) (a := 1) (b := 0) (by rfl) f
+          (stackLeftOf true walked) (R.cons 0)
+        have ht := Semantics.Riemann.Layer1.step_nSteps h1
+          (Semantics.Riemann.Layer1.step_nSteps h2 hscan)
+        rw [Semantics.Riemann.Layer1.append_replicate_cons] at ht
+        refine ⟨f + 1 + 1, Nat.le_add_left 1 (f + 1), ?_⟩
+        simpa only [Fin.val_zero, ↓reduceIte, List.replicate_succ, ListBlank.append, R] using ht
     · have h1 := step_mk'_left (q := 63) (q' := 2) (a := 0) (b := 1) (by rfl)
         (ListBlank.append (List.replicate fill 1) (stackLeftOf true walked))
         ((Semantics.Riemann.Layer1.regsTape bank).cons 0)
       have hscan := scanL (q := 2) (a := 1) (b := 0) (by rfl) fill
         (stackLeftOf true walked) R
-      refine ⟨fill + 1, by omega, ?_⟩
+      refine ⟨fill + 1, Nat.le_add_left 1 fill, ?_⟩
       simpa only [Fin.val_one, Nat.one_ne_zero, ↓reduceIte, show (1 : Fin 2) ≠ 0 by decide,
         ListBlank.append, R] using Semantics.Riemann.Layer1.step_nSteps h1 hscan
   let w := (popBreakRev k.val walked.reverse).reverse
@@ -110,9 +110,10 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
         (ListBlank.append (List.replicate fill 0) R)⟩ =
       some ⟨5, mkL (stackLeftOf true w).tail
         ((ListBlank.append (List.replicate (pad' - w.length) 0) R).cons 1)⟩ := by
+    clear hinit
     by_cases hc : k.val < walked.count 0
     · have hc' : k.val < walked.reverse.count 0 := by simpa only [List.count_reverse] using hc
-      obtain ⟨t, ht, hscan⟩ := popscan walked.reverse k.val (by omega) hc'
+      obtain ⟨t, ht, hscan⟩ := popscan walked.reverse k.val (by clear popscan; omega) hc'
         (rootLeftOf true) (ListBlank.append (List.replicate fill 0) R)
       rw [append_replicate_zeros_eq] at hscan
       have he : walked.reverse.length - (popBreakRev k.val walked.reverse).length + fill =
@@ -120,11 +121,13 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
         have hl : (popBreakRev k.val walked.reverse).length = w.length := by
           simp only [w, List.length_reverse]
         rw [List.length_reverse, hl]
+        clear popscan hscan
         omega
       refine ⟨walked.length + fill, by simp only [exactPad, hc, ite_true, Nat.add_zero],
         t, ht, ?_⟩
       simpa only [he, stackLeftOf, w, List.reverse_reverse] using hscan
-    · have heq : walked.reverse.count 0 = k.val := by rw [List.count_reverse]; omega
+    · have heq : walked.reverse.count 0 = k.val := by
+        rw [List.count_reverse]; clear popscan; omega
       have hnil : w = [] := by simp only [w, (popBreakRev_of_count_eq k.val walked.reverse heq).1,
         List.reverse_nil]
       have heq' : (walked.reverse ++ [1]).count 0 = k.val := by
@@ -134,18 +137,18 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
       have hp := (popBreakRev_of_count_eq k.val (walked.reverse ++ [1]) heq').2
       have hc' : k.val < ((walked.reverse ++ [1]) ++ [0]).count 0 := by
         simp only [List.count_append, heq', List.count_cons_self, List.count_nil]
-        omega
+        clear popscan; omega
       have hstack : stackLeftOf true walked =
           ListBlank.append ((walked.reverse ++ [1]) ++ [0]) default := by
         simp only [stackLeftOf, rootLeftOf, ↓reduceIte, ListBlank.append_assoc,
           ListBlank.append, Semantics.Riemann.Layer1.default_cons_zero]
       obtain ⟨t, ht, hscan⟩ := popscan ((walked.reverse ++ [1]) ++ [0]) k.val
-        (by omega) hc' default (ListBlank.append (List.replicate fill 0) R)
+        (by clear popscan; omega) hc' default (ListBlank.append (List.replicate fill 0) R)
       rw [← hstack, hp, append_replicate_zeros_eq] at hscan
       have he : ((walked.reverse ++ [1]) ++ [0]).length - ([1] : List (Fin 2)).length + fill =
           walked.length + fill + 1 := by
         simp only [List.length_append, List.length_reverse, List.length_cons, List.length_nil]
-        omega
+        clear popscan hscan; omega
       rw [he] at hscan
       refine ⟨walked.length + fill + 1, by simp only [exactPad, hc, ite_false],
         t, ht, ?_⟩
@@ -188,7 +191,7 @@ theorem fenceReturn_exact (k : Fin 2) (walked : List (Fin 2)) (fill : Nat) (hfil
   obtain ⟨t₀, ht₀, h₀⟩ := hinit
   obtain ⟨pad', hpad', t₁, ht₁, h₁⟩ := hmid
   obtain ⟨t₂, ht₂, h₂⟩ := finish pad' w hguard hheadw
-  refine ⟨t₀ + (t₁ + t₂), by omega, ?_⟩
+  refine ⟨t₀ + (t₁ + t₂), Nat.le_trans ht₀ (Nat.le_add_right t₀ (t₁ + t₂)), ?_⟩
   rw [← hpad']
   rw [nSteps98_eq]
   exact Semantics.Riemann.Layer1.nSteps_bind_eq h₀

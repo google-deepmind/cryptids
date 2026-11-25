@@ -394,19 +394,108 @@ theorem paProvable_sound {M : Type*} [PAStructure M] [PAModel M] {φ : PAFormula
 theorem paProvable_sound_nat (φ : PAFormula) (h : PAProvable φ) (v : ℕ → ℕ) : φ.Holds v :=
   (holdsIn_nat_iff v φ).mp (paProvable_sound h v)
 
-/-! ## Section 4: Constructive Consistency via Negative Translation (`not_paProvable_false`) -/
+/-! ## Section 4: Zero-Axiom Consistency via Negative Translation (`not_paProvable_false`) -/
+
+/-- Environment update avoiding `Function.update` so `not_paProvable_false` uses zero axioms. -/
+def envUpdate (v : ℕ → ℕ) (x a y : ℕ) : ℕ :=
+  match Nat.decEq y x with
+  | isTrue _ => a
+  | isFalse _ => v y
+
+private theorem envUpdate_self (v : ℕ → ℕ) (x a : ℕ) : envUpdate v x a x = a := by
+  dsimp only [envUpdate]
+  cases Nat.decEq x x with
+  | isTrue _ => rfl
+  | isFalse h => exact False.elim (h rfl)
+
+private theorem envUpdate_of_ne (v : ℕ → ℕ) {x y : ℕ} (h : y ≠ x) (a : ℕ) :
+    envUpdate v x a y = v y := by
+  dsimp only [envUpdate]
+  cases Nat.decEq y x with
+  | isTrue he => exact False.elim (h he)
+  | isFalse _ => rfl
 
 /-- Gödel–Gentzen negative satisfaction of a `PAFormula` in `ℕ`, replacing positive disjunction
 and existential quantification by their double-negated counterparts so every formula is
-constructively `¬¬`-stable without `Classical.choice`. -/
+constructively `¬¬`-stable with zero axioms (`[]`). -/
 def PAFormula.NHolds (v : ℕ → ℕ) : PAFormula → Prop
   | .bot => False
   | .eq t₁ t₂ => t₁.eval v = t₂.eval v
   | .and φ ψ => PAFormula.NHolds v φ ∧ PAFormula.NHolds v ψ
   | .or φ ψ => ¬¬ (PAFormula.NHolds v φ ∨ PAFormula.NHolds v ψ)
   | .imp φ ψ => PAFormula.NHolds v φ → PAFormula.NHolds v ψ
-  | .all x φ => ∀ a : ℕ, PAFormula.NHolds (Function.update v x a) φ
-  | .ex x φ => ¬¬ ∃ a : ℕ, PAFormula.NHolds (Function.update v x a) φ
+  | .all x φ => ∀ a : ℕ, PAFormula.NHolds (envUpdate v x a) φ
+  | .ex x φ => ¬¬ ∃ a : ℕ, PAFormula.NHolds (envUpdate v x a) φ
+
+private theorem nat_beq_refl : ∀ x : ℕ, (x == x) = true
+  | 0 => rfl
+  | x + 1 => nat_beq_refl x
+
+private theorem nat_beq_eq_false : ∀ {x y : ℕ}, x ≠ y → (x == y) = false
+  | 0, 0, h => False.elim (h rfl)
+  | 0, _ + 1, _ => rfl
+  | _ + 1, 0, _ => rfl
+  | x + 1, y + 1, h => nat_beq_eq_false (x := x) (y := y) fun heq ↦ h (congrArg (· + 1) heq)
+
+private theorem bool_or_inl {a b : Bool} (ha : a = true) : (a || b) = true := by
+  rw [ha]; rfl
+
+private theorem bool_or_inr {a b : Bool} (hb : b = true) : (a || b) = true := by
+  cases a with
+  | true => rfl
+  | false => exact hb
+
+private theorem bool_and_left {a b : Bool} (h : (a && b) = true) : a = true := by
+  cases a with
+  | false => exact Bool.noConfusion h
+  | true => rfl
+
+private theorem bool_and_right {a b : Bool} (h : (a && b) = true) : b = true := by
+  cases a with
+  | false => exact Bool.noConfusion h
+  | true => exact h
+
+private theorem bool_or_false_left {a b : Bool} (h : (a || b) = false) : a = false := by
+  cases a with
+  | false => rfl
+  | true => exact Bool.noConfusion h
+
+private theorem bool_or_false_right {a b : Bool} (h : (a || b) = false) : b = false := by
+  cases a with
+  | false => exact h
+  | true => exact Bool.noConfusion h
+
+private theorem bool_or_cases {a b : Bool} (h : (a || b) = true) : a = true ∨ b = true := by
+  cases a with
+  | true => exact Or.inl rfl
+  | false => exact Or.inr h
+
+private theorem bool_not_eq_true_iff {a : Bool} (h : (!a) = true) : a = false := by
+  cases a with
+  | false => rfl
+  | true => exact Bool.noConfusion h
+
+private theorem iff_and_zero {A B C D : Prop} (h₁ : A ↔ C) (h₂ : B ↔ D) :
+    (A ∧ B) ↔ (C ∧ D) :=
+  ⟨fun ⟨a, b⟩ ↦ ⟨h₁.mp a, h₂.mp b⟩, fun ⟨c, d⟩ ↦ ⟨h₁.mpr c, h₂.mpr d⟩⟩
+
+private theorem iff_imp_zero {A B C D : Prop} (h₁ : A ↔ C) (h₂ : B ↔ D) :
+    (A → B) ↔ (C → D) :=
+  ⟨fun f c ↦ h₂.mp (f (h₁.mpr c)), fun g a ↦ h₂.mpr (g (h₁.mp a))⟩
+
+private theorem iff_nn_or_zero {A B C D : Prop} (h₁ : A ↔ C) (h₂ : B ↔ D) :
+    ¬¬ (A ∨ B) ↔ ¬¬ (C ∨ D) :=
+  ⟨fun h hn ↦ h fun d ↦ hn (d.elim (fun a ↦ Or.inl (h₁.mp a)) (fun b ↦ Or.inr (h₂.mp b))),
+   fun h hn ↦ h fun d ↦ hn (d.elim (fun c ↦ Or.inl (h₁.mpr c)) (fun d ↦ Or.inr (h₂.mpr d)))⟩
+
+private theorem iff_all_zero {P Q : ℕ → Prop} (h : ∀ a, P a ↔ Q a) :
+    (∀ a, P a) ↔ (∀ a, Q a) :=
+  ⟨fun f a ↦ (h a).mp (f a), fun g a ↦ (h a).mpr (g a)⟩
+
+private theorem iff_nn_ex_zero {P Q : ℕ → Prop} (h : ∀ a, P a ↔ Q a) :
+    (¬¬ ∃ a, P a) ↔ (¬¬ ∃ a, Q a) :=
+  ⟨fun f hn ↦ f fun ⟨a, pa⟩ ↦ hn ⟨a, (h a).mp pa⟩,
+   fun g hn ↦ g fun ⟨a, qa⟩ ↦ hn ⟨a, (h a).mpr qa⟩⟩
 
 theorem nHolds_stable (φ : PAFormula) (v : ℕ → ℕ) :
     ¬¬ PAFormula.NHolds v φ → PAFormula.NHolds v φ := by
@@ -414,9 +503,9 @@ theorem nHolds_stable (φ : PAFormula) (v : ℕ → ℕ) :
   | bot => intro h; exact h id
   | eq t₁ t₂ =>
     intro h
-    by_cases he : t₁.eval v = t₂.eval v
-    · exact he
-    · exact False.elim (h he)
+    cases Nat.decEq (t₁.eval v) (t₂.eval v) with
+    | isFalse hne => exact False.elim (h hne)
+    | isTrue he => exact he
   | and φ ψ ih₁ ih₂ =>
     intro h
     exact ⟨ih₁ v fun h₁ ↦ h fun hp ↦ h₁ hp.1, ih₂ v fun h₂ ↦ h fun hp ↦ h₂ hp.2⟩
@@ -428,137 +517,349 @@ theorem nHolds_stable (φ : PAFormula) (v : ℕ → ℕ) :
     exact ih₂ v fun hψ ↦ h fun himp ↦ hψ (himp hφ)
   | all x φ ih =>
     intro h a
-    exact ih (Function.update v x a) fun ha ↦ h fun hall ↦ ha (hall a)
+    exact ih (envUpdate v x a) fun ha ↦ h fun hall ↦ ha (hall a)
   | ex _ _ _ =>
     intro h hn
     exact h fun hnn ↦ hnn hn
+
+private theorem eval_congr_zero {v₁ v₂ : ℕ → ℕ} :
+    ∀ {t : PATerm}, (∀ x, t.hasVar x = true → v₁ x = v₂ x) → t.eval v₁ = t.eval v₂
+  | .var x, h => h x (nat_beq_refl x)
+  | .zero, _ => rfl
+  | .succ _, h => congrArg (· + 1) (eval_congr_zero h)
+  | .add _ _, h =>
+    congrArg₂ (· + ·)
+      (eval_congr_zero fun x hx ↦ h x (bool_or_inl hx))
+      (eval_congr_zero fun x hx ↦ h x (bool_or_inr hx))
+  | .mul _ _, h =>
+    congrArg₂ (· * ·)
+      (eval_congr_zero fun x hx ↦ h x (bool_or_inl hx))
+      (eval_congr_zero fun x hx ↦ h x (bool_or_inr hx))
+
+private theorem eval_update_of_hasVar_false_zero (v : ℕ → ℕ) {x : ℕ} (a : ℕ) {t : PATerm}
+    (hx : t.hasVar x = false) : t.eval (envUpdate v x a) = t.eval v :=
+  eval_congr_zero fun y hy ↦
+    have hne : y ≠ x := fun h ↦ by subst h; rw [hx] at hy; exact Bool.noConfusion hy
+    envUpdate_of_ne v hne a
+
+private theorem eval_subst_zero (v : ℕ → ℕ) (x : ℕ) (s : PATerm) :
+    ∀ t : PATerm, (t.subst x s).eval v = t.eval (envUpdate v x (s.eval v))
+  | .var y => by
+    dsimp only [PATerm.subst]
+    cases Nat.decEq y x with
+    | isTrue h =>
+      subst h
+      rw [nat_beq_refl]
+      exact (envUpdate_self v y (s.eval v)).symm
+    | isFalse h =>
+      rw [nat_beq_eq_false h]
+      exact (envUpdate_of_ne v h (s.eval v)).symm
+  | .zero => rfl
+  | .succ t => congrArg (· + 1) (eval_subst_zero v x s t)
+  | .add t₁ t₂ => congrArg₂ (· + ·) (eval_subst_zero v x s t₁) (eval_subst_zero v x s t₂)
+  | .mul t₁ t₂ => congrArg₂ (· * ·) (eval_subst_zero v x s t₁) (eval_subst_zero v x s t₂)
+
+private theorem term_subst_eq_self_zero {x : ℕ} (s : PATerm) :
+    ∀ {t : PATerm}, t.hasVar x = false → t.subst x s = t
+  | .var y, ht => by
+    dsimp only [PATerm.subst]
+    have hyx : (y == x) = false := by
+      cases Nat.decEq y x with
+      | isTrue h =>
+        subst h
+        change (y == y) = false at ht
+        rw [nat_beq_refl] at ht
+        exact Bool.noConfusion ht
+      | isFalse h => exact nat_beq_eq_false h
+    rw [hyx]
+    rfl
+  | .zero, _ => rfl
+  | .succ _, ht => congrArg PATerm.succ (term_subst_eq_self_zero s ht)
+  | .add _ _, ht =>
+    congrArg₂ PATerm.add
+      (term_subst_eq_self_zero s (bool_or_false_left ht))
+      (term_subst_eq_self_zero s (bool_or_false_right ht))
+  | .mul _ _, ht =>
+    congrArg₂ PATerm.mul
+      (term_subst_eq_self_zero s (bool_or_false_left ht))
+      (term_subst_eq_self_zero s (bool_or_false_right ht))
+
+private theorem subst_eq_self_zero {x : ℕ} (s : PATerm) :
+    ∀ {φ : PAFormula}, φ.hasFree x = false → φ.subst x s = φ
+  | .bot, _ => rfl
+  | .eq _ _, hx =>
+    congrArg₂ PAFormula.eq
+      (term_subst_eq_self_zero s (bool_or_false_left hx))
+      (term_subst_eq_self_zero s (bool_or_false_right hx))
+  | .and _ _, hx =>
+    congrArg₂ PAFormula.and
+      (subst_eq_self_zero s (bool_or_false_left hx))
+      (subst_eq_self_zero s (bool_or_false_right hx))
+  | .or _ _, hx =>
+    congrArg₂ PAFormula.or
+      (subst_eq_self_zero s (bool_or_false_left hx))
+      (subst_eq_self_zero s (bool_or_false_right hx))
+  | .imp _ _, hx =>
+    congrArg₂ PAFormula.imp
+      (subst_eq_self_zero s (bool_or_false_left hx))
+      (subst_eq_self_zero s (bool_or_false_right hx))
+  | .all y φ, hx => by
+    dsimp only [PAFormula.subst]
+    cases Nat.decEq y x with
+    | isTrue h =>
+      subst h
+      rw [nat_beq_refl]
+      rfl
+    | isFalse h =>
+      have hb : (y == x) = false := nat_beq_eq_false h
+      rw [hb]
+      have hfree : φ.hasFree x = false := by
+        change (!(y == x) && φ.hasFree x) = false at hx
+        rw [hb] at hx
+        exact hx
+      exact congrArg (PAFormula.all y) (subst_eq_self_zero s hfree)
+  | .ex y φ, hx => by
+    dsimp only [PAFormula.subst]
+    cases Nat.decEq y x with
+    | isTrue h =>
+      subst h
+      rw [nat_beq_refl]
+      rfl
+    | isFalse h =>
+      have hb : (y == x) = false := nat_beq_eq_false h
+      rw [hb]
+      have hfree : φ.hasFree x = false := by
+        change (!(y == x) && φ.hasFree x) = false at hx
+        rw [hb] at hx
+        exact hx
+      exact congrArg (PAFormula.ex y) (subst_eq_self_zero s hfree)
+
+private theorem freeFor_zero_zero (x : ℕ) : ∀ φ : PAFormula, φ.freeFor x .zero = true
+  | .bot | .eq _ _ => rfl
+  | .and φ ψ | .or φ ψ | .imp φ ψ => by
+    change (φ.freeFor x .zero && ψ.freeFor x .zero) = true
+    rw [freeFor_zero_zero x φ, freeFor_zero_zero x ψ]
+    rfl
+  | .all y φ | .ex y φ => by
+    change ((y == x) || ((!φ.hasFree x || !PATerm.zero.hasVar y) && φ.freeFor x .zero)) = true
+    have hor : (!φ.hasFree x || !PATerm.zero.hasVar y) = true := bool_or_inr rfl
+    rw [hor, freeFor_zero_zero x φ]
+    exact bool_or_inr rfl
+
+private theorem freeFor_succ_self_zero (x : ℕ) :
+    ∀ φ : PAFormula, φ.freeFor x (.succ (.var x)) = true
+  | .bot | .eq _ _ => rfl
+  | .and φ ψ | .or φ ψ | .imp φ ψ => by
+    change (φ.freeFor x (.succ (.var x)) && ψ.freeFor x (.succ (.var x))) = true
+    rw [freeFor_succ_self_zero x φ, freeFor_succ_self_zero x ψ]
+    rfl
+  | .all y φ | .ex y φ => by
+    change ((y == x) ||
+        ((!φ.hasFree x || !(PATerm.succ (.var x)).hasVar y) &&
+          φ.freeFor x (.succ (.var x)))) = true
+    cases Nat.decEq y x with
+    | isTrue h =>
+      subst h
+      exact bool_or_inl (nat_beq_refl y)
+    | isFalse h =>
+      have hxy : (x == y) = false := nat_beq_eq_false (Ne.symm h)
+      have hnot : (!(PATerm.succ (.var x)).hasVar y) = true := by
+        change (!(x == y)) = true
+        rw [hxy]
+        rfl
+      have hor : (!φ.hasFree x || !(PATerm.succ (.var x)).hasVar y) = true := bool_or_inr hnot
+      rw [hor, freeFor_succ_self_zero x φ]
+      exact bool_or_inr rfl
 
 private theorem nHolds_congr {v₁ v₂ : ℕ → ℕ} {φ : PAFormula}
     (h : ∀ x, φ.hasFree x = true → v₁ x = v₂ x) :
     PAFormula.NHolds v₁ φ ↔ PAFormula.NHolds v₂ φ := by
   induction φ generalizing v₁ v₂ with
-  | bot => exact Iff.rfl
+  | bot => exact ⟨id, id⟩
   | eq t₁ t₂ =>
-    have e₁ : t₁.eval v₁ = t₁.eval v₂ := by
-      rw [← evalIn_nat_eq, ← evalIn_nat_eq]
-      exact evalIn_congr fun x hx ↦ h x (by simp [PAFormula.hasFree, hx])
-    have e₂ : t₂.eval v₁ = t₂.eval v₂ := by
-      rw [← evalIn_nat_eq, ← evalIn_nat_eq]
-      exact evalIn_congr fun x hx ↦ h x (by simp [PAFormula.hasFree, hx])
-    simp only [PAFormula.NHolds, e₁, e₂]
+    have e₁ : t₁.eval v₁ = t₁.eval v₂ := eval_congr_zero fun x hx ↦ h x (bool_or_inl hx)
+    have e₂ : t₂.eval v₁ = t₂.eval v₂ := eval_congr_zero fun x hx ↦ h x (bool_or_inr hx)
+    exact ⟨fun he ↦ e₁.symm.trans (he.trans e₂), fun he ↦ e₁.trans (he.trans e₂.symm)⟩
   | and _ _ ih₁ ih₂ =>
-    refine and_congr (ih₁ fun x hx ↦ h x ?_) (ih₂ fun x hx ↦ h x ?_) <;>
-      simp [PAFormula.hasFree, hx]
+    exact iff_and_zero
+      (ih₁ fun x hx ↦ h x (bool_or_inl hx))
+      (ih₂ fun x hx ↦ h x (bool_or_inr hx))
   | or _ _ ih₁ ih₂ =>
-    have c₁ := ih₁ (v₁ := v₁) (v₂ := v₂) fun x hx ↦ h x (by simp [PAFormula.hasFree, hx])
-    have c₂ := ih₂ (v₁ := v₁) (v₂ := v₂) fun x hx ↦ h x (by simp [PAFormula.hasFree, hx])
-    exact not_congr (not_congr (or_congr c₁ c₂))
+    exact iff_nn_or_zero
+      (ih₁ fun x hx ↦ h x (bool_or_inl hx))
+      (ih₂ fun x hx ↦ h x (bool_or_inr hx))
   | imp _ _ ih₁ ih₂ =>
-    refine imp_congr (ih₁ fun x hx ↦ h x ?_) (ih₂ fun x hx ↦ h x ?_) <;>
-      simp [PAFormula.hasFree, hx]
+    exact iff_imp_zero
+      (ih₁ fun x hx ↦ h x (bool_or_inl hx))
+      (ih₂ fun x hx ↦ h x (bool_or_inr hx))
   | all y _ ih =>
-    refine forall_congr' fun a ↦ ih fun x hx ↦ ?_
-    rcases Decidable.eq_or_ne x y with rfl | hxy
-    · simp
-    · simp only [Function.update_of_ne hxy]
-      exact h x (by simp [PAFormula.hasFree, Ne.symm hxy, hx])
+    refine iff_all_zero fun a ↦ ih fun x hx ↦ ?_
+    cases Nat.decEq x y with
+    | isTrue heq =>
+      subst heq
+      exact (envUpdate_self v₁ x a).trans (envUpdate_self v₂ x a).symm
+    | isFalse hxy =>
+      have hu₁ := envUpdate_of_ne v₁ hxy a
+      have hu₂ := envUpdate_of_ne v₂ hxy a
+      refine hu₁.trans ((h x ?_).trans hu₂.symm)
+      change (!(y == x) && _) = true
+      rw [nat_beq_eq_false (Ne.symm hxy)]
+      exact hx
   | ex y _ ih =>
-    refine not_congr (not_congr (exists_congr fun a ↦ ih fun x hx ↦ ?_))
-    rcases Decidable.eq_or_ne x y with rfl | hxy
-    · simp
-    · simp only [Function.update_of_ne hxy]
-      exact h x (by simp [PAFormula.hasFree, Ne.symm hxy, hx])
+    refine iff_nn_ex_zero fun a ↦ ih fun x hx ↦ ?_
+    cases Nat.decEq x y with
+    | isTrue heq =>
+      subst heq
+      exact (envUpdate_self v₁ x a).trans (envUpdate_self v₂ x a).symm
+    | isFalse hxy =>
+      have hu₁ := envUpdate_of_ne v₁ hxy a
+      have hu₂ := envUpdate_of_ne v₂ hxy a
+      refine hu₁.trans ((h x ?_).trans hu₂.symm)
+      change (!(y == x) && _) = true
+      rw [nat_beq_eq_false (Ne.symm hxy)]
+      exact hx
 
 private theorem nHolds_update_of_hasFree_false (v : ℕ → ℕ) {x : ℕ} (a : ℕ) {φ : PAFormula}
     (hx : φ.hasFree x = false) :
-    PAFormula.NHolds (Function.update v x a) φ ↔ PAFormula.NHolds v φ := by
-  refine nHolds_congr fun y hy ↦ ?_
-  have hne : y ≠ x := fun h ↦ by subst h; rw [hx] at hy; cases hy
-  exact Function.update_of_ne hne a v
+    PAFormula.NHolds (envUpdate v x a) φ ↔ PAFormula.NHolds v φ :=
+  nHolds_congr fun y hy ↦
+    have hne : y ≠ x := fun h ↦ by subst h; rw [hx] at hy; exact Bool.noConfusion hy
+    envUpdate_of_ne v hne a
 
 private theorem nHolds_update_idem (v : ℕ → ℕ) (x a b : ℕ) (φ : PAFormula) :
-    PAFormula.NHolds (Function.update (Function.update v x a) x b) φ ↔
-      PAFormula.NHolds (Function.update v x b) φ := by
-  refine nHolds_congr fun z _ ↦ ?_
-  rcases Decidable.eq_or_ne z x with rfl | hzx
-  · simp only [Function.update_self]
-  · simp only [Function.update_of_ne hzx]
+    PAFormula.NHolds (envUpdate (envUpdate v x a) x b) φ ↔
+      PAFormula.NHolds (envUpdate v x b) φ :=
+  nHolds_congr fun z _ ↦ by
+    cases Nat.decEq z x with
+    | isTrue h =>
+      subst h
+      exact (envUpdate_self (envUpdate v z a) z b).trans (envUpdate_self v z b).symm
+    | isFalse hzx =>
+      exact (envUpdate_of_ne (envUpdate v x a) hzx b).trans
+        ((envUpdate_of_ne v hzx a).trans (envUpdate_of_ne v hzx b).symm)
 
 private theorem nHolds_update_comm (v : ℕ → ℕ) {x y : ℕ} (hxy : x ≠ y) (a b : ℕ) (φ : PAFormula) :
-    PAFormula.NHolds (Function.update (Function.update v x a) y b) φ ↔
-      PAFormula.NHolds (Function.update (Function.update v y b) x a) φ := by
-  refine nHolds_congr fun z _ ↦ ?_
-  rcases Decidable.eq_or_ne z y with rfl | hzy
-  · rw [Function.update_self, Function.update_of_ne hxy.symm, Function.update_self]
-  · rw [Function.update_of_ne hzy]
-    rcases Decidable.eq_or_ne z x with rfl | hzx
-    · rw [Function.update_self, Function.update_self]
-    · rw [Function.update_of_ne hzx, Function.update_of_ne hzx, Function.update_of_ne hzy]
+    PAFormula.NHolds (envUpdate (envUpdate v x a) y b) φ ↔
+      PAFormula.NHolds (envUpdate (envUpdate v y b) x a) φ :=
+  nHolds_congr fun z _ ↦ by
+    cases Nat.decEq z y with
+    | isTrue hzy =>
+      subst hzy
+      exact (envUpdate_self (envUpdate v x a) z b).trans
+        ((envUpdate_of_ne (envUpdate v z b) (Ne.symm hxy) a).trans
+          (envUpdate_self v z b)).symm
+    | isFalse hzy =>
+      cases Nat.decEq z x with
+      | isTrue hzx =>
+        subst hzx
+        exact (envUpdate_of_ne (envUpdate v z a) hzy b).trans
+          ((envUpdate_self v z a).trans (envUpdate_self (envUpdate v y b) z a).symm)
+      | isFalse hzx =>
+        exact (envUpdate_of_ne (envUpdate v x a) hzy b).trans
+          ((envUpdate_of_ne v hzx a).trans
+            ((envUpdate_of_ne (envUpdate v y b) hzx a).trans (envUpdate_of_ne v hzy b)).symm)
 
 private theorem nHolds_subst (v : ℕ → ℕ) {x : ℕ} {s : PATerm} {φ : PAFormula}
     (hf : φ.freeFor x s = true) :
     PAFormula.NHolds v (φ.subst x s) ↔
-      PAFormula.NHolds (Function.update v x (s.eval v)) φ := by
+      PAFormula.NHolds (envUpdate v x (s.eval v)) φ := by
   induction φ generalizing v with
-  | bot => exact Iff.rfl
+  | bot => exact ⟨id, id⟩
   | eq t₁ t₂ =>
-    simp only [PAFormula.subst, PAFormula.NHolds, ← evalIn_nat_eq, evalIn_subst]
+    have e₁ := eval_subst_zero v x s t₁
+    have e₂ := eval_subst_zero v x s t₂
+    exact ⟨fun he ↦ e₁.symm.trans (he.trans e₂), fun he ↦ e₁.trans (he.trans e₂.symm)⟩
   | and _ _ ih₁ ih₂ =>
-    simp only [PAFormula.freeFor, Bool.and_eq_true] at hf
-    exact and_congr (ih₁ v hf.1) (ih₂ v hf.2)
+    exact iff_and_zero (ih₁ v (bool_and_left hf)) (ih₂ v (bool_and_right hf))
   | or _ _ ih₁ ih₂ =>
-    simp only [PAFormula.freeFor, Bool.and_eq_true] at hf
-    exact not_congr (not_congr (or_congr (ih₁ v hf.1) (ih₂ v hf.2)))
+    exact iff_nn_or_zero (ih₁ v (bool_and_left hf)) (ih₂ v (bool_and_right hf))
   | imp _ _ ih₁ ih₂ =>
-    simp only [PAFormula.freeFor, Bool.and_eq_true] at hf
-    exact imp_congr (ih₁ v hf.1) (ih₂ v hf.2)
+    exact iff_imp_zero (ih₁ v (bool_and_left hf)) (ih₂ v (bool_and_right hf))
   | all y φ ih =>
-    simp only [PAFormula.subst]
-    rcases Decidable.eq_or_ne y x with rfl | hxy
-    · simp only [beq_self_eq_true, ↓reduceIte, PAFormula.NHolds]
-      refine forall_congr' fun a ↦ ?_
-      exact (nHolds_update_idem v y (s.eval v) a φ).symm
-    · have hb : (y == x) = false := beq_eq_false_iff_ne.mpr hxy
-      simp only [hb, Bool.false_eq_true, ↓reduceIte, PAFormula.NHolds]
-      simp only [PAFormula.freeFor, hb, Bool.false_or, Bool.and_eq_true,
-        Bool.or_eq_true, Bool.not_eq_true'] at hf
-      rcases hf with ⟨hno | hsy, hf'⟩
-      · refine forall_congr' fun a ↦ ?_
-        rw [subst_eq_self_of_hasFree_false s hno,
-          nHolds_update_comm v (Ne.symm hxy),
-          nHolds_update_of_hasFree_false _ _ hno]
-      · refine forall_congr' fun a ↦ ?_
-        have hev : s.eval (Function.update v y a) = s.eval v := by
-          rw [← evalIn_nat_eq, ← evalIn_nat_eq]
-          exact evalIn_update_of_hasVar_false v a hsy
-        rw [ih (Function.update v y a) hf', hev, nHolds_update_comm v hxy]
+    cases Nat.decEq y x with
+    | isTrue heq =>
+      subst heq
+      have hsub : (PAFormula.all y φ).subst y s = PAFormula.all y φ := by
+        dsimp only [PAFormula.subst]
+        rw [nat_beq_refl]
+        rfl
+      rw [hsub]
+      exact iff_all_zero fun a ↦
+        have hid := nHolds_update_idem v y (s.eval v) a φ
+        ⟨hid.mpr, hid.mp⟩
+    | isFalse hxy =>
+      have hb : (y == x) = false := nat_beq_eq_false hxy
+      have hsub : (PAFormula.all y φ).subst x s = PAFormula.all y (φ.subst x s) := by
+        dsimp only [PAFormula.subst]
+        rw [hb]
+        rfl
+      rw [hsub]
+      have hconj : ((!φ.hasFree x || !s.hasVar y) && φ.freeFor x s) = true := by
+        change ((y == x) || ((!φ.hasFree x || !s.hasVar y) && φ.freeFor x s)) = true at hf
+        rw [hb] at hf
+        exact hf
+      have hf' : φ.freeFor x s = true := bool_and_right hconj
+      rcases bool_or_cases (bool_and_left hconj) with hno | hsy
+      · have hno' : φ.hasFree x = false := bool_not_eq_true_iff hno
+        refine iff_all_zero fun a ↦ ?_
+        rw [subst_eq_self_zero s hno']
+        have h₁ := nHolds_update_of_hasFree_false (envUpdate v y a) (s.eval v) hno'
+        have h₂ := nHolds_update_comm v hxy a (s.eval v) φ
+        exact ⟨fun u ↦ h₂.mp (h₁.mpr u), fun w ↦ h₁.mp (h₂.mpr w)⟩
+      · have hsy' : s.hasVar y = false := bool_not_eq_true_iff hsy
+        refine iff_all_zero fun a ↦ ?_
+        have hev : s.eval (envUpdate v y a) = s.eval v :=
+          eval_update_of_hasVar_false_zero v a hsy'
+        have hstep := ih (envUpdate v y a) hf'
+        rw [hev] at hstep
+        have hcomm := nHolds_update_comm v hxy a (s.eval v) φ
+        exact ⟨fun u ↦ hcomm.mp (hstep.mp u), fun w ↦ hstep.mpr (hcomm.mpr w)⟩
   | ex y φ ih =>
-    simp only [PAFormula.subst]
-    rcases Decidable.eq_or_ne y x with rfl | hxy
-    · simp only [beq_self_eq_true, ↓reduceIte, PAFormula.NHolds]
-      refine not_congr (not_congr (exists_congr fun a ↦ ?_))
-      exact (nHolds_update_idem v y (s.eval v) a φ).symm
-    · have hb : (y == x) = false := beq_eq_false_iff_ne.mpr hxy
-      simp only [hb, Bool.false_eq_true, ↓reduceIte, PAFormula.NHolds]
-      simp only [PAFormula.freeFor, hb, Bool.false_or, Bool.and_eq_true,
-        Bool.or_eq_true, Bool.not_eq_true'] at hf
-      rcases hf with ⟨hno | hsy, hf'⟩
-      · refine not_congr (not_congr (exists_congr fun a ↦ ?_))
-        rw [subst_eq_self_of_hasFree_false s hno,
-          nHolds_update_comm v (Ne.symm hxy),
-          nHolds_update_of_hasFree_false _ _ hno]
-      · refine not_congr (not_congr (exists_congr fun a ↦ ?_))
-        have hev : s.eval (Function.update v y a) = s.eval v := by
-          rw [← evalIn_nat_eq, ← evalIn_nat_eq]
-          exact evalIn_update_of_hasVar_false v a hsy
-        rw [ih (Function.update v y a) hf', hev, nHolds_update_comm v hxy]
+    cases Nat.decEq y x with
+    | isTrue heq =>
+      subst heq
+      have hsub : (PAFormula.ex y φ).subst y s = PAFormula.ex y φ := by
+        dsimp only [PAFormula.subst]
+        rw [nat_beq_refl]
+        rfl
+      rw [hsub]
+      exact iff_nn_ex_zero fun a ↦
+        have hid := nHolds_update_idem v y (s.eval v) a φ
+        ⟨hid.mpr, hid.mp⟩
+    | isFalse hxy =>
+      have hb : (y == x) = false := nat_beq_eq_false hxy
+      have hsub : (PAFormula.ex y φ).subst x s = PAFormula.ex y (φ.subst x s) := by
+        dsimp only [PAFormula.subst]
+        rw [hb]
+        rfl
+      rw [hsub]
+      have hconj : ((!φ.hasFree x || !s.hasVar y) && φ.freeFor x s) = true := by
+        change ((y == x) || ((!φ.hasFree x || !s.hasVar y) && φ.freeFor x s)) = true at hf
+        rw [hb] at hf
+        exact hf
+      have hf' : φ.freeFor x s = true := bool_and_right hconj
+      rcases bool_or_cases (bool_and_left hconj) with hno | hsy
+      · have hno' : φ.hasFree x = false := bool_not_eq_true_iff hno
+        refine iff_nn_ex_zero fun a ↦ ?_
+        rw [subst_eq_self_zero s hno']
+        have h₁ := nHolds_update_of_hasFree_false (envUpdate v y a) (s.eval v) hno'
+        have h₂ := nHolds_update_comm v hxy a (s.eval v) φ
+        exact ⟨fun u ↦ h₂.mp (h₁.mpr u), fun w ↦ h₁.mp (h₂.mpr w)⟩
+      · have hsy' : s.hasVar y = false := bool_not_eq_true_iff hsy
+        refine iff_nn_ex_zero fun a ↦ ?_
+        have hev : s.eval (envUpdate v y a) = s.eval v :=
+          eval_update_of_hasVar_false_zero v a hsy'
+        have hstep := ih (envUpdate v y a) hf'
+        rw [hev] at hstep
+        have hcomm := nHolds_update_comm v hxy a (s.eval v) φ
+        exact ⟨fun u ↦ hcomm.mp (hstep.mp u), fun w ↦ hstep.mpr (hcomm.mpr w)⟩
 
-/-- Constructive soundness of `PAProvable` under `NHolds` (zero `Classical.choice`). -/
+/-- Soundness of `PAProvable` under Gödel–Gentzen negative satisfaction `NHolds` (zero axioms). -/
 theorem paProvable_nSound {φ : PAFormula} (h : PAProvable φ) (v : ℕ → ℕ) :
     PAFormula.NHolds v φ := by
   induction h generalizing v with
   | mp _ _ ihφ ihimp => exact ihimp v (ihφ v)
-  | gen x _ ih => intro a; exact ih (Function.update v x a)
+  | gen x _ ih => intro a; exact ih (envUpdate v x a)
   | imp_k _ _ => intro h₁ _; exact h₁
   | imp_s _ _ _ => intro h₁ h₂ h₃; exact h₁ h₃ (h₂ h₃)
   | dne φ => exact nHolds_stable φ v
@@ -591,7 +892,7 @@ theorem paProvable_nSound {φ : PAFormula} (h : PAProvable φ) (v : ℕ → ℕ)
     have h1 := (nHolds_subst v hs).mp hφs
     rw [heq] at h1
     exact (nHolds_subst v ht).mpr h1
-  | pa_zero_ne_succ => exact Nat.succ_ne_zero (v 0)
+  | pa_zero_ne_succ => exact fun h ↦ Nat.noConfusion h
   | pa_succ_inj => exact Nat.succ.inj
   | pa_add_zero => exact Nat.add_zero (v 0)
   | pa_add_succ => exact Nat.add_succ (v 0) (v 1)
@@ -599,21 +900,23 @@ theorem paProvable_nSound {φ : PAFormula} (h : PAProvable φ) (v : ℕ → ℕ)
   | pa_mul_succ => exact Nat.mul_succ (v 0) (v 1)
   | pa_ind x φ =>
     intro h0 hs a
-    have h0' : PAFormula.NHolds (Function.update v x 0) φ :=
-      (nHolds_subst v (freeFor_zero x φ)).mp h0
-    have hs' : ∀ b : ℕ, PAFormula.NHolds (Function.update v x b) φ →
-        PAFormula.NHolds (Function.update v x (b + 1)) φ := by
+    have h0' : PAFormula.NHolds (envUpdate v x 0) φ :=
+      (nHolds_subst v (freeFor_zero_zero x φ)).mp h0
+    have hs' : ∀ b : ℕ, PAFormula.NHolds (envUpdate v x b) φ →
+        PAFormula.NHolds (envUpdate v x (b + 1)) φ := by
       intro b hb
       have hstep := hs b hb
-      have hsub := (nHolds_subst (Function.update v x b) (freeFor_succ_self x φ)).mp hstep
-      simp only [PATerm.eval, Function.update_self] at hsub
+      have hsub := (nHolds_subst (envUpdate v x b) (freeFor_succ_self_zero x φ)).mp hstep
+      have hev : (PATerm.succ (.var x)).eval (envUpdate v x b) = b + 1 :=
+        congrArg (· + 1) (envUpdate_self v x b)
+      rw [hev] at hsub
       exact (nHolds_update_idem v x b (b + 1) φ).mp hsub
     induction a with
     | zero => exact h0'
     | succ a ih => exact hs' a ih
 
-/-- Consistency of first-order Peano Arithmetic (`¬ PAProvable .bot`), proved constructively
-without `Classical.choice`. -/
+/-- Consistency of first-order Peano Arithmetic (`¬ PAProvable .bot`), proved with **zero axioms**
+(`[]`) in Lean's Calculus of Inductive Constructions. -/
 theorem not_paProvable_false : ¬ PAProvable .bot :=
   fun h ↦ paProvable_nSound h (fun _ ↦ 0)
 
