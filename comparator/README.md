@@ -25,7 +25,8 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`,
   `has_transducer_reduction`, `is_closed_segmented_system`, `is_valid_acceleration`,
   `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`,
-  `acceleration_iff_highLevel_acceleration`, A6 `is_halt` / `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, the 74
+  `acceleration_iff_highLevel_acceleration`, A6 `is_not_halt`, resolved `BB(6)` `is_halt` /
+  `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, the 74
   `HardnessEvidence` live-hazard witness and halting residue-class theorems across the 95 machines,
   and the Hard holdout theorems) with `sorry`.
 

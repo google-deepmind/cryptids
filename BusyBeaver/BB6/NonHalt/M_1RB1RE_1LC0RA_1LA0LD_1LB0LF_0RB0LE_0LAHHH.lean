@@ -4193,7 +4193,7 @@ private theorem encSR_symRebuildMR (v : Fin 5 → ℕ) :
     ∀ (ms : List SymMidItem) (tail out : List SymRTok),
     symRebuildMR ms tail = some out →
       encSR v out = encMidR (ms.map (evalMidItem v)) (encSR v tail)
-  | [], tail, out, h => by simp [symRebuildMR] at h; subst h; rfl
+  | [], tail, out, h => by simp only [symRebuildMR] at h; cases h; rfl
   | .mid k :: ms, tail, out, h => by
     dsimp only [symRebuildMR] at h
     rcases hr : symRebuildMR ms tail with _ | t1; · rw [hr] at h; cases h

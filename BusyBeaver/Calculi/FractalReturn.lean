@@ -8,39 +8,18 @@ public import BusyBeaver.Calculi.Longitudinal
 import Mathlib.Tactic.Ring
 
 /-!
-# Fractal-in-Bouncer Return Combinators & Symbolic Executor (`BusyBeaver.FractalReturn`)
+# Symbolic Executor with Shift-Rule Acceleration (`BusyBeaver.FractalReturn`)
 
-Reusable infrastructure extracted from the BusyCoq `FIBv7.v` ("fractal-in-bouncer", holdout `#234`)
-and `ES_v3.v` verification libraries:
+Reusable infrastructure extracted from BusyCoq's `ES_v3.v` verification library:
 
-1. **Return-Closure Non-Halting & 3-Adic Factorization**:
-   - `isNotHalt_of_return`: if `init [] [M]⊢* S a₀` and `∀ a, ∃ b, S a [M]⊢⁺ S b`, then `IsNotHalt
-     M`.
-   - `isNotHalt_of_odd_return`: specialization to odd index families `∀ a, ∃ b, S (1 + a * 2)
-     [M]⊢⁺ S (1 + b * 2)`.
-   - `factor_three`: every positive `x > 0` factors as `x = 3 ^ e * u` with `u % 3 ≠ 0`.
+1. **Block-Power & Half-Tape Algebraic Helpers**:
+   - `lpow_shift`, `lpow_all0`, and half-tape normalization lemmas over `Longitudinal`.
 
 2. **Reflective Symbolic Executor with Shift-Rule Acceleration (`ES`)**:
    - Port of BusyCoq's `ES_v3.v` (`VSide`, `VConfig`, `vconfigEs`, `vconfigEs_spec`,
-     `checkEs_spec_star`,
-     `checkEs_spec_plus`, `vsideRL_es_spec`) with $O(1)$ accumulator-based block rotation
+     `checkEs_spec_star`, `checkEs_spec_plus`) with $O(1)$ accumulator-based block rotation
      (`vsideRwLpowRotateAux`), enabling `by decide` discharge of symbolic execution lemmas without
      `native_decide`.
-
-3. **Half-Run List Combinators**:
-   - `Post`, `mass`, `Pairs`, `Field`, `Fields`, `TripleWord`, `triple_mass`, `M9`, `TripleFields`,
-     `EWord`, `Spaced`, `Raised`, `Block`, `Chain`, `CPeriod`, and their append/power/reverse/mass
-     algebraic lemmas.
-
-4. **Variable-Arity `Sweep` Tile Schema over `Longitudinal.SegRLs` / `SideRLs`**:
-   - `Sweep`, `sweep_step`, `sweep_step_spec`, `sweep_iter`, `Sweep_spec`, `sweep_power`,
-     `sweep_iter_spec`, `blank_sweeps`, `right_sweeps`.
-
-5. **Machine-Generic List-Induction Combinators**:
-   - `even_absorb_list`, `even_absorb_power`, `A_return_list`, `A_return_power`, `C_recover_list`,
-     `odd_recover_list`, `C_recover_period`, `D_sweep`, `D_block`, `D_block_power`, `C_absorb_alt`,
-     `C_block`, `C_block_power`, `CPeriod_collapse`, `B_batch`, `B_complete`, `tagged_even`,
-     `tagged_odd`, `B_half_power`, `caller_list`, `Chain_even`.
 -/
 
 @[expose] public section
