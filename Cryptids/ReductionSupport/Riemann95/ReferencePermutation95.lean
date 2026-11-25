@@ -26,13 +26,8 @@ def decodeBank (regs : List Nat) : List Nat :=
   [regs.getD 3 0,regs.getD 4 0,regs.getD 0 0,regs.getD 2 0,regs.getD 1 0]
 
 theorem bank_five (regs : List Nat) (hlen : regs.length = 5) :
-    ∃ a b c d e, regs = [a,b,c,d,e] := by
-  rcases regs with _ | ⟨a, _ | ⟨b, _ | ⟨c, _ | ⟨d, _ | ⟨e, rest⟩⟩⟩⟩⟩ <;>
-    simp only [List.length_nil, List.length_cons] at hlen
-  all_goals try omega
-  have he : rest = [] := List.eq_nil_of_length_eq_zero (by omega)
-  subst rest
-  exact ⟨a,b,c,d,e,rfl⟩
+    ∃ a b c d e, regs = [a,b,c,d,e] :=
+  ConjectureMachines.list_length_five regs hlen
 
 theorem encodeBank_length (regs : List Nat) : (encodeBank regs).length = 5 := rfl
 theorem decodeBank_length (regs : List Nat) : (decodeBank regs).length = 5 := rfl

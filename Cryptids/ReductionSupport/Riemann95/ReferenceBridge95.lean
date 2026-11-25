@@ -355,12 +355,7 @@ theorem original_scoped_fold95 : OriginalScopedSubEval95 102 (fun regs => [regs.
               ((Relation.TransGen.single s3).trans (ih m (x + 1) f (v + 1)))))
         simpa only [Nat.succ_eq_add_one, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using ht
     intro regs hlen
-    rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, tail⟩⟩⟩⟩⟩ <;>
-      simp only [List.length_nil, List.length_cons] at hlen
-    all_goals try omega
-    have htail : tail = [] := by simpa only [List.length_eq_zero_iff] using (show tail.length = 0
-      by omega)
-    subst tail
+    obtain ⟨m, j, x, f, v, rfl⟩ := ConjectureMachines.list_length_five regs hlen
     exact ⟨hbank j m x f v, rfl⟩
   have hmove := original_scoped_move95 60 73 74 44 4 1 (by decide) (by decide) (by decide)
     rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl
@@ -466,10 +461,8 @@ theorem original_scoped_divide95 : OriginalScopedSubEval95 54 OriginalDivideFn95
     · intro regs hlen
       simp only [List.length_cons, List.length_nil]
     · intro regs hlen hm
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;>
-        try simp only [List.length_nil, OfNat.zero_ne_ofNat, List.length_cons, zero_add,
-      OfNat.one_ne_ofNat, Nat.reduceAdd, Nat.reduceEqDiff, List.getD_eq_getElem?_getD,
-      Nat.ofNat_pos, getElem?_pos, List.getElem_cons_zero, Option.getD_some] at hlen hm
+      obtain ⟨m, j, x, f, v, rfl⟩ := ConjectureMachines.list_length_five regs hlen
+      simp only [List.getD_cons_zero] at hm
       subst hm
       simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero]
       have hj_lt : j < j + v + 1 := by omega
@@ -479,28 +472,25 @@ theorem original_scoped_divide95 : OriginalScopedSubEval95 54 OriginalDivideFn95
         rw [Nat.mul_comm, Nat.mul_add_mod, Nat.mod_eq_of_lt hj_lt]
       simp [hdiv, hmod]
     · intro regs k hlen hm
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;>
-        try simp only [List.length_nil, OfNat.zero_ne_ofNat, List.length_cons, zero_add,
-      OfNat.one_ne_ofNat, Nat.reduceAdd, Nat.reduceEqDiff, List.getD_eq_getElem?_getD,
-      Nat.ofNat_pos, getElem?_pos, List.getElem_cons_zero, Option.getD_some] at hlen hm
+      obtain ⟨m, j, x, f, v, rfl⟩ := ConjectureMachines.list_length_five regs hlen
+      simp only [List.getD_cons_zero] at hm
       subst hm
       rcases v with _ | v'
       · simp only [OriginalTickFn95, List.set, List.getD_cons_zero, List.getD_cons_succ,
           ↓reduceIte, Nat.zero_add, Nat.add_zero]
-        have hN : (x + 1) * (j + 1) + k = x * (j + 1) + j + (k + 1) := by ring
+        have hN : (x + 1) * (j + 1) + k = x * (j + 1) + j + (k + 1) := by
+          rw [Nat.succ_mul]; omega
         rw [hN]
       · simp only [OriginalTickFn95, List.set, List.getD_cons_zero, List.getD_cons_succ,
           Nat.succ_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
         have hJ : j + 1 + v' + 1 = j + (v' + 1) + 1 := by omega
         have hJ2 : j + 1 + v' = j + (v' + 1) := by omega
         have hN : x * (j + (v' + 1) + 1) + (j + 1) + k =
-            x * (j + (v' + 1) + 1) + j + (k + 1) := by ring
+            x * (j + (v' + 1) + 1) + j + (k + 1) := by omega
         rw [hJ, hJ2, hN]
     · intro regs k hlen hm
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;>
-        try simp only [List.length_nil, OfNat.zero_ne_ofNat, List.length_cons, zero_add,
-      OfNat.one_ne_ofNat, Nat.reduceAdd, Nat.reduceEqDiff, List.getD_eq_getElem?_getD,
-      Nat.ofNat_pos, getElem?_pos, List.getElem_cons_zero, Option.getD_some] at hlen hm
+      obtain ⟨m, j, x, f, v, rfl⟩ := ConjectureMachines.list_length_five regs hlen
+      simp only [List.getD_cons_zero] at hm
       subst hm
       rcases v with _ | v' <;> simp [OriginalTickFn95]
   have hjv := original_scoped_move95 65 47 80 70 1 4 (by decide) (by decide)
@@ -510,10 +500,10 @@ theorem original_scoped_divide95 : OriginalScopedSubEval95 54 OriginalDivideFn95
   have h66 := original_scoped_combinators95.1 66 81 82 _ _ rfl rfl rfl rfl hxm hloop
   apply hcongr (original_scoped_combinators95.1 54 65 66 _ _ rfl rfl rfl rfl hjv h66)
   intro regs hlen
-  rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
+  obtain ⟨m, j, x, f, v, rfl⟩ := ConjectureMachines.list_length_five regs hlen
   simp only [OriginalDivideFn95, List.set, List.getD_cons_zero, List.getD_cons_succ,
     Nat.zero_add, Nat.add_zero, Nat.zero_mul]
-  have h1 : m + x = x + m := by ring
+  have h1 : m + x = x + m := Nat.add_comm m x
   have h2 : j + v + 1 - 1 = j + v := by omega
   have h3 : v + j = j + v := by omega
   simp [h1, h2, h3]
@@ -584,10 +574,8 @@ theorem original_digits_scoped95 (j x f v : Nat) (hJ : 2 ≤ j + v + 1) : Relati
       simp only [Fin.isValue, Riemann120.Layer2.trimZeros, List.reverse_cons,
         List.reverse_nil, List.nil_append, List.cons_append, Riemann120.Layer2.dropLeadingZeros,
         BEq.rfl, ↓reduceIte, Fin.reduceBEq, Bool.false_eq_true, Riemann120.Layer2.retStack,
-        Riemann120.Layer2.popBreakRev, OriginalDivideFn95, List.getD_eq_getElem?_getD,
-        List.length_cons, List.length_nil, zero_add, Nat.reduceAdd, Nat.ofNat_pos, getElem?_pos,
-        List.getElem_cons_zero, Option.getD_some, Nat.reduceLT, List.getElem_cons_succ,
-        Nat.one_lt_ofNat, Nat.lt_add_one, add_tsub_cancel_right] at hd'
+        Riemann120.Layer2.popBreakRev, OriginalDivideFn95, List.getD_cons_zero,
+        List.getD_cons_succ, Nat.zero_add, add_tsub_cancel_right] at hd'
       have hf := hdecf (x % J) (x / J) f (J - 1 - x % J)
       have hc : Riemann120.Layer2.rhRegStep
           ⟨[1,1,1,0,0,1,1,1], [0,x % J,x / J,f-1,J-1-x % J]⟩ =
@@ -678,7 +666,9 @@ theorem original_scoped_transform95 : OriginalScopedSubEval95 84 OriginalTransfo
         have hs_c := Riemann120.Layer2.rhRegStep_of_jump
           (regs := [k,j+v,x+j+1,f,0]) hev_cont
         have hi := ih (j+v) (x+j+1) f 0
-        have h2 : x+j+1+k*(j+v+0+1)+(j+v) = x+(k+1)*(j+v+1)+j := by ring
+        have h1 : j+v+0 = j+v := by omega
+        have h2 : x+j+1+k*(j+v+0+1)+(j+v) = x+(k+1)*(j+v+1)+j := by
+          rw [h1, Nat.succ_mul]; omega
         simp only [Nat.add_zero] at hi h2
         rw [h2] at hi
         have hm : R ⟨P ++ [1], [k+1,j+v,x+j,f,0]⟩

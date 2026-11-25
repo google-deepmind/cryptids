@@ -3609,11 +3609,13 @@ theorem rhReg_eval_dom_of_tm_halt (isEd : Bool) :
     · obtain ⟨hv', hregs', padTotal', hpad', s, hs_pos, extra', hsteps⟩ :=
         hsim.2 c'.stack c'.regs hs
       have hle : s ≤ N := by
-        by_contra hlt
-        have hgt : 1 ≤ s - N := by omega
-        have hsplit : s = N + (s - N) := by omega
-        rw [hsplit, nSteps_add, hN, Option.bind_some, nSteps_of_halt hnone hgt] at hsteps
-        cases hsteps
+        by_cases h : s ≤ N
+        · exact h
+        · exfalso
+          have hgt : 1 ≤ s - N := by omega
+          have hsplit : s = N + (s - N) := by omega
+          rw [hsplit, nSteps_add, hN, Option.bind_some, nSteps_of_halt hnone hgt] at hsteps
+          cases hsteps
       have hsplit : N = s + (N - s) := by omega
       rw [hsplit, nSteps_add, hsteps, Option.bind_some] at hN
       have hDom' := ih (N - s) (by omega) hpad' hv' hregs' hN hnone
