@@ -1,6 +1,10 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
-public import BusyBeaver.Basic
+import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 import BusyBeaver.Calculi.Compat
 
@@ -52,6 +56,7 @@ def target_tm : Machine (Fin 2) (Fin 6)
 -- END TRUSTED DEFINITIONS
 
 -- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
+set_option linter.flexible false
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 set_option linter.unusedTactic false

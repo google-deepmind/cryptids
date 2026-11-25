@@ -6,7 +6,6 @@ module
 
 import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-public import BusyBeaver.BB6.Accelerations.M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH
 import BusyBeaver.Calculi.Compat
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
@@ -28,11 +27,20 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH
 
-namespace NonHaltProof
-
 -- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
+
+/-- Machine `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH` (Turing machine transition table). -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH"
+
+/-- Target machine on `Fin 2 → Fin 6`. -/
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 /-- Transition function for `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
@@ -2111,14 +2119,12 @@ private theorem target_tm_eq_target : target_tm = target := by
   | 0, 0 | 0, 1 | 1, 0 | 1, 1 | 2, 0 | 2, 1
   | 3, 0 | 3, 1 | 4, 0 | 4, 1 | 5, 0 | 5, 1 => rfl
 
-end NonHaltProof
-
 public section
 
 /-- The machine `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---` does not halt from the blank tape. -/
 theorem is_not_halt : IsNotHalt target := by
-  rw [← NonHaltProof.target_tm_eq_target]
-  exact NonHaltProof.is_does_not_halt
+  rw [← target_tm_eq_target]
+  exact is_does_not_halt
 
 end
 

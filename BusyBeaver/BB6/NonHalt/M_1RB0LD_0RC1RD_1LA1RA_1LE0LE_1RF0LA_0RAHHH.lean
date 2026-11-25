@@ -6,12 +6,10 @@ module
 
 import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-public import BusyBeaver.BB6.Accelerations.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
 import BusyBeaver.Calculi.Compat
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Zify
-import BusyBeaver.Calculi.Accelerated
 import BusyBeaver.Calculi.ProofKit
 
 
@@ -30,11 +28,20 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH
 
-namespace NonHaltProof
-
 -- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
+
+/-- Machine `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH` (Turing machine transition table). -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH"
+
+/-- Target machine on `Fin 2 → Fin 6`. -/
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 /-- Transition function for `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
@@ -58,7 +65,8 @@ def target_tm : Machine (Fin 2) (Fin 6)
 /-!
 Holdout #510 (797:#510 / 608:#385, `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---`).
 derived_from:
-  suspects/partial/accelerated/m_1rb0ld_0rc1rd_1la1ra_1le0le_1rf0la_0rahhh/has_queried_acceleration.lean
+  suspects/partial/accelerated/
+    m_1rb0ld_0rc1rd_1la1ra_1le0le_1rf0la_0rahhh/has_queried_acceleration.lean
 
 ## Proof Overview
 
@@ -4636,14 +4644,12 @@ private theorem target_tm_eq_target : target_tm = target := by
   | 0, 0 | 0, 1 | 1, 0 | 1, 1 | 2, 0 | 2, 1
   | 3, 0 | 3, 1 | 4, 0 | 4, 1 | 5, 0 | 5, 1 => rfl
 
-end NonHaltProof
-
 public section
 
 /-- The machine `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` does not halt from the blank tape. -/
 theorem is_not_halt : IsNotHalt target := by
-  rw [← NonHaltProof.target_tm_eq_target]
-  exact NonHaltProof.is_does_not_halt
+  rw [← target_tm_eq_target]
+  exact is_does_not_halt
 
 end
 

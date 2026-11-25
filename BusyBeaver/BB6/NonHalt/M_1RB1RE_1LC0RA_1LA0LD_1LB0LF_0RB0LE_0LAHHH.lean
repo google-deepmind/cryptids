@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
 import BusyBeaver.Basic
@@ -31,6 +35,8 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 end
+
+@[expose] public section
 
 /-- Transition function for `1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LA---`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
@@ -5115,7 +5121,7 @@ private theorem symRunBits_sound_star (v : Fin 5 → ℕ) :
     · rw [h1] at h; try dsimp only at h
       exact (symIterPow2_sound v k h1).to_star.trans (symRunBits_sound_star v ks h)
 
-private theorem symRunBits_sound_plus (v : Fin 5 → ℕ) {k : ℕ} {ks : List ℕ}
+theorem symRunBits_sound_plus (v : Fin 5 → ℕ) {k : ℕ} {ks : List ℕ}
     {s s' : SymState} (h : symRunBits (k :: ks) s = some s') :
     ReachesPlus target_tm (evalSym v s) (evalSym v s') := by
   dsimp only [symRunBits] at h
@@ -5186,7 +5192,7 @@ private theorem fin6_ind {P : Fin 6 → Prop}
   | ⟨5, _⟩ => h5
   | ⟨_ + 6, h⟩ => absurd h (by omega)
 
-private theorem reachesPlus_eq_both {a a' b b' : Cfg (Fin 2) (Fin 6)}
+theorem reachesPlus_eq_both {a a' b b' : Cfg (Fin 2) (Fin 6)}
     (h : ReachesPlus target_tm a b) (ha : a = a') (hb : b = b') :
     ReachesPlus target_tm a' b' := ha ▸ hb ▸ h
 
@@ -5259,7 +5265,7 @@ private theorem add_one_1 : (1 : ℕ) + 1 = 2 := rfl
 private theorem add_one_7 : (7 : ℕ) + 1 = 8 := rfl
 private theorem add_one_8 : (8 : ℕ) + 1 = 9 := rfl
 
-private theorem eval_mCfg_z1 (v : Fin 5 → ℕ) (cm ca cb cc : SymN) (m c k : ℕ)
+theorem eval_mCfg_z1 (v : Fin 5 → ℕ) (cm ca cb cc : SymN) (m c k : ℕ)
     (hm : evalSymN v cm + 1 = m) (ha : evalSymN v ca + 3 = 6 * k + 7)
     (hb : evalSymN v cb + 1 = 3 * k + 1) (hc : evalSymN v cc + 1 = c) :
     evalSym v (.mA, [.pair 1 0 symZero, .mid cm, .pair 1 1 symZero, .pair 1 0 symZero],
@@ -13764,7 +13770,7 @@ private theorem postL11_to_M (r q k z C0 : ℕ)
       exact ⟨m', z', c', k', hm', hstep.trans hrest⟩
   | _ + 11 => omega
 
-private theorem invM_step {m z c k : ℕ} (hinv : InvM m z c k) :
+theorem invM_step {m z c k : ℕ} (hinv : InvM m z c k) :
     ReachesInvM (mCfg m z c k) := by
   rcases hinv with ⟨hk, hz, hm, h9m, hc2100⟩
   set K := m / 11
@@ -13919,6 +13925,8 @@ private theorem init_reaches_entry :
     reachesPlus_eq_both h_e10 hinit (eval_mCfg_z2 (v5 0 0 0 0 0) (symConst 151) (symConst 36)
     (symConst 217) (symConst 15) (symConst 2161) 152 218 2162 5 rfl rfl rfl rfl rfl)
   exact hstep.to_star
+
+end
 
 def InAttractor (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ m z c k, InvM m z c k ∧ cfg = mCfg m z c k

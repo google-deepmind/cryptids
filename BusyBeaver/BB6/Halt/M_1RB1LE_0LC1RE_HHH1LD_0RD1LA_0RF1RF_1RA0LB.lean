@@ -10,7 +10,6 @@ import BusyBeaver.Calculi.Compat
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Zify
-import BusyBeaver.Calculi.Accelerated
 
 
 /-!
@@ -62,7 +61,8 @@ def target_tm : Machine (Fin 2) (Fin 6)
 
 -- Holdout #123 (797:#123 / 608:#87, 1RB1LE_0LC1RE_---1LD_0RD1LA_0RF1RF_1RA0LB)
 -- derived_from:
--- suspects/partial/accelerated/m_1rb1le_0lc1re_hhh1ld_0rd1la_0rf1rf_1ra0lb/has_queried_acceleration.lean
+--   suspects/partial/accelerated/
+--     m_1rb1le_0lc1re_hhh1ld_0rd1la_0rf1rf_1ra0lb/has_queried_acceleration.lean
 
 def subGuard (a b : ℕ) : ℕ :=
   if b ≤ a then a - b else 0

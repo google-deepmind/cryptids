@@ -10,7 +10,6 @@ import BusyBeaver.Calculi.Compat
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Zify
-import BusyBeaver.Calculi.Accelerated
 
 
 /-!
@@ -971,7 +970,7 @@ private theorem finish_no0 {M L S : List ℕ} {c : ℕ}
         omega
 
 /--
-Finish a state `cfg_BR1 (0 :: L) (0 :: (2 * c) :: S)` (with extra leading `0`) to a goal `GoodOut`. -/
+Finish a state `cfg_BR1 (0 :: L) (0 :: (2 * c) :: S)` (with extra leading `0`) to `GoodOut`. -/
 private theorem finish_has0 {M L S : List ℕ} {c : ℕ}
     (hr : Reach (cfg_CL1 (inc1 M) ((2 * c + 1) :: S)) (cfg_BR1 (0 :: L) (0 :: (2 * c) :: S)))
     (hw : 2 * W L + 2 ≤ psi M) :
@@ -1722,7 +1721,8 @@ private theorem mCL_bump_spec : ∀ (M : List ℕ) (c : ℕ) (S : List ℕ), Goo
                         change psi (5 :: 4 :: tl) = 2 * (2 + (1 + (0 + W M'''))) at hpsi_x
                         change 2 * (0 + (wf z + W Z)) + 3 ≤ psi (5 :: 4 :: tl)
                         omega
-                  · -- KEEP0 of `5 :: M'''`: `2 * W L1 + 1 ≤ psi (5 :: M''')` => `2 * W L1 ≤ 2*W M''' + 2 = psi M - 4`!
+                  · -- KEEP0 of `5 :: M'''`: `2 * W L1 + 1 ≤ psi (5 :: M''')` =>
+                    -- `2 * W L1 ≤ 2*W M''' + 2 = psi M - 4`!
                     have hreach1 : Reach (cfg_CL1 (6 :: 4 :: tl) ((2 * c + 1) :: S))
                                          (cfg_BR1 (0 :: L1) (0 :: 0 :: 2 :: 0 :: (rep02 (k + 1) ++
                                            ((2 * c) :: S)))) :=
@@ -1796,7 +1796,8 @@ private theorem mCL_bump_spec : ∀ (M : List ℕ) (c : ℕ) (S : List ℕ), Goo
               rcases ihEL M'' hltM'' (List.replicate (2 * m + 3) 0 ++ (2 :: 2 :: (rep02 (k + 1) ++
                 ((2 * c) :: S)))) with
                 ⟨L1, hr1, hw1⟩ | ⟨L1, hr1, hw1⟩
-              · -- `2*m + 3 = 2*(m+1) + 1` zeros -> pushes `2^(m+1)` then `0 :: 2` -> `4 :: 2^(m+1) :: L1` on `2 :: rep02(k+1) :: 2c :: S`!
+              · -- `2*m + 3 = 2*(m+1) + 1` zeros -> pushes `2^(m+1)` then `0 :: 2` ->
+                -- `4 :: 2^(m+1) :: L1` on `2 :: rep02(k+1) :: 2c :: S`!
                 have hrep : List.replicate (2 * m + 3) 0 ++ (2 :: 2 :: (rep02 (k + 1) ++ ((2 * c)
                   :: S))) =
                     List.replicate (2 * (m + 1)) 0 ++ (0 :: 2 :: 2 :: (rep02 (k + 1) ++ ((2 * c)
@@ -1836,7 +1837,8 @@ private theorem mCL_bump_spec : ∀ (M : List ℕ) (c : ℕ) (S : List ℕ), Goo
                   rw [hwx] at hpsi_x; have := psi_le M''
                   change 2 * W L2 + 1 ≤ 2 * (0 + (m + 1 + W L1)) at hw2
                   change 2 * (1 + W L2) + 1 ≤ psi (5 :: 4 :: tl); omega
-              · -- `KEEP0`: `2*m + 4 = 2*(m+2)` zeros -> pushes `2^(m+2)` onto `L1` on `2 :: 2 :: rep02(k+1) :: 2c :: S`!
+              · -- `KEEP0`: `2*m + 4 = 2*(m+2)` zeros -> pushes `2^(m+2)` onto `L1` on
+                -- `2 :: 2 :: rep02(k+1) :: 2c :: S`!
                 have hrep : 0 :: (List.replicate (2 * m + 3) 0 ++ (2 :: 2 :: (rep02 (k + 1) ++ ((2
                   * c) :: S)))) =
                     List.replicate (2 * (m + 2)) 0 ++ (2 :: 2 :: (rep02 (k + 1) ++ ((2 * c) ::

@@ -6,7 +6,6 @@ module
 
 import BusyBeaver.Basic
 public import BusyBeaver.Bridge
-public import BusyBeaver.BB6.M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
 import BusyBeaver.Calculi.Compat
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
@@ -28,11 +27,20 @@ open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE
 
-namespace NonHaltProof
-
 -- BEGIN TRUSTED DEFINITIONS (DO NOT MODIFY)
 
 variable {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+
+@[expose] public section
+
+/-- Machine `1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE` (Turing machine transition table). -/
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE"
+
+/-- Target machine on `Fin 2 → Fin 6`. -/
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+
+end
 
 /-- Transition function for `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
@@ -2077,7 +2085,8 @@ theorem sub_tower_step_core
     · clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega
     · rw [hn_def, h2M3]; clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega
     · clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega
-    · have hA_sq := sq_sub3_add2 (4 * P) (by clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega)
+    · have hA_sq :=
+        sq_sub3_add2 (4 * P) (by clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega)
       have h_e : 4 * P - 3 = E := hE_def.symm
       have h_e5 : 4 * P + 2 = E + 5 := by clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega
       rw [h_e, h_e5, mul_coef 4 4 P P, ← hP2_def] at hA_sq
@@ -2123,7 +2132,8 @@ theorem sub_tower_step_core
         clear hma_def hm_rem2_def hA_def hAnext_def; omega
       exact Nat.le_trans h2 (pow2_mono hexp)
     have h4M'_le : 4 * M' + 4 ≤ 2 ^ (M' - 3) := by
-      have h1 := pow2_ge_four_mul (M' - 3) (by clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega)
+      have h1 :=
+        pow2_ge_four_mul (M' - 3) (by clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega)
       clear hy_def hma_def hm_rem2_def hA_def hAnext_def; omega
     have hpow_succ : 2 ^ (M' - 2) = 2 ^ (M' - 3) * 2 := by
       have hsub : M' - 2 = (M' - 3) + 1 := by
@@ -2184,14 +2194,12 @@ private theorem target_tm_eq_target : target_tm = target := by
   | 0, 0 | 0, 1 | 1, 0 | 1, 1 | 2, 0 | 2, 1
   | 3, 0 | 3, 1 | 4, 0 | 4, 1 | 5, 0 | 5, 1 => rfl
 
-end NonHaltProof
-
 public section
 
 /-- The machine `1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE` does not halt from the blank tape. -/
 theorem is_not_halt : IsNotHalt target := by
-  rw [← NonHaltProof.target_tm_eq_target]
-  exact NonHaltProof.is_does_not_halt
+  rw [← target_tm_eq_target]
+  exact is_does_not_halt
 
 end
 

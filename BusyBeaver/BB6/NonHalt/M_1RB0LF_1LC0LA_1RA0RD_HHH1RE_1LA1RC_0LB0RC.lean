@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2026 Google LLC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 module
 
 import BusyBeaver.Basic
@@ -32,6 +36,8 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 
 end
 
+@[expose] public section
+
 /-- Transition function for `1RB0LF_1LC0LA_1RA0RD_---1RE_1LA1RC_0LB0RC`. -/
 def target_tm : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.right)
@@ -53,9 +59,9 @@ def target_tm : Machine (Fin 2) (Fin 6)
 
 /-! ### Reusable Step-Counted & Reachability Helpers -/
 
-private abbrev sA : Fin 6 := 2
-private abbrev sB : Fin 6 := 0
-private abbrev sF : Fin 6 := 5
+abbrev sA : Fin 6 := 2
+abbrev sB : Fin 6 := 0
+abbrev sF : Fin 6 := 5
 
 private theorem reachesIn_zero (c : Cfg (Fin 2) (Fin 6)) : ReachesIn target_tm 0 c c :=
   ReachesIn.zero target_tm c
@@ -1334,27 +1340,34 @@ private theorem sweepLeftStep_sound (a0 b0 : ℕ) {L R L' R' : SSide}
     rcases EM : peelMAux 8 0 L with ⟨km, Lm⟩
     rw [EM] at hM H; dsimp only [repTok] at hM; dsimp only at H
     split_ifs at H with hkm
-    rcases hq : (match Lm with
-      | ⟨.q, k⟩ :: Lr => if 1 ≤ k.c0 then some (sdec k .q Lr) else none
-      | _ => spop100110 Lm) with _ | Lq
-    · rw [hq] at H; nomatch H
-    · rw [hq] at H; injection H with hp; injection hp with hL' hR'; subst hL'; subst hR'
-      have hLm : exSide a0 b0 Lm = tokStep .q (exSide a0 b0 Lq) := by
-        cases Lm with
-        | nil => exact spop100110_sound a0 b0 hq
-        | cons hd Lr =>
-          rcases hd with ⟨t, k⟩
-          cases t with
-          | q =>
-            dsimp only at hq
-            split_ifs at hq with hk1
-            injection hq with hEq; subst hEq
-            exact exSide_sdec a0 b0 .q k Lr hk1
-          | _ => exact spop100110_sound a0 b0 hq
-      rw [hM, hLm]
-      have hkmEq : km = (km - 1) + 1 := by omega
-      rw [hkmEq, exSide_spushc, exSide_push000P2, exSide_spushc, exSide_spushc]
-      exact reach_L_MkQ (km - 1) (exSide a0 b0 Lq) (exSide a0 b0 R)
+    have hq_ex : ∃ Lq, exSide a0 b0 Lm = tokStep .q (exSide a0 b0 Lq) ∧
+        L' = Lq ∧ R' = spushc .p2 2 (push000P2 (km - 1) (spushc .b0 3 (spushc .p2 2 R))) := by
+      cases Lm with
+      | nil =>
+        try dsimp only at H
+        rcases hq : spop100110 [] with _ | Lq <;> rw [hq] at H
+        · nomatch H
+        · injection H with hp; injection hp with h1 h2
+          exact ⟨Lq, spop100110_sound a0 b0 hq, h1.symm, h2.symm⟩
+      | cons hd Lr =>
+        rcases hd with ⟨t, k⟩
+        cases t with
+        | q =>
+          try dsimp only at H
+          split_ifs at H with hk1
+          injection H with hp; injection hp with h1 h2
+          exact ⟨sdec k .q Lr, exSide_sdec a0 b0 .q k Lr hk1, h1.symm, h2.symm⟩
+        | _ =>
+          try dsimp only at H
+          rcases hq : spop100110 (_ :: Lr) with _ | Lq <;> rw [hq] at H
+          · nomatch H
+          · injection H with hp; injection hp with h1 h2
+            exact ⟨Lq, spop100110_sound a0 b0 hq, h1.symm, h2.symm⟩
+    rcases hq_ex with ⟨Lq, hLm, rfl, rfl⟩
+    rw [hM, hLm]
+    have hkmEq : km = (km - 1) + 1 := by omega
+    rw [hkmEq, exSide_spushc, exSide_push000P2, exSide_spushc, exSide_spushc]
+    exact reach_L_MkQ (km - 1) (exSide a0 b0 L') (exSide a0 b0 R)
 
 def sweepLeftLoop : ℕ → SSide → SSide → SSide × SSide
   | 0, L, R => (L, R)
@@ -1913,7 +1926,7 @@ private theorem symRunPow_sound (a0 b0 : ℕ) :
 def symRunPos (n : ℕ) (s : SState) : Option SState :=
   (superStep s).bind (symRunPow 14 superStep n)
 
-private theorem symRunPos_sound (a0 b0 : ℕ) {n : ℕ} {s s' : SState}
+theorem symRunPos_sound (a0 b0 : ℕ) {n : ℕ} {s s' : SState}
     (H : symRunPos n s = some s') :
     ReachesPlus target_tm (evalSym a0 b0 s) (evalSym a0 b0 s') := by
   obtain ⟨s1, h1, h2⟩ := bind_some_elim H
@@ -2367,7 +2380,7 @@ def encodeCP (u a b : ℕ) : Cfg (Fin 2) (Fin 6) :=
     ((0 : Fin 2) >> repTok .b0 2 (repTok .p2 (3 * a) (repTok .b0 3 (repTok .p2 (3 * b)
       (exConstSide (cpTail u))))))
 
-private theorem evalSym_cpState (a0 b0 u : ℕ) (a b : SN) :
+theorem evalSym_cpState (a0 b0 u : ℕ) (a b : SN) :
     evalSym a0 b0 (cpState u a b) = encodeCP u (a.eval a0 b0) (b.eval a0 b0) := by
   simp only [evalSym, cpState, cpR, encodeCP, exSide, boolToFin2, ↓reduceIte]
   rw [exSide_spushc, exSide_spush, exSide_spushc, exSide_spush, exSide_constSide]
@@ -2518,7 +2531,7 @@ private theorem checkMerge_all (i : ℕ) (hi : i < 36) : checkMerge i = true := 
       ·
         exact checkRange_spec checkMerge 4 32 i checkMerge_3_ok (by omega) (by omega)
 
-private theorem attractor_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : InAttractor cfg) :
+theorem attractor_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : InAttractor cfg) :
     ∃ cfg', ReachesPlus target_tm cfg cfg' ∧ InAttractor cfg' := by
   rcases h with ⟨u, a, b, ⟨hu98, ha, hb, hab⟩, rfl⟩
   by_cases hu62 : u < 62
@@ -2585,6 +2598,8 @@ private theorem attractor_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : InAttractor cf
     rw [ha1, hb1, ha2, hb2] at hrun
     exact ⟨encodeCP v (a - segLen) (b + dbM), hrun,
       ⟨v, a - segLen, b + dbM, ⟨hv98, by omega, by omega, by omega⟩, rfl⟩⟩
+
+end
 
 -- END EXPLORATORY DEFINITIONS AND LEMMAS
 

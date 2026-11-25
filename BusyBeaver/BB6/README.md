@@ -1027,8 +1027,8 @@ Under $(a, d) = (c, b + 1)$ (for $d \ge 1$), this map is identical to that of [`
 
 This directory formalizes 212 resolved `BB(6)` Turing machines (plus `IsNotHalt` on `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---` in [`BusyBeaver/BB6/`](./)) reproducing community proofs and `busycoq` results directly verified in Lean 4 without axioms (`sorry`-free and `native_decide`-free kernel verification):
 
-- **[`BusyBeaver/BB6/Halt/`](./Halt/)**: 32 resolved halting machines (`IsHalt`), each reaching a halting configuration from `init []` with verified multi-step traces.
-- **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)**: 159 resolved non-halting machines (`IsNotHalt`; 178 `IsNotHalt` entries in the table below including `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`), verified via inductive invariants, simulated cycles, or closed-set reachability certificates.
+- **[`BusyBeaver/BB6/Halt/`](./Halt/)**: 35 resolved halting machines (`IsHalt`), each reaching a halting configuration from `init []` with verified multi-step traces.
+- **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)**: 177 resolved non-halting machines (`IsNotHalt`; 178 `IsNotHalt` entries in the table below including `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`), verified via inductive invariants, simulated cycles, or closed-set reachability certificates.
 
 ### Resolved BB(6) Halt Machines (35 machines)
 

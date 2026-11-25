@@ -720,7 +720,8 @@ private theorem step_F_exit_entry (l r : zB) :
   bb_steps
 
 /--
-Drains `Dr^u +> [1,1,0,1,1,1] <{{1}} ([0,0] +> r)` to `default <{{1}} (X^(u+1) +> [0,0] +> X +> r)`. -/
+Drains `Dr^u +> [1,1,0,1,1,1] <{{1}} ([0,0] +> r)` to
+`default <{{1}} (X^(u+1) +> [0,0] +> X +> r)`. -/
 private theorem drain_A2 (u : ℕ) (r : zB) :
     (((Dr ^ u) +> ([1, 1, 0, 1, 1, 1] +> default)) <{{1}} ([0, 0] +> r)) [target_tm]⊢⁺
       (default <{{1}} ((X ^ (u + 1)) +> ([0, 0] +> (X +> r)))) := by
