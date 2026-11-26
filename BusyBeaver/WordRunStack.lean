@@ -40,6 +40,9 @@ theorem nth_cons_two (x : Γ) (t : ListBlank Γ) : (x >> t).nth 2 = t.nth 1 :=
 theorem nth_cons_three (x : Γ) (t : ListBlank Γ) : (x >> t).nth 3 = t.nth 2 :=
   nth_cons_succ x t 2
 
+theorem nth_cons_four (x : Γ) (t : ListBlank Γ) : (x >> t).nth 4 = t.nth 3 :=
+  nth_cons_succ x t 3
+
 theorem nth_default : ∀ i : ℕ, (default : ListBlank Γ).nth i = default
   | 0 => by
       rw [ListBlank.nth_zero]
@@ -129,5 +132,262 @@ theorem isNowhereDenseHalf_of_noFactor {S : Type*} (Valid : S → Prop)
     (hforb : ∀ s, Valid s → NoFactor pat (evalSegmentedHalf (segs s))) :
     IsNowhereDenseHalf Valid segs :=
   isNowhereDenseFamily_of_noFactor Valid (fun s => evalSegmentedHalf (segs s)) pat hforb
+
+/-!
+### Word-List Encoders & `SegModeSpec` Helpers (`PairStackSeg`)
+-/
+
+/-- Encodes a list of tokens `xs : List α` onto `tail : ListBlank Γ` via word map `w`. -/
+def encWordsTail {Γ α : Type*} [Inhabited Γ] (w : α → List Γ) (tail : ListBlank Γ) :
+    List α → ListBlank Γ
+  | [] => tail
+  | x :: xs => w x +> encWordsTail w tail xs
+
+/-- Encodes a list of tokens `xs : List α` onto the blank half-tape `default`. -/
+def encWords {Γ α : Type*} [Inhabited Γ] (w : α → List Γ) (xs : List α) : ListBlank Γ :=
+  encWordsTail w default xs
+
+@[simp] theorem encWordsTail_nil {Γ α : Type*} [Inhabited Γ]
+    (w : α → List Γ) (tail : ListBlank Γ) :
+    encWordsTail w tail [] = tail :=
+  rfl
+
+@[simp] theorem encWordsTail_cons {Γ α : Type*} [Inhabited Γ]
+    (w : α → List Γ) (tail : ListBlank Γ) (x : α) (xs : List α) :
+    encWordsTail w tail (x :: xs) = w x +> encWordsTail w tail xs :=
+  rfl
+
+@[simp] theorem encWords_nil {Γ α : Type*} [Inhabited Γ] (w : α → List Γ) :
+    encWords w [] = default :=
+  rfl
+
+@[simp] theorem encWords_cons {Γ α : Type*} [Inhabited Γ]
+    (w : α → List Γ) (x : α) (xs : List α) :
+    encWords w (x :: xs) = w x +> encWords w xs :=
+  rfl
+
+/-- Bridge from `evalSegRegion (.finWord (xs.map w)) +> tail` to `encWordsTail w tail xs`. -/
+theorem evalSegRegion_finWord_map {Γ α : Type*} [Inhabited Γ]
+    (w : α → List Γ) :
+    ∀ (xs : List α) (tail : ListBlank Γ),
+      evalSegRegion (.finWord (xs.map w)) +> tail = encWordsTail w tail xs
+  | [], tail => by simp [evalSegRegion, encWordsTail]
+  | x :: xs, tail => by
+      simp only [List.map_cons, evalSegRegion, encWordsTail]
+      rw [append_assoc_blank, evalSegRegion_finWord_map w xs tail]
+
+/-- Bridge from `evalSegmentedHalf [.finWord (xs.map w)]` to `encWords w xs`. -/
+theorem evalSegmentedHalf_finWord_map {Γ α : Type*} [Inhabited Γ]
+    (w : α → List Γ) (xs : List α) :
+    evalSegmentedHalf [.finWord (xs.map w)] = encWords w xs := by
+  simp only [evalSegmentedHalf, encWords]
+  exact evalSegRegion_finWord_map w xs default
+
+/-- Bridge from `evalSegmentedHalf [.finWord (xs.map w), .gadget base]` to `encWordsTail`. -/
+theorem evalSegmentedHalf_finWord_gadget {Γ α : Type*} [Inhabited Γ]
+    (w : α → List Γ) (base : List Γ) (xs : List α) :
+    evalSegmentedHalf [.finWord (xs.map w), .gadget base] =
+      encWordsTail w (base +> default) xs := by
+  simp only [evalSegmentedHalf, evalSegRegion]
+  exact evalSegRegion_finWord_map w xs (base +> default)
+
+/-- Head orientation for a segmented mode descriptor. -/
+inductive SegHeadDir
+  | left
+  | right
+  deriving DecidableEq
+
+/-- Table entry describing the TM state, head orientation, and left/right `HalfTapeView`s
+    for a segmented mode `m : Mode`. -/
+structure SegModeSpec (Γ Λ : Type*) where
+  q : Λ
+  dir : SegHeadDir
+  vL : HalfTapeView Γ := .id []
+  vR : HalfTapeView Γ := .id []
+
+/-- `SegStepOut M ValidSeg evalCfg c`: from `c`, machine `M` advances in `⊢⁺` either to
+    `evalCfg s'` for some valid `s'` (`ValidSeg s'`), or to a halting configuration. -/
+def SegStepOut {Γ Λ SegState : Type*} [Inhabited Γ] [Inhabited Λ]
+    (M : Machine Γ Λ) (ValidSeg : SegState → Prop) (evalCfg : SegState → Cfg Γ Λ)
+    (c : Cfg Γ Λ) : Prop :=
+  ∃ cfg', (c [M]⊢⁺ cfg') ∧
+    ((∃ s', ValidSeg s' ∧ cfg' = evalCfg s') ∨ (BusyBeaver.step M cfg').isNone)
+
+/-- Close `SegStepOut` by stepping in `⊢⁺` to `evalCfg s'` for a valid state `s'`. -/
+theorem SegStepOut.step {Γ Λ SegState : Type*} [Inhabited Γ] [Inhabited Λ]
+    {M : Machine Γ Λ} {ValidSeg : SegState → Prop} {evalCfg : SegState → Cfg Γ Λ}
+    {c : Cfg Γ Λ} {s' : SegState} (hs' : ValidSeg s') (h : c [M]⊢⁺ evalCfg s') :
+    SegStepOut M ValidSeg evalCfg c :=
+  ⟨evalCfg s', h, Or.inl ⟨s', hs', rfl⟩⟩
+
+/-- Close `SegStepOut` by stepping in `⊢⁺` to a halting configuration `cfg_h`. -/
+theorem SegStepOut.halt {Γ Λ SegState : Type*} [Inhabited Γ] [Inhabited Λ]
+    {M : Machine Γ Λ} {ValidSeg : SegState → Prop} {evalCfg : SegState → Cfg Γ Λ}
+    {c cfg_h : Cfg Γ Λ} (h : c [M]⊢⁺ cfg_h) (hhalt : (BusyBeaver.step M cfg_h).isNone) :
+    SegStepOut M ValidSeg evalCfg c :=
+  ⟨cfg_h, h, Or.inr hhalt⟩
+
+/-- Transport `IsNowhereDenseFamily` along a pointwise description of evaluated segments. -/
+theorem isNowhereDenseHalf_of_family {S : Type*} {Valid : S → Prop}
+    {segs : S → List (SegRegionKind Γ)} {enc : S → ListBlank Γ}
+    (heq : ∀ s, evalSegmentedHalf (segs s) = enc s) (h : IsNowhereDenseFamily Valid enc) :
+    IsNowhereDenseHalf Valid segs := by
+  unfold IsNowhereDenseHalf
+  rw [show (fun s => evalSegmentedHalf (segs s)) = enc from funext heq]
+  exact h
+
+/-- Decidable `n`-step window checker from `(ls +> l) {{q}}> (rs +> r)` to
+    `(ls' +> l) {{q'}}> (rs' +> r)`. -/
+def checkHeadRight {Γ Λ : Type*} [DecidableEq Γ] [DecidableEq Λ] [Inhabited Γ] [Inhabited Λ]
+    (bL bR : Bool) (M : Machine Γ Λ) (n : ℕ)
+    (q : Λ) (ls rs : List Γ) (q' : Λ) (ls' rs' : List Γ) : Bool :=
+  match rs with
+  | [] =>
+      if !bR then false
+      else
+        match rs' with
+        | a' :: rs₀' =>
+            Counter.multiStepWindow bL true M n ⟨q, default, ls, []⟩ ==
+              some ⟨q', a', ls', rs₀'⟩
+        | [] =>
+            Counter.multiStepWindow bL true M n ⟨q, default, ls, []⟩ ==
+              some ⟨q', default, ls', []⟩
+  | a :: rs₀ =>
+      match rs' with
+      | a' :: rs₀' =>
+          Counter.multiStepWindow bL bR M n ⟨q, a, ls, rs₀⟩ == some ⟨q', a', ls', rs₀'⟩
+      | [] =>
+          if bR then
+            Counter.multiStepWindow bL true M n ⟨q, a, ls, rs₀⟩ ==
+              some ⟨q', default, ls', []⟩
+          else
+            match n with
+            | 0 => false
+            | m + 1 =>
+                match Counter.multiStepWindow bL false M m ⟨q, a, ls, rs₀⟩ with
+                | some ⟨q₀, x, ls₀, []⟩ =>
+                    match M q₀ x with
+                    | some (some q₁, Stmt.write w Dir.right) =>
+                        (q₁ == q') && (Counter.pushWindow bL w ls₀ == ls')
+                    | _ => false
+                | _ => false
+
+private theorem evalWindow_eq_headRight_cons {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+    (l r : ListBlank Γ) (q : Λ) (a : Γ) (ls rs₀ : List Γ) :
+    Counter.evalWindow l r ⟨q, a, ls, rs₀⟩ = (ls +> l) {{q}}> ((a :: rs₀) +> r) := by
+  simp [Counter.evalWindow]
+
+private theorem evalWindow_eq_headRight_nil {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
+    (l : ListBlank Γ) (q : Λ) (ls : List Γ) :
+    Counter.evalWindow l default ⟨q, default, ls, []⟩ = (ls +> l) {{q}}> ([] +> default) := by
+  have hd : (default : ListBlank Γ).head = default := rfl
+  have tl : (default : ListBlank Γ).tail = default := rfl
+  simp [Counter.evalWindow, hd, tl]
+
+/-- Soundness of `checkHeadRight`. -/
+theorem checkHeadRight_sound {Γ Λ : Type*} [DecidableEq Γ] [DecidableEq Λ]
+    [Inhabited Γ] [Inhabited Λ]
+    {bL bR : Bool} {M : Machine Γ Λ}
+    (n : ℕ) (q : Λ) (ls rs : List Γ) (q' : Λ) (ls' rs' : List Γ)
+    (l r : ListBlank Γ)
+    (hL : bL = true → l = default) (hR : bR = true → r = default)
+    (h : checkHeadRight bL bR M n q ls rs q' ls' rs' = true) :
+    ((ls +> l) {{q}}> (rs +> r)) [M]⊢^{n} ((ls' +> l) {{q'}}> (rs' +> r)) := by
+  unfold checkHeadRight at h
+  cases rs with
+  | nil =>
+      cases hbR : bR with
+      | false => simp [hbR] at h
+      | true =>
+          simp only [hbR, Bool.not_true, Bool.false_eq_true, ↓reduceIte] at h
+          have hr_def := hR hbR
+          subst hr_def
+          cases rs' with
+          | cons a' rs₀' =>
+              have hms := eq_of_beq h
+              have hsnd := Counter.multiStepWindow_sound l default hL (fun _ => rfl) n _ _ hms
+              rwa [evalWindow_eq_headRight_nil, evalWindow_eq_headRight_cons] at hsnd
+          | nil =>
+              have hms := eq_of_beq h
+              have hsnd := Counter.multiStepWindow_sound l default hL (fun _ => rfl) n _ _ hms
+              rwa [evalWindow_eq_headRight_nil, evalWindow_eq_headRight_nil] at hsnd
+  | cons a rs₀ =>
+      cases rs' with
+      | cons a' rs₀' =>
+          have hms := eq_of_beq h
+          have hsnd := Counter.multiStepWindow_sound l r hL hR n _ _ hms
+          rwa [evalWindow_eq_headRight_cons, evalWindow_eq_headRight_cons] at hsnd
+      | nil =>
+          cases hbR : bR with
+          | true =>
+              simp only [hbR, ↓reduceIte] at h
+              have hr_def := hR hbR
+              subst hr_def
+              have hms := eq_of_beq h
+              have hsnd := Counter.multiStepWindow_sound l default hL (fun _ => rfl) n _ _ hms
+              rwa [evalWindow_eq_headRight_cons, evalWindow_eq_headRight_nil] at hsnd
+          | false =>
+              simp only [hbR, Bool.false_eq_true, ↓reduceIte] at h
+              cases n with
+              | zero => nomatch h
+              | succ m =>
+                  dsimp only at h
+                  split at h
+                  · next val q₀ x ls₀ hms =>
+                      split at h
+                      · next htm q_opt stmt =>
+                          simp only [Bool.and_eq_true, beq_iff_eq] at h
+                          rcases h with ⟨rfl, hpush⟩
+                          have hsnd := Counter.multiStepWindow_sound l r hL
+                            (by intro hc; contradiction) m _ _ hms
+                          rw [evalWindow_eq_headRight_cons,
+                            evalWindow_eq_headRight_cons] at hsnd
+                          have hstep1 : (((ls₀ +> l) {{q₀}}> ([x] +> r)) [M]⊢
+                              ((ls' +> l) {{htm}}> ([] +> r))) := by
+                            rw [← hpush, Counter.pushWindow_append q_opt ls₀ l hL]
+                            simp [step, stmt, Turing.Tape.write, Turing.Tape.move]
+                          exact Counter.multiStep_trans M _ _ _ m 1 hsnd hstep1
+                      · nomatch h
+                  · nomatch h
+
+/-- Inductive rightward word-run transducer walk. -/
+theorem walkWordRight {Γ Λ : Type*} [DecidableEq Γ] [DecidableEq Λ]
+    [Inhabited Γ] [Inhabited Λ]
+    {M : Machine Γ Λ} (s : ℕ) (q : Λ) (pL u pR v : List Γ)
+    (hbody : checkHeadRight false false M s q pL (pR ++ v) q (pL ++ u) pR = true) :
+    ∀ (k : ℕ) (l r : ListBlank Γ),
+      ((pL +> l) {{q}}> (pR +> ((v ^ k) +> r))) [M]⊢^{s * k}
+        ((pL +> ((u ^ k) +> l)) {{q}}> (pR +> r))
+  | 0, l, r => by simp
+  | k + 1, l, r => by
+      rw [Counter.pow_succ_list, append_assoc_blank v (v ^ k) r,
+        ← append_assoc_blank pR v ((v ^ k) +> r)]
+      have h1 := @checkHeadRight_sound Γ Λ _ _ _ _ false false M s q pL (pR ++ v) q (pL ++ u) pR
+        l ((v ^ k) +> r) (by intro hc; contradiction) (by intro hc; contradiction) hbody
+      rw [append_assoc_blank pL u l] at h1
+      have h2 := walkWordRight s q pL u pR v hbody k (u +> l) r
+      rw [← append_assoc_blank (u ^ k) u l, ← Counter.pow_succ_right] at h2
+      rw [show s * (k + 1) = s + s * k by ring]
+      exact Counter.multiStep_trans M _ _ _ s (s * k) h1 h2
+
+/-- Inductive leftward word-run transducer walk. -/
+theorem walkWordLeft {Γ Λ : Type*} [DecidableEq Γ] [DecidableEq Λ]
+    [Inhabited Γ] [Inhabited Λ]
+    {M : Machine Γ Λ} (s : ℕ) (q : Λ) (pL u pR v : List Γ)
+    (hbody : checkHeadRight false false M s q (pL ++ u) pR q pL (pR ++ v) = true) :
+    ∀ (k : ℕ) (l r : ListBlank Γ),
+      ((pL +> ((u ^ k) +> l)) {{q}}> (pR +> r)) [M]⊢^{s * k}
+        ((pL +> l) {{q}}> (pR +> ((v ^ k) +> r)))
+  | 0, l, r => by simp
+  | k + 1, l, r => by
+      rw [Counter.pow_succ_list, append_assoc_blank u (u ^ k) l,
+        ← append_assoc_blank pL u ((u ^ k) +> l)]
+      have h1 := @checkHeadRight_sound Γ Λ _ _ _ _ false false M s q (pL ++ u) pR q pL (pR ++ v)
+        ((u ^ k) +> l) r (by intro hc; contradiction) (by intro hc; contradiction) hbody
+      rw [append_assoc_blank pR v r] at h1
+      have h2 := walkWordLeft s q pL u pR v hbody k l (v +> r)
+      rw [← append_assoc_blank (v ^ k) v r, ← Counter.pow_succ_right] at h2
+      rw [show s * (k + 1) = s + s * k by ring]
+      exact Counter.multiStep_trans M _ _ _ s (s * k) h1 h2
 
 end BusyBeaver.WordRunStack

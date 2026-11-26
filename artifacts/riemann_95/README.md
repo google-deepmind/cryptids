@@ -33,14 +33,19 @@ From the repository root:
 
 ```sh
 lake build
+lake comparator --config comparator/riemann_95_reduction.json
 lake comparator --config comparator/riemann_95.json
 python3 verify.py
 ```
 
-The comparator checks the three public theorems against independent challenge
-definitions loaded from [`machine.txt`](machine.txt), allowing only `propext`,
-`Classical.choice`, and `Quot.sound`. The same targets are included in
-`comparator/all.json` and the normal CI workflow.
+`comparator/riemann_95_reduction.json` verifies the state-reduction theorems
+(`candidate_fewer_states` and `candidate_equivalent`) without `Classical.choice`
+(allowing only `propext` and `Quot.sound`), and is included in `comparator/constructive.json`
+(`candidate_fewer_states` itself is also checked with zero axioms in `comparator/zero_axioms.json`).
+`comparator/riemann_95.json` checks all three public theorems—including the analytic
+`halts_candidate_iff_not_riemannHypothesis`—against independent challenge definitions loaded from
+[`machine.txt`](machine.txt), allowing `propext`, `Classical.choice`, and `Quot.sound`; the same
+targets are included in `comparator/all.json` and the normal CI workflow.
 
 The root Python verifier checks the table's SHA-256, compares all 190 cells
 loaded by the implementation and challenge, and replays the complete blank

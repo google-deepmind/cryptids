@@ -60,9 +60,18 @@ theorem bounded_unwind_eval (B d x f : Nat) (hB : 5 * d + 18 ≤ B) :
             ⟨unwind d,[0,0,f,x,0]⟩ := Relation.TransGen.single
           (bounded_unwind_edge B (d+1) (f+1) x hB _ (unwind_succ_positive_step d f x))
         have hc : (f+1 ≤ d+1 ∧ (d+1-(f+1))%2 = 0) ↔
-            (f ≤ d ∧ (d-f)%2 = 0) := by omega
+            (f ≤ d ∧ (d-f)%2 = 0) := by
+          constructor <;> intro ⟨h1, h2⟩ <;> exact ⟨by omega, by omega⟩
         have hsub : f+1-(d+1+1) = f-(d+1) := by omega
-        simpa only [hc,hsub] using hs.trans (ih d (by omega) f (by omega))
+        have hite : (if f+1 ≤ d+1 ∧ (d+1-(f+1))%2 = 0 then ControlWord.outside 0
+            else .outside finalTestId) =
+            (if f ≤ d ∧ (d-f)%2 = 0 then ControlWord.outside 0
+            else .outside finalTestId) := by
+          by_cases hcond : f ≤ d ∧ (d - f) % 2 = 0
+          · rw [ite_eq_left (hc.mpr hcond), ite_eq_left hcond]
+          · rw [ite_eq_right (fun h => hcond (hc.mp h)), ite_eq_right hcond]
+        rw [hite, hsub]
+        exact hs.trans (ih d (by omega) f (by omega))
 
 theorem outside_frontier_bound (s : Fin 97) :
     (walked (.outside s)).length + 3 ≤ 19 :=
