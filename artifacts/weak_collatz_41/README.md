@@ -46,7 +46,9 @@ with **zero growing blank gaps**:
    states without context ambiguity.
 
 This compression also accelerates simulation (`70,573` vs. `235,850` steps to reach stage `x = 17`,
-a `3.34x` speedup; `174,497` vs. `677,770` steps to reach `x = 25`, a `3.88x` speedup).
+a `3.34x` speedup; `174,497` vs. `677,770` steps to reach `x = 25`, a `3.88x` speedup). A further
+state reduction to **27 states** ([`weak_collatz_27`](../weak_collatz_27/README.md), `75 → 41 → 27`)
+eliminates the counter block `1^c` via zero-counter cycle-maximum dovetailing.
 
 ## Review Entry Points
 

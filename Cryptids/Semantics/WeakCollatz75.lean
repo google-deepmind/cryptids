@@ -89,7 +89,7 @@ private theorem findEq_none_spec (f : ℕ → ℕ) (target r : ℕ)
         exact hr1
 
 /-- Constructive finite pigeonhole principle on `ℕ` (zero `Classical.choice`). -/
-private theorem nat_pigeonhole_constructive (N : ℕ) :
+theorem nat_pigeonhole_constructive (N : ℕ) :
     ∀ f : ℕ → ℕ, (∀ i : ℕ, i ≤ N + 1 → f i < N + 1) →
       ∃ a b : ℕ, a < b ∧ b ≤ N + 1 ∧ f a = f b := by
   induction N with
@@ -186,72 +186,82 @@ private theorem orbitMax_spec (x r : ℕ) :
         subst hieq
         exact Nat.le_max_right _ _
 
-/-- Constructive equivalence between arbitrary nontrivial positive cycles of `terras` and
-bounded-period cycles `1 ≤ j ≤ x` on `x ≥ 3` (zero `Classical.choice`). -/
-theorem bounded_cycle_iff_exists_cycle :
+/-- Constructive extraction of the cycle maximum `M ≥ 3` and bounded period `1 ≤ j ≤ M - 2`
+from any nontrivial positive cycle of `terras` (zero `Classical.choice`). -/
+theorem exists_bounded_cycle_max {x k : ℕ} (hx3 : 3 ≤ x) (hk1 : 1 ≤ k)
+    (hcyc : terras^[k] x = x) :
+    ∃ M j : ℕ, 3 ≤ M ∧ 1 ≤ j ∧ j ≤ M - 2 ∧ terras^[j] M = M ∧
+      (∀ t : ℕ, 3 ≤ terras^[t] M ∧ terras^[t] M ≤ M) ∧
+      (∃ i : ℕ, i < k ∧ terras^[i] x = M) := by
+  let M := orbitMax x (k - 1)
+  rcases orbitMax_spec x (k - 1) with ⟨⟨i0, hi0_le, hi0_eq⟩, h_le_M⟩
+  have hi0_M : terras^[i0] x = M := hi0_eq
+  have hM3 : 3 ≤ M := by
+    rw [← hi0_M]
+    exact terras_orbit_ge_three hx3 hk1 hcyc i0
+  have hM_cyc : terras^[k] M = M := by
+    rw [← hi0_M, ← Function.iterate_add_apply, Nat.add_comm k i0,
+        Function.iterate_add_apply, hcyc]
+  have hM_iter_le : ∀ t : ℕ, terras^[t] M ≤ M := by
+    intro t
+    have ht_eq : terras^[t] M = terras^[t + i0] x := by
+      rw [← hi0_M, ← Function.iterate_add_apply]
+    rw [ht_eq]
+    let s := t + i0
+    change terras^[s] x ≤ M
+    have hdiv : s = s % k + (s / k) * k := by
+      have hd := Nat.div_add_mod s k
+      rw [Nat.mul_comm k (s / k), Nat.add_comm] at hd
+      exact hd.symm
+    rw [hdiv, Function.iterate_add_apply, terras_iterate_mul_period (s / k) k x hcyc]
+    have hmod_lt : s % k < k := Nat.mod_lt s hk1
+    exact h_le_M (s % k) (by omega)
+  let N := M - 3
+  let f : ℕ → ℕ := fun t => terras^[t] M - 3
+  have hf_lt : ∀ t : ℕ, t ≤ N + 1 → f t < N + 1 := by
+    intro t _
+    have ht_ge3 : 3 ≤ terras^[t] M := terras_orbit_ge_three hM3 hk1 hM_cyc t
+    have ht_leM : terras^[t] M ≤ M := hM_iter_le t
+    dsimp [f, N]
+    omega
+  rcases nat_pigeonhole_constructive N f hf_lt with ⟨a, b, hab, hb_le, hfab⟩
+  have ha_ge3 : 3 ≤ terras^[a] M := terras_orbit_ge_three hM3 hk1 hM_cyc a
+  have hb_ge3 : 3 ≤ terras^[b] M := terras_orbit_ge_three hM3 hk1 hM_cyc b
+  have hab_eq : terras^[a] M = terras^[b] M := by
+    dsimp [f] at hfab
+    omega
+  let j := b - a
+  have hj_pos : 1 ≤ j := by dsimp [j]; omega
+  have hj_le : j ≤ M - 2 := by dsimp [j, N] at hb_le ⊢; omega
+  have hj_cyc : terras^[j] M = M := by
+    have happ := congrArg (fun z => terras^[a * (k - 1)] z) hab_eq
+    rw [← Function.iterate_add_apply, ← Function.iterate_add_apply] at happ
+    have hlhs : a * (k - 1) + a = a * k := by
+      have hk_eq : k - 1 + 1 = k := by omega
+      calc
+        a * (k - 1) + a = a * (k - 1) + a * 1 := by rw [Nat.mul_one]
+        _ = a * (k - 1 + 1) := (Nat.mul_add a (k - 1) 1).symm
+        _ = a * k := by rw [hk_eq]
+    have hrhs : a * (k - 1) + b = j + a * k := by
+      dsimp [j]
+      omega
+    rw [hlhs, hrhs, Function.iterate_add_apply,
+        terras_iterate_mul_period a k M hM_cyc] at happ
+    exact happ.symm
+  exact ⟨M, j, hM3, hj_pos, hj_le, hj_cyc,
+    fun t => ⟨terras_orbit_ge_three hM3 hk1 hM_cyc t, hM_iter_le t⟩,
+    ⟨i0, by omega, hi0_M⟩⟩
+
+private theorem bounded_cycle_iff_exists_cycle :
     (∃ x j : ℕ, 3 ≤ x ∧ 1 ≤ j ∧ j ≤ x ∧ terras^[j] x = x) ↔
       (∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2) := by
   constructor
   · rintro ⟨x, j, hx3, hj1, _, hcyc⟩
     exact ⟨x, j, by omega, hj1, hcyc, by omega, by omega⟩
   · rintro ⟨x, k, hx1, hk1, hcyc, hxne1, hxne2⟩
-    have hx3 : 3 ≤ x := by omega
-    let M := orbitMax x (k - 1)
-    rcases orbitMax_spec x (k - 1) with ⟨⟨i0, hi0_le, hi0_eq⟩, h_le_M⟩
-    have hi0_M : terras^[i0] x = M := hi0_eq
-    have hM3 : 3 ≤ M := by
-      rw [← hi0_M]
-      exact terras_orbit_ge_three hx3 hk1 hcyc i0
-    have hM_cyc : terras^[k] M = M := by
-      rw [← hi0_M, ← Function.iterate_add_apply, Nat.add_comm k i0,
-          Function.iterate_add_apply, hcyc]
-    have hM_iter_le : ∀ t : ℕ, terras^[t] M ≤ M := by
-      intro t
-      have ht_eq : terras^[t] M = terras^[t + i0] x := by
-        rw [← hi0_M, ← Function.iterate_add_apply]
-      rw [ht_eq]
-      let s := t + i0
-      change terras^[s] x ≤ M
-      have hdiv : s = s % k + (s / k) * k := by
-        have hd := Nat.div_add_mod s k
-        rw [Nat.mul_comm k (s / k), Nat.add_comm] at hd
-        exact hd.symm
-      rw [hdiv, Function.iterate_add_apply, terras_iterate_mul_period (s / k) k x hcyc]
-      have hmod_lt : s % k < k := Nat.mod_lt s hk1
-      exact h_le_M (s % k) (by omega)
-    let N := M - 3
-    let f : ℕ → ℕ := fun t => terras^[t] M - 3
-    have hf_lt : ∀ t : ℕ, t ≤ N + 1 → f t < N + 1 := by
-      intro t _
-      have ht_ge3 : 3 ≤ terras^[t] M := terras_orbit_ge_three hM3 hk1 hM_cyc t
-      have ht_leM : terras^[t] M ≤ M := hM_iter_le t
-      dsimp [f, N]
-      omega
-    rcases nat_pigeonhole_constructive N f hf_lt with ⟨a, b, hab, hb_le, hfab⟩
-    have ha_ge3 : 3 ≤ terras^[a] M := terras_orbit_ge_three hM3 hk1 hM_cyc a
-    have hb_ge3 : 3 ≤ terras^[b] M := terras_orbit_ge_three hM3 hk1 hM_cyc b
-    have hab_eq : terras^[a] M = terras^[b] M := by
-      dsimp [f] at hfab
-      omega
-    let j := b - a
-    have hj_pos : 1 ≤ j := by dsimp [j]; omega
-    have hj_le : j ≤ M := by dsimp [j, N] at hb_le ⊢; omega
-    have hj_cyc : terras^[j] M = M := by
-      have happ := congrArg (fun z => terras^[a * (k - 1)] z) hab_eq
-      rw [← Function.iterate_add_apply, ← Function.iterate_add_apply] at happ
-      have hlhs : a * (k - 1) + a = a * k := by
-        have hk_eq : k - 1 + 1 = k := by omega
-        calc
-          a * (k - 1) + a = a * (k - 1) + a * 1 := by rw [Nat.mul_one]
-          _ = a * (k - 1 + 1) := (Nat.mul_add a (k - 1) 1).symm
-          _ = a * k := by rw [hk_eq]
-      have hrhs : a * (k - 1) + b = j + a * k := by
-        dsimp [j]
-        omega
-      rw [hlhs, hrhs, Function.iterate_add_apply,
-          terras_iterate_mul_period a k M hM_cyc] at happ
-      exact happ.symm
-    exact ⟨M, j, hM3, hj_pos, hj_le, hj_cyc⟩
+    rcases exists_bounded_cycle_max (by omega) hk1 hcyc with
+      ⟨M, j, hM3, hj1, hjM, hj_cyc, -, -⟩
+    exact ⟨M, j, hM3, hj1, by omega, hj_cyc⟩
 
 /-- Constructive equivalence between `weakCollatz75` blank-tape halting and the existence of a
 nontrivial positive cycle of `terras`. -/

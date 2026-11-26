@@ -323,6 +323,11 @@ def weakCollatz41Rows : List (List (Option (Fin 2 × Dir × Fin 41))) :=
   load_machine_rows% "artifacts/weak_collatz_41/machine.txt"
 /-- 41-state Weak Collatz candidate. -/
 def weakCollatz41 : Machine 41 2 := Machine.ofRows weakCollatz41Rows
+/-- Rows of `weakCollatz27`. -/
+def weakCollatz27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/weak_collatz_27/machine.txt"
+/-- 27-state Weak Collatz candidate. -/
+def weakCollatz27 : Machine 27 2 := Machine.ofRows weakCollatz27Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff

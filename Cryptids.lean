@@ -29,6 +29,8 @@ public import Cryptids.WeakCollatz75
 public import Cryptids.Semantics.WeakCollatz75
 public import Cryptids.WeakCollatz41
 public import Cryptids.Semantics.WeakCollatz41
+public import Cryptids.WeakCollatz27
+public import Cryptids.Semantics.WeakCollatz27
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -95,6 +97,12 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   in-place `terras` hole-shifting, local `2p` comparison/restoration, and 1-pass triple-building,
   with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and
   Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz27`, `Cryptids.Semantics.WeakCollatz27` — A 27-state compression
+  (`weakCollatz27`, `41 → 27` states; `75 → 41 → 27` overall) eliminating the per-stage step
+  counter via zero-counter cycle-maximum dovetailing (`y = 1` and `z > x` stage aborts), shared
+  `restCfg` stage-advance splitting, and a zero-state blank-tape warm-up (`53/53` active cells
+  visited), with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle
+  and Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

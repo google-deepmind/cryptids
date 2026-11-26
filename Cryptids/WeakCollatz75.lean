@@ -405,11 +405,6 @@ private theorem nSteps_then_reachPos {k : ℕ} {c₁ c₂ c₃ : Cfg 75 2}
   obtain ⟨s, hs, heq⟩ := h₂
   exact ⟨k + s, by omega, nSteps_bind_eq h₁ heq⟩
 
-private theorem reachPos_then_nSteps {k : ℕ} {c₁ c₂ c₃ : Cfg 75 2}
-    (h₁ : reachPos c₁ c₂) (h₂ : nSteps weakCollatz75 k c₂ = some c₃) : reachPos c₁ c₃ := by
-  obtain ⟨s, hs, heq⟩ := h₁
-  exact ⟨s + k, by omega, nSteps_bind_eq heq h₂⟩
-
 private theorem sweep1R {q : Fin 75}
     (h : ∀ L R, step weakCollatz75 ⟨q, ⟨1, L, R⟩⟩ = some ⟨q, Tape.mk' (L.cons 1) R⟩)
     (k : ℕ) (L R : ListBlank (Fin 2)) :
