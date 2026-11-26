@@ -1039,7 +1039,7 @@ def verify_legendre_21(machine: Machine, steps: int) -> dict[str, object]:
   `20` (`X`); with `f = 1`, `r = 5` (the tape the blank-tape run has at `8`) it reaches
   the test of `9` with the flag clear and six ones in the walker area.
   """
-  proof_text = (ROOT / "Cryptids/Legendre21.lean").read_text(encoding="utf-8")
+  proof_text = (ROOT / LEGENDRE_21["proof_path"]).read_text(encoding="utf-8")
   assert "theorem halts_legendre21_iff" in proof_text
   halting = [
       (q, sym)

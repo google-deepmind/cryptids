@@ -1,17 +1,145 @@
 landing_page = "Cryptids"
 extra_css = ["literate-overrides.css"]
 
-order = ["Cryptids", "BusyBeaver"]
+# Verso applies `order` at every directory level (`parent == prefix_`), including
+# dotted subsection prefixes where `[order_children]` TOML keys wouldn't split.
+order = [
+  "Cryptids",
+  "BusyBeaver",
+  # BusyBeaver.Defs
+  "BusyBeaver.Defs.Core",
+  "BusyBeaver.Defs.Patterns",
+  "BusyBeaver.Defs.Stack",
+  "BusyBeaver.Defs.Odometer",
+  "BusyBeaver.Defs.Transducer",
+  "BusyBeaver.Defs.WordRun",
+  "BusyBeaver.Defs.Segmented",
+  # BusyBeaver.BB6
+  "BusyBeaver.BB6.Equivalences",
+  "BusyBeaver.BB6.Hardness",
+  "BusyBeaver.BB6.HardnessEvidence",
+  "BusyBeaver.BB6.Accelerations",
+  "BusyBeaver.BB6.A6",
+  "BusyBeaver.BB6.Pomme",
+  # Cryptids.Semantics
+  "Cryptids.Semantics.Goldbach",
+  "Cryptids.Semantics.Zf",
+  "Cryptids.Semantics.Zf393",
+  "Cryptids.Semantics.PA",
+  "Cryptids.Semantics.Riemann",
+  "Cryptids.Semantics.Riemann120",
+  "Cryptids.Semantics.Riemann95",
+  "Cryptids.Semantics.ErdosTernary15",
+  "Cryptids.Semantics.ErdosTernary14",
+  "Cryptids.Semantics.Brocard28",
+  "Cryptids.Semantics.Legendre21",
+  # Cryptids.Semantics.Zf
+  "Cryptids.Semantics.Zf.Boot",
+  "Cryptids.Semantics.Zf.Gadgets",
+  "Cryptids.Semantics.Zf.Dispatcher",
+  "Cryptids.Semantics.Zf.Subroutines",
+  "Cryptids.Semantics.Zf.RegisterMachine",
+  "Cryptids.Semantics.Zf.Soundness",
+  # Cryptids.Semantics.Zf393
+  "Cryptids.Semantics.Zf393.Backend",
+  "Cryptids.Semantics.Zf393.Program",
+  # Cryptids.Semantics.Riemann
+  "Cryptids.Semantics.Riemann.Gadgets",
+  "Cryptids.Semantics.Riemann.Dispatcher",
+  "Cryptids.Semantics.Riemann.RegisterMachine",
+  "Cryptids.Semantics.Riemann.Analytic",
+  "Cryptids.Semantics.Riemann.Schmidt",
+  "Cryptids.Semantics.Riemann.DigammaBinet",
+  "Cryptids.Semantics.Riemann.HorizontalBounds",
+  "Cryptids.Semantics.Riemann.VonMangoldtCount",
+  "Cryptids.Semantics.Riemann.WeightedStieltjes",
+  "Cryptids.Semantics.Riemann.ExplicitLarge",
+  # Cryptids.Semantics.Riemann120
+  "Cryptids.Semantics.Riemann120.Backend",
+  "Cryptids.Semantics.Riemann120.Program",
+  "Cryptids.Semantics.Riemann120.Analytic",
+  "Cryptids.Semantics.Riemann120.VonMangoldt",
+  "Cryptids.Semantics.Riemann120.Bridge",
+]
 
 [metadata]
 title = "Cryptids & Busy Beaver"
 description = "Formally verified conjecture-checking and Busy Beaver Turing machines in Lean 4."
 
+# Note: `Challenge` and `BusyBeaverChallenge` are intentionally excluded because
+# they duplicate `ConjectureMachines.*` and `BusyBeaver.*` declaration names for
+# `comparator`, which causes Verso's search indexer (`IndexM.save`) to fail with
+# `Duplicate document ID` collisions.
 [[targets]]
 library = "Cryptids"
 
+# Render human-authored BusyBeaver definitions, certificate frameworks,
+# equivalence/hardness analyses, and named case studies (`A6`, `Pomme`,
+# `WilyCoyote`) without running full SubVerso hover elaboration on hundreds of
+# generated `M_*` holdout proof scripts and `Calculi` data tables.
 [[targets]]
 library = "BusyBeaver"
+module = "BusyBeaver.Defs"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.Basic"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.Bridge"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.Cert"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.Stack"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.WordRLE"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.AffRLE"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.WordRunStack"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.ElabRLE"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB6.Equivalences"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB6.Hardness"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB6.HardnessEvidence"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB6.Accelerations.Stack"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB6.A6"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB6.Pomme"
+
+[[targets]]
+library = "BusyBeaver"
+module = "BusyBeaver.BB33.WilyCoyote"
 
 [order_children]
 "BusyBeaver" = [
@@ -19,6 +147,11 @@ library = "BusyBeaver"
   "BusyBeaver.Basic",
   "BusyBeaver.Bridge",
   "BusyBeaver.Cert",
+  "BusyBeaver.Stack",
+  "BusyBeaver.WordRLE",
+  "BusyBeaver.AffRLE",
+  "BusyBeaver.WordRunStack",
+  "BusyBeaver.ElabRLE",
   "BusyBeaver.BB6",
   "BusyBeaver.BB33",
 ]
@@ -30,48 +163,16 @@ library = "BusyBeaver"
   "Cryptids.Zf380",
   "Cryptids.Riemann120",
   "Cryptids.Riemann104",
+  "Cryptids.Riemann95",
+  "Cryptids.Riemann95Definition",
+  "Cryptids.ErdosTernary15",
+  "Cryptids.ErdosTernary14",
+  "Cryptids.Brocard28",
+  "Cryptids.Legendre21",
   "Cryptids.Semantics",
-]
-"Cryptids.Semantics" = [
-  "Cryptids.Semantics.Goldbach",
-  "Cryptids.Semantics.Zf",
-  "Cryptids.Semantics.Zf393",
-  "Cryptids.Semantics.Riemann",
-  "Cryptids.Semantics.Riemann120",
-]
-"Cryptids.Semantics.Zf" = [
-  "Cryptids.Semantics.Zf.Boot",
-  "Cryptids.Semantics.Zf.Gadgets",
-  "Cryptids.Semantics.Zf.Dispatcher",
-  "Cryptids.Semantics.Zf.Subroutines",
-  "Cryptids.Semantics.Zf.RegisterMachine",
-  "Cryptids.Semantics.Zf.Soundness",
-]
-"Cryptids.Semantics.Zf393" = [
-  "Cryptids.Semantics.Zf393.Backend",
-  "Cryptids.Semantics.Zf393.Program",
-]
-"Cryptids.Semantics.Riemann" = [
-  "Cryptids.Semantics.Riemann.Gadgets",
-  "Cryptids.Semantics.Riemann.Dispatcher",
-  "Cryptids.Semantics.Riemann.RegisterMachine",
-  "Cryptids.Semantics.Riemann.Analytic",
-  "Cryptids.Semantics.Riemann.Schmidt",
-  "Cryptids.Semantics.Riemann.DigammaBinet",
-  "Cryptids.Semantics.Riemann.HorizontalBounds",
-  "Cryptids.Semantics.Riemann.VonMangoldtCount",
-  "Cryptids.Semantics.Riemann.WeightedStieltjes",
-  "Cryptids.Semantics.Riemann.ExplicitLarge",
-]
-"Cryptids.Semantics.Riemann120" = [
-  "Cryptids.Semantics.Riemann120.Backend",
-  "Cryptids.Semantics.Riemann120.Program",
-  "Cryptids.Semantics.Riemann120.Analytic",
-  "Cryptids.Semantics.Riemann120.VonMangoldt",
-  "Cryptids.Semantics.Riemann120.Bridge",
+  "Cryptids.ReductionSupport",
 ]
 
 # Verso's dark mode leaves code tokens black on a dark background.
 [theme.dark]
 code_color = "var(--verso-text-color)"
-

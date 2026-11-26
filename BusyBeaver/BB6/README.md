@@ -1,12 +1,12 @@
 # Busy Beaver 6 Holdouts (`BusyBeaver/BB6/`)
 
-This directory contains formal Lean 4 specifications and kernel-verified Collatz-like reductions for 55 Busy Beaver 6 (`BB(6)`, 6-state 2-symbol) holdout Turing machines (the [A6 nonhalting certificate](../../artifacts/a6/README.md), 54 closed-pattern holdouts including a Baker-free 2-adic Laurent-determinant non-halting proof for `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`), together with 56 stacked, odometer, transducer, and cryptid holdouts (15 machines formalized under `HasStackReduction`, `HasOdometerReduction`, and `HasTransducerReduction`—12 `bbchallenge` Wiki machines and 3 Halving Tower holdouts—20 open acceleration problems under `IsValidAcceleration`, 13 with higher-level accelerations, and 21 Hard holdout cryptid machines under `IsSegmentedCryptid`, `IsStackCryptid`, and `IsOdometerCryptid`) in **[`BusyBeaver/BB6/Accelerations/`](./Accelerations/README.md)** (111 `BB(6)` holdouts total), alongside 191 resolved `BB(6)` holdouts categorized under **[`BusyBeaver/BB6/Halt/`](./Halt/)** (32 kernel-verified halting machines, `IsHalt`) and **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)** (159 kernel-verified non-halting machines, `IsNotHalt`), resolving machines from the `bbchallenge` holdout set and `busycoq` formalizations (302 distinct `BB(6)` machines overall). Each machine module in `BusyBeaver/BB6/` below (other than the A6 module) exposes both **Level A** (`ps`, `is_closed_pattern_set`, `has_collatz_reduction`, with `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` also proving `IsCryptid`) and **Level B** (`State`, `start`, `encode`, `next`, `is_valid_acceleration`, `isHalt_iff_acceleration`), and 33 modules (all 20 novel discovery modules together with 13 multi-family or multi-counter wiki/busycoq holdouts) additionally expose a higher-level Collatz-like acceleration (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`); see [`BusyBeaver/README.md`](../README.md) for definitions of the behavioral predicates and [`BusyBeaver/BB6/Accelerations/README.md`](./Accelerations/README.md) for the stacked, odometer, and transducer formalizations and open problem statements.
+This directory contains formal Lean 4 specifications and kernel-verified Collatz-like reductions for 54 Busy Beaver 6 (`BB(6)`, 6-state 2-symbol) holdout Turing machines (the [A6 nonhalting certificate](../../artifacts/a6/README.md) and 53 closed-pattern holdouts including a Baker-free 2-adic Laurent-determinant non-halting proof for `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`), together with 57 stacked, odometer, transducer, and cryptid holdouts (14 structural reductions formalized under `HasStackReduction` and `HasOdometerReduction`—10 `bbchallenge` Wiki machines, 3 Halving Tower holdouts, and 1 interleaved multi-separator pair-stack—18 open acceleration problems under `IsValidAcceleration`, 12 with higher-level accelerations, and 25 Hard holdout cryptid machines under `IsSegmentedCryptid`, `IsStackCryptid`, and `IsOdometerCryptid`) in **[`BusyBeaver/BB6/Accelerations/`](./Accelerations/README.md)** (111 `BB(6)` holdouts total), alongside 212 resolved `BB(6)` holdouts categorized under **[`BusyBeaver/BB6/Halt/`](./Halt/)** (35 kernel-verified halting machines, `IsHalt`) and **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)** (177 kernel-verified non-halting machines, `IsNotHalt`), resolving single-file machines from the `bbchallenge` holdout set and `busycoq` formalizations (323 distinct `BB(6)` machines overall; resolved holdouts whose halting or non-halting proofs span multiple files, such as `#413`, `#748`, and `#749`, are omitted for size). Each machine module in `BusyBeaver/BB6/` below (other than the A6 module) exposes **Level A** (`ps`, `is_closed_pattern_set`, `has_collatz_reduction`, with `1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE` and `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` also proving `IsCryptid`) and 52 of the 53 also expose **Level B** (`State`, `start`, `encode`, `next`, `is_valid_acceleration`, `isHalt_iff_acceleration`; the compressed-token Level B transition system of `#1` is kept `private`); 31 modules (18 novel discovery modules together with 13 multi-family or multi-counter wiki/busycoq holdouts) additionally expose a higher-level Collatz-like acceleration (`HighLevelState`, `highLevelStart`, `highLevelEncode`, `highLevelNext`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`); see [`BusyBeaver/README.md`](../README.md) for definitions of the behavioral predicates and [`BusyBeaver/BB6/Accelerations/README.md`](./Accelerations/README.md) for the stacked, odometer, and transducer formalizations and open problem statements.
 
 The A6 module exports a closed blank-tape `IsNotHalt` proof using a checked
 entry certificate and a universal return family; it has a separate
 [proof guide](../../artifacts/a6/README.md).
 
-> **Hardness & Formal Evidence.** Why the hardest of these holdouts are hard (halting trigger, growth regime, shields, heuristic hazards, and the calibration case `#72` that the community proved halting) is recorded in [`Hardness.lean`](./Hardness.lean) (rendered on the docs site as `BusyBeaver.BB6.Hardness`); each machine in that core also carries a `## Hardness` section in its module docstring. Kernel-checked live-hazard witnesses (`highLevelNext s = none` / `next s = none`) and parametric halting residue classes across 26 select `BB(6)` holdouts (the 24 hard-core holdouts carrying `IsValidAcceleration`, plus `#568` (`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC`) and `1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD`, out of 73 accelerated holdouts in the repository) are proved in [`HardnessEvidence.lean`](./HardnessEvidence.lean) (`BusyBeaver.BB6.HardnessEvidence`).
+> **Hardness & Formal Evidence.** Why the hardest of these holdouts are hard (halting trigger, growth regime, shields, heuristic hazards, and the calibration case `#72` that the community proved halting) is recorded in [`Hardness.lean`](./Hardness.lean) (rendered on the docs site as `BusyBeaver.BB6.Hardness`); each machine in that core also carries a `## Hardness` section in its module docstring. Kernel-checked live-hazard witnesses (`highLevelNext s = none` / `next s = none`) and parametric halting residue classes across 24 select `BB(6)` holdouts (the 22 hard-core holdouts carrying `IsValidAcceleration`, plus `#568` (`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC`) and `1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD`, out of 71 accelerated `BB(6)` holdouts in the repository) are proved in [`HardnessEvidence.lean`](./HardnessEvidence.lean) (`BusyBeaver.BB6.HardnessEvidence`).
 
 > **Equivalences.** Machine-level halting equivalences between holdouts whose certified high-level accelerations coincide are collected in [`Equivalences.lean`](./Equivalences.lean) (`BusyBeaver.BB6.Equivalences`): `isHalt_HHH1LC_iff_HHH0LA` proves that `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC` halts if and only if `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` does (the pair merged by busycoq `Eqv_RegularPairs.v`).
 
@@ -27,14 +27,12 @@ entry certificate and a universal return family; it has a separate
 | `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean) |
 | `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---1LC` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | equivalent to `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA` (same orbit after two macro-steps; busycoq [`Eqv_RegularPairs.v`](https://github.com/ccz181078/busycoq/blob/BB6/verify/Eqv_RegularPairs.v)); the machine-level halting equivalence is proved in [`Equivalences.lean`](./Equivalences.lean) (`BusyBeaver.BB6.isHalt_HHH1LC_iff_HHH0LA`) | [`M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH1LC.lean) |
 | `1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RC---` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki (`User:RobinCodes/Next_Steps`)](https://wiki.bbchallenge.org/wiki/User:RobinCodes/Next_Steps) | [`M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.lean`](./M_1RB0LE_1LC1RA_1RA1LD_0LC0LA_0RE1RF_0RCHHH.lean) |
-| `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean`](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean) |
 | `1RB0LF_1LC1RA_0RE0RD_---1LE_1LF1RC_1LC1LA` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean`](./M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean) |
 | `1RB0LF_1RC1RA_0RD0RB_1LE---_0LA1LE_1RD1LA` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA.lean`](./M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA.lean) |
 | `1RB0RB_1LB0LC_1RD1LC_1RE0RA_0RF1RA_---1LB` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RB_1LB0LC_1RD1LC_1RE0RA_0RF1RA_---1LB) | [`M_1RB0RB_1LB0LC_1RD1LC_1RE0RA_0RF1RA_HHH1LB.lean`](./M_1RB0RB_1LB0LC_1RD1LC_1RE0RA_0RF1RA_HHH1LB.lean) |
 | `1RB0RB_1LC1RE_1LF0LD_1RA1LD_1RC1RB_---1LC` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RB_1LC1RE_1LF0LD_1RA1LD_1RC1RB_---1LC) (*Space Needle* family) | [`M_1RB0RB_1LC1RE_1LF0LD_1RA1LD_1RC1RB_HHH1LC.lean`](./M_1RB0RB_1LC1RE_1LF0LD_1RA1LD_1RC1RB_HHH1LC.lean) |
 | `1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD.lean`](./M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD.lean) |
 | `1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_---0RA` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_---0RA) (*Lucy's Moonlight*) | [`M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA.lean`](./M_1RB0RD_0RC1RE_1RD0LA_1LE1LC_1RF0LD_HHH0RA.lean) |
-| `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean`](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean) |
 | `1RB0RE_1LC1LD_0RA0LD_1LB0LA_1RF1RA_---1LB` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RE_1LC1LD_0RA0LD_1LB0LA_1RF1RA_---1LB) | [`M_1RB0RE_1LC1LD_0RA0LD_1LB0LA_1RF1RA_HHH1LB.lean`](./M_1RB0RE_1LC1LD_0RA0LD_1LB0LA_1RF1RA_HHH1LB.lean) |
 | `1RB0RF_1RC1RF_1LD0LE_---1LC_1RA1LE_1LC1RB` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RF_1RC1RF_1LD0LE_---1LC_1RA1LE_1LC1RB) (Parity-Collatz) | [`M_1RB0RF_1RC1RF_1LD0LE_HHH1LC_1RA1LE_1LC1RB.lean`](./M_1RB0RF_1RC1RF_1LD0LE_HHH1LC_1RA1LE_1LC1RB.lean) |
 | `1RB1LA_0LC0RC_1LE1RD_1RE1RC_1LF0LA_---1LE` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LA_0LC0RC_1LE1RD_1RE1RC_1LF0LA_---1LE) (*The Sheep Machine*) | [`M_1RB1LA_0LC0RC_1LE1RD_1RE1RC_1LF0LA_HHH1LE.lean`](./M_1RB1LA_0LC0RC_1LE1RD_1RE1RC_1LF0LA_HHH1LE.lean) |
@@ -66,6 +64,7 @@ entry certificate and a universal return family; it has a separate
 | `1RB1RE_1LC0RA_1RD0LB_1LB1RC_1LF0RD_---0LE` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RE_1LC0RA_1RD0LB_1LB1RC_1LF0RD_---0LE) | [`M_1RB1RE_1LC0RA_1RD0LB_1LB1RC_1LF0RD_HHH0LE.lean`](./M_1RB1RE_1LC0RA_1RD0LB_1LB1RC_1LF0RD_HHH0LE.lean) |
 | `1RB1RE_1LC1LD_---1LA_1LB1LE_0RF0RA_1LD1RF` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RE_1LC1LD_---1LA_1LB1LE_0RF0RA_1LD1RF) (*HydraShift6*) | [`M_1RB1RE_1LC1LD_HHH1LA_1LB1LE_0RF0RA_1LD1RF.lean`](./M_1RB1RE_1LC1LD_HHH1LA_1LB1LE_0RF0RA_1LD1RF.lean) |
 | `1RB1RF_0LC0RF_1RD1LC_---0LE_0RC1LF_1RA0LE` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RF_0LC0RF_1RD1LC_---0LE_0RC1LF_1RA0LE) | [`M_1RB1RF_0LC0RF_1RD1LC_HHH0LE_0RC1LF_1RA0LE.lean`](./M_1RB1RF_0LC0RF_1RD1LC_HHH0LE_0RC1LF_1RA0LE.lean) |
+| `1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsCryptid` | — (bbchallenge #1) | [`M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC.lean`](./M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC.lean) |
 | `1RB1RF_1LC1LF_0RE1LD_0LB1LD_---1RC_1RA0RD` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RF_1LC1LF_0RE1LD_0LB1LD_---1RC_1RA0RD) | [`M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD.lean`](./M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD.lean) |
 | `1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean`](./M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean) |
 | `1RB---_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD` | `6` | `2` | `IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration` | — | [`M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD.lean`](./M_1RBHHH_1RC1LE_0RD0RF_0RE0LA_1LF0LB_1LA1LD.lean) |
@@ -216,44 +215,6 @@ This 2-counter system is identical to that of [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1
 
 Restricting $D(a, b, d) := 0^\infty \ \mathrm{D}{>} \ (10)^{a+1} \ (110)^b \ 0 \ 1^d \ 0^\infty$ to the $b = 0$ Poincaré section $D(a, d) := D(a, 0, d)$ gives the exact same 2-counter map $T$ (with initial state $D(0, 7)$, reached after 68 steps, and helpers $A$ and $B$) as [`1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA`](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean).
 
-### [`1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean)
-
-We define the configuration for $b, c \ge 0$:
-
-$$
-A(b, c) := 0^\infty \ 1^b \ \mathrm{F}{>} \ 00 \ 1^c \ 0^\infty.
-$$
-
-Starting from $A(5, 2)$ (reached after 33 steps from the blank tape), the machine follows the map $T$, where $h = \lfloor c/2 \rfloor$:
-
-$$
-T(A(b, c)) = \begin{cases}
-  A(2c+4, 3) & \text{if } b = 0, \\
-  A(3, 3) & \text{if } b = 2 \text{ and } c = 0, \\
-  A(5, c-1) & \text{if } b = 2 \text{ and } c \ge 1, \\
-  A(b-2h-4, 2c+5) & \text{if } b \ge 2h+5, \\
-  A(2c+6, 3) & \text{if } b \text{ is odd and } b \le 2h+3, \\
-  F(b-3, 2, 0, c-b+1) & \text{if } b \ge 4 \text{ is even and } b \le 2h, \\
-  F(b-4+(c \bmod 2), 2, 0, 0) & \text{if } b \ge 4 \text{ is even and } b = 2h+2, \\
-  \text{Halt} & \text{if } b \ge 4 \text{ is even and } b = 2h+4,
-\end{cases}
-$$
-
-where $F(m, p, n, c)$ (`evalOdd`) is defined recursively on $m$:
-
-$$
-F(m, p, n, c) = \begin{cases}
-  A(4n+c+7, 3) & \text{if } m = 0 \text{ and } p \le n+1, \\
-  A(2(p-n-2)+1, 4n+c+6) & \text{if } m = 0 \text{ and } p \ge n+2, \\
-  A(4n+9, c) & \text{if } m = 1 \text{ and } p \le n+1, \\
-  F(0, p-n-2, 2n+3, c) & \text{if } m = 1 \text{ and } p \ge n+2, \\
-  F(m-2, 2n+4, 0, c) & \text{if } m \ge 2 \text{ and } p \le n+1, \\
-  F(m-1, p-n-2, 2n+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
-\end{cases}
-$$
-
-This machine shares the exact same transition map $T$ and helper $F$ with [`1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean), which starts from $A(4, 3)$.
-
 ### [`1RB0LF_1LC1RA_0RE0RD_---1LE_1LF1RC_1LC1LA`](./M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean)
 
 We define the configuration for $a \ge 0$, $b \ge 1$:
@@ -374,44 +335,6 @@ D(b, a, p) = \begin{cases}
   D(8q + 8,\ a - 1,\ p) & \text{if } a \ge 2 \text{ and } b \equiv 2 \pmod{3}.
 \end{cases}
 $$
-
-### [`1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean)
-
-We define the configuration for $b, c \ge 0$:
-
-$$
-A(b, c) := 0^\infty \ 1^c \ 0 \ \mathrm{A}{>} \ 0 \ 1^b \ 0^\infty.
-$$
-
-Starting from $A(4, 3)$ (reached after 27 steps from the blank tape), the machine follows the map $T$, where $h = \lfloor c/2 \rfloor$:
-
-$$
-T(A(b, c)) = \begin{cases}
-  A(2c+4, 3) & \text{if } b = 0, \\
-  A(3, 3) & \text{if } b = 2 \text{ and } c = 0, \\
-  A(5, c-1) & \text{if } b = 2 \text{ and } c \ge 1, \\
-  A(b-2h-4, 2c+5) & \text{if } b \ge 2h+5, \\
-  A(2c+6, 3) & \text{if } b \text{ is odd and } b \le 2h+3, \\
-  F(b-3, 2, 0, c-b+1) & \text{if } b \ge 4 \text{ is even and } b \le 2h, \\
-  F(b-4+(c \bmod 2), 2, 0, 0) & \text{if } b \ge 4 \text{ is even and } b = 2h+2, \\
-  \text{Halt} & \text{if } b \ge 4 \text{ is even and } b = 2h+4,
-\end{cases}
-$$
-
-where $F(m, p, n, c)$ (`evalOdd`) is defined recursively on $m$:
-
-$$
-F(m, p, n, c) = \begin{cases}
-  A(4n+c+7, 3) & \text{if } m = 0 \text{ and } p \le n+1, \\
-  A(2(p-n-2)+1, 4n+c+6) & \text{if } m = 0 \text{ and } p \ge n+2, \\
-  A(4n+9, c) & \text{if } m = 1 \text{ and } p \le n+1, \\
-  F(0, p-n-2, 2n+3, c) & \text{if } m = 1 \text{ and } p \ge n+2, \\
-  F(m-2, 2n+4, 0, c) & \text{if } m \ge 2 \text{ and } p \le n+1, \\
-  F(m-1, p-n-2, 2n+3, c) & \text{if } m \ge 2 \text{ and } p \ge n+2.
-\end{cases}
-$$
-
-This machine shares the exact same transition map $T$ and helper $F$ with [`1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean), which starts from $A(5, 2)$.
 
 ### [`1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_---0LD`](./M_1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_HHH0LD.lean)
 
@@ -1025,12 +948,12 @@ Under $(a, d) = (c, b + 1)$ (for $d \ge 1$), this map is identical to that of [`
 
 ## Resolved `BB(6)` Machines
 
-This directory formalizes 191 resolved `BB(6)` Turing machines (plus `IsNotHalt` on `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---` in [`BusyBeaver/BB6/`](./)) reproducing community proofs and `busycoq` results directly verified in Lean 4 without axioms (`sorry`-free and `native_decide`-free kernel verification):
+This directory formalizes 212 resolved `BB(6)` Turing machines (plus `IsNotHalt` on `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---` in [`BusyBeaver/BB6/`](./)) reproducing community proofs and `busycoq` results directly verified in Lean 4 without axioms (`sorry`-free and `native_decide`-free kernel verification):
 
-- **[`BusyBeaver/BB6/Halt/`](./Halt/)**: 32 resolved halting machines (`IsHalt`), each reaching a halting configuration from `init []` with verified multi-step traces.
-- **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)**: 159 resolved non-halting machines (`IsNotHalt`; 160 `IsNotHalt` entries in the table below including `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`), verified via inductive invariants, simulated cycles, or closed-set reachability certificates.
+- **[`BusyBeaver/BB6/Halt/`](./Halt/)**: 35 resolved halting machines (`IsHalt`), each reaching a halting configuration from `init []` with verified multi-step traces.
+- **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)**: 177 resolved non-halting machines (`IsNotHalt`; 178 `IsNotHalt` entries in the table below including `1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`), verified via inductive invariants, simulated cycles, or closed-set reachability certificates.
 
-### Resolved BB(6) Halt Machines (32 machines)
+### Resolved BB(6) Halt Machines (35 machines)
 
 | Machine (`bbchallenge` RLE) | States | Symbols | Proved Property | Origin / Wiki | Lean 4 Proof |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -1066,8 +989,11 @@ This directory formalizes 191 resolved `BB(6)` Turing machines (plus `IsNotHalt`
 | `1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_---1RA` | `6` | `2` | `IsHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_---1RA) | [`M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA.lean`](./Halt/M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA.lean) |
 | `1RB1RF_1LC0RA_---0LD_1RE1LD_0LF0LB_1RA1LE` | `6` | `2` | `IsHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RF_1LC0RA_---0LD_1RE1LD_0LF0LB_1RA1LE) | [`M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE.lean`](./Halt/M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE.lean) |
 | `1RB---_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD` | `6` | `2` | `IsHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB---_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD) | [`M_1RBHHH_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD.lean`](./Halt/M_1RBHHH_1LC1RE_1LA0LD_0RE1LC_1LC1RF_1RB0RD.lean) |
+| `1RB0LE_0RC---_1RD0LA_1RE0RA_0LF1LD_1LC1RF` | `6` | `2` | `IsHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LE_0RC---_1RD0LA_1RE0RA_0LF1LD_1LC1RF) | [`M_1RB0LE_0RCHHH_1RD0LA_1RE0RA_0LF1LD_1LC1RF.lean`](./Halt/M_1RB0LE_0RCHHH_1RD0LA_1RE0RA_0LF1LD_1LC1RF.lean) |
+| `1RB1LE_0LC1RE_---1LD_0RD1LA_0RF1RF_1RA0LB` | `6` | `2` | `IsHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LE_0LC1RE_---1LD_0RD1LA_0RF1RF_1RA0LB) | [`M_1RB1LE_0LC1RE_HHH1LD_0RD1LA_0RF1RF_1RA0LB.lean`](./Halt/M_1RB1LE_0LC1RE_HHH1LD_0RD1LA_0RF1RF_1RA0LB.lean) |
+| `1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_---0RA` | `6` | `2` | `IsHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_---0RA) | [`M_1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_HHH0RA.lean`](./Halt/M_1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_HHH0RA.lean) |
 
-### Resolved BB(6) NonHalt Machines (160 machines)
+### Resolved BB(6) NonHalt Machines (178 machines)
 
 | Machine (`bbchallenge` RLE) | States | Symbols | Proved Property | Origin / Wiki | Lean 4 Proof |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -1231,3 +1157,21 @@ This directory formalizes 191 resolved `BB(6)` Turing machines (plus `IsNotHalt`
 | `1RB---_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB---_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE) | [`M_1RBHHH_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE.lean`](./NonHalt/M_1RBHHH_1RC1LF_1LD1RE_1LB0LD_1RA0RC_1RC0LE.lean) |
 | `1RB---_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB---_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC) | [`M_1RBHHH_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC.lean`](./NonHalt/M_1RBHHH_1RC1RA_1RD0RB_1LE1RC_1LF0LE_1RC0LC.lean) |
 | `1RB---_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB---_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF) | [`M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF.lean`](./NonHalt/M_1RBHHH_1RC1RE_1LD0RC_0RE0LD_1LC0LF_1RA0RF.lean) |
+| `1RB0LA_1LC1RF_---1LD_1RE0LA_1RA0RB_1RE0RF` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LA_1LC1RF_---1LD_1RE0LA_1RA0RB_1RE0RF) | [`M_1RB0LA_1LC1RF_HHH1LD_1RE0LA_1RA0RB_1RE0RF.lean`](./NonHalt/M_1RB0LA_1LC1RF_HHH1LD_1RE0LA_1RA0RB_1RE0RF.lean) |
+| `1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RA---) | [`M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH.lean`](./NonHalt/M_1RB0LD_0RC1RD_1LA1RA_1LE0LE_1RF0LA_0RAHHH.lean) |
+| `1RB0LD_1LC0RD_1LA0LC_1RE0LB_1RB1RF_0LD---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LD_1LC0RD_1LA0LC_1RE0LB_1RB1RF_0LD---) | [`M_1RB0LD_1LC0RD_1LA0LC_1RE0LB_1RB1RF_0LDHHH.lean`](./NonHalt/M_1RB0LD_1LC0RD_1LA0LC_1RE0LB_1RB1RF_0LDHHH.lean) |
+| `1RB0LE_1RC0LB_1RD0RC_1LA1RC_---1LF_1LB1LD` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LE_1RC0LB_1RD0RC_1LA1RC_---1LF_1LB1LD) | [`M_1RB0LE_1RC0LB_1RD0RC_1LA1RC_HHH1LF_1LB1LD.lean`](./NonHalt/M_1RB0LE_1RC0LB_1RD0RC_1LA1RC_HHH1LF_1LB1LD.lean) |
+| `1RB0LE_1RC---_1RD1RE_1LA0RF_0RC0LA_0LC0RB` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LE_1RC---_1RD1RE_1LA0RF_0RC0LA_0LC0RB) | [`M_1RB0LE_1RCHHH_1RD1RE_1LA0RF_0RC0LA_0LC0RB.lean`](./NonHalt/M_1RB0LE_1RCHHH_1RD1RE_1LA0RF_0RC0LA_0LC0RB.lean) |
+| `1RB0LF_1LC0LA_1RA0RD_---1RE_1LA1RC_0LB0RC` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LF_1LC0LA_1RA0RD_---1RE_1LA1RC_0LB0RC) | [`M_1RB0LF_1LC0LA_1RA0RD_HHH1RE_1LA1RC_0LB0RC.lean`](./NonHalt/M_1RB0LF_1LC0LA_1RA0RD_HHH1RE_1LA1RC_0LB0RC.lean) |
+| `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE) | [`M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean`](./NonHalt/M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean) |
+| `1RB0RA_1RC0RD_1RD0LC_1LE1RA_---1LF_1RB0LC` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RA_1RC0RD_1RD0LC_1LE1RA_---1LF_1RB0LC) | [`M_1RB0RA_1RC0RD_1RD0LC_1LE1RA_HHH1LF_1RB0LC.lean`](./NonHalt/M_1RB0RA_1RC0RD_1RD0LC_1LE1RA_HHH1LF_1RB0LC.lean) |
+| `1RB0RC_1RC---_1LD1RE_1LE0LD_1RA0LF_0RC0RB` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RC_1RC---_1LD1RE_1LE0LD_1RA0LF_0RC0RB) | [`M_1RB0RC_1RCHHH_1LD1RE_1LE0LD_1RA0LF_0RC0RB.lean`](./NonHalt/M_1RB0RC_1RCHHH_1LD1RE_1LE0LD_1RA0LF_0RC0RB.lean) |
+| `1RB0RD_1RC0LF_1LA0LB_---1RE_1LB1RA_0LC0RA` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RD_1RC0LF_1LA0LB_---1RE_1LB1RA_0LC0RA) | [`M_1RB0RD_1RC0LF_1LA0LB_HHH1RE_1LB1RA_0LC0RA.lean`](./NonHalt/M_1RB0RD_1RC0LF_1LA0LB_HHH1RE_1LB1RA_0LC0RA.lean) |
+| `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC) | [`M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean`](./NonHalt/M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean) |
+| `1RB0RF_1RC0LD_1RD0RA_1LB1LE_0LB0RE_0RD---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB0RF_1RC0LD_1RD0RA_1LB1LE_0LB0RE_0RD---) | [`M_1RB0RF_1RC0LD_1RD0RA_1LB1LE_0LB0RE_0RDHHH.lean`](./NonHalt/M_1RB0RF_1RC0LD_1RD0RA_1LB1LE_0LB0RE_0RDHHH.lean) |
+| `1RB1LC_0RC0RB_1LD0LA_1LE---_1LF1RA_1LA1LC` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LC_0RC0RB_1LD0LA_1LE---_1LF1RA_1LA1LC) | [`M_1RB1LC_0RC0RB_1LD0LA_1LEHHH_1LF1RA_1LA1LC.lean`](./NonHalt/M_1RB1LC_0RC0RB_1LD0LA_1LEHHH_1LF1RA_1LA1LC.lean) |
+| `1RB1LE_1RC0RB_1LD1RC_1LA1LE_1LF0LA_1LC---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LE_1RC0RB_1LD1RC_1LA1LE_1LF0LA_1LC---) | [`M_1RB1LE_1RC0RB_1LD1RC_1LA1LE_1LF0LA_1LCHHH.lean`](./NonHalt/M_1RB1LE_1RC0RB_1LD1RC_1LA1LE_1LF0LA_1LCHHH.lean) |
+| `1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---) | [`M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean`](./NonHalt/M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean) |
+| `1RB1LF_1RC1RB_1RD0RB_0LE0LF_---1LD_0LE1LA` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1LF_1RC1RB_1RD0RB_0LE0LF_---1LD_0LE1LA) | [`M_1RB1LF_1RC1RB_1RD0RB_0LE0LF_HHH1LD_0LE1LA.lean`](./NonHalt/M_1RB1LF_1RC1RB_1RD0RB_0LE0LF_HHH1LD_0LE1LA.lean) |
+| `1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RF---_0RA0RF` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RF---_0RA0RF) | [`M_1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RFHHH_0RA0RF.lean`](./NonHalt/M_1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RFHHH_0RA0RF.lean) |
+| `1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LA---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LA---) | [`M_1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LAHHH.lean`](./NonHalt/M_1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LAHHH.lean) |

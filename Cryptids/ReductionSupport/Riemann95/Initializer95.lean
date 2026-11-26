@@ -103,7 +103,7 @@ theorem post_reference_trace (M : Nat) :
       ⟨ReferenceProgram.word 88,[0,0,Riemann120.shuniaDeficit (M+2),0,M+1]⟩ := by
     intro he
     exact reference_word3_ne88 (congrArg RhRegCfg.stack he)
-  rcases StateTransition.reaches_total hi hf with hpost | hback
+  rcases ConjectureMachines.reaches_total_det hi hf with hpost | hback
   · rcases Relation.reflTransGen_iff_eq_or_transGen.mp hpost with he | ht
     · exact False.elim (hne he.symm)
     · exact ht
@@ -111,9 +111,7 @@ theorem post_reference_trace (M : Nat) :
         ⟨ReferenceProgram.word 88,[0,0,Riemann120.shuniaDeficit (M+2),0,M+1]⟩ = none := by
       unfold ReferencePreStep95
       exact ite_eq_left rfl
-    have he := (Relation.reflTransGen_iff_eq
-      (Option.eq_none_iff_forall_not_mem.mp hsink)).mp hback
-    exact False.elim (hne he)
+    exact False.elim (hne (ConjectureMachines.reaches_of_none hsink hback).symm)
 
 theorem initializer (M f : Nat) :
     Relation.TransGen (Control.BoundedEdge 19)
