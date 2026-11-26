@@ -121,7 +121,7 @@ of a defined execution of length `S(k)` is a defined execution of length
 This argument is formalized for arbitrary machines in
 `BusyBeaver.AffRLE.isNotHalt_of_family` ([`AffRLE.lean`](../../BusyBeaver/AffRLE.lean))
 using `IsNotHalt.of_reachesPlus_invariant`, and instantiated for `A6` in
-[`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean). In particular,
+[`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean). In particular,
 nonhalting follows from positive, universally proved return paths; it does
 not require a finite simulation to continue indefinitely.
 
@@ -232,7 +232,7 @@ their `q`-fold quadratic batch iterations (`transferB_batch` and
 
 The entry certificate starts with state A, left-facing orientation, and two
 empty stacks, whose `evalEntryCfg` denotation equals `init []` via
-`init_nil_eq_headLeft` ([`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean)).
+`init_nil_eq_headLeft` ([`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean)).
 
 Each step of `stepEntry` executes either a 2-bit word exit, a homogeneous
 sweep, or a certified B or D transfer batch. Strict `withNat` evaluation in
@@ -333,10 +333,10 @@ E (D E)^n D = (E D)^(n+1) = Q^(n+1).
 
 The suffix `W B>Y^6` is unchanged. The full state and tape equality is
 `a6_final_eq_next` in
-[`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean).
+[`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean).
 Combining it with `verifyReturnCert_sound` proves `family_step` for every
 `n >= 8`, and `isNotHalt_of_family` closes
-[`BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.is_not_halt`](../../BusyBeaver/BB6/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean).
+[`BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.is_not_halt`](../../BusyBeaver/BB6/NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean).
 
 ## Scope of the result
 

@@ -1497,11 +1497,23 @@ private theorem step_T1 (n : Nat) : StepsTo (T1_cfg n) (next_T1 n) := by
     have h_rem := rem_to_R1_01 (n' + 8)
     exact ReachesPlus.trans hc_6 h_rem
 
-private theorem step_R3_0 : (R3_cfg 0) [target]⊢⁺ (T1_cfg 4) := by
-  unfold R3_cfg T1_cfg
-  simp only [LA, U4, HPow.hPow,
-    ListBlank.append_cons, ListBlank.append_nil]
+private theorem step_R3_0_part1 :
+    (R3_cfg 0) [target]⊢⁺
+      ((([1] : List (Fin 2)) +> default) {{E}}> (([0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1,
+        0, 0, 1] : List (Fin 2)) +> default)) := by
+  unfold R3_cfg
+  simp only [LA, U4, HPow.hPow, ListBlank.append_cons, ListBlank.append_nil]
   bb_steps
+
+private theorem step_R3_0_part2 :
+    ((([1] : List (Fin 2)) +> default) {{E}}> (([0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1,
+      0, 0, 1] : List (Fin 2)) +> default)) [target]⊢⁺ (T1_cfg 4) := by
+  unfold T1_cfg
+  simp only [LA, U4, HPow.hPow, ListBlank.append_cons, ListBlank.append_nil]
+  bb_steps
+
+private theorem step_R3_0 : (R3_cfg 0) [target]⊢⁺ (T1_cfg 4) :=
+  ReachesPlus.trans step_R3_0_part1 step_R3_0_part2
 
 private theorem R3_entry_137 (l : ListBlank (Fin 2)) :
     (((l <+ U4) <+ [0, 0, 1, 0, 0, 1, 0, 0, 1]) {{A}}> default) [target]⊢⁺
