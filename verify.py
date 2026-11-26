@@ -921,9 +921,11 @@ def verify_brocard_27(machine: Machine, steps: int) -> dict[str, object]:
   and `n = 5` at step 391. Then, from a prepared tape with eight cells of `N` and
   `1 + T_8 = 37` cells of `B` in state 0 (`36 = T_8` is triangular and a multiple of
   `4`), the machine halts in state 22 (`M0`); with `2 + T_8` cells it reaches the next
-  test with `9` cells of `N` and `9 * 37 + 1` cells of `B`.
+  test with `9` cells of `N` and `9 * 37 + 1` cells of `B`. With `1 + T_3 = 7` cells
+  (`6 = T_3` is triangular, but `6 % 4 = 2`) the gate (`M2` reading `0`) lets the machine
+  go on: it reaches the next test with `9` cells of `N` and `9 * 6 + 1` cells of `B`.
   """
-  proof_text = (ROOT / "Cryptids/Brocard27.lean").read_text(encoding="utf-8")
+  proof_text = (ROOT / BROCARD_27["proof_path"]).read_text(encoding="utf-8")
   assert "theorem halts_brocard27_iff_exists_tri" in proof_text
   halting = [
       (q, sym)
@@ -993,6 +995,11 @@ def verify_brocard_27(machine: Machine, steps: int) -> dict[str, object]:
   assert status == "stop", f"brocard_27 planted non-square: {status}"
   expected = {head + i for i in range(9 * 37 + 1)} | {head - 2 - i for i in range(9)}
   assert cells == expected, "brocard_27 planted non-square: wrong next tape"
+  # A triangular value with residue 2: T_3 = 6. The gate (`M2` reading `0`) must not halt.
+  (status, state, head, _), cells = planted(1 + 6)
+  assert status == "stop", f"brocard_27 planted residue-2 triangular: {status} in {state}"
+  expected = {head + i for i in range(9 * 6 + 1)} | {head - 2 - i for i in range(9)}
+  assert cells == expected, "brocard_27 planted residue-2 triangular: wrong next tape"
   return {
       "steps_simulated": total,
       "tests_verified": tests,
