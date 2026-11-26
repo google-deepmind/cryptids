@@ -32,6 +32,12 @@ def incLeaf98 : Fin 5 → Fin 98
   | ⟨3, _⟩ => 23
   | _ => 55
 
+private theorem list_getD_eq_getElem {α : Type*} :
+    ∀ (l : List α) (d : α) {i : ℕ} (hi : i < l.length), l.getD i d = l[i]
+  | [], _, _, hi => absurd hi (Nat.not_lt_zero _)
+  | _ :: _, _, 0, _ => rfl
+  | _ :: xs, d, _ + 1, hi => list_getD_eq_getElem xs d (Nat.lt_of_succ_lt_succ hi)
+
 theorem nSteps98_eq (n : Nat) (c : Cfg 98 2) : Raw.nSteps n c =
   ConjectureMachines.Semantics.Riemann.Layer1.nSteps Raw.machine n c := by
   induction n generalizing c with
@@ -167,7 +173,7 @@ private theorem dec_select_one (m : Nat) (hm1 : 1 ≤ m) (hm4 : m ≤ 4) :
 
 private theorem dec_leaf_transition (r : Fin 5) :
     Raw.machine.transition (decLeaf98 r) 1 = some (0, .right, decSelect (r.val + 1)) := by
-  fin_cases r <;> rfl
+  revert r; decide
 
 private theorem dec_select_scan : ∀ (pref : List Nat), pref.length ≤ 4 →
     ∀ (L R : ListBlank (Fin 2)),
@@ -279,7 +285,7 @@ theorem unary98_dec_pos (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length)
   have hsplit : regsTape bank = ListBlank.append (encodeRegs pref) (regsTape ((m + 1) :: suff)) :=
     by
     have hb : bank = pref ++ (m + 1) :: suff := by
-      rw [← hv, List.getD_eq_getElem bank 0 hr]
+      rw [← hv, list_getD_eq_getElem bank 0 hr]
       exact (list_take_cons_drop bank r.val hr).symm
     rw [hb, regsTape_append]
   have h0 : step Raw.machine
@@ -506,8 +512,9 @@ theorem unary98_inc (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (L 
     have hbank : regsTape bank = ListBlank.append (encodeRegs pref) (regsTape (v :: suff)) := by
       dsimp only [pref, v, suff]
       rw [← regsTape_append, list_take_cons_drop bank r.val hr]
-    have hleaf : Raw.machine.transition (incLeaf98 r) 1 = some (0, .right, chain (r.val + 1)) := by
-      fin_cases r <;> decide
+    have hleaf : Raw.machine.transition (incLeaf98 r) 1 = some (0, .right, chain (r.val + 1)) :=
+      (by decide : ∀ s : Fin 5,
+        Raw.machine.transition (incLeaf98 s) 1 = some (0, .right, chain (s.val + 1))) r
     have h0 : step Raw.machine ⟨incLeaf98 r, Tape.mk' L (ListBlank.append [1, 0] (regsTape bank))⟩ =
         some ⟨chain (pref.length + 1), Tape.mk' (L.cons 0)
           ((ListBlank.append (encodeRegs pref) (regsTape (v :: suff))).cons 0)⟩ := by
@@ -532,7 +539,7 @@ theorem unary98_inc (r : Fin 5) (bank : List Nat) (hr : r.val < bank.length) (L 
     have hret := return_regs8 pref ((L.cons 0).cons 0) (regsTape ((v + 1) :: suff))
     have hset : ListBlank.append (encodeRegs pref) (regsTape ((v + 1) :: suff)) =
         regsTape (bank.set r.val (bank.getD r.val 0 + 1)) := by
-      rw [← regsTape_append, List.getD_eq_getElem bank 0 hr]
+      rw [← regsTape_append, list_getD_eq_getElem bank 0 hr]
       congr 1
       exact list_take_set_drop bank r.val (v + 1) hr
     rw [hset] at hret

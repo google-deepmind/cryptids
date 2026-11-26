@@ -107,7 +107,8 @@ theorem entry_arithmeticPrefix (d : Nat) : arithmeticPrefix (.entry d) := by
   rfl
 
 theorem local_arithmeticPrefix (d : Nat) (s : Fin 22) : arithmeticPrefix (.local d s) := by
-  fin_cases s <;>
+  rcases s with ⟨sv, hsv⟩
+  interval_cases sv <;>
     simp [arithmeticPrefix, Control.effect, Control.localEffects, Control.walked,
       Schema.word, Schema.localWalk, Schema.localWalkSuffix, Schema.localWalkSuffixes,
       Schema.suffix, Schema.suffixes, List.length_append, Nat.add_sub_add_left,
@@ -152,7 +153,10 @@ theorem physical_halt_word (P : Nat) (bank : List Nat) :
   refine ⟨6, ⟨61, Tape.mk' (ListBlank.append bits.reverse L) R⟩, ?_, ?_⟩
   · rw [hroot]
     exact ConjectureMachines.Riemann95.Parser.walkInternal_nSteps bits 15 61 L R hwalk
-  · rfl
+  · have hR : R.head = 1 := by
+      simp only [R, List.cons_append, List.nil_append, ← ListBlank.cons_mk, ListBlank.head_cons]
+    simp only [step, Tape.mk'_head, hR]
+    rfl
 
 end ConjectureMachines.Riemann95
 

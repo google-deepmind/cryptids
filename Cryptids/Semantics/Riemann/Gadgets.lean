@@ -718,7 +718,7 @@ theorem mem_eval_iff_nSteps {K : ℕ} [NeZero K] {M : Machine K 2} {c₀ ch : Cf
 
 theorem mk_append_replicate_zero (l : List (Fin 2)) (n : ℕ) :
     ListBlank.mk (l ++ List.replicate n 0) = ListBlank.mk l :=
-  Quot.sound (Or.inr ⟨n, rfl⟩)
+  ListBlank.mk_append_replicate_default l n
 
 theorem default_eq_mk_nil : (default : ListBlank (Fin 2)) = ListBlank.mk [] := rfl
 

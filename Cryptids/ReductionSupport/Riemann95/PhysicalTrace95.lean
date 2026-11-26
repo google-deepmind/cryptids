@@ -25,6 +25,12 @@ open Riemann120.Layer2 Schema Control
 attribute [local irreducible] Control.instruction Control.effect Control.walked
   Control.localEffects Control.outsideEffects Control.outsideInstrs Control.localInstr
 
+private theorem list_getD_append_left {α : Type*} : ∀ (l₁ l₂ : List α) (d : α) (i : ℕ),
+    i < l₁.length → (l₁ ++ l₂).getD i d = l₁.getD i d
+  | [], _, _, _, hi => absurd hi (Nat.not_lt_zero _)
+  | _ :: _, _, _, 0, _ => rfl
+  | _ :: xs, l₂, d, n + 1, hi => list_getD_append_left xs l₂ d n (Nat.lt_of_succ_lt_succ hi)
+
 theorem physical_arithmetic_step (c : ControlWord) (regs extra : List Nat)
     (hlen : regs.length = 5) (P : Nat) (hP : (walked c).length + 3 ≤ P)
     (next : RhRegCfg) (hnext : applyInstr (rawInstr c) regs = some next)
@@ -36,7 +42,7 @@ theorem physical_arithmetic_step (c : ControlWord) (regs extra : List Nat)
   have hr : r.val < regs.length := by omega
   have hrbank : r.val < (regs ++ extra).length := by simp only [List.length_append]; omega
   obtain ⟨n,hn,hsteps⟩ := Dispatch.root_native c r inc he P (regs ++ extra) hrbank (by omega)
-  simp only [List.getD_append regs extra 0 r.val hr] at hsteps
+  simp only [list_getD_append_left regs extra 0 r.val hr] at hsteps
   have strict (k : Fin 2) (hk : k.val ≤ (walked c).count 0)
       (hempty : (popBreakRev k.val (walked c).reverse).reverse = []) :
       P + 1 ≤ Physical.exactPad k (walked c) (P - (walked c).length) := by
