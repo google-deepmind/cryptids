@@ -4,16 +4,16 @@ This directory organizes all **`109` unresolved and acceleration-based `BB(6)` h
 
 | Subdirectory | Dynamical Family & Goal Definitions | Machines | Wiki / Community | Ours (Novel) | Details & Examples |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| [`FixedArityReduction/`](./FixedArityReduction/README.md) | Fixed-arity `TapePatternSet` / counter accelerations (`IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration`, `IsCryptid`) | `52` | `33` | `19` | [`FixedArityReduction/README.md`](./FixedArityReduction/README.md) |
-| [`StackReduction/`](./StackReduction/README.md) | Unbounded two-sided digit-stack systems (`HasStackReduction`, `IsStackCryptid`, stacked `IsValidAcceleration`) | `28` | `10` | `18` | [`StackReduction/README.md`](./StackReduction/README.md) |
+| [`FixedArityReduction/`](./FixedArityReduction/README.md) | Fixed-arity `TapePatternSet` / counter accelerations (`IsClosedPatternSet`, `HasCollatzReduction`, `IsValidAcceleration`, `IsCryptid`) | `52` | `32` | `20` | [`FixedArityReduction/README.md`](./FixedArityReduction/README.md) |
+| [`StackReduction/`](./StackReduction/README.md) | Unbounded two-sided digit-stack systems (`HasStackReduction`, `IsStackCryptid`, stacked `IsValidAcceleration`) | `28` | `9` | `19` | [`StackReduction/README.md`](./StackReduction/README.md) |
 | [`OdometerReduction/`](./OdometerReduction/README.md) | Mixed-radix odometer stack & bitstream systems (`HasOdometerReduction`, `IsOdometerCryptid`, odometer `IsValidAcceleration`) | `10` | `1` | `9` | [`OdometerReduction/README.md`](./OdometerReduction/README.md) |
 | [`TransducerReduction/`](./TransducerReduction/README.md) | Bidirectional finite-mode word-stack transducers (`IsValidAcceleration`, cf. `HasTransducerReduction`) | `4` | `0` (`1` BMO11 class) | `4` | [`TransducerReduction/README.md`](./TransducerReduction/README.md) |
 | [`SegmentedReduction/`](./SegmentedReduction/README.md) | Partitioned `≤ 3`-region segmented half-tape schemas (`IsClosedSegmentedSystem`, `IsSegmentedCryptid`) | `15` | `0` | `15` | [`SegmentedReduction/README.md`](./SegmentedReduction/README.md) |
-| **Total** | | **`109`** | **`44`** | **`65`** | |
+| **Total** | | **`109`** | **`42`** | **`67`** | |
 
 ## Sequence and Stack Notation
 
-Throughout the table and problem statements below, $\mathbb{N} = \lbrace 0, 1, 2, \dots \rbrace$ denotes the non-negative integers, and we use standard sequence (free-monoid) notation for stacks and words:
+Throughout the subdirectory tables and problem statements, $\mathbb{N} = \lbrace 0, 1, 2, \dots \rbrace$ denotes the non-negative integers, and we use standard sequence (free-monoid) notation for stacks and words:
 
 - **Finite sequences ($\Sigma^{\ast}$):** For any alphabet or entry set $\Sigma$ (such as $\mathbb{N}$, $\lbrace 0, 1 \rbrace$, or $\mathbb{N} \times \lbrace 0, 1 \rbrace$), $\Sigma^{\ast}$ denotes the set of finite sequences $[x_1, x_2, \dots, x_m]$ of length $m \ge 0$ with $x_i \in \Sigma$, ordered from the active top/front entry ($x_1$) to the bottom/back entry ($x_m$).
 - **Empty sequence ($\varepsilon$):** We write $\varepsilon \in \Sigma^{\ast}$ for the empty sequence of length $0$ (written `[]` in Lean). Note that $[0]$ has length $1$ (sole entry $0$), whereas $\varepsilon$ has length $0$.

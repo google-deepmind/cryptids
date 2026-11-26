@@ -4,7 +4,7 @@
 
 In a transducer reduction, neither half-tape acts as a dominant scalar counter: instead, both half-tapes are words over a finite or run-length block alphabet, and each macro-step sweeps a stateful finite-mode carry head (a sequential Mealy transducer) across an arbitrarily long prefix of blocks, rewriting every block in transit before reflecting at the blank boundary or an interior stop pattern. Halting reduces to the **iterated transducer mortality / forbidden-subword problem**—determining whether repeated bidirectional sweeps from $s_0$ ever synthesize a specific local halting block or carry state (such as a block of height $\ge 3$ or a designated halting carry mode). The four open problems below capture pure zero-run, pair-block, and multi-separator bidirectional transducers in `BB(6)`.
 
-This directory holds the **`4` transducer `BB(6)` holdout problems** (all novel `IsValidAcceleration` reductions; `#118` belongs to the *BMO Problem 11* odometer family).
+This directory holds the **`4` transducer `BB(6)` holdout problems** (all novel `IsValidAcceleration` reductions; [`1RB---_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA`](./M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean) belongs to the *BMO Problem 11* odometer family).
 
 ## Machines (4 Total)
 

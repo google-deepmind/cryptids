@@ -249,7 +249,7 @@ This directory formalizes 214 resolved `BB(6)` Turing machines (`35` halting + `
 | `1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RF---_0RA0RF` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RF---_0RA0RF) | [`M_1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RFHHH_0RA0RF.lean`](./NonHalt/M_1RB1RC_0LC1RE_1RA0LD_1LB0RD_0RFHHH_0RA0RF.lean) |
 | `1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LA---` | `6` | `2` | `IsNotHalt` | [Wiki](https://wiki.bbchallenge.org/wiki/1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LA---) | [`M_1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LAHHH.lean`](./NonHalt/M_1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LAHHH.lean) |
 
-### Pomme (`1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`) High-Level Acceleration(./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean)
+### [Pomme (`1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`) High-Level Acceleration](./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean)
 
 Contracting the diagonal sweep $P_{270}(a + 2, b, c + 4) \to P_{270}(a, b + 3, c)$ via $k = \min(\lfloor a/2 \rfloor, \lfloor c/4 \rfloor)$ and draining any intermediate $P_{61}(a', c')$ with $a' > 0$ (which decreases $c$ by at least $6$) reduces the *Pomme* / Baker machine to a **single-counter** map on $P(c) := P_{61}(0, c) = 0^\infty \ 1 \ \mathrm{B}{>} \ 1^{c+3} \ 01 \ 0^\infty$, starting from $P(7)$:
 
