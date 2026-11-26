@@ -333,6 +333,11 @@ def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
   load_machine_rows% "artifacts/brocard_28/machine.txt"
 /-- 28-state Brocard machine. -/
 def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `weakCollatz75`. -/
+def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
+  load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
+/-- 75-state Weak Collatz machine. -/
+def weakCollatz75 : Machine 75 2 := Machine.ofRows weakCollatz75Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -830,6 +835,31 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
+/-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
+for odd `n`. -/
+def terras (n : ℕ) : ℕ :=
+  if n % 2 = 0 then n / 2 else (3 * n + 1) / 2
+
+/-- **Weak Collatz Conjecture** (Steiner 1977; Böhm & Sontacchi 1978; Eliahou 1993; Tao 2019;
+`ccchallenge.org`): the shortcut Collatz map `terras` admits no positive integer cycle outside the
+trivial cycle `{1, 2}` (`1 ↦ 2 ↦ 1`). -/
+def WeakCollatzConjecture : Prop :=
+  ∀ x k : ℕ, 1 ≤ x → 1 ≤ k → terras^[k] x = x → x = 1 ∨ x = 2
+
+/-- Length-`n` parity word of `terras` starting from `x`. -/
+def terrasParityWord : ℕ → ℕ → List ℕ
+  | 0, _ => []
+  | n + 1, x => (x % 2) :: terrasParityWord n (terras x)
+
+/-- Böhm–Sontacchi (1978) Diophantine cycle numerator `g(v)` for a parity word `v ∈ {0, 1}^*`:
+satisfies `2 ^ n * terras^[n] x = 3 ^ v.sum * x + collatzCycleNum v` along
+`v = terrasParityWord n x`. -/
+def collatzCycleNum : List ℕ → ℕ
+  | [] => 0
+  | b :: rest =>
+    if b = 0 then 2 * collatzCycleNum rest
+    else 3 ^ rest.sum + 2 * collatzCycleNum rest
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -959,5 +989,22 @@ theorem halts_brocard28_iff_exists_square :
 theorem halts_brocard28_iff_not_brocard :
     ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by sorry
 end Brocard28
+
+namespace WeakCollatz75
+/-- 75-state Weak Collatz machine (`weak_collatz_75`), improving on the unverified 124-state
+`bbchallenge` wiki machine. -/
+abbrev weakCollatz75 : Machine 75 2 := Machines.weakCollatz75
+theorem halts_weakCollatz75_iff_exists_cycle :
+    ConjectureMachines.Halts weakCollatz75 ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_weakCollatz75_iff_bohmSontacchi :
+    ConjectureMachines.Halts weakCollatz75 ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_weakCollatz75_iff_not_weakCollatz :
+    ConjectureMachines.Halts weakCollatz75 ↔ ¬ WeakCollatzConjecture := by sorry
+end WeakCollatz75
 
 end ConjectureMachines

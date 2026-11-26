@@ -25,6 +25,8 @@ public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
 public import Cryptids.Brocard28
 public import Cryptids.Semantics.Brocard28
+public import Cryptids.WeakCollatz75
+public import Cryptids.Semantics.WeakCollatz75
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines

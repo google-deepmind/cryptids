@@ -279,6 +279,22 @@ BROCARD_28 = {
     ),
 }
 
+WEAK_COLLATZ_75 = {
+    "id": "weak_collatz_75",
+    "path": "artifacts/weak_collatz_75",
+    "lean_file": "Cryptids/Machines.lean",
+    "lean_def": "weakCollatz75",
+    "proof_path": "Cryptids/WeakCollatz75.lean",
+    "challenge_path": "Challenge.lean",
+    "states": 75,
+    "machine_sha256": (
+        "a4ff22c976b077d8afcc3f2db9589ea772a019f00d75ba35ad312fc9d82d549c"
+    ),
+    "table_file_sha256": (
+        "a4ff22c976b077d8afcc3f2db9589ea772a019f00d75ba35ad312fc9d82d549c"
+    ),
+}
+
 
 @dataclasses.dataclass(frozen=True)
 class Transition:
@@ -999,6 +1015,79 @@ def verify_brocard_28(machine: Machine, steps: int) -> dict[str, object]:
       "planted_square_halts": True,
   }
 
+
+def verify_weak_collatz_75(machine: Machine, steps: int) -> dict[str, object]:
+  """Verifies stage checkpoints of `weak_collatz_75` against `terras` plus planted cycle halt."""
+  def terras_py(n: int) -> int:
+    return n // 2 if n % 2 == 0 else (3 * n + 1) // 2
+
+  tape: set[int] = set()
+  head = 0
+  state = 0
+  exp_x, exp_c, exp_y = 3, 3, 3
+  checkpoints = 0
+  for step in range(steps):
+    sym = 1 if head in tape else 0
+    if state == 20 and sym == 1:
+      ones = sorted(tape)
+      runs: list[list[int]] = []
+      for pos in ones:
+        if not runs or pos != runs[-1][1] + 1:
+          runs.append([pos, pos])
+        else:
+          runs[-1][1] = pos
+      lengths = [b - a + 1 for a, b in runs]
+      gaps = [runs[i + 1][0] - runs[i][1] - 1 for i in range(len(runs) - 1)]
+      assert lengths == [exp_x, exp_c, exp_y], (
+          f"weak_collatz_75 step {step}: {lengths} != {[exp_x, exp_c, exp_y]}"
+      )
+      assert gaps[0] == 2 and gaps[1] >= 2, f"weak_collatz_75 bad gaps {gaps}"
+      assert head == runs[2][0], f"weak_collatz_75 bad head {head}"
+      checkpoints += 1
+      exp_y = terras_py(exp_y)
+      exp_c -= 1
+      if exp_c == 0:
+        exp_x += 1
+        exp_c = exp_x
+        exp_y = exp_x
+    tr = machine.table[state][sym]
+    assert tr is not None, f"weak_collatz_75 unexpected halt at step {step}"
+    if tr.write:
+      tape.add(head)
+    else:
+      tape.discard(head)
+    head += tr.direction
+    assert tr.next_state is not None, f"weak_collatz_75 halt at step {step}"
+    state = tr.next_state
+
+  assert checkpoints >= 80, f"weak_collatz_75 too few checkpoints: {checkpoints}"
+
+  # Planted cycle hit at stage x = 5, c = 2, y = 3 (`terras(3) = 5 == x` -> halts in state 56).
+  ptape = {0, 1, 2, 3, 4, 7, 8, 11, 12, 13}
+  phead, pstate = 11, 20
+  halted = False
+  for _ in range(10_000):
+    psym = 1 if phead in ptape else 0
+    ptr = machine.table[pstate][psym]
+    if ptr is None:
+      assert (pstate, psym) == (56, 0), f"wrong halt {(pstate, psym)}"
+      halted = True
+      break
+    if ptr.write:
+      ptape.add(phead)
+    else:
+      ptape.discard(phead)
+    phead += ptr.direction
+    assert ptr.next_state is not None
+    pstate = ptr.next_state
+  assert halted, "weak_collatz_75 planted cycle failed to halt"
+  return {
+      "steps_simulated": steps,
+      "checkpoints_verified": checkpoints,
+      "last_x": exp_x,
+      "planted_cycle_halts": True,
+  }
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -1343,6 +1432,43 @@ def run_verification(
         f" {brocard_sim['tests_verified']} tests verified on the blank tape"
         f" ({brocard_sim['steps_simulated']:,} steps, up to n = {brocard_sim['last_n']});"
         " planted square halts in M0"
+    )
+
+  # Weak Collatz 75: table, SHA-256, Lean definitions, and simulation.
+  wcspec = WEAK_COLLATZ_75
+  wc_text = (ROOT / str(wcspec["path"]) / "machine.txt").read_text(encoding="utf-8")
+  assert sha256_bytes(wc_text.encode("utf-8")) == wcspec["table_file_sha256"], (
+      "weak_collatz_75 table file SHA-256 mismatch"
+  )
+  wcm = parse_canonical_machine(wc_text)
+  assert wcm.states == wcspec["states"], f"weak_collatz_75 state count mismatch: {wcm.states}"
+  assert wcm.sha256 == wcspec["machine_sha256"], (
+      f"weak_collatz_75 machine SHA-256 mismatch: {wcm.sha256}"
+  )
+  for lean_path in (wcspec["lean_file"], wcspec["challenge_path"]):
+    assert (
+        parse_lean_machine_def(
+            (ROOT / str(lean_path)).read_text(encoding="utf-8"),
+            str(wcspec["lean_def"]),
+            expected_table_path=f"{wcspec['path']}/machine.txt",
+        ).table
+        == wcm.table
+    ), f"{lean_path} weak_collatz_75 table mismatch"
+  assert "theorem halts_weakCollatz75_iff_exists_cycle" in (
+      ROOT / "Challenge.lean"
+    ).read_text(encoding="utf-8")
+  wc_sim = verify_weak_collatz_75(wcm, steps)
+  report["candidates"]["weak_collatz_75"] = {
+      "states": wcm.states,
+      "machine_sha256": wcm.sha256,
+  }
+  report["simulations"]["weak_collatz_75"] = wc_sim
+  if verbose:
+    print(
+        f"[PASS] Weak Collatz 75 ({wcm.states} states, SHA-256 {wcm.sha256[:16]}...):"
+        f" {wc_sim['checkpoints_verified']} Terras checkpoints verified on the blank tape"
+        f" ({wc_sim['steps_simulated']:,} steps, up to x = {wc_sim['last_x']});"
+        " planted cycle halts in state 56"
     )
 
   # 5. Concrete blank-tape lockstep simulations

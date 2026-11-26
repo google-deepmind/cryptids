@@ -313,6 +313,11 @@ def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
   load_machine_rows% "artifacts/brocard_28/machine.txt"
 /-- 28-state Brocard machine. -/
 def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `weakCollatz75`. -/
+def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
+  load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
+/-- 75-state Weak Collatz machine. -/
+def weakCollatz75 : Machine 75 2 := Machine.ofRows weakCollatz75Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff
