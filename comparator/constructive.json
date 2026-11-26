@@ -20,7 +20,11 @@
     "ConjectureMachines.ErdosTernary14.candidate_equivalent",
     "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square",
     "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_exists_cycle",
-    "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_bohmSontacchi"
+    "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_bohmSontacchi",
+    "ConjectureMachines.WeakCollatz41.candidate_fewer_states",
+    "ConjectureMachines.WeakCollatz41.candidate_equivalent",
+    "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_exists_cycle",
+    "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_bohmSontacchi"
   ],
   "permitted_axioms": [
     "propext",
