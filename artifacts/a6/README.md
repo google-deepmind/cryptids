@@ -15,7 +15,7 @@ BusyBeaver.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.is_not_halt :
 ```
 
 The public machine module is
-[`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean).
+[`M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](../../BusyBeaver/BB6/NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean).
 The [self-contained proof](PROOF.md) gives the exact tape family and the
 entry, transfer, return, and infinite-run arguments. A6 is a local label;
 the complete transition string identifies the machine.
@@ -78,7 +78,7 @@ Use this repository's pinned Lean toolchain and fetch its Mathlib cache:
 
 ```sh
 lake exe cache get
-lake build BusyBeaver.BB6.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH
+lake build BusyBeaver.BB6.NonHalt.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH
 lake env lean artifacts/a6/Audit.lean
 ```
 

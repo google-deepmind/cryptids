@@ -13,6 +13,7 @@ on:
       - '!.github/workflows/update.yml'
       - '!BusyBeaver/BB6/Halt/**'
       - '!BusyBeaver/BB6/NonHalt/**'
+      - '!BusyBeaver/BB6/Accelerations/*/M_*.lean'
       - '!BusyBeaver/BB33/M_*.lean'
       - '!BusyBeaver/Calculi/**'
       - 'BusyBeaver/Calculi/Counter.lean'

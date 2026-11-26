@@ -1,0 +1,25 @@
+# Segmented Half-Tape Reductions (`SegmentedReduction/`)
+
+<!-- TODO (Marco): Expand overview for partitioned segmented half-tape schemas (`IsClosedSegmentedSystem`, `IsSegmentedCryptid`). -->
+
+This directory holds **`15` potential cryptids** (`BB(6)` hard holdouts, all novel reductions) whose blank-tape trajectories enter closed dynamic schemas over partitioned half-tapes (`IsClosedSegmentedSystem`, `IsSegmentedCryptid`) composed of register, word-run, finite-word, and bounded gadget (`w.length ≤ 16`) regions defined in [`BusyBeaver/Defs/Segmented.lean`](../../../Defs/Segmented.lean). All `15` modules export both their concrete `is_closed_segmented_system` theorem and `is_segmented_cryptid`.
+
+## Machines (15 Total: 0 Wiki, 15 Ours)
+
+| Machine (`bbchallenge` RLE) | Origin | Proved Properties | Notes | Lean 4 Proof |
+| :--- | :--- | :--- | :--- | :--- |
+| `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LA---` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH.lean`](./M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LAHHH.lean) |
+| `1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LC---` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH.lean`](./M_1RB0LA_0RC0RB_1LD1LA_1LC1RE_1RF0RD_1LCHHH.lean) |
+| `1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_---0LC` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC.lean`](./M_1RB0LA_1RC0RE_0LD0RF_1LA1LD_0RA1RE_HHH0LC.lean) |
+| `1RB0RA_0LC0RE_1LE1LD_0LE---_1LF0LC_1RA1LE` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE.lean`](./M_1RB0RA_0LC0RE_1LE1LD_0LEHHH_1LF0LC_1RA1LE.lean) |
+| `1RB0RA_0LC0RF_0LB1RD_1LE---_1RA0LF_1LE0RC` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RA_0LC0RF_0LB1RD_1LEHHH_1RA0LF_1LE0RC.lean`](./M_1RB0RA_0LC0RF_0LB1RD_1LEHHH_1RA0LF_1LE0RC.lean) |
+| `1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_---0LB` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB.lean`](./M_1RB0RE_0LC0RF_1LD1LC_1RA0LD_0RD1RE_HHH0LB.lean) |
+| `1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RA---` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH.lean`](./M_1RB0RE_1LC1RA_1LD0LC_0RE0LA_1RA1RF_0RAHHH.lean) |
+| `1RB0RE_1RC---_0RD0RC_1LE1LF_1LD1RA_1RC0LF` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF.lean`](./M_1RB0RE_1RCHHH_0RD0RC_1LE1LF_1LD1RA_1RC0LF.lean) |
+| `1RB0RF_1LC---_1LF1LD_1RE0LD_0RC0RE_1LC1RA` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA.lean`](./M_1RB0RF_1LCHHH_1LF1LD_1RE0LD_0RC0RE_1LC1RA.lean) |
+| `1RB0RF_1LC---_1RD0LC_0RE0RD_1LF1LC_1LE1RA` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA.lean`](./M_1RB0RF_1LCHHH_1RD0LC_0RE0RD_1LF1LC_1LE1RA.lean) |
+| `1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_---0RE` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE.lean`](./M_1RB1RA_1LC0RB_1LE0LD_0LB1LD_0RA0LF_HHH0RE.lean) |
+| `1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RB---` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH.lean`](./M_1RB1RF_1RC0RA_1LD1RB_1LE0LD_0RA0LB_0RBHHH.lean) |
+| `1RB---_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD.lean`](./M_1RBHHH_0RC0RB_1LD1LE_1LC1RF_1RB0LE_1RA0RD.lean) |
+| `1RB---_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE.lean`](./M_1RBHHH_1LC0RB_0LD0LC_1RE1RB_1RD1LF_1LA0LE.lean) |
+| `1RB---_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE` | Ours (Novel) | `IsClosedSegmentedSystem`, `IsSegmentedCryptid` | Potential cryptid (≤ 3-region segmented tape schema) | [`M_1RBHHH_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE.lean`](./M_1RBHHH_1LC0RF_1LD0LC_0RE0LF_0RD1LA_1RB0LE.lean) |
