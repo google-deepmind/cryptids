@@ -319,11 +319,11 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
-/-- Rows of `brocard28`. -/
-def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
-  load_machine_rows% "artifacts/brocard_28/machine.txt"
-/-- 28-state Brocard machine. -/
-def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `brocard27`. -/
+def brocard27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/brocard_27/machine.txt"
+/-- 27-state Brocard machine. -/
+def brocard27 : Machine 27 2 := Machine.ofRows brocard27Rows
 /-- Rows of `weakCollatz75`. -/
 def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
   load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
