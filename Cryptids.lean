@@ -23,8 +23,18 @@ public import Cryptids.ErdosTernary15
 public import Cryptids.Semantics.ErdosTernary15
 public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
-public import Cryptids.Brocard28
-public import Cryptids.Semantics.Brocard28
+public import Cryptids.Brocard27
+public import Cryptids.Semantics.Brocard27
+public import Cryptids.WeakCollatz75
+public import Cryptids.Semantics.WeakCollatz75
+public import Cryptids.WeakCollatz41
+public import Cryptids.Semantics.WeakCollatz41
+public import Cryptids.WeakCollatz27
+public import Cryptids.Semantics.WeakCollatz27
+public import Cryptids.WeakCollatz17
+public import Cryptids.Semantics.WeakCollatz17
+public import Cryptids.WeakCollatz16
+public import Cryptids.Semantics.WeakCollatz16
 public import Cryptids.Legendre21
 public import Cryptids.Semantics.Legendre21
 
@@ -33,10 +43,10 @@ public import Cryptids.Semantics.Legendre21
 
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
-Hypothesis** (`120 → 104 → 95` states), and **Erdős's ternary conjecture** (`15 → 14`
-states), a 28-state machine for **Brocard's problem** (`brocard_28`), a 21-state machine for
-**Legendre's conjecture** (`legendre_21`), as well as complete
-Lean 4 formalizations of all publicly
+Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
+and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16` states), a 27-state machine
+for **Brocard's problem** (`brocard_27`), a 21-state machine for **Legendre's conjecture**
+(`legendre_21`), as well as complete Lean 4 formalizations of all publicly
 known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
@@ -79,11 +89,39 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   `Halts erdosTernary14 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` and `Halts candidate ↔ Halts reference` relative to
   `erdosTernary15`, and
   `ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary`.
-- `Cryptids.Brocard28`, `Cryptids.Semantics.Brocard28` — A 28-state machine for Brocard's problem
-  (`brocard28`), with constructive proofs of `Halts brocard28 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)`
-  (`V n = n! / 8`) and `ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square`
-  (`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
-  `ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard`.
+- `Cryptids.Brocard27`, `Cryptids.Semantics.Brocard27` — A 27-state machine for Brocard's problem
+  (`brocard27`), with constructive proofs of `Halts brocard27 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)`
+  (`V n = n! / 8`) and `ConjectureMachines.Brocard27.halts_brocard27_iff_exists_square`
+  (`Halts brocard27 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
+  `ConjectureMachines.Brocard27.halts_brocard27_iff_not_brocard`.
+- `Cryptids.WeakCollatz75`, `Cryptids.Semantics.WeakCollatz75` — A 75-state reference machine for
+  Tao's Weak Collatz Conjecture (`weakCollatz75`), with constructive proofs of halting equivalence
+  to nontrivial `terras` cycles (`halts_weakCollatz75_iff_exists_cycle`) and the Böhm–Sontacchi
+  (1978) Diophantine cycle equation (`halts_weakCollatz75_iff_bohmSontacchi`), plus
+  `halts_weakCollatz75_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz41`, `Cryptids.Semantics.WeakCollatz41` — A 41-state compression
+  (`weakCollatz41`, `75 → 41` states) eliminating unbounded blank gaps via single-zero markers,
+  in-place `terras` hole-shifting, local `2p` comparison/restoration, and 1-pass triple-building,
+  with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and
+  Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz27`, `Cryptids.Semantics.WeakCollatz27` — A 27-state compression
+  (`weakCollatz27`, `41 → 27` states; `75 → 41 → 27` overall) eliminating the per-stage step
+  counter via zero-counter cycle-maximum dovetailing (`y = 1` and `z > x` stage aborts), shared
+  `restCfg` stage-advance splitting, and a zero-state blank-tape warm-up (`53/53` active cells
+  visited), with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle
+  and Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz17`, `Cryptids.Semantics.WeakCollatz17` — A 17-state compression
+  (`weakCollatz17`, `27 → 17` states; `75 → 41 → 27 → 17` overall) maintaining the single-separator
+  popcount conservation law `d + y = x` (`0^∞ 1^d [0] 1^y 0^∞`) to eliminate comparison,
+  restoration, and stage-doubling loops (`33/33` active cells visited), with constructive
+  `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and Böhm–Sontacchi
+  equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz16`, `Cryptids.Semantics.WeakCollatz16` — A 16-state compression
+  (`weakCollatz16`, `17 → 16` states; `75 → 41 → 27 → 17 → 16` overall) exploiting constructive
+  evenness of nontrivial cycle maxima (`even_of_stageHalts`, `x = 2, 4, 6, ...`) to advance stages
+  by `+2` without a trim state (`31/31` active cells visited), with constructive
+  `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and Böhm–Sontacchi
+  equivalences, and `halts_candidate_iff_not_weakCollatz`.
 - `Cryptids.Legendre21`, `Cryptids.Semantics.Legendre21` — A 21-state machine for Legendre's
   conjecture (`legendre21`), built on the primality test of `goldbach_21`, with constructive
   proofs of `Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ EmptyInterval n` and

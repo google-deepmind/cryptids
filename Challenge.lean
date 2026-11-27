@@ -21,19 +21,24 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
 - **Zero-axiom gate (`comparator/zero_axioms.json`; `permitted_axioms = []`):**
   Specification definitions (`ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `candidate`,
   `reference`, `PAProvable`) are quotient-free and axiom-free (`ListBlank` stores a canonical
-  blank-trimmed `List Γ`), and all five `candidate_fewer_states` theorems together with syntactic
+  blank-trimmed `List Γ`), and all nine `candidate_fewer_states` theorems together with syntactic
   `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
 - **Constructive gate (`comparator/constructive.json`, `goldbach_21.json`, `zf_380.json`,
-  `riemann_104.json`, `riemann_95_reduction.json`;
+  `riemann_104.json`, `riemann_95_reduction.json`, `weak_collatz_41_reduction.json`,
+  `weak_collatz_27_reduction.json`, `weak_collatz_17_reduction.json`,
+  `weak_collatz_16_reduction.json`;
   `permitted_axioms = ["propext", "Quot.sound"]`):**
-  All five state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`),
+  All nine state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`,
+  `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`),
   all ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`,
   `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
-  the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`, and the
-  `legendre_21` equivalence `Legendre21.halts_legendre21_iff_exists_gap`
+  the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, the
+  `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`
+  cycle and Böhm–Sontacchi Diophantine equivalences, and the `legendre_21` equivalence
+  `Legendre21.halts_legendre21_iff_exists_gap`
   are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
   `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
   choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
@@ -41,40 +46,53 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 38 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  Audits all 61 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
   negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
   `RiemannHypothesis` equivalences, the `erdos_ternary_15` and `erdos_ternary_14` equivalences
   with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
-  also uses Markov's Principle), and the `brocard_28` and `legendre_21` equivalences with
-  `¬ BrocardConjecture` and `¬ LegendreConjecture` (Markov's Principle).
+  also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, the
+  `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`
+  equivalences with `¬ WeakCollatzConjecture`, and the `legendre_21` equivalence with
+  `¬ LegendreConjecture` (Markov's Principle).
 -/
 
 meta section
 namespace ConjectureMachines.Machines
 open Lean Elab Term
 
-private def parseCellStx (cell : String) : TermElabM (TSyntax `term) := do
+private def parseCellStx (numStates : Nat) (cell : String) : TermElabM (TSyntax `term) := do
   if cell == "---" then `(none)
   else match cell.toList with
     | wChar :: dChar :: rest =>
-      if rest.isEmpty then throwError "Malformed transition cell: {cell}"
+      if wChar != '0' && wChar != '1' then
+        throwError "Invalid write symbol in transition cell: {cell}"
+      let some state := (String.ofList rest).toNat?
+        | throwError "Invalid destination state in transition cell: {cell}"
+      if state >= numStates then
+        throwError "Out-of-range destination state in transition cell: {cell}"
       let wLit := Syntax.mkNumLit (String.singleton wChar)
       let dirStx ← match dChar with
         | 'L' => `(Turing.Dir.left) | 'R' => `(Turing.Dir.right)
         | _ => throwError "Invalid direction in transition cell: {cell}"
-      `(some ($wLit, $dirStx, $(Syntax.mkNumLit (String.ofList rest))))
+      `(some ($wLit, $dirStx, $(Syntax.mkNumLit (toString state))))
     | _ => throwError "Malformed transition cell: {cell}"
 
 elab "load_machine_rows% " path:str : term <= expectedType? => do
   let contents ← liftM (m := IO) (IO.FS.readFile path.getString)
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for rawLine in contents.splitOn "\n" do
+  let lines := (contents.splitOn "\n").filterMap fun rawLine =>
     let line := ((rawLine.splitOn "#").headD "").trimAscii.toString
-    if !line.isEmpty then
-      match (line.splitOn " ").filter (fun s => !s.isEmpty) with
-      | [c0, c1] => rowStxs := rowStxs.push (← `([$(← parseCellStx c0), $(← parseCellStx c1)]))
-      | _ => throwError "Expected 2 columns in transition table line: {rawLine}"
-  elabTerm (← `([$rowStxs,*])) expectedType?
+    if line.isEmpty then none else some line
+  if lines.isEmpty then throwError "Empty transition table"
+  let mut rowStxs : Array (TSyntax `term) := #[]
+  for line in lines do
+    match (line.splitOn " ").filter (fun s => !s.isEmpty) with
+    | [c0, c1] =>
+      rowStxs := rowStxs.push (← `([$(← parseCellStx lines.length c0),
+        $(← parseCellStx lines.length c1)]))
+    | _ => throwError "Expected 2 columns in transition table line: {line}"
+  let states := Syntax.mkNumLit (toString lines.length)
+  elabTerm (← `(([$rowStxs,*] : List (List (Option (Fin 2 × Turing.Dir × Fin $states))))))
+    expectedType?
 end ConjectureMachines.Machines
 end
 
@@ -329,11 +347,36 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
-/-- Rows of `brocard28`. -/
-def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
-  load_machine_rows% "artifacts/brocard_28/machine.txt"
-/-- 28-state Brocard machine. -/
-def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `brocard27`. -/
+def brocard27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/brocard_27/machine.txt"
+/-- 27-state Brocard machine. -/
+def brocard27 : Machine 27 2 := Machine.ofRows brocard27Rows
+/-- Rows of `weakCollatz75`. -/
+def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
+  load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
+/-- 75-state Weak Collatz machine. -/
+def weakCollatz75 : Machine 75 2 := Machine.ofRows weakCollatz75Rows
+/-- Rows of `weakCollatz41`. -/
+def weakCollatz41Rows : List (List (Option (Fin 2 × Dir × Fin 41))) :=
+  load_machine_rows% "artifacts/weak_collatz_41/machine.txt"
+/-- 41-state Weak Collatz candidate. -/
+def weakCollatz41 : Machine 41 2 := Machine.ofRows weakCollatz41Rows
+/-- Rows of `weakCollatz27`. -/
+def weakCollatz27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/weak_collatz_27/machine.txt"
+/-- 27-state Weak Collatz candidate. -/
+def weakCollatz27 : Machine 27 2 := Machine.ofRows weakCollatz27Rows
+/-- Rows of `weakCollatz17`. -/
+def weakCollatz17Rows : List (List (Option (Fin 2 × Dir × Fin 17))) :=
+  load_machine_rows% "artifacts/weak_collatz_17/machine.txt"
+/-- 17-state Weak Collatz candidate. -/
+def weakCollatz17 : Machine 17 2 := Machine.ofRows weakCollatz17Rows
+/-- Rows of `weakCollatz16`. -/
+def weakCollatz16Rows : List (List (Option (Fin 2 × Dir × Fin 16))) :=
+  load_machine_rows% "artifacts/weak_collatz_16/machine.txt"
+/-- 16-state Weak Collatz candidate. -/
+def weakCollatz16 : Machine 16 2 := Machine.ofRows weakCollatz16Rows
 /-- Rows of `legendre21`. -/
 def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
   load_machine_rows% "artifacts/legendre_21/machine.txt"
@@ -841,6 +884,31 @@ a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
 def LegendreConjecture : Prop :=
   ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
 
+/-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
+for odd `n`. -/
+def terras (n : ℕ) : ℕ :=
+  if n % 2 = 0 then n / 2 else (3 * n + 1) / 2
+
+/-- **Weak Collatz Conjecture** (Steiner 1977; Böhm & Sontacchi 1978; Eliahou 1993; Tao 2019;
+`ccchallenge.org`): the shortcut Collatz map `terras` admits no positive integer cycle outside the
+trivial cycle `{1, 2}` (`1 ↦ 2 ↦ 1`). -/
+def WeakCollatzConjecture : Prop :=
+  ∀ x k : ℕ, 1 ≤ x → 1 ≤ k → terras^[k] x = x → x = 1 ∨ x = 2
+
+/-- Length-`n` parity word of `terras` starting from `x`. -/
+def terrasParityWord : ℕ → ℕ → List ℕ
+  | 0, _ => []
+  | n + 1, x => (x % 2) :: terrasParityWord n (terras x)
+
+/-- Böhm–Sontacchi (1978) Diophantine cycle numerator `g(v)` for a parity word `v ∈ {0, 1}^*`:
+satisfies `2 ^ n * terras^[n] x = 3 ^ v.sum * x + collatzCycleNum v` along
+`v = terrasParityWord n x`. -/
+def collatzCycleNum : List ℕ → ℕ
+  | [] => 0
+  | b :: rest =>
+    if b = 0 then 2 * collatzCycleNum rest
+    else 3 ^ rest.sum + 2 * collatzCycleNum rest
+
 namespace Goldbach21
 /-- 25-state Goldbach reference machine (`goldbach_25`, Yao & Leng 2024). -/
 abbrev reference : BundledMachine 2 := Machines.goldbach25.bundle
@@ -962,14 +1030,119 @@ theorem halts_candidate_iff_not_erdosTernary :
 end Semantics
 end ErdosTernary14
 
-namespace Brocard28
-/-- 28-state Brocard machine (`brocard_28`, Veljjanoski 2026). -/
-abbrev brocard28 : Machine 28 2 := Machines.brocard28
-theorem halts_brocard28_iff_exists_square :
-    ConjectureMachines.Halts brocard28 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
-theorem halts_brocard28_iff_not_brocard :
-    ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by sorry
-end Brocard28
+namespace Brocard27
+/-- 27-state Brocard machine (`brocard_27`, Veljjanoski 2026). -/
+abbrev brocard27 : Machine 27 2 := Machines.brocard27
+theorem halts_brocard27_iff_exists_square :
+    ConjectureMachines.Halts brocard27 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
+theorem halts_brocard27_iff_not_brocard :
+    ConjectureMachines.Halts brocard27 ↔ ¬ BrocardConjecture := by sorry
+end Brocard27
+
+namespace WeakCollatz75
+/-- 75-state Weak Collatz machine (`weak_collatz_75`), improving on the unverified 124-state
+`bbchallenge` wiki machine. -/
+abbrev weakCollatz75 : Machine 75 2 := Machines.weakCollatz75
+theorem halts_weakCollatz75_iff_exists_cycle :
+    ConjectureMachines.Halts weakCollatz75 ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_weakCollatz75_iff_bohmSontacchi :
+    ConjectureMachines.Halts weakCollatz75 ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_weakCollatz75_iff_not_weakCollatz :
+    ConjectureMachines.Halts weakCollatz75 ↔ ¬ WeakCollatzConjecture := by sorry
+end WeakCollatz75
+
+namespace WeakCollatz41
+/-- 75-state Weak Collatz reference machine (`weak_collatz_75`). -/
+abbrev reference : BundledMachine 2 := Machines.weakCollatz75.bundle
+/-- 41-state Weak Collatz candidate machine (`weak_collatz_41`). -/
+abbrev candidate : BundledMachine 2 := Machines.weakCollatz41.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_exists_cycle :
+    Halts candidate ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_candidate_iff_bohmSontacchi :
+    Halts candidate ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_candidate_iff_not_weakCollatz :
+    Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
+end Semantics
+end WeakCollatz41
+
+namespace WeakCollatz27
+/-- 41-state Weak Collatz reference machine (`weak_collatz_41`). -/
+abbrev reference : BundledMachine 2 := Machines.weakCollatz41.bundle
+/-- 27-state Weak Collatz candidate machine (`weak_collatz_27`). -/
+abbrev candidate : BundledMachine 2 := Machines.weakCollatz27.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_exists_cycle :
+    Halts candidate ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_candidate_iff_bohmSontacchi :
+    Halts candidate ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_candidate_iff_not_weakCollatz :
+    Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
+end Semantics
+end WeakCollatz27
+
+namespace WeakCollatz17
+/-- 27-state Weak Collatz reference machine (`weak_collatz_27`). -/
+abbrev reference : BundledMachine 2 := Machines.weakCollatz27.bundle
+/-- 17-state Weak Collatz candidate machine (`weak_collatz_17`). -/
+abbrev candidate : BundledMachine 2 := Machines.weakCollatz17.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_exists_cycle :
+    Halts candidate ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_candidate_iff_bohmSontacchi :
+    Halts candidate ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_candidate_iff_not_weakCollatz :
+    Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
+end Semantics
+end WeakCollatz17
+
+namespace WeakCollatz16
+/-- 17-state Weak Collatz reference machine (`weak_collatz_17`). -/
+abbrev reference : BundledMachine 2 := Machines.weakCollatz17.bundle
+/-- 16-state Weak Collatz candidate machine (`weak_collatz_16`). -/
+abbrev candidate : BundledMachine 2 := Machines.weakCollatz16.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_exists_cycle :
+    Halts candidate ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_candidate_iff_bohmSontacchi :
+    Halts candidate ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_candidate_iff_not_weakCollatz :
+    Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
+end Semantics
+end WeakCollatz16
 
 namespace Legendre21
 /-- 21-state Legendre machine (`legendre_21`, Veljjanoski 2026). -/
