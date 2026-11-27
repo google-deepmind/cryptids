@@ -25,15 +25,21 @@ public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
 public import Cryptids.Brocard28
 public import Cryptids.Semantics.Brocard28
+public import Cryptids.WeakCollatz75
+public import Cryptids.Semantics.WeakCollatz75
+public import Cryptids.WeakCollatz41
+public import Cryptids.Semantics.WeakCollatz41
+public import Cryptids.WeakCollatz27
+public import Cryptids.Semantics.WeakCollatz27
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
 
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
-Hypothesis** (`120 → 104 → 95` states), and **Erdős's ternary conjecture** (`15 → 14`
-states), a 28-state machine for **Brocard's problem** (`brocard_28`), as well as complete
-Lean 4 formalizations of all publicly
+Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
+and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41` states), a 28-state machine for
+**Brocard's problem** (`brocard_28`), as well as complete Lean 4 formalizations of all publicly
 known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
@@ -81,6 +87,22 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   (`V n = n! / 8`) and `ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square`
   (`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
   `ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard`.
+- `Cryptids.WeakCollatz75`, `Cryptids.Semantics.WeakCollatz75` — A 75-state reference machine for
+  Tao's Weak Collatz Conjecture (`weakCollatz75`), with constructive proofs of halting equivalence
+  to nontrivial `terras` cycles (`halts_weakCollatz75_iff_exists_cycle`) and the Böhm–Sontacchi
+  (1978) Diophantine cycle equation (`halts_weakCollatz75_iff_bohmSontacchi`), plus
+  `halts_weakCollatz75_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz41`, `Cryptids.Semantics.WeakCollatz41` — A 41-state compression
+  (`weakCollatz41`, `75 → 41` states) eliminating unbounded blank gaps via single-zero markers,
+  in-place `terras` hole-shifting, local `2p` comparison/restoration, and 1-pass triple-building,
+  with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and
+  Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz27`, `Cryptids.Semantics.WeakCollatz27` — A 27-state compression
+  (`weakCollatz27`, `41 → 27` states; `75 → 41 → 27` overall) eliminating the per-stage step
+  counter via zero-counter cycle-maximum dovetailing (`y = 1` and `z > x` stage aborts), shared
+  `restCfg` stage-advance splitting, and a zero-state blank-tape warm-up (`53/53` active cells
+  visited), with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle
+  and Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

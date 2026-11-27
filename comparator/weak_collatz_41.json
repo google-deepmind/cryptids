@@ -1,0 +1,16 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.WeakCollatz41",
+  "theorem_names": [
+    "ConjectureMachines.WeakCollatz41.candidate_fewer_states",
+    "ConjectureMachines.WeakCollatz41.candidate_equivalent",
+    "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_exists_cycle",
+    "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_bohmSontacchi",
+    "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_not_weakCollatz"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}
