@@ -1,6 +1,73 @@
 # Fixed-Arity Counter Reductions (`FixedArityReduction/`)
 
-<!-- TODO (Marco): Overview of fixed-arity Collatz-like reductions (`HasCollatzReduction`, `IsCryptid`). -->
+Fixed-arity reductions are the most common type of reduction found by the Busy Beaver community.
+
+The most famous example is [Antihydra](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/M_1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_HHH0RA.lean) (`1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_---0RA`), the first Cryptid found in BB(6). We will use it as a guiding example to explain what a fixed-arity reduction is and how it can be found.
+
+If we run Antihydra from a blank tape, we observe that one configuration keeps coming back:
+```
+step       58:   0^inf 1^2 0 1^8 E> 0^inf
+step      169:   0^inf 1^4 0 1^14 E> 0^inf
+step      419:   0^inf 1^6 0 1^23 E> 0^inf
+```
+
+Let's denote it by:
+```
+A(a, b) = 0^inf 1^a 0 1^b E> 0^inf
+```
+
+If we watch closely, we find more and more instances of `A(a, b)`:
+```
+step       11:   0^inf 1^4 E> 0^inf = A(0, 4)
+step       58:   0^inf 1^2 0 1^8 E> 0^inf = A(2, 8)
+step      169:   0^inf 1^4 0 1^14 E> 0^inf = A(4, 14)
+step      419:   0^inf 1^6 0 1^23 E> 0^inf = A(6, 23)
+step      919:   0^inf 1^5 0 1^36 E> 0^inf = A(5, 36)
+step     2128:   0^inf 1^7 0 1^56 E> 0^inf = A(7, 56)
+step     4841:   0^inf 1^9 0 1^86 E> 0^inf = A(9, 86)
+step    10933:   0^inf 1^11 0 1^131 E> 0^inf = A(11, 131)
+```
+
+We can then show three things:
+1. The machine reaches an instance of `A(a, b)`: here, it reaches `A(0, 4)` in 11 steps.
+2. Once the machine reaches one instance of `A(a, b)`, it will necessarily either reach a new instance of `A(a, b)` or halt: in other words, the family of configurations `A(a, b)` is closed.
+3. To determine the next instance `A(a', b')` from `A(a, b)`, there exist simple rules:
+```
+Start: A(0, 4)
+A(a, 2b)         -> A(a + 2, 3b + 2)
+A(0, 2b + 1)     -> halt
+A(a + 1, 2b + 1) -> A(a, 3b + 3)
+```
+
+Once these three facts are proved, we can forget the machine entirely! We have obtained a fixed-arity reduction: the halting problem of the machine is strictly equivalent to the halting problem of the `A(0, 4)` trajectory in the arithmetic system of the simple rules.
+
+Antihydra is just one example: 51 fixed-arity reductions have been found in BB(6). Their mathematical problems are all of the same kind: the halting problem of a Collatz-like sequence on a fixed number of integers. Another example is [Space Needle](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/M_1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_HHH0LD.lean) (`1RB1LA_1LC0RE_1LF1LD_0RB0LA_1RC1RE_---0LD`), whose halting problem is equivalent to the halting problem of the following sequence:
+
+```
+Start: A(3, 1)
+A(1, c)      -> halt
+A(2b, c)     -> A(2 + 5b + c, 1)
+A(2b + 3, c) -> A(b, 4 + b + c)
+```
+
+Fixed-arity reductions have enabled us to prove the non-halting of two previously open machines in this repository: [`1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/NonHalt/M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean) and [`1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/NonHalt/M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean). For example, for [`1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/NonHalt/M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean), the main recurring configuration is:
+```
+F(b, k, c) = 0^inf 1^b (10)^k F> 00 1^c 0^inf
+```
+
+Starting from `F(5, 0, 2)`, its main rules are:
+```
+F(b + 3, k, c + 2) -> F(b + 1, k + 2, c)
+F(b + 5, k, 1)     -> F(b + 1, 0, 2k + 7)
+F(b, k + 1, 0)     -> F(b, k, 1)
+F(4, k, 1)         -> halt
+F(4, 0, 0)         -> halt
+```
+(together with boundary rules for `b < 4` that never halt and reload to `F(a - 2, 0, 3)`).
+
+From a configuration `F(a - 2, 0, 3)`, the first two rules repeatedly double `c` while eating down `b`, until `b` runs out and either halts (`b = 4`) or reloads to a new `F(a' - 2, 0, 3)`. After 10 such rounds, `a` can be written as a dominant power of 2 plus a small remainder: `a = 12 * 2^(2M - 3) + 4K - 2`, for integers `M >= 128` and `K >= 2` satisfying `4K + 4M + 4 <= 2^(M - 2)`. The proof shows that from any such `a`, the machine always misses `b = 4` and reloads to a new value of the same form with `M' = 2^(M - 1)` and a new remainder `K'` still satisfying the bound. Therefore, this invariant holds forever and the machine never halts.
+
+## Contents
 
 This directory holds **`52` `BB(6)` machines** (`32` community `Wiki`/`busycoq` holdouts and `20` novel reductions) whose blank-tape dynamics reduce to **fixed-arity integer counter tuples** over a finite `TapePatternSet` (`IsClosedPatternSet`, `HasCollatzReduction`), rather than unbounded stacks, odometers, or transducers. Fifty-one export explicit counter-level `IsValidAcceleration` maps (`30` with contracted `HighLevelState` Poincaré maps), and two ([`1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_---1RE`](./M_1RB1LE_0LC0LB_1RD1LC_1RD1RA_1RF0LA_HHH1RE.lean) and [`1RB1RF_1LC1LB_1RD1LD_1RE0RA_---0LB_0LF0RC`](./M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC.lean)) additionally carry compact `IsCryptid` (`≤ 16` patterns) certificates. Many of these machines are **potential cryptids**; see [`BusyBeaver/BB6/Hardness.lean`](../../Hardness.lean) for hardness dossiers and [`BusyBeaver/BB6/NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean`](../../NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean) (*Pomme*) for a resolved machine whose counter acceleration is paired with a Baker-free `IsNotHalt` proof.
 

@@ -1,8 +1,63 @@
 # Stack Reductions (`StackReduction/`)
 
-<!-- TODO (Marco): Expand overview for unbounded digit-stack reductions (`HasStackReduction`, `IsStackCryptid`, open stacked `IsValidAcceleration`). -->
+Fixed-arity reductions have the same number of blocks from start to finish. Many machines are not like that, and their number of blocks grows with time: this is the case for stack reductions.
 
-In a stacked reduction, both half-tapes organize into unbounded sequences $L, R \in \mathbb{N}^{\ast}$ of variable-length run blocks (such as $1^{a+1} 0^s$), so the machine's state space is an unbounded pair of integer stacks rather than a fixed-dimension tuple in $\mathbb{N}^d$. At each macro-step, the head performs modular arithmetic ($\bmod\ 2$, $\bmod\ 3$, or $\bmod\ 4$) on the active top counters adjacent to the head—incrementing stack tops or pushing fresh zero entries that increase stack depth—and periodically triggers a full-stack transfer sweep ($\tau$, $\sigma_D$, $\Delta$, $\tau_B$) that pours one stack onto the other in reverse order. This couples local Collatz-like residue branching at the head with arbitrarily deep historical memory stored across $L$ and $R$, while halting requires draining an entire stack down to $\varepsilon$ at a specific head residue. Thirteen holdouts in the table below satisfy `HasStackReduction` (nine `bbchallenge` Wiki holdouts, three Halving Tower holdouts, and one interleaved multi-separator pair-stack); the seven open problems below give explicit accelerated maps $(s_0, T)$ in this family.
+The main example is [`1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/Accelerations/M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean), which we will use as a guiding example to explain what a stack reduction is and how it can be found.
+
+If we run `1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF` from a blank tape, we observe that one shape of configuration keeps coming back:
+```
+step       34:   0^inf 1 0 1^4 C> 0 1 0^inf
+step       84:   0^inf 1 0 1^4 0 1^2 C> 0 1 0^inf
+step     2504:   0^inf 1^12 0 1 C> 0 1^13 0 1^8 0 1^6 0 1^4 0 1^2 0^inf
+```
+
+The tape is always blocks of `1`s separated by single `0`s, with the head in state C on one of the separating `0`s. The number of blocks changes, so a fixed number of integers cannot describe it. Let's denote it by:
+```
+C([x1, ..., xm], [y1, ..., yn]) = 0^inf 1^x1 0 ... 0 1^xm C> 0 1^y1 0 ... 0 1^yn 0^inf
+```
+
+If we watch closely, we find more and more instances of `C(L, R)`:
+```
+step        8:   0^inf 1^3 C> 0 1 0^inf = C([3], [1])
+step       19:   0^inf 1 0 1 C> 0 1^2 0^inf = C([1, 1], [2])
+step       34:   0^inf 1 0 1^4 C> 0 1 0^inf = C([1, 4], [1])
+step       47:   0^inf 1^2 0 1^2 C> 0 1^2 0^inf = C([2, 2], [2])
+step       55:   0^inf 1^3 C> 0 1 0 1^2 0^inf = C([3], [1, 2])
+step       66:   0^inf 1 0 1 C> 0 1^2 0 1^2 0^inf = C([1, 1], [2, 2])
+step       84:   0^inf 1 0 1^4 0 1^2 C> 0 1 0^inf = C([1, 4, 2], [1])
+step       92:   0^inf 1 0 1^5 C> 0 1 0 1 0^inf = C([1, 5], [1, 1])
+```
+
+Compared to fixed-arity reductions, we now have two things to keep track of: the lengths of the blocks, as with `a` and `b`, but also the number of blocks, which is new. Despite this, we can show the same three things:
+1. The machine reaches an instance of `C(L, R)`: here, it reaches `C([3], [1])` in 8 steps.
+2. Once the machine reaches one instance of `C(L, R)`, it will necessarily either reach a new instance of `C(L, R)` or halt: in other words, the family of configurations `C(L, R)` is closed.
+3. To determine the next instance `C(L', R')` from `C(L, R)`, there exist simple rules:
+```
+Start: C([3], [1])
+C([L, b, x + 2], [y, R]) -> C([L, b + 1, x], [y + 1, R])        if x >= 1
+C([L, b, 2],     [y, R]) -> C([L, b + 1],    [1, y, R])
+C([L, b, 1],     [y, R]) -> C([L, b, y + 2, R], [1])
+C([1],           [y, R]) -> halt
+```
+
+Here `L` and `R` stand for the remaining blocks, possibly none. If there is no block `b`, then `b + 1` is a new block of length 1.
+
+Once these three facts are proved, we can forget the machine entirely! Its halting problem is strictly equivalent to the halting problem of the `C([3], [1])` trajectory in this system of rules.
+
+The rules only look at the blocks next to the head: they take from the nearest block, give to its neighbours, add or remove a block, and occasionally move all the blocks of one side to the other side. This is why each list is called a stack: like a stack of plates, the machine only ever touches the top.
+
+`1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF` is just one example: 166 BB(6) holdouts have been reduced to a problem of this kind, including machines previously studied by the community such as [`1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_---0LB`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/Accelerations/M_1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_HHH0LB.lean) ([bbchallenge Wiki](https://wiki.bbchallenge.org/wiki/1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_---0LB)). Note that for most of these 166 machines, our Lean proof (`HasStackReduction`) only checks steps 1 and 2 (that the tape stays in the stack family), while explicit transition rules (step 3) are proved in our acceleration and halting/non-halting proofs. In `1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF`, the blocks are made of `1`s and are always separated by a single `0`. Other stack reductions swap the roles of `0` and `1`, use longer separators such as `00`, or mix a few separator lengths. In general, the formal definition allows one symbol to repeat arbitrarily many times while restricting the separator to finitely many lengths (at most 4). This restriction is essential: if all symbols could have arbitrary run lengths, then *any* tape could be written as a stack of alternating runs, and the definition would trivially hold for every Turing machine.
+
+Stack reductions have enabled us to prove the halting or non-halting of three previously open machines in this repository: two halting ([`1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_---0RA`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/Halt/M_1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_HHH0RA.lean) and [`1RB1LE_0LC1RE_---1LD_0RD1LA_0RF1RF_1RA0LB`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/Halt/M_1RB1LE_0LC1RE_HHH1LD_0RD1LA_0RF1RF_1RA0LB.lean)) and one non-halting ([`1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LB---`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/NonHalt/M_1RB1LF_0RC0RB_0LD1RB_1LE0LB_0LA1LC_0LBHHH.lean)). For example, for [`1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_---0RA`](https://github.com/google-deepmind/cryptids/blob/main/BusyBeaver/BB6/Halt/M_1RB1LE_1LC1RE_1LE1LD_1LC0LA_1RF0LA_HHH0RA.lean), each configuration at the right edge of the tape is a single stack of `0`-separated blocks of `1`s. After 11,120 stack steps (already past 10^33 raw Turing machine steps), the stack reaches the shape:
+```
+[1, 6, 6,  5, ..., 5,  3,  5, ..., 5,  3,  5, ..., 5,  ...]
+            a0 times        a1 times        a2 times
+```
+with `a0 = 156,691`, `a1 = 3,931,792`, and `a2 = 19,317,108`. The proof shows that each cycle on this shape subtracts `9` from `a0` and `28` from `a1`. Running `17,410` cycles drains `a0` down to `1`, and two intermediate steps then switch the prefix `[1, 6, 6]` to `[1, 4]`, leaving `a1 = 3,444,302` entries equal to `5` in front. On this new shape, each cycle subtracts `9` from `a1`, so `382,700` cycles drain it down to `2`, at which point the machine directly hits its halting transition (well past 10^80 raw steps).
+
+<!-- In a stacked reduction, both half-tapes organize into unbounded sequences $L, R \in \mathbb{N}^{\ast}$ of variable-length run blocks (such as $1^{a+1} 0^s$), so the machine's state space is an unbounded pair of integer stacks rather than a fixed-dimension tuple in $\mathbb{N}^d$. At each macro-step, the head performs modular arithmetic ($\bmod\ 2$, $\bmod\ 3$, or $\bmod\ 4$) on the active top counters adjacent to the head—incrementing stack tops or pushing fresh zero entries that increase stack depth—and periodically triggers a full-stack transfer sweep ($\tau$, $\sigma_D$, $\Delta$, $\tau_B$) that pours one stack onto the other in reverse order. This couples local Collatz-like residue branching at the head with arbitrarily deep historical memory stored across $L$ and $R$, while halting requires draining an entire stack down to $\varepsilon$ at a specific head residue. Thirteen holdouts in the table below satisfy `HasStackReduction` (nine `bbchallenge` Wiki holdouts, three Halving Tower holdouts, and one interleaved multi-separator pair-stack); the seven open problems below give explicit accelerated maps $(s_0, T)$ in this family.  -->
+
+## Contents
 
 This directory collects all **`28` stacked `BB(6)` holdout machines** (`9` Wiki and `19` novel reductions): `13` structural two-sided digit-stack reductions (`HasStackReduction`), `7` open stacked acceleration problems (`IsValidAcceleration`, `4` with `HighLevelState`), and `8` hard multi-layer stack potential cryptids (`IsStackCryptid`).
 
