@@ -35,6 +35,8 @@ public import Cryptids.WeakCollatz17
 public import Cryptids.Semantics.WeakCollatz17
 public import Cryptids.WeakCollatz16
 public import Cryptids.Semantics.WeakCollatz16
+public import Cryptids.WeakCollatz15
+public import Cryptids.Semantics.WeakCollatz15
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -42,9 +44,9 @@ public import Cryptids.Semantics.WeakCollatz16
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
 Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
-and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16` states), a 28-state machine
-for **Brocard's problem** (`brocard_28`), as well as complete Lean 4 formalizations of all publicly
-known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
+and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16 → 15` states), a 28-state
+machine for **Brocard's problem** (`brocard_28`), as well as complete Lean 4 formalizations of all
+publicly known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
 
@@ -117,6 +119,13 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   (`weakCollatz16`, `17 → 16` states; `75 → 41 → 27 → 17 → 16` overall) exploiting constructive
   evenness of nontrivial cycle maxima (`even_of_stageHalts`, `x = 2, 4, 6, ...`) to advance stages
   by `+2` without a trim state (`31/31` active cells visited), with constructive
+  `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and Böhm–Sontacchi
+  equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz15`, `Cryptids.Semantics.WeakCollatz15` — A 15-state compression
+  (`weakCollatz15`, `16 → 15` states; `75 → 41 → 27 → 17 → 16 → 15` overall) replacing inward
+  parity-squeezing with a Parity-Back + Left-to-Right Pair-Eater architecture under the shifted
+  conservation law `d + n = x - 1` (`n = y - 1`, zero-state `y = 2` abort, 1-step odd decrement,
+  6-step boot, `29/29` active cells visited by step `93`), with constructive
   `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and Böhm–Sontacchi
   equivalences, and `halts_candidate_iff_not_weakCollatz`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —

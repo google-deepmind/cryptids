@@ -11,6 +11,7 @@
     "ConjectureMachines.WeakCollatz27.candidate_fewer_states",
     "ConjectureMachines.WeakCollatz17.candidate_fewer_states",
     "ConjectureMachines.WeakCollatz16.candidate_fewer_states",
+    "ConjectureMachines.WeakCollatz15.candidate_fewer_states",
     "ConjectureMachines.Semantics.PA.not_paProvable_false"
   ],
   "permitted_axioms": []
