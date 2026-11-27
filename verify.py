@@ -309,6 +309,23 @@ CANDIDATES = [
             "e896555fd48db3b2d1ebc606ae6b53596b6fe5a1033588682f1c06fc1d434f01"
         ),
     },
+    {
+        "id": "weak_collatz_16",
+        "instance": "weak_collatz_17",
+        "path": "artifacts/weak_collatz_16",
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "weakCollatz16",
+        "proof_path": "Cryptids/WeakCollatz16.lean",
+        "challenge_path": "Challenge.lean",
+        "states": 16,
+        "baseline_states": 17,
+        "machine_sha256": (
+            "8deddb7f5a1cd0d17b7ea644c370178f3447a700dfbb2a99903e43da58dd9f3b"
+        ),
+        "table_file_sha256": (
+            "8deddb7f5a1cd0d17b7ea644c370178f3447a700dfbb2a99903e43da58dd9f3b"
+        ),
+    },
 ]
 
 
@@ -1475,6 +1492,128 @@ def verify_weak_collatz_17(machine: Machine, steps: int) -> dict[str, object]:
       "planted_cycle_halts": True,
   }
 
+
+def verify_weak_collatz_16(machine: Machine, steps: int) -> dict[str, object]:
+  """Simulates weak_collatz_16 on the blank tape and verifies even-stage d+y=x checkpoints & halts."""
+  proof_text = (ROOT / "Cryptids/WeakCollatz16.lean").read_text(encoding="utf-8")
+  assert (
+      "theorem halts_weakCollatz16_iff_bounded_cycle" in proof_text
+      and "theorem candidate_equivalent : Halts candidate ↔ Halts reference"
+      in proof_text
+  )
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  assert halting == [(15, 0)], f"weak_collatz_16 halting entries: {halting}"
+
+  tape: set[int] = set()
+  head = 0
+  state = 0
+  visited: set[tuple[int, int]] = set()
+  checkpoints = 0
+  boot_9_verified = False
+  boot_39_verified = False
+
+  def expected_schedule():
+    x = 2
+    while True:
+      y = x
+      while True:
+        yield (x, x - y, y)
+        if y == 1:
+          break
+        z = y // 2 if y % 2 == 0 else (3 * y + 1) // 2
+        if z > x:
+          break
+        assert z != x
+        y = z
+      x += 2
+
+  sched = expected_schedule()
+  exp_x, exp_d, exp_y = next(sched)
+  last_x = 2
+
+  for step in range(steps):
+    sym = 1 if head in tape else 0
+    if state == 1 and sym == 0 and tape:
+      hi = max(tape)
+      if head < hi:
+        left_ones = sorted(p for p in tape if p < head)
+        right_ones = sorted(p for p in tape if p > head)
+        if ((not left_ones or left_ones == list(range(head - len(left_ones), head)))
+            and right_ones == list(range(head + 1, head + 1 + len(right_ones)))):
+          assert len(tape) == exp_x, (
+              f"weak_collatz_16 popcount mismatch at step {step}: {len(tape)} vs {exp_x}"
+          )
+          assert (len(left_ones), len(right_ones)) == (exp_d, exp_y), (
+              f"weak_collatz_16 (d, y) mismatch at step {step}"
+          )
+          if step == 9:
+            assert (exp_x, exp_d, exp_y) == (2, 0, 2)
+            boot_9_verified = True
+          if step == 39:
+            assert (exp_x, exp_d, exp_y) == (4, 0, 4)
+            boot_39_verified = True
+          checkpoints += 1
+          last_x = exp_x
+          exp_x, exp_d, exp_y = next(sched)
+
+    tr = machine.table[state][sym]
+    assert tr is not None and tr.next_state is not None, (
+        f"weak_collatz_16 unexpectedly halted at step {step}"
+    )
+    visited.add((state, sym))
+    if tr.write:
+      tape.add(head)
+    else:
+      tape.discard(head)
+    head += tr.direction
+    state = tr.next_state
+
+  assert boot_9_verified and boot_39_verified, (
+      "weak_collatz_16 did not verify step 9 (2,0,2) and step 39 (4,0,4)"
+  )
+  assert checkpoints >= 100, f"weak_collatz_16 too few checkpoints: {checkpoints}"
+  if steps >= 2_000:
+    assert len(visited) == 31, (
+        f"weak_collatz_16 transition coverage {len(visited)}/31"
+    )
+
+  # Planted cycle maxima `(x = 6, ...)` / `(x = 8, d = 3, y = 5)` and `(x = 14, d = 5, y = 9)`.
+  for x_val, y_val in ((8, 5), (14, 9)):
+    d_val = x_val - y_val
+    ptape = set(range(-d_val, 0)) | set(range(1, 1 + y_val))
+    phead = 0
+    pstate = 1
+    halted = False
+    for _ in range(1_000):
+      psym = 1 if phead in ptape else 0
+      ptr = machine.table[pstate][psym]
+      if ptr is None:
+        assert (pstate, psym) == (15, 0), f"wrong halt {(pstate, psym)}"
+        halted = True
+        break
+      if ptr.write:
+        ptape.add(phead)
+      else:
+        ptape.discard(phead)
+      phead += ptr.direction
+      assert ptr.next_state is not None
+      pstate = ptr.next_state
+    assert halted, f"weak_collatz_16 planted cycle {(x_val, y_val)} failed to halt"
+
+  return {
+      "steps_simulated": steps,
+      "boot_step_cand": 39,
+      "checkpoints_verified": checkpoints,
+      "last_x": last_x,
+      "active_transitions_visited": len(visited),
+      "planted_cycle_halts": True,
+  }
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -1887,6 +2026,16 @@ def run_verification(
         f" boot at t=29 + {wc17_sim['checkpoints_verified']} Terras checkpoints"
         f" verified (up to x = {wc17_sim['last_x']}, {wc17_sim['active_transitions_visited']}/33"
         " transitions visited); planted cycles halt in state 16"
+    )
+
+  wc16_sim = verify_weak_collatz_16(cand_machines["weak_collatz_16"], steps)
+  report["simulations"]["weak_collatz_16"] = wc16_sim
+  if verbose:
+    print(
+        f"[PASS] Weak Collatz 16 stage simulation ({steps:,} steps):"
+        f" boot at t=39 + {wc16_sim['checkpoints_verified']} Terras checkpoints"
+        f" verified (up to x = {wc16_sim['last_x']}, {wc16_sim['active_transitions_visited']}/31"
+        " transitions visited); planted cycles halt in state 15"
     )
 
   # 5. Concrete blank-tape lockstep simulations

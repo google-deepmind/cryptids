@@ -361,11 +361,11 @@ Care is required when interpreting a Lean theorem of type `Halts M ↔ ZFInconsi
    Lean's type theory is proof-theoretically stronger than first-order $\mathrm{ZF}$. Using `Classical.choice` and Mathlib's cumulative hierarchy `ZFSet.{0} : Type 1`, [`Zf/Soundness.lean`](./Zf/Soundness.lean) proves `not_zfInconsistent : ¬ ZFInconsistent` inside Lean itself (and deduces `not_halts_zf393` and `not_halts_candidate`). Moreover, as noted by Elliot Glazer and formalized in Lean 4 by Mario Carneiro ([`digama0/ConZF`](https://github.com/digama0/ConZF), *"CIC + EM $\vdash$ Con(ZF): the consistency of ZF in type theory with excluded middle and no choice"*), Lean's Calculus of Inductive Constructions (`CIC`) plus Excluded Middle alone (or `¬¬ ∀ p : Prop, p ∨ ¬p`, via large elimination of `Acc`) proves $\operatorname{Con}(\mathrm{ZF})$ without `Classical.choice`, `propext`, or `Quot.sound`. Consequently, if `Classical.choice` (which yields Excluded Middle together with `propext` and `Quot.sound` by Diaconescu's theorem) or `not_zfInconsistent` is allowed, **any** provably non-halting machine—such as the 1-state machine `0R0 0R0` that moves right forever—vacuously satisfies the bare material biconditional `Halts M ↔ ZFInconsistent` (`False ↔ False`).
 2. **Zero-axiom specification & constructive proof-search equivalence (enforced by `comparator`):**
    To eliminate quotient axioms from the specification layer itself and rule out classical shortcuts through `Classical.choice`, `Classical.em`, or `not_zfInconsistent`:
-   - **Quotient-free, zero-axiom specification (`comparator/zero_axioms.json`, `permitted_axioms = []`):** `ConjectureMachines.ListBlank` represents half-tapes concretely as canonical blank-trimmed lists (`structure ListBlank (Γ : Type*) [Inhabited Γ] where ofTrimmed ::`, `Challenge.lean`, `Cryptids/Machines.lean`), so `ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `PAProvable`, all five `candidate_fewer_states` theorems, and syntactic `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
-   - **Constructive equivalences (`comparator/constructive.json`, `permitted_axioms = ["propext", "Quot.sound"]`):** **All five** state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`, `Riemann95.candidate_equivalent`, `ErdosTernary14.candidate_equivalent`), **all three** ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), and $\Sigma_1^0$ `PA` standard-model adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`) are proved **constructively in Lean** with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
+   - **Quotient-free, zero-axiom specification (`comparator/zero_axioms.json`, `permitted_axioms = []`):** `ConjectureMachines.ListBlank` represents half-tapes concretely as canonical blank-trimmed lists (`structure ListBlank (Γ : Type*) [Inhabited Γ] where ofTrimmed ::`, `Challenge.lean`, `Cryptids/Machines.lean`), so `ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `PAProvable`, all nine `candidate_fewer_states` theorems, and syntactic `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
+   - **Constructive equivalences (`comparator/constructive.json`, `permitted_axioms = ["propext", "Quot.sound"]`):** **All nine** state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`, `Riemann95.candidate_equivalent`, `ErdosTernary14.candidate_equivalent`, `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, `WeakCollatz17.candidate_equivalent`, `WeakCollatz16.candidate_equivalent`), **all three** ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), $\Sigma_1^0$ `PA` standard-model adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard28.halts_brocard28_iff_exists_square`, and the `WeakCollatz{75,41,27,17,16}` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences (35 theorems total) are proved **constructively in Lean** with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
    - **Forward completeness (`ZFInconsistent → Halts M`):** Given a finite derivation tree `d : ZFProvable (zfMem 0 0)`, structural induction extracts an explicit step count `s` and halting configuration `c` with `nSteps M s init = some c ∧ step M c = none` (no `by_contra` / unbounded search).
    - **Backward soundness (`Halts M → ZFInconsistent`):** Given `h : Halts M`, constructive induction along `StateTransition.evalInduction'` extracts the finite execution trace from `init` and decodes a valid `ZFProvable (zfMem 0 0)` derivation.
-   - **Comparator gate:** [`comparator/zero_axioms.json`](../../comparator/zero_axioms.json) (`[]`), [`comparator/constructive.json`](../../comparator/constructive.json), [`comparator/zf_380.json`](../../comparator/zf_380.json), [`comparator/goldbach_21.json`](../../comparator/goldbach_21.json), [`comparator/riemann_104.json`](../../comparator/riemann_104.json), and [`comparator/riemann_95_reduction.json`](../../comparator/riemann_95_reduction.json) (`["propext", "Quot.sound"]`) enforce these axiom bounds in CI, automatically rejecting any proof that invokes `Classical.choice` (including `not_zfInconsistent` in [`Zf/Soundness.lean`](./Zf/Soundness.lean) or `Classical.em` + [`digama0/ConZF`](https://github.com/digama0/ConZF)).
+   - **Comparator gate:** [`comparator/zero_axioms.json`](../../comparator/zero_axioms.json) (`[]`), [`comparator/constructive.json`](../../comparator/constructive.json), [`comparator/zf_380.json`](../../comparator/zf_380.json), [`comparator/goldbach_21.json`](../../comparator/goldbach_21.json), [`comparator/riemann_104.json`](../../comparator/riemann_104.json), [`comparator/riemann_95_reduction.json`](../../comparator/riemann_95_reduction.json), [`comparator/weak_collatz_41_reduction.json`](../../comparator/weak_collatz_41_reduction.json), [`comparator/weak_collatz_27_reduction.json`](../../comparator/weak_collatz_27_reduction.json), [`comparator/weak_collatz_17_reduction.json`](../../comparator/weak_collatz_17_reduction.json), and [`comparator/weak_collatz_16_reduction.json`](../../comparator/weak_collatz_16_reduction.json) (`["propext", "Quot.sound"]`) enforce these axiom bounds in CI, automatically rejecting any proof that invokes `Classical.choice` (including `not_zfInconsistent` in [`Zf/Soundness.lean`](./Zf/Soundness.lean) or `Classical.em` + [`digama0/ConZF`](https://github.com/digama0/ConZF)).
 3. **Metamathematical scope — Lean's type theory, `PA`/`ZF` internalization, and `ZF`-independence:**
    Care must also be taken not to conflate a constructive Lean theorem `Halts M ↔ ZFInconsistent` with a formal proof of $\mathrm{ZF}$-independence:
    - **Strength of constructive Lean (`CIC` vs. `PA`/`ZF`):** Even without `Classical.choice` or Excluded Middle, Lean's Calculus of Inductive Constructions provides constructions absent from first-order $\mathrm{PA}$ and $\mathrm{ZF}$—an impredicative `Prop`, inductive families (`ZFProvable`, `Acc`, `PSet`), and a predicative universe hierarchy `Type u` (already strong enough to validate Zermelo set theory, and whether axiom-free `CIC` itself proves $\operatorname{Con}(\mathrm{ZF})$ remains an open question; see [`digama0/ConZF`](https://github.com/digama0/ConZF)). An axiom check in Lean therefore blocks classical `Con(ZF)` shortcuts, rather than restricting reasoning to $\mathrm{PA}$ or $\mathrm{ZF}$.
@@ -685,16 +685,18 @@ with `V n = n.factorial / 8` and `IsTri x ↔ ∃ k, x = 1 + 2 + ⋯ + k`.
 
 ---
 
-## 10. Weak Collatz Machines ([`WeakCollatz75.lean`](./WeakCollatz75.lean), [`WeakCollatz41.lean`](./WeakCollatz41.lean), [`WeakCollatz27.lean`](./WeakCollatz27.lean), and [`WeakCollatz17.lean`](./WeakCollatz17.lean))
+## 10. Weak Collatz Machines ([`WeakCollatz75.lean`](./WeakCollatz75.lean), [`WeakCollatz41.lean`](./WeakCollatz41.lean), [`WeakCollatz27.lean`](./WeakCollatz27.lean), [`WeakCollatz17.lean`](./WeakCollatz17.lean), and [`WeakCollatz16.lean`](./WeakCollatz16.lean))
 
 In [`Cryptids/WeakCollatz75.lean`](../WeakCollatz75.lean), [`Cryptids/WeakCollatz41.lean`](../WeakCollatz41.lean),
 [`Cryptids/WeakCollatz27.lean`](../WeakCollatz27.lean), [`Cryptids/WeakCollatz17.lean`](../WeakCollatz17.lean),
+[`Cryptids/WeakCollatz16.lean`](../WeakCollatz16.lean),
 and their semantics modules [`WeakCollatz75.lean`](./WeakCollatz75.lean),
-[`WeakCollatz41.lean`](./WeakCollatz41.lean), [`WeakCollatz27.lean`](./WeakCollatz27.lean), and
-[`WeakCollatz17.lean`](./WeakCollatz17.lean), we formalize a 75-state reference machine (`weak_collatz_75`,
-improving on the unverified 124-state `bbchallenge` wiki machine) and three successive state reductions
-(`weak_collatz_41`, `weak_collatz_27`, and `weak_collatz_17`, `75 → 41 → 27 → 17` states) for Tao's
-Weak Collatz Conjecture
+[`WeakCollatz41.lean`](./WeakCollatz41.lean), [`WeakCollatz27.lean`](./WeakCollatz27.lean),
+[`WeakCollatz17.lean`](./WeakCollatz17.lean), and [`WeakCollatz16.lean`](./WeakCollatz16.lean),
+we formalize a 75-state reference machine (`weak_collatz_75`,
+improving on the unverified 124-state `bbchallenge` wiki machine) and four successive state reductions
+(`weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`,
+`75 → 41 → 27 → 17 → 16` states) for Tao's Weak Collatz Conjecture
 (absence of nontrivial positive cycles of `terras n = n / 2` if `n` is even, `(3 * n + 1) / 2` if `n`
 is odd, outside `{1, 2}`):
 
@@ -718,9 +720,9 @@ together with `candidate_fewer_states` (`[]` zero axioms), `candidate_equivalent
 `Semantics.halts_candidate_iff_exists_cycle`, `Semantics.halts_candidate_iff_bohmSontacchi`
 (`["propext", "Quot.sound"]`, zero `Classical.choice`), and
 `Semantics.halts_candidate_iff_not_weakCollatz` for `WeakCollatz41` (`41 < 75`), `WeakCollatz27`
-(`27 < 41`), and `WeakCollatz17` (`17 < 27`).
+(`27 < 41`), `WeakCollatz17` (`17 < 27`), and `WeakCollatz16` (`16 < 17`).
 
-1. **Machines & Constructive Cycle-Maximum Pigeonhole (`WeakCollatz75.lean`, `WeakCollatz41.lean`, `WeakCollatz27.lean`, `WeakCollatz17.lean`)**:
+1. **Machines & Constructive Cycle-Maximum Pigeonhole (`WeakCollatz75.lean`, `WeakCollatz41.lean`, `WeakCollatz27.lean`, `WeakCollatz17.lean`, `WeakCollatz16.lean`)**:
    Every nontrivial cycle `C` outside `{1, 2}` attains a maximum `M = max C ≥ 3` whose orbit stays
    inside `[3, M]` and repeats in `1 ≤ j ≤ M - 2` steps (`exists_bounded_cycle_max`, proved via
    constructive finite pigeonhole `nat_pigeonhole_constructive` with `propext` and `Quot.sound` only).
@@ -728,13 +730,15 @@ together with `candidate_fewer_states` (`[]` zero axioms), `candidate_equivalent
    eliminating unbounded blank gaps via single-zero markers, in-place `terras` hole-shifting, local
    `2p` comparison/restoration, and 1-pass triple-building); `weak_collatz_27` drops the step-counter
    block `1^c` altogether via zero-counter cycle-maximum dovetailing (`y = 1` and `terras y > x`
-   stage aborts); and `weak_collatz_17` replaces `1^x 0 1^y` with the single-separator popcount
+   stage aborts); `weak_collatz_17` replaces `1^x 0 1^y` with the single-separator popcount
    conservation law `d + y = x` (`0^∞ 1^d [0] 1^y 0^∞`), eliminating comparison, restoration, and
-   stage-doubling passes (`33/33` active cells visited).
-2. **Semantics (`Semantics/WeakCollatz75.lean`, `Semantics/WeakCollatz41.lean`, `Semantics/WeakCollatz27.lean`, `Semantics/WeakCollatz17.lean`)**:
+   stage-doubling passes (`33/33` active cells visited); and `weak_collatz_16` proves constructively
+   that every nontrivial cycle maximum is even (`even_of_stageHalts`), testing only even stages
+   `x = 2, 4, 6, ...` (`x ↦ x + 2`) to eliminate the abort-trim state (`31/31` active cells visited).
+2. **Semantics (`Semantics/WeakCollatz75.lean`, `Semantics/WeakCollatz41.lean`, `Semantics/WeakCollatz27.lean`, `Semantics/WeakCollatz17.lean`, `Semantics/WeakCollatz16.lean`)**:
    Proves the algebraic telescope `2 ^ n * terras^[n] x = 3 ^ v.sum * x + collatzCycleNum v` along
    `v = terrasParityWord n x` to obtain the Böhm–Sontacchi (1978) Diophantine cycle equation and
    nontrivial-cycle equivalence without `Classical.choice`, and derives equivalence with
    `¬ WeakCollatzConjecture` via Markov's Principle (`not_forall`), transported along
-   `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, and
-   `WeakCollatz17.candidate_equivalent`.
+   `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`,
+   `WeakCollatz17.candidate_equivalent`, and `WeakCollatz16.candidate_equivalent`.

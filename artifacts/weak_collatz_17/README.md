@@ -1,5 +1,10 @@
 # 17-state Weak Collatz machine (`weak_collatz_17`)
 
+> [!NOTE]
+> Superseded as the smallest Weak Collatz machine in this repository by the 16-state machine
+> [`weak_collatz_16`](../weak_collatz_16/README.md) (`17 → 16` states, `-1` state / `-5.88%`),
+> retained here as the `+1`-stage popcount-conservation step in the `75 → 41 → 27 → 17 → 16` chain.
+
 This binary Turing machine has **17 states**, **33 defined transitions** (all 33 visited by step
 `238` on the blank tape—`100%` active cell utilization, `0` unused transitions, and `17/17`
 Hopcroft equivalence classes), and a single halting transition (`16/ZERO`, state `16` reading `0`).

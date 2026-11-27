@@ -55,7 +55,12 @@
     "ConjectureMachines.WeakCollatz17.candidate_equivalent",
     "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_exists_cycle",
     "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_bohmSontacchi",
-    "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_not_weakCollatz"
+    "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_not_weakCollatz",
+    "ConjectureMachines.WeakCollatz16.candidate_fewer_states",
+    "ConjectureMachines.WeakCollatz16.candidate_equivalent",
+    "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_exists_cycle",
+    "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_bohmSontacchi",
+    "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_not_weakCollatz"
   ],
   "permitted_axioms": [
     "propext",
