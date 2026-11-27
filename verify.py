@@ -258,6 +258,40 @@ CANDIDATES = [
         ),
         "source_format": "standard",
     },
+    {
+        "id": "weak_collatz_41",
+        "instance": "weak_collatz_75",
+        "path": "artifacts/weak_collatz_41",
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "weakCollatz41",
+        "proof_path": "Cryptids/WeakCollatz41.lean",
+        "challenge_path": "Challenge.lean",
+        "states": 41,
+        "baseline_states": 75,
+        "machine_sha256": (
+            "154e80575f6229f4a8d3ec197561e749b216af7c3340e912de71d1315cc16aa5"
+        ),
+        "table_file_sha256": (
+            "154e80575f6229f4a8d3ec197561e749b216af7c3340e912de71d1315cc16aa5"
+        ),
+    },
+    {
+        "id": "weak_collatz_27",
+        "instance": "weak_collatz_41",
+        "path": "artifacts/weak_collatz_27",
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "weakCollatz27",
+        "proof_path": "Cryptids/WeakCollatz27.lean",
+        "challenge_path": "Challenge.lean",
+        "states": 27,
+        "baseline_states": 41,
+        "machine_sha256": (
+            "494e1a7aadbf86628ac1c56094919b4a0846113cea5f07096d040bea784a6cd6"
+        ),
+        "table_file_sha256": (
+            "494e1a7aadbf86628ac1c56094919b4a0846113cea5f07096d040bea784a6cd6"
+        ),
+    },
 ]
 
 
@@ -276,6 +310,22 @@ BROCARD_27 = {
     ),
     "table_file_sha256": (
         "97fe0a3e279374757975bada0c3e8d057cf4e47ecba28d0afa3013b3e7c439a6"
+    ),
+}
+
+WEAK_COLLATZ_75 = {
+    "id": "weak_collatz_75",
+    "path": "artifacts/weak_collatz_75",
+    "lean_file": "Cryptids/Machines.lean",
+    "lean_def": "weakCollatz75",
+    "proof_path": "Cryptids/WeakCollatz75.lean",
+    "challenge_path": "Challenge.lean",
+    "states": 75,
+    "machine_sha256": (
+        "a4ff22c976b077d8afcc3f2db9589ea772a019f00d75ba35ad312fc9d82d549c"
+    ),
+    "table_file_sha256": (
+        "a4ff22c976b077d8afcc3f2db9589ea772a019f00d75ba35ad312fc9d82d549c"
     ),
 }
 
@@ -1007,6 +1057,310 @@ def verify_brocard_27(machine: Machine, steps: int) -> dict[str, object]:
       "planted_square_halts": True,
   }
 
+
+def verify_weak_collatz_75(machine: Machine, steps: int) -> dict[str, object]:
+  """Verifies stage checkpoints of `weak_collatz_75` against `terras` plus planted cycle halt."""
+  def terras_py(n: int) -> int:
+    return n // 2 if n % 2 == 0 else (3 * n + 1) // 2
+
+  tape: set[int] = set()
+  head = 0
+  state = 0
+  exp_x, exp_c, exp_y = 3, 3, 3
+  checkpoints = 0
+  for step in range(steps):
+    sym = 1 if head in tape else 0
+    if state == 20 and sym == 1:
+      ones = sorted(tape)
+      runs: list[list[int]] = []
+      for pos in ones:
+        if not runs or pos != runs[-1][1] + 1:
+          runs.append([pos, pos])
+        else:
+          runs[-1][1] = pos
+      lengths = [b - a + 1 for a, b in runs]
+      gaps = [runs[i + 1][0] - runs[i][1] - 1 for i in range(len(runs) - 1)]
+      assert lengths == [exp_x, exp_c, exp_y], (
+          f"weak_collatz_75 step {step}: {lengths} != {[exp_x, exp_c, exp_y]}"
+      )
+      assert gaps[0] == 2 and gaps[1] >= 2, f"weak_collatz_75 bad gaps {gaps}"
+      assert head == runs[2][0], f"weak_collatz_75 bad head {head}"
+      checkpoints += 1
+      exp_y = terras_py(exp_y)
+      exp_c -= 1
+      if exp_c == 0:
+        exp_x += 1
+        exp_c = exp_x
+        exp_y = exp_x
+    tr = machine.table[state][sym]
+    assert tr is not None, f"weak_collatz_75 unexpected halt at step {step}"
+    if tr.write:
+      tape.add(head)
+    else:
+      tape.discard(head)
+    head += tr.direction
+    assert tr.next_state is not None, f"weak_collatz_75 halt at step {step}"
+    state = tr.next_state
+
+  assert checkpoints >= 80, f"weak_collatz_75 too few checkpoints: {checkpoints}"
+
+  # Planted cycle hit at stage x = 5, c = 2, y = 3 (`terras(3) = 5 == x` -> halts in state 56).
+  ptape = {0, 1, 2, 3, 4, 7, 8, 11, 12, 13}
+  phead, pstate = 11, 20
+  halted = False
+  for _ in range(10_000):
+    psym = 1 if phead in ptape else 0
+    ptr = machine.table[pstate][psym]
+    if ptr is None:
+      assert (pstate, psym) == (56, 0), f"wrong halt {(pstate, psym)}"
+      halted = True
+      break
+    if ptr.write:
+      ptape.add(phead)
+    else:
+      ptape.discard(phead)
+    phead += ptr.direction
+    assert ptr.next_state is not None
+    pstate = ptr.next_state
+  assert halted, "weak_collatz_75 planted cycle failed to halt"
+  return {
+      "steps_simulated": steps,
+      "checkpoints_verified": checkpoints,
+      "last_x": exp_x,
+      "planted_cycle_halts": True,
+  }
+
+
+def verify_weak_collatz_41(machine: Machine, steps: int) -> dict[str, object]:
+  """Verifies 77-step boot, stage checkpoints, transition coverage, and planted halts of `weak_collatz_41`."""
+  proof_text = (ROOT / "Cryptids/WeakCollatz41.lean").read_text(encoding="utf-8")
+  assert (
+      "theorem halts_weakCollatz41_iff_bounded_cycle" in proof_text
+      and "theorem candidate_equivalent : Halts candidate ↔ Halts reference"
+      in proof_text
+  )
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  assert halting == [(25, 0)], f"weak_collatz_41 halting entries: {halting}"
+
+  def terras_py(n: int) -> int:
+    return n // 2 if n % 2 == 0 else (3 * n + 1) // 2
+
+  tape: set[int] = set()
+  head = 0
+  state = 0
+  visited: set[tuple[int, int]] = set()
+  exp_x, exp_c, exp_y = 3, 3, 3
+  checkpoints = 0
+  boot_verified = False
+  for step in range(steps):
+    sym = 1 if head in tape else 0
+    visited.add((state, sym))
+    if step == 77:
+      assert (
+          state == 12
+          and head == 5
+          and sorted(tape) == [-3, -2, -1, 1, 2, 3, 5, 6, 7]
+      ), f"weak_collatz_41 bad boot at step 77: q={state}, h={head}, tape={sorted(tape)}"
+      boot_verified = True
+    if state == 12 and sym == 1:
+      ones = sorted(tape)
+      runs: list[list[int]] = []
+      for pos in ones:
+        if not runs or pos != runs[-1][1] + 1:
+          runs.append([pos, pos])
+        else:
+          runs[-1][1] = pos
+      lengths = [b - a + 1 for a, b in runs]
+      gaps = [runs[i + 1][0] - runs[i][1] - 1 for i in range(len(runs) - 1)]
+      assert lengths == [exp_c, exp_x, exp_y], (
+          f"weak_collatz_41 step {step}: {lengths} != {[exp_c, exp_x, exp_y]}"
+      )
+      assert gaps == [1, 1], f"weak_collatz_41 bad gaps {gaps}"
+      assert head == runs[2][0], f"weak_collatz_41 bad head {head}"
+      checkpoints += 1
+      exp_y = terras_py(exp_y)
+      exp_c -= 1
+      if exp_c == 0:
+        exp_x += 1
+        exp_c = exp_x
+        exp_y = exp_x
+    tr = machine.table[state][sym]
+    assert tr is not None and tr.next_state is not None, (
+        f"weak_collatz_41 unexpected halt at step {step}"
+    )
+    if tr.write:
+      tape.add(head)
+    else:
+      tape.discard(head)
+    head += tr.direction
+    state = tr.next_state
+
+  assert boot_verified, "weak_collatz_41 did not verify step 77 bootstrap"
+  assert checkpoints >= 300, f"weak_collatz_41 too few checkpoints: {checkpoints}"
+  if steps >= 200_000:
+    assert len(visited) == 81, (
+        f"weak_collatz_41 transition coverage {len(visited)}/81"
+    )
+
+  # Planted odd (`y = 3, x = 5`) and even (`y = 10, x = 5`) cycle hits halting in `(25, 0)`.
+  for x_val, c_val, y_val in ((5, 2, 3), (5, 1, 10)):
+    ptape: set[int] = set()
+    pos = 0
+    for _ in range(c_val):
+      ptape.add(pos)
+      pos += 1
+    pos += 1
+    for _ in range(x_val):
+      ptape.add(pos)
+      pos += 1
+    pos += 1
+    phead = pos
+    for _ in range(y_val):
+      ptape.add(pos)
+      pos += 1
+    pstate = 12
+    halted = False
+    for _ in range(10_000):
+      psym = 1 if phead in ptape else 0
+      ptr = machine.table[pstate][psym]
+      if ptr is None:
+        assert (pstate, psym) == (25, 0), f"wrong halt {(pstate, psym)}"
+        halted = True
+        break
+      if ptr.write:
+        ptape.add(phead)
+      else:
+        ptape.discard(phead)
+      phead += ptr.direction
+      assert ptr.next_state is not None
+      pstate = ptr.next_state
+    assert halted, f"weak_collatz_41 planted cycle {(x_val, c_val, y_val)} failed to halt"
+
+  return {
+      "steps_simulated": steps,
+      "boot_step_cand": 77,
+      "checkpoints_verified": checkpoints,
+      "last_x": exp_x,
+      "active_transitions_visited": len(visited),
+      "planted_cycle_halts": True,
+  }
+
+
+def verify_weak_collatz_27(machine: Machine, steps: int) -> dict[str, object]:
+  """Simulates weak_collatz_27 on the blank tape and verifies 2-block checkpoints & cycle halts."""
+  tape: set[int] = set()
+  head = 0
+  state = 0
+  visited: set[tuple[int, int]] = set()
+  checkpoints = 0
+  boot_148_verified = False
+
+  def expected_schedule():
+    yield (1, 1)
+    yield (2, 2)
+    yield (2, 1)
+    x = 3
+    while True:
+      y = x
+      while True:
+        yield (x, y)
+        if y == 1:
+          break
+        z = y // 2 if y % 2 == 0 else (3 * y + 1) // 2
+        if z > x:
+          break
+        assert z != x
+        y = z
+      x += 1
+
+  sched = expected_schedule()
+  exp_x, exp_y = next(sched)
+  last_x = 1
+
+  for step in range(steps):
+    sym = 1 if head in tape else 0
+    if state == 24 and sym == 1:
+      assert len(tape) == exp_x + exp_y, (
+          f"weak_collatz_27 popcount mismatch at step {step}: {len(tape)} vs"
+          f" {exp_x + exp_y}"
+      )
+      for pos in range(head - 1 - exp_x, head - 1):
+        assert pos in tape, f"weak_collatz_27 missing x cell at step {step}"
+      assert (head - 1) not in tape, (
+          f"weak_collatz_27 missing 0 separator at step {step}"
+      )
+      for pos in range(head, head + exp_y):
+        assert pos in tape, f"weak_collatz_27 missing y cell at step {step}"
+      if step == 148:
+        assert (exp_x, exp_y) == (3, 3)
+        boot_148_verified = True
+      checkpoints += 1
+      last_x = exp_x
+      exp_x, exp_y = next(sched)
+
+    tr = machine.table[state][sym]
+    assert tr is not None and tr.next_state is not None, (
+        f"weak_collatz_27 unexpectedly halted at step {step}"
+    )
+    visited.add((state, sym))
+    if tr.write:
+      tape.add(head)
+    else:
+      tape.discard(head)
+    head += tr.direction
+    state = tr.next_state
+
+  assert boot_148_verified, "weak_collatz_27 did not verify step 148 stage (3, 3)"
+  assert checkpoints >= 100, f"weak_collatz_27 too few checkpoints: {checkpoints}"
+  if steps >= 1_000:
+    assert len(visited) == 53, (
+        f"weak_collatz_27 transition coverage {len(visited)}/53"
+    )
+
+  # Planted odd (`y = 3, x = 5`) and even (`y = 10, x = 5`) cycle hits halting in `(18, 0)`.
+  for x_val, y_val in ((5, 3), (5, 10)):
+    ptape: set[int] = set()
+    pos = 0
+    for _ in range(x_val):
+      ptape.add(pos)
+      pos += 1
+    pos += 1
+    phead = pos
+    for _ in range(y_val):
+      ptape.add(pos)
+      pos += 1
+    pstate = 24
+    halted = False
+    for _ in range(10_000):
+      psym = 1 if phead in ptape else 0
+      ptr = machine.table[pstate][psym]
+      if ptr is None:
+        assert (pstate, psym) == (18, 0), f"wrong halt {(pstate, psym)}"
+        halted = True
+        break
+      if ptr.write:
+        ptape.add(phead)
+      else:
+        ptape.discard(phead)
+      phead += ptr.direction
+      assert ptr.next_state is not None
+      pstate = ptr.next_state
+    assert halted, f"weak_collatz_27 planted cycle {(x_val, y_val)} failed to halt"
+
+  return {
+      "steps_simulated": steps,
+      "boot_step_cand": 148,
+      "checkpoints_verified": checkpoints,
+      "last_x": last_x,
+      "active_transitions_visited": len(visited),
+      "planted_cycle_halts": True,
+  }
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -1140,6 +1494,7 @@ def run_verification(
   # 3. Verify all candidate tables, independent declarations, and Lean proof files.
   cand_machines: dict[str, Machine] = {}
   reference_specs = dict(PINNED_BASELINES)
+  reference_specs["weak_collatz_75"] = WEAK_COLLATZ_75
   reference_specs.update({str(spec["id"]): spec for spec in CANDIDATES})
   for cspec in CANDIDATES:
     cid = str(cspec["id"])
@@ -1351,6 +1706,63 @@ def run_verification(
         f" {brocard_sim['tests_verified']} tests verified on the blank tape"
         f" ({brocard_sim['steps_simulated']:,} steps, up to n = {brocard_sim['last_n']});"
         " planted square halts in M0"
+    )
+
+  # Weak Collatz 75: table, SHA-256, Lean definitions, and simulation.
+  wcspec = WEAK_COLLATZ_75
+  wc_text = (ROOT / str(wcspec["path"]) / "machine.txt").read_text(encoding="utf-8")
+  assert sha256_bytes(wc_text.encode("utf-8")) == wcspec["table_file_sha256"], (
+      "weak_collatz_75 table file SHA-256 mismatch"
+  )
+  wcm = parse_canonical_machine(wc_text)
+  assert wcm.states == wcspec["states"], f"weak_collatz_75 state count mismatch: {wcm.states}"
+  assert wcm.sha256 == wcspec["machine_sha256"], (
+      f"weak_collatz_75 machine SHA-256 mismatch: {wcm.sha256}"
+  )
+  for lean_path in (wcspec["lean_file"], wcspec["challenge_path"]):
+    assert (
+        parse_lean_machine_def(
+            (ROOT / str(lean_path)).read_text(encoding="utf-8"),
+            str(wcspec["lean_def"]),
+            expected_table_path=f"{wcspec['path']}/machine.txt",
+        ).table
+        == wcm.table
+    ), f"{lean_path} weak_collatz_75 table mismatch"
+  assert "theorem halts_weakCollatz75_iff_exists_cycle" in (
+      ROOT / "Challenge.lean"
+    ).read_text(encoding="utf-8")
+  wc_sim = verify_weak_collatz_75(wcm, steps)
+  report["candidates"]["weak_collatz_75"] = {
+      "states": wcm.states,
+      "machine_sha256": wcm.sha256,
+  }
+  report["simulations"]["weak_collatz_75"] = wc_sim
+  if verbose:
+    print(
+        f"[PASS] Weak Collatz 75 ({wcm.states} states, SHA-256 {wcm.sha256[:16]}...):"
+        f" {wc_sim['checkpoints_verified']} Terras checkpoints verified on the blank tape"
+        f" ({wc_sim['steps_simulated']:,} steps, up to x = {wc_sim['last_x']});"
+        " planted cycle halts in state 56"
+    )
+
+  wc41_sim = verify_weak_collatz_41(cand_machines["weak_collatz_41"], steps)
+  report["simulations"]["weak_collatz_41"] = wc41_sim
+  if verbose:
+    print(
+        f"[PASS] Weak Collatz 41 stage simulation ({steps:,} steps):"
+        f" boot at t=77 + {wc41_sim['checkpoints_verified']} Terras checkpoints"
+        f" verified (up to x = {wc41_sim['last_x']}, {wc41_sim['active_transitions_visited']}/81"
+        " transitions visited); planted cycles halt in state 25"
+    )
+
+  wc27_sim = verify_weak_collatz_27(cand_machines["weak_collatz_27"], steps)
+  report["simulations"]["weak_collatz_27"] = wc27_sim
+  if verbose:
+    print(
+        f"[PASS] Weak Collatz 27 stage simulation ({steps:,} steps):"
+        f" boot at t=148 + {wc27_sim['checkpoints_verified']} Terras checkpoints"
+        f" verified (up to x = {wc27_sim['last_x']}, {wc27_sim['active_transitions_visited']}/53"
+        " transitions visited); planted cycles halt in state 18"
     )
 
   # 5. Concrete blank-tape lockstep simulations

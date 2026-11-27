@@ -26,28 +26,39 @@ meta section
 namespace ConjectureMachines.Machines
 open Lean Elab Term
 
-private def parseCellStx (cell : String) : TermElabM (TSyntax `term) := do
+private def parseCellStx (numStates : Nat) (cell : String) : TermElabM (TSyntax `term) := do
   if cell == "---" then `(none)
   else match cell.toList with
     | wChar :: dChar :: rest =>
-      if rest.isEmpty then throwError "Malformed transition cell: {cell}"
+      if wChar != '0' && wChar != '1' then
+        throwError "Invalid write symbol in transition cell: {cell}"
+      let some state := (String.ofList rest).toNat?
+        | throwError "Invalid destination state in transition cell: {cell}"
+      if state >= numStates then
+        throwError "Out-of-range destination state in transition cell: {cell}"
       let wLit := Syntax.mkNumLit (String.singleton wChar)
       let dirStx ← match dChar with
         | 'L' => `(Turing.Dir.left) | 'R' => `(Turing.Dir.right)
         | _ => throwError "Invalid direction in transition cell: {cell}"
-      `(some ($wLit, $dirStx, $(Syntax.mkNumLit (String.ofList rest))))
+      `(some ($wLit, $dirStx, $(Syntax.mkNumLit (toString state))))
     | _ => throwError "Malformed transition cell: {cell}"
 
 elab "load_machine_rows% " path:str : term <= expectedType? => do
   let contents ← liftM (m := IO) (IO.FS.readFile path.getString)
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for rawLine in contents.splitOn "\n" do
+  let lines := (contents.splitOn "\n").filterMap fun rawLine =>
     let line := ((rawLine.splitOn "#").headD "").trimAscii.toString
-    if !line.isEmpty then
-      match (line.splitOn " ").filter (fun s => !s.isEmpty) with
-      | [c0, c1] => rowStxs := rowStxs.push (← `([$(← parseCellStx c0), $(← parseCellStx c1)]))
-      | _ => throwError "Expected 2 columns in transition table line: {rawLine}"
-  elabTerm (← `([$rowStxs,*])) expectedType?
+    if line.isEmpty then none else some line
+  if lines.isEmpty then throwError "Empty transition table"
+  let mut rowStxs : Array (TSyntax `term) := #[]
+  for line in lines do
+    match (line.splitOn " ").filter (fun s => !s.isEmpty) with
+    | [c0, c1] =>
+      rowStxs := rowStxs.push (← `([$(← parseCellStx lines.length c0),
+        $(← parseCellStx lines.length c1)]))
+    | _ => throwError "Expected 2 columns in transition table line: {line}"
+  let states := Syntax.mkNumLit (toString lines.length)
+  elabTerm (← `(([$rowStxs,*] : List (List (Option (Fin 2 × Turing.Dir × Fin $states))))))
+    expectedType?
 end ConjectureMachines.Machines
 end
 
@@ -313,6 +324,21 @@ def brocard27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
   load_machine_rows% "artifacts/brocard_27/machine.txt"
 /-- 27-state Brocard machine. -/
 def brocard27 : Machine 27 2 := Machine.ofRows brocard27Rows
+/-- Rows of `weakCollatz75`. -/
+def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
+  load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
+/-- 75-state Weak Collatz machine. -/
+def weakCollatz75 : Machine 75 2 := Machine.ofRows weakCollatz75Rows
+/-- Rows of `weakCollatz41`. -/
+def weakCollatz41Rows : List (List (Option (Fin 2 × Dir × Fin 41))) :=
+  load_machine_rows% "artifacts/weak_collatz_41/machine.txt"
+/-- 41-state Weak Collatz candidate. -/
+def weakCollatz41 : Machine 41 2 := Machine.ofRows weakCollatz41Rows
+/-- Rows of `weakCollatz27`. -/
+def weakCollatz27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/weak_collatz_27/machine.txt"
+/-- 27-state Weak Collatz candidate. -/
+def weakCollatz27 : Machine 27 2 := Machine.ofRows weakCollatz27Rows
 end Machines
 
 attribute [-simp] Nat.add_eq_right Order.add_one_le_iff Order.lt_add_one_iff

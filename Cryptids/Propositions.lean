@@ -716,4 +716,31 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
+/-! ## 7. Weak Collatz Conjecture & Böhm–Sontacchi Cycle Equation -/
+
+/-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
+for odd `n`. -/
+def terras (n : ℕ) : ℕ :=
+  if n % 2 = 0 then n / 2 else (3 * n + 1) / 2
+
+/-- **Weak Collatz Conjecture** (Steiner 1977; Böhm & Sontacchi 1978; Eliahou 1993; Tao 2019;
+`ccchallenge.org`): the shortcut Collatz map `terras` admits no positive integer cycle outside the
+trivial cycle `{1, 2}` (`1 ↦ 2 ↦ 1`). -/
+def WeakCollatzConjecture : Prop :=
+  ∀ x k : ℕ, 1 ≤ x → 1 ≤ k → terras^[k] x = x → x = 1 ∨ x = 2
+
+/-- Length-`n` parity word of `terras` starting from `x`. -/
+def terrasParityWord : ℕ → ℕ → List ℕ
+  | 0, _ => []
+  | n + 1, x => (x % 2) :: terrasParityWord n (terras x)
+
+/-- Böhm–Sontacchi (1978) Diophantine cycle numerator `g(v)` for a parity word `v ∈ {0, 1}^*`:
+satisfies `2 ^ n * terras^[n] x = 3 ^ v.sum * x + collatzCycleNum v` along
+`v = terrasParityWord n x`. -/
+def collatzCycleNum : List ℕ → ℕ
+  | [] => 0
+  | b :: rest =>
+    if b = 0 then 2 * collatzCycleNum rest
+    else 3 ^ rest.sum + 2 * collatzCycleNum rest
+
 end ConjectureMachines

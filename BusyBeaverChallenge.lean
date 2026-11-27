@@ -56,11 +56,11 @@ meta section
 namespace BusyBeaver
 open Lean Elab Term
 
-private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
+private def parseRleBlock (numStates numSymbols : Nat) (block : String) :
+    TermElabM (TSyntax `term) := do
   let chars := block.toList
-  if chars.length == 0 || chars.length % 3 != 0 then
+  if numSymbols == 0 || chars.length != 3 * numSymbols then
     throwError "Invalid RLE state block length: {block}"
-  let numSymbols := chars.length / 3
   let mut cellStxs : Array (TSyntax `term) := #[]
   for i in [:numSymbols] do
     let wChar := chars[3 * i]!
@@ -72,6 +72,8 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
     else
       if !wChar.isDigit then
         throwError "Invalid symbol character '{wChar}' in RLE block: {block}"
+      if wChar.toNat - '0'.toNat >= numSymbols then
+        throwError "Out-of-range symbol in RLE block: {block}"
       let wLit := Syntax.mkNumLit (String.singleton wChar)
       let dirStx ← match dChar with
         | 'L' => `(Turing.Dir.left)
@@ -80,27 +82,27 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
       if sChar < 'A' || sChar > 'Z' then
         throwError "Invalid state letter '{sChar}' in RLE block: {block}"
       let stateIdx := sChar.toNat - 'A'.toNat
+      if stateIdx >= numStates then
+        throwError "Out-of-range state in RLE block: {block}"
       let sLit := Syntax.mkNumLit (toString stateIdx)
       cellStxs := cellStxs.push (← `(some ($wLit, $dirStx, $sLit)))
   `([$cellStxs,*])
 
-elab "load_rle_rows% " rle:str : term <= expectedType? => do
-  let blocks := rle.getString.trimAscii.toString.splitOn "_"
-  if blocks.isEmpty then
-    throwError "Empty RLE string"
+private def parseRleRows (rle : String) : TermElabM (TSyntax `term) := do
+  let blocks := rle.trimAscii.toString.splitOn "_"
+  let numSymbols := (blocks.headD "").length / 3
   let mut rowStxs : Array (TSyntax `term) := #[]
   for b in blocks do
-    rowStxs := rowStxs.push (← parseRleBlock b)
-  elabTerm (← `([$rowStxs,*])) expectedType?
+    rowStxs := rowStxs.push (← parseRleBlock blocks.length numSymbols b)
+  let states := Syntax.mkNumLit (toString blocks.length)
+  let symbols := Syntax.mkNumLit (toString numSymbols)
+  `(([$rowStxs,*] : List (List (Option (Fin $symbols × Turing.Dir × Fin $states)))))
+
+elab "load_rle_rows% " rle:str : term <= expectedType? => do
+  elabTerm (← parseRleRows rle.getString) expectedType?
 
 elab "load_rle_machine% " rle:str : term <= expectedType? => do
-  let blocks := rle.getString.trimAscii.toString.splitOn "_"
-  if blocks.isEmpty then
-    throwError "Empty RLE string"
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for b in blocks do
-    rowStxs := rowStxs.push (← parseRleBlock b)
-  elabTerm (← `(ConjectureMachines.Machine.ofRows [$rowStxs,*])) expectedType?
+  elabTerm (← `(ConjectureMachines.Machine.ofRows $(← parseRleRows rle.getString))) expectedType?
 
 end BusyBeaver
 end
@@ -10530,6 +10532,97 @@ def machine : ConjectureMachines.Machine 6 2 :=
 abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB1RE_1LC0RA_1LA0LD_1LB0LF_0RB0LE_0LAHHH
+
+namespace BusyBeaver.M_1RB0RB_0LC1RA_1RD1LC_1LA1LE_1LF0LD_HHH0LA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RB_0LC1RA_1RD1LC_1LA1LE_1LF0LD_HHH0LA"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_halt : IsHalt target := by sorry
+end BusyBeaver.M_1RB0RB_0LC1RA_1RD1LC_1LA1LE_1LF0LD_HHH0LA
+
+namespace BusyBeaver.M_1RB0RD_1RC0LF_0LA0RB_1REHHH_1LB1RA_0LE0LF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1RC0LF_0LA0RB_1REHHH_1LB1RA_0LE0LF"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_halt : IsHalt target := by sorry
+end BusyBeaver.M_1RB0RD_1RC0LF_0LA0RB_1REHHH_1LB1RA_0LE0LF
+
+namespace BusyBeaver.M_1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LAHHH_0RA0RF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LAHHH_0RA0RF"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_halt : IsHalt target := by sorry
+end BusyBeaver.M_1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LAHHH_0RA0RF
+
+namespace BusyBeaver.M_1RB0LC_0LA1RD_1LA0RE_1RE0RF_1LFHHH_1LB1RF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_0LA1RD_1LA0RE_1RE0RF_1LFHHH_1LB1RF"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LC_0LA1RD_1LA0RE_1RE0RF_1LFHHH_1LB1RF
+
+namespace BusyBeaver.M_1RB0LC_1LC0RE_1RA1LD_1LA1LC_1RF0RA_HHH0LA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LC_1LC0RE_1RA1LD_1LA1LC_1RF0RA_HHH0LA"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LC_1LC0RE_1RA1LD_1LA1LC_1RF0RA_HHH0LA
+
+namespace BusyBeaver.M_1RB0LD_1LC0RE_HHH1LD_1LE1LA_1RA0LF_1LC1RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LD_1LC0RE_HHH1LD_1LE1LA_1RA0LF_1LC1RE"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LD_1LC0RE_HHH1LD_1LE1LA_1RA0LF_1LC1RE
+
+namespace BusyBeaver.M_1RB0LE_1LC1RD_1LA0RB_1RC1RB_1LF0LC_HHH0RC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LE_1LC1RD_1LA0RB_1RC1RB_1LF0LC_HHH0RC"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LE_1LC1RD_1LA0RB_1RC1RB_1LF0LC_HHH0RC
+
+namespace BusyBeaver.M_1RB0LF_1LC0LA_HHH1RD_1RF1RE_1LF1RD_1LB0RE
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LF_1LC0LA_HHH1RD_1RF1RE_1LF1RD_1LB0RE"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LF_1LC0LA_HHH1RD_1RF1RE_1LF1RD_1LB0RE
+
+namespace BusyBeaver.M_1RB0RC_1LC0RB_1LD0LD_1RA1LE_HHH0LF_1LB1LF
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RC_1LC0RB_1LD0LD_1RA1LE_HHH0LF_1LB1LF"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RC_1LC0RB_1LD0LD_1RA1LE_HHH0LF_1LB1LF
+
+namespace BusyBeaver.M_1RB0RD_1LC0LE_0RA0LB_1RC1RF_1LB1RD_0RCHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0RD_1LC0LE_0RA0LB_1RC1RF_1LB1RD_0RCHHH"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0RD_1LC0LE_0RA0LB_1RC1RF_1LB1RD_0RCHHH
+
+namespace BusyBeaver.M_1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_HHH0LB
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_HHH0LB"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_HHH0LB
+
+namespace BusyBeaver.M_1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RCHHH
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RCHHH"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RCHHH
+
+namespace BusyBeaver.M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA
 
 namespace BusyBeaver.M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC
 open Turing BusyBeaver
