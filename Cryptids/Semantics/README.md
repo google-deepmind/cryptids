@@ -685,14 +685,16 @@ with `V n = n.factorial / 8` and `IsTri x ↔ ∃ k, x = 1 + 2 + ⋯ + k`.
 
 ---
 
-## 10. Weak Collatz Machines ([`WeakCollatz75.lean`](./WeakCollatz75.lean), [`WeakCollatz41.lean`](./WeakCollatz41.lean), and [`WeakCollatz27.lean`](./WeakCollatz27.lean))
+## 10. Weak Collatz Machines ([`WeakCollatz75.lean`](./WeakCollatz75.lean), [`WeakCollatz41.lean`](./WeakCollatz41.lean), [`WeakCollatz27.lean`](./WeakCollatz27.lean), and [`WeakCollatz17.lean`](./WeakCollatz17.lean))
 
 In [`Cryptids/WeakCollatz75.lean`](../WeakCollatz75.lean), [`Cryptids/WeakCollatz41.lean`](../WeakCollatz41.lean),
-[`Cryptids/WeakCollatz27.lean`](../WeakCollatz27.lean), and their semantics modules
-[`WeakCollatz75.lean`](./WeakCollatz75.lean), [`WeakCollatz41.lean`](./WeakCollatz41.lean), and
-[`WeakCollatz27.lean`](./WeakCollatz27.lean), we formalize a 75-state reference machine (`weak_collatz_75`,
-improving on the unverified 124-state `bbchallenge` wiki machine) and two successive state reductions
-(`weak_collatz_41` and `weak_collatz_27`, `75 → 41 → 27` states) for Tao's Weak Collatz Conjecture
+[`Cryptids/WeakCollatz27.lean`](../WeakCollatz27.lean), [`Cryptids/WeakCollatz17.lean`](../WeakCollatz17.lean),
+and their semantics modules [`WeakCollatz75.lean`](./WeakCollatz75.lean),
+[`WeakCollatz41.lean`](./WeakCollatz41.lean), [`WeakCollatz27.lean`](./WeakCollatz27.lean), and
+[`WeakCollatz17.lean`](./WeakCollatz17.lean), we formalize a 75-state reference machine (`weak_collatz_75`,
+improving on the unverified 124-state `bbchallenge` wiki machine) and three successive state reductions
+(`weak_collatz_41`, `weak_collatz_27`, and `weak_collatz_17`, `75 → 41 → 27 → 17` states) for Tao's
+Weak Collatz Conjecture
 (absence of nontrivial positive cycles of `terras n = n / 2` if `n` is even, `(3 * n + 1) / 2` if `n`
 is odd, outside `{1, 2}`):
 
@@ -715,10 +717,10 @@ theorem halts_weakCollatz75_iff_not_weakCollatz :
 together with `candidate_fewer_states` (`[]` zero axioms), `candidate_equivalent`,
 `Semantics.halts_candidate_iff_exists_cycle`, `Semantics.halts_candidate_iff_bohmSontacchi`
 (`["propext", "Quot.sound"]`, zero `Classical.choice`), and
-`Semantics.halts_candidate_iff_not_weakCollatz` for both `WeakCollatz41` (`41 < 75`) and
-`WeakCollatz27` (`27 < 41`).
+`Semantics.halts_candidate_iff_not_weakCollatz` for `WeakCollatz41` (`41 < 75`), `WeakCollatz27`
+(`27 < 41`), and `WeakCollatz17` (`17 < 27`).
 
-1. **Machines & Constructive Cycle-Maximum Pigeonhole (`WeakCollatz75.lean`, `WeakCollatz41.lean`, `WeakCollatz27.lean`)**:
+1. **Machines & Constructive Cycle-Maximum Pigeonhole (`WeakCollatz75.lean`, `WeakCollatz41.lean`, `WeakCollatz27.lean`, `WeakCollatz17.lean`)**:
    Every nontrivial cycle `C` outside `{1, 2}` attains a maximum `M = max C ≥ 3` whose orbit stays
    inside `[3, M]` and repeats in `1 ≤ j ≤ M - 2` steps (`exists_bounded_cycle_max`, proved via
    constructive finite pigeonhole `nat_pigeonhole_constructive` with `propext` and `Quot.sound` only).
@@ -726,10 +728,13 @@ together with `candidate_fewer_states` (`[]` zero axioms), `candidate_equivalent
    eliminating unbounded blank gaps via single-zero markers, in-place `terras` hole-shifting, local
    `2p` comparison/restoration, and 1-pass triple-building); `weak_collatz_27` drops the step-counter
    block `1^c` altogether via zero-counter cycle-maximum dovetailing (`y = 1` and `terras y > x`
-   stage aborts, proved terminating without assuming absence of divergent trajectories).
-2. **Semantics (`Semantics/WeakCollatz75.lean`, `Semantics/WeakCollatz41.lean`, `Semantics/WeakCollatz27.lean`)**:
+   stage aborts); and `weak_collatz_17` replaces `1^x 0 1^y` with the single-separator popcount
+   conservation law `d + y = x` (`0^∞ 1^d [0] 1^y 0^∞`), eliminating comparison, restoration, and
+   stage-doubling passes (`33/33` active cells visited).
+2. **Semantics (`Semantics/WeakCollatz75.lean`, `Semantics/WeakCollatz41.lean`, `Semantics/WeakCollatz27.lean`, `Semantics/WeakCollatz17.lean`)**:
    Proves the algebraic telescope `2 ^ n * terras^[n] x = 3 ^ v.sum * x + collatzCycleNum v` along
    `v = terrasParityWord n x` to obtain the Böhm–Sontacchi (1978) Diophantine cycle equation and
    nontrivial-cycle equivalence without `Classical.choice`, and derives equivalence with
    `¬ WeakCollatzConjecture` via Markov's Principle (`not_forall`), transported along
-   `WeakCollatz41.candidate_equivalent` and `WeakCollatz27.candidate_equivalent`.
+   `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, and
+   `WeakCollatz17.candidate_equivalent`.

@@ -13,8 +13,9 @@ project:
     (15 -> 14 states: Tristan Stérin and Damien Woods's 2021 15-state
     machine erdos_ternary_15 and Tristan Stérin's October 2026 14-state machine
     erdos_ternary_14), Brocard's problem (a new 28-state machine brocard_28,
-    November 2026), and Tao's Weak Collatz Conjecture (75 -> 41 -> 27 states:
-    weak_collatz_75, weak_collatz_41, and weak_collatz_27),
+    November 2026), and Tao's Weak Collatz Conjecture (75 -> 41 -> 27 -> 17
+    states: weak_collatz_75, weak_collatz_41, weak_collatz_27, and
+    weak_collatz_17),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -218,7 +219,7 @@ sources:
     location: "Atti Accad. Naz. Lincei Rend. Cl. Sci. Fis. Mat. Nat. (8) 64 (1978), 260-264"
     relationship: "background"
     author_endorsement: "n/a"
-  - title: "Weak Collatz Turing machines and state reductions (weak_collatz_75 -> weak_collatz_41 -> weak_collatz_27)"
+  - title: "Weak Collatz Turing machines and state reductions (weak_collatz_75 -> weak_collatz_41 -> weak_collatz_27 -> weak_collatz_17)"
     authors:
       - "Tom Zahavy"
     type: "original-proof"
@@ -227,9 +228,11 @@ sources:
       Constructs and kernel-verifies a 75-state reference machine weak_collatz_75
       for Tao's Weak Collatz Conjecture (improving on the unverified 124-state
       bbchallenge wiki entry), a 41-state compression weak_collatz_41 (75 -> 41
-      states), and a 27-state zero-counter compression weak_collatz_27 (41 -> 27
-      states), with constructive Lean 4 halting equivalences to nontrivial
-      Terras cycles and the Böhm-Sontacchi (1978) Diophantine cycle equation.
+      states), a 27-state zero-counter compression weak_collatz_27 (41 -> 27
+      states), and a 17-state conservation-law compression weak_collatz_17
+      (27 -> 17 states), with constructive Lean 4 halting equivalences to
+      nontrivial Terras cycles and the Böhm-Sontacchi (1978) Diophantine cycle
+      equation.
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -255,15 +258,17 @@ related_formalizations:
 status:
   scope: >-
     Specification definitions (ListBlank, Tape, Halts, Machine, BundledMachine,
-    PAProvable), all seven candidate_fewer_states theorems, and syntactic
+    PAProvable), all eight candidate_fewer_states theorems, and syntactic
     first-order Peano Arithmetic consistency (not_paProvable_false) depend on
-    zero axioms ([], audited via comparator/zero_axioms.json). All seven
+    zero axioms ([], audited via comparator/zero_axioms.json). All eight
     state-reduction halting equivalences (goldbach_21, zf_380, riemann_104,
-    riemann_95, erdos_ternary_14, weak_collatz_41, weak_collatz_27), all three
+    riemann_95, erdos_ternary_14, weak_collatz_41, weak_collatz_27,
+    weak_collatz_17), all three
     ZF machine-to-proof-search equivalences (zf_393, zf_380, zf_432), Sigma_1^0
     PA standard-model adequacy, the brocard_28 square equivalence, and the
-    weak_collatz_75, weak_collatz_41, and weak_collatz_27 nontrivial-cycle and
-    Böhm-Sontacchi Diophantine equivalences (27 theorems total) are
+    weak_collatz_75, weak_collatz_41, weak_collatz_27, and weak_collatz_17
+    nontrivial-cycle and Böhm-Sontacchi Diophantine equivalences (31 theorems
+    total) are
     proved constructively using at most
     propext and Quot.sound (zero Classical.choice, audited via
     comparator/constructive.json). Object-level first-order PA provability of
@@ -285,8 +290,9 @@ status:
     Halts brocard28 <-> ∃ n, 7 < n ∧ IsSquare (n! + 1) constructively
     (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean), and
     Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle. The
-    75-state, 41-state, and 27-state Weak Collatz machines (weak_collatz_75,
-    weak_collatz_41, weak_collatz_27) constructively satisfy halting equivalence
+    75-state, 41-state, 27-state, and 17-state Weak Collatz machines
+    (weak_collatz_75, weak_collatz_41, weak_collatz_27, weak_collatz_17)
+    constructively satisfy halting equivalence
     with nontrivial Terras cycles and the Böhm-Sontacchi Diophantine cycle
     equation, and Halts M <-> ¬ WeakCollatzConjecture with Markov's Principle.
   sorry_count: 0
@@ -541,6 +547,31 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/weak_collatz_27.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.candidate_fewer_states"
+      file: "Cryptids/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.candidate_equivalent"
+      file: "Cryptids/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_17_reduction.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_17.json"
 
 automation:
   methods:
@@ -780,6 +811,18 @@ alignment:
     - source: "weak_collatz_27 <-> ¬ WeakCollatzConjecture"
       lean: "ConjectureMachines.WeakCollatz27.Semantics.halts_candidate_iff_not_weakCollatz"
       module: "Cryptids.Semantics.WeakCollatz27"
+      status: "proved"
+    - source: "weak_collatz_17 < weak_collatz_27 state reduction"
+      lean: "ConjectureMachines.WeakCollatz17.candidate_fewer_states"
+      module: "Cryptids.WeakCollatz17"
+      status: "proved"
+    - source: "weak_collatz_17 <-> weak_collatz_27 halting equivalence"
+      lean: "ConjectureMachines.WeakCollatz17.candidate_equivalent"
+      module: "Cryptids.WeakCollatz17"
+      status: "proved"
+    - source: "weak_collatz_17 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz17"
       status: "proved"
 
 acknowledgements: >-

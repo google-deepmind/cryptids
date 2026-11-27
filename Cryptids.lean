@@ -31,6 +31,8 @@ public import Cryptids.WeakCollatz41
 public import Cryptids.Semantics.WeakCollatz41
 public import Cryptids.WeakCollatz27
 public import Cryptids.Semantics.WeakCollatz27
+public import Cryptids.WeakCollatz17
+public import Cryptids.Semantics.WeakCollatz17
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -38,7 +40,7 @@ public import Cryptids.Semantics.WeakCollatz27
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
 Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
-and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41` states), a 28-state machine for
+and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17` states), a 28-state machine for
 **Brocard's problem** (`brocard_28`), as well as complete Lean 4 formalizations of all publicly
 known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
 `erdos_ternary_15`),
@@ -103,6 +105,12 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   `restCfg` stage-advance splitting, and a zero-state blank-tape warm-up (`53/53` active cells
   visited), with constructive `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle
   and Böhm–Sontacchi equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.WeakCollatz17`, `Cryptids.Semantics.WeakCollatz17` — A 17-state compression
+  (`weakCollatz17`, `27 → 17` states; `75 → 41 → 27 → 17` overall) maintaining the single-separator
+  popcount conservation law `d + y = x` (`0^∞ 1^d [0] 1^y 0^∞`) to eliminate comparison,
+  restoration, and stage-doubling loops (`33/33` active cells visited), with constructive
+  `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and Böhm–Sontacchi
+  equivalences, and `halts_candidate_iff_not_weakCollatz`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

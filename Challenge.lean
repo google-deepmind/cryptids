@@ -364,6 +364,11 @@ def weakCollatz27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
   load_machine_rows% "artifacts/weak_collatz_27/machine.txt"
 /-- 27-state Weak Collatz candidate. -/
 def weakCollatz27 : Machine 27 2 := Machine.ofRows weakCollatz27Rows
+/-- Rows of `weakCollatz17`. -/
+def weakCollatz17Rows : List (List (Option (Fin 2 × Dir × Fin 17))) :=
+  load_machine_rows% "artifacts/weak_collatz_17/machine.txt"
+/-- 17-state Weak Collatz candidate. -/
+def weakCollatz17 : Machine 17 2 := Machine.ofRows weakCollatz17Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -1076,5 +1081,27 @@ theorem halts_candidate_iff_not_weakCollatz :
     Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
 end Semantics
 end WeakCollatz27
+
+namespace WeakCollatz17
+/-- 27-state Weak Collatz reference machine (`weak_collatz_27`). -/
+abbrev reference : BundledMachine 2 := Machines.weakCollatz27.bundle
+/-- 17-state Weak Collatz candidate machine (`weak_collatz_17`). -/
+abbrev candidate : BundledMachine 2 := Machines.weakCollatz17.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_exists_cycle :
+    Halts candidate ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_candidate_iff_bohmSontacchi :
+    Halts candidate ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_candidate_iff_not_weakCollatz :
+    Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
+end Semantics
+end WeakCollatz17
 
 end ConjectureMachines

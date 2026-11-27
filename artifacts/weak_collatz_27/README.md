@@ -1,5 +1,10 @@
 # 27-state Weak Collatz machine (`weak_collatz_27`)
 
+> [!NOTE]
+> Superseded as the smallest Weak Collatz machine in this repository by the 17-state machine
+> [`weak_collatz_17`](../weak_collatz_17/README.md) (`27 → 17` states, `-10` states / `-37.04%`),
+> retained here as the intermediate zero-counter reduction step in the `75 → 41 → 27 → 17` chain.
+
 This binary Turing machine has **27 states**, **53 defined transitions** (all 53 visited by step
 `507` on the blank tape—`100%` active cell utilization), and a single halting transition
 (`18/ZERO`, state `18` reading `0`). Starting in state `0` on the all-blank tape, Lean 4
