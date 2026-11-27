@@ -10624,6 +10624,13 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 theorem is_not_halt : IsNotHalt target := by sorry
 end BusyBeaver.M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA
 
+namespace BusyBeaver.M_1RB0LA_1RC0RB_1LD1RB_0LA0LE_HHH1LF_1LA1LC
+def machine : ConjectureMachines.Machine 6 2 :=
+  load_rle_machine% "1RB0LA_1RC0RB_1LD1RB_0LA0LE_HHH1LF_1LA1LC"
+abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
+theorem is_not_halt : IsNotHalt target := by sorry
+end BusyBeaver.M_1RB0LA_1RC0RB_1LD1RB_0LA0LE_HHH1LF_1LA1LC
+
 namespace BusyBeaver.M_1RB1RF_1LC1LB_1RD1LD_1RE0RA_HHH0LB_0LF0RC
 open Turing BusyBeaver
 
