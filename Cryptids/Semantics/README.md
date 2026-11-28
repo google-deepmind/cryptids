@@ -362,7 +362,7 @@ Care is required when interpreting a Lean theorem of type `Halts M ↔ ZFInconsi
 2. **Zero-axiom specification & constructive proof-search equivalence (enforced by `comparator`):**
    To eliminate quotient axioms from the specification layer itself and rule out classical shortcuts through `Classical.choice`, `Classical.em`, or `not_zfInconsistent`:
    - **Quotient-free, zero-axiom specification (`comparator/zero_axioms.json`, `permitted_axioms = []`):** `ConjectureMachines.ListBlank` represents half-tapes concretely as canonical blank-trimmed lists (`structure ListBlank (Γ : Type*) [Inhabited Γ] where ofTrimmed ::`, `Challenge.lean`, `Cryptids/Machines.lean`), so `ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `PAProvable`, all nine `candidate_fewer_states` theorems, and syntactic `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
-   - **Constructive equivalences (`comparator/constructive.json`, `permitted_axioms = ["propext", "Quot.sound"]`):** **All nine** state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`, `Riemann95.candidate_equivalent`, `ErdosTernary14.candidate_equivalent`, `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, `WeakCollatz17.candidate_equivalent`, `WeakCollatz16.candidate_equivalent`), **all three** ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), $\Sigma_1^0$ `PA` standard-model adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard27.halts_brocard27_iff_exists_square`, and the `WeakCollatz{75,41,27,17,16}` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences (35 theorems total) are proved **constructively in Lean** with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
+   - **Constructive equivalences (`comparator/constructive.json`, `permitted_axioms = ["propext", "Quot.sound"]`):** **All nine** state-reduction halting equivalences (`Goldbach21.candidate_equivalent`, `Zf380.candidate_equivalent`, `Riemann104.candidate_equivalent`, `Riemann95.candidate_equivalent`, `ErdosTernary14.candidate_equivalent`, `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`, `WeakCollatz17.candidate_equivalent`, `WeakCollatz16.candidate_equivalent`), **all three** ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`, `Zf380.Semantics.halts_candidate_iff_zfInconsistent`, `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), $\Sigma_1^0$ `PA` standard-model adequacy (`paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard27.halts_brocard27_iff_exists_square`, the `WeakCollatz{75,41,27,17,16}` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences, and `Legendre21.halts_legendre21_iff_exists_gap` (36 theorems total) are proved **constructively in Lean** with **zero `Classical.choice`, zero Excluded Middle, and zero Markov's Principle**:
    - **Forward completeness (`ZFInconsistent → Halts M`):** Given a finite derivation tree `d : ZFProvable (zfMem 0 0)`, structural induction extracts an explicit step count `s` and halting configuration `c` with `nSteps M s init = some c ∧ step M c = none` (no `by_contra` / unbounded search).
    - **Backward soundness (`Halts M → ZFInconsistent`):** Given `h : Halts M`, constructive induction along `StateTransition.evalInduction'` extracts the finite execution trace from `init` and decodes a valid `ZFProvable (zfMem 0 0)` derivation.
    - **Comparator gate:** [`comparator/zero_axioms.json`](../../comparator/zero_axioms.json) (`[]`), [`comparator/constructive.json`](../../comparator/constructive.json), [`comparator/zf_380.json`](../../comparator/zf_380.json), [`comparator/goldbach_21.json`](../../comparator/goldbach_21.json), [`comparator/riemann_104.json`](../../comparator/riemann_104.json), [`comparator/riemann_95_reduction.json`](../../comparator/riemann_95_reduction.json), [`comparator/weak_collatz_41_reduction.json`](../../comparator/weak_collatz_41_reduction.json), [`comparator/weak_collatz_27_reduction.json`](../../comparator/weak_collatz_27_reduction.json), [`comparator/weak_collatz_17_reduction.json`](../../comparator/weak_collatz_17_reduction.json), and [`comparator/weak_collatz_16_reduction.json`](../../comparator/weak_collatz_16_reduction.json) (`["propext", "Quot.sound"]`) enforce these axiom bounds in CI, automatically rejecting any proof that invokes `Classical.choice` (including `not_zfInconsistent` in [`Zf/Soundness.lean`](./Zf/Soundness.lean) or `Classical.em` + [`digama0/ConZF`](https://github.com/digama0/ConZF)).
@@ -744,3 +744,44 @@ together with `candidate_fewer_states` (`[]` zero axioms), `candidate_equivalent
    `¬ WeakCollatzConjecture` via Markov's Principle (`not_forall`), transported along
    `WeakCollatz41.candidate_equivalent`, `WeakCollatz27.candidate_equivalent`,
    `WeakCollatz17.candidate_equivalent`, and `WeakCollatz16.candidate_equivalent`.
+
+---
+
+## 11. A 21-State Legendre Machine ([`Legendre21.lean`](./Legendre21.lean))
+
+In [`Cryptids/Legendre21.lean`](../Legendre21.lean) and [`Cryptids/Semantics/Legendre21.lean`](./Legendre21.lean),
+we formalize a new 21-state binary Turing machine for Legendre's conjecture (`legendre_21`, Daniel Veljjanoski with
+Claude (Anthropic) as assistant, November 2026):
+
+```lean
+theorem halts_legendre21_iff :
+    ConjectureMachines.Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ EmptyInterval n
+
+theorem halts_legendre21_iff_exists_gap :
+    ConjectureMachines.Halts legendre21 ↔
+      ∃ n : ℕ, 1 ≤ n ∧ ∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2)
+
+theorem halts_legendre21_iff_not_legendre :
+    ConjectureMachines.Halts legendre21 ↔ ¬ LegendreConjecture
+```
+
+with `EmptyInterval n ↔ ∀ x, n * n < x → x < (n + 1) * (n + 1) → ¬ IsPrime x` and `IsPrime` the
+predicate of `Cryptids/Goldbach21.lean`.
+
+1. **Machine (`Legendre21.lean`)**: The tape holds the number under test in unary, a separator, a
+   flag cell and a walker area. The primality test is the one of `goldbach_21`; sixteen of the 21
+   states are its states. The machine is embedded into the 25-state numbering of
+   `Goldbach21.edited` (`leg25`), so the step and scan lemmas and the machine-generic pass lemmas
+   of `Goldbach21.lean` apply unchanged, and the lemmas stated there for `edited` only are proved
+   again; `test_eval` says that from a test event the machine reaches the exit that decides
+   `IsPrime t` with the block restored. After each test the hole of the walker area moves one cell
+   left. Interval `n` (`n ^ 2, …, n ^ 2 + 2 n`) starts with `2 n` ones in the walker area; its
+   first prime sets the flag and is tested twice; the hole reaches the left end at the last
+   number, with the flag set (`cycle_adv`: the next interval starts with `2 n + 2` ones) or clear
+   (`cycle_halt`: the machine halts). The first `17` steps are run concretely, and interval `1`
+   follows from the general lemmas. This gives `halts_legendre21_iff` with `propext` and
+   `Quot.sound` only.
+2. **Semantics (`Semantics/Legendre21.lean`)**: `isPrime_iff_prime` (`Semantics/Goldbach.lean`) and
+   `Nat.pow_two`
+   give `halts_legendre21_iff_exists_gap` without `Classical.choice`;
+   `halts_legendre21_iff_not_legendre` uses Markov's Principle via `by_contra` (as in Section 9).

@@ -35,9 +35,10 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
-  the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, and the
+  the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`
-  cycle and Böhm–Sontacchi Diophantine equivalences
+  cycle and Böhm–Sontacchi Diophantine equivalences, and the `legendre_21` equivalence
+  `Legendre21.halts_legendre21_iff_exists_gap`
   are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
   `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
   choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
@@ -45,13 +46,14 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 59 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  Audits all 61 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
   negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
   `RiemannHypothesis` equivalences, the `erdos_ternary_15` and `erdos_ternary_14` equivalences
   with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
-  also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, and the
+  also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`
-  equivalences with `¬ WeakCollatzConjecture` (Markov's Principle).
+  equivalences with `¬ WeakCollatzConjecture`, and the `legendre_21` equivalence with
+  `¬ LegendreConjecture` (Markov's Principle).
 -/
 
 meta section
@@ -375,6 +377,11 @@ def weakCollatz16Rows : List (List (Option (Fin 2 × Dir × Fin 16))) :=
   load_machine_rows% "artifacts/weak_collatz_16/machine.txt"
 /-- 16-state Weak Collatz candidate. -/
 def weakCollatz16 : Machine 16 2 := Machine.ofRows weakCollatz16Rows
+/-- Rows of `legendre21`. -/
+def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
+  load_machine_rows% "artifacts/legendre_21/machine.txt"
+/-- 21-state Legendre machine. -/
+def legendre21 : Machine 21 2 := Machine.ofRows legendre21Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -872,6 +879,11 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
+/-- **Legendre's conjecture** (one of Landau's four problems, 1912): for every `n ≥ 1` there is
+a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
+def LegendreConjecture : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
+
 /-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
 for odd `n`. -/
 def terras (n : ℕ) : ℕ :=
@@ -1131,5 +1143,15 @@ theorem halts_candidate_iff_not_weakCollatz :
     Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
 end Semantics
 end WeakCollatz16
+
+namespace Legendre21
+/-- 21-state Legendre machine (`legendre_21`, Veljjanoski 2026). -/
+abbrev legendre21 : Machine 21 2 := Machines.legendre21
+theorem halts_legendre21_iff_exists_gap :
+    ConjectureMachines.Halts legendre21 ↔
+      ∃ n : ℕ, 1 ≤ n ∧ ∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2) := by sorry
+theorem halts_legendre21_iff_not_legendre :
+    ConjectureMachines.Halts legendre21 ↔ ¬ LegendreConjecture := by sorry
+end Legendre21
 
 end ConjectureMachines

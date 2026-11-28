@@ -40,6 +40,8 @@ constructions and halting proofs:
    For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
 5. **Brocard's Problem** (`BrocardConjecture`):
    `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_27`).
+6. **Legendre's Conjecture** (`LegendreConjecture`):
+   For every `n ≥ 1` there is a prime strictly between `n ^ 2` and `(n + 1) ^ 2` (`legendre_21`).
 -/
 
 @[expose] public section
@@ -742,5 +744,12 @@ def collatzCycleNum : List ℕ → ℕ
   | b :: rest =>
     if b = 0 then 2 * collatzCycleNum rest
     else 3 ^ rest.sum + 2 * collatzCycleNum rest
+
+/-! ## 8. Legendre's Conjecture -/
+
+/-- **Legendre's conjecture** (one of Landau's four problems, 1912): for every `n ≥ 1` there is
+a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
+def LegendreConjecture : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
 
 end ConjectureMachines
