@@ -69,7 +69,9 @@
     "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap",
     "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre",
     "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd",
-    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
+    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa",
+    "ConjectureMachines.Oppermann22.halts_oppermann22_iff_exists_gap",
+    "ConjectureMachines.Oppermann22.halts_oppermann22_iff_not_oppermann"
   ],
   "permitted_axioms": [
     "propext",

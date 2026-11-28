@@ -38,8 +38,9 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
   and `weak_collatz_15` cycle and Böhm–Sontacchi Diophantine equivalences, the `legendre_21`
-  equivalence `Legendre21.halts_legendre21_iff_exists_gap`, and the `kurepa_19` equivalence
-  `Kurepa19.halts_kurepa19_iff_exists_dvd`
+  equivalence `Legendre21.halts_legendre21_iff_exists_gap`, the `kurepa_19` equivalence
+  `Kurepa19.halts_kurepa19_iff_exists_dvd`, and the `oppermann_22` equivalence
+  `Oppermann22.halts_oppermann22_iff_exists_gap`
   are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
   `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
   choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
@@ -47,15 +48,16 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 68 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  Audits all 70 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
   negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
   `RiemannHypothesis` equivalences, the `erdos_ternary_15` and `erdos_ternary_14` equivalences
   with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
   also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
   and `weak_collatz_15` equivalences with `¬ WeakCollatzConjecture`, the `legendre_21`
-  equivalence with `¬ LegendreConjecture`, and the `kurepa_19` equivalence with
-  `¬ KurepaConjecture` (Markov's Principle).
+  equivalence with `¬ LegendreConjecture`, the `kurepa_19` equivalence with
+  `¬ KurepaConjecture`, and the `oppermann_22` equivalence with `¬ OppermannConjecture`
+  (Markov's Principle).
 -/
 
 meta section
@@ -394,6 +396,11 @@ def kurepa19Rows : List (List (Option (Fin 2 × Dir × Fin 19))) :=
   load_machine_rows% "artifacts/kurepa_19/machine.txt"
 /-- 19-state Kurepa machine. -/
 def kurepa19 : Machine 19 2 := Machine.ofRows kurepa19Rows
+/-- Rows of `oppermann22`. -/
+def oppermann22Rows : List (List (Option (Fin 2 × Dir × Fin 22))) :=
+  load_machine_rows% "artifacts/oppermann_22/machine.txt"
+/-- 22-state Oppermann machine. -/
+def oppermann22 : Machine 22 2 := Machine.ofRows oppermann22Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -907,6 +914,13 @@ factorial `!n = 0! + 1! + ⋯ + (n - 1)!` is not divisible by `n`. Kurepa stated
 def KurepaConjecture : Prop :=
   ∀ n : ℕ, 2 < n → ¬ n ∣ leftFactorial n
 
+/-- **Oppermann's conjecture** (Ludvig Oppermann, 1877): for every `n ≥ 2` there is a prime `p`
+with `n ^ 2 - n < p < n ^ 2` and a prime `p` with `n ^ 2 < p < n ^ 2 + n`. -/
+def OppermannConjecture : Prop :=
+  ∀ n : ℕ, 2 ≤ n →
+    (∃ p : ℕ, p.Prime ∧ n ^ 2 - n < p ∧ p < n ^ 2) ∧
+    (∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < n ^ 2 + n)
+
 /-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
 for odd `n`. -/
 def terras (n : ℕ) : ℕ :=
@@ -1207,5 +1221,17 @@ theorem halts_kurepa19_iff_exists_dvd :
 theorem halts_kurepa19_iff_not_kurepa :
     ConjectureMachines.Halts kurepa19 ↔ ¬ KurepaConjecture := by sorry
 end Kurepa19
+
+namespace Oppermann22
+/-- 22-state Oppermann machine (`oppermann_22`, Veljjanoski 2026). -/
+abbrev oppermann22 : Machine 22 2 := Machines.oppermann22
+theorem halts_oppermann22_iff_exists_gap :
+    ConjectureMachines.Halts oppermann22 ↔
+      ∃ n : ℕ, 2 ≤ n ∧
+        ((∀ p : ℕ, p.Prime → ¬ (n ^ 2 - n < p ∧ p < n ^ 2)) ∨
+         (∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < n ^ 2 + n))) := by sorry
+theorem halts_oppermann22_iff_not_oppermann :
+    ConjectureMachines.Halts oppermann22 ↔ ¬ OppermannConjecture := by sorry
+end Oppermann22
 
 end ConjectureMachines

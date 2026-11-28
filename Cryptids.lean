@@ -41,6 +41,8 @@ public import Cryptids.Legendre21
 public import Cryptids.Semantics.Legendre21
 public import Cryptids.Kurepa19
 public import Cryptids.Semantics.Kurepa19
+public import Cryptids.Oppermann22
+public import Cryptids.Semantics.Oppermann22
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -50,8 +52,9 @@ This library formalizes record smaller 2-symbol Turing machines for **Goldbach's
 Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
 and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16 → 15` states), a 27-state
 machine for **Brocard's problem** (`brocard_27`), a 21-state machine for **Legendre's conjecture**
-(`legendre_21`), a 19-state machine for **Kurepa's left factorial conjecture** (`kurepa_19`), as
-well as complete Lean 4 formalizations of all publicly known baseline machines
+(`legendre_21`), a 19-state machine for **Kurepa's left factorial conjecture** (`kurepa_19`), a
+22-state machine for **Oppermann's conjecture** (`oppermann_22`), as well as complete Lean 4
+formalizations of all publicly known baseline machines
 (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`, `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
 
@@ -145,6 +148,11 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   `ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd`
   (`Halts kurepa19 ↔ ∃ n, 2 < n ∧ n ∣ leftFactorial n`), and
   `ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa`.
+- `Cryptids.Oppermann22`, `Cryptids.Semantics.Oppermann22` — A 22-state machine for Oppermann's
+  conjecture (`oppermann22`), built on the primality test of `goldbach_21`, with constructive
+  proofs of `Halts oppermann22 ↔ ∃ n, 2 ≤ n ∧ (EmptyLeft n ∨ EmptyRight n)` and
+  `ConjectureMachines.Oppermann22.halts_oppermann22_iff_exists_gap` (the same with
+  `Nat.Prime`), and `ConjectureMachines.Oppermann22.halts_oppermann22_iff_not_oppermann`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

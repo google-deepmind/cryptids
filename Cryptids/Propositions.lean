@@ -45,6 +45,9 @@ constructions and halting proofs:
 7. **Kurepa's Left Factorial Conjecture** (`KurepaConjecture`):
    For every `n > 2`, the left factorial `!n = 0! + 1! + ⋯ + (n - 1)!` (`leftFactorial`) is not
    divisible by `n` (`kurepa_19`).
+8. **Oppermann's Conjecture** (`OppermannConjecture`):
+   For every `n ≥ 2` there is a prime strictly between `n ^ 2 - n` and `n ^ 2` and one strictly
+   between `n ^ 2` and `n ^ 2 + n` (`oppermann_22`).
 -/
 
 @[expose] public section
@@ -767,5 +770,14 @@ factorial `!n = 0! + 1! + ⋯ + (n - 1)!` is not divisible by `n`. Kurepa stated
 `gcd (!n, n!) = 2` for `n ≥ 2`; both forms are equivalent to: no odd prime `p` divides `!p`. -/
 def KurepaConjecture : Prop :=
   ∀ n : ℕ, 2 < n → ¬ n ∣ leftFactorial n
+
+/-! ## 10. Oppermann's Conjecture -/
+
+/-- **Oppermann's conjecture** (Ludvig Oppermann, 1877): for every `n ≥ 2` there is a prime `p`
+with `n ^ 2 - n < p < n ^ 2` and a prime `p` with `n ^ 2 < p < n ^ 2 + n`. -/
+def OppermannConjecture : Prop :=
+  ∀ n : ℕ, 2 ≤ n →
+    (∃ p : ℕ, p.Prime ∧ n ^ 2 - n < p ∧ p < n ^ 2) ∧
+    (∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < n ^ 2 + n)
 
 end ConjectureMachines
