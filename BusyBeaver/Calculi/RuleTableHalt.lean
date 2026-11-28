@@ -7,7 +7,7 @@ module
 public import BusyBeaver.Defs
 
 /-!
-# Shared Rule-Table Block Indexing and Hex Table Packing (`BusyBeaver.RuleTableHalt`)
+# Shared Rule-Table Block Indexing and Hex Table Packing (`BusyBeaver.Calculi.RuleTableHalt`)
 
 Shared infrastructure for compressed `@Bool.rec` rule-table halting proofs:
 - Kernel-friendly `Nat` arithmetic normalization lemmas (`nat_add_eq`, `nat_sub_eq`, `nat_mul_eq`).
@@ -17,7 +17,7 @@ Shared infrastructure for compressed `@Bool.rec` rule-table halting proofs:
 
 @[expose] public section
 
-namespace BusyBeaver.RuleTableHalt
+namespace BusyBeaver.Calculi.RuleTableHalt
 
 @[scoped simp] theorem nat_add_eq (a b : Nat) : Nat.add a b = a + b := rfl
 @[scoped simp] theorem nat_sub_eq (a b : Nat) : Nat.sub a b = a - b := rfl
@@ -43,4 +43,4 @@ def entFromBlkF (blkF : Nat → Nat) (g : Nat) : Nat :=
 def bsel2F (base b0 b1 : Nat) (j : Nat) : Nat :=
   @Bool.rec (fun _ => Nat) b1 b0 (Nat.ble j base)
 
-end BusyBeaver.RuleTableHalt
+end BusyBeaver.Calculi.RuleTableHalt

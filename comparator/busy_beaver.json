@@ -753,7 +753,8 @@
     "BusyBeaver.M_1RB0RD_1LC0LE_0RA0LB_1RC1RF_1LB1RD_0RCHHH.is_not_halt",
     "BusyBeaver.M_1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_HHH0LB.is_not_halt",
     "BusyBeaver.M_1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RCHHH.is_not_halt",
-    "BusyBeaver.M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA.is_not_halt"
+    "BusyBeaver.M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA.is_not_halt",
+    "BusyBeaver.M_1RB0LA_1RC0RB_1LD1RB_0LA0LE_HHH1LF_1LA1LC.is_not_halt"
   ],
   "permitted_axioms": [
     "propext",

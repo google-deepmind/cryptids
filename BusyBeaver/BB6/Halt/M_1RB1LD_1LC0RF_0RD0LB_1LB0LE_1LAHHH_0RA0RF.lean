@@ -14,6 +14,7 @@ import BusyBeaver.Calculi.ProofKit
 import BusyBeaver.Calculi.RuleTableHalt
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
+open BusyBeaver.Calculi.RuleTableHalt
 
 namespace BusyBeaver.M_1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LAHHH_0RA0RF
 
@@ -52,7 +53,7 @@ private def target_tm : Machine (Fin 2) (Fin 6)
 /-! ## Auto-generated packed B8 and 14-Stage Wall-Tower DAG tables (noncomputable hex literals) -/
 
 private noncomputable def b8Blk_0_0 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x14fd01ff05f801fd14ed01fb097f01f914f501f705f001f5097f01f314db01f1,
     0x14ed01ef05e801ed0aef01eb097701e914e501e705e001e5097701e30aff01e1,
     0x14dd01df05d801dd0c6d01db0c6f01d914d501d705d001d50c6f01d3095f01d1,
@@ -70,7 +71,7 @@ private noncomputable def b8Blk_0_0 : Nat :=
     0x141d011f0518011d0abd011b0abf011914150117051001150abf011308bb0111,
     0x140d010f0508010d097d010b0548010914050107050001050548010305900101]
 private noncomputable def b8Blk_0_1 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x5fe097f05fc14f605fa097d05f800fc05f614db05f400e005f214d905f000f4,
     0x05ee097705ec14b605ea097505e800ec05e60aff05e4097e05e205f205e000e4,
     0x05de0c6f05dc14d605da0c6d05d800dc05d6095f05d400c005d2058205d000d4,
@@ -88,7 +89,7 @@ private noncomputable def b8Blk_0_1 : Nat :=
     0x051e0abf051c1416051a0abd0518001c051608bb05140000051208b905100014,
     0x050e0548050c089e050a09e70508000c0506059005040abe0502051205000004]
 private noncomputable def b8Blk_0_2 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0xfc03fe0afe03fc00f803fa14ec03f800f403f60afa03f400f003f201f903f0,
     0x00ec03ee14b603ec00e803ea01c103e800e403e614b203e400e003e201e903e0,
     0x00dc03de0aee03dc00d803da0c6c03d800d403d60aea03d400d003d201d903d0,
@@ -106,7 +107,7 @@ private noncomputable def b8Blk_0_2 : Nat :=
     0x001c031e0090031c0018031a0abc0318001403160bce03140010031201190310,
     0x000c030e089e030c0008030a097c030800040306002403040000030201090300]
 private noncomputable def b8Blk_0_3 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x14fe05fc14f60aff14fa05f800fc14ed14f605f400e00afb14f205f000f4097f,
     0x14ee05ec14b614b714ea05e800ec0aef14e605e4097e14b314e205e000e40977,
     0x14de05dc14d60aef14da05d800dc0c6d14d605d400c00aeb14d205d000d40c6f,
@@ -124,7 +125,7 @@ private noncomputable def b8Blk_0_3 : Nat :=
     0x141e051c14160590141a0518001c0abd1416051400000bcf1412051000140abf,
     0x140e050c089e089f140a0508000c097d140605040abe05241402050000040548]
 private noncomputable def b8Blk_0_4 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x14ff14fb14fd05fe14fb05f014f905fa14f714db14f505f614f30aff14f105f2,
     0x14ef14eb14ed05ee14eb05e014e905ea14e70aff14e505e614e314b714e105e2,
     0x14df14db14dd05de14db05d014d905da14d7095f14d505d614d30aef14d105d2,
@@ -142,7 +143,7 @@ private noncomputable def b8Blk_0_4 : Nat :=
     0x141f141b141d051e141b05101419051a141708bb141505161413059014110512,
     0x140f140b140d050e140b05001409050a14070590140505061403089f14010502]
 private noncomputable def b8Blk_0_5 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x5fe00fe05fc00fc05fa00fa05f800f805f600f605f400f405f200f205f000f0,
     0x05ee00ee05ec00ec05ea00ea05e800e805e600e605e400e405e200e205e000e0,
     0x05de00de05dc00dc05da00da05d800d805d600d605d400d405d200d205d000d0,
@@ -160,7 +161,7 @@ private noncomputable def b8Blk_0_5 : Nat :=
     0x051e001e051c001c051a001a0518001805160016051400140512001205100010,
     0x050e000e050c000c050a000a0508000805060006050400040502000205000000]
 private noncomputable def b8Blk_1_0 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0xbff0bfe0bfd0bfc0bfb0bfa0bf90bf80bf70bf60bf50bf40bf30bf20bf10bf0,
     0x0bef0bee0bed0bec0beb0bea0be90be80be70be60be50be40be30be20be10be0,
     0x0bdf0bde0bdd0bdc0bdb0bda0bd90bd80bd70bd60bd50bd40bd30bd20bd10bd0,
@@ -178,7 +179,7 @@ private noncomputable def b8Blk_1_0 : Nat :=
     0x095f095e095d095c095b095a0959095809570956095509540953095209510950,
     0x094f094e094d094c094b094a0949094809470946094509440943094209410940]
 private noncomputable def b8Blk_1_1 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x500000005900101089f089e050205120abf0abe0abd0abc0504000405240024,
     0x097f097e097d097c097b097a0979097805080008054801090548004809e70149,
     0x08bf08be08bd08bc08bb08ba08b908b808b708b608b508b408b308b208b108b0,
@@ -196,7 +197,7 @@ private noncomputable def b8Blk_1_1 : Nat :=
     0x0a9f0a9e0a9d0a9c0a9b0a9a0a990a980a970a960a950a940a930a920a910a90,
     0x0a8f0a8e0a8d0a8c0a8b0a8a0a890a880a870a860a850a840a830a820a810a80]
 private noncomputable def b8Blk_1_2 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x97f097e097d097c097b097a0979097809770976097509740973097209710970,
     0x096f096e096d096c096b096a0969096809670966096509640963096209610960,
     0x095f095e095d095c095b095a0959095809570956095509540953095209510950,
@@ -214,7 +215,7 @@ private noncomputable def b8Blk_1_2 : Nat :=
     0x0adf0ade0add0adc0adb0ada0ad90ad80ad70ad60ad50ad40ad30ad20ad10ad0,
     0x0acf0ace0acd0acc0acb0aca0ac90ac80ac70ac60ac50ac40ac30ac20ac10ac0]
 private noncomputable def b8Blk_1_3 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0xc7f0c7e0c7d0c7c0c7b0c7a0c790c780c770c760c750c740c730c720c710c70,
     0x0c6f0c6e0c6d0c6c0c6b0c6a0c690c680c670c660c650c640c630c620c610c60,
     0x0c5f0c5e0c5d0c5c0c5b0c5a0c590c580c570c560c550c540c530c520c510c50,
@@ -232,7 +233,7 @@ private noncomputable def b8Blk_1_3 : Nat :=
     0x099f099e099d099c099b099a0999099809970996099509940993099209910990,
     0x098f098e098d098c098b098a0989098809870986098509840983098209810980]
 private noncomputable def b8Blk_1_4 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x14ff14fe14fd14fc14fb14fa14f914f814f714f614f514f414f314f214f114f0,
     0x14ef14ee14ed14ec14eb14ea14e914e814e714e614e514e414e314e214e114e0,
     0x14df14de14dd14dc14db14da14d914d814d714d614d514d414d314d214d114d0,
@@ -250,7 +251,7 @@ private noncomputable def b8Blk_1_4 : Nat :=
     0x089f089e089d089c089b089a0899089808970896089508940893089208910890,
     0x088f088e088d088c088b088a0889088808870886088508840883088208810880]
 private noncomputable def b8Blk_1_5 : Nat :=
-  RuleTableHalt.pack256 [
+  pack256 [
     0x500000005900101089f089e050205120abf0abe0abd0abc0504000405240024,
     0x097f097e097d097c097b097a0979097805080008054801090548004809e70149,
     0x08bf08be08bd08bc08bb08ba08b908b808b708b608b508b408b308b208b108b0,
@@ -283,16 +284,16 @@ private noncomputable def b8Blk (side : Bool) (q : Nat) : Nat :=
   | true, 5 => b8Blk_1_5
   | _, _ => 0
 
-private noncomputable def nBlk_0_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_0_0 : Nat := pack256 [
     0x1f000900000000001f0009000000000017000800000000001e,
     0x0007000000000013000500000000001f000500000000000f0000000000000017]
-private noncomputable def rBlk_0_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_0_0 : Nat := pack256 [
     0x700000000000000030000000000000021000000000000001c0000,
     0x0000000000170000001000000000000e000c0000000000000000000000260000]
 private noncomputable def nodeBlk_0 : Nat → Nat := fun _ => nBlk_0_0
 private noncomputable def ruleBlk_0 : Nat → Nat := fun _ => rBlk_0_0
 
-private noncomputable def nBlk_1_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_1_0 : Nat := pack256 [
     0xbe797f97fc000000be79fcfefc,
     0x0000007e797cbefc0000007e79fcbefc000000ee79fcbefc0000007e7f3cf3fc,
     0x0000003e797cfefc0000007e79e5fffc0000003e5f2fbffc000000fe5f2fbffc,
@@ -318,7 +319,7 @@ private noncomputable def nBlk_1_0 : Nat := RuleTableHalt.pack256 [
     0x000000e7cf3cf3fc000000ee79fcf3fc0000007e797cf3fc0000009e5f3cf3fc,
     0x000000fe7f2fbffc00000097cf3cf3fc000000be79ef97fc000000fe797f97fc,
     0x0000009e7f3cf3fc000000ee7f3cf3fc000000ee797cf3fc0000009e5f2fbffc]
-private noncomputable def rBlk_1_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_1_0 : Nat := pack256 [
     0x17000000000000013e0000,
     0x0000000000000080000000000000007b01d80000000001d5019c000000000026,
     0x001a000000000000009300000000000000610000000000000000000001e80000,
@@ -347,7 +348,7 @@ private noncomputable def rBlk_1_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_1 : Nat → Nat := fun _ => nBlk_1_0
 private noncomputable def ruleBlk_1 : Nat → Nat := fun _ => rBlk_1_0
 
-private noncomputable def nBlk_2_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_2_0 : Nat := pack256 [
     0x5007dcf2f3f3c000000e7cf3cf72f0006003e797ff72f000600be797ff72f,
     0x0004007e5f3cf3fb000400ee5f3cf3fb0016003e7ee5f3fb001600be7ee5f3fb,
     0x000b007e7fe79fcf000900ee5ee79e790027003e5f7cbf3f002700be5f7cbf3f,
@@ -412,7 +413,7 @@ private noncomputable def nBlk_2_0 : Nat := RuleTableHalt.pack256 [
     0x000600fe797ff72f000900fe5ee79e790008003e79e7f73f0007009ff2fcbee7,
     0x000400fff73f9f3c0006009e797ff72f000500cfcf2f3f3c000400fe7f2fff3c,
     0x000300ee7ee7f73f000200e5f9e5f2f3000100ee7ff9ffe70000009fcf3cf72f]
-private noncomputable def rBlk_2_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_2_0 : Nat := pack256 [
     0x1d04fd00000000000004f8000000000000000004f600000000,
     0x00000000000003a504e900000000000004e4000000000000000004e200000000,
     0x004d000000000000037200000000000004d0000000000000000004ce00000000,
@@ -477,16 +478,16 @@ private noncomputable def rBlk_2_0 : Nat := RuleTableHalt.pack256 [
     0x03af03ac000000000378037500000000036800000000000001ec000000000000,
     0x016a016800000000044d000000000000050300000000000004b804b500000000,
     0x035900000000000003df00000000000003360000000000000452000000000000]
-private noncomputable def nBlk_2_1 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_2_1 : Nat := pack256 [
     0x1c00fff97b97e7,
     0x001c007ff97b97e7001c00eff97b97e70012003fb97dff3c001200bfb97dff3c]
-private noncomputable def rBlk_2_1 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_2_1 : Nat := pack256 [
     0xc000000000000,
     0x05160000000000000511000000000000050c0000000000000000050a00000000]
-private noncomputable def nodeBlk_2 : Nat → Nat := RuleTableHalt.bsel2F 0 nBlk_2_0 nBlk_2_1
-private noncomputable def ruleBlk_2 : Nat → Nat := RuleTableHalt.bsel2F 0 rBlk_2_0 rBlk_2_1
+private noncomputable def nodeBlk_2 : Nat → Nat := bsel2F 0 nBlk_2_0 nBlk_2_1
+private noncomputable def ruleBlk_2 : Nat → Nat := bsel2F 0 rBlk_2_0 rBlk_2_1
 
-private noncomputable def nBlk_3_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_3_0 : Nat := pack256 [
     0x300979f3f9ee700010097df3cffe50006009e5ee7f3cf000200679fcbf3f9,
     0x0003007f3f3f9fe7000000ee7fe7f3fb0003005f3f3f9fe700030079f73f9fe7,
     0x000200ff9fcbf3f90002007f9fcbf3f90005009f9ffff3ff000500979ffff3ff,
@@ -515,7 +516,7 @@ private noncomputable def nBlk_3_0 : Nat := RuleTableHalt.pack256 [
     0x000100fcff3cffe5000600fe5ee7f3cf0003003f9f3f9ee7000600ee5ee7f3cf,
     0x0005003f9ffff3ff000100cfcf3cffe5000200ee5ee79ff90004007fcbff97e7,
     0x0003009f9f3f9ee7000200e79fcbf3f90001009fdf3cffe50000009e7fe7f3fb]
-private noncomputable def rBlk_3_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_3_0 : Nat := pack256 [
     0x10000000000000000600000000000000010000000c000000000000,
     0x0000000000000221018d000000000000000000000000021901ec00000000020f,
     0x01c50000000002070205000000000035020000000200000001fa000001fa0000,
@@ -547,7 +548,7 @@ private noncomputable def rBlk_3_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_3 : Nat → Nat := fun _ => nBlk_3_0
 private noncomputable def ruleBlk_3 : Nat → Nat := fun _ => rBlk_3_0
 
-private noncomputable def nBlk_4_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_4_0 : Nat := pack256 [
     0x30000ffcbf3fb,
     0x00030000bfcbf3fb00030000f7cbf3fb000000009fdf9e5f0000000097df9e5f,
     0x000100009e7f72fb000200009e79fe5f000300009ff9f3cf000200007ff9ff9f,
@@ -560,7 +561,7 @@ private noncomputable def nBlk_4_0 : Nat := RuleTableHalt.pack256 [
     0x00000000cbe5f3cf00010000cbe797ff00000000cfdcbeff00020000cfe7e7ff,
     0x00030000cfe7f3fb00010000cfe7f3cf00000000cfe79e5f00010000cfe7f2fb,
     0x00020000cfe7fe5f00020000cfe7be5f00010000cf3cbeff00000000cbe5e7ff]
-private noncomputable def rBlk_4_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_4_0 : Nat := pack256 [
     0x40000,
     0x0000000000df00000000000000da00000000000000d5000000ce000000000000,
     0x0000000000c9000000c40000000000000000000000bf000000b1000000000000,
@@ -581,7 +582,7 @@ private noncomputable def rBlk_5_0 : Nat := 0x4000000000000
 private noncomputable def nodeBlk_5 : Nat → Nat := fun _ => nBlk_5_0
 private noncomputable def ruleBlk_5 : Nat → Nat := fun _ => rBlk_5_0
 
-private noncomputable def nBlk_6_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_6_0 : Nat := pack256 [
     0xbcbf3cbe5f7f00003fff3cf3ff2f0000bfff3cf3ff2f00002fff3cf3ff2f,
     0x0000afff3cf3ff2f00003dff3cf3ff2f0000bdff3cf3ff2f0000e5f72f9e79e7,
     0x000065f72f9e79e700007cbf3cfe5f7f0000ffff3cf3f97d0000bfff3cf3f97d,
@@ -646,7 +647,7 @@ private noncomputable def nBlk_6_0 : Nat := RuleTableHalt.pack256 [
     0x000072f73cfe5f7f0000f3cfdcf2ff2f0000fe79fcf2ff2f00002f3ffcf2ff2f,
     0x0000e5e7dcfe79e70000ee5f3cbe5f7f0000e7fe7cf2f97d0000fdcffcfe5f7f,
     0x00003cf2fcf2f9e70000ee7f3cfe79e70000e7f7fcf2ff2f0000fe797cf2f3ff]
-private noncomputable def rBlk_6_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_6_0 : Nat := pack256 [
     0x5050000000004fe000000000000000004fb0000000004f4000000000000,
     0x000004f10000000004ea000000000000000004e70000000004e0000000000000,
     0x04da00000000000000000000000004d804d00000000004cd0000000004cc0000,
@@ -711,7 +712,7 @@ private noncomputable def rBlk_6_0 : Nat := RuleTableHalt.pack256 [
     0x01bf0000000000000215021c02150036061606130000000004bd000000000000,
     0x07a400000000002706ab000000000000029100000000000000fd000000000000,
     0x0247000000000000063300000000000e0296000000000009076f030c00000000]
-private noncomputable def nBlk_6_1 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_6_1 : Nat := pack256 [
     0x65f73cf2f9fd00007f3f3cf3cf2f0000fb9fcf9e79e70000bb9fcf9e79e7,
     0x0000be5e7cf2f97d0000e5f3fcf3f9e700007fcffcf3cbff0000ffcffcf3cbff,
     0x0000fdcbdcf2ff2f00007dcbdcf2ff2f0000e7cfdcf3f9fd00003fcffcf3ff2f,
@@ -747,7 +748,7 @@ private noncomputable def nBlk_6_1 : Nat := RuleTableHalt.pack256 [
     0x000073cffcf3cbff0000f3cffcf3cbff000073cfdcf3f9fd0000f3cfdcf3f9fd,
     0x000073cf7cf3ff2f0000f3cf7cf3ff2f00009e797cf2f9e700009e797cfe5f7f,
     0x00009e797cf3f3ff00009e797cf3f97d0000e79f3cf3cbff00003cbf3cbe5f7f]
-private noncomputable def rBlk_6_1 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_6_1 : Nat := pack256 [
     0x46700000000000000000000000007bc00000000010500000000000007b00000,
     0x00000000019d000000250000000007a2079600000000000000f2079e00000798,
     0x07970000000000000791000000000000078c0000000000000787000000000000,
@@ -783,10 +784,10 @@ private noncomputable def rBlk_6_1 : Nat := RuleTableHalt.pack256 [
     0x0534000000000000053f053c00000000052a000000000000053505320000052c,
     0x0520000000000000052b052800000000052100000000000000000000051a0000,
     0x05150000000000000000000005100000050b0000000005090507000000000000]
-private noncomputable def nodeBlk_6 : Nat → Nat := RuleTableHalt.bsel2F 0 nBlk_6_0 nBlk_6_1
-private noncomputable def ruleBlk_6 : Nat → Nat := RuleTableHalt.bsel2F 0 rBlk_6_0 rBlk_6_1
+private noncomputable def nodeBlk_6 : Nat → Nat := bsel2F 0 nBlk_6_0 nBlk_6_1
+private noncomputable def ruleBlk_6 : Nat → Nat := bsel2F 0 rBlk_6_0 rBlk_6_1
 
-private noncomputable def nBlk_7_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_7_0 : Nat := pack256 [
     0x13f2fff3cbe790001bf2fff3cbe790001772fff3cbe79,
     0x000aff7fcfe7fcff000a7f7fcfe7fcff00079e7ff3cbf3cb0006ff97cbcf9e79,
     0x00067f97cbcf9e7900019f97cfdcbe7900017b97cfdcbe7900037f97cbdcbdcf,
@@ -841,7 +842,7 @@ private noncomputable def nBlk_7_0 : Nat := RuleTableHalt.pack256 [
     0x0009fb9fcffcfe5f0008cbdcbe797cf700073ee5f72f73cb0007fcbe7e5f73cb,
     0x0006bcbe79ff9e79000579ee5f3cf2f90004fb9fff3cffb90003ff97cbdcbdcf,
     0x0001fb97cfdcbe790002ff9fcfdcfdcf0001f72fff3cbe790000cfe7f73f72fb]
-private noncomputable def rBlk_7_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_7_0 : Nat := pack256 [
     0x32b00000000000000000433000000000007000000000000,
     0x0008000000000000042100000000000000000000041c00000416000000000000,
     0x041200000000000000000000040d000000110000000000000016000000000000,
@@ -899,7 +900,7 @@ private noncomputable def rBlk_7_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_7 : Nat → Nat := fun _ => nBlk_7_0
 private noncomputable def ruleBlk_7 : Nat → Nat := fun _ => rBlk_7_0
 
-private noncomputable def nBlk_8_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_8_0 : Nat := pack256 [
     0xdffcf3fff3f3d,
     0x000dbfcf3fff3f3d0004797f73f9fcf9000c7ff3f9f97cff0004b97f73f9fcf9,
     0x0000f97f97f3cbff0000797f97f3cbff000d9fcf3fff3f3d0003797ff3f9f9f9,
@@ -910,7 +911,7 @@ private noncomputable def nBlk_8_0 : Nat := RuleTableHalt.pack256 [
     0x0008b9fdcfcffe7f0007f9e7cfee5e7c0007b9e7cfee5e7c0006cf2fcf3ffcf9,
     0x0002fff97cf9fcf90001f97f9e5f3cf30005f97b9e7f3fb90004f97f73f9fcf9,
     0x0003b97ff3f9f9f900023ff97cf9fcf90001797f9e5f3cf30000b97f97f3cbff]
-private noncomputable def rBlk_8_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_8_0 : Nat := pack256 [
     0x10000,
     0x0000000000b700000016000000000000007a0000000000000017000000170000,
     0x0065009b00000000009d00000000000700980000000000000084000000000000,
@@ -924,7 +925,7 @@ private noncomputable def rBlk_8_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_8 : Nat → Nat := fun _ => nBlk_8_0
 private noncomputable def ruleBlk_8 : Nat → Nat := fun _ => rBlk_8_0
 
-private noncomputable def nBlk_9_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_9_0 : Nat := pack256 [
     0x197cbdcbee5fe00039ffcf9f7e5ff,
     0x0004b3cfe5f2fee70003bcfcf9f7e5ff00023cfe7f9ff72f0002bcfe7f9ff72f,
     0x00003cf3ff97e5ff0000bcf3ff97e5ff00007fcf2f3ee5ff00023cfe7b9ff72f,
@@ -986,7 +987,7 @@ private noncomputable def nBlk_9_0 : Nat := RuleTableHalt.pack256 [
     0x00022fcfe5f2f72f0000ee5f2f3ee5ff000679f3df2ff9fc00007f9fcf3ee5ff,
     0x000697ff3cfdf9fc000697cfe5f3f9fc00052fcfe5f3f9f9000497cfe5f2fee7,
     0x00033cfcf9f7e5ff000297cfe5f2f72f000197cfe5e7e5fe000097cf2f3ee5ff]
-private noncomputable def rBlk_9_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_9_0 : Nat := pack256 [
     0x4340000000000000000000004b60000,
     0x0000000003370000000000140000000004a9000000000000000004a600000000,
     0x04860000000000000000049c00000000007a000000000000049f000000000000,
@@ -1051,7 +1052,7 @@ private noncomputable def rBlk_9_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_9 : Nat → Nat := fun _ => nBlk_9_0
 private noncomputable def ruleBlk_9 : Nat → Nat := fun _ => rBlk_9_0
 
-private noncomputable def nBlk_10_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_10_0 : Nat := pack256 [
     0x1acbf3cfe5f73c,
     0x0003bff3cbe79fcf0003dff3cbe79fcf00075f73cbe79f3f001b79f3cbe5f73f,
     0x0004cbf3f97dff3f0007dff3f9e79f3f00017f73cfcfff3f00015f73cfcfff3f,
@@ -1116,7 +1117,7 @@ private noncomputable def nBlk_10_0 : Nat := RuleTableHalt.pack256 [
     0x00033f72f9e79fcf0006e5f3cfe79f3f0005e5f3cfe797cf00012f73cf2fff3f,
     0x0003e5f3cbe79fcf0003e5f3f9e79fcf0003cbe5f9e79fcf00043ff2f97dff3f,
     0x00032f72f9e79fcf00023f73cf3cbf3f00013f73cf2fff3f00003df3cffcbf3f]
-private noncomputable def rBlk_10_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_10_0 : Nat := pack256 [
     0x4c1000000000000,
     0x00000000006c000004e8000000000000000000000000006600000000000004df,
     0x04da00000000000003cb00000000000000000000000004d200000000000004cb,
@@ -1184,7 +1185,7 @@ private noncomputable def rBlk_10_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_10 : Nat → Nat := fun _ => nBlk_10_0
 private noncomputable def ruleBlk_10 : Nat → Nat := fun _ => rBlk_10_0
 
-private noncomputable def nBlk_11_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_11_0 : Nat := pack256 [
     0x2bf2fb97cbe7f,
     0x0002772fb97cbe7f00169ff9f97cbe790014ffdcfe7979ee0014bfdcfe7979ee,
     0x0003bee79fb9fe7f0003b979ff9ffe7f0014fe7e7979f9fe0014be7e7979f9fe,
@@ -1249,7 +1250,7 @@ private noncomputable def nBlk_11_0 : Nat := RuleTableHalt.pack256 [
     0x00023f2fb97cbe7f0002ff2ffdcfee7f0002fff9f97cbe7f0003cf3cf97cbe7f,
     0x00045f9fb97cbe7f00003cf2fe797e7f0004b9fff97cbe7f0002f73ffeff3e7f,
     0x0003fee79fb9fe7f0002f72fb97cbe7f0001f9e5f97cbe7f0000e797b9e5ee7f]
-private noncomputable def rBlk_11_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_11_0 : Nat := pack256 [
     0x3c00000000,
     0x000c000000000000000d0000000d000004e3000004e304e10000000004e00000,
     0x000000000012000000000000022e000004cf0000000004cd0000000004cc0000,
@@ -1317,7 +1318,7 @@ private noncomputable def rBlk_11_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_11 : Nat → Nat := fun _ => nBlk_11_0
 private noncomputable def ruleBlk_11 : Nat → Nat := fun _ => rBlk_11_0
 
-private noncomputable def nBlk_12_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_12_0 : Nat := pack256 [
     0x273f3e79fe5f20000f3ffdcbee797,
     0x000173e5e7f9e5f300019fb9fcfee5f300009ff9e7ffe79700009ef9e7ffe797,
     0x0000fcfdcfe7e79700007cfdcfe7e7970001bcfe7f9fe5f30001fcfe7b9fe5f3,
@@ -1349,7 +1350,7 @@ private noncomputable def nBlk_12_0 : Nat := RuleTableHalt.pack256 [
     0x0001f3e5e7f9e5f3000097f9e7ffe79700049ff9f9ffe5f30001dcbee7f3e5f3,
     0x0003fcf3fcffff2f0000f2f9fe7ee79700017cfe7f9fe5f30002f3f3e79fe5f2,
     0x000197b9fcfee5f300017cfe7b9fe5f3000073ffdcbee797000072f9fe7ee797]
-private noncomputable def rBlk_12_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_12_0 : Nat := pack256 [
     0x160000000000000017000a0000025c,
     0x003900000000000000000000002e000000000000001000000000000000330000,
     0x0021000000000243024100000000000000000000003f0000001b000000000000,
@@ -1384,7 +1385,7 @@ private noncomputable def rBlk_12_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_12 : Nat → Nat := fun _ => nBlk_12_0
 private noncomputable def ruleBlk_12 : Nat → Nat := fun _ => rBlk_12_0
 
-private noncomputable def nBlk_13_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_13_0 : Nat := pack256 [
     0xe7e5e7ff97cf00003ee5e7ff97cf,
     0x0000bee5e7ff97cf00019fe5f3cf97ff0002e7e79fff97b90007ff3cbe7cbe79,
     0x0007bf3cbe7cbe7900009fe5e7ff97cf000097e5e7ff97cf00009ee5e7ff97cf,
@@ -1414,7 +1415,7 @@ private noncomputable def nBlk_13_0 : Nat := RuleTableHalt.pack256 [
     0x0006f9e7f3f9f7cb0007f73cbe7cbe790006cbffcf2f97cf0001cfe7f3ff97ff,
     0x0004b9e79f9f97df0005f9fdcf3f9ff90002f3e5f3fb9e790004f9e7cf3f97df,
     0x0003cf2fcf3cf2ff0002f3ffcffb9e790001ffe5f3cf97ff0000f3fcfffcbe5f]
-private noncomputable def rBlk_13_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_13_0 : Nat := pack256 [
     0x240000000000000237000000000000,
     0x000002350000000000000000001c000002270000000002250000000000240000,
     0x00000000021f00000000000000350000021300000000000000000000020e0000,
@@ -1447,7 +1448,7 @@ private noncomputable def rBlk_13_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_13 : Nat → Nat := fun _ => nBlk_13_0
 private noncomputable def ruleBlk_13 : Nat → Nat := fun _ => rBlk_13_0
 
-private noncomputable def nBlk_14_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_14_0 : Nat := pack256 [
     0x4797dcff3f9f3,
     0x00059f2fcbf2fff200027fe5f97e5f9f000a9e5f3ffe7f3c00069e5f2f73f3f3,
     0x00077fcf3f3e7f2f0007ffcf3f3e7f2f00053f2fcbf2fff20005bf2fcbf2fff2,
@@ -1462,7 +1463,7 @@ private noncomputable def nBlk_14_0 : Nat := RuleTableHalt.pack256 [
     0x00019e5f3fee79f90006e5ee7f73f3f30005e5f2f9f2fff20002e7f2f9fe5f9f,
     0x0002ffe5f97e5f9f0005e7f2f3f2fff20004f97dcff3f9f30003e5f2f9fffff3,
     0x0003e5f3cbf3cff30002e7f2f9ee5f9f0001e7fcffee79f90000cbff9f3e79fc]
-private noncomputable def rBlk_14_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_14_0 : Nat := pack256 [
     0x1b000000000000,
     0x000000000106000000250000000000000000000000fc00000000000000380000,
     0x00e8000000000000003e00f0000000000004000000000000000000e600000000,
@@ -1480,7 +1481,7 @@ private noncomputable def rBlk_14_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_14 : Nat → Nat := fun _ => nBlk_14_0
 private noncomputable def ruleBlk_14 : Nat → Nat := fun _ => rBlk_14_0
 
-private noncomputable def nBlk_15_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_15_0 : Nat := pack256 [
     0xb7e7cf3cf2fff000b5e7cf3cf2fff00017cfcf3cf2fcb0001e7dcf3cf2fcb,
     0x000c3e7cf3ff2fcb000cbe7cf3ff2fcb000573ff9ff3fe5e0005f3ff9ff3fe5e,
     0x00069ffb97b9fdcb00099f3e7979ee79000879ffeff3ffcb0008f9ffeff3ffcb,
@@ -1545,7 +1546,7 @@ private noncomputable def nBlk_15_0 : Nat := RuleTableHalt.pack256 [
     0x00073f2f3ee5f2ff0006f3f9f7cbf2f900013fff9e79e7cb0002f3cff3f97dcb,
     0x00055ffb9fdfee5e0004b9fcf2f97dcb0002b97b9fb9fdcb0003ffcbe79f7fcb,
     0x0002be5f97b9fdcb00009effe5f73f970001e7fcf3cf2fcb00009fffe5f73f97]
-private noncomputable def rBlk_15_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_15_0 : Nat := pack256 [
     0x50300000000000004fd00000000000004f804f30000000004f0,
     0x04ee000000000000000004ec0000000004da00000000000004e504e200000000,
     0x04db0000000000000000000004d4000004c600000000000004cf04ce00000000,
@@ -1610,7 +1611,7 @@ private noncomputable def rBlk_15_0 : Nat := RuleTableHalt.pack256 [
     0x02af0000000000000000000002920000011a00000000000000bc00b900000000,
     0x0000000000000093048b000000000000043b0000000000000349034800000000,
     0x00000000057100000579000000000000055b0000000000000580000000000000]
-private noncomputable def nBlk_15_1 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_15_1 : Nat := pack256 [
     0x13efcf3cf2fcb0001befcf3cf2fcb,
     0x0005f3fb9ff3fe5e000673cf97b9fdcb0006f3cf97b9fdcb000097ffe5f73f97,
     0x0009f2fbfff9fe790002fe5f97b9fdcb0004ffff97cfe7cb0004bfff97cfe7cb,
@@ -1619,7 +1620,7 @@ private noncomputable def nBlk_15_1 : Nat := RuleTableHalt.pack256 [
     0x00053e7b9ff3fe5e0005be7b9ff3fe5e000273ff97cf2fcb0002f3ff97cf2fcb,
     0x000273df97cf2fcb0002f3df97cf2fcb00009e5fe5f73f9700089fff9ff3ffcb,
     0x000897ff9ff3ffcb00089eff9ff3ffcb00047cff97cfe7cb0004fcff97cfe7cb]
-private noncomputable def rBlk_15_1 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_15_1 : Nat := pack256 [
     0x70000000000000000059600000000,
     0x058f00460000058b057f000000000000058a0587000000000000000000010000,
     0x00000000000b00000000000005760000000000000012000000000000056c0000,
@@ -1628,10 +1629,10 @@ private noncomputable def rBlk_15_1 : Nat := RuleTableHalt.pack256 [
     0x053e0000000000000000053c00000000052a000000000000053505320000052c,
     0x0520000000000000052b052800000000052100000000000000000000051a0000,
     0x051500000000000000000000051000000502000000000000050b050a00000000]
-private noncomputable def nodeBlk_15 : Nat → Nat := RuleTableHalt.bsel2F 0 nBlk_15_0 nBlk_15_1
-private noncomputable def ruleBlk_15 : Nat → Nat := RuleTableHalt.bsel2F 0 rBlk_15_0 rBlk_15_1
+private noncomputable def nodeBlk_15 : Nat → Nat := bsel2F 0 nBlk_15_0 nBlk_15_1
+private noncomputable def ruleBlk_15 : Nat → Nat := bsel2F 0 rBlk_15_0 rBlk_15_1
 
-private noncomputable def nBlk_16_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_16_0 : Nat := pack256 [
     0x97cbcfff2f00020097cbe7f72f,
     0x00030097cbe79f3c00000097cf2fff2f0000009fb97dff2f0000009fcfcfff2f,
     0x0002009fcfe7f72f0003009fcfe79f3c0001009fcf3cbf3f0002009fcfe5f72f,
@@ -1657,7 +1658,7 @@ private noncomputable def nBlk_16_0 : Nat := RuleTableHalt.pack256 [
     0x00010097cf7cbf3f0000009fcf2fff2f00020097cfe7f72f00010097cffcbf3f,
     0x0003009fcbe79f3c00000097cfcfff2f00020097cfe5f72f0002009fcbe7f72f,
     0x00000097b97dff2f00010097cf3cbf3f000000e7cbcfff2f000000ffb97dff2f]
-private noncomputable def rBlk_16_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_16_0 : Nat := pack256 [
     0x4700000000000000150000,
     0x0000000000240000000000000033000000000000004200000000000000100000,
     0x00000000001f000000000000002e000000000000003d000000000000000b0000,
@@ -1686,7 +1687,7 @@ private noncomputable def rBlk_16_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_16 : Nat → Nat := fun _ => nBlk_16_0
 private noncomputable def ruleBlk_16 : Nat → Nat := fun _ => rBlk_16_0
 
-private noncomputable def nBlk_17_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_17_0 : Nat := pack256 [
     0x1a00000000e7f9001a00000000e7b90019000000003fcf001900000000bfcf,
     0x001800000000cfcb0018000000007dcb001700000000e7fe001600000000e7cb,
     0x0015000000003ff7001500000000bff7001400000000f97b001400000000b97b,
@@ -1696,7 +1697,7 @@ private noncomputable def nBlk_17_0 : Nat := RuleTableHalt.pack256 [
     0x000a0000000079e700090000000079e700080000000079e700070000000079e7,
     0x00060000000079e700050000000079e700040000000079e700030000000079e7,
     0x00020000000079e70001000000007e790001000000005e790000000000007cf3]
-private noncomputable def rBlk_17_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_17_0 : Nat := pack256 [
     0x20000000000b300b100000000000000ac000000000000000000aa00000000,
     0x00a3000000000000000000000000009f00980000000000950093000000000000,
     0x008e0000000000000000008c0000000000850000000000810000000000800000,
@@ -1714,7 +1715,7 @@ private noncomputable def rBlk_18_0 : Nat := 0x2
 private noncomputable def nodeBlk_18 : Nat → Nat := fun _ => nBlk_18_0
 private noncomputable def ruleBlk_18 : Nat → Nat := fun _ => rBlk_18_0
 
-private noncomputable def nBlk_19_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_19_0 : Nat := pack256 [
     0x9e7cf3cf3e0000007fe797cf3e000000ffe797cf3e,
     0x000000bfe797cf3e000000bee797cbee0000009fe7f3cf3e00000097e7f3cf3e,
     0x0000009ee7f3cf3e000000bfe79fcf3e00000079e79e5ffe00000079e5f2fbfe,
@@ -1763,7 +1764,7 @@ private noncomputable def nBlk_19_0 : Nat := RuleTableHalt.pack256 [
     0x000000f3e79ef97e000000cbe79fcbee0000009ee79fcf3e0000007fe79e5ffe,
     0x000000f9e79fcf3e000000ffe79ef97e000000f9e79e797e000000f9e5f2fbfe,
     0x000000f9e797cbee000000f9e79e5ffe000000f9e797cfee000000b9e797cfee]
-private noncomputable def rBlk_19_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_19_0 : Nat := pack256 [
     0x25a000003ae00000000000003b703b600000000,
     0x03af00000000000000000000009400000000000000e90000039e000000000000,
     0x00000000039900000283000000000000000c0000000000000016000000000000,
@@ -1815,7 +1816,7 @@ private noncomputable def rBlk_19_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_19 : Nat → Nat := fun _ => nBlk_19_0
 private noncomputable def ruleBlk_19 : Nat → Nat := fun _ => rBlk_19_0
 
-private noncomputable def nBlk_20_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_20_0 : Nat := pack256 [
     0x30009e7cbfffcf00180072fcbe7e7d001800f2fcbe7e7d000900bffcf3fb9f,
     0x0027003cbf979f9e002700bcbf979f9e001200bcbff97f2f0021003fff2fcbef,
     0x002100bfff2fcbef001c007e5e7cbcfc0001003e5f3ffe7f000100be5f3ffe7f,
@@ -1874,7 +1875,7 @@ private noncomputable def nBlk_20_0 : Nat := RuleTableHalt.pack256 [
     0x000900fffcf3fb9f000800b9fb97cf9e000700f3e79e79f3000600f9fcfdcbf3,
     0x000500fe5ffe79f9000300cf2f9fdff3000000f9fcbe5f3f000400f9e7f3cf72,
     0x000300f97cfcfff3000200ffcbee5f72000100ff9ff9f979000000f3dff3cf3f]
-private noncomputable def rBlk_20_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_20_0 : Nat := pack256 [
     0x2a00000047b000000000000048404830000000000000000003a0000,
     0x047500000000000000000474000000000000006e000000000468000000000000,
     0x000004650000000000000000000000b300ac0000000000000000045600000000,
@@ -1936,7 +1937,7 @@ private noncomputable def rBlk_20_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_20 : Nat → Nat := fun _ => nBlk_20_0
 private noncomputable def ruleBlk_20 : Nat → Nat := fun _ => rBlk_20_0
 
-private noncomputable def nBlk_21_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_21_0 : Nat := pack256 [
     0x27009f2f9e7be50005007fe79e797f000500ffe79e797f000500bfe79e797f,
     0x000300fee797cbef000600f3e7f2f3ff0024009fe7f2f9fd00240097e7f2f9fd,
     0x0024009ee7f2f9fd0023007b9ffe7cff000200be79fdcf3c000a00ffcfe5f73f,
@@ -1985,7 +1986,7 @@ private noncomputable def nBlk_21_0 : Nat := RuleTableHalt.pack256 [
     0x000900ff3f2ffe7f00080079fcfe5e7f000600ffe7f2f3ff00070079e79fcbef,
     0x0006007fe7f2f3ff000600cbe7ff3cff000500bcfb9e797f000400cf9ffdf9e5,
     0x000300bee797cbef000200fe79fdcf3c000100fcff2f9fe50000009f2f9e7f3c]
-private noncomputable def rBlk_21_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_21_0 : Nat := pack256 [
     0x44000003b300000000000003bc03bb0000000003b4000000000000,
     0x0000000003ad000000000000001200000000000003a50000039e000000000000,
     0x0000000003990000024100000000000000000000000d000000000000038c0000,
@@ -2037,7 +2038,7 @@ private noncomputable def rBlk_21_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_21 : Nat → Nat := fun _ => nBlk_21_0
 private noncomputable def ruleBlk_21 : Nat → Nat := fun _ => rBlk_21_0
 
-private noncomputable def nBlk_22_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_22_0 : Nat := pack256 [
     0x200b3cffff97c000300ee5f3f9e7c,
     0x000b003e7fe7fe79000b00be7fe7fe79000a007e5ee5ef9e000000ee5e7e5f2f,
     0x000b00fe7fe7fe79000b007e7fe7fe79000b00ee7fe7fe79000a003e5ee5ef9e,
@@ -2064,7 +2065,7 @@ private noncomputable def nBlk_22_0 : Nat := RuleTableHalt.pack256 [
     0x000700cf3f3fe5ee000600cf3f9e7f73000500cf3f9fcf7c000400f97e7f73cb,
     0x000400b97e7f73cb0003009e5f3ffe7c000200dcbf9e797c000100e7fcbcf97c,
     0x0001009e5ee5f97c000200f3cffff97c00010097dcbcf97c000000fe5e7e5f2f]
-private noncomputable def rBlk_22_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_22_0 : Nat := pack256 [
     0xd00000188000000000000,
     0x01f6000000000000000001f40000000001bf00000000000001920000000001e4,
     0x017500000000000001dd00000000017a01d800000000000001d3000000000000,
@@ -2094,7 +2095,7 @@ private noncomputable def rBlk_22_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_22 : Nat → Nat := fun _ => nBlk_22_0
 private noncomputable def ruleBlk_22 : Nat → Nat := fun _ => rBlk_22_0
 
-private noncomputable def nBlk_23_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_23_0 : Nat := pack256 [
     0x3003cf979ffe7000300bcf979ffe70003007ff72fbfe7000300eff72fbfe7,
     0x000200f9f97cf3e700020079f97cf3e70003007cf9e5ffe7000300fcf9e5ffe7,
     0x0003003fb9f9ffe7000300bfb9f9ffe70003002fb9f9ffe7000300afb9f9ffe7,
@@ -2111,7 +2112,7 @@ private noncomputable def nBlk_23_0 : Nat := RuleTableHalt.pack256 [
     0x000200f3f97cf3e7000300f3f9e5ffe7000100f3f97cbee7000300f2f72fbfe7,
     0x000300f2f9f9ffe7000100f2f9fcfee7000200f2f9fcf3e7000000f2f9e797e7,
     0x000100f2f9fcbee7000000f2f9ff97e7000000f2f9ef97e7000000b2f9ef97e7]
-private noncomputable def rBlk_23_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_23_0 : Nat := pack256 [
     0x10000000000000000014000000000000000000000011b0133000000000130,
     0x01390000000000000129000000000000011a0000000000000124012200000000,
     0x012e000000000000000001180000000001110000000000000000010e00000000,
@@ -2136,7 +2137,7 @@ private noncomputable def rBlk_24_0 : Nat := 0x30000
 private noncomputable def nodeBlk_24 : Nat → Nat := fun _ => nBlk_24_0
 private noncomputable def ruleBlk_24 : Nat → Nat := fun _ => rBlk_24_0
 
-private noncomputable def nBlk_25_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_25_0 : Nat := pack256 [
     0x6797cffcbf3c000079e7cbcfff3c0000cbcfcbe79f3c0000f3ffb97dff3c,
     0x00009f7fb97dff3c000079fdcfcfff3c0000f9fdcfcfff3c0000b9fdcfcfff3c,
     0x0000f9e7cfe7f73c0000b9e7cfe7f73c0000cf2fcfe79f3c0000cbffcfe5f73c,
@@ -2147,7 +2148,7 @@ private noncomputable def nBlk_25_0 : Nat := RuleTableHalt.pack256 [
     0x0000e79fcbe79f3c0000e79fcbe5f73c0000e797cfcfff3c0000e797cfe79f3c,
     0x0000e797cfe5f73c0000e797cf7cbf3c0000e79fcbe7f73c0000e79fcf2fff3c,
     0x0000e797b97dff3c0000e797cfe7f73c0000e797cf3cbf3c0000e797cffcbf3c]
-private noncomputable def rBlk_25_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_25_0 : Nat := pack256 [
     0x200000000000000000000000000c800c000000000000000bd0000000000b8,
     0x0000000000b7000000a700000000000000b000af0000000000a8000000000000,
     0x0000000000a1000000000000009e000000970000000000000095000000000000,
@@ -2166,13 +2167,13 @@ private noncomputable def rBlk_26_0 : Nat := 0x2000000000004
 private noncomputable def nodeBlk_26 : Nat → Nat := fun _ => nBlk_26_0
 private noncomputable def ruleBlk_26 : Nat → Nat := fun _ => rBlk_26_0
 
-private noncomputable def nBlk_27_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_27_0 : Nat := pack256 [
     0x3ee5f7f9ff,
     0x000000bee5f7f9ff00000073e79e7cf30000009f3cbcfcbe000000ff3fff3cfe,
     0x000000f73fff3cfe0000009f3dff3cfe000000f9e5f7f9ff00000079e5f7f9ff,
     0x0000009f3cbe7f97000000ff2fff3cfe000000bf2fff3cfe000000df2fff3cfe,
     0x0000007fe79e7cf3000000e7e5f7f9ff000000f3e79e7cf3000000bf3fff3cfe]
-private noncomputable def rBlk_27_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_27_0 : Nat := pack256 [
     0xc000000000000,
     0x0000005500000000000700000000000000080000000000000000000000420000,
     0x000000000003000000000000003a00000033000000000031002f000000000000,
@@ -2181,7 +2182,7 @@ private noncomputable def rBlk_27_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_27 : Nat → Nat := fun _ => nBlk_27_0
 private noncomputable def ruleBlk_27 : Nat → Nat := fun _ => rBlk_27_0
 
-private noncomputable def nBlk_28_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_28_0 : Nat := pack256 [
     0x200ffcfe7e7e5000100fdcfe7f3e5000100ffcf3ffee5000100bfcf3ffee5,
     0x000100f7cf3ffee50002009f3f9e7ee5000000e79ffff7fc0000003fcffcfe7c,
     0x000000bfcffcfe7c0000002fcffcfe7c000000afcffcfe7c000200ee5e79f9e5,
@@ -2199,7 +2200,7 @@ private noncomputable def nBlk_28_0 : Nat := RuleTableHalt.pack256 [
     0x000100e7f72ffee5000000ff9ffff7fc0002003e7b9e7fe5000000f3cbe79ffc,
     0x000200fe5e79f9e5000000fdcfe79ffc000000fdcffcfe7c0002002f9f9e7fe5,
     0x000200f3cbe7e7e5000100bdcfe7f3e500000073cbe79ffc0000003dcffcfe7c]
-private noncomputable def rBlk_28_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_28_0 : Nat := pack256 [
     0x420000000000000152000000000000000d00000000000001480000,
     0x000000000143000000000000013e000000390000000001350133000000000000,
     0x0000013100000000012a0000000000000000012700000000008e000000000000,
@@ -2220,7 +2221,7 @@ private noncomputable def rBlk_28_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_28 : Nat → Nat := fun _ => nBlk_28_0
 private noncomputable def ruleBlk_28 : Nat → Nat := fun _ => rBlk_28_0
 
-private noncomputable def nBlk_29_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_29_0 : Nat := pack256 [
     0x300f2f73cbf3f,
     0x000d0073f73f3f2f000d00f3f73f3f2f000b0073ff3cffcf000b00f3ff3cffcf,
     0x00010072f73f3f2f0001007fff9e5f2f0003009e79e7f3df000c009e79e5f2f9,
@@ -2232,7 +2233,7 @@ private noncomputable def nBlk_29_0 : Nat := RuleTableHalt.pack256 [
     0x000800afcbe79f3f0008003dcbe79f3f000800bdcbe79f3f0007007df2fcfff9,
     0x000600e79fdcbff90005007cbf3fb9e700040079ffb9fdcf00020072ffe5f73c,
     0x00030072f73cbf3f000200f2ffe5f73c000100f2f73f3f2f0000007b9e7f9f9f]
-private noncomputable def rBlk_29_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_29_0 : Nat := pack256 [
     0xb70014000000cc,
     0x00c0000000000000000d00c8000000c200b600000000000000c100be000000b8,
     0x0007000000000000000000000000000800ac0000000000000000000000a60000,
@@ -2247,12 +2248,12 @@ private noncomputable def rBlk_29_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_29 : Nat → Nat := fun _ => nBlk_29_0
 private noncomputable def ruleBlk_29 : Nat → Nat := fun _ => rBlk_29_0
 
-private noncomputable def nBlk_30_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_30_0 : Nat := pack256 [
     0x73f900080000000073f9,
     0x000800000000f3f900070000000073f9000700000000f3f900060000000073f9,
     0x000600000000f3f900050000000072f9000500000000f2f9000400000000cf3f,
     0x000300000000cf2f000200000000cf3f000100000000cf2f000000000000f3f9]
-private noncomputable def rBlk_30_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_30_0 : Nat := pack256 [
     0x20000000000000039000000000000,
     0x000300410000003b002f000000000000003a0037000000000025000000000000,
     0x0030002d00000027001b0000000000000026002300000000000e000000000000,
@@ -2265,7 +2266,7 @@ private noncomputable def rBlk_31_0 : Nat := 0x4000000000000
 private noncomputable def nodeBlk_31 : Nat → Nat := fun _ => nBlk_31_0
 private noncomputable def ruleBlk_31 : Nat → Nat := fun _ => rBlk_31_0
 
-private noncomputable def nBlk_32_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_32_0 : Nat := pack256 [
     0x3cfcffee5f7f0000bcfcffee5f7f00003cfe7f73f3ff0000bcfe7f73f3ff,
     0x00003cfe79f3f9fd0000bcfe79f3f9fd00003cf3cbf3f9e70000bcf3cbf3f9e7,
     0x00003cbcff73ff2f0000bcbcff73ff2f00003cbe7f72f3ff0000bcbe7f72f3ff,
@@ -2281,7 +2282,7 @@ private noncomputable def nBlk_32_0 : Nat := RuleTableHalt.pack256 [
     0x00009e79e5f3f9e700009e79e5f3df2f00009e79e7f3cbff00009e79e5f3f9fd,
     0x00009e79e5f3ff2f00009e79e7f2f9e700009e79e5f3f3ff00009e79e5f3f97d,
     0x00009e79e7f2f9fd00009e79e5ee5f7f00009e79e5f3cf2f0000e79e79f2f3ff]
-private noncomputable def rBlk_32_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_32_0 : Nat := pack256 [
     0x20000000000000000012c0000000001250000000000000000012200000000,
     0x011b000000000000000001180000000001110000000000000000010e00000000,
     0x0107000000000000000001040000000000fd000000000000000000fa00000000,
@@ -2305,7 +2306,7 @@ private noncomputable def rBlk_33_0 : Nat := 0x1000000010000
 private noncomputable def nodeBlk_33 : Nat → Nat := fun _ => nBlk_33_0
 private noncomputable def ruleBlk_33 : Nat → Nat := fun _ => rBlk_33_0
 
-private noncomputable def nBlk_34_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_34_0 : Nat := pack256 [
     0xfe7e79e79e5f0000be7e79e79e5f00003f3f9f3cf3cf0000bf3f9f3cf3cf,
     0x0000773f9f3cf3cf0000f73f9f3cf3cf00009f3cf9e5e7ff0000f9e5f9e5f3cf,
     0x0000b9e5f9e5f3cf00009f2fb9fcf3cf0000fcfff9e7be5f0000bcfff9e7be5f,
@@ -2366,7 +2367,7 @@ private noncomputable def nBlk_34_0 : Nat := RuleTableHalt.pack256 [
     0x0000fffe79e7f2fb0000cf3fb9e5f2fb0000fe7ff9e7f3cf0000cffe797cf3cf,
     0x0000ff9fb9e5f3cf0000fcfe79e7be5f0000e7f2f9fcf3cf0000dcbe5f3cf3cf,
     0x0000dcbe797cbeff0000dcfe79fcf3cf00007f3f9f3cf3cf0000fcf2f9e7be5f]
-private noncomputable def rBlk_34_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_34_0 : Nat := pack256 [
     0x1ad00000000000004ae000004a7000000000000000004a600000000,
     0x0494000000000000049f049c00000000049500000000000000000000048e0000,
     0x00000000048b00000000000003590000047f00000000047d00000000047c0000,
@@ -2430,7 +2431,7 @@ private noncomputable def rBlk_34_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_34 : Nat → Nat := fun _ => nBlk_34_0
 private noncomputable def ruleBlk_34 : Nat → Nat := fun _ => rBlk_34_0
 
-private noncomputable def nBlk_35_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_35_0 : Nat := pack256 [
     0x1bcfb9ff9ff9e,
     0x0002be7f9fb9fb9f00179e797b97cbe70000979ffe7f3cbc000397cfee7f3cf3,
     0x000497cf3e79e5ff00019e7e7e79ff9e00119e7f3e797df200029e79fe79fb9f,
@@ -2460,7 +2461,7 @@ private noncomputable def nBlk_35_0 : Nat := RuleTableHalt.pack256 [
     0x0003cbcf979f3cf30007f3ff97b9ffe70004cfe5f3f9e5ff0006cfe5f3f9fcf2,
     0x0005cffcfcf3fcfe0002fe7f9fb9fb9f00009f9ffe7f3cbc00049fcf3e79e5ff,
     0x00039fcfee7f3cf30002fe7b9fb9fb9f0001fcfb9ff9ff9e0000ffcfff3f3cbc]
-private noncomputable def rBlk_35_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_35_0 : Nat := pack256 [
     0x80000,
     0x00000000002100000000000001b6000000000000001a00000000000000100000,
     0x000000000015000002180000000000000000000002130000020e000000000000,
@@ -2493,7 +2494,7 @@ private noncomputable def rBlk_35_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_35 : Nat → Nat := fun _ => nBlk_35_0
 private noncomputable def ruleBlk_35 : Nat → Nat := fun _ => rBlk_35_0
 
-private noncomputable def nBlk_36_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_36_0 : Nat := pack256 [
     0x3f97cbf3cf2fb,
     0x0003b97cbf3cf2fb00017ff2f7fcbcfc0003cf3cbffcf3fb0005cbfffe5f97ff,
     0x0003cbf3cf3f73fb0002cf3fff3f73fc0003f9fcbf3cf2fb0003b9fcbf3cf2fb,
@@ -2550,7 +2551,7 @@ private noncomputable def nBlk_36_0 : Nat := RuleTableHalt.pack256 [
     0x00003cf3f9fcf3df0000e5f3f9fcf3df0003cff3cf3f73fb000597cf3ee797ff,
     0x0000e7f2f9fff3df0000cf2f9ee5f3ff00023cf3f2fcf3fc0004cbdcbf3cf3cf,
     0x0003f3cfff2ff3fb00027e7cf2f9ffdc0001f97e797fe7dc0000cf2f9fe5f3ff]
-private noncomputable def rBlk_36_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_36_0 : Nat := pack256 [
     0x1a5000000000450,
     0x00000000044f0000008400000000000000040000000000000441000000000000,
     0x043c00000000000001ca000000000000043200000000042d00000000042c0000,
@@ -2610,7 +2611,7 @@ private noncomputable def rBlk_36_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_36 : Nat → Nat := fun _ => nBlk_36_0
 private noncomputable def ruleBlk_36 : Nat → Nat := fun _ => rBlk_36_0
 
-private noncomputable def nBlk_37_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_37_0 : Nat := pack256 [
     0x73ffe5ff3cbd,
     0x0005fffb9fff9fcf0005bffb9fff9fcf0006bcbdcff3f9f3000f3f73f3ee7f3e,
     0x000fbf73f3ee7f3e000f2f73f3ee7f3e000faf73f3ee7f3e001d3ff3cff3f9ff,
@@ -2663,7 +2664,7 @@ private noncomputable def nBlk_37_0 : Nat := RuleTableHalt.pack256 [
     0x00089fff2f97b9e70005fcbe7ffff3cf0005bcbe7ffff3cf0005dcbe7ffff3cf,
     0x00077cbe7cffe79700063cbdcff3f9f30005f73f9eff9fcf0004e7fe5ffe7f3f,
     0x0003cbfe7f73cfe50002e797e5ffe5ee0001ff3f3ff73f3e0000f3ffe5ff3cbd]
-private noncomputable def rBlk_37_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_37_0 : Nat := pack256 [
     0x2000000000000,
     0x00030000000003fb0000000003fa0000000000230000000001ca000000000000,
     0x000003ed0000000003e6000000000000000003e30000000003dc000000000000,
@@ -2719,7 +2720,7 @@ private noncomputable def rBlk_37_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_37 : Nat → Nat := fun _ => nBlk_37_0
 private noncomputable def ruleBlk_37 : Nat → Nat := fun _ => rBlk_37_0
 
-private noncomputable def nBlk_38_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_38_0 : Nat := pack256 [
     0x65f97e5fcbe5,
     0x0000bfb97e5fcbe500002fb97e5fcbe50000afb97e5fcbe50000bcf9fe5fcbe5,
     0x0000fff9fe5fcbe5000065f9ee5fcbe50000eff9fe5fcbe50000bfb9ee5fcbe5,
@@ -2733,7 +2734,7 @@ private noncomputable def nBlk_38_0 : Nat := RuleTableHalt.pack256 [
     0x00003fb9ee5fcbe500002fb9fe5fcbe50000e5f97e5fcbe50001fcbfcf2fcbf3,
     0x00007ff9fe5fcbe50000e5f9fe5fcbe500003cf9fe5fcbe500007ff9ee5fcbe5,
     0x00002fb9ee5fcbe500003fb97e5fcbe50000eff97e5fcbe50000e5f9ee5fcbe5]
-private noncomputable def rBlk_38_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_38_0 : Nat := pack256 [
     0x2f000000000000,
     0x0000000f0000000000ee000000000000000000eb000000000000001e00000000,
     0x0002000000000000000200000000000000250000000000d10000003c00000000,
@@ -2750,7 +2751,7 @@ private noncomputable def rBlk_38_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_38 : Nat → Nat := fun _ => nBlk_38_0
 private noncomputable def ruleBlk_38 : Nat → Nat := fun _ => rBlk_38_0
 
-private noncomputable def nBlk_39_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_39_0 : Nat := pack256 [
     0x40000f3cf3e5e000500009e5e7e5f000100009f9ffdcb00010000979ffdcb,
     0x000400009fcfee7e0004000097cfee7e000200009fcf3e7f0002000097cf3e7f,
     0x000500009e797e7f000600009f9fee7f00060000979fee7f000400009fcfee5e,
@@ -2790,7 +2791,7 @@ private noncomputable def nBlk_39_0 : Nat := RuleTableHalt.pack256 [
     0x00030000cf3cfe5f00050000cf3cbe7f00060000cf3cbe7b00070000cf3cfe79,
     0x00020000cf3cbe7f00060000cf3cbe7f00050000cf3cfe5f00040000cf3cbe7e,
     0x00030000cf3cbe7f00020000cf3cfe5f00010000cf3cbdcb00000000cf3cbe79]
-private noncomputable def rBlk_39_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_39_0 : Nat := pack256 [
     0x4000000000000030a000003030000000000000000000002fe0000,
     0x02f90000000000000000000002f4000002ef0000000000000000000002ea0000,
     0x02e50000000000000000000002e0000002db0000000000000000000002d60000,
@@ -2838,7 +2839,7 @@ private noncomputable def rBlk_40_0 : Nat := 0x4000000000000
 private noncomputable def nodeBlk_40 : Nat → Nat := fun _ => nBlk_40_0
 private noncomputable def ruleBlk_40 : Nat → Nat := fun _ => rBlk_40_0
 
-private noncomputable def nBlk_41_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_41_0 : Nat := pack256 [
     0x7ffcf3df2f,
     0x0000005ffcf3df2f0000007bfcf3df2f000000cffcbe79e7000000cbfcf3ff2f,
     0x000000b97cf2f3ff000000b97cf2f9e7000000f97cf2f97d000000b97cf2f97d,
@@ -2895,7 +2896,7 @@ private noncomputable def nBlk_41_0 : Nat := RuleTableHalt.pack256 [
     0x0000007f3cfe79e7000000797cf2f97d0000003f3cf3cf2f0000007f3cf2f97d,
     0x0000005f3cbe5f7f000000cffcfe5f7f000000f7fcf2ff2f000000797cf2f3ff,
     0x0000005f2f9e79e70000009fcf9e79e7000000cfdcf2ff2f00000079fcf2ff2f]
-private noncomputable def rBlk_41_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_41_0 : Nat := pack256 [
     0x2a9,
     0x000000000000044e000000000000044900090000000000000040000000000000,
     0x00000000012500000000000001110000042f00000000042d00000000042c0000,
@@ -2955,7 +2956,7 @@ private noncomputable def rBlk_41_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_41 : Nat → Nat := fun _ => nBlk_41_0
 private noncomputable def ruleBlk_41 : Nat → Nat := fun _ => rBlk_41_0
 
-private noncomputable def nBlk_42_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_42_0 : Nat := pack256 [
     0x200fff3e5ff9f000200bff3e5ff9f,
     0x000100f97cbcfff3000100b97cbcfff3000c00f97cbe7f73000c00b97cbe7f73,
     0x0032003fcbe5f3f3003200bfcbe5f3f30032002fcbe5f3f3003200afcbe5f3f3,
@@ -3007,7 +3008,7 @@ private noncomputable def nBlk_42_0 : Nat := RuleTableHalt.pack256 [
     0x000a0097fcfe797e000900f3cbffcf3f000800bee7f3fbfe000500cfdcbe79e7,
     0x000700bf3f9e79ee000600ff3cffb9fd000500ff3cbe79e7000400f73f72fbfe,
     0x0003009f3cf2ffee000200cffcffcf3f000100cfe7fcfff3000000cffcfe5ffe]
-private noncomputable def rBlk_42_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_42_0 : Nat := pack256 [
     0x6c00000000000003f00000,
     0x0000000003eb00000000000003e6000003df0000000003dd0000000003dc0000,
     0x03d5000000000000000003d40000000003cd000000000000000003ca00000000,
@@ -3062,7 +3063,7 @@ private noncomputable def rBlk_42_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_42 : Nat → Nat := fun _ => nBlk_42_0
 private noncomputable def ruleBlk_42 : Nat → Nat := fun _ => rBlk_42_0
 
-private noncomputable def nBlk_43_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_43_0 : Nat := pack256 [
     0x700bf3f3dcf3c0006003f3fb9fb9f000600bf3fb9fb9f,
     0x000600f73fb9fb9f0001009f3cf9fcff000200b9f9f9fb9f000f00f9fcf9ff9f,
     0x000f00b9fcf9ff9f0005007f3cf3f72f00080079f9f9fb970016007f3cbe7fcf,
@@ -3092,7 +3093,7 @@ private noncomputable def nBlk_43_0 : Nat := RuleTableHalt.pack256 [
     0x0005005f3cf3f72f0002002f9ff97b9f000700ff3f3dcf3c0002003f9ff97b9f,
     0x00000079e7f97b9f0006005f3fb9fb9f0005009f3cf3f72f00040073cbffcfe7,
     0x000300be5f9f9f9700020079f9f9fb9f000100f97cfff9ff000000f9e7f97b9f]
-private noncomputable def rBlk_43_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_43_0 : Nat := pack256 [
     0x300000023b0000000000000000023a00000000,
     0x023300000000022f00000000022e000000530000000000000000000002220000,
     0x00000000021f0000000000000000002500000000000000390000000000000188,
@@ -3125,7 +3126,7 @@ private noncomputable def rBlk_43_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_43 : Nat → Nat := fun _ => nBlk_43_0
 private noncomputable def ruleBlk_43 : Nat → Nat := fun _ => rBlk_43_0
 
-private noncomputable def nBlk_44_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_44_0 : Nat := pack256 [
     0xd00fe7dcffb9e,
     0x000d00be7dcffb9e000100ff3cf2f3f9000100bf3cf2f3f9000f003cfff9fcf3,
     0x000f00bcfff9fcf30008003cf9ffe79f000800bcf9ffe79f00010079fdcbf3cb,
@@ -3141,7 +3142,7 @@ private noncomputable def nBlk_44_0 : Nat := RuleTableHalt.pack256 [
     0x0006009fe7e7cbee00060097e7e7cbee0006009ee7e7cbee000500ff3ef97f2f,
     0x0005007f3ef97f2f0004009ff3cfee5f00040097f3cfee5f0003009f2ff2f3cf,
     0x000100f9fdcbf3cb000200e5f9fe7ffe000100b9fdcbf3cb000000f73cbe7f3e]
-private noncomputable def rBlk_44_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_44_0 : Nat := pack256 [
     0x60000,
     0x00000000011b000000b5000000b501120000000001110000010a000000000000,
     0x00000109000000000102000000000000000000ff000000000011000000000000,
@@ -3160,7 +3161,7 @@ private noncomputable def rBlk_44_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_44 : Nat → Nat := fun _ => nBlk_44_0
 private noncomputable def ruleBlk_44 : Nat → Nat := fun _ => rBlk_44_0
 
-private noncomputable def nBlk_45_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_45_0 : Nat := pack256 [
     0x1007e5f3dcbff000100ee5f3dcbff0000007e7e7fcbe7,
     0x000000ee7e7fcbe70001007e7f3dcbff000100ee7f3dcbff0002007e7fe5ffcf,
     0x000200ee7fe5ffcf0000003e797fcbe70001007e5f2fcbff0000007dcbefcbe7,
@@ -3182,7 +3183,7 @@ private noncomputable def nBlk_45_0 : Nat := RuleTableHalt.pack256 [
     0x000100fe7f2fcbff000100be7f2fcbff000200fe7fe5ffcf000200be7fe5ffcf,
     0x000200fe7be5ffcf000200be7be5ffcf000000f3cbefcbe7000000fe5e7fcbe7,
     0x000000be5e7fcbe7000100fe5f3fcbff000100be5f3fcbff000000b3cbefcbe7]
-private noncomputable def rBlk_45_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_45_0 : Nat := pack256 [
     0xd019c000000000199000000000000006c,
     0x019200000000018f004d0000000000000188000000000000000000000000003a,
     0x017e00000000000001970000000000000070000000000000006b000000000000,
@@ -3212,7 +3213,7 @@ private noncomputable def rBlk_46_0 : Nat := 0x30000
 private noncomputable def nodeBlk_46 : Nat → Nat := fun _ => nBlk_46_0
 private noncomputable def ruleBlk_46 : Nat → Nat := fun _ => rBlk_46_0
 
-private noncomputable def nBlk_47_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_47_0 : Nat := pack256 [
     0xf9e79f3c00000000b9e79f3c00000000797dff3c0000000079e79f3c,
     0x00000000f3cfff3c000000009fe7f73c000000009ee7f73c000000007f3cbf3c,
     0x00000000ff3cbf3c00000000bf3cbf3c0000000079e7f73c000000009fcfff3c,
@@ -3226,7 +3227,7 @@ private noncomputable def nBlk_47_0 : Nat := RuleTableHalt.pack256 [
     0x00000000cf7cbf3c00000000cfe7f73c00000000cbe79f3c00000000cfe5f73c,
     0x00000000b97dff3c00000000cfe79f3c00000000cf2fff3c00000000cffcbf3c,
     0x00000000cbe7f73c00000000cf3cbf3c00000000cbcfff3c00000000cfcfff3c]
-private noncomputable def rBlk_47_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_47_0 : Nat := pack256 [
     0x2400000000000001020000005700000000003b00000000000000f7,
     0x00000000001300000000000000ee0000000000000051000000d9000000000000,
     0x00e200e10000000000da000000000000007a0000000000000000000000cf0000,
@@ -3243,7 +3244,7 @@ private noncomputable def rBlk_47_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_47 : Nat → Nat := fun _ => nBlk_47_0
 private noncomputable def ruleBlk_47 : Nat → Nat := fun _ => rBlk_47_0
 
-private noncomputable def nBlk_48_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_48_0 : Nat := pack256 [
     0x3ee7f9fd,
     0x00000000bee7f9fd00000000f3e7b9fd000600009f3fcf2f00060000ff3dcf2f,
     0x000600007f3dcf2f000300009e7ff9e7001200009e7ff9fd00110000ff3fb9e7,
@@ -3258,7 +3259,7 @@ private noncomputable def nBlk_48_0 : Nat := RuleTableHalt.pack256 [
     0x000900009e79e79f000800009e79e797000700009e79e797000100009e79e79f,
     0x000600009e79e797000500009e79e79f000400009e79e797000000009e79e797,
     0x000300009e79e79f000200009e79e797000100009e5e79e700000000e7e7f9fd]
-private noncomputable def rBlk_48_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_48_0 : Nat := pack256 [
     0x2000000000000,
     0x000001090000000001020000000000fe0000000000fd000000f60000000000f4,
     0x00f20000000000000000000000ed000000e70000000000000000000000e20000,
@@ -3281,12 +3282,12 @@ private noncomputable def rBlk_49_0 : Nat := 0x1000000010000
 private noncomputable def nodeBlk_49 : Nat → Nat := fun _ => nBlk_49_0
 private noncomputable def ruleBlk_49 : Nat → Nat := fun _ => rBlk_49_0
 
-private noncomputable def nBlk_50_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_50_0 : Nat := pack256 [
     0x7cbf3f73fb000000fdff2f72fb0000007dff2f72fb0000003cbf3f73fb,
     0x000000bcbf3f73fb0000003fff2f72fb000000bfff2f72fb0000002fff2f72fb,
     0x000000afff2f72fb0000003dff2f72fb000000bdff2f72fb000000fcbf3f73fb,
     0x000000e79f3cf3fb000000cfff2f72fb000000e7f72fbe5f000000e5f72fbe5f]
-private noncomputable def rBlk_50_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_50_0 : Nat := pack256 [
     0x160000000000000017000000000000004800000000000e0011000000000000,
     0x0000004100000000003a00000000000000000037000000000030000000000000,
     0x0000002d00000000002600000000000000000023000000000002005000000018,
@@ -3294,7 +3295,7 @@ private noncomputable def rBlk_50_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_50 : Nat → Nat := fun _ => nBlk_50_0
 private noncomputable def ruleBlk_50 : Nat → Nat := fun _ => rBlk_50_0
 
-private noncomputable def nBlk_51_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_51_0 : Nat := pack256 [
     0x1003cbe79eff9000100bcbe79eff90001007f9e79fff90003009f97cf3cf3,
     0x000300fb97cf3cf3000300bb97cf3cf30000007f9e79e5e70002003e7e5f2fbf,
     0x000200be7e5f2fbf000200f3ee5f2fbf0003009f3e5f3cf300010079fe79fff9,
@@ -3307,7 +3308,7 @@ private noncomputable def nBlk_51_0 : Nat := RuleTableHalt.pack256 [
     0x000300fcfe7f3cf3000200e79e5f2fbf0002003cbe7f2fbf0000003cbe79e5e7,
     0x000200cf9e7f2fbf000300fcf3cf3cf3000100f9fe79fff9000200fcfe7f2fbf,
     0x000000e79e79e5e7000100fcfe79eff9000000fcfe79e5e7000000ef9e79e5e7]
-private noncomputable def rBlk_51_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_51_0 : Nat := pack256 [
     0x67000000000000000000f000000000000000000000004500e3000000000000,
     0x0000000000dd00000000000000da000000000000000000270002000000000000,
     0x000000cd0000000000c60000000000c20000000000c10000001b000000000000,
@@ -3323,7 +3324,7 @@ private noncomputable def rBlk_51_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_51 : Nat → Nat := fun _ => nBlk_51_0
 private noncomputable def ruleBlk_51 : Nat → Nat := fun _ => rBlk_51_0
 
-private noncomputable def nBlk_52_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_52_0 : Nat := pack256 [
     0xef9e7f3ee5,
     0x0001003e7e7f73f9000100be7e7f73f90002009f3e79f3f9000600b9f3cbf3f9,
     0x0002007fcbdcbff90007007cbe5e7cff0000007cbe5f3ee5000b009f97dff3f9,
@@ -3351,7 +3352,7 @@ private noncomputable def nBlk_52_0 : Nat := RuleTableHalt.pack256 [
     0x000300cff2fff3f90007007fe7cbf2ff000600f9f3cbf3f9000300fcf3fff3f9,
     0x000400dcf2fcbcf9000300dcbe7f3ff9000500f9fdcbeff9000400fcfcfcbcf9,
     0x000300dcf3fff3f90002005fcbdcbff9000100f3ee7f73f9000000fcbe5f3ee5]
-private noncomputable def rBlk_52_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_52_0 : Nat := pack256 [
     0x1bf000000000000,
     0x020a000000000000000002080000000000000000000800000000000000300000,
     0x0000000000000040000000000000000c00020000000000000000000001e70000,
@@ -3382,7 +3383,7 @@ private noncomputable def rBlk_52_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_52 : Nat → Nat := fun _ => nBlk_52_0
 private noncomputable def ruleBlk_52 : Nat → Nat := fun _ => rBlk_52_0
 
-private noncomputable def nBlk_53_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_53_0 : Nat := pack256 [
     0x200797cfbfe7e,
     0x000200b97cfbfe7e000b0097e5ff3cf3000b009ee5ff3cf3000100f2fcbee7f2,
     0x000100b2fcbee7f20002003f9e5ffe7e000200bf9e5ffe7e0002002f9e5ffe7e,
@@ -3423,7 +3424,7 @@ private noncomputable def nBlk_53_0 : Nat := RuleTableHalt.pack256 [
     0x0005009f3cff3cbf000400f9e5fee5f7000400b9e5fee5f7000300f72fcf3fe7,
     0x000200f3ffe7e79e0001009f9e7fe7f2000000f3e7cfee5e000200f97e7ffe7e,
     0x000100fff3cbdcf3000200f97cfbfe7e000100f97b9fcbf30000002f97cbee5e]
-private noncomputable def rBlk_53_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_53_0 : Nat := pack256 [
     0xc000000000000,
     0x000d0000000000000286000000000000000000000303000002fe0000000002fc,
     0x0000000002fb000002f4000000000000000002f30000000002ec000000000000,
@@ -3467,13 +3468,13 @@ private noncomputable def rBlk_53_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_53 : Nat → Nat := fun _ => nBlk_53_0
 private noncomputable def ruleBlk_53 : Nat → Nat := fun _ => rBlk_53_0
 
-private noncomputable def nBlk_54_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_54_0 : Nat := pack256 [
     0x72f9f9ee7f00010072f9fe5e7f0000007cf2f97e7f,
     0x000000fcf2f97e7f0008007fff97dcf3000800ffff97dcf3000800bfff97dcf3,
     0x000700feff3fcbf2000700beff3fcbf2000600f3fb9fdfff000500f3cf9e7cf3,
     0x0004009fff3f97cb00040097ff3f97cb0003009f2f3cf73c0002009ee797b979,
     0x0002009fe797b97900020097e797b979000100f2f9fe5e7f000000f2f9f9ee7f]
-private noncomputable def rBlk_54_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_54_0 : Nat := pack256 [
     0x20000000000000007000000000000004d000000000000,
     0x000800550000004f0043000000000000004e004b000000000044000000000000,
     0x00000000003d000000000000003a000000000000003500000000000000300000,
@@ -3482,12 +3483,12 @@ private noncomputable def rBlk_54_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_54 : Nat → Nat := fun _ => nBlk_54_0
 private noncomputable def ruleBlk_54 : Nat → Nat := fun _ => rBlk_54_0
 
-private noncomputable def nBlk_55_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_55_0 : Nat := pack256 [
     0x79f97e5ee70002007fcbff9ee7000200ffcbff9ee7,
     0x000000cbf97e5ee70004007fffcfe5e700030073fe7e5fe7000300f3fe7e5fe7,
     0x00020072f73fcbe7000200f2f73fcbe700010072f9ffcbe5000100f2f9ffcbe5,
     0x0001007cf3f9f9e5000100fcf3f9f9e5000000b9f97e5ee7000000f9f97e5ee7]
-private noncomputable def rBlk_55_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_55_0 : Nat := pack256 [
     0x2000000000000003e0000000000000006004600000000,
     0x003f000000000000000000000000003b002a000000000000003400320000002c,
     0x0020000000000000002b00280000000000160000000000000021001e00000018,
@@ -3495,7 +3496,7 @@ private noncomputable def rBlk_55_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_55 : Nat → Nat := fun _ => nBlk_55_0
 private noncomputable def ruleBlk_55 : Nat → Nat := fun _ => rBlk_55_0
 
-private noncomputable def nBlk_56_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_56_0 : Nat := pack256 [
     0x9e5e7e5f3c000000e79ffdcbef0000003fcfee7e7f000000bfcfee7e7f,
     0x0000002fcfee7e7f000000afcfee7e7f0000003dcfee7e7f000000bdcfee7e7f,
     0x0000007e797e7f3c000000fe797e7f3c0001007e5ffe7f2f000100ee5ffe7f2f,
@@ -3508,7 +3509,7 @@ private noncomputable def nBlk_56_0 : Nat := RuleTableHalt.pack256 [
     0x000000cf3cbe7f3c000000cf3cbe7be5000000cf3cfe797f000100cf3cbe7f3f,
     0x000000cf3cbe7fe5000000cf3cfe5f3c000000cf3cbe7e7f000100cf3cbe7f2f,
     0x000100cf3cfe5f3f000000cf3cbdcbef000000cf3cbe79e5000000f3cf3e5e7f]
-private noncomputable def rBlk_56_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_56_0 : Nat := pack256 [
     0x3000000ec00000000000000e8000000000000000000e600000000,
     0x00df000000000000000000dc0000000000d5000000000000000000d200000000,
     0x00c000000000000000cb00c80000000000000000000000c100bb0000000000b8,
@@ -3529,7 +3530,7 @@ private noncomputable def rBlk_57_0 : Nat := 0x4000000000000
 private noncomputable def nodeBlk_57 : Nat → Nat := fun _ => nBlk_57_0
 private noncomputable def ruleBlk_57 : Nat → Nat := fun _ => rBlk_57_0
 
-private noncomputable def nBlk_58_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_58_0 : Nat := pack256 [
     0x79f2f3ff00000000bfee5f7f00000000f3f2f9e7000000009f72f9e7,
     0x00000000f9f3cbff0000000079f3cbff00000000ffee5f7f00000000dfee5f7f,
     0x000000007f73f3ff000000005f73f3ff0000000079f3f9fd00000000f3f3cf2f,
@@ -3541,7 +3542,7 @@ private noncomputable def nBlk_58_0 : Nat := RuleTableHalt.pack256 [
     0x00000000e7f2f9e700000000e7f3cbff00000000e7f2f97d00000000e5ee5f7f,
     0x00000000e5f3f3ff00000000e5f3f9fd00000000e5f3f9e700000000e5f3cf2f,
     0x00000000e5f3f97d00000000e5f3ff2f00000000e5f3df2f0000000065f3df2f]
-private noncomputable def rBlk_58_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_58_0 : Nat := pack256 [
     0x50000000000bc000000d90000000000d10000000000d00000,
     0x00c90000000000c700c50000000000000000000000c0000000d3000000000000,
     0x00000000000000b800000000000000b100000000000000ac00a70000000000a4,
@@ -3561,7 +3562,7 @@ private noncomputable def rBlk_59_0 : Nat := 0x2000000000000
 private noncomputable def nodeBlk_59 : Nat → Nat := fun _ => nBlk_59_0
 private noncomputable def ruleBlk_59 : Nat → Nat := fun _ => rBlk_59_0
 
-private noncomputable def nBlk_60_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_60_0 : Nat := pack256 [
     0xf3cf3e5e7ff900009e5e7e5f3cf900009f9ffdcbeff9,
     0x0000979ffdcbeff900009fcfee7e7ff9000097cfee7e7ff900009fcf3e7f3fb9,
     0x000097cf3e7f3fb900009e797e7f3cf900009f9fee7fe5f90000979fee7fe5f9,
@@ -3580,7 +3581,7 @@ private noncomputable def nBlk_60_0 : Nat := RuleTableHalt.pack256 [
     0x0000cf3cbe7f2fb90000cf3cfe5e7ff90000cf3cfe797ff90000cf3cbe7e7ff9,
     0x0000cf3cbe79e5f90000cf3cbe7be5f90000cf3cfe5f3cf90000cf3cbdcbeff9,
     0x0000cf3cbe7f3cf90000cf3cbe7fe5f90000cf3cfe5f3fb90000cf3cfe5f2fb9]
-private noncomputable def rBlk_60_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_60_0 : Nat := pack256 [
     0x2700000000000001610000015a000000000000,
     0x0000000001550000015000000000000000000000014b00000146000000000000,
     0x0000000001410000013c00000000000000000000013700000132000000000000,
@@ -3602,12 +3603,12 @@ private noncomputable def rBlk_60_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_60 : Nat → Nat := fun _ => nBlk_60_0
 private noncomputable def ruleBlk_60 : Nat → Nat := fun _ => rBlk_60_0
 
-private noncomputable def nBlk_61_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_61_0 : Nat := pack256 [
     0xc00e5f3f9e5f3,
     0x000b00e5f3f9e5f3000a00e5f3f9e5f3000900e5f3f9e5f3000800e5f3f9e5f3,
     0x000700e5f3f9e5f3000600e5f3f9e5f3000500e5f3f9e5f3000400e5f3f9e5f3,
     0x000300e5f3f9e5f3000200e5f3f9e5f3000100e5f3f9e5f3000000e5f3f9e5f3]
-private noncomputable def rBlk_61_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_61_0 : Nat := pack256 [
     0x2000000000040,
     0x003e00000000003b00390000000000360034000000000031002f00000000002c,
     0x002a0000000000270025000000000022002000000000001d001b000000000018,
@@ -3620,7 +3621,7 @@ private noncomputable def rBlk_62_0 : Nat := 0x2000000000004
 private noncomputable def nodeBlk_62 : Nat → Nat := fun _ => nBlk_62_0
 private noncomputable def ruleBlk_62 : Nat → Nat := fun _ => rBlk_62_0
 
-private noncomputable def nBlk_63_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_63_0 : Nat := pack256 [
     0x3cf979ff00000000bcf979ff0000000065f97cf3,
     0x000000007ff97cbe00000000eff97cbe00000000fff97cbe000000003fb97f97,
     0x00000000bfb97f97000000002fb97f9700000000afb97f97000000003cff2fbf,
@@ -3651,7 +3652,7 @@ private noncomputable def nBlk_63_0 : Nat := RuleTableHalt.pack256 [
     0x00000000f3f97cf300000000f3f9e5ff00000000f3f97cbe00000000f2f72fbf,
     0x00000000f2f9f9ff00000000f2f9fcfe00000000f2f9fcf300000000f2f9e797,
     0x00000000f2f9fcbe00000000f2f9ff9700000000f2f9ef9700000000b2f9ef97]
-private noncomputable def rBlk_63_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_63_0 : Nat := pack256 [
     0x100000000000000000253000000000048000000000000,
     0x0237000000000249024100000000023e0048000000000000023c000000000000,
     0x0000023500000000022e0000000000000000022b000000000224000000000000,
@@ -3690,7 +3691,7 @@ private noncomputable def rBlk_64_0 : Nat := 0x30000
 private noncomputable def nodeBlk_64 : Nat → Nat := fun _ => nBlk_64_0
 private noncomputable def ruleBlk_64 : Nat → Nat := fun _ => rBlk_64_0
 
-private noncomputable def nBlk_65_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_65_0 : Nat := pack256 [
     0x7cf3cbe7f73c,
     0x00007cf3cf3cbf3c00007cfe79e79f3c0000fcf3cbcfff3c00007cf3cbcfff3c,
     0x0000fcf3cbe5f73c00007cf3cbe5f73c00007cf3f9e79f3c0000fcf3cfe79f3c,
@@ -3739,7 +3740,7 @@ private noncomputable def nBlk_65_0 : Nat := RuleTableHalt.pack256 [
     0x00009f73f9e79f3c00007cbe79e79f3c00003f73cbe79f3c00007cf3cf2fff3c,
     0x0000e5f3cf7cbf3c0000fff3cbfcbf3c00007f3e79e79f3c00007cf2f97dff3c,
     0x00002f73cfe7f73c0000e5f3cbcfff3c0000dff3cbfcbf3c00003ff3f97dff3c]
-private noncomputable def rBlk_65_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_65_0 : Nat := pack256 [
     0x25f000000000000,
     0x0093000000000000008400000000000003a4000000000000039f000000000000,
     0x039a0000000000000395000000000000004d000000000000038b000000000000,
@@ -3791,7 +3792,7 @@ private noncomputable def rBlk_65_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_65 : Nat → Nat := fun _ => nBlk_65_0
 private noncomputable def ruleBlk_65 : Nat → Nat := fun _ => rBlk_65_0
 
-private noncomputable def nBlk_66_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_66_0 : Nat := pack256 [
     0x5ffcf3fee7f7002c7cbcf2ffdcbe00139f3f97cf2fcf000b7fcf2fcf2f97,
     0x000bffcf2fcf2f97000e7dcbffcbdcbf00047f2f3e79e7b900045f2f3e79e7b9,
     0x00055f3ff3ff3cfe00157f2f72f73cf300155f2f72f73cf3000f5f3f73f73fb9,
@@ -3846,7 +3847,7 @@ private noncomputable def nBlk_66_0 : Nat := RuleTableHalt.pack256 [
     0x00009ffcf3fee7f7000a97dff3cbffb90009be5f73ffcfff0008f2f3f3f97cf9,
     0x00079e5f72f72fb9000672f9e5f3dcbc0005f2ffcf97fe7e0004f2fcfe79e7b9,
     0x0003f73f97b9fdcf00029fdcfdcbeff900015f3f72f9e79f00007ffcf3fee7f7]
-private noncomputable def rBlk_66_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_66_0 : Nat := pack256 [
     0x2000000000000043500000000001200000421000000000000,
     0x042a042900000423006b000000000000000000000000006c0000000000000417,
     0x0000000000000052000000000000040d00000000000004080000000000000070,
@@ -3904,7 +3905,7 @@ private noncomputable def rBlk_66_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_66 : Nat → Nat := fun _ => nBlk_66_0
 private noncomputable def ruleBlk_66 : Nat → Nat := fun _ => rBlk_66_0
 
-private noncomputable def nBlk_67_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_67_0 : Nat := pack256 [
     0xf9e797f2fff3f,
     0x00049f9e7fe7cbfc00007b9fcf3ee7ee00039f97e79fe7f200045f9fcfdcff3c,
     0x00047b9fcfdcff3c0000ff9fcf3ee7ee00007f9fcf3ee7ee00039f9e7f9fe7f2,
@@ -3953,7 +3954,7 @@ private noncomputable def nBlk_67_0 : Nat := RuleTableHalt.pack256 [
     0x0000fcbee7e7e7ee0003bf97e79fe7f200042fb97ffcbf3c00019e5ffff3cf9e,
     0x00027cbcf7f9f73f00059f979f2f97e700025f3ff7f9f73f00047f9fcfdcff3c,
     0x00037b97e79fe7f200029f3ff7f9f73f0001ffcbf2f7fb9e0000ff9fcfe7e7ee]
-private noncomputable def rBlk_67_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_67_0 : Nat := pack256 [
     0x2e1000000000000,
     0x0000000003ad0000033600000000000000000000002500000000000000000016,
     0x000000000000039a0395000000000392039000000000000000000000038b0000,
@@ -4005,7 +4006,7 @@ private noncomputable def rBlk_67_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_67 : Nat → Nat := fun _ => nBlk_67_0
 private noncomputable def ruleBlk_67 : Nat → Nat := fun _ => rBlk_67_0
 
-private noncomputable def nBlk_68_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_68_0 : Nat := pack256 [
     0x69f3f73cf2fe7,
     0x00019f9f3ff3f3cf0001979f3ff3f3cf00029fcffdcf2f9f000297cffdcf2f9f,
     0x00069fcbf3cf2fe70005bcbe7e5f72fe0005dcbe7e5f72fe00037ff9ffb9fe79,
@@ -4039,7 +4040,7 @@ private noncomputable def nBlk_68_0 : Nat := RuleTableHalt.pack256 [
     0x00035ff9ffb9fe7900035f3f97b9fe790006e7cbf3cf2fe70001cf2f3ff3f3cf,
     0x0006f3fff3cf2fe700059f9ffe5f72fe0004ff3f97cf2f9e0003fff9ffb9fe79,
     0x0003f7cf3fb9fe790002ff2f97cf2f9f0001f73ff3cbf3f30000cfdcf3cf2f97]
-private noncomputable def rBlk_68_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_68_0 : Nat := pack256 [
     0x1640000,
     0x00000000013d0000027c00000000000000000000027700000272000000000000,
     0x00000000026d000000000000003f000002630000000000000000000000000261,
@@ -4076,7 +4077,7 @@ private noncomputable def rBlk_68_0 : Nat := RuleTableHalt.pack256 [
 private noncomputable def nodeBlk_68 : Nat → Nat := fun _ => nBlk_68_0
 private noncomputable def ruleBlk_68 : Nat → Nat := fun _ => rBlk_68_0
 
-private noncomputable def nBlk_69_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def nBlk_69_0 : Nat := pack256 [
     0xf000097f3f2ff000f00009f2ffcff000c00003e7e5f72000c0000be7e5f72,
     0x000c0000f3ee5f72000e00009f3ffcf9000d0000ff3e5e7e000d00007f3e5e7e,
     0x000c00009e7ffff2000b00007ffcffee000b00005ffcffee000b00007bfcffee,
@@ -4085,7 +4086,7 @@ private noncomputable def nBlk_69_0 : Nat := RuleTableHalt.pack256 [
     0x00050000f97cfdcf00050000b97cfdcf000400003fcbdcfd00040000bfcbdcfd,
     0x000400002fcbdcfd00040000afcbdcfd000400003dcbdcfd00040000bdcbdcfd,
     0x00030000e5f3f3e500020000e5f3fb9f00010000e5f3cf9f00000000e797ff97]
-private noncomputable def rBlk_69_0 : Nat := RuleTableHalt.pack256 [
+private noncomputable def rBlk_69_0 : Nat := pack256 [
     0x9c000000970000000000000000009600000000,
     0x008f00000000008b00000000008a00000083000000000081007f000000000000,
     0x00000000007a000000000000000000740000000000000070000000000000006b,
@@ -4615,10 +4616,10 @@ private noncomputable def simSliceBytes (fuel : Nat) (side : Bool) (q : Nat)
 
 private noncomputable def getRuleFromBlk (rBlk : Nat → Nat) (id q : Nat) : Nat :=
   match q with
-  | 0 => Nat.land (RuleTableHalt.entFromBlkF rBlk id) 65535
-  | 1 => Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF rBlk id) 16) 65535
-  | 3 => Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF rBlk id) 32) 65535
-  | 5 => Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF rBlk id) 48) 65535
+  | 0 => Nat.land (entFromBlkF rBlk id) 65535
+  | 1 => Nat.land (Nat.shiftRight (entFromBlkF rBlk id) 16) 65535
+  | 3 => Nat.land (Nat.shiftRight (entFromBlkF rBlk id) 32) 65535
+  | 5 => Nat.land (Nat.shiftRight (entFromBlkF rBlk id) 48) 65535
   | _ => 0
 
 private noncomputable def checkRuleLoop (pCnt : Nat) (pRBlk : Nat → Nat)
@@ -4652,7 +4653,7 @@ private noncomputable def checkSlot (cntCur pCnt : Nat) (nBlk pRBlk : Nat → Na
      forceN false (Nat.div e1 5) fun idOut =>
      forceN false (Nat.mod e1 5) fun qOut =>
       @Bool.rec (fun _ => Bool) false
-        (forceN false (RuleTableHalt.entFromBlkF nBlk idOut) fun tgtW =>
+        (forceN false (entFromBlkF nBlk idOut) fun tgtW =>
          forceN false (Nat.shiftRight tgtW 48) fun tgtP =>
          forceN false (Nat.land tgtW 281474976710655) fun tgtS =>
            checkRuleLoop pCnt pRBlk tgtP tgtS qOut 360 srcP true qin rb0 cb0 [])
@@ -4662,8 +4663,8 @@ private noncomputable def checkSlot (cntCur pCnt : Nat) (nBlk pRBlk : Nat → Na
 
 private noncomputable def checkNodeFast (nbytes cntCur pCnt : Nat)
     (nBlk rBlk pRBlk : Nat → Nat) (id : Nat) : Bool :=
-  forceN false (RuleTableHalt.entFromBlkF rBlk id) fun rW =>
-  forceN false (RuleTableHalt.entFromBlkF nBlk id) fun nW =>
+  forceN false (entFromBlkF rBlk id) fun rW =>
+  forceN false (entFromBlkF nBlk id) fun nW =>
   forceN false (Nat.shiftRight nW 48) fun srcP =>
   forceN false (Nat.land nW 281474976710655) fun srcS =>
   match unpackTailAux (Nat.sub nbytes 1) srcS [] with
@@ -4716,7 +4717,7 @@ private noncomputable def checkWallSlot (topL wallCnt : Nat) (id q we : Nat) : B
     (Nat.beq we 0)
 
 private noncomputable def checkWallNode (topL nextBaseL wallCnt id : Nat) : Bool :=
-  forceN false (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) fun wW =>
+  forceN false (entFromBlkF (ruleBlkOf nextBaseL) 0) fun wW =>
   forceN false (Nat.land wW 65535) fun w0 =>
   @Bool.rec (fun _ => Bool) false
     (forceN false (Nat.land (Nat.shiftRight wW 16) 65535) fun w1 =>
@@ -4872,7 +4873,7 @@ private noncomputable def simStagePush
           forceN false (Nat.add cdd 1) fun cdd' =>
           forceN false (Nat.add baseL cdd') fun nxtL =>
           @Bool.rec (fun _ => Bool) false
-            (forceN false (RuleTableHalt.entFromBlkF (nodeBlkOf nxtL) nid) fun nw =>
+            (forceN false (entFromBlkF (nodeBlkOf nxtL) nid) fun nw =>
              forceN false (Nat.add (Nat.shiftLeft id 48) outBits) fun expected =>
               @Bool.rec (fun _ => Bool) false
                 (match ps' with
@@ -5971,7 +5972,7 @@ private theorem simB8Raw_sound (fuel : Nat) {q : Nat} {r : List Bool} {c : Bool}
       have ⟨_, hlt⟩ := byteBits_packBitsLSB_of_len8 hlen8
       set pb := packBitsLSB (revBoolK r (c :: l))
       have hst2 : Nat.shiftRight (Nat.add pb (Nat.add (Nat.mul 256 q) 4096)) 11 = 2 := by
-        simp only [nat_shiftRight_11, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+        simp only [nat_shiftRight_11, nat_add_eq, nat_mul_eq]; omega
       refine ⟨(fun h0 => by rw [hst2] at h0; cases h0), (fun h1 => by rw [hst2] at h1; cases h1),
                                                                     fun _ => ?_⟩
       refine ⟨Cfg.headLeft (fin6OfNat q) (bitsToLB (c :: l) L) (bitsToLB r R),
@@ -5989,13 +5990,13 @@ private theorem simB8Raw_sound (fuel : Nat) {q : Nat} {r : List Bool} {c : Bool}
           have ⟨hbb, hlt⟩ := byteBits_packBitsLSB_of_len8 hlen8
           set pb := packBitsLSB (revBoolK r [w])
           have hout : Nat.land (Nat.add pb (Nat.add (Nat.mul 256 nq) 2048)) 255 = pb := by
-            simp only [nat_land_255, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+            simp only [nat_land_255, nat_add_eq, nat_mul_eq]; omega
           have hqo :
               Nat.land (Nat.shiftRight (Nat.add pb (Nat.add (Nat.mul 256 nq) 2048)) 8) 7 = nq := by
-            simp only [nat_land_7, nat_shiftRight_8, RuleTableHalt.nat_add_eq,
-                RuleTableHalt.nat_mul_eq]; omega
+            simp only [nat_land_7, nat_shiftRight_8, nat_add_eq,
+                nat_mul_eq]; omega
           have hst1 : Nat.shiftRight (Nat.add pb (Nat.add (Nat.mul 256 nq) 2048)) 11 = 1 := by
-            simp only [nat_shiftRight_11, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+            simp only [nat_shiftRight_11, nat_add_eq, nat_mul_eq]; omega
           refine ⟨(fun h0 => by rw [hst1] at h0; cases h0), (fun _ => ?_),
                               (fun h2 => by rw [hst1] at h2; cases h2)⟩
           rw [hout, hqo]
@@ -6025,12 +6026,12 @@ private theorem simB8Raw_sound (fuel : Nat) {q : Nat} {r : List Bool} {c : Bool}
           have ⟨hbb, hlt⟩ := byteBits_packBitsLSB_of_len8 hlen8
           set pb := packBitsLSB (w :: l)
           have hout : Nat.land (Nat.add pb (Nat.mul 256 nq)) 255 = pb := by
-            simp only [nat_land_255, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+            simp only [nat_land_255, nat_add_eq, nat_mul_eq]; omega
           have hqo : Nat.land (Nat.shiftRight (Nat.add pb (Nat.mul 256 nq)) 8) 7 = nq := by
-            simp only [nat_land_7, nat_shiftRight_8, RuleTableHalt.nat_add_eq,
-                RuleTableHalt.nat_mul_eq]; omega
+            simp only [nat_land_7, nat_shiftRight_8, nat_add_eq,
+                nat_mul_eq]; omega
           have hst0 : Nat.shiftRight (Nat.add pb (Nat.mul 256 nq)) 11 = 0 := by
-            simp only [nat_shiftRight_11, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+            simp only [nat_shiftRight_11, nat_add_eq, nat_mul_eq]; omega
           refine ⟨(fun _ => ?_), (fun h1 => by rw [hst0] at h1; cases h1),
                                              (fun h2 => by rw [hst0] at h2; cases h2)⟩
           rw [hout, hqo]
@@ -6259,9 +6260,9 @@ private theorem unpackBytesK_packBytesK (bs : List Nat) (h : ∀ b ∈ bs, b < 2
       unpackBytesK bs.length (Nat.shiftRight (Nat.add b (Nat.mul 256 (packBytesK bs))) 8) =
       b :: bs
     have h1 : Nat.land (Nat.add b (Nat.mul 256 (packBytesK bs))) 255 = b := by
-      rw [nat_land_255, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+      rw [nat_land_255, nat_add_eq, nat_mul_eq]; omega
     have h2 : Nat.shiftRight (Nat.add b (Nat.mul 256 (packBytesK bs))) 8 = packBytesK bs := by
-      rw [nat_shiftRight_8, RuleTableHalt.nat_add_eq, RuleTableHalt.nat_mul_eq]; omega
+      rw [nat_shiftRight_8, nat_add_eq, nat_mul_eq]; omega
     rw [h1, h2, ih hbs]
 
 private theorem packBytesK_lt (bs : List Nat) (h : ∀ b ∈ bs, b < 256) :
@@ -6424,10 +6425,10 @@ private theorem simSliceBytes_sound (fuel N : Nat) {side : Bool} {q : Nat}
 /-! ## Unified 14-Stage Wall-Tower Inductive DAG Soundness -/
 
 private noncomputable def nodeParent (L id : Nat) : Nat :=
-  Nat.shiftRight (RuleTableHalt.entFromBlkF (nodeBlkOf L) id) 48
+  Nat.shiftRight (entFromBlkF (nodeBlkOf L) id) 48
 
 private noncomputable def nodeSlice (L id : Nat) : Nat :=
-  Nat.land (RuleTableHalt.entFromBlkF (nodeBlkOf L) id) 281474976710655
+  Nat.land (entFromBlkF (nodeBlkOf L) id) 281474976710655
 
 private def StageNodeTape (basePred : Nat → Side → Prop) (baseL : Nat) : Nat → Nat → Side → Prop
   | 0, id, R => basePred id R
@@ -6658,7 +6659,7 @@ private theorem checkSlot_sound {s d : Nat} (hP : RuleSound s d)
           rb0⟩
       rw [hpair] at hunp hslot; dsimp only at hunp hslot
       have hsub : Nat.sub (nbytesOf curL) 1 + 1 = nbytesOf curL := by
-        rw [RuleTableHalt.nat_sub_eq]; omega
+        rw [nat_sub_eq]; omega
       rw [hsub, List.append_nil] at hunp
       have ⟨hulen, huall⟩ := unpackBytesK_spec (nbytesOf curL) (nodeSlice curL id)
       have hcb0 : cb0 < 256 := by
@@ -6710,18 +6711,18 @@ private theorem checkNodeFast_sound {s d : Nat} (hP : RuleSound s d)
   rcases hpair : unpackTailAux (Nat.sub (nbytesOf curL) 1) (nodeSlice curL id) [] with ⟨cb0, rb0⟩
   change (match unpackTailAux (Nat.sub (nbytesOf curL) 1) (nodeSlice curL id) [] with
     | (cb, rb) =>
-      forceN false (Nat.land (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 65535) fun e0 =>
+      forceN false (Nat.land (entFromBlkF (ruleBlkOf curL) id) 65535) fun e0 =>
       @Bool.rec (fun _ => Bool) false
         (forceN false
-            (Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 16)
+            (Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 16)
             65535) fun e1 =>
          @Bool.rec (fun _ => Bool) false
            (forceN false
-               (Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 32)
+               (Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 32)
                65535) fun e2 =>
             @Bool.rec (fun _ => Bool) false
               (forceN false
-                  (Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 48)
+                  (Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 48)
                   65535) fun e3 =>
                 checkSlot (nodeCntOf curL) (nodeCntOf prevL) (nodeBlkOf curL) (ruleBlkOf prevL)
                   (nodeParent curL id) cb rb 5 e3)
@@ -6735,29 +6736,29 @@ private theorem checkNodeFast_sound {s d : Nat} (hP : RuleSound s d)
   cases hs0 : checkSlot (nodeCntOf curL) (nodeCntOf prevL) (nodeBlkOf curL) (ruleBlkOf prevL)
       (nodeParent curL id) cb0 rb0 0 (getRuleFromBlk (ruleBlkOf curL) id 0) with
   | false =>
-    rw [show Nat.land (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 65535 =
+    rw [show Nat.land (entFromBlkF (ruleBlkOf curL) id) 65535 =
       getRuleFromBlk (ruleBlkOf curL) id 0 from rfl, hs0] at hnode; cases hnode
   | true =>
-    rw [show Nat.land (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 65535 =
+    rw [show Nat.land (entFromBlkF (ruleBlkOf curL) id) 65535 =
       getRuleFromBlk (ruleBlkOf curL) id 0 from rfl, hs0] at hnode
     dsimp only at hnode; rw [forceN_eq] at hnode
     cases hs1 : checkSlot (nodeCntOf curL) (nodeCntOf prevL) (nodeBlkOf curL) (ruleBlkOf prevL)
         (nodeParent curL id) cb0 rb0 1 (getRuleFromBlk (ruleBlkOf curL) id 1) with
     | false =>
-      rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 16) 65535 =
+      rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 16) 65535 =
         getRuleFromBlk (ruleBlkOf curL) id 1 from rfl, hs1] at hnode; cases hnode
     | true =>
-      rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 16) 65535 =
+      rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 16) 65535 =
         getRuleFromBlk (ruleBlkOf curL) id 1 from rfl, hs1] at hnode
       dsimp only at hnode; rw [forceN_eq] at hnode
       cases hs3 : checkSlot (nodeCntOf curL) (nodeCntOf prevL) (nodeBlkOf curL) (ruleBlkOf prevL)
           (nodeParent curL id) cb0 rb0 3 (getRuleFromBlk (ruleBlkOf curL) id 3) with
       | false =>
-        rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 32)
+        rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 32)
             65535 =
           getRuleFromBlk (ruleBlkOf curL) id 3 from rfl, hs3] at hnode; cases hnode
       | true =>
-        rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf curL) id) 32)
+        rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf curL) id) 32)
             65535 =
           getRuleFromBlk (ruleBlkOf curL) id 3 from rfl, hs3] at hnode
         dsimp only at hnode; rw [forceN_eq] at hnode
@@ -6857,29 +6858,29 @@ private theorem checkWallNode_slot {topL nextBaseL wallCnt id q : Nat}
   rw [forceN_eq, forceN_eq] at hnode
   cases hs0 : checkWallSlot topL wallCnt id 0 (getRuleFromBlk (ruleBlkOf nextBaseL) 0 0) with
   | false =>
-    rw [show Nat.land (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) 65535 =
+    rw [show Nat.land (entFromBlkF (ruleBlkOf nextBaseL) 0) 65535 =
       getRuleFromBlk (ruleBlkOf nextBaseL) 0 0 from rfl, hs0] at hnode; cases hnode
   | true =>
-    rw [show Nat.land (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) 65535 =
+    rw [show Nat.land (entFromBlkF (ruleBlkOf nextBaseL) 0) 65535 =
       getRuleFromBlk (ruleBlkOf nextBaseL) 0 0 from rfl, hs0] at hnode
     dsimp only at hnode; rw [forceN_eq] at hnode
     cases hs1 : checkWallSlot topL wallCnt id 1 (getRuleFromBlk (ruleBlkOf nextBaseL) 0 1) with
     | false =>
-      rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) 16)
+      rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf nextBaseL) 0) 16)
           65535 =
         getRuleFromBlk (ruleBlkOf nextBaseL) 0 1 from rfl, hs1] at hnode; cases hnode
     | true =>
-      rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) 16)
+      rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf nextBaseL) 0) 16)
           65535 =
         getRuleFromBlk (ruleBlkOf nextBaseL) 0 1 from rfl, hs1] at hnode
       dsimp only at hnode; rw [forceN_eq] at hnode
       cases hs3 : checkWallSlot topL wallCnt id 3 (getRuleFromBlk (ruleBlkOf nextBaseL) 0 3) with
       | false =>
-        rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) 32)
+        rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf nextBaseL) 0) 32)
             65535 =
           getRuleFromBlk (ruleBlkOf nextBaseL) 0 3 from rfl, hs3] at hnode; cases hnode
       | true =>
-        rw [show Nat.land (Nat.shiftRight (RuleTableHalt.entFromBlkF (ruleBlkOf nextBaseL) 0) 32)
+        rw [show Nat.land (Nat.shiftRight (entFromBlkF (ruleBlkOf nextBaseL) 0) 32)
             65535 =
           getRuleFromBlk (ruleBlkOf nextBaseL) 0 3 from rfl, hs3] at hnode
         dsimp only at hnode; rw [forceN_eq] at hnode
@@ -6899,7 +6900,7 @@ private theorem baseRule_div5_zero (s : Nat) (hs : s < 13) (q : Nat) :
       | 0 | 1 | 3 | 5 => decide
       | 2 | 4 | _ + 6 => exact Nat.zero_le 5
     | s + 13 => omega
-  rw [nat_div_eq, RuleTableHalt.nat_sub_eq]
+  rw [nat_div_eq, nat_sub_eq]
   omega
 
 private theorem nodeCnt_stageBase_succ (s : Nat) (hs : s < 13) :
@@ -7405,7 +7406,7 @@ private theorem simStagePush_succ (isHalt : Bool) (baseL tgtLid tgtQ : Nat) (tgt
           forceN false (Nat.add cd 1) fun cdd' =>
           forceN false (Nat.add baseL cdd') fun nxtL =>
           @Bool.rec (fun _ => Bool) false
-            (forceN false (RuleTableHalt.entFromBlkF (nodeBlkOf nxtL) nid) fun nw =>
+            (forceN false (entFromBlkF (nodeBlkOf nxtL) nid) fun nw =>
              forceN false (Nat.add (Nat.shiftLeft lid 48) outBits) fun expected =>
               @Bool.rec (fun _ => Bool) false
                 (match ps' with
@@ -7453,7 +7454,7 @@ private theorem simStagePush_bridge_sound {s : Nat} (hs : s ≤ 13)
       obtain ⟨_, houtB, hl', hlen', hstep⟩ := hsim
       dsimp only at hchk
       rw [forceN_eq] at hchk
-      simp only [RuleTableHalt.nat_add_eq] at hchk
+      simp only [nat_add_eq] at hchk
       cases hble : Nat.ble (lid + 1) (nodeCntOf (stageBase s + cd)) with
       | false => rw [hble] at hchk; cases hchk
       | true =>
@@ -7480,19 +7481,19 @@ private theorem simStagePush_bridge_sound {s : Nat} (hs : s ≤ 13)
       | nil => cases hchk
       | cons nid ps' =>
         dsimp only at hchk; rw [forceN_eq, forceN_eq] at hchk
-        simp only [RuleTableHalt.nat_add_eq] at hchk
+        simp only [nat_add_eq] at hchk
         set nxtL := stageBase s + (cd + 1)
         have hnxtEq : stageBase s + cd + 1 = nxtL := by omega
         cases hble : Nat.ble (nid + 1) (nodeCntOf nxtL) with
         | false => rw [hble] at hchk; cases hchk
         | true =>
           rw [hble] at hchk; dsimp only at hchk; rw [forceN_eq, forceN_eq] at hchk
-          cases hbeq : Nat.beq (RuleTableHalt.entFromBlkF (nodeBlkOf nxtL) nid)
+          cases hbeq : Nat.beq (entFromBlkF (nodeBlkOf nxtL) nid)
               (Nat.shiftLeft lid 48 + outBits) with
           | false => rw [hbeq] at hchk; cases hchk
           | true =>
             rw [hbeq] at hchk; dsimp only at hchk
-            have hnwEq : RuleTableHalt.entFromBlkF (nodeBlkOf nxtL) nid =
+            have hnwEq : entFromBlkF (nodeBlkOf nxtL) nid =
                 Nat.shiftLeft lid 48 + outBits := Nat.eq_of_beq_eq_true hbeq
             have hpow : 256 ^ nbytesOf nxtL ≤ 281474976710656 := by
               have hle := Nat.pow_le_pow_right (by decide : 0 < 256) (nbytesOf_le6 nxtL)
@@ -7577,7 +7578,7 @@ private theorem simStagePush_halt_sound {s : Nat} (hs : s ≤ 13) (tailFuel fuel
       obtain ⟨_, houtB, hl', hlen', hstep⟩ := hsim
       dsimp only at hchk
       rw [forceN_eq] at hchk
-      simp only [RuleTableHalt.nat_add_eq] at hchk
+      simp only [nat_add_eq] at hchk
       cases hble : Nat.ble (lid + 1) (nodeCntOf (stageBase s + cd)) with
       | false => rw [hble] at hchk; cases hchk
       | true =>
@@ -7604,19 +7605,19 @@ private theorem simStagePush_halt_sound {s : Nat} (hs : s ≤ 13) (tailFuel fuel
       | nil => cases hchk
       | cons nid ps' =>
         dsimp only at hchk; rw [forceN_eq, forceN_eq] at hchk
-        simp only [RuleTableHalt.nat_add_eq] at hchk
+        simp only [nat_add_eq] at hchk
         set nxtL := stageBase s + (cd + 1)
         have hnxtEq : stageBase s + cd + 1 = nxtL := by omega
         cases hble : Nat.ble (nid + 1) (nodeCntOf nxtL) with
         | false => rw [hble] at hchk; cases hchk
         | true =>
           rw [hble] at hchk; dsimp only at hchk; rw [forceN_eq, forceN_eq] at hchk
-          cases hbeq : Nat.beq (RuleTableHalt.entFromBlkF (nodeBlkOf nxtL) nid)
+          cases hbeq : Nat.beq (entFromBlkF (nodeBlkOf nxtL) nid)
               (Nat.shiftLeft lid 48 + outBits) with
           | false => rw [hbeq] at hchk; cases hchk
           | true =>
             rw [hbeq] at hchk; dsimp only at hchk
-            have hnwEq : RuleTableHalt.entFromBlkF (nodeBlkOf nxtL) nid =
+            have hnwEq : entFromBlkF (nodeBlkOf nxtL) nid =
                 Nat.shiftLeft lid 48 + outBits := Nat.eq_of_beq_eq_true hbeq
             have hpow : 256 ^ nbytesOf nxtL ≤ 281474976710656 := by
               have hle := Nat.pow_le_pow_right (by decide : 0 < 256) (nbytesOf_le6 nxtL)

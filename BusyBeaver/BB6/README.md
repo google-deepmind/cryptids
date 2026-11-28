@@ -1,6 +1,6 @@
 # Busy Beaver 6 Holdouts (`BusyBeaver/BB6/`)
 
-This directory formalizes **336 distinct `BB(6)` (6-state, 2-symbol) Turing machines**: **`109`** behavioral reductions and potential cryptids organized by dynamical family in **[`BusyBeaver/BB6/Accelerations/`](./Accelerations/README.md)**, together with **`227`** resolved single-file proofs in **[`BusyBeaver/BB6/Halt/`](./Halt/)** (`38` `IsHalt`) and **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)** (`189` `IsNotHalt`, including [A6](../../artifacts/a6/README.md) and [*Pomme*](./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean), which also carries its Level A/B counter reduction). Resolved holdouts whose halting or non-halting proofs span multiple files (such as `#413`, `#748`, and `#749`) or exceed the CI comparator budget are omitted for size and CI runtime.
+This directory formalizes **337 distinct `BB(6)` (6-state, 2-symbol) Turing machines**: **`109`** behavioral reductions and potential cryptids organized by dynamical family in **[`BusyBeaver/BB6/Accelerations/`](./Accelerations/README.md)**, together with **`228`** resolved proofs in **[`BusyBeaver/BB6/Halt/`](./Halt/)** (`38` `IsHalt`) and **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)** (`190` `IsNotHalt`, including [A6](../../artifacts/a6/README.md) and [*Pomme*](./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean), which also carries its Level A/B counter reduction). Larger multi-file resolved proofs (`> 1.5 MB` or slower `lake comparator` replay, such as `#413`, `#748`, and `#749`) are omitted for repository size and to fit within the `120m` CI comparator budget.
 
 ## Directory Structure
 
@@ -12,18 +12,18 @@ This directory formalizes **336 distinct `BB(6)` (6-state, 2-symbol) Turing mach
 | [`Accelerations/TransducerReduction/`](./Accelerations/TransducerReduction/README.md) | Bidirectional word-stack transducers (`IsValidAcceleration`, cf. `HasTransducerReduction`) | `4` | [`TransducerReduction/README.md`](./Accelerations/TransducerReduction/README.md) |
 | [`Accelerations/SegmentedReduction/`](./Accelerations/SegmentedReduction/README.md) | Partitioned segmented half-tape schemas (`IsClosedSegmentedSystem`, `IsSegmentedCryptid`) | `15` | [`SegmentedReduction/README.md`](./Accelerations/SegmentedReduction/README.md) |
 | [`Halt/`](./Halt/) | Kernel-verified halting machines (`IsHalt`) | `38` | See table below |
-| [`NonHalt/`](./NonHalt/) | Kernel-verified non-halting machines (`IsNotHalt`, including A6 & *Pomme*) | `189` | See table below |
-| `A6/` & `Pomme/` | Multi-file backing modules for A6 (reflective RLE engine) and *Pomme* (2-adic Laurent-determinant proof) | — | [`artifacts/a6/README.md`](../../artifacts/a6/README.md) |
+| [`NonHalt/`](./NonHalt/) | Kernel-verified non-halting machines (`IsNotHalt`, including A6 & *Pomme*) | `190` | See table below |
+| `A6/`, `Pomme/`, & [`Calculi/`](../Calculi/) | Multi-file backing modules for A6, *Pomme*, and shared calculi (`RuleTableHalt`, `Longitudinal`, etc.) | — | [`artifacts/a6/README.md`](../../artifacts/a6/README.md) |
 | [`Hardness.lean`](./Hardness.lean), [`HardnessEvidence.lean`](./HardnessEvidence.lean), [`Equivalences.lean`](./Equivalences.lean) | Hardness taxonomy, `68` live-hazard / halting-residue theorems across `24` holdouts, and `isHalt_HHH1LC_iff_HHH0LA` | — | [`Hardness.lean`](./Hardness.lean) |
 
 > **A6 & Pomme Notes.** The A6 proof ([`NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean`](./NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean)) uses the reflective RLE engine and has a dedicated [proof guide](../../artifacts/a6/README.md). *Pomme* (`1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`) proves both a Baker-free 2-adic `IsNotHalt` theorem (backed by `Pomme/NonHalt.lean`) and a single-counter `HighLevelState` Collatz acceleration (below).
 
 ## Resolved `BB(6)` Machines
 
-This directory formalizes 227 resolved `BB(6)` Turing machines (`38` halting + `189` non-halting, including [A6](../../artifacts/a6/README.md) and *Pomme*) covering novel campaign discoveries as well as community proofs and `busycoq` results directly verified in Lean 4 without axioms (`sorry`-free and `native_decide`-free kernel verification):
+This directory formalizes 228 resolved `BB(6)` Turing machines (`38` halting + `190` non-halting, including [A6](../../artifacts/a6/README.md) and *Pomme*) covering novel campaign discoveries as well as community proofs and `busycoq` results directly verified in Lean 4 without axioms (`sorry`-free and `native_decide`-free kernel verification):
 
 - **[`BusyBeaver/BB6/Halt/`](./Halt/)**: 38 resolved halting machines (`IsHalt`), each reaching a halting configuration from `init []` with verified multi-step traces.
-- **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)**: 189 resolved non-halting machines (`IsNotHalt`, including [A6](./NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean) and [*Pomme*](./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean)), verified via inductive invariants, simulated cycles, or closed-set reachability certificates.
+- **[`BusyBeaver/BB6/NonHalt/`](./NonHalt/)**: 190 resolved non-halting machines (`IsNotHalt`, including [A6](./NonHalt/M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH.lean) and [*Pomme*](./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean)), verified via inductive invariants, simulated cycles, or closed-set reachability certificates.
 
 ### Resolved BB(6) Halt Machines (38 machines)
 
@@ -68,7 +68,7 @@ This directory formalizes 227 resolved `BB(6)` Turing machines (`38` halting + `
 | `1RB0RD_1RC0LF_0LA0RB_1RE---_1LB1RA_0LE0LF` | `6` | `2` | `IsHalt` | [bbchallenge](https://bbchallenge.org/1RB0RD_1RC0LF_0LA0RB_1RE---_1LB1RA_0LE0LF) (Ours, Novel) | [`M_1RB0RD_1RC0LF_0LA0RB_1REHHH_1LB1RA_0LE0LF.lean`](./Halt/M_1RB0RD_1RC0LF_0LA0RB_1REHHH_1LB1RA_0LE0LF.lean) |
 | `1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LA---_0RA0RF` | `6` | `2` | `IsHalt` | [bbchallenge](https://bbchallenge.org/1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LA---_0RA0RF) (Ours, Novel) | [`M_1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LAHHH_0RA0RF.lean`](./Halt/M_1RB1LD_1LC0RF_0RD0LB_1LB0LE_1LAHHH_0RA0RF.lean) |
 
-### Resolved BB(6) NonHalt Machines (189 machines)
+### Resolved BB(6) NonHalt Machines (190 machines)
 
 | Machine (`bbchallenge` RLE) | States | Symbols | Proved Property | Origin / Wiki | Lean 4 Proof |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -261,6 +261,7 @@ This directory formalizes 227 resolved `BB(6)` Turing machines (`38` halting + `
 | `1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_---0LB` | `6` | `2` | `IsNotHalt` | [bbchallenge](https://bbchallenge.org/1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_---0LB) (Ours, Novel) | [`M_1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_HHH0LB.lean`](./NonHalt/M_1RB1LD_1RC0LA_1LA0RE_1LB1LA_1RF0RB_HHH0LB.lean) |
 | `1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RC---` | `6` | `2` | `IsNotHalt` | [bbchallenge](https://bbchallenge.org/1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RC---) (Ours, Novel) | [`M_1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RCHHH.lean`](./NonHalt/M_1RB1LE_1RC1RF_0RD0LB_1LD0RA_0LA0LE_0RCHHH.lean) |
 | `1RB1RF_1LC0RF_1LE0LD_1RC0LB_---1RA_1LB1RA` | `6` | `2` | `IsNotHalt` | [bbchallenge](https://bbchallenge.org/1RB1RF_1LC0RF_1LE0LD_1RC0LB_---1RA_1LB1RA) (Ours, Novel) | [`M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA.lean`](./NonHalt/M_1RB1RF_1LC0RF_1LE0LD_1RC0LB_HHH1RA_1LB1RA.lean) |
+| `1RB0LA_1RC0RB_1LD1RB_0LA0LE_---1LF_1LA1LC` | `6` | `2` | `IsNotHalt` | [bbchallenge](https://bbchallenge.org/1RB0LA_1RC0RB_1LD1RB_0LA0LE_---1LF_1LA1LC) (`busycoq` `Others_v2.v`) | [`M_1RB0LA_1RC0RB_1LD1RB_0LA0LE_HHH1LF_1LA1LC.lean`](./NonHalt/M_1RB0LA_1RC0RB_1LD1RB_0LA0LE_HHH1LF_1LA1LC.lean) |
 
 ### [Pomme (`1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RB---`) High-Level Acceleration](./NonHalt/M_1RB1LA_1RC1RE_1LD0RB_1LA0LC_0RF0RD_0RBHHH.lean)
 
