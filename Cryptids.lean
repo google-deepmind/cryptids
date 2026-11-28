@@ -39,6 +39,8 @@ public import Cryptids.WeakCollatz15
 public import Cryptids.Semantics.WeakCollatz15
 public import Cryptids.Legendre21
 public import Cryptids.Semantics.Legendre21
+public import Cryptids.Kurepa19
+public import Cryptids.Semantics.Kurepa19
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -48,7 +50,8 @@ This library formalizes record smaller 2-symbol Turing machines for **Goldbach's
 Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
 and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16 → 15` states), a 27-state
 machine for **Brocard's problem** (`brocard_27`), a 21-state machine for **Legendre's conjecture**
-(`legendre_21`), as well as complete Lean 4 formalizations of all publicly known baseline machines
+(`legendre_21`), a 19-state machine for **Kurepa's left factorial conjecture** (`kurepa_19`), as
+well as complete Lean 4 formalizations of all publicly known baseline machines
 (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`, `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
 
@@ -136,6 +139,12 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   `ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap`
   (`Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ ∀ p, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2)`), and
   `ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre`.
+- `Cryptids.Kurepa19`, `Cryptids.Semantics.Kurepa19` — A 19-state machine for Kurepa's left
+  factorial conjecture (`kurepa19`), with constructive proofs of
+  `Halts kurepa19 ↔ ∃ S, 2 ≤ S ∧ 2 * S ∣ leftFact S` and
+  `ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd`
+  (`Halts kurepa19 ↔ ∃ n, 2 < n ∧ n ∣ leftFactorial n`), and
+  `ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).

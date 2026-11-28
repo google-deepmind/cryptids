@@ -15,8 +15,10 @@ project:
     erdos_ternary_14), Brocard's problem (a new 27-state machine brocard_27,
     November 2026), Tao's Weak Collatz Conjecture
     (75 -> 41 -> 27 -> 17 -> 16 -> 15 states: weak_collatz_75, weak_collatz_41,
-    weak_collatz_27, weak_collatz_17, weak_collatz_16, and weak_collatz_15), and
+    weak_collatz_27, weak_collatz_17, weak_collatz_16, and weak_collatz_15),
     Legendre's conjecture (a new 21-state machine legendre_21, November 2026),
+    and Kurepa's left factorial conjecture (a new 19-state machine kurepa_19,
+    November 2026),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -283,6 +285,27 @@ sources:
       strictly between n^2 and (n+1)^2 (Cryptids/Legendre21.lean,
       Cryptids/Semantics/Legendre21.lean). The proof uses the lemmas of
       Cryptids/Goldbach21.lean for the test.
+  - title: "A Turing machine for Kurepa's conjecture (tinycryptids, kurepa_38)"
+    authors:
+      - "Charlie Reams"
+    id: "https://github.com/calr3/tinycryptids/tree/main/kurepa"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 38-state, 2-symbol machine (reduced from a 47-state design) with a Lean proof
+      TM.Kurepa.M38.halts_iff, published in October 2026; an earlier machine for the
+      conjecture. kurepa_19 keeps its scheme (unary modulus, running sum, factorial, two
+      holes, merge by a filled marker); its table and its proofs are not used.
+  - title: "A 19-state Turing machine for Kurepa's left factorial conjecture with Lean 4 proofs (kurepa_19)"
+    authors:
+      - "Daniel Veljjanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      New machine (artifacts/kurepa_19/machine.txt) and first Lean 4 proofs that it halts
+      iff some n > 2 divides the left factorial !n = 0! + 1! + ... + (n - 1)!
+      (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
@@ -318,8 +341,8 @@ status:
     PA standard-model adequacy, the brocard_27 square equivalence, the
     weak_collatz_75, weak_collatz_41, weak_collatz_27, weak_collatz_17,
     weak_collatz_16, and weak_collatz_15 nontrivial-cycle and Böhm-Sontacchi
-    Diophantine equivalences, and the legendre_21 gap equivalence (40 theorems
-    total) are
+    Diophantine equivalences, the legendre_21 gap equivalence, and the kurepa_19
+    divisibility equivalence (41 theorems total) are
     proved constructively using at most
     propext and Quot.sound (zero Classical.choice, audited via
     comparator/constructive.json). Object-level first-order PA provability of
@@ -349,7 +372,10 @@ status:
     The 21-state machine legendre_21 satisfies Halts legendre21 <-> ∃ n, 1 ≤ n ∧
     ∀ p, p.Prime -> ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2) constructively
     (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean), and Halts
-    legendre21 <-> ¬ LegendreConjecture with Markov's Principle.
+    legendre21 <-> ¬ LegendreConjecture with Markov's Principle. The 19-state
+    machine kurepa_19 satisfies Halts kurepa19 <-> ∃ n, 2 < n ∧ n ∣ leftFactorial n
+    constructively (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean), and
+    Halts kurepa19 <-> ¬ KurepaConjecture with Markov's Principle.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms:
@@ -687,6 +713,16 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/legendre_21.json"
+    - declaration: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd"
+      file: "Cryptids/Semantics/Kurepa19.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
+      file: "Cryptids/Semantics/Kurepa19.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/kurepa_19.json"
 
 automation:
   methods:
@@ -710,8 +746,9 @@ automation:
         (Cryptids/ErdosTernary15.lean, Cryptids/Semantics/ErdosTernary15.lean,
         Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean) and for
         the design, simulation checks and proofs of brocard_27
-        (Cryptids/Brocard27.lean, Cryptids/Semantics/Brocard27.lean) and of legendre_21
-        (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean).
+        (Cryptids/Brocard27.lean, Cryptids/Semantics/Brocard27.lean), of legendre_21
+        (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean), and of kurepa_19
+        (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
   spend_usd: ""
   notes: >-
     Candidate state reductions and halting-equivalence proofs were discovered
@@ -719,7 +756,7 @@ automation:
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_ternary_15 machine is by Tristan Stérin and Damien Woods and the erdos_ternary_14
     machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs, and the
-    brocard_27 and legendre_21 machines and proofs, were written by Daniel Veljjanoski with Claude
+    brocard_27, legendre_21, and kurepa_19 machines and proofs, were written by Daniel Veljjanoski with Claude
     (Anthropic) as assistant.
 
 fidelity:
@@ -975,6 +1012,18 @@ alignment:
     - source: "legendre_21 <-> ¬ LegendreConjecture"
       lean: "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre"
       module: "Cryptids.Semantics.Legendre21"
+      status: "proved"
+    - source: "kurepa_19 <-> ∃ S ≥ 2, 2 S ∣ !S"
+      lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff"
+      module: "Cryptids.Kurepa19"
+      status: "proved"
+    - source: "kurepa_19 <-> ∃ n > 2, n ∣ !n"
+      lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd"
+      module: "Cryptids.Semantics.Kurepa19"
+      status: "proved"
+    - source: "kurepa_19 <-> ¬ KurepaConjecture"
+      lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_not_kurepa"
+      module: "Cryptids.Semantics.Kurepa19"
       status: "proved"
 
 acknowledgements: >-

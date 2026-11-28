@@ -42,6 +42,9 @@ constructions and halting proofs:
    `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_27`).
 6. **Legendre's Conjecture** (`LegendreConjecture`):
    For every `n ≥ 1` there is a prime strictly between `n ^ 2` and `(n + 1) ^ 2` (`legendre_21`).
+7. **Kurepa's Left Factorial Conjecture** (`KurepaConjecture`):
+   For every `n > 2`, the left factorial `!n = 0! + 1! + ⋯ + (n - 1)!` (`leftFactorial`) is not
+   divisible by `n` (`kurepa_19`).
 -/
 
 @[expose] public section
@@ -751,5 +754,18 @@ def collatzCycleNum : List ℕ → ℕ
 a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
 def LegendreConjecture : Prop :=
   ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
+
+/-! ## 9. Kurepa's Left Factorial Conjecture -/
+
+/-- The left factorial `!n = 0! + 1! + ⋯ + (n - 1)!`. -/
+def leftFactorial : ℕ → ℕ
+  | 0 => 0
+  | n + 1 => leftFactorial n + n.factorial
+
+/-- **Kurepa's left factorial conjecture** (Đuro Kurepa, 1971): for every `n > 2`, the left
+factorial `!n = 0! + 1! + ⋯ + (n - 1)!` is not divisible by `n`. Kurepa stated it as
+`gcd (!n, n!) = 2` for `n ≥ 2`; both forms are equivalent to: no odd prime `p` divides `!p`. -/
+def KurepaConjecture : Prop :=
+  ∀ n : ℕ, 2 < n → ¬ n ∣ leftFactorial n
 
 end ConjectureMachines

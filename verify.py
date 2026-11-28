@@ -55,6 +55,10 @@ It independently:
      event (`q16` reading `0`) the tape is the block, separator, flag and walker area of
      `Cryptids/Legendre21.lean`; from a prepared tape an interval in which no prime was
      seen halts in `X`.
+   - Kurepa (19 states): the 15-step start writes `11 0 11 0 1`, then at every round start
+     (`S1` entered from `LNf`) the tape holds `S`, `!S/2 + S - 1` and `S!/2` ones
+     (`Cryptids/Kurepa19.lean`), and from a prepared tape with `S` dividing the middle
+     block plus one the machine halts in `K`.
 """
 
 from __future__ import annotations
@@ -402,6 +406,23 @@ LEGENDRE_21 = {
     ),
 }
 
+
+# A new machine with no reference, checked like `brocard_27`.
+KUREPA_19 = {
+    "id": "kurepa_19",
+    "path": "artifacts/kurepa_19",
+    "lean_file": "Cryptids/Machines.lean",
+    "lean_def": "kurepa19",
+    "proof_path": "Cryptids/Kurepa19.lean",
+    "challenge_path": "Challenge.lean",
+    "states": 19,
+    "machine_sha256": (
+        "6e6334480338626349254c049f36bb5cc6250ca5cd80cc33f8734a687f1eb251"
+    ),
+    "table_file_sha256": (
+        "6e6334480338626349254c049f36bb5cc6250ca5cd80cc33f8734a687f1eb251"
+    ),
+}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1910,6 +1931,96 @@ def verify_legendre_21(machine: Machine, steps: int) -> dict[str, object]:
   }
 
 
+def verify_kurepa_19(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the round layout of `Cryptids/Kurepa19.lean`.
+
+  State numbers are those of `machine.txt`: `1` is `S1`, `17` is `K` and `18` is `LNf`. A
+  round start is `S1` entered from `LNf`. On the blank tape the first round start is at
+  step 15, and at the round start number `S - 1` (`S = 2, 3, ...`) the tape holds exactly
+  three blocks of ones with single zeros between them: `N` with `S` cells, `A` with
+  `!S/2 + S - 1` cells and `T` with `S!/2` cells, where `!S = 0! + ... + (S-1)!`; the head
+  is on a cell of `N` or on the zero after it. Then, from prepared round starts with
+  `S = 5` and `T` of `3` cells (head on the first cell of `N`):
+  - `A` of `9` cells (`5` divides `9 + 1`): the machine halts in state `17` (`K`);
+  - `A` of `10` cells: it reaches the next round start with the blocks `6`, `14 = 10 + 1 + 3`
+    and `18 = 6 * 3`.
+  """
+  proof_text = (ROOT / str(KUREPA_19["proof_path"])).read_text(encoding="utf-8")
+  assert "theorem halts_kurepa19_iff " in proof_text
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  # Only `K` (state 17) on `0` halts.
+  assert halting == [(17, 0)], f"kurepa_19 halting entries: {halting}"
+
+  def run(ones: set[int], head: int, state: int, limit: int):
+    """Runs until the next round start (after a step), a halt, or `limit` steps."""
+    for t in range(limit):
+      tr = machine.table[state][int(head in ones)]
+      if tr is None:
+        return "halt", state, head, t
+      if tr.write:
+        ones.add(head)
+      else:
+        ones.discard(head)
+      head += tr.direction
+      previous, state = state, tr.next_state
+      if state == 1 and previous == 18:
+        return "stop", state, head, t + 1
+    return "limit", state, head, limit
+
+  def layout(first: int, s: int, a: int, t: int) -> set[int]:
+    cells = {first + i for i in range(s)}
+    cells |= {first + s + 1 + i for i in range(a)}
+    cells |= {first + s + a + 2 + i for i in range(t)}
+    return cells
+
+  def factorial(n: int) -> int:
+    f = 1
+    for i in range(2, n + 1):
+      f *= i
+    return f
+
+  def left_factorial(n: int) -> int:
+    return sum(factorial(k) for k in range(n))
+
+  # Blank-tape rounds: S = 2, 3, ... as far as `steps` allows.
+  ones: set[int] = set()
+  head, state, total, s = 0, 0, 0, 1
+  while True:
+    status, state, head, t = run(ones, head, state, steps - total)
+    total += t
+    if status != "stop":
+      assert status == "limit", f"kurepa_19 halted at step {total}"
+      break
+    s += 1
+    first = min(ones)
+    expected = layout(first, s, left_factorial(s) // 2 + s - 1, factorial(s) // 2)
+    assert ones == expected, f"kurepa_19 round start S={s}: tape mismatch at step {total}"
+    assert first <= head <= first + s, f"kurepa_19 round start S={s}: head outside N"
+    if s == 2:
+      assert total == 15, f"kurepa_19 first round start at step {total}"
+  if steps >= 6_000:
+    assert s >= 5, f"kurepa_19: only {s - 1} round starts in {steps} steps"
+
+  # Planted rounds with S = 5: 5 divides 9 + 1, and does not divide 10 + 1.
+  cells = layout(0, 5, 9, 3)
+  status, state, _, _ = run(cells, 0, 1, 100_000)
+  assert (status, state) == ("halt", 17), f"kurepa_19 planted divisor: {status} in {state}"
+  cells = layout(0, 5, 10, 3)
+  status, state, head, _ = run(cells, 0, 1, 100_000)
+  assert status == "stop", f"kurepa_19 planted non-divisor: {status}"
+  assert cells == layout(min(cells), 6, 14, 18), "kurepa_19 planted non-divisor: wrong next tape"
+  return {
+      "steps_simulated": total,
+      "rounds_verified": s - 1,
+      "last_s": s,
+      "planted_divisor_halts": True,
+  }
+
 
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
@@ -2382,6 +2493,42 @@ def run_verification(
         f" {legendre_sim['last_number']}); planted gap halts in X"
     )
 
+  # Kurepa: table, SHA-256, Lean definitions, and simulation.
+  kspec = KUREPA_19
+  k_text = (ROOT / str(kspec["path"]) / "machine.txt").read_text(encoding="utf-8")
+  assert sha256_bytes(k_text.encode("utf-8")) == kspec["table_file_sha256"], (
+      "kurepa_19 table file SHA-256 mismatch"
+  )
+  km = parse_canonical_machine(k_text)
+  assert km.states == kspec["states"], f"kurepa_19 state count mismatch: {km.states}"
+  assert km.sha256 == kspec["machine_sha256"], (
+      f"kurepa_19 machine SHA-256 mismatch: {km.sha256}"
+  )
+  for lean_path in (kspec["lean_file"], kspec["challenge_path"]):
+    assert (
+        parse_lean_machine_def(
+            (ROOT / str(lean_path)).read_text(encoding="utf-8"),
+            str(kspec["lean_def"]),
+            expected_table_path=f"{kspec['path']}/machine.txt",
+        ).table
+        == km.table
+    ), f"{lean_path} kurepa_19 table mismatch"
+  assert "theorem halts_kurepa19_iff_exists_dvd" in (
+      ROOT / "Challenge.lean"
+  ).read_text(encoding="utf-8")
+  kurepa_sim = verify_kurepa_19(km, steps)
+  report["candidates"]["kurepa_19"] = {
+      "states": km.states,
+      "machine_sha256": km.sha256,
+  }
+  report["simulations"]["kurepa_19"] = kurepa_sim
+  if verbose:
+    print(
+        f"[PASS] Kurepa 19 ({km.states} states, SHA-256 {km.sha256[:16]}...):"
+        f" {kurepa_sim['rounds_verified']} round starts verified on the blank tape"
+        f" ({kurepa_sim['steps_simulated']:,} steps, up to S = {kurepa_sim['last_s']});"
+        f" a planted divisor halts in K"
+    )
 
   # 5. Concrete blank-tape lockstep simulations
   gb_ref_sim = extract_goldbach_chk0(

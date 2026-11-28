@@ -39,6 +39,7 @@ order = [
   "Cryptids.Semantics.WeakCollatz16",
   "Cryptids.Semantics.WeakCollatz15",
   "Cryptids.Semantics.Legendre21",
+  "Cryptids.Semantics.Kurepa19",
   # Cryptids.Semantics.Zf
   "Cryptids.Semantics.Zf.Boot",
   "Cryptids.Semantics.Zf.Gadgets",
@@ -181,6 +182,7 @@ module = "BusyBeaver.BB33.WilyCoyote"
   "Cryptids.WeakCollatz16",
   "Cryptids.WeakCollatz15",
   "Cryptids.Legendre21",
+  "Cryptids.Kurepa19",
   "Cryptids.Semantics",
   "Cryptids.ReductionSupport",
 ]

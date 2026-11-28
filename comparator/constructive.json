@@ -41,7 +41,8 @@
     "ConjectureMachines.WeakCollatz15.candidate_equivalent",
     "ConjectureMachines.WeakCollatz15.Semantics.halts_candidate_iff_exists_cycle",
     "ConjectureMachines.WeakCollatz15.Semantics.halts_candidate_iff_bohmSontacchi",
-    "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap"
+    "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap",
+    "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd"
   ],
   "permitted_axioms": [
     "propext",

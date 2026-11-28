@@ -37,8 +37,9 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
   the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
-  and `weak_collatz_15` cycle and Böhm–Sontacchi Diophantine equivalences, and the `legendre_21`
-  equivalence `Legendre21.halts_legendre21_iff_exists_gap`
+  and `weak_collatz_15` cycle and Böhm–Sontacchi Diophantine equivalences, the `legendre_21`
+  equivalence `Legendre21.halts_legendre21_iff_exists_gap`, and the `kurepa_19` equivalence
+  `Kurepa19.halts_kurepa19_iff_exists_dvd`
   are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
   `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
   choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
@@ -46,14 +47,15 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 66 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  Audits all 68 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
   negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
   `RiemannHypothesis` equivalences, the `erdos_ternary_15` and `erdos_ternary_14` equivalences
   with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
   also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
-  and `weak_collatz_15` equivalences with `¬ WeakCollatzConjecture`, and the `legendre_21`
-  equivalence with `¬ LegendreConjecture` (Markov's Principle).
+  and `weak_collatz_15` equivalences with `¬ WeakCollatzConjecture`, the `legendre_21`
+  equivalence with `¬ LegendreConjecture`, and the `kurepa_19` equivalence with
+  `¬ KurepaConjecture` (Markov's Principle).
 -/
 
 meta section
@@ -387,6 +389,11 @@ def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
   load_machine_rows% "artifacts/legendre_21/machine.txt"
 /-- 21-state Legendre machine. -/
 def legendre21 : Machine 21 2 := Machine.ofRows legendre21Rows
+/-- Rows of `kurepa19`. -/
+def kurepa19Rows : List (List (Option (Fin 2 × Dir × Fin 19))) :=
+  load_machine_rows% "artifacts/kurepa_19/machine.txt"
+/-- 19-state Kurepa machine. -/
+def kurepa19 : Machine 19 2 := Machine.ofRows kurepa19Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -889,6 +896,17 @@ a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
 def LegendreConjecture : Prop :=
   ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
 
+/-- The left factorial `!n = 0! + 1! + ⋯ + (n - 1)!`. -/
+def leftFactorial : ℕ → ℕ
+  | 0 => 0
+  | n + 1 => leftFactorial n + n.factorial
+
+/-- **Kurepa's left factorial conjecture** (Đuro Kurepa, 1971): for every `n > 2`, the left
+factorial `!n = 0! + 1! + ⋯ + (n - 1)!` is not divisible by `n`. Kurepa stated it as
+`gcd (!n, n!) = 2` for `n ≥ 2`; both forms are equivalent to: no odd prime `p` divides `!p`. -/
+def KurepaConjecture : Prop :=
+  ∀ n : ℕ, 2 < n → ¬ n ∣ leftFactorial n
+
 /-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
 for odd `n`. -/
 def terras (n : ℕ) : ℕ :=
@@ -1180,5 +1198,14 @@ theorem halts_legendre21_iff_exists_gap :
 theorem halts_legendre21_iff_not_legendre :
     ConjectureMachines.Halts legendre21 ↔ ¬ LegendreConjecture := by sorry
 end Legendre21
+
+namespace Kurepa19
+/-- 19-state Kurepa machine (`kurepa_19`, Veljjanoski 2026). -/
+abbrev kurepa19 : Machine 19 2 := Machines.kurepa19
+theorem halts_kurepa19_iff_exists_dvd :
+    ConjectureMachines.Halts kurepa19 ↔ ∃ n : ℕ, 2 < n ∧ n ∣ leftFactorial n := by sorry
+theorem halts_kurepa19_iff_not_kurepa :
+    ConjectureMachines.Halts kurepa19 ↔ ¬ KurepaConjecture := by sorry
+end Kurepa19
 
 end ConjectureMachines
