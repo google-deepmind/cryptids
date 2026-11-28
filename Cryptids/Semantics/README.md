@@ -780,8 +780,9 @@ predicate of `Cryptids/Goldbach21.lean`.
    states are its states. The machine is embedded into the 25-state numbering of
    `Goldbach21.edited` (`leg25`), so the step and scan lemmas and the machine-generic pass lemmas
    of `Goldbach21.lean` apply unchanged, and the lemmas stated there for `edited` only are proved
-   again; `test_eval` says that from a test event the machine reaches the exit that decides
-   `IsPrime t` with the block restored. After each test the hole of the walker area moves one cell
+   again, for every machine with the cells of the test (`TestCells`); `test_eval` says that from
+   a test event the machine reaches the exit that decides `IsPrime t` with the block restored.
+   After each test the hole of the walker area moves one cell
    left. Interval `n` (`n ^ 2, …, n ^ 2 + 2 n`) starts with `2 n` ones in the walker area; its
    first prime sets the flag and is tested twice; the hole reaches the left end at the last
    number, with the flag set (`cycle_adv`: the next interval starts with `2 n + 2` ones) or clear
@@ -860,9 +861,10 @@ with `EmptyLeft n ↔ ∀ x, n * n - n < x → x < n * n → ¬ IsPrime x`,
    flag cell and a walker area. The primality test is the one of `goldbach_21`; sixteen of the 22
    states are its states. The machine is embedded into the 25-state numbering of
    `Goldbach21.edited` (`opp25`), so the step and scan lemmas and the machine-generic pass lemmas
-   of `Goldbach21.lean` apply unchanged, and the lemmas stated there for `edited` only are proved
-   again; `test_eval` says that from a test event the machine reaches the exit that decides
-   `IsPrime t` with the block restored. After each test the hole of the walker area moves two
+   of `Goldbach21.lean` apply unchanged, and `opp25` has the cells of the test of `legendre_21`
+   (`testCells_opp25`), so the test lemmas of `Legendre21.lean` apply too; `test_eval` says that
+   from a test event the machine reaches the exit that decides `IsPrime t` with the block
+   restored. After each test the hole of the walker area moves two
    cells left. Block `j` (`qs j, …, qs (j + 1) - 1` with `qs j = ⌊j² / 4⌋`) starts with `j - 1`
    ones in the walker area; a prime sets the flag; at the last number the hole would land on the
    flag cell or pass it, with the flag set (`block_adv`: the next block starts with `j` ones) or

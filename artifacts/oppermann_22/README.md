@@ -57,8 +57,8 @@ where `q0`–`q24` are the names of the same states in the Lean proof of `goldba
   of block `7`, the number `12`, with six ones in the walker area. The half-intervals of
   `n = 2, 3` hold the primes `3, 5, 7, 11`. No state is used for the start only.
 
-The design follows `legendre_21`, a 21-state machine for Legendre's conjecture by the same
-author (proposed separately in pull request #32 of this repository): the same test and walker,
+The design follows [`legendre_21`](../legendre_21/README.md), a 21-state machine for
+Legendre's conjecture by the same author: the same test and walker,
 with one more state (`C2`), four changed cells and another start state. A start without a
 further state was found by a computer search over start states and
 changed cells; its survivors were checked against a simulator written from the definition.
@@ -74,8 +74,9 @@ In the bbchallenge standard text format (states `0`–`21` written `A`–`V`):
 ## Review entry points
 
 - [`Oppermann22.lean`](../../Cryptids/Oppermann22.lean): the machine (loaded from `machine.txt`),
-  its embedding into the state numbering of `Goldbach21.edited`, the test (`test_eval`), the
-  walker and block lemmas, and `halts_oppermann22_iff`.
+  its embedding into the state numbering of `Goldbach21.edited`, its cells of the test
+  (`testCells_opp25`; the test lemmas are in `Legendre21.lean`), the walker and block lemmas,
+  and `halts_oppermann22_iff`.
 - [`Semantics/Oppermann22.lean`](../../Cryptids/Semantics/Oppermann22.lean):
   `halts_oppermann22_iff_exists_gap` and `halts_oppermann22_iff_not_oppermann`.
 

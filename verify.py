@@ -2066,7 +2066,7 @@ def verify_oppermann_22(machine: Machine, steps: int) -> dict[str, object]:
   - `t = 15`, `f = 1`, `h = 0`, `r = 6` (the tape the blank-tape run has at `15`): it
     reaches the test of `16` with the flag clear and seven ones in the walker area.
   """
-  proof_text = (ROOT / "Cryptids/Oppermann22.lean").read_text(encoding="utf-8")
+  proof_text = (ROOT / str(OPPERMANN_22["proof_path"])).read_text(encoding="utf-8")
   assert "theorem halts_oppermann22_iff" in proof_text
   halting = [
       (q, sym)

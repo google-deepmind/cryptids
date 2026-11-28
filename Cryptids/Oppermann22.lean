@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import Cryptids.Goldbach21
+public import Cryptids.Legendre21
 
 /-!
 # Oppermann22
@@ -17,9 +18,9 @@ strictly between `n ^ 2` and `n ^ 2 + n`.
 
 The machine and the proofs are by Daniel Veljjanoski, with Claude (Anthropic) as assistant
 (November 2026). The design follows `legendre_21`, a 21-state machine for Legendre's conjecture
-by the same author (proposed separately): the same test and walker, with one new state (`C2`),
-both cells of `C`, `(q7, 0)` and `(X, 1)` changed, and the start in `q12`. The primality test
-is the one of
+by the same author (`Cryptids/Legendre21.lean`): the same test and walker, with one new state
+(`C2`), both cells of `C`, `(q7, 0)` and `(X, 1)` changed, and the start in `q12`. The primality
+test is the one of
 the Goldbach machines: the anonymous 2016 machine, Andrew Yao and Yijun Leng's `goldbach_25`
 (2024), and `goldbach_21` of Maxence Faldor and Moritz Firsching (2026), whose lemmas in
 `Cryptids/Goldbach21.lean` this file uses. Earlier machines for the same conjecture, both with
@@ -64,8 +65,9 @@ block stays blank; the block grows to the left.
 
 `opp25` is the machine in the 25-state numbering of `Goldbach21.edited` (`A1, B, C, Z1, X, C2`
 take the numbers `1, 2, 5, 8, 10, 17`, which are free in our table), so the step and scan
-lemmas and the machine-generic pass lemmas of `Cryptids/Goldbach21.lean` apply unchanged; the
-lemmas stated there for `edited` only are proved again for `opp25`.
+lemmas and the machine-generic pass lemmas of `Cryptids/Goldbach21.lean` apply unchanged, and
+so do the test lemmas of `Cryptids/Legendre21.lean`, which are stated for every machine with
+the cells of the test.
 -/
 
 @[expose] public section
@@ -75,6 +77,7 @@ namespace ConjectureMachines.Oppermann22
 open Turing (Dir)
 open StateTransition
 open Goldbach21
+open Legendre21 (TestCells testCfg testCfg_B0 testExit test_eval)
 
 /-- 22-state Oppermann machine (`oppermann_22`). -/
 abbrev oppermann22 : Machine 22 2 := Machines.oppermann22
@@ -147,453 +150,15 @@ theorem halts_iff_opp25 :
 /-!
 ## The primality test in `opp25`
 
-The test is the one of `Goldbach21.edited` with three changes:
-* `q21` is merged into `q9`: `(q20, 0) = 1 L q9`, and `q9` reading `0` reaches `q22` through
-  `(q0, 1) = 1 L q22` (three steps instead of one, same tape);
-* the entry is `(q16, 0) = 1 R q3` instead of `(q0, 1) = 1 R q3`;
-* the composite exit is `(q15, 0) = 1 L A1`: `A1` runs right over the restored block and
-  `(A1, 0) = 0 R q6` leaves `q6` on the cell right of the separator.
-
-Three more cells of the test states differ from `edited`, `(q3, 0)`, `(q6, 0)` and `(q7, 0)`;
-they are read only at the exits of the test and by the block logic.
-
-Used unchanged from `Goldbach21`: the step and scan lemmas and the machine-generic pass lemmas
-`nSteps_pass_11_to_13` and `nSteps_pass_13_zero_to_15`.  The other lemmas of this section
-follow the `_edit`, `cfg6E` and `cfg11E` lemmas of `Goldbach21` line by line, stated for `opp25`
-and for arbitrary tape on both sides of the block.
+The test is the one of `legendre_21`: `opp25` has the `29` cells of `Legendre21.TestCells` (the
+two `25`-state tables differ only in the cells of `C`, in `(q7, 0)`, `(X, 1)` and in the state
+`C2`), so the test lemmas of `Cryptids/Legendre21.lean` apply; this file uses
+`Legendre21.test_eval`.
 -/
 
-theorem pass_13_one_to_9 (m : ℕ) (L R : ListBlank (Fin 2)) :
-    nSteps opp25 (1 + ((m + 1) + 1))
-      ⟨13, Tape.mk' (ListBlank.append (List.replicate (m + 1) 1) (L.cons 0)) (R.cons 1)⟩ =
-      some ⟨9, Tape.mkL L ((ListBlank.append (List.replicate (m + 1) 1) (R.cons 0)).cons 1)⟩ := by
-  refine nSteps_bind_eq (step_one (step_mk'_left (b := 0) (q' := 20) rfl _ _)) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 20) (a := 1) (b := 1) rfl (m + 1) _ _) ?_
-  exact step_one (step_mkL_left (b := 1) (q' := 9) rfl _ _)
-
-theorem pass_9_b0_to_11 (A : ℕ) (L_base R : ListBlank (Fin 2)) :
-    nSteps opp25 (3 + (A + (2 + A)))
-      ⟨9, Tape.mkL (counterTape A 0 L_base) (R.cons 1)⟩ =
-      some ⟨11, Tape.mk' (counterTape 0 A L_base) (R.cons 1)⟩ := by
-  unfold counterTape
-  simp only [List.replicate_zero, ListBlank.append]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mkL_right (b := 1) (q' := 0) rfl _ _)
-      (step_nSteps (step_mk'_left (b := 1) (q' := 22) rfl _ _)
-        (step_one (step_mkL_left (b := 0) (q' := 22) rfl _ _)))) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 22) (a := 1) (b := 0) rfl A _ _) ?_
-  rw [append_replicate_cons]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mkL_right (b := 0) (q' := 0) rfl _ _)
-      (step_one (by
-        rw [List.replicate_succ, ListBlank.append]
-        exact step_mk'_right (b := 0) (q' := 11) rfl _ _))) ?_
-  exact nSteps_mk'_right_scan (q := 11) (a := 0) (b := 1) rfl A _ _
-
-theorem pass_9_bsucc_to_11 (A b : ℕ) (L_base R : ListBlank (Fin 2)) :
-    nSteps opp25 (1 + (b + (2 + b)))
-      ⟨9, Tape.mkL (counterTape A (b + 1) L_base) R⟩ =
-      some ⟨11, Tape.mk' (counterTape (A + 1) b L_base) R⟩ := by
-  unfold counterTape
-  rw [List.replicate_succ, ListBlank.append]
-  refine nSteps_bind_eq (step_one (step_mkL_left (b := 0) (q' := 9) rfl _ _)) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 9) (a := 1) (b := 0) rfl b _ _) ?_
-  rw [append_replicate_cons]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mkL_right (b := 1) (q' := 0) rfl _ _)
-      (step_one (by
-        rw [List.replicate_succ, ListBlank.append]
-        exact step_mk'_right (b := 0) (q' := 11) rfl _ _))) ?_
-  exact nSteps_mk'_right_scan (q := 11) (a := 0) (b := 1) rfl b _ _
-
-theorem pass_11_b0 (A m : ℕ) (L_base R : ListBlank (Fin 2)) :
-    nSteps opp25 ((1 + (m + 1)) + ((1 + ((m + 1) + 1)) + (3 + (A + (2 + A)))))
-      ⟨11, Tape.mk' (counterTape A 0 L_base)
-        ((ListBlank.append (List.replicate m 1) ((R.cons 1).cons 0)).cons 1)⟩ =
-      some ⟨11, Tape.mk' (counterTape 0 A L_base)
-        ((ListBlank.append (List.replicate (m + 1) 1) (R.cons 0)).cons 1)⟩ :=
-  nSteps_bind_eq (nSteps_pass_11_to_13 rfl rfl rfl m _ _)
-    (nSteps_bind_eq (pass_13_one_to_9 m _ _)
-      (pass_9_b0_to_11 A _ _))
-
-theorem pass_11_bsucc (A b m : ℕ) (L_base R : ListBlank (Fin 2)) :
-    nSteps opp25 ((1 + (m + 1)) + ((1 + ((m + 1) + 1)) + (1 + (b + (2 + b)))))
-      ⟨11, Tape.mk' (counterTape A (b + 1) L_base)
-        ((ListBlank.append (List.replicate m 1) ((R.cons 1).cons 0)).cons 1)⟩ =
-      some ⟨11, Tape.mk' (counterTape (A + 1) b L_base)
-        ((ListBlank.append (List.replicate (m + 1) 1) (R.cons 0)).cons 1)⟩ :=
-  nSteps_bind_eq (nSteps_pass_11_to_13 rfl rfl rfl m _ _)
-    (nSteps_bind_eq (pass_13_one_to_9 m _ _)
-      (pass_9_bsucc_to_11 A b _ _))
-
-theorem pass_15_bsucc_to_6 (A b : ℕ) (L_base R : ListBlank (Fin 2)) :
-    nSteps opp25 (1 + (b + (1 + (b + 3))))
-      ⟨15, Tape.mkL (counterTape A (b + 1) L_base) ((R.cons 1).cons 1)⟩ =
-      some ⟨6, Tape.mk'
-        ((ListBlank.append (List.replicate (A + b + 3) 1) (L_base.cons 0)).cons 1) R⟩ := by
-  unfold counterTape
-  rw [List.replicate_succ, ListBlank.append]
-  refine nSteps_bind_eq (step_one (step_mkL_left (b := 0) (q' := 23) rfl _ _)) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 23) (a := 1) (b := 1) rfl b _ _) ?_
-  refine nSteps_bind_eq (step_one (step_mkL_right (b := 1) (q' := 24) rfl _ _)) ?_
-  refine nSteps_bind_eq (nSteps_mk'_right_scan (q := 24) (a := 1) (b := 1) rfl b _ _) ?_
-  have h_cnt : ListBlank.append (List.replicate b 1)
-      ((ListBlank.append (List.replicate A 1) (L_base.cons 0)).cons 1) =
-      ListBlank.append (List.replicate (A + b + 1) 1) (L_base.cons 0) := by
-    rw [append_replicate_cons, append_replicate_add]
-    have : b + 1 + A = A + b + 1 := by omega
-    rw [this]
-  rw [h_cnt]
-  refine step_nSteps (step_mk'_right (b := 1) (q' := 3) rfl _ _) ?_
-  refine step_nSteps (step_mk'_right (b := 1) (q' := 4) rfl _ _) ?_
-  exact step_one (step_mk'_right (b := 1) (q' := 6) rfl _ _)
-
-theorem pass_11_to_6 (A b m : ℕ) (L_base R_end : ListBlank (Fin 2)) :
-    nSteps opp25 ((1 + (m + 1)) + ((1 + ((m + 1) + 1)) + (1 + (b + (1 + (b + 3))))))
-      ⟨11, Tape.mk' (counterTape A (b + 1) L_base)
-        ((ListBlank.append (List.replicate m 1) ((R_end.cons 0).cons 0)).cons 1)⟩ =
-      some ⟨6, Tape.mk' ((ListBlank.append (List.replicate (A + b + 3) 1) (L_base.cons 0)).cons 1)
-        (ListBlank.append (List.replicate m 1) (R_end.cons 0))⟩ :=
-  nSteps_bind_eq (nSteps_pass_11_to_13 rfl rfl rfl m _ _)
-    (nSteps_bind_eq (nSteps_pass_13_zero_to_15 rfl rfl rfl m _ _)
-      (pass_15_bsucc_to_6 A b _ _))
-
-/-- Composite exit.  `q15` reads the `0` of the counter with `A + 1 ≥ 1` ones of the block on
-its left, so `A1` starts on a `1`; it leaves `q6` on the first cell right of the separator. -/
-theorem pass_15_b0_to_exit (A m : ℕ) (L_base R_end : ListBlank (Fin 2)) :
-    nSteps opp25 (2 + ((m + 3) + 1))
-      ⟨15, Tape.mkL (counterTape (A + 1) 0 L_base)
-        ((ListBlank.append (List.replicate (m + 1) 1) (R_end.cons 0)).cons 1)⟩ =
-      some ⟨6, Tape.mk'
-        ((ListBlank.append (List.replicate (A + m + 4) 1) (L_base.cons 0)).cons 0) R_end⟩ := by
-  unfold counterTape
-  simp only [List.replicate_zero, ListBlank.append]
-  have h1 : ListBlank.append (List.replicate (A + 1) 1) (L_base.cons 0) =
-      (ListBlank.append (List.replicate A 1) (L_base.cons 0)).cons 1 := rfl
-  rw [h1]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mkL_left (b := 1) (q' := 1) rfl _ _)
-      (step_one (step_mkL_right (b := 1) (q' := 1) rfl _ _))) ?_
-  have h2 : ((ListBlank.append (List.replicate (m + 1) 1) (R_end.cons 0)).cons 1).cons 1 =
-      ListBlank.append (List.replicate (m + 3) 1) (R_end.cons 0) := rfl
-  rw [h2]
-  refine nSteps_bind_eq (nSteps_mk'_right_scan (q := 1) (a := 1) (b := 1) rfl (m + 3) _ _) ?_
-  have h3 : ListBlank.append (List.replicate (m + 3) 1)
-      ((ListBlank.append (List.replicate A 1) (L_base.cons 0)).cons 1) =
-      ListBlank.append (List.replicate (A + m + 4) 1) (L_base.cons 0) := by
-    rw [append_replicate_cons, append_replicate_add]
-    have : m + 3 + 1 + A = A + m + 4 := by omega
-    rw [this]
-  rw [h3]
-  exact step_one (step_mk'_right (b := 0) (q' := 6) rfl _ _)
-
-theorem pass_11_to_exit (A m : ℕ) (L_base R_end : ListBlank (Fin 2)) :
-    nSteps opp25 ((1 + (m + 1)) + ((1 + ((m + 1) + 1)) + (2 + ((m + 3) + 1))))
-      ⟨11, Tape.mk' (counterTape (A + 1) 0 L_base)
-        ((ListBlank.append (List.replicate m 1) ((R_end.cons 0).cons 0)).cons 1)⟩ =
-      some ⟨6, Tape.mk'
-        ((ListBlank.append (List.replicate (A + m + 4) 1) (L_base.cons 0)).cons 0) R_end⟩ :=
-  nSteps_bind_eq (nSteps_pass_11_to_13 rfl rfl rfl m _ _)
-    (nSteps_bind_eq (nSteps_pass_13_zero_to_15 rfl rfl rfl m _ _)
-      (pass_15_b0_to_exit A m _ _))
-
-theorem sim6_d (k : ℕ) (L_base R_rest : ListBlank (Fin 2)) :
-    let L_cnt := ListBlank.append (List.replicate (k + 2) 1) (L_base.cons 0)
-    let R_mid := R_rest.cons 0
-    nSteps opp25 (2 + ((k + 2) + (2 + ((k + 1) + (6 + (k + 1))))))
-      ⟨6, Tape.mk' (L_cnt.cons 1) ((R_rest.cons 1).cons 1)⟩ =
-      some ⟨0, Tape.mk' ((L_base.cons 0).cons 1)
-        (ListBlank.append (0 :: (List.replicate k 0 ++ [1])) (R_mid.cons 1))⟩ := by
-  dsimp only
-  refine nSteps_bind_eq
-    (step_nSteps (step_mk'_left (b := 0) (q' := 7) rfl _ _)
-      (step_one (step_mkL_left (b := 1) (q' := 22) rfl _ _))) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 22) (a := 1) (b := 0) rfl (k + 2) _ _) ?_
-  rw [List.replicate_succ, ListBlank.append]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mkL_right (b := 0) (q' := 0) rfl _ _)
-      (step_one (step_mk'_right (b := 0) (q' := 11) rfl _ _))) ?_
-  refine nSteps_bind_eq (nSteps_mk'_right_scan (q := 11) (a := 0) (b := 1) rfl (k + 1) _ _) ?_
-  rw [List.replicate_succ, ListBlank.append]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mk'_right (b := 0) (q' := 12) rfl _ _)
-      (step_nSteps (step_mk'_right (b := 1) (q' := 13) rfl _ _)
-        (step_nSteps (step_mk'_left (b := 0) (q' := 20) rfl _ _)
-          (step_nSteps (step_mkL_left (b := 1) (q' := 20) rfl _ _)
-            (step_nSteps (step_mkL_left (b := 1) (q' := 9) rfl _ _)
-              (step_one (step_mkL_left (b := 0) (q' := 9) rfl _ _))))))) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 9) (a := 1) (b := 0) rfl k _ _) ?_
-  rw [append_replicate_cons, List.replicate_succ, ListBlank.append]
-  apply step_one
-  simpa [ListBlank.append_assoc] using
-    step_mkL_right (M := opp25) (q := 9) (q' := 0) (a := 0) (b := 1) rfl
-      (L_base.cons 0) (ListBlank.append (0 :: List.replicate k 0) (((R_rest.cons 0).cons 1).cons 1))
-
-theorem sim6_accept (k : ℕ) (L_base R_end : ListBlank (Fin 2)) :
-    let L_cnt := ListBlank.append (List.replicate (k + 2) 1) (L_base.cons 0)
-    nSteps opp25 (2 + ((k + 2) + (2 + ((k + 1) + (6 + (k + (1 + (k + 3))))))))
-      ⟨6, Tape.mk' (L_cnt.cons 1) ((R_end.cons 0).cons 1)⟩ =
-      some ⟨6, Tape.mk' ((L_cnt.cons 1).cons 1) (R_end.cons 0)⟩ := by
-  dsimp only
-  refine nSteps_bind_eq
-    (step_nSteps (step_mk'_left (b := 0) (q' := 7) rfl _ _)
-      (step_one (step_mkL_left (b := 1) (q' := 22) rfl _ _))) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 22) (a := 1) (b := 0) rfl (k + 2) _ _) ?_
-  rw [List.replicate_succ, ListBlank.append]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mkL_right (b := 0) (q' := 0) rfl _ _)
-      (step_one (step_mk'_right (b := 0) (q' := 11) rfl _ _))) ?_
-  refine nSteps_bind_eq (nSteps_mk'_right_scan (q := 11) (a := 0) (b := 1) rfl (k + 1) _ _) ?_
-  rw [List.replicate_succ, ListBlank.append]
-  refine nSteps_bind_eq
-    (step_nSteps (step_mk'_right (b := 0) (q' := 12) rfl _ _)
-      (step_nSteps (step_mk'_right (b := 1) (q' := 13) rfl _ _)
-        (step_nSteps (step_mk'_left (b := 0) (q' := 14) rfl _ _)
-          (step_nSteps (step_mkL_left (b := 1) (q' := 14) rfl _ _)
-            (step_nSteps (step_mkL_left (b := 1) (q' := 15) rfl _ _)
-              (step_one (step_mkL_left (b := 0) (q' := 23) rfl _ _))))))) ?_
-  refine nSteps_bind_eq (nSteps_mkL_left_scan (q := 23) (a := 1) (b := 1) rfl k _ _) ?_
-  refine nSteps_bind_eq (step_one (step_mkL_right (b := 1) (q' := 24) rfl _ _)) ?_
-  refine nSteps_bind_eq (nSteps_mk'_right_scan (q := 24) (a := 1) (b := 1) rfl k _ _) ?_
-  rw [append_replicate_cons]
-  refine step_nSteps (step_mk'_right (b := 1) (q' := 3) rfl _ _) ?_
-  refine step_nSteps (step_mk'_right (b := 1) (q' := 4) rfl _ _) ?_
-  exact step_one (step_mk'_right (b := 1) (q' := 6) rfl _ _)
-
-/-- Inside the test of `k + 3 + r`: `q6` on the block, `k + 2` is the next divisor to try,
-`r + 1` cells of the block are right of the head.  `L.cons 0` is the tape left of the block,
-`R.cons 0` the tape right of it. -/
-def tcfg6 (L R : ListBlank (Fin 2)) (k r : ℕ) : Cfg 25 2 :=
-  ⟨6, Tape.mk' ((ListBlank.append (List.replicate (k + 2) 1) (L.cons 0)).cons 1)
-    (ListBlank.append (List.replicate (r + 1) 1) (R.cons 0))⟩
-
-def tcfg11 (L R : ListBlank (Fin 2)) (A B m r : ℕ) : Cfg 25 2 :=
-  ⟨11, Tape.mk' (counterTape A B L)
-    ((ListBlank.append (List.replicate (m + 1) 1)
-      ((ListBlank.append (List.replicate r 1) (R.cons 0)).cons 0)).cons 1)⟩
-
-/-- Exit of the test of `p` (a block of `p + 1` ones, restored).  Prime: `q6` on the separator.
-Composite: `q6` on the first cell right of the separator. -/
-def testExit (L R : ListBlank (Fin 2)) (is_prime : Bool) (p : ℕ) : Cfg 25 2 :=
-  if is_prime then
-    ⟨6, Tape.mk' (ListBlank.append (List.replicate (p + 1) 1) (L.cons 0)) (R.cons 0)⟩
-  else
-    ⟨6, Tape.mk' ((ListBlank.append (List.replicate (p + 1) 1) (L.cons 0)).cons 0) R⟩
-
-theorem tcfg11_step_b0 (L R : ListBlank (Fin 2)) (A m r' : ℕ) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (tcfg11 L R A 0 m (r' + 1)) = some (tcfg11 L R 0 A (m + 1) r') := by
-  have h_rep : ListBlank.append (List.replicate (r' + 1) 1) (R.cons 0) =
-      (ListBlank.append (List.replicate r' 1) (R.cons 0)).cons 1 := rfl
-  unfold tcfg11
-  rw [h_rep]
-  have h := pass_11_b0 A (m + 1) L (ListBlank.append (List.replicate r' 1) (R.cons 0))
-  exact ⟨_, by omega, h⟩
-
-theorem tcfg11_step_bsucc (L R : ListBlank (Fin 2)) (A b m r' : ℕ) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (tcfg11 L R A (b + 1) m (r' + 1)) =
-        some (tcfg11 L R (A + 1) b (m + 1) r') := by
-  have h_rep : ListBlank.append (List.replicate (r' + 1) 1) (R.cons 0) =
-      (ListBlank.append (List.replicate r' 1) (R.cons 0)).cons 1 := rfl
-  unfold tcfg11
-  rw [h_rep]
-  have h := pass_11_bsucc A b (m + 1) L (ListBlank.append (List.replicate r' 1) (R.cons 0))
-  exact ⟨_, by omega, h⟩
-
-theorem tcfg11_drain (L R : ListBlank (Fin 2)) (k r A B m : ℕ)
-    (hAB : A + B = k + 1) (hdvd : (k + 2) ∣ B + m + 2) :
-    ∃ A' B', A' + B' = k + 1 ∧ (k + 2) ∣ B' + (m + r) + 2 ∧
-      ∃ s, nSteps opp25 s (tcfg11 L R A B m r) = some (tcfg11 L R A' B' (m + r) 0) := by
-  induction r generalizing A B m with
-  | zero =>
-    exact ⟨A, B, hAB, by simpa using hdvd, 0, rfl⟩
-  | succ r' ih =>
-    cases B with
-    | zero =>
-      obtain ⟨s₁, _, hs₁⟩ := tcfg11_step_b0 L R A m r'
-      have hdvd' : (k + 2) ∣ A + (m + 1) + 2 := by
-        have h_eq : A + (m + 1) + 2 = (0 + m + 2) + (k + 2) := by omega
-        rw [h_eq]
-        exact Nat.dvd_add_self_right.mpr hdvd
-      obtain ⟨A', B', hAB', hdvd'', s₂, hs₂⟩ := ih 0 A (m + 1) (by omega) hdvd'
-      have h_mr : m + 1 + r' = m + (r' + 1) := by omega
-      rw [h_mr] at hdvd'' hs₂
-      exact ⟨A', B', hAB', hdvd'', s₁ + s₂, nSteps_bind_eq hs₁ hs₂⟩
-    | succ b =>
-      obtain ⟨s₁, _, hs₁⟩ := tcfg11_step_bsucc L R A b m r'
-      have hdvd' : (k + 2) ∣ b + (m + 1) + 2 := by
-        have h_eq : b + (m + 1) + 2 = b + 1 + m + 2 := by omega
-        rwa [h_eq]
-      obtain ⟨A', B', hAB', hdvd'', s₂, hs₂⟩ := ih (A + 1) b (m + 1) (by omega) hdvd'
-      have h_mr : m + 1 + r' = m + (r' + 1) := by omega
-      rw [h_mr] at hdvd'' hs₂
-      exact ⟨A', B', hAB', hdvd'', s₁ + s₂, nSteps_bind_eq hs₁ hs₂⟩
-
-theorem tcfg6_step_enter (L R : ListBlank (Fin 2)) (k r' : ℕ) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (tcfg6 L R k (r' + 1)) = some (tcfg11 L R 1 k 0 r') := by
-  have h_rep : ListBlank.append (List.replicate (r' + 1 + 1) 1) (R.cons 0) =
-      ((ListBlank.append (List.replicate r' 1) (R.cons 0)).cons 1).cons 1 := rfl
-  unfold tcfg6 tcfg11
-  rw [h_rep]
-  have h1 := sim6_d k L (ListBlank.append (List.replicate r' 1) (R.cons 0))
-  have h0_to_11 (L_b R_m : ListBlank (Fin 2)) :
-      nSteps opp25 (1 + k)
-        ⟨0, Tape.mk' ((L_b.cons 0).cons 1)
-          (ListBlank.append (0 :: (List.replicate k 0 ++ [1])) R_m)⟩ =
-        some ⟨11, Tape.mk' (counterTape 1 k L_b) (R_m.cons 1)⟩ := by
-    rw [ListBlank.append, ListBlank.append_assoc, ListBlank.append, ListBlank.append]
-    refine nSteps_bind_eq (step_one
-      (step_mk'_right (M := opp25) (q := 0) (q' := 11) (a := 0) (b := 0) rfl _ _)) ?_
-    exact nSteps_mk'_right_scan (M := opp25) (q := 11) (a := 0) (b := 1) rfl k _ _
-  have h := nSteps_bind_eq h1 (h0_to_11 L _)
-  exact ⟨_, by omega, h⟩
-
-theorem tcfg6_pass_succ_dvd (L R : ListBlank (Fin 2)) (k r' : ℕ)
-    (hdvd : (k + 2) ∣ (k + 4 + r')) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (tcfg6 L R k (r' + 1)) = some (testExit L R false (k + 4 + r')) := by
-  obtain ⟨s₀, _, hs₀⟩ := tcfg6_step_enter L R k r'
-  obtain ⟨A', B', hAB', hdvd', s₁, hs₁⟩ :=
-    tcfg11_drain L R k r' 1 k 0 (by omega) (by simp)
-  simp only [Nat.zero_add] at hdvd' hs₁
-  have hB0 : B' = 0 := by
-    have h_eq1 : k + 4 + r' = (r' + 2) + (k + 2) := by omega
-    have h_eq2 : B' + r' + 2 = B' + (r' + 2) := by omega
-    rw [h_eq1, Nat.dvd_add_self_right] at hdvd
-    rw [h_eq2] at hdvd'
-    exact Nat.eq_zero_of_dvd_of_lt ((Nat.dvd_add_iff_left hdvd).mpr hdvd') (by omega)
-  subst hB0
-  have hA : A' = k + 1 := by omega
-  subst hA
-  have h_fin := pass_11_to_exit k (r' + 1) L R
-  have h_p : k + (r' + 1) + 4 = (k + 4 + r') + 1 := by omega
-  have h_fin' :
-      nSteps opp25 ((1 + (r' + 1 + 1)) + ((1 + ((r' + 1 + 1) + 1)) + (2 + ((r' + 1 + 3) + 1))))
-        (tcfg11 L R (k + 1) 0 r' 0) = some (testExit L R false (k + 4 + r')) := by
-    unfold tcfg11 testExit
-    simpa [List.replicate_zero, ListBlank.append, h_p] using h_fin
-  exact ⟨_, by omega, nSteps_bind_eq hs₀ (nSteps_bind_eq hs₁ h_fin')⟩
-
-theorem tcfg6_pass_succ_not_dvd (L R : ListBlank (Fin 2)) (k r' : ℕ)
-    (hdvd : ¬ (k + 2) ∣ (k + 4 + r')) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (tcfg6 L R k (r' + 1)) = some (tcfg6 L R (k + 1) r') := by
-  obtain ⟨s₀, _, hs₀⟩ := tcfg6_step_enter L R k r'
-  obtain ⟨A', B', hAB', hdvd', s₁, hs₁⟩ :=
-    tcfg11_drain L R k r' 1 k 0 (by omega) (by simp)
-  simp only [Nat.zero_add] at hdvd' hs₁
-  cases B' with
-  | zero =>
-    exfalso
-    apply hdvd
-    have h_eq1 : k + 4 + r' = (r' + 2) + (k + 2) := by omega
-    rw [h_eq1, Nat.dvd_add_self_right]
-    simpa using hdvd'
-  | succ b =>
-    have h_fin := pass_11_to_6 A' b (r' + 1) L R
-    have h_k : A' + b + 3 = (k + 1) + 2 := by omega
-    have h_fin' :
-        nSteps opp25 ((1 + (r' + 1 + 1)) + ((1 + ((r' + 1 + 1) + 1)) + (1 + (b + (1 + (b + 3))))))
-          (tcfg11 L R A' (b + 1) r' 0) = some (tcfg6 L R (k + 1) r') := by
-      unfold tcfg11 tcfg6
-      simpa [List.replicate_zero, ListBlank.append, h_k] using h_fin
-    exact ⟨_, by omega, nSteps_bind_eq hs₀ (nSteps_bind_eq hs₁ h_fin')⟩
-
-theorem tcfg6_eval (L R : ListBlank (Fin 2)) (k r : ℕ) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (tcfg6 L R k r) =
-        some (testExit L R (decide (NoFactorFrom k (k + 3 + r))) (k + 3 + r)) := by
-  induction r generalizing k with
-  | zero =>
-    have h_nf : NoFactorFrom k (k + 3 + 0) := by
-      intro d hd1 hd2 hdvd
-      have hd_eq : d = k + 2 := by omega
-      subst hd_eq
-      have h1 : (k + 2) ∣ 1 := by
-        have h_add : (k + 2) ∣ (k + 2) + 1 := hdvd
-        exact (Nat.dvd_add_right (Nat.dvd_refl (k + 2))).mp h_add
-      have := Nat.le_of_dvd (by omega) h1
-      omega
-    rw [decide_eq_true h_nf]
-    have h1 := sim6_accept k L R
-    have h_cnt :
-        ((ListBlank.append (List.replicate (k + 2) 1) (L.cons 0)).cons 1).cons 1 =
-        ListBlank.append (List.replicate (k + 3 + 1) 1) (L.cons 0) := rfl
-    refine ⟨2 + ((k + 2) + (2 + ((k + 1) + (6 + (k + (1 + (k + 3))))))), by omega, ?_⟩
-    unfold tcfg6 testExit
-    simpa [Nat.add_zero, List.replicate_zero, ListBlank.append, h_cnt] using h1
-  | succ r' ih =>
-    have h_arith : k + 3 + (r' + 1) = k + 4 + r' := by omega
-    rw [h_arith]
-    by_cases hdvd : (k + 2) ∣ (k + 4 + r')
-    · have h_nf : ¬ NoFactorFrom k (k + 4 + r') := fun h => h (k + 2) (by omega) (by omega) hdvd
-      rw [decide_eq_false h_nf]
-      exact tcfg6_pass_succ_dvd L R k r' hdvd
-    · obtain ⟨s₁, _, hs₁⟩ := tcfg6_pass_succ_not_dvd L R k r' hdvd
-      obtain ⟨s₂, _, hs₂⟩ := ih (k + 1)
-      have h_arith2 : k + 1 + 3 + r' = k + 4 + r' := by omega
-      rw [h_arith2] at hs₂
-      have h_iff : NoFactorFrom k (k + 4 + r') ↔ NoFactorFrom (k + 1) (k + 4 + r') := by
-        constructor
-        · intro h d hd1 hd2
-          exact h d (by omega) hd2
-        · intro h d hd1 hd2
-          rcases Nat.eq_or_lt_of_le hd1 with rfl | hd_gt
-          · exact hdvd
-          · exact h d (by omega) hd2
-      have h_dec : decide (NoFactorFrom k (k + 4 + r')) =
-          decide (NoFactorFrom (k + 1) (k + 4 + r')) := by
-        simp [h_iff]
-      rw [h_dec]
-      exact ⟨s₁ + s₂, by omega, nSteps_bind_eq hs₁ hs₂⟩
-
-/-- The test event: `q16` reading the `0` left of a block of `t` ones.  `(q16, 0) = 1 R q3`
-makes the block `t + 1` long and enters the test of `t`. -/
-def testCfg (L R : ListBlank (Fin 2)) (t : ℕ) : Cfg 25 2 :=
-  ⟨16, Tape.mkL ((L.cons 0).cons 0) (ListBlank.append (List.replicate t 1) (R.cons 0))⟩
-
-theorem enter_two (L R : ListBlank (Fin 2)) :
-    nSteps opp25 3 ⟨16, Tape.mkL (L.cons 0) (((R.cons 0).cons 1).cons 1)⟩ =
-      some ⟨6, Tape.mk' (((L.cons 1).cons 1).cons 1) (R.cons 0)⟩ :=
-  step_nSteps (step_mkL_right (b := 1) (q' := 3) rfl L (((R.cons 0).cons 1).cons 1))
-    (step_nSteps (step_mk'_right (b := 1) (q' := 4) rfl (L.cons 1) ((R.cons 0).cons 1))
-      (step_one (step_mk'_right (b := 1) (q' := 6) rfl ((L.cons 1).cons 1) (R.cons 0))))
-
-theorem enter_ge3 (L R : ListBlank (Fin 2)) :
-    nSteps opp25 3 ⟨16, Tape.mkL (L.cons 0) (((R.cons 1).cons 1).cons 1)⟩ =
-      some ⟨6, Tape.mk' (((L.cons 1).cons 1).cons 1) (R.cons 1)⟩ :=
-  step_nSteps (step_mkL_right (b := 1) (q' := 3) rfl L (((R.cons 1).cons 1).cons 1))
-    (step_nSteps (step_mk'_right (b := 1) (q' := 4) rfl (L.cons 1) ((R.cons 1).cons 1))
-      (step_one (step_mk'_right (b := 1) (q' := 6) rfl ((L.cons 1).cons 1) (R.cons 1))))
-
-/-- **The test.**  From the test event of `t ≥ 2` the machine reaches the exit that says
-whether `t` is prime, with the block (now `t + 1` ones) restored and `L`, `R` untouched. -/
-theorem test_eval (L R : ListBlank (Fin 2)) (t : ℕ) (ht : 2 ≤ t) :
-    ∃ s, 1 ≤ s ∧
-      nSteps opp25 s (testCfg L R t) = some (testExit L R (decide (IsPrime t)) t) := by
-  rcases Nat.eq_or_lt_of_le ht with rfl | ht3
-  · rw [decide_eq_true isPrime_two]
-    have h2 := enter_two (L.cons 0) R
-    refine ⟨3, by omega, ?_⟩
-    unfold testCfg testExit
-    exact h2
-  · obtain ⟨r0, rfl⟩ : ∃ r0, t = r0 + 3 := ⟨t - 3, by omega⟩
-    have h_enter : nSteps opp25 3 (testCfg L R (r0 + 3)) = some (tcfg6 L R 0 r0) :=
-      enter_ge3 (L.cons 0) (ListBlank.append (List.replicate r0 1) (R.cons 0))
-    obtain ⟨s₂, _, hs₂⟩ := tcfg6_eval L R 0 r0
-    have h_prime_iff : IsPrime (r0 + 3) ↔ NoFactorFrom 0 (0 + 3 + r0) := by
-      unfold IsPrime
-      have h_eq : 0 + 3 + r0 = r0 + 3 := by omega
-      rw [h_eq]
-      exact ⟨fun h => h.2, fun h => ⟨by omega, h⟩⟩
-    have h_dec : decide (IsPrime (r0 + 3)) = decide (NoFactorFrom 0 (0 + 3 + r0)) := by
-      simp [h_prime_iff]
-    have h_eq : 0 + 3 + r0 = r0 + 3 := by omega
-    rw [h_dec]
-    rw [h_eq] at hs₂ ⊢
-    exact ⟨3 + s₂, by omega, nSteps_bind_eq h_enter hs₂⟩
+/-- `opp25` has the cells of the test of `legendre_21`. -/
+theorem testCells_opp25 : TestCells opp25 := by
+  constructor <;> rfl
 
 /-!
 ## Walker
@@ -845,16 +410,11 @@ theorem ev_congr {t t' : ℕ} (f : Fin 2) {h h' r r' : ℕ}
     (ht : t = t') (hh : h = h') (hr : r = r') : evCfg t f h r = evCfg t' f h' r' := by
   subst ht hh hr; rfl
 
-theorem testCfg_B0 (R : ListBlank (Fin 2)) (t : ℕ) :
-    testCfg B0 R t = ⟨16, Tape.mkL (B0.cons 0) ones(t, R.cons 0)⟩ :=
-  congrArg (fun l : ListBlank (Fin 2) =>
-    (⟨16, Tape.mkL (l.cons 0) ones(t, R.cons 0)⟩ : Cfg 25 2)) B0_cons_zero
-
 theorem ev_test (t : ℕ) (f : Fin 2) (h r : ℕ) (ht : 2 ≤ t) :
     ∃ s, 1 ≤ s ∧
       nSteps opp25 s (evCfg t f h r) =
         some (testExit B0 ((walkerTape h r).cons f) (decide (IsPrime t)) t) := by
-  have h0 := test_eval B0 ((walkerTape h r).cons f) t ht
+  have h0 := test_eval testCells_opp25 B0 ((walkerTape h r).cons f) t ht
   rw [testCfg_B0] at h0
   exact h0
 

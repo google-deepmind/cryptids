@@ -342,7 +342,7 @@ sources:
       goldbach_21, and first Lean 4 proofs that it halts iff some n >= 2 has no prime
       strictly between n^2 - n and n^2 or none strictly between n^2 and n^2 + n
       (Cryptids/Oppermann22.lean, Cryptids/Semantics/Oppermann22.lean). The proof uses the
-      lemmas of Cryptids/Goldbach21.lean for the test.
+      lemmas of Cryptids/Goldbach21.lean and Cryptids/Legendre21.lean for the test.
 
 related_formalizations:
   - id: "https://github.com/lengyijun/goldbach_tm"
