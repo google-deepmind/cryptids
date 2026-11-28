@@ -13,6 +13,9 @@ public import BusyBeaver.Calculi.WordCalculusD
 public import BusyBeaver.Calculi.WordCalculusE
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RB_1LC0LE_1RD1LB_1RA0RD_1LB1LF_1LEHHH
@@ -34,7 +37,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {Γ₀ Λ₀ α β γ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 abbrev A : Fin 6 := 0
@@ -46,7 +48,6 @@ abbrev F : Fin 6 := 5
 variable {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 8000000
 @[simp] theorem zMz (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 0 = some config := rfl
 @[simp] theorem zMo (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 1 = step M config := rfl
 @[simp] theorem zMs (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) (n : Nat) :
@@ -114,7 +115,7 @@ abbrev d1 : BitWord := [1,0]
 abbrev one : BitWord := [1]
 abbrev lh : HalfTape := (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default
 @[simp] theorem zDd : d0 +> (default : HalfTape) = default := by
-  simp [d0]
+  simp
 inductive Call where
   | ch
   | cj
@@ -181,13 +182,13 @@ theorem zSg {ls1 ls2 ls3 ls4 : List Call} {w1 w2 w3 : BitWord}
   rcases z09 h with ⟨r2,ha,hb⟩
   exact z08 (h1 r1 r2 ha) (h2 r2 r3 hb)
 theorem zS4 {c : Call} {w1 w2 : BitWord}
-    (h1 : ∀ l r,(zCR l c (w1 +> r)) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c (w1 +> r)) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c] [] w1 w2 := by
   intro r1 r2 h; cases h
   exact Side.cons (fun l => h1 l r1) (Side.nil _)
 theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid +> l) c_out r))
-    (h2 : ∀ l r,(zCL (mid +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid +> l) c_out r))
+    (h2 : ∀ l r, (zCL (mid +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c_out] w1 w2 := by
   intro r1 r2 h
   rcases h with _ | ⟨hc1,hnil⟩
@@ -195,9 +196,9 @@ theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
   refine Side.cons (fun l => ?_) (Side.nil _)
   exact zPt (h1 l r1) (zPt (hc1 (mid +> l)) (h2 l r2))
 theorem zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
-    (h2 : ∀ l r,(zCL (mid1 +> l) r) [target_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
-    (h3 : ∀ l r,(zCL (mid2 +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
+    (h2 : ∀ l r, (zCL (mid1 +> l) r) [target_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
+    (h3 : ∀ l r, (zCL (mid2 +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c1,c2] w1 w2 := by
   intro r1 r3 h
   rcases h with _ | ⟨hc1,hrest⟩
@@ -278,7 +279,7 @@ theorem zS3 (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t := by
     have h_eq : (n + 1) * 2 = 2 + n * 2 := by omega
     rw [zLp,h_eq,z07]
     exact zSg z0d ih
-theorem zSa {w2 : BitWord} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
+theorem zSa {w2 : BitWord} (hw : Seg [.ch, .ch] [.ch] w2 w2) (n : Nat) :
     Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) w2 w2 := by
   induction n with
   | zero => exact z0a w2
@@ -455,7 +456,7 @@ theorem loc_z11 {A H : Nat} {r : HalfTape} (h : Binary A H r) :
   induction h with
   | one =>
     have h0 := RIncs.zero (default : HalfTape)
-    have hd : d1 +> (default : HalfTape) = one +> default := by simp [d1,one]
+    have hd : d1 +> (default : HalfTape) = one +> default := by simp
     rw [hd]; exact h0
   | @zero n H r _ ih =>
     have ih' : RIncs (n * 2) default r := by
@@ -689,8 +690,8 @@ theorem loc_z1M {a : Nat} {u : WordList} {b : Nat} {v : WordList} {l : Rat}
 
 theorem loc_z1N {a : Nat} {ds : WordList} {b : Nat} {v : WordList} {l : Rat}
     (hI : Scan a (ds ++ [K]) b v l)
-    (hw : ∃ w,ds = Q :: K :: w)
-    (hD : ∃ A H,DigitVal A H ds)
+    (hw : ∃ w, ds = Q :: K :: w)
+    (hD : ∃ A H, DigitVal A H ds)
     (hZ : 2 <= wordMassK ds) :
     wordMass v <= wordMassK ds * (1 / 4) /\ wordMass v + l <= wordMassK ds * (3 / 4) := by
   rcases hw with ⟨w,rfl⟩
@@ -1076,7 +1077,7 @@ def loc_z28 (e : Bool) (k : Nat) : Option (Word × Nat) :=
   else none
 
 theorem loc_z29 (e : Bool) (k : Nat) (d : Word) (k' : Nat) (r r' : HalfTape)
-    (hS : loc_z28 e k = some (d,k')) (hI : RIncs k' r r') :
+    (hS : loc_z28 e k = some (d, k')) (hI : RIncs k' r r') :
     RIncs k (evalWords [loc_z27 e] r) (evalWords [d] r') := by
   dsimp [loc_z28] at hS
   cases hk0 : (k == 0) with
@@ -1632,7 +1633,7 @@ theorem loc_z2P :
   have h := pre_z0W
   have heq : evalWords loc_z2B default =
       (([1,1,0,0,1,1,0,0,1,1,0,0,1,0,1,1,0,0,0,0,0,0,1,1,0,0,1,0,1,0] : BitWord) +> default) := by
-    simp [loc_z2B,List.replicate,evalWords,t,d0,d1,append_cons,append_nil]
+    simp [loc_z2B, List.replicate, evalWords]
   rwa [heq]
 
 theorem loc_z2Q (m : Nat) :
@@ -1657,7 +1658,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg h_reach

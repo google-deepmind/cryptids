@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_1LC1RE_1LD0LC_1LE1LC_1RF0RE_1RA0RB
@@ -31,7 +34,6 @@ local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 
 /-- `BLECv5.v:TM4.tm` is `flipTM target_tm` (`1LB---_1RC1LE_1RD0RC_1RE1RC_1LF0LE_1LA0LB`).
@@ -905,10 +907,10 @@ macro "rodd" n:term:arg ls:term:arg : tactic =>
   `(tactic| (apply reset_odd $n ($ls : List ℕ); { omega }; { rfl }))
 
 macro "reven" n:term:arg ls:term:arg : tactic =>
-  `(tactic| (apply reset_even $n ($ls : List ℕ); { omega }; { rfl }))
+  `(tactic| (apply (config := { newGoals := .nonDependentOnly }) @reset_even $n ($ls : List ℕ); { omega }; { rfl }))
 
 macro "rmark" : tactic =>
-  `(tactic| apply reset_mark)
+  `(tactic| apply (config := { newGoals := .nonDependentOnly }) reset_mark)
 
 theorem step_drop {k : ℕ} {ls : List ℕ} {n : ℕ} {t : Tp} {s' : State}
     (h : Steps (.st (k + 3) ls (n + 1) t) s') :
@@ -1158,7 +1160,7 @@ theorem LH_zeros (j : ℕ) {n : ℕ} {l l' : zB} (h : LH n l l') :
     have hp : 2 ^ (j + 1) = 2 ^ j * 2 := by rw [Nat.pow_succ]
     exact hz.congr (by rw [hp]; ring) rfl rfl
 
-theorem G_start (j u n : ℕ) (hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 3) * 2 ^ (1 + j)) :
+theorem G_start (j u n : ℕ) (_hj : 2 ≤ j) (hval : n + 5 = (u * 2 + 3) * 2 ^ (1 + j)) :
     Steps (RootG n) (.st (n * 2 + 9 - 3 * 2 ^ j) [0, 1 + j] (n + 1) .t7) := by
   have hp1 : 2 ^ (1 + j) = 2 * 2 ^ j := by rw [Nat.add_comm 1 j, Nat.pow_succ]; ring
   have hp2 : 2 ^ (2 + j) = 4 * 2 ^ j := by rw [Nat.add_comm 2 j, Nat.pow_add]; ring
@@ -1357,7 +1359,7 @@ theorem LH_partial_D_start (j k : ℕ) (l : zB) (hk : k + 24 = 2 ^ (6 + j)) (hl 
       z0 +> (z0 +> (z0 +> (v +> (z0 +> (z0 +> (z0 ^ j +> (z0 +> ([0] +> (z1 +> default))))))))) := by
     have h3j : 3 + j = 2 + (j + 1) := by omega
     rw [h3j, pow_add_list, pow_succ_list' z0 j]
-    simp only [pow_succ_list, pow_zero_list, append_assoc, append_nil, List.nil_append]
+    simp only [pow_succ_list, pow_zero_list, append_assoc, append_nil]
   rw [hsplit] at hstep1
   exact (LH_add hstep1 (LH_partial_D j)).congr (by omega) rfl rfl
 

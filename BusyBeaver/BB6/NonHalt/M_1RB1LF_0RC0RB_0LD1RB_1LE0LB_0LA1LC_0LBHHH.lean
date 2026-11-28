@@ -553,7 +553,9 @@ theorem steps284_sound : ∀ (n : ℕ) {s₁ s₂ : State},
       unfold steps284 at h
       rcases hs : step284 s₁ with _ | s'
       · rw [hs] at h; nomatch h
-      · rw [hs] at h; simp [steps284] at h; subst h; exact step284_sound hs
+      · rw [hs, Option.bind_some] at h
+        simp only [steps284, Option.some.injEq] at h
+        subst h; exact step284_sound hs
   | n + 2, s₁, s₂, _, h => by
       unfold steps284 at h
       rcases hs : step284 s₁ with _ | s'

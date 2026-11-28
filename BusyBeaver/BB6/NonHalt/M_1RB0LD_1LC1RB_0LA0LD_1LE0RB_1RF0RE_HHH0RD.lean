@@ -25,7 +25,6 @@ end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 200000
-set_option maxHeartbeats 20000000
 open BusyBeaver.Longitudinal.BoundedConfig (BCfg toCfg step_r0inf step_r0inf_spec
   steps_spec steps1_spec_true all0_spec eqAppR0inf eqAppR0inf_spec)
 
@@ -199,7 +198,8 @@ theorem R1_raw (l r : ListBlank (Fin 2)) (N a : ℕ) :
       [0, 0, 1] +> ([0, 1] +> ([0, 1, 1, 1, 1] +>
         (([0, 1] : List (Fin 2)) ^ a +> ([0, 1, 1] +> r)))) := by
     have h_comm := (ListBlank.append_pow_comm ([0, 1] : List (Fin 2)) a ([1] +> r)).symm
-    change [0, 0, 1, 0, 1, 0, 1, 1, 1, 1] +> ([0, 1] +> (([0, 1] : List (Fin 2)) ^ a +> ([1] +> r))) = _
+    change [0, 0, 1, 0, 1, 0, 1, 1, 1, 1] +>
+      ([0, 1] +> (([0, 1] : List (Fin 2)) ^ a +> ([1] +> r))) = _
     rw [h_comm]
     rfl
   rw [h₄_rhs] at h₄
@@ -218,7 +218,8 @@ theorem R2_raw (l r : ListBlank (Fin 2)) (N : ℕ) :
       ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> ([0, 1, 1, 1, 1, 0, 1, 0] +> r))))
       [target_tm]⊢*
     (([0] +> l) <{{D}}
-      ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ (N + 1) +> ([0, 1, 1, 1, 1, 1, 1, 1, 1] +> r)))) := by
+      ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ (N + 1) +>
+        ([0, 1, 1, 1, 1, 1, 1, 1, 1] +> r)))) := by
   let L : ListBlank (Fin 2) := ([1, 1] : List (Fin 2)) ^ N +> ([1, 0, 0] +> l)
   have h₁ : (([0, 0, 0, 0] +> l) <{{D}}
       ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N +> ([0, 1, 1, 1, 1, 0, 1, 0] +> r))))
@@ -268,7 +269,8 @@ theorem RB_raw (l r : ListBlank (Fin 2)) (N b : ℕ) :
       [0, 0, 1] +> ([0, 1, 1, 1, 1, 1, 1, 1] +>
         (([0, 1] : List (Fin 2)) ^ b +> ([0, 1, 1] +> r))) := by
     have h_comm := (ListBlank.append_pow_comm ([0, 1] : List (Fin 2)) b ([1] +> r)).symm
-    change [0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1] +> ([0, 1] +> (([0, 1] : List (Fin 2)) ^ b +> ([1] +> r))) = _
+    change [0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1] +>
+      ([0, 1] +> (([0, 1] : List (Fin 2)) ^ b +> ([1] +> r))) = _
     rw [h_comm]
     rfl
   rw [h₄_rhs] at h₄
@@ -328,7 +330,7 @@ theorem R1 (N a e : ℕ) (zs : List ℕ) :
         ([0] +> ((([1] : List (Fin 2)) ^ e ++ reg zs) +> default))) := by
     dsimp only [reg]
     rw [pow_one_add_7 a]
-    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, List.append_assoc,
+    simp only [List.nil_append, List.cons_append, 
       ListBlank.append_nil, ListBlank.append_cons, ListBlank.append_assoc]
   have h_r2 : reg (4 :: (List.replicate a 1 ++ (e + 2) :: zs)) +> default =
       [0, 1, 1, 1, 1] +> (([0, 1] : List (Fin 2)) ^ a +>
@@ -337,7 +339,7 @@ theorem R1 (N a e : ℕ) (zs : List ℕ) :
     rw [reg_ones a ((e + 2) :: zs)]
     dsimp only [reg]
     rw [pow_one_add_2 e]
-    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, List.append_assoc,
+    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, 
       ListBlank.append_nil, ListBlank.append_cons, ListBlank.append_assoc]
   have hN : N + 8 + 2 = N + 2 + 8 := by omega
   unfold recCfg
@@ -356,7 +358,7 @@ theorem R2 (N y : ℕ) (zs : List ℕ) :
       [0, 1, 1, 1, 1, 1, 1, 1, 1] +> ((([1] : List (Fin 2)) ^ y ++ reg zs) +> default) := by
     dsimp only [reg]
     rw [pow_one_add_8 y]
-    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, List.append_assoc,
+    simp only [List.nil_append, List.cons_append, 
       ListBlank.append_nil, ListBlank.append_cons, ListBlank.append_assoc]
   have hN : N + 8 + 1 = N + 1 + 8 := by omega
   unfold recCfg
@@ -374,7 +376,7 @@ theorem RB (N b y : ℕ) (zs : List ℕ) :
         ([0] +> ((([1] : List (Fin 2)) ^ y ++ reg zs) +> default))) := by
     dsimp only [reg]
     rw [pow_one_add_3 b]
-    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, List.append_assoc,
+    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, 
       ListBlank.append_nil, ListBlank.append_cons, ListBlank.append_assoc]
   have h_r2 : reg (7 :: (List.replicate b 1 ++ (y + 2) :: zs)) +> default =
       [0, 1, 1, 1, 1, 1, 1, 1] +> (([0, 1] : List (Fin 2)) ^ b +>
@@ -383,7 +385,7 @@ theorem RB (N b y : ℕ) (zs : List ℕ) :
     rw [reg_ones b ((y + 2) :: zs)]
     dsimp only [reg]
     rw [pow_one_add_2 y]
-    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, List.append_assoc,
+    simp only [pow_succ_list, pow_zero_list, List.nil_append, List.cons_append, 
       ListBlank.append_nil, ListBlank.append_cons, ListBlank.append_assoc]
   have hN : N + 8 + 1 = N + 1 + 8 := by omega
   unfold recCfg
@@ -766,7 +768,8 @@ theorem rStep_spec (N : ℕ) (r₂ : List (Fin 2)) {N' : ℕ} {r₂' : List (Fin
     (([0] +> l) <{{D}} ([0, 1, 1] +> (([0, 1] : List (Fin 2)) ^ N' +> (r₂' +> default)))) := by
   dsimp only [rStep] at h
   rcases h₁ : stripPfx [0, 1, 1, 1, 1, 1, 1, 1] r₂ with _ | r₃ <;> rw [h₁] at h <;> dsimp only at h
-  · rcases h₂ : stripPfx [0, 1, 1, 1, 1, 0, 1, 1, 1] r₂ with _ | r₃ <;> rw [h₂] at h <;> dsimp only at h
+  · rcases h₂ : stripPfx [0, 1, 1, 1, 1, 0, 1, 1, 1] r₂ with _ | r₃ <;>
+      rw [h₂] at h <;> dsimp only at h
     · rcases h₃ : stripPfx [0, 1, 1, 1, 1, 0, 1] r₂ with _ | r₃ <;> rw [h₃] at h <;> dsimp only at h
       · cases h
       · rcases ht : tailAfter0 r₃ with _ | r₅ <;> rw [ht] at h
@@ -1091,7 +1094,8 @@ theorem special_spec (zs : List ℕ) (k : ℕ) (zs' : List ℕ)
   rw [hrun] at h h₁
   dsimp only at h
   split_ifs at h with h_res
-  rw [Bool.and_assoc, Bool.and_eq_true, beq_iff_eq, Bool.and_eq_true, beq_iff_eq, beq_iff_eq] at h_res
+  rw [Bool.and_assoc, Bool.and_eq_true, beq_iff_eq, Bool.and_eq_true,
+    beq_iff_eq, beq_iff_eq] at h_res
   rcases h_res with ⟨hr_nil, hs_D, hsgn_L⟩
   subst hr_nil hs_D hsgn_L
   dsimp only [specialRuns, specialCheck] at h
@@ -1151,7 +1155,8 @@ theorem final_spec (zs : List ℕ) (h : final zs = true) : NH zs := by
   rw [hrun] at h h₁
   dsimp only at h
   split_ifs at h with h_res
-  rw [Bool.and_assoc, Bool.and_eq_true, beq_iff_eq, Bool.and_eq_true, beq_iff_eq, beq_iff_eq] at h_res
+  rw [Bool.and_assoc, Bool.and_eq_true, beq_iff_eq, Bool.and_eq_true,
+    beq_iff_eq, beq_iff_eq] at h_res
   rcases h_res with ⟨hr_nil, hs_B, hsgn_R⟩
   subst hr_nil hs_B hsgn_R
   rcases h_sp : stripPfx cyc l' with _ | t
@@ -1245,11 +1250,19 @@ def C24 : List ℕ := [2558, 1, 1, 1, 3, 1, 1, 5, 1, 6]
 
 theorem seg1 : driveSteps 3 Z1 = some [2432] := by rfl
 theorem seg2 : driveSteps 6 [2432] = some [2454] := by rfl
+set_option maxHeartbeats 20000000 in
+-- Kernel `rfl` evaluation of `driveSteps` exceeds the default heartbeat limit.
 theorem seg3 : driveSteps 13 [2454] = some [2480] := by rfl
 theorem seg4 : driveSteps 6 [2480] = some [2502] := by rfl
 theorem seg5 : driveSteps 4 [2502] = some C9 := by rfl
+set_option maxHeartbeats 20000000 in
+-- Kernel `rfl` evaluation of `driveSteps` exceeds the default heartbeat limit.
 theorem seg6 : driveSteps 19 C9 = some [2532] := by rfl
+set_option maxHeartbeats 20000000 in
+-- Kernel `rfl` evaluation of `driveSteps` exceeds the default heartbeat limit.
 theorem seg7 : driveSteps 15 [2532] = some [2560] := by rfl
+set_option maxHeartbeats 20000000 in
+-- Kernel `rfl` evaluation of `driveSteps` exceeds the default heartbeat limit.
 theorem seg8 : driveSteps 13 [2560] = some C24 := by rfl
 theorem seg9 : driveSteps 13 C24 = some [2596] := by rfl
 theorem seg10 : driveEnd 9 [2596] = true := by rfl

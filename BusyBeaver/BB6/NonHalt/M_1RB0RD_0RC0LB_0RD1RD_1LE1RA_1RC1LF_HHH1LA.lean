@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RD_0RC0LB_0RD1RD_1LE1RA_1RC1LF_HHH1LA
@@ -29,7 +32,6 @@ local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 0
 set_option maxRecDepth 200000
 
 @[simp] theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
@@ -932,8 +934,8 @@ theorem symMacroSteps_ER_plus (k : Nat) (vars : Nat → Nat) (n_off m : Nat) (r_
         (symMacroSteps (k + 1) .ER m [] (.bit true :: .bit false :: r_rest)).2.2.2) := by
     refine z02 ?_ (symMacroSteps_sound l_G_tail G_bounce vars n_off k .CR m [.bit false] (.bit false :: r_rest))
     dsimp [toSymCfg, dstateToCfg, evalSideWith, bitToSym]
-    refine z03 (by simp only [Turing.ListBlank.head_cons, zDh]; rfl) ?_
-    simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt]
+    refine z03 (by simp only [Turing.ListBlank.head_cons]; rfl) ?_
+    simp only [Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write]
     exact ⟨0, rfl⟩
   rw [heq] at h
   exact h
@@ -1086,12 +1088,12 @@ theorem TE (n b d : Nat) :
   symMacroSteps_mkSymR_plus 11956 (mkVars 0 b 0 d) n 0
     2 [] 44 [1] 17 [] 10 [3] 278 1 [1] 41 [] 35 [3] 9 []
     _ _ _ _ _ _ _ _ _ _ sym_TE_eq
-    (by omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
+    (by omega) (by simp only [evalVarSum]; try omega)
+    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega)
     (by omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega)
+    (by simp only [evalVarSum]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
+    (by simp only [evalVarSum]; try omega)
 
 theorem sym_TO_eq :
     symMacroSteps 11792 .ER 2 [] (mkSymR 1 [] 41 [1] 18 [2] 9 [3]) =
@@ -1103,12 +1105,12 @@ theorem TO (n b c d : Nat) :
   symMacroSteps_mkSymR_plus 11791 (mkVars 0 b c d) n 0
     1 [] 41 [1] 18 [2] 9 [3] 294 14 [1, 2] 40 [3] 17 [] 9 []
     _ _ _ _ _ _ _ _ _ _ sym_TO_eq
-    (by omega) (by simp only [evalVarSum, mkVars]; try omega)
+    (by omega) (by simp only [evalVarSum]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega)
     (by omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega)
+    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum]; try omega)
+    (by simp only [evalVarSum]; try omega)
 
 theorem sym_T6_eq :
     symMacroSteps 11927 .ER 2 [] (mkSymR 3 [] 41 [1] 17 [2] 9 [3]) =
@@ -1120,12 +1122,12 @@ theorem T6 (n b c d : Nat) :
   symMacroSteps_mkSymR_plus 11926 (mkVars 0 b c d) n 0
     3 [] 41 [1] 17 [2] 9 [3] 296 13 [1, 2] 40 [3] 17 [] 9 []
     _ _ _ _ _ _ _ _ _ _ sym_T6_eq
-    (by omega) (by simp only [evalVarSum, mkVars]; try omega)
+    (by omega) (by simp only [evalVarSum]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega)
     (by omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega)
+    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum]; try omega)
+    (by simp only [evalVarSum]; try omega)
 
 theorem sym_T8_eq :
     symMacroSteps 11689 .ER 2 [] (mkSymR 4 [] 44 [1] 17 [] 10 [3]) =
@@ -1137,12 +1139,12 @@ theorem T8 (n b d : Nat) :
   symMacroSteps_mkSymR_plus 11688 (mkVars 0 b 0 d) n 0
     4 [] 44 [1] 17 [] 10 [3] 270 7 [1] 43 [] 33 [3] 9 []
     _ _ _ _ _ _ _ _ _ _ sym_T8_eq
-    (by omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
+    (by omega) (by simp only [evalVarSum]; try omega)
+    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum]; try omega)
     (by simp only [evalVarSum, mkVars]; try omega)
     (by omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
-    (by simp only [evalVarSum, mkVars]; try omega)
+    (by simp only [evalVarSum]; try omega) (by simp only [evalVarSum, mkVars]; try omega)
+    (by simp only [evalVarSum]; try omega)
 
 theorem follow_Kr_plus {n1 a1 b1 c1 d1 n2 a2 b2 c2 d2 n1' a1' b1' c1' d1' : Nat} {c3 : Cfg (Fin 2) (Fin 6)}
     (h1 : (Kr n1 a1 b1 c1 d1) [target_tm]⊢⁺ (Kr n2 a2 b2 c2 d2))
@@ -1222,6 +1224,8 @@ theorem rawSteps_true_sound_eq (n : Nat) (q : DState) (l r : List Bool)
   rw [heq] at h
   exact h
 
+set_option maxHeartbeats 8000000 in
+-- Kernel `rfl` reduction of 42693 symbolic macro steps requires extra heartbeats.
 theorem sym_init_eq :
     symMacroSteps 42693 .ER 2 [] (addBits r_init_bool []) =
       (.ER, 1293, [], mkSymR 35 [] 38 [] 21 [] 9 []) := rfl

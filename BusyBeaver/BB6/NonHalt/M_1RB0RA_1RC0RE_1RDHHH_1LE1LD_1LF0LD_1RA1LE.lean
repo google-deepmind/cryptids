@@ -14,6 +14,9 @@ public import BusyBeaver.Calculi.WordCalculusD
 public import BusyBeaver.Calculi.WordCalculusE
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1RC0RE_1RDHHH_1LE1LD_1LF0LD_1RA1LE
@@ -52,7 +55,6 @@ abbrev F : Fin 6 := 5
 abbrev holdout_0549_tm : Machine (Fin 2) (Fin 6) := target_tm
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 2000000
 @[simp] theorem zMz (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 0 = some config := rfl
 @[simp] theorem zMo (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 1 = step M config := rfl
@@ -123,7 +125,7 @@ abbrev lh : HalfTape := [1,0,1] +> default
 abbrev w_word : BitWord := t ++ one
 abbrev w_pre : BitWord := w_word
 @[simp] theorem zDd : d0 +> (default : HalfTape) = default := by
-  simp [d0]
+  simp
 inductive Call where
   | ch
   | cj
@@ -198,13 +200,13 @@ theorem zS0 {ls1 ls2 ls3 : List Call} {u1 u2 v1 v2 : BitWord}
   rw [append_assoc u1 v1 r1,append_assoc u2 v2 r2]
   exact h1 (v1 +> r1) (v2 +> r2) (h2 r1 r2 h)
 theorem zS4 {c : Call} {w1 w2 : BitWord}
-    (h1 : ∀ l r,(zCR l c (w1 +> r)) [holdout_0549_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c (w1 +> r)) [holdout_0549_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c] [] w1 w2 := by
   intro r1 r2 h; cases h
   exact Side.cons (fun l => h1 l r1) (Side.nil _)
 theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [holdout_0549_tm]⊢⁺ (zCR (mid +> l) c_out r))
-    (h2 : ∀ l r,(zCL (mid +> l) r) [holdout_0549_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [holdout_0549_tm]⊢⁺ (zCR (mid +> l) c_out r))
+    (h2 : ∀ l r, (zCL (mid +> l) r) [holdout_0549_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c_out] w1 w2 := by
   intro r1 r2 h
   rcases h with _ | ⟨hc1,hnil⟩
@@ -212,9 +214,9 @@ theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
   refine Side.cons (fun l => ?_) (Side.nil _)
   exact zPt (h1 l r1) (zPt (hc1 (mid +> l)) (h2 l r2))
 theorem zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [holdout_0549_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
-    (h2 : ∀ l r,(zCL (mid1 +> l) r) [holdout_0549_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
-    (h3 : ∀ l r,(zCL (mid2 +> l) r) [holdout_0549_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [holdout_0549_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
+    (h2 : ∀ l r, (zCL (mid1 +> l) r) [holdout_0549_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
+    (h3 : ∀ l r, (zCL (mid2 +> l) r) [holdout_0549_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c1,c2] w1 w2 := by
   intro r1 r3 h
   rcases h with _ | ⟨hc1,hrest⟩
@@ -288,7 +290,7 @@ theorem z0m : Seg [.ca] [.cj,.ch] w_word (w_word ++ t) :=
 theorem z0n (r : HalfTape) :
     (zCL lh r) [holdout_0549_tm]⊢⁺ (zCR lh .ca r) := by
   unfold zCL zCR lh zCw zCs
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil]
   execute
 theorem H_T (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t := by
   induction n with
@@ -297,7 +299,7 @@ theorem H_T (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t := by
     have h_eq : (n + 1) * 2 = 2 + n * 2 := by omega
     rw [zLp,h_eq,z07]
     exact zSg z0c ih
-theorem zSa {w2 : BitWord} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
+theorem zSa {w2 : BitWord} (hw : Seg [.ch, .ch] [.ch] w2 w2) (n : Nat) :
     Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) w2 w2 := by
   induction n with
   | zero => exact z0a w2
@@ -490,7 +492,7 @@ theorem loc_z2A {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hPos : 0 < A
     | zero =>
       have h_side : evalWords (Q :: u) default = one +> default := by
         rw [evalWords,loc_z2z hDu rfl]
-        simp [d1,one]
+        simp
       rw [h_side]
       intro w hs hN
       have hk0 : (1 + 0 * 2 - 1) * 2 = 0 := rfl
@@ -773,7 +775,7 @@ theorem loc_z2J {k : Nat} {v : WordList} {k' : Nat} {w : WordList} {a b : Rat}
 theorem loc_z2K {q : Nat} {orig out : WordList} (hS : EStep q orig out) :
     loc_z2v (4 * 2 ^ q) (evalWords orig default) (evalWords out default) := by
   rcases hS with ⟨eff,n,v,a0,b0,J,da,hE,hI,hPos,hDA⟩
-  have hBlank : evalWords [K] default = default := by simp [evalWords,d0]
+  have hBlank : evalWords [K] default = default := by simp [evalWords]
   have hC : loc_z2v (n * 2) default (evalWords da default) := by
     have heq : n * 2 = ((1 + n) - 1) * 2 := by omega
     rw [heq]
@@ -917,7 +919,7 @@ theorem loc_z3E :
     (init []) [holdout_0549_tm]⊢⁺ zCf 5 (evalWords loc_z2Q default) := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = loc_z2R loc_z31 := rfl
   have h_end : loc_z2R loc_z3k = zCf 5 (evalWords loc_z2Q default) := by
-    simp [loc_z2R,loc_z3k,zCf,zCL,lh,w_pre,w_word,t,d0,d1,one,loc_z2Q,evalWords]
+    simp [loc_z2R, loc_z3k, zCf, zCL, lh, w_pre, w_word, t, d1, one, loc_z2Q, evalWords]
   rw [h_init,<- h_end]
   exact zPt (zTc (by decide) loc_z3l) (zPt (zTc (by decide) loc_z3m) (zPt (zTc (by decide) loc_z3n) (zPt (zTc (by decide) loc_z3o) (zPt (zTc (by decide) z3p) (zPt (zTc (by decide) z3q) (zPt (zTc (by decide) z3r) (zPt (zTc (by decide) z3s) (zPt (zTc (by decide) z3t) (zPt (zTc (by decide) z3u) (zPt (zTc (by decide) z3v) (zPt (zTc (by decide) z3w) (zPt (zTc (by decide) z3x) (zPt (zTc (by decide) z3y) (zPt (zTc (by decide) loc_z3z) (zPt (zTc (by decide) loc_z3A) (zPt (zTc (by decide) loc_z3B) (zPt (zTc (by decide) loc_z3C) ((zTc (by decide) loc_z3D)))))))))))))))))))
 def loc_z3F : List CodeE := [

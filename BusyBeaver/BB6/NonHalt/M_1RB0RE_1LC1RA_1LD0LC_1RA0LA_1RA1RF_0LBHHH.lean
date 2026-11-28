@@ -107,7 +107,7 @@ abbrev d1 : BitWord := [1, 0]
 abbrev one : BitWord := [1]
 abbrev lh : HalfTape := (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default
 @[simp] theorem append_d0_default : d0 +> (default : HalfTape) = default := by
-  simp [d0]
+  simp
 
 inductive Call where
   | ch
@@ -395,7 +395,7 @@ theorem brIncs_of_binary {A H : Nat} {r : HalfTape} (h : Binary A H r) :
   induction h with
   | one =>
     have h0 := BRIncs.zero (default : HalfTape)
-    have hd : d1 +> (default : HalfTape) = one +> default := by simp [d1,one]
+    have hd : d1 +> (default : HalfTape) = one +> default := by simp
     rw [hd]; exact h0
   | @zero n H r _ ih =>
     have ih' : BRIncs (n * 2) default r := by
@@ -785,17 +785,17 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE _
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨k,[],[],0,0,0,0,BScan.nil k,BScan.nil k,rfl,by simp [wordScale],by simp [wordScale]⟩
     | cons s p => simp at hE
   | T hI ih =>
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.T hI,rfl,by simp [wordScale],by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons V p q hP) with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
       exact ⟨m,V :: x,y,a1 * (1 / 2),b1 * (1 / 2),a2,b2,BScan.T hJ,hK,rfl,
         by dsimp [wordScale]; rw [hA]; ring,by dsimp [wordScale]; rw [hB]; ring⟩
@@ -803,16 +803,16 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.pair0 hI,rfl,by simp [wordScale],by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       cases p with
       | nil =>
-        simp at hE; subst hE
+        simp only [List.nil_append] at hE; subst hE
         rcases hP with hP | ⟨r,hP⟩ <;> nomatch hP
       | cons s2 p =>
-        simp at hE; rcases hE with ⟨rfl,hE⟩
+        simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
         have hP' := splitCond_of_cons K p q (splitCond_of_cons Q (K :: p) q hP)
         rcases ih p q hE hP' with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
         exact ⟨m,V :: x,y,a1 * (1 / 2),b1 * (1 / 2),a2,b2,BScan.pair0 hJ,hK,rfl,
@@ -821,16 +821,16 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.pair1 hI,rfl,by simp [wordScale],by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       cases p with
       | nil =>
-        simp at hE; subst hE
+        simp only [List.nil_append] at hE; subst hE
         rcases hP with hP | ⟨r,hP⟩ <;> nomatch hP
       | cons s2 p =>
-        simp at hE; rcases hE with ⟨rfl,hE⟩
+        simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
         have hP' := splitCond_of_cons Q p q (splitCond_of_cons Q (Q :: p) q hP)
         rcases ih p q hE hP' with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
         exact ⟨m,V :: x,y,a1 * (1 / 2),(1 / 4) + b1 * (1 / 2),a2,b2,BScan.pair1 hJ,hK,rfl,
@@ -839,11 +839,11 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.short00 hI,rfl,by simp [wordScale],by simp
           [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons K p q hP) with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
       exact ⟨m,K :: x,y,2 + a1 * 2,b1 * 2,a2,b2,BScan.short00 hJ,hK,rfl,
         by dsimp [wordScale]; rw [hA]; ring,by dsimp [wordScale]; rw [hB]; ring⟩
@@ -851,11 +851,11 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.short01 hI,rfl,by simp [wordScale],by simp
           [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons Q p q hP) with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
       exact ⟨m,K :: x,y,1 + a1 * 2,b1 * 2,a2,b2,BScan.short01 hJ,hK,rfl,
         by dsimp [wordScale]; rw [hA]; ring,by dsimp [wordScale]; rw [hB]; ring⟩
@@ -863,11 +863,11 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.short10 hI,rfl,by simp [wordScale],by simp
           [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons K p q hP) with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
       exact ⟨m,Q :: x,y,3 + a1 * 2,b1 * 2,a2,b2,BScan.short10 hJ,hK,rfl,
         by dsimp [wordScale]; rw [hA]; ring,by dsimp [wordScale]; rw [hB]; ring⟩
@@ -875,11 +875,11 @@ theorem bscan_split {k : Nat} {u : WordList} {k' : Nat} {v : WordList} {a b : Ra
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,0,_,_,BScan.nil _,BScan.short11 hI,rfl,by simp [wordScale],by simp
           [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons Q p q hP) with ⟨m,x,y,a1,b1,a2,b2,hJ,hK,rfl,hA,hB⟩
       exact ⟨m,Q :: x,y,2 + a1 * 2,b1 * 2,a2,b2,BScan.short11 hJ,hK,rfl,
         by dsimp [wordScale]; rw [hA]; ring,by dsimp [wordScale]; rw [hB]; ring⟩

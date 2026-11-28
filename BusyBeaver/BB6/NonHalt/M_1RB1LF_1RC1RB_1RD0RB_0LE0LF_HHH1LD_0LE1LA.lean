@@ -56,13 +56,11 @@ def target_tm : Machine (Fin 2) (Fin 6)
 -- END TRUSTED DEFINITIONS
 
 -- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
-set_option linter.flexible false
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 set_option linter.unusedTactic false
 set_option linter.unnecessarySimpa false
 set_option linter.unreachableTactic false
-set_option maxHeartbeats 8000000
 set_option maxRecDepth 200000
 
 abbrev sweep_tm : Machine (Fin 2) (Fin 6) := target_tm
@@ -730,13 +728,13 @@ def M_rv (rv : RVal) : Nat := W_rv rv + 2
 /-! ### 5. Basic Bounds & `SweepRV` Combinators -/
 
 theorem tree_c_pos_of_WF_u {u : Tree} (h : WF_u u) : tree_c u ≥ 1 := by
-  cases u <;> simp [WF_u, tree_c] at h ⊢ ; all_goals (try omega)
+  cases u <;> simp only [WF_u, tree_c] at h ⊢ ; all_goals (try omega)
 
 theorem WF_d_of_WF_u {u : Tree} (h : WF_u u) : WF_d u := by
   cases u <;> simp [WF_u, WF_d] at h ⊢ <;> tauto
 
 theorem WF_d_set_c (nc : Nat) {d : Tree} (h : WF_d d) : WF_d (set_c nc d) := by
-  cases d <;> simp [WF_d, set_c] at h ⊢ <;> exact h
+  cases d <;> simp only [WF_d, set_c] at h ⊢ <;> exact h
 
 theorem WF_u_add_c (k : Nat) {u : Tree} (h : WF_u u) : WF_u (add_c k u) := by
   cases u with
@@ -752,15 +750,15 @@ theorem WF_u_add_c (k : Nat) {u : Tree} (h : WF_u u) : WF_u (add_c k u) := by
       rcases h with ⟨hc, rest⟩
       dsimp only [WF_u, add_c, set_c, tree_c]
       exact ⟨by omega, rest⟩
-  | _ => simp [WF_u, add_c, set_c, tree_c] at h ⊢; (try omega)
+  | _ => simp only [WF_u, add_c, set_c, tree_c] at h ⊢; (try omega)
 
 theorem WF_u_mk_stop (c : Nat) (hc : c ≥ 1) {d : Tree} (hd : WF_d d) :
     WF_u (mk_stop c d) := by
   unfold mk_stop
   split_ifs with h1 h2
-  · simp [WF_u]; (try omega)
-  · simp [WF_u]; (try omega)
-  · simp [WF_u]; exact ⟨hc, h1, h2, hd⟩
+  · simp only [WF_u]; (try omega)
+  · simp only [WF_u]; (try omega)
+  · simp only [WF_u]; exact ⟨hc, h1, h2, hd⟩
 
 theorem WF_u_mk_sh (c m : Nat) (hc : c ≥ 2) {u : Tree} (hu : WF_u u) :
     WF_u (mk_sh c m u) := by
@@ -774,7 +772,7 @@ theorem W0_ge_11 (t : Tree) : W0 t ≥ 2 * tree_c t + 9 := by
   cases t with
   | endZero c => simp [W0, tree_c]
   | endStop c =>
-      simp [W0, tree_c]
+      simp only [W0, tree_c]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -786,14 +784,14 @@ theorem W0_ge_11 (t : Tree) : W0 t ≥ 2 * tree_c t + 9 := by
   | endOne c => simp [W0, tree_c]
   | oneEnd c => simp [W0, tree_c]
   | stopOne c => simp [W0, tree_c]
-  | stop c d => have := Wd_ge_9 d; simp [W0, tree_c]; (try omega)
-  | od c m d => have := Wd_ge_9 d; simp [W0, tree_c]; (try omega)
-  | sh c m u => have := W0_ge_11 u; simp [W0, tree_c]; (try omega)
+  | stop c d => have := Wd_ge_9 d; simp only [W0, tree_c]; (try omega)
+  | od c m d => have := Wd_ge_9 d; simp only [W0, tree_c]; (try omega)
+  | sh c m u => have := W0_ge_11 u; simp only [W0, tree_c]; (try omega)
 
 theorem Wd_ge_9 (d : Tree) : Wd d ≥ 9 := by
   cases d with
   | endZero c =>
-      simp [Wd]
+      simp only [Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -803,7 +801,7 @@ theorem Wd_ge_9 (d : Tree) : Wd d ≥ 9 := by
       all_goals (try exact not_false)
       all_goals (try omega)
   | endStop c =>
-      simp [Wd]
+      simp only [Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -813,7 +811,7 @@ theorem Wd_ge_9 (d : Tree) : Wd d ≥ 9 := by
       all_goals (try exact not_false)
       all_goals (try omega)
   | endOne c =>
-      simp [Wd]
+      simp only [Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -823,7 +821,7 @@ theorem Wd_ge_9 (d : Tree) : Wd d ≥ 9 := by
       all_goals (try exact not_false)
       all_goals (try omega)
   | oneEnd c =>
-      simp [Wd]
+      simp only [Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -833,7 +831,7 @@ theorem Wd_ge_9 (d : Tree) : Wd d ≥ 9 := by
       all_goals (try exact not_false)
       all_goals (try omega)
   | stopOne c =>
-      simp [Wd]
+      simp only [Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -842,9 +840,9 @@ theorem Wd_ge_9 (d : Tree) : Wd d ≥ 9 := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-  | stop c d2 => have := Wd_ge_9 d2; simp [Wd]; (try omega)
-  | od c m d2 => have := Wd_ge_9 d2; simp [Wd]; (try omega)
-  | sh c m u2 => have := W0_ge_11 u2; simp [Wd]; (try omega)
+  | stop c d2 => have := Wd_ge_9 d2; simp only [Wd]; (try omega)
+  | od c m d2 => have := Wd_ge_9 d2; simp only [Wd]; (try omega)
+  | sh c m u2 => have := W0_ge_11 u2; simp only [Wd]; (try omega)
 end
 
 theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := by
@@ -853,7 +851,7 @@ theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := b
     by_cases h1 : c = 1
     · left; subst h1; rfl
     · right
-      simp [Wd, tree_c]
+      simp only [Wd, tree_c]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -864,7 +862,7 @@ theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := b
       all_goals (try omega)
   | endZero c =>
       right
-      simp [Wd, tree_c]
+      simp only [Wd, tree_c]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -875,7 +873,7 @@ theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := b
       all_goals (try omega)
   | endStop c =>
       right
-      simp [Wd, tree_c]
+      simp only [Wd, tree_c]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -886,7 +884,7 @@ theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := b
       all_goals (try omega)
   | oneEnd c =>
       right
-      simp [Wd, tree_c]
+      simp only [Wd, tree_c]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -897,7 +895,7 @@ theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := b
       all_goals (try omega)
   | stopOne c =>
       right
-      simp [Wd, tree_c]
+      simp only [Wd, tree_c]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -906,9 +904,9 @@ theorem Wd_ge_2c_9 (d : Tree) : d = .endOne 1 ∨ Wd d ≥ 2 * tree_c d + 9 := b
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-  | stop c d2 => have := Wd_ge_9 d2; right; simp [Wd, tree_c]; (try omega)
-  | od c m d2 => have := Wd_ge_9 d2; right; simp [Wd, tree_c]; (try omega)
-  | sh c m u2 => have := W0_ge_11 u2; right; simp [Wd, tree_c]; (try omega)
+  | stop c d2 => have := Wd_ge_9 d2; right; simp only [Wd, tree_c]; (try omega)
+  | od c m d2 => have := Wd_ge_9 d2; right; simp only [Wd, tree_c]; (try omega)
+  | sh c m u2 => have := W0_ge_11 u2; right; simp only [Wd, tree_c]; (try omega)
 
 theorem S_tree_iff_WF_r_core (k : Nat) {u : Tree} (hu : WF_u u) :
     WF_r_core (add_c k u) ↔ 2 * k + 20 ≥ S_tree u := by
@@ -928,8 +926,8 @@ theorem S_tree_iff_WF_r_core (k : Nat) {u : Tree} (hu : WF_u u) :
     simp [S_tree, add_c, set_c, tree_c]
     omega
   | od c m d =>
-    simp [WF_u] at hu
-    simp [S_tree, add_c, set_c, tree_c]
+    simp only [WF_u] at hu
+    simp only [S_tree, add_c, set_c, tree_c]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1029,7 +1027,7 @@ theorem WF_rv_app_1_even (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
     cases rv with
     | R_D p => cases p <;> simpa [app_1_even, WF_rv] using hwf
     | R_F m0 p =>
-      cases m0 <;> cases p <;> simp [app_1_even, WF_rv] at hwf ⊢ <;> exact hwf
+      cases m0 <;> cases p <;> simp only [app_1_even, WF_rv] at hwf ⊢ <;> exact hwf
     | R_A m0 p => cases p <;> simpa [app_1_even, WF_rv] using hwf
 
 /-! ### 6. Base-Case `Sweep` & `SweepRV` Lemmas for Leaves and `stop` -/
@@ -1381,7 +1379,9 @@ theorem sweep_d0_od_pos (m2 : Nat) {d2 : Tree} (hpos : tree_c d2 ≥ 1) :
   have hd2 : evalT d2 = ((0 : Fin 2) >> (1 : Fin 2) >> evalT (sub_c 1 d2)) := by
     have h := @evalT_add_c_one (sub_c 1 d2)
     have hrestore : add_c 1 (sub_c 1 d2) = d2 := by
-      cases d2 <;> simp [add_c, sub_c, set_c, tree_c] at hpos ⊢ ; all_goals (try omega)
+      cases d2 <;> simp only [add_c, sub_c, set_c, tree_c, Tree.endZero.injEq, Tree.endStop.injEq,
+        Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq, Tree.stop.injEq, and_true,
+        true_and, Tree.od.injEq, Tree.sh.injEq] at hpos ⊢ ; all_goals (try omega)
     rw [hrestore] at h; exact h
   rw [hd2]
   have hin : ((0 : Fin 2) >> ((([1, 1] : List (Fin 2)) ^ m2) +>
@@ -1414,7 +1414,9 @@ theorem sweep_P_od_pos {d : Tree} (hpos : tree_c d ≥ 1) :
   have hd : evalT d = ((0 : Fin 2) >> (1 : Fin 2) >> evalT (sub_c 1 d)) := by
     have h := @evalT_add_c_one (sub_c 1 d)
     have hrestore : add_c 1 (sub_c 1 d) = d := by
-      cases d <;> simp [add_c, sub_c, set_c, tree_c] at hpos ⊢ ; all_goals (try omega)
+      cases d <;> simp only [add_c, sub_c, set_c, tree_c, Tree.endZero.injEq, Tree.endStop.injEq,
+        Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq, Tree.stop.injEq, and_true,
+        true_and, Tree.od.injEq, Tree.sh.injEq] at hpos ⊢ ; all_goals (try omega)
     rw [hrestore] at h; exact h
   rw [hd]
   simpa [ListBlank.append_cons, ListBlank.append_nil] using sweep_001 (evalT (sub_c 1 d))
@@ -1436,7 +1438,9 @@ theorem sweepRV_01_RF0 {u : Tree} {r : ListBlank (Fin 2)} (hu : WF_u u)
   have hu_eq : evalT u = ((0 : Fin 2) >> (1 : Fin 2) >> evalT (sub_c 1 u)) := by
     have h1 := @evalT_add_c_one (sub_c 1 u)
     have hr : add_c 1 (sub_c 1 u) = u := by
-      cases u <;> simp [add_c, sub_c, set_c, tree_c] at hc ⊢ ; all_goals (try omega)
+      cases u <;> simp only [add_c, sub_c, set_c, tree_c, Tree.endZero.injEq, Tree.endStop.injEq,
+        Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq, Tree.stop.injEq, and_true,
+        true_and, Tree.od.injEq, Tree.sh.injEq] at hc ⊢ ; all_goals (try omega)
     rw [hr] at h1; exact h1
   rw [hu_eq] at h
   have hs := sweep_01_F h
@@ -1507,7 +1511,7 @@ theorem WF_rv_bump_ra {rv2 : RVal} (hwf2 : WF_rv rv2)
   cases rv2 with
   | R_D p => exact absurd rfl (hnotD p)
   | R_F m p =>
-    cases m <;> cases p <;> simp [bump_ra, WF_rv] at hwf2 ⊢ <;> exact hwf2
+    cases m <;> cases p <;> simp only [bump_ra, WF_rv] at hwf2 ⊢ <;> exact hwf2
   | R_A m p =>
     cases p <;> simpa [bump_ra, WF_rv] using hwf2
 
@@ -1527,10 +1531,12 @@ theorem W0_lin_eq (t : Tree) :
 theorem W0_lin_add_c_one {u : Tree} (hu : WF_u u) :
     W0_lin (add_c 1 u) = W0_lin u + 2 := by
   cases u with
-  | endZero c => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
+  | endZero c => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
   | endStop c =>
     simp [WF_u] at hu
-    simp [W0_lin, W0, add_c, set_c, tree_c]
+    simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+      Tree.endStop.injEq, Nat.reduceEqDiff, Nat.reduceLeDiff]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1539,12 +1545,18 @@ theorem W0_lin_add_c_one {u : Tree} (hu : WF_u u) :
     all_goals (try split_ifs)
     all_goals (try exact not_false)
     all_goals (try omega)
-  | endOne c => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
-  | oneEnd c => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
-  | stopOne c => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
-  | stop c d => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
-  | od c m d => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
-  | sh c m u2 => simp [WF_u] at hu; simp [W0_lin, W0, add_c, set_c, tree_c]; (try omega)
+  | endOne c => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
+  | oneEnd c => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
+  | stopOne c => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
+  | stop c d => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
+  | od c m d => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
+  | sh c m u2 => simp [WF_u] at hu; simp only [W0_lin, W0, add_c, set_c, tree_c, reduceCtorEq,
+    ↓reduceIte, ite_true, ite_false]; (try omega)
 
 theorem S_tree_add_c_one {u : Tree} (hu : WF_u u) :
     S_tree (add_c 1 u) = S_tree u - 2 := by
@@ -1552,11 +1564,11 @@ theorem S_tree_add_c_one {u : Tree} (hu : WF_u u) :
   | endZero c | endStop c | endOne c | oneEnd c =>
     simp [S_tree, add_c, set_c]
   | stopOne c =>
-    simp [S_tree, add_c, set_c, tree_c]; (try omega)
+    simp only [S_tree, add_c, set_c, tree_c]; (try omega)
   | stop c d =>
-    simp [S_tree, add_c, set_c, tree_c]; (try omega)
+    simp only [S_tree, add_c, set_c, tree_c]; (try omega)
   | od c m d =>
-    simp [S_tree, add_c, set_c, tree_c]
+    simp only [S_tree, add_c, set_c, tree_c]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1566,14 +1578,14 @@ theorem S_tree_add_c_one {u : Tree} (hu : WF_u u) :
     all_goals (try exact not_false)
     all_goals (try omega)
   | sh c m u2 =>
-    simp [S_tree, add_c, set_c, tree_c]; (try omega)
+    simp only [S_tree, add_c, set_c, tree_c]; (try omega)
 
 theorem Wd_sub_c_one_le {u : Tree} (hu : WF_u u) :
     Wd (sub_c 1 u) ≤ W0 u + 2 := by
   cases u with
   | endZero c =>
       simp [WF_u] at hu
-      simp [sub_c, set_c, tree_c, Wd, W0]
+      simp only [sub_c, set_c, tree_c, Wd, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1584,7 +1596,7 @@ theorem Wd_sub_c_one_le {u : Tree} (hu : WF_u u) :
       all_goals (try omega)
   | endStop c =>
       simp [WF_u] at hu
-      simp [sub_c, set_c, tree_c, Wd, W0]
+      simp only [sub_c, set_c, tree_c, Wd, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1595,7 +1607,7 @@ theorem Wd_sub_c_one_le {u : Tree} (hu : WF_u u) :
       all_goals (try omega)
   | endOne c =>
       simp [WF_u] at hu
-      simp [sub_c, set_c, tree_c, Wd, W0]
+      simp only [sub_c, set_c, tree_c, Wd, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1606,7 +1618,7 @@ theorem Wd_sub_c_one_le {u : Tree} (hu : WF_u u) :
       all_goals (try omega)
   | oneEnd c =>
       simp [WF_u] at hu
-      simp [sub_c, set_c, tree_c, Wd, W0]
+      simp only [sub_c, set_c, tree_c, Wd, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1617,7 +1629,7 @@ theorem Wd_sub_c_one_le {u : Tree} (hu : WF_u u) :
       all_goals (try omega)
   | stopOne c =>
       simp [WF_u] at hu
-      simp [sub_c, set_c, tree_c, Wd, W0]
+      simp only [sub_c, set_c, tree_c, Wd, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1626,9 +1638,9 @@ theorem Wd_sub_c_one_le {u : Tree} (hu : WF_u u) :
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-  | stop c d => simp [WF_u] at hu; simp [sub_c, set_c, tree_c, Wd, W0]; (try omega)
-  | od c m d => simp [WF_u] at hu; simp [sub_c, set_c, tree_c, Wd, W0]; (try omega)
-  | sh c m u2 => simp [WF_u] at hu; simp [sub_c, set_c, tree_c, Wd, W0]; (try omega)
+  | stop c d => simp [WF_u] at hu; simp only [sub_c, set_c, tree_c, Wd, W0]; (try omega)
+  | od c m d => simp [WF_u] at hu; simp only [sub_c, set_c, tree_c, Wd, W0]; (try omega)
+  | sh c m u2 => simp [WF_u] at hu; simp only [sub_c, set_c, tree_c, Wd, W0]; (try omega)
 
 theorem W_rv_RF0_spec {u : Tree} (hu : WF_u u) :
     W0_lin (mk_stop 1 (sub_c 1 u)) ≤ W_rv (.R_F 0 (.P_tree u)) + 2 := by
@@ -1658,7 +1670,8 @@ theorem W_rv_app_1_even_le (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
       | P_od d => cases hwf
       | P_tree u =>
         simp only [app_1_even, Nat.succ_ne_zero, ↓reduceIte, Nat.add_sub_cancel, W_rv]
-        cases u <;> simp [WF_rv, WF_u, W_ra_tree, W0_lin, W0] at hwf ⊢
+        cases u <;> simp only [WF_rv, WF_u, W_ra_tree, W0_lin, W0, Tree.endStop.injEq,
+          Nat.reduceLeDiff] at hwf ⊢
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1675,8 +1688,11 @@ theorem W_rv_app_1_even_le (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
         | P_tree u =>
           simp only [app_1_even, Nat.succ_ne_zero, ↓reduceIte]
           have hsub := Wd_sub_c_one_le hwf
-          cases u <;> simp [WF_rv, WF_u, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin, W0,
-            Wd] at hwf hsub ⊢
+          cases u <;> simp only [WF_rv, WF_u, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin,
+            W0,
+            Wd, Tree.endZero.injEq, Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq,
+              ↓reduceIte, ite_true, ite_false, and_false, false_and, not_false_eq_true,
+              not_true_eq_false, ne_eq, eq_self, Nat.reduceEqDiff, Nat.reduceLeDiff] at hwf hsub ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1691,7 +1707,11 @@ theorem W_rv_app_1_even_le (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
           simp only [app_1_even, Nat.succ_ne_zero, ↓reduceIte,
             show m + 1 + (m0 + 1) = (m + m0 + 1) + 1 by omega]
           have hw := W0_ge_11 u
-          cases u <;> simp [W_rv, mk_sh, W0_lin, W0] at hw ⊢
+          cases u <;> simp only [W_rv, mk_sh, W0_lin, W0, Tree.endStop.injEq, and_false, false_and,
+            not_false_eq_true, not_true_eq_false, eq_self, Nat.reduceLeDiff, reduceCtorEq,
+              ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+              Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff,
+              Nat.reduceSub] at hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1703,7 +1723,7 @@ theorem W_rv_app_1_even_le (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
         | P_od d =>
           simp only [app_1_even, Nat.succ_ne_zero, ↓reduceIte,
             show m + 1 + (m0 + 1) = (m + m0 + 1) + 1 by omega]
-          simp [W_rv]
+          simp only [W_rv]
           all_goals (try split_ifs)
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1716,7 +1736,7 @@ theorem W_rv_app_1_even_le (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
       cases p with
       | P_tree w =>
         simp only [app_1_even, Nat.succ_ne_zero, ↓reduceIte, W_rv]
-        cases w <;> simp [W_ra_tree]
+        cases w <;> simp only [W_ra_tree]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1727,7 +1747,7 @@ theorem W_rv_app_1_even_le (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
         all_goals (try omega)
       | P_od d =>
         simp only [app_1_even, Nat.succ_ne_zero, ↓reduceIte, W_rv]
-        cases d <;> simp [W_ra_od]
+        cases d <;> simp only [W_ra_od]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1747,8 +1767,11 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       cases M with
       | zero =>
         have hsub := Wd_sub_c_one_le hwf
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, mk_stop, sub_c, set_c, tree_c, W0_lin, W0,
-          Wd] at hwf hsub ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, mk_stop, sub_c, set_c, tree_c, W0_lin,
+          W0,
+          Wd, Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+            not_false_eq_true, not_true_eq_false, Nat.reduceEqDiff, Nat.reduceLeDiff, zero_add,
+            add_zero] at hwf hsub ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1759,7 +1782,8 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
         all_goals (try omega)
       | succ M =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, mk_sh, W0_lin, W0] at hwf hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, mk_sh, W0_lin, W0, Tree.endStop.injEq,
+          not_false_eq_true, not_true_eq_false, Nat.reduceLeDiff] at hwf hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1774,8 +1798,11 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       cases p with
       | P_od d => cases hwf
       | P_tree u =>
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_stop, sub_c, set_c, tree_c,
-          W0_lin, W0, Wd] at hwf ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_stop, sub_c, set_c,
+          tree_c,
+          W0_lin, W0, Wd, Tree.endZero.injEq, Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq,
+            ↓reduceIte, ite_true, ite_false, not_false_eq_true, not_true_eq_false, eq_self,
+            Nat.reduceLeDiff, zero_add, add_zero] at hwf ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1788,7 +1815,11 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       cases p with
       | P_tree u =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0,
+          Tree.endStop.injEq, and_false, false_and, ne_eq, eq_self, Nat.reduceLeDiff, reduceCtorEq,
+            ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+            not_false_eq_true, not_true_eq_false, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+            Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at hwf hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1798,7 +1829,8 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
         all_goals (try exact not_false)
         all_goals (try omega)
       | P_od d =>
-        cases d <;> simp [WF_rv, app_1_odd, W_rv, W_ra_od, Wd] at hwf ⊢
+        cases d <;> simp only [WF_rv, app_1_odd, W_rv, W_ra_od, Wd, Tree.endOne.injEq,
+          Nat.reduceLeDiff] at hwf ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1811,7 +1843,7 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
     cases p with
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf hw ⊢
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1821,7 +1853,7 @@ theorem W_rv_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       all_goals (try exact not_false)
       all_goals (try omega)
     | P_od d =>
-      cases d <;> simp [WF_rv, app_1_odd, W_rv, W_ra_od, Wd] at hwf ⊢
+      cases d <;> simp only [WF_rv, app_1_odd, W_rv, W_ra_od, Wd] at hwf ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1842,8 +1874,10 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       | zero =>
         have hsub := Wd_sub_c_one_le hwf
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, W_rv, mk_stop, sub_c, set_c, tree_c,
-          S_tree, W0_lin, W0, Wd, evenCeil] at hwf hsub hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, W_rv, mk_stop, sub_c, set_c, tree_c,
+          S_tree, W0_lin, W0, Wd, evenCeil, Tree.endStop.injEq, Tree.endOne.injEq, ↓reduceIte,
+            ite_true, ite_false, not_false_eq_true, not_true_eq_false, Nat.reduceEqDiff,
+            Nat.reduceLeDiff] at hwf hsub hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1854,8 +1888,8 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
         all_goals (try omega)
       | succ M =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, W_rv, mk_sh, S_tree, W0_lin, W0,
-          evenCeil] at hwf hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, W_rv, mk_sh, S_tree, W0_lin, W0,
+          evenCeil, Tree.endStop.injEq] at hwf hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1871,8 +1905,10 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       | P_od d => cases hwf
       | P_tree u =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_stop, sub_c, set_c,
-          tree_c, W0_lin, W0, Wd, evenCeil] at hwf hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_stop, sub_c, set_c,
+          tree_c, W0_lin, W0, Wd, evenCeil, Tree.endZero.injEq, Tree.endStop.injEq,
+            Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, not_false_eq_true,
+            not_true_eq_false, eq_self, Nat.reduceLeDiff] at hwf hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1885,8 +1921,11 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       cases p with
       | P_tree u =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh, W0_lin, W0,
-          evenCeil] at hwf hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh, W0_lin, W0,
+          evenCeil, Tree.endStop.injEq, and_false, false_and, ne_eq, eq_self, reduceCtorEq,
+            ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+            not_false_eq_true, not_true_eq_false, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+            Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, Nat.reduceSub] at hwf hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1899,7 +1938,7 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
         cases d with
         | stop cd d2 =>
           have h2 := Wd_ge_9 d2
-          simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf h2 ⊢
+          simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf h2 ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1910,7 +1949,7 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
           all_goals (try omega)
         | od cd m2 d2 =>
           have h2 := Wd_ge_9 d2
-          simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf h2 ⊢
+          simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf h2 ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1921,7 +1960,7 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
           all_goals (try omega)
         | sh cd m2 u2 =>
           have h2 := W0_ge_11 u2
-          simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf h2 ⊢
+          simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf h2 ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1931,7 +1970,8 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
           all_goals (try exact not_false)
           all_goals (try omega)
         | _ =>
-          simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf ⊢
+          simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil,
+            Tree.endOne.injEq] at hwf ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1944,7 +1984,7 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
     cases p with
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, W_rv, W_ra_tree, mk_sh, S_tree, W0,
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, W_rv, W_ra_tree, mk_sh, S_tree, W0,
         evenCeil] at hwf hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -1956,7 +1996,8 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       all_goals (try omega)
     | P_od d =>
       have hd := Wd_ge_9 d
-      cases d <;> simp [WF_rv, app_1_odd, S_rv, W_rv, W_ra_od, S_tree, Wd, evenCeil] at hwf hd ⊢
+      cases d <;> simp only [WF_rv, app_1_odd, S_rv, W_rv, W_ra_od, S_tree, Wd,
+        evenCeil] at hwf hd ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1966,6 +2007,8 @@ theorem S_rv_app_1_odd_le (M : Nat) {rv : RVal} (hwf : WF_rv rv) :
       all_goals (try exact not_false)
       all_goals (try omega)
 
+set_option maxHeartbeats 8000000 in
+-- Large case-splitting `simp`/`omega` proof over `RVal` constructors requires extra heartbeats.
 theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
     (hnotD : ∀ p, rv2 ≠ .R_D p)
     (hnotBad : rv2 ≠ .R_F 0 (.P_tree (.endZero 1)) ∧ rv2 ≠ .R_F 0 (.P_tree (.endOne 2))) :
@@ -1985,8 +2028,13 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
         rcases hnotBad with ⟨hnez, hneo⟩
         have hw := W0_ge_11 u
         refine ⟨by simp [bump_ra, NotBadRD], ?_, ?_, ?_⟩
-        · cases u <;> simp [WF_rv, WF_u, bump_ra, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c,
-          W0_lin, W0, Wd] at hwf2 hnez hneo hw ⊢
+        · cases u <;> simp only [WF_rv, WF_u, bump_ra, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c,
+          W0_lin, W0, Wd, Tree.endZero.injEq, Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq,
+            ↓reduceIte, ite_true, ite_false, and_false, false_and, and_true, true_and,
+            not_false_eq_true, not_true_eq_false, ne_eq, eq_self, Nat.reduceEqDiff,
+            Nat.reduceLeDiff, zero_add, add_zero, RVal.R_F.injEq, Payload.P_tree.injEq, or_false,
+              false_or, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff,
+              Nat.reduceSub] at hwf2 hnez hneo hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -1995,8 +2043,10 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · cases u <;> simp [WF_rv, WF_u, bump_ra, S_rv, mk_stop, mk_sh, sub_c, set_c, tree_c,
-          S_tree, W0, Wd] at hwf2 hnez hneo hw ⊢
+        · cases u <;> simp only [WF_rv, WF_u, bump_ra, S_rv, mk_stop, mk_sh, sub_c, set_c, tree_c,
+          S_tree, W0, Wd, Tree.endZero.injEq, Tree.endOne.injEq, ↓reduceIte, ite_true, ite_false,
+            and_false, false_and, and_true, true_and, not_false_eq_true, not_true_eq_false, ne_eq,
+            zero_add, add_zero] at hwf2 hnez hneo hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2007,8 +2057,13 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           all_goals (try omega)
         · intro M
           constructor
-          · cases u <;> simp [WF_rv, WF_u, bump_ra, app_1_odd, W_rv, W_ra_tree, mk_stop, sub_c,
-            set_c, tree_c, W0_lin, W0, Wd] at hwf2 hnez hneo hw ⊢
+          · cases u <;> simp only [WF_rv, WF_u, bump_ra, app_1_odd, W_rv, W_ra_tree, mk_stop, sub_c,
+            set_c, tree_c, W0_lin, W0, Wd, Tree.endZero.injEq, Tree.endStop.injEq,
+              Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, not_false_eq_true,
+              not_true_eq_false, ne_eq, eq_self, Nat.reduceLeDiff, zero_add,
+              add_zero, RVal.R_F.injEq, Payload.P_tree.injEq, and_false, false_and, and_true,
+                true_and, or_false, false_or, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+                Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at hwf2 hnez hneo hw ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2017,8 +2072,10 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
             all_goals (try split_ifs)
             all_goals (try exact not_false)
             all_goals (try omega)
-          · cases u <;> simp [WF_rv, WF_u, bump_ra, app_1_odd, S_rv, S_ra_tree, W_rv, mk_stop,
-            sub_c, set_c, tree_c, W0_lin, W0, Wd, evenCeil] at hwf2 hnez hneo hw ⊢
+          · cases u <;> simp only [WF_rv, WF_u, bump_ra, app_1_odd, S_rv, S_ra_tree, W_rv, mk_stop,
+            sub_c, set_c, tree_c, W0_lin, W0, Wd, evenCeil, Tree.endZero.injEq, Tree.endStop.injEq,
+              Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, not_false_eq_true,
+              not_true_eq_false, ne_eq, eq_self, Nat.reduceLeDiff] at hwf2 hnez hneo hw ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2032,7 +2089,11 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
       | P_tree u =>
         have hw := W0_ge_11 u
         refine ⟨by simp [bump_ra, NotBadRD], ?_, ?_, ?_⟩
-        · cases u <;> simp [WF_rv, WF_u, bump_ra, W_rv, mk_sh, W0_lin, W0] at hwf2 hw ⊢
+        · cases u <;> simp only [WF_rv, WF_u, bump_ra, W_rv, mk_sh, W0_lin, W0, Tree.endStop.injEq,
+          and_false, false_and, not_false_eq_true, not_true_eq_false, ne_eq,
+          Nat.reduceLeDiff, reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_true, true_and,
+            or_false, false_or, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+            Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at hwf2 hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2041,7 +2102,11 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · cases u <;> simp [WF_rv, WF_u, bump_ra, S_rv, mk_sh, S_tree, W0] at hwf2 hw ⊢
+        · cases u <;> simp only [WF_rv, WF_u, bump_ra, S_rv, mk_sh, S_tree, W0, Tree.endStop.injEq,
+          and_false, false_and, ne_eq, zero_add, add_zero, reduceCtorEq, ↓reduceIte, ite_true,
+            ite_false, and_true, true_and, or_false, false_or, not_false_eq_true,
+            not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff,
+            Nat.reduceEqDiff, Nat.reduceLeDiff, Nat.reduceSub] at hwf2 hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2052,8 +2117,11 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           all_goals (try omega)
         · intro M
           constructor
-          · cases u <;> simp [WF_rv, WF_u, bump_ra, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
-            W0] at hwf2 hw ⊢
+          · cases u <;> simp only [WF_rv, WF_u, bump_ra, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
+            W0, Tree.endStop.injEq, and_false, false_and, ne_eq, Nat.reduceLeDiff, reduceCtorEq,
+              ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+              not_false_eq_true, not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+              Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at hwf2 hw ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2062,8 +2130,11 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
             all_goals (try split_ifs)
             all_goals (try exact not_false)
             all_goals (try omega)
-          · cases u <;> simp [WF_rv, WF_u, bump_ra, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh,
-            W0_lin, W0, evenCeil] at hwf2 hw ⊢
+          · cases u <;> simp only [WF_rv, WF_u, bump_ra, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh,
+            W0_lin, W0, evenCeil, Tree.endStop.injEq, and_false, false_and, ne_eq, reduceCtorEq,
+              ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+              not_false_eq_true, not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+              Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, Nat.reduceSub] at hwf2 hw ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2075,7 +2146,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
       | P_od d =>
         have hd := Wd_ge_9 d
         refine ⟨by simp [bump_ra, NotBadRD], ?_, ?_, ?_⟩
-        · simp [bump_ra, W_rv]
+        · simp only [bump_ra, W_rv]
           all_goals (try split_ifs)
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2087,7 +2158,8 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
         · simp [bump_ra, S_rv, S_tree]
         · intro M
           constructor
-          · cases d <;> simp [WF_rv, bump_ra, app_1_odd, W_rv, W_ra_od, Wd] at hwf2 hd ⊢
+          · cases d <;> simp only [WF_rv, bump_ra, app_1_odd, W_rv, W_ra_od, Wd, Tree.endOne.injEq,
+            ne_eq, Nat.reduceLeDiff] at hwf2 hd ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2099,7 +2171,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           · cases d with
             | stop cd d2 =>
               have h2 := Wd_ge_9 d2
-              simp [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
+              simp only [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
                 evenCeil] at hwf2 h2 ⊢
               all_goals (try split_ifs at * )
               all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -2111,7 +2183,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
               all_goals (try omega)
             | od cd m2 d2 =>
               have h2 := Wd_ge_9 d2
-              simp [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
+              simp only [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
                 evenCeil] at hwf2 h2 ⊢
               all_goals (try split_ifs at * )
               all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -2123,7 +2195,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
               all_goals (try omega)
             | sh cd m2 u2 =>
               have h2 := W0_ge_11 u2
-              simp [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
+              simp only [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
                 evenCeil] at hwf2 h2 ⊢
               all_goals (try split_ifs at * )
               all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -2134,8 +2206,8 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
               all_goals (try exact not_false)
               all_goals (try omega)
             | _ =>
-              simp [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
-                evenCeil] at hwf2 ⊢
+              simp only [WF_rv, bump_ra, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd,
+                evenCeil, Tree.endOne.injEq, ne_eq] at hwf2 ⊢
               all_goals (try split_ifs at * )
               all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
                 W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2149,7 +2221,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
     | P_tree w =>
       have hw := W0_ge_11 w
       refine ⟨by simp [bump_ra, NotBadRD], ?_, ?_, ?_⟩
-      · cases w <;> simp [bump_ra, W_rv, W_ra_tree]
+      · cases w <;> simp only [bump_ra, W_rv, W_ra_tree]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2161,7 +2233,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
       · simp [bump_ra, S_rv, S_ra_tree]
       · intro M
         constructor
-        · cases w <;> simp [WF_rv, WF_u, bump_ra, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
+        · cases w <;> simp only [WF_rv, WF_u, bump_ra, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
           W0] at hwf2 hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -2171,7 +2243,8 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · cases w <;> simp [WF_rv, WF_u, bump_ra, app_1_odd, S_rv, W_rv, W_ra_tree, mk_sh, S_tree,
+        · cases w <;> simp only [WF_rv, WF_u, bump_ra, app_1_odd, S_rv, W_rv, W_ra_tree, mk_sh,
+          S_tree,
           W0, evenCeil] at hwf2 hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -2184,7 +2257,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
     | P_od d =>
       have hd := Wd_ge_9 d
       refine ⟨by simp [bump_ra, NotBadRD], ?_, ?_, ?_⟩
-      · cases d <;> simp [bump_ra, W_rv, W_ra_od]
+      · cases d <;> simp only [bump_ra, W_rv, W_ra_od]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2196,7 +2269,8 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
       · simp [bump_ra, S_rv]
       · intro M
         constructor
-        · cases d <;> simp [WF_rv, bump_ra, app_1_odd, W_rv, W_ra_od, Wd] at hwf2 hd ⊢
+        · cases d <;> simp only [WF_rv, bump_ra, app_1_odd, W_rv, W_ra_od, Wd, Tree.endOne.injEq,
+          ne_eq, Nat.reduceLeDiff] at hwf2 hd ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2205,7 +2279,7 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · cases d <;> simp [WF_rv, bump_ra, app_1_odd, S_rv, W_rv, W_ra_od, S_tree, Wd,
+        · cases d <;> simp only [WF_rv, bump_ra, app_1_odd, S_rv, W_rv, W_ra_od, S_tree, Wd,
           evenCeil] at hwf2 hd ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -2218,7 +2292,8 @@ theorem bump_ra_bounds {rv2 : RVal} (hwf2 : WF_rv rv2)
 
 theorem bump_ra_app_1_odd (m : Nat) (rv0 : RVal) :
     bump_ra (app_1_odd m rv0) = app_1_odd (m + 1) rv0 := by
-  cases rv0 <;> simp [app_1_odd, bump_ra] ; all_goals (try omega)
+  cases rv0 <;> simp only [app_1_odd, bump_ra, RVal.R_A.injEq, true_and, and_true, ne_eq,
+    RVal.R_F.injEq] ; all_goals (try omega)
 
 theorem evenCeil_mono {x y : Nat} (h : x ≤ y) : evenCeil x ≤ evenCeil y := by
   unfold evenCeil; (try omega)
@@ -2261,7 +2336,11 @@ theorem odd_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
     | P_od d => cases hwf0
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf0 hw ⊢
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0,
+        Tree.endStop.injEq, and_false, false_and, ne_eq, Nat.reduceLeDiff, reduceCtorEq,
+          ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+          not_false_eq_true, not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+          Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at hwf0 hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2277,7 +2356,8 @@ theorem odd_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
       | P_od d => cases hwf0
       | P_tree u =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf0 hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
+          W0] at hwf0 hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2290,7 +2370,8 @@ theorem odd_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
       cases p with
       | P_tree u =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf0 hw ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
+          W0] at hwf0 hw ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2300,7 +2381,8 @@ theorem odd_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
         all_goals (try exact not_false)
         all_goals (try omega)
       | P_od d =>
-        cases d <;> simp [WF_rv, app_1_odd, W_rv, W_ra_od, Wd] at hwf0 ⊢
+        cases d <;> simp only [WF_rv, app_1_odd, W_rv, W_ra_od, Wd, Tree.endOne.injEq,
+          Nat.reduceLeDiff] at hwf0 ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2313,7 +2395,8 @@ theorem odd_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
     cases p with
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0] at hwf0 hw ⊢
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin,
+        W0] at hwf0 hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2323,7 +2406,8 @@ theorem odd_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
       all_goals (try exact not_false)
       all_goals (try omega)
     | P_od d =>
-      cases d <;> simp [WF_rv, app_1_odd, W_rv, W_ra_od, Wd] at hwf0 ⊢
+      cases d <;> simp only [WF_rv, app_1_odd, W_rv, W_ra_od, Wd, Tree.endOne.injEq,
+        Nat.reduceLeDiff] at hwf0 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2342,7 +2426,8 @@ theorem notBad_of_odd (m : Nat) {rv0 : RVal}
     cases m with
     | zero =>
       rcases hnb rfl with ⟨h1, h2⟩
-      simp [app_1_odd]
+      simp only [app_1_odd, RVal.R_D.injEq, true_and, and_true, ne_eq, RVal.R_F.injEq, eq_self,
+        Nat.reduceEqDiff]
       exact ⟨fun he => h1 (by rw [he]), fun he => h2 (by rw [he])⟩
     | succ m => simp [app_1_odd]
   | R_F m0 p => simp [app_1_odd]
@@ -2354,7 +2439,7 @@ theorem W_safe_ge_W_rv {rv : RVal} : W_rv rv ≤ W_safe rv := by
     cases p with
     | P_od d => rfl
     | P_tree t =>
-        cases t <;> simp [W_safe, W_rv, W0_lin, W0]
+        cases t <;> simp only [W_safe, W_rv, W0_lin, W0]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2367,7 +2452,9 @@ theorem W_safe_ge_W_rv {rv : RVal} : W_rv rv ≤ W_safe rv := by
     cases p with
     | P_od d => rfl
     | P_tree t =>
-      cases m <;> cases t <;> simp [W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin, W0]
+      cases m <;> cases t <;> simp only [W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c,
+        W0_lin, W0, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_false,
+        false_and, and_true, true_and, not_false_eq_true, not_true_eq_false, Nat.reduceLeDiff]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2380,7 +2467,7 @@ theorem W_safe_ge_W_rv {rv : RVal} : W_rv rv ≤ W_safe rv := by
     cases p with
     | P_tree t => rfl
     | P_od d =>
-        cases d <;> simp [W_safe, W_rv, W_ra_od]
+        cases d <;> simp only [W_safe, W_rv, W_ra_od]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2398,7 +2485,9 @@ theorem W_safe_app_1_even_pos (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
     cases p with
     | P_od d => cases hwf
     | P_tree u =>
-      cases u <;> simp [app_1_even, W_safe, W_rv] at he ⊢ ; all_goals (try omega)
+      cases u <;> simp only [app_1_even, W_safe, W_rv, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.reduceEqDiff,
+        Nat.succ_eq_add_one] at he ⊢ ; all_goals (try omega)
   | R_F m0 p =>
     cases m0 with
     | zero =>
@@ -2406,8 +2495,10 @@ theorem W_safe_app_1_even_pos (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
       | P_od d => cases hwf
       | P_tree u =>
         have hsub := Wd_sub_c_one_le hwf
-        cases u <;> simp [WF_rv, WF_u, app_1_even, W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c,
-          tree_c, W0_lin, W0, Wd] at hwf hsub he ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_even, W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c,
+          tree_c, W0_lin, W0, Wd, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+            and_false, false_and, not_false_eq_true, not_true_eq_false,
+            Nat.reduceLeDiff] at hwf hsub he ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2419,7 +2510,11 @@ theorem W_safe_app_1_even_pos (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
     | succ m0 =>
       cases p with
       | P_tree u =>
-        cases u <;> simp [app_1_even, show m + 1 + (m0 + 1) = m + m0 + 2 by omega, W_safe] at he ⊢
+        cases u <;> simp only [app_1_even, show m + 1 + (m0 + 1) = m + m0 + 2 by omega, W_safe,
+          and_false, false_and, not_false_eq_true, not_true_eq_false, Nat.reduceLeDiff,
+            reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+            eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff,
+            Nat.reduceSub] at he ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2429,12 +2524,18 @@ theorem W_safe_app_1_even_pos (m : Nat) {rv : RVal} (hwf : WF_rv rv) :
         all_goals (try exact not_false)
         all_goals (try omega)
       | P_od d =>
-        simp [app_1_even, show m + 1 + (m0 + 1) = m + m0 + 2 by omega, W_safe] at he ⊢; (try omega)
+        simp only [app_1_even, show m + 1 + (m0 + 1) = m + m0 + 2 by omega, W_safe, ↓reduceIte,
+          ite_true, ite_false, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.reduceEqDiff,
+          Nat.succ_eq_add_one] at he ⊢; (try omega)
   | R_A m0 p =>
     cases p with
-    | P_tree w => simp [app_1_even, W_safe] at he ⊢; (try omega)
+    | P_tree w => simp only [app_1_even, W_safe, ↓reduceIte, ite_true, ite_false,
+      Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.reduceEqDiff,
+      Nat.succ_eq_add_one] at he ⊢; (try omega)
     | P_od d =>
-      cases d <;> simp [app_1_even, show m + 1 + m0 = (m + m0) + 1 by omega, W_safe] at he ⊢
+      cases d <;> simp only [app_1_even, show m + 1 + m0 = (m + m0) + 1 by omega, W_safe,
+        ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+        Nat.reduceEqDiff] at he ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2455,7 +2556,12 @@ theorem W_safe_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv)
     | P_tree u =>
       cases M with
       | zero =>
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_safe, W_rv, W0_lin, W0] at hwf hne2 ho ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_safe, W_rv, W0_lin, W0,
+          Tree.endStop.injEq, and_false, false_and, not_false_eq_true, not_true_eq_false, ne_eq,
+          Nat.reduceLeDiff, zero_add, add_zero, RVal.R_D.injEq, Payload.P_tree.injEq,
+            Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_true, true_and,
+            or_false, false_or, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+            Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at hwf hne2 ho ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2465,7 +2571,7 @@ theorem W_safe_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv)
         all_goals (try exact not_false)
         all_goals (try omega)
       | succ M =>
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_safe, W_rv, W0_lin, W0] at hwf ho ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_safe, W_rv, W0_lin, W0] at hwf ho ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2479,9 +2585,9 @@ theorem W_safe_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv)
     | zero => exact absurd rfl (hnf0 p)
     | succ m0 =>
       cases p with
-      | P_tree u => simp [app_1_odd, W_safe] at ho ⊢; (try omega)
+      | P_tree u => simp only [app_1_odd, W_safe] at ho ⊢; (try omega)
       | P_od d =>
-        cases d <;> simp [app_1_odd, show M + (m0 + 1) = (M + m0) + 1 by omega, W_safe] at ho ⊢
+        cases d <;> simp only [app_1_odd, show M + (m0 + 1) = (M + m0) + 1 by omega, W_safe] at ho ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2493,7 +2599,7 @@ theorem W_safe_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv)
   | R_A m0 p =>
     cases p with
     | P_tree u =>
-      cases u <;> simp [app_1_odd, W_safe, W_rv, W_ra_tree, W0] at ho ⊢
+      cases u <;> simp only [app_1_odd, W_safe, W_rv, W_ra_tree, W0] at ho ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2503,7 +2609,7 @@ theorem W_safe_app_1_odd_le_4 (M : Nat) {rv : RVal} (hwf : WF_rv rv)
       all_goals (try exact not_false)
       all_goals (try omega)
     | P_od d =>
-      simp [app_1_odd, W_safe] at ho ⊢; (try omega)
+      simp only [app_1_odd, W_safe] at ho ⊢; (try omega)
 
 theorem odd_wsafe_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
     W_safe (app_1_odd M (app_1_odd (m + 1) rv0)) ≤ 2 * M + 2 + W_rv (app_1_odd (m + 1) rv0) := by
@@ -2513,7 +2619,7 @@ theorem odd_wsafe_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
     cases p with
     | P_od d => cases hwf0
     | P_tree u =>
-      cases u <;> simp [app_1_odd, W_safe] at ho ⊢
+      cases u <;> simp only [app_1_odd, W_safe] at ho ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2525,7 +2631,10 @@ theorem odd_wsafe_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
   | R_F m0 p =>
     cases p with
     | P_tree u =>
-      cases u <;> simp [app_1_odd, W_safe] at ho ⊢
+      cases u <;> simp only [app_1_odd, W_safe, and_false, false_and, Nat.reduceLeDiff,
+        reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+        not_false_eq_true, not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceSub] at ho ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2535,12 +2644,12 @@ theorem odd_wsafe_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
       all_goals (try exact not_false)
       all_goals (try omega)
     | P_od d =>
-      simp [app_1_odd, W_safe] at ho ⊢; (try omega)
+      simp only [app_1_odd, W_safe] at ho ⊢; (try omega)
   | R_A m0 p =>
     cases p with
-    | P_tree u => simp [app_1_odd, W_safe] at ho ⊢; (try omega)
+    | P_tree u => simp only [app_1_odd, W_safe] at ho ⊢; (try omega)
     | P_od d =>
-      cases d <;> simp [app_1_odd, W_safe] at ho ⊢
+      cases d <;> simp only [app_1_odd, W_safe] at ho ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2567,8 +2676,10 @@ theorem W_safe_bump_ra_odd (m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0)
       | zero =>
         rcases hnb0 rfl with ⟨h1, h2⟩
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, W_safe, W_rv, mk_stop, sub_c, set_c, tree_c,
-          W0_lin, W0, Wd] at hwf0 h1 h2 hw hb ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, W_safe, W_rv, mk_stop, sub_c, set_c, tree_c,
+          W0_lin, W0, Wd, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+            and_false, false_and, and_true, true_and, not_false_eq_true, not_true_eq_false, ne_eq,
+            eq_self, Nat.reduceEqDiff] at hwf0 h1 h2 hw hb ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2578,7 +2689,10 @@ theorem W_safe_bump_ra_odd (m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0)
         all_goals (try exact not_false)
         all_goals (try omega)
       | succ m =>
-        cases u <;> simp [app_1_odd, W_safe] at hb ⊢
+        cases u <;> simp only [app_1_odd, W_safe, and_false, false_and, ne_eq, reduceCtorEq,
+          ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or,
+          not_false_eq_true, not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+          Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, Nat.reduceSub] at hb ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2589,9 +2703,9 @@ theorem W_safe_bump_ra_odd (m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0)
         all_goals (try omega)
   | R_F m0 p =>
     cases p with
-    | P_tree u => simp [app_1_odd, W_safe] at hb ⊢; (try omega)
+    | P_tree u => simp only [app_1_odd, W_safe] at hb ⊢; (try omega)
     | P_od d =>
-      cases d <;> simp [app_1_odd, W_safe] at hb ⊢
+      cases d <;> simp only [app_1_odd, W_safe] at hb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2603,7 +2717,10 @@ theorem W_safe_bump_ra_odd (m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0)
   | R_A m0 p =>
     cases p with
     | P_tree u =>
-      cases u <;> simp [app_1_odd, W_safe] at hb ⊢
+      cases u <;> simp only [app_1_odd, W_safe, and_false, false_and, ne_eq, reduceCtorEq,
+        ↓reduceIte, ite_true, ite_false, and_true, true_and, or_false, false_or, not_false_eq_true,
+        not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff,
+        Nat.reduceEqDiff, Nat.reduceLeDiff, Nat.reduceSub] at hb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2613,7 +2730,7 @@ theorem W_safe_bump_ra_odd (m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0)
       all_goals (try exact not_false)
       all_goals (try omega)
     | P_od d =>
-      simp [app_1_odd, W_safe] at hb ⊢; (try omega)
+      simp only [app_1_odd, W_safe] at hb ⊢; (try omega)
 
 theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
     (hnf0 : ∀ p, rv ≠ .R_F 0 p) (hrem : rem ≥ 1) (hsafe : W_safe rv ≤ 2 * rem + 13) :
@@ -2665,8 +2782,9 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
           all_goals (try exact not_false)
           all_goals (try omega)
         | _ =>
-          simp [WF_rv, WF_u, app_1_odd, BadRV, hrem0, BadRoot, mk_stop, sub_c, set_c, tree_c,
-            W_safe, W_rv, W0_lin, W0] at hwf hsafe ⊢
+          simp only [WF_rv, WF_u, app_1_odd, BadRV, hrem0, BadRoot, mk_stop, sub_c, set_c, tree_c,
+            W_safe, W_rv, W0_lin, W0, Tree.endOne.injEq, ↓reduceIte, ite_true, ite_false,
+              not_false_eq_true, not_true_eq_false, ne_eq, Nat.reduceLeDiff] at hwf hsafe ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2676,7 +2794,7 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
           all_goals (try exact not_false)
           all_goals (try omega)
       | succ M =>
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, BadRV, hrem0, BadRoot, mk_sh, W_safe, W_rv,
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, BadRV, hrem0, BadRoot, mk_sh, W_safe, W_rv,
           W0_lin, W0] at hwf hw hsafe ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -2693,8 +2811,11 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
       cases p with
       | P_tree u =>
         have hw := W0_ge_11 u
-        cases u <;> simp [WF_rv, WF_u, app_1_odd, BadRV, hrem0, mk_sh, W_safe, W_rv, W0_lin,
-          W0] at hwf hw hsafe ⊢
+        cases u <;> simp only [WF_rv, WF_u, app_1_odd, BadRV, hrem0, mk_sh, W_safe, W_rv, W0_lin,
+          W0, Tree.endStop.injEq, and_false, false_and, not_false_eq_true, not_true_eq_false,
+            ne_eq, eq_self, Nat.reduceEqDiff, Nat.reduceLeDiff, reduceCtorEq, ↓reduceIte, ite_true,
+              ite_false, and_true, true_and, or_false, false_or, Nat.add_one_ne_zero,
+              Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceSub] at hwf hw hsafe ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2705,7 +2826,11 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
         all_goals (try omega)
       | P_od d =>
         have hd9 := Wd_ge_9 d
-        cases d <;> simp [WF_rv, app_1_odd, BadRV, hrem0, W_safe, W_rv, Wd] at hwf hd9 hsafe ⊢
+        cases d <;> simp only [WF_rv, app_1_odd, BadRV, hrem0, W_safe, W_rv, Wd, and_false,
+          false_and, not_false_eq_true, not_true_eq_false, ne_eq, reduceCtorEq, ↓reduceIte,
+            ite_true, ite_false, and_true, true_and, or_false, false_or, eq_self,
+            Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff,
+            Nat.reduceLeDiff, Nat.reduceSub] at hwf hd9 hsafe ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2718,7 +2843,7 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
     cases p with
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, BadRV, hrem0, BadRoot, mk_sh, W_safe, W_rv,
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, BadRV, hrem0, BadRoot, mk_sh, W_safe, W_rv,
         W_ra_tree, W0] at hwf hw hsafe ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -2733,7 +2858,7 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
       cases d with
       | stop cd d2 =>
         have h2 := Wd_ge_9 d2
-        cases d2 <;> simp [WF_rv, app_1_odd, BadRV, hrem0, BadRoot, W_safe, W_rv, W_ra_od,
+        cases d2 <;> simp only [WF_rv, app_1_odd, BadRV, hrem0, BadRoot, W_safe, W_rv, W_ra_od,
           Wd] at hwf hd9 h2 hsafe ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -2744,7 +2869,8 @@ theorem not_badRV_of_W_safe_le (rem M : Nat) {rv : RVal} (hwf : WF_rv rv)
         all_goals (try exact not_false)
         all_goals (try omega)
       | _ =>
-        simp [WF_rv, app_1_odd, BadRV, hrem0, BadRoot, W_safe, W_rv, W_ra_od, Wd] at hwf hd9 hsafe ⊢
+        simp only [WF_rv, app_1_odd, BadRV, hrem0, BadRoot, W_safe, W_rv, W_ra_od,
+          Wd] at hwf hd9 hsafe ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2869,9 +2995,9 @@ theorem iter_app_01_pos (k B : Nat)
 
 theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
   refine ⟨.R_D (.P_tree (.endStop c)), sweep_u_endZero c hc, ?_, ?_, by simp, ?_, ?_, ?_, ?_, ?_⟩
-  · simp [WF_rv, WF_u]; (try omega)
+  · simp only [WF_rv, WF_u]; (try omega)
   · intro _; simp [NotBadRD]
-  · simp [W_rv, W0_lin, W0]
+  · simp only [W_rv, W0_lin, W0]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2880,7 +3006,7 @@ theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
     all_goals (try split_ifs)
     all_goals (try exact not_false)
     all_goals (try omega)
-  · simp [isLeaf, W_safe, W_rv, W0_lin, W0]
+  · simp only [isLeaf, W_safe, W_rv, W0_lin, W0]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2892,7 +3018,8 @@ theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
   · intro m _
     cases m with
     | zero =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0, Wd,
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0,
+        Wd,
         evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -2903,7 +3030,7 @@ theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2913,7 +3040,7 @@ theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro c' m hc' _ hw0 hnbr
-    simp [isLeaf] at hc'
+    simp only [isLeaf, Bool.false_eq_true, ↓reduceIte] at hc'
     cases m with
     | zero =>
       simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_stop, sub_c, set_c, tree_c,
@@ -2927,7 +3054,7 @@ theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_sh, W0] at hw0 hnbr ⊢
+      simp only [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_sh, W0] at hw0 hnbr ⊢
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2936,17 +3063,20 @@ theorem postU_endZero (c : Nat) (hc : c ≥ 1) : PostU (.endZero c) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-  · intro _; exact ⟨.endStop c, rfl, ⟨by simp [WF_r_core, WF_u]; (try omega), by simp [BadRoot]⟩⟩
+  · intro _
+    exact ⟨.endStop c, rfl, ⟨by
+      simp only [WF_r_core, WF_u, and_true, true_and]; (try omega), by simp [BadRoot]⟩⟩
 
 theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
   refine ⟨.R_D (.P_tree (.endOne (c + 1))), sweep_u_endStop c hc, ?_, ?_, by simp, ?_, ?_, ?_, ?_,
     ?_⟩
-  · simp [WF_rv, WF_u]; (try omega)
+  · simp only [WF_rv, WF_u, and_true, true_and]; (try omega)
   · intro hne
     have hc2 : c ≥ 2 := by
       by_contra hlt; apply hne; congr; (try omega)
-    simp [NotBadRD]; (try omega)
-  · simp [W_rv, W0_lin, W0]
+    simp only [NotBadRD, ne_eq, RVal.R_D.injEq, Payload.P_tree.injEq, Tree.endOne.injEq,
+      reduceCtorEq, not_false_eq_true, true_and]; (try omega)
+  · simp only [W_rv, W0_lin, W0, ne_eq]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2955,7 +3085,7 @@ theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
     all_goals (try split_ifs)
     all_goals (try exact not_false)
     all_goals (try omega)
-  · simp [isLeaf, W_safe, W0]
+  · simp only [isLeaf, W_safe, W0]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2969,8 +3099,11 @@ theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
     | zero =>
       have hc2 : c ≥ 2 := by
         by_contra hlt; apply hm; exact ⟨rfl, by congr; (try omega)⟩
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0, Wd,
-        evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0,
+        Wd,
+        evenCeil, Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true,
+          ite_false, and_true, true_and, not_false_eq_true, not_true_eq_false, eq_self,
+          Nat.reduceEqDiff, Nat.reduceLeDiff, zero_add, add_zero]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2980,7 +3113,7 @@ theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -2990,13 +3123,14 @@ theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro c' m hc' hm hw0 hnbr
-    simp [isLeaf] at hc'
+    simp only [isLeaf, Bool.false_eq_true, ↓reduceIte] at hc'
     cases m with
     | zero =>
       have hc2 : c ≥ 2 := by
         by_contra hlt; apply hm; exact ⟨rfl, by congr; (try omega)⟩
-      simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_stop, sub_c, set_c, tree_c,
-        W0] at hw0 hnbr ⊢
+      simp only [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_stop, sub_c, set_c, tree_c,
+        W0, Tree.endStop.injEq, Tree.endOne.injEq, ↓reduceIte, ite_true, ite_false,
+          not_false_eq_true, not_true_eq_false, eq_self, Nat.reduceEqDiff] at hw0 hnbr ⊢
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3006,7 +3140,7 @@ theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_sh, W0] at hw0 hnbr ⊢
+      simp only [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_sh, W0] at hw0 hnbr ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3016,18 +3150,20 @@ theorem postU_endStop (c : Nat) (hc : c ≥ 1) : PostU (.endStop c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro _
-    exact ⟨.endOne (c + 1), rfl, ⟨by simp [WF_r_core, WF_u]; (try omega), by simp [BadRoot]⟩⟩
+    exact ⟨.endOne (c + 1), rfl, ⟨by simp only [WF_r_core, WF_u, and_true, true_and]; (try omega),
+      by simp [BadRoot]⟩⟩
 
 theorem postU_endOne (c : Nat) (hc : c ≥ 2) : PostU (.endOne c) := by
   refine ⟨.R_D (.P_tree (.oneEnd c)), sweep_u_endOne c hc, ?_, ?_, by simp, ?_, ?_, ?_, ?_, ?_⟩
-  · simp [WF_rv, WF_u]; (try omega)
+  · simp only [WF_rv, WF_u, and_true, true_and]; (try omega)
   · intro _; simp [NotBadRD]
   · simp [W_rv, W0_lin, W0]; (try omega)
   · simp [isLeaf, W_safe, W0]; (try omega)
   · intro m _
     cases m with
     | zero =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0, Wd,
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0,
+        Wd,
         evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -3038,7 +3174,7 @@ theorem postU_endOne (c : Nat) (hc : c ≥ 2) : PostU (.endOne c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3048,7 +3184,7 @@ theorem postU_endOne (c : Nat) (hc : c ≥ 2) : PostU (.endOne c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro c' m hc' _ hw0 hnbr
-    simp [isLeaf] at hc'
+    simp only [isLeaf, Bool.false_eq_true, ↓reduceIte] at hc'
     cases m with
     | zero =>
       simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_stop, sub_c, set_c, tree_c,
@@ -3062,7 +3198,9 @@ theorem postU_endOne (c : Nat) (hc : c ≥ 2) : PostU (.endOne c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_sh, W0] at hw0 hnbr ⊢
+      simp only [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_sh, W0, reduceCtorEq,
+        ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero, Nat.succ_ne_zero, and_false,
+        false_and, eq_self, Nat.reduceEqDiff, Nat.reduceLeDiff] at hw0 hnbr ⊢
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3071,14 +3209,16 @@ theorem postU_endOne (c : Nat) (hc : c ≥ 2) : PostU (.endOne c) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-  · intro _; exact ⟨.oneEnd c, rfl, ⟨by simp [WF_r_core, WF_u]; (try omega), by simp [BadRoot]⟩⟩
+  · intro _
+    exact ⟨.oneEnd c, rfl, ⟨by
+      simp only [WF_r_core, WF_u, and_true, true_and]; (try omega), by simp [BadRoot]⟩⟩
 
 theorem postU_oneEnd (c : Nat) (hc : c ≥ 2) : PostU (.oneEnd c) := by
   refine ⟨.R_D (.P_tree (.stopOne c)), sweep_u_oneEnd c hc, ?_, ?_, by simp, ?_, ?_, ?_, ?_, ?_⟩
-  · simp [WF_rv, WF_u]; (try omega)
+  · simp only [WF_rv, WF_u, and_true, true_and]; (try omega)
   · intro _; simp [NotBadRD]
   · simp [W_rv, W0_lin, W0]; (try omega)
-  · simp [isLeaf, W_safe, W0]
+  · simp only [isLeaf, W_safe, W0]
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3090,7 +3230,8 @@ theorem postU_oneEnd (c : Nat) (hc : c ≥ 2) : PostU (.oneEnd c) := by
   · intro m _
     cases m with
     | zero =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0, Wd,
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0,
+        Wd,
         evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -3101,7 +3242,7 @@ theorem postU_oneEnd (c : Nat) (hc : c ≥ 2) : PostU (.oneEnd c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3111,11 +3252,12 @@ theorem postU_oneEnd (c : Nat) (hc : c ≥ 2) : PostU (.oneEnd c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro c' m hc' _ hw0 hnbr
-    simp [isLeaf] at hc'
+    simp only [isLeaf, Bool.false_eq_true, ↓reduceIte] at hc'
     cases m with
     | zero =>
-      simp [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_stop, sub_c, set_c, tree_c,
-        W0] at hw0 hnbr ⊢
+      simp only [app_1_odd, BadRV, show c' ≠ 0 by omega, BadRoot, mk_stop, sub_c, set_c, tree_c,
+        W0, reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_true, true_and, not_false_eq_true,
+          not_true_eq_false, eq_self, Nat.reduceEqDiff, Nat.reduceLeDiff] at hw0 hnbr ⊢
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3134,20 +3276,25 @@ theorem postU_oneEnd (c : Nat) (hc : c ≥ 2) : PostU (.oneEnd c) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-  · intro _; exact ⟨.stopOne c, rfl, ⟨by simp [WF_r_core, WF_u]; (try omega), by simp [BadRoot]⟩⟩
+  · intro _; exact ⟨.stopOne c, rfl, ⟨by simp only [WF_r_core, WF_u]; (try omega),
+    by simp [BadRoot]⟩⟩
 
 theorem postU_stopOne (c : Nat) (hc : c ≥ 1) : PostU (.stopOne c) := by
   refine ⟨.R_D (.P_tree (.od (c + 1) 0 (.endOne 1))), sweep_u_stopOne c hc, ?_, ?_, by simp, ?_,
     ?_, ?_, ?_, ?_⟩
-  · simp [WF_rv, WF_u, WF_d]; (try omega)
+  · simp only [WF_rv, WF_u, WF_d, and_true, true_and]; (try omega)
   · intro _; simp [NotBadRD]
-  · simp [W_rv, W0_lin, W0, Wd]; (try omega)
-  · simp [isLeaf, W_safe, W_rv, W0_lin, W0, Wd]; (try omega)
+  · simp only [W_rv, W0_lin, W0, Wd, and_true, true_and, reduceCtorEq, ↓reduceIte, ite_true,
+    ite_false, Nat.reduceLeDiff, zero_add, add_zero]; (try omega)
+  · simp only [isLeaf, W_safe, W_rv, W0_lin, W0, Wd, and_true, true_and, reduceCtorEq, ↓reduceIte,
+    ite_true, ite_false, Nat.reduceLeDiff, zero_add, add_zero]; (try omega)
   · intro m _
     cases m with
     | zero =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0, Wd,
-        stopOnePosBonus, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0,
+        Wd,
+        stopOnePosBonus, evenCeil, reduceCtorEq, ↓reduceIte, ite_true, ite_false, Nat.reduceLeDiff,
+          zero_add, add_zero]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3157,7 +3304,7 @@ theorem postU_stopOne (c : Nat) (hc : c ≥ 1) : PostU (.stopOne c) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, Wd, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, Wd, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3168,29 +3315,39 @@ theorem postU_stopOne (c : Nat) (hc : c ≥ 1) : PostU (.stopOne c) := by
       all_goals (try omega)
   · intro c' m hc' _ hw0 hnbr
     simp [isLeaf] at hc'
-    exact not_badRV_of_W_safe_le c' m (by simp [WF_rv, WF_u, WF_d]; (try omega)) (by simp)
-      (by omega) (by simp [W_safe, W_rv, W0_lin, W0, Wd] at hw0 ⊢; (try omega))
+    exact not_badRV_of_W_safe_le c' m
+      (by
+        simp only [WF_rv, WF_u, WF_d, reduceCtorEq, and_true, true_and]; (try omega)) (by simp)
+      (by omega) (by simp only [W_safe, W_rv, W0_lin, W0, Wd, reduceCtorEq, and_true, true_and,
+        ↓reduceIte, ite_true, ite_false, Nat.reduceLeDiff, zero_add,
+        add_zero] at hw0 ⊢; (try omega))
   · intro hr
     rcases hr with ⟨hrc, _⟩
     refine ⟨.od (c + 1) 0 (.endOne 1), rfl, ⟨?_, by simp [BadRoot]⟩⟩
-    simp [WF_r_core, WF_u, WF_d, Wd, stopOnePosBonus] at hrc ⊢; (try omega)
+    simp only [WF_r_core, WF_u, WF_d, Wd, stopOnePosBonus, reduceCtorEq, and_true, true_and,
+      ↓reduceIte, ite_true, ite_false, Nat.reduceLeDiff, zero_add, add_zero,
+      eq_self] at hrc ⊢; (try omega)
 
 theorem postU_stop (c : Nat) (d : Tree) (hwf : WF_u (.stop c d)) : PostU (.stop c d) := by
   rcases hwf with ⟨hc, hd0, hd1, hd⟩
   have hwd := Wd_ge_9 d
   have hwf_rv : WF_rv (.R_D (.P_tree (.od (c + 1) 0 d))) := ⟨by omega, hd⟩
   have hws_le : W_safe (.R_D (.P_tree (.od (c + 1) 0 d))) ≤ W0 (.stop c d) + 2 := by
-    simp [W_safe, W_rv, W0_lin, W0]; (try omega)
+    simp only [W_safe, W_rv, W0_lin, W0, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq,
+      zero_add, add_zero]; (try omega)
   refine ⟨.R_D (.P_tree (.od (c + 1) 0 d)), sweep_u_stop c hc d, hwf_rv, ?_, by simp, ?_, ?_, ?_,
     ?_, ?_⟩
   · intro _; simp [NotBadRD]
-  · simp [W_rv, W0_lin, W0]; (try omega)
+  · simp only [W_rv, W0_lin, W0, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq, zero_add,
+    add_zero]; (try omega)
   · simpa [isLeaf] using hws_le
   · intro m _
     cases m with
     | zero =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0, Wd,
-        stopOnePosBonus, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, W0_lin, W0,
+        Wd,
+        stopOnePosBonus, evenCeil, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq, zero_add,
+          add_zero]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3200,7 +3357,7 @@ theorem postU_stop (c : Nat) (d : Tree) (hwf : WF_u (.stop c d)) : PostU (.stop 
       all_goals (try exact not_false)
       all_goals (try omega)
     | succ m =>
-      simp [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, Wd, evenCeil]
+      simp only [app_1_odd, W_safe, W_rv, S_rv, mk_sh, S_tree, W0_lin, W0, Wd, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3210,7 +3367,7 @@ theorem postU_stop (c : Nat) (d : Tree) (hwf : WF_u (.stop c d)) : PostU (.stop 
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro c' m hc' _ hw0 _
-    simp [isLeaf] at hc'
+    simp only [isLeaf] at hc'
     exact not_badRV_of_W_safe_le c' m hwf_rv (by simp) hc' (by omega)
   · intro hr
     rcases hr with ⟨⟨_, hc2, hwd_le⟩, hnbr⟩
@@ -3223,7 +3380,7 @@ theorem postU_stop (c : Nat) (d : Tree) (hwf : WF_u (.stop c d)) : PostU (.stop 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d <;> simp [BadRoot, stopOnePosBonus, Wd] at hwd_le hnbr ⊢
+    · cases d <;> simp only [BadRoot, stopOnePosBonus, Wd] at hwd_le hnbr ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3234,9 +3391,9 @@ theorem postU_stop (c : Nat) (d : Tree) (hwf : WF_u (.stop c d)) : PostU (.stop 
       all_goals (try omega)
     · cases d with
       | stop cd d2 =>
-        cases d2 <;> simp [BadRoot] at hnbr ⊢ ; all_goals (try omega)
+        cases d2 <;> simp only [BadRoot] at hnbr ⊢ ; all_goals (try omega)
       | _ =>
-        simp [BadRoot] at hnbr ⊢; (try omega)
+        simp only [BadRoot] at hnbr ⊢; (try omega)
 
 theorem postD0_endZero : PostD0 (.endZero 0) := by
   refine ⟨.R_F 0 (.P_tree (.endZero 1)), sweep_d0_endZero, ?_, ?_, ?_, ?_, ?_⟩
@@ -3244,10 +3401,16 @@ theorem postD0_endZero : PostD0 (.endZero 0) := by
   · simp [NotBadRD]
   · intro _; simp [W_safe, W_rv, Wd]
   · intro m2
-    cases m2 <;> simp [app_1_even, W_safe, W_rv, mk_sh, W0_lin, W0, Wd] ; all_goals (try omega)
+    cases m2 <;> simp only [app_1_even, W_safe, W_rv, mk_sh, W0_lin, W0, Wd, Tree.endStop.injEq,
+      reduceCtorEq, ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+      Nat.reduceEqDiff, zero_add, add_zero, Nat.succ_eq_add_one, and_false, false_and, and_true,
+        true_and, or_false, false_or, not_false_eq_true, not_true_eq_false, eq_self,
+        Nat.add_eq_zero_iff, Nat.reduceLeDiff, Nat.reduceSub] ; all_goals (try omega)
   · intro cd m
     refine ⟨?_, ?_, ?_, ?_⟩
-    · simp [set_c, app_1_odd, W_rv, W_ra_tree, Wd]
+    · simp only [set_c, app_1_odd, W_rv, W_ra_tree, Wd, Tree.endStop.injEq, reduceCtorEq,
+      ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.reduceEqDiff,
+      zero_add, add_zero, Nat.succ_eq_add_one]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3256,7 +3419,7 @@ theorem postD0_endZero : PostD0 (.endZero 0) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [set_c, app_1_odd, W_safe, W_rv, W_ra_tree, Wd]
+    · simp only [set_c, app_1_odd, W_safe, W_rv, W_ra_tree, Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3265,7 +3428,8 @@ theorem postD0_endZero : PostD0 (.endZero 0) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [set_c, app_1_odd, S_rv, S_ra_tree, Wd, stopOnePosBonus, evenCeil]
+    · simp only [set_c, app_1_odd, S_rv, S_ra_tree, Wd, stopOnePosBonus, evenCeil,
+      Tree.endZero.injEq, ↓reduceIte, ite_true, ite_false, zero_add, add_zero]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3283,12 +3447,17 @@ theorem postD0_endStop : PostD0 (.endStop 0) := by
   · simp [NotBadRD]
   · intro h; exact absurd rfl h
   · intro m2
-    cases m2 <;> simp [app_1_even, W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin, W0,
-      Wd]
+    cases m2 <;> simp only [app_1_even, W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin,
+      W0,
+      Wd, Tree.endStop.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero,
+        Nat.succ_ne_zero, Nat.reduceEqDiff, zero_add, add_zero, Nat.succ_eq_add_one,
+          Tree.endZero.injEq, and_false, false_and, and_true, true_and, or_false, false_or,
+          not_false_eq_true, not_true_eq_false, eq_self, Nat.add_eq_zero_iff, Nat.reduceLeDiff,
+          Nat.reduceSub]
     all_goals (try omega)
   · intro cd m
     refine ⟨?_, ?_, ?_, ?_⟩
-    · simp [set_c, app_1_odd, W_rv, W_ra_tree, Wd]
+    · simp only [set_c, app_1_odd, W_rv, W_ra_tree, Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3297,7 +3466,7 @@ theorem postD0_endStop : PostD0 (.endStop 0) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [set_c, app_1_odd, W_safe, W_rv, W_ra_tree, Wd]
+    · simp only [set_c, app_1_odd, W_safe, W_rv, W_ra_tree, Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3306,7 +3475,7 @@ theorem postD0_endStop : PostD0 (.endStop 0) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [set_c, app_1_odd, S_rv, S_ra_tree, Wd, stopOnePosBonus, evenCeil]
+    · simp only [set_c, app_1_odd, S_rv, S_ra_tree, Wd, stopOnePosBonus, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3333,7 +3502,7 @@ theorem postD0_endOne : PostD0 (.endOne 0) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, W_rv, mk_stop, sub_c, tree_c, W0_lin, W0, Wd]
       | succ M =>
-        simp [set_c, app_1_odd, W_rv, mk_sh, W0_lin, W0, Wd]
+        simp only [set_c, app_1_odd, W_rv, mk_sh, W0_lin, W0, Wd]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3348,7 +3517,7 @@ theorem postD0_endOne : PostD0 (.endOne 0) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, W_safe, W_rv, mk_stop, sub_c, tree_c, W0_lin, W0, Wd]
       | succ M =>
-        simp [set_c, app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd]
+        simp only [set_c, app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3363,7 +3532,7 @@ theorem postD0_endOne : PostD0 (.endOne 0) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, S_rv, mk_stop, sub_c, tree_c, S_tree, Wd, stopOnePosBonus, evenCeil]
       | succ M =>
-        simp [set_c, app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil]
+        simp only [set_c, app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3394,7 +3563,7 @@ theorem postD0_oneEnd : PostD0 (.oneEnd 0) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, W_rv, mk_stop, sub_c, tree_c, W0_lin, W0, Wd]
       | succ M =>
-        simp [set_c, app_1_odd, W_rv, mk_sh, W0_lin, W0, Wd]
+        simp only [set_c, app_1_odd, W_rv, mk_sh, W0_lin, W0, Wd]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3409,7 +3578,7 @@ theorem postD0_oneEnd : PostD0 (.oneEnd 0) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, W_safe, W_rv, mk_stop, sub_c, tree_c, W0_lin, W0, Wd]
       | succ M =>
-        simp [set_c, app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd]
+        simp only [set_c, app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3424,7 +3593,7 @@ theorem postD0_oneEnd : PostD0 (.oneEnd 0) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, S_rv, mk_stop, sub_c, tree_c, S_tree, Wd, stopOnePosBonus, evenCeil]
       | succ M =>
-        simp [set_c, app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil]
+        simp only [set_c, app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3438,8 +3607,8 @@ theorem postD0_oneEnd : PostD0 (.oneEnd 0) := by
       | zero =>
         simp [app_1_odd, BadRV, show rem ≠ 0 by omega, mk_stop, sub_c, set_c, tree_c, BadRoot]
       | succ M =>
-        simp [set_c, Wd, stopOnePosBonus, BadRoot] at hwd hnbr
-        simp [app_1_odd, BadRV, show rem ≠ 0 by omega, mk_sh, BadRoot]
+        simp only [set_c, Wd, stopOnePosBonus, BadRoot] at hwd hnbr
+        simp only [app_1_odd, BadRV, show rem ≠ 0 by omega, mk_sh, BadRoot]
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3455,12 +3624,17 @@ theorem postD0_stopOne : PostD0 (.stopOne 0) := by
   · simp [NotBadRD]
   · intro _; simp [W_safe, W_rv, mk_stop, sub_c, set_c, tree_c, W0_lin, W0, Wd]
   · intro m2
-    cases m2 <;> simp [app_1_even, W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin, W0,
-      Wd]
+    cases m2 <;> simp only [app_1_even, W_safe, W_rv, mk_stop, mk_sh, sub_c, set_c, tree_c, W0_lin,
+      W0,
+      Wd, Tree.endStop.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero,
+        Nat.succ_ne_zero, Nat.reduceEqDiff, zero_add, add_zero, Nat.succ_eq_add_one,
+          Tree.endOne.injEq, and_false, false_and, and_true, true_and, or_false, false_or,
+          not_false_eq_true, not_true_eq_false, eq_self, Nat.add_eq_zero_iff, Nat.reduceLeDiff,
+          Nat.reduceSub]
     all_goals (try omega)
   · intro cd m
     refine ⟨?_, ?_, ?_, ?_⟩
-    · simp [set_c, app_1_odd, W_rv, W_ra_tree, W0, Wd]
+    · simp only [set_c, app_1_odd, W_rv, W_ra_tree, W0, Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3469,7 +3643,7 @@ theorem postD0_stopOne : PostD0 (.stopOne 0) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [set_c, app_1_odd, W_safe, W_rv, W_ra_tree, W0, Wd]
+    · simp only [set_c, app_1_odd, W_safe, W_rv, W_ra_tree, W0, Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3478,7 +3652,7 @@ theorem postD0_stopOne : PostD0 (.stopOne 0) := by
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [set_c, app_1_odd, S_rv, S_ra_tree, W0, Wd, stopOnePosBonus, evenCeil]
+    · simp only [set_c, app_1_odd, S_rv, S_ra_tree, W0, Wd, stopOnePosBonus, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3488,8 +3662,8 @@ theorem postD0_stopOne : PostD0 (.stopOne 0) := by
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hcd2 hwd hnbr
-      simp [set_c, Wd, stopOnePosBonus, BadRoot] at hwd hnbr
-      simp [app_1_odd, BadRV, show rem ≠ 0 by omega]
+      simp only [set_c, Wd, stopOnePosBonus, BadRoot] at hwd hnbr
+      simp only [app_1_odd, BadRV, show rem ≠ 0 by omega]
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3505,7 +3679,11 @@ theorem postD0_stop {d : Tree} (hwf : WF_d (.stop 0 d)) : PostD0 (.stop 0 d) := 
     cases d <;> simp [WF_d, WF_u, add_c, set_c, tree_c] at hd ⊢ <;> tauto
   have hwd := Wd_ge_9 d
   have hw2 : W0 (add_c 2 d) ≤ Wd d + 5 := by
-    cases d <;> simp [add_c, set_c, tree_c, W0, Wd] at hd0 hd1 ⊢
+    cases d <;> simp only [add_c, set_c, tree_c, W0, Wd, ne_eq, Nat.reduceLeDiff,
+      Tree.endZero.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+      and_false, false_and, and_true, true_and, or_false, false_or, not_false_eq_true,
+      not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff,
+      Nat.reduceEqDiff, Nat.reduceSub] at hd0 hd1 ⊢
     all_goals (try split_ifs at * )
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3517,7 +3695,11 @@ theorem postD0_stop {d : Tree} (hwf : WF_d (.stop 0 d)) : PostD0 (.stop 0 d) := 
   have hsub2 : sub_c 1 (add_c 2 d) = add_c 1 d := by
     cases d <;> simp [sub_c, add_c, set_c, tree_c] ; all_goals (try omega)
   have hwd1 : Wd (add_c 1 d) ≤ Wd d + 3 := by
-    cases d <;> simp [add_c, set_c, tree_c, Wd] at hd0 hd1 ⊢
+    cases d <;> simp only [add_c, set_c, tree_c, Wd, ne_eq, Nat.reduceLeDiff, Tree.endZero.injEq,
+      Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, and_false, false_and,
+      and_true, true_and, or_false, false_or, not_false_eq_true, not_true_eq_false, eq_self,
+      Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff,
+      Nat.reduceSub] at hd0 hd1 ⊢
     all_goals (try split_ifs at * )
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3530,35 +3712,39 @@ theorem postD0_stop {d : Tree} (hwf : WF_d (.stop 0 d)) : PostD0 (.stop 0 d) := 
     have hneqz : add_c 2 d ≠ .endZero 1 := by cases d <;> simp [add_c, set_c, tree_c]
                                               all_goals (try omega)
     by_cases hneo : add_c 2 d = .endOne 2
-    · simp [W_rv, hneqz, hneo]; (try omega)
+    · simp only [W_rv, hneqz, hneo, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq,
+      eq_self]; (try omega)
     · simp only [W_rv, hneqz, hneo, ↓reduceIte, hsub2]
       have hmk : W0_lin (mk_stop 1 (add_c 1 d)) ≤ Wd d + 9 := by
         unfold mk_stop
         split_ifs with ha hb
         · cases d <;> simp [add_c, set_c, tree_c] at ha
-        · simp [W0_lin, W0]; (try omega)
-        · simp [W0_lin, W0]; (try omega)
+        · simp only [W0_lin, W0, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq,
+          eq_self]; (try omega)
+        · simp only [W0_lin, W0, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq,
+          eq_self]; (try omega)
       omega
   have hrf0_safe : W_safe (.R_F 0 (.P_tree (add_c 2 d))) ≤ Wd d + 9 := by
     cases d <;> simp only [add_c, set_c, tree_c, W_safe] at hrf0 ⊢
     all_goals (try split_ifs)
-    all_goals (try simp [Wd] at hrf0 ⊢)
+    all_goals (try simp only [Wd, reduceCtorEq, ↓reduceIte, ite_true, ite_false, ne_eq] at hrf0 ⊢)
     all_goals (try split_ifs at hrf0 ⊢)
     all_goals omega
   refine ⟨.R_F 0 (.P_tree (add_c 2 d)), sweep_d0_stop_any d, hu2, ?_, ?_, ?_, ?_⟩
   · simp [NotBadRD]
-  · intro _; simp [Wd]; (try omega)
+  · intro _; simp only [Wd]; (try omega)
   · intro m2
     cases m2 with
-    | zero => simp [app_1_even, Wd]; (try omega)
+    | zero => simp only [app_1_even, Wd, ↓reduceIte, ite_true, ite_false, ne_eq, zero_add,
+      add_zero]; (try omega)
     | succ m2 =>
       have he := W_rv_app_1_even_le (m2 + 1) (rv := .R_F 0 (.P_tree (add_c 2 d))) hu2
       have hes := W_safe_app_1_even_pos m2 (rv := .R_F 0 (.P_tree (add_c 2 d))) hu2
-      simp [Wd]; (try omega)
+      simp only [Wd, ↓reduceIte, ite_true, ite_false, ne_eq, zero_add, add_zero]; (try omega)
   · intro cd m
     simp only [set_c, app_1_odd, Nat.add_zero]
     refine ⟨?_, ?_, ?_, ?_⟩
-    · cases d <;> simp [W_rv, W_ra_tree, add_c, set_c, tree_c, W0, Wd] at hd0 hd1 ⊢
+    · cases d <;> simp only [W_rv, W_ra_tree, add_c, set_c, tree_c, W0, Wd] at hd0 hd1 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3567,7 +3753,7 @@ theorem postD0_stop {d : Tree} (hwf : WF_d (.stop 0 d)) : PostD0 (.stop 0 d) := 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d <;> simp [W_safe, W_rv, W_ra_tree, add_c, set_c, tree_c, W0, Wd] at hd0 hd1 ⊢
+    · cases d <;> simp only [W_safe, W_rv, W_ra_tree, add_c, set_c, tree_c, W0, Wd] at hd0 hd1 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3576,8 +3762,12 @@ theorem postD0_stop {d : Tree} (hwf : WF_d (.stop 0 d)) : PostD0 (.stop 0 d) := 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d <;> simp [S_rv, S_ra_tree, add_c, set_c, tree_c, W0, Wd, stopOnePosBonus,
-      evenCeil] at hd0 hd1 hwd ⊢
+    · cases d <;> simp only [S_rv, S_ra_tree, add_c, set_c, tree_c, W0, Wd, stopOnePosBonus,
+      evenCeil, not_false_eq_true, not_true_eq_false, ne_eq, zero_add, add_zero,
+        Tree.endZero.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+        and_false, false_and, and_true, true_and, or_false, false_or, eq_self, Nat.add_one_ne_zero,
+        Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff,
+        Nat.reduceSub] at hd0 hd1 hwd ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3587,8 +3777,13 @@ theorem postD0_stop {d : Tree} (hwf : WF_d (.stop 0 d)) : PostD0 (.stop 0 d) := 
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hcd2 hwd_le hnbr
-      cases d <;> simp [Wd, stopOnePosBonus, BadRoot, BadRV, show rem ≠ 0 by omega, add_c, set_c,
-        tree_c] at hd0 hd1 hwd hwd_le hnbr ⊢
+      cases d <;> simp only [Wd, stopOnePosBonus, BadRoot, BadRV, show rem ≠ 0 by omega, add_c,
+        set_c,
+        tree_c, not_false_eq_true, not_true_eq_false, ne_eq, Nat.reduceLeDiff, zero_add,
+          add_zero, Tree.endZero.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true,
+            ite_false, and_false, false_and, and_true, true_and, or_false, false_or, eq_self,
+            Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff,
+            Nat.reduceSub] at hd0 hd1 hwd hwd_le hnbr ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3603,7 +3798,7 @@ theorem postD0_od_pos (m2 : Nat) {d2 : Tree} (hd2 : WF_d d2) (hpos : tree_c d2 �
   have hu : WF_u (.od 2 m2 (sub_c 1 d2)) := ⟨by omega, WF_d_set_c _ hd2⟩
   have hwd2 := Wd_ge_9 d2
   have hsub_le : Wd (sub_c 1 d2) ≤ Wd d2 := by
-    cases d2 <;> simp [sub_c, set_c, tree_c, Wd] at hpos ⊢
+    cases d2 <;> simp only [sub_c, set_c, tree_c, Wd] at hpos ⊢
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3613,7 +3808,8 @@ theorem postD0_od_pos (m2 : Nat) {d2 : Tree} (hd2 : WF_d d2) (hpos : tree_c d2 �
     all_goals (try exact not_false)
     all_goals (try omega)
   have hw_rv : W_rv (.R_D (.P_tree (.od 2 m2 (sub_c 1 d2)))) ≤ Wd (.od 0 m2 d2) + 4 := by
-    simp [W_rv, W0_lin, W0, Wd]; (try omega)
+    simp only [W_rv, W0_lin, W0, Wd, reduceCtorEq, ↓reduceIte, ite_true, ite_false, zero_add,
+      add_zero]; (try omega)
   have hws_rv : W_safe (.R_D (.P_tree (.od 2 m2 (sub_c 1 d2)))) = W_rv (.R_D (.P_tree (.od 2 m2
     (sub_c 1 d2)))) := rfl
   refine ⟨.R_D (.P_tree (.od 2 m2 (sub_c 1 d2))), sweep_d0_od_pos m2 hpos, hu, ?_, ?_, ?_, ?_⟩
@@ -3621,7 +3817,8 @@ theorem postD0_od_pos (m2 : Nat) {d2 : Tree} (hd2 : WF_d d2) (hpos : tree_c d2 �
   · intro _; exact ⟨hw_rv, by omega⟩
   · intro m
     cases m with
-    | zero => simp [app_1_even]; (try omega)
+    | zero => simp only [app_1_even, ↓reduceIte, ite_true, ite_false, zero_add,
+      add_zero]; (try omega)
     | succ m =>
       have he := W_rv_app_1_even_le (m + 1) (rv := .R_D (.P_tree (.od 2 m2 (sub_c 1 d2)))) hu
       have hes := W_safe_app_1_even_pos m (rv := .R_D (.P_tree (.od 2 m2 (sub_c 1 d2)))) hu
@@ -3645,7 +3842,7 @@ theorem postD0_od_pos (m2 : Nat) {d2 : Tree} (hd2 : WF_d d2) (hpos : tree_c d2 �
         simp [app_1_odd, W_safe, W_rv, mk_stop, sub_c, set_c, tree_c, W0_lin, W0, Wd] at hsub_le ⊢
         omega
       | succ M =>
-        simp [app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd] at hsub_le ⊢
+        simp only [app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd] at hsub_le ⊢
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3658,7 +3855,7 @@ theorem postD0_od_pos (m2 : Nat) {d2 : Tree} (hd2 : WF_d d2) (hpos : tree_c d2 �
       | zero =>
         have : m = 0 ∧ cd = 0 := by omega
         rcases this with ⟨rfl, rfl⟩
-        simp [app_1_odd, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, Wd, stopOnePosBonus,
+        simp only [app_1_odd, S_rv, mk_stop, sub_c, set_c, tree_c, S_tree, Wd, stopOnePosBonus,
           evenCeil] at hsub_le hwd2 ⊢
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -3672,8 +3869,8 @@ theorem postD0_od_pos (m2 : Nat) {d2 : Tree} (hd2 : WF_d d2) (hpos : tree_c d2 �
         simp [app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil] at hsub_le hwd2 ⊢
         omega
     · intro rem hrem _ hwd_le _
-      have hlin : Wd (.od cd m2 d2) = 2 * cd + Wd (.od 0 m2 d2) := by simp [Wd]; (try omega)
-      simp [stopOnePosBonus] at hwd_le
+      have hlin : Wd (.od cd m2 d2) = 2 * cd + Wd (.od 0 m2 d2) := by simp only [Wd]; (try omega)
+      simp only [stopOnePosBonus] at hwd_le
       exact not_badRV_of_W_safe_le rem (m + 2 * cd) hu (by simp) hrem (by omega)
 
 /-! ### 11. `od` Prefix Combinators & Master Mutual Induction via `Nat.strongRecOn` -/
@@ -3697,7 +3894,9 @@ theorem sweep_od_partial (k m : Nat) {d : Tree} (hd : WF_d d) (hk : k + 1 ≤ tr
       WF_d_set_c _ (WF_d_set_c _ hd)
     have hstep := sweepRV_01_RA (m + 2 * k + 1) hwf0 hprev h0
     have hsub : sub_c 1 (sub_c (k + 1) d) = sub_c (k + 1 + 1) d := by
-      cases d <;> simp [sub_c, set_c, tree_c] ; all_goals (try omega)
+      cases d <;> simp only [sub_c, set_c, tree_c, Tree.endZero.injEq, Tree.endStop.injEq,
+        Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq, Tree.stop.injEq, and_true,
+        true_and, Tree.od.injEq, Tree.sh.injEq] ; all_goals (try omega)
     rw [hsub] at hstep
     rw [ListBlank.append_pow_succ]
     simpa [ListBlank.append_cons, ListBlank.append_nil, app_1_odd, bump_ra,
@@ -3710,14 +3909,20 @@ theorem sweep_od_prefix (m : Nat) {d : Tree} {rv0 : RVal} (hd : WF_d d) (hwf0 : 
       (app_1_odd (m + 2 * tree_c d) rv0) := by
   cases hcd : tree_c d with
   | zero =>
-    have hd0 : set_c 0 d = d := by cases d <;> simp [set_c, tree_c] at hcd ⊢ ; all_goals (try omega)
+    have hd0 : set_c 0 d = d := by
+      cases d <;> simp only [set_c, tree_c, Tree.endZero.injEq,
+      Tree.endStop.injEq, Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq,
+      Tree.stop.injEq, and_true, true_and, Tree.od.injEq,
+      Tree.sh.injEq] at hcd ⊢ ; all_goals (try omega)
     rw [hd0] at h0
     have h1 := sweepRV_app_1_odd m hwf0 h0
     simpa [list_pow_zero, ListBlank.append_nil, evalP] using h1
   | succ k =>
     have hpart := sweep_od_partial k m hd (by omega)
     have hsub0 : sub_c (k + 1) d = set_c 0 d := by
-      cases d <;> simp [sub_c, set_c, tree_c] at hcd ⊢ ; all_goals (try omega)
+      cases d <;> simp only [sub_c, set_c, tree_c, Tree.endZero.injEq, Tree.endStop.injEq,
+        Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq, Tree.stop.injEq, and_true,
+        true_and, Tree.od.injEq, Tree.sh.injEq] at hcd ⊢ ; all_goals (try omega)
     rw [hsub0] at hpart
     have hstep := sweepRV_01_RA (m + 2 * k + 1) hwf0 hpart h0
     rw [bump_ra_app_1_odd, show m + 2 * k + 1 + 1 = m + 2 * (k + 1) by omega] at hstep
@@ -3733,8 +3938,11 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
     | P_od d => cases hwf0
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh, W0_lin, W0,
-        evenCeil] at hwf0 hw ⊢
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh, W0_lin, W0,
+        evenCeil, Tree.endStop.injEq, and_false, false_and, ne_eq, reduceCtorEq, ↓reduceIte,
+          ite_true, ite_false, and_true, true_and, or_false, false_or, not_false_eq_true,
+          not_true_eq_false, eq_self, Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff,
+          Nat.reduceEqDiff, Nat.reduceLeDiff, Nat.reduceSub] at hwf0 hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3747,7 +3955,7 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
     cases p with
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, W_rv, W_ra_tree, mk_sh, S_tree, W0,
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, W_rv, W_ra_tree, mk_sh, S_tree, W0,
         evenCeil] at hwf0 hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -3759,7 +3967,7 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
       all_goals (try omega)
     | P_od d =>
       have hd := Wd_ge_9 d
-      cases d <;> simp [WF_rv, app_1_odd, S_rv, W_rv, W_ra_od, S_tree, Wd, stopOnePosBonus,
+      cases d <;> simp only [WF_rv, app_1_odd, S_rv, W_rv, W_ra_od, S_tree, Wd, stopOnePosBonus,
         evenCeil] at hwf0 hd ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -3775,7 +3983,7 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
       cases d with
       | stop cd d2 =>
         have h2 := Wd_ge_9 d2
-        simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 h2 ⊢
+        simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 h2 ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3786,7 +3994,7 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
         all_goals (try omega)
       | od cd m2 d2 =>
         have h2 := Wd_ge_9 d2
-        simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 h2 ⊢
+        simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 h2 ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3797,7 +4005,7 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
         all_goals (try omega)
       | sh cd m2 u2 =>
         have h2 := W0_ge_11 u2
-        simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 h2 ⊢
+        simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 h2 ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3807,7 +4015,8 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
         all_goals (try exact not_false)
         all_goals (try omega)
       | _ =>
-        simp [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil] at hwf0 ⊢
+        simp only [WF_rv, app_1_odd, S_rv, S_ra_od, W_rv, set_c, tree_c, Wd, evenCeil,
+          Tree.endOne.injEq] at hwf0 ⊢
         all_goals (try split_ifs at * )
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3818,7 +4027,7 @@ theorem odd_S_of_app_1_odd_pos (M m : Nat) {rv0 : RVal} (hwf0 : WF_rv rv0) :
         all_goals (try omega)
     | P_tree u =>
       have hw := W0_ge_11 u
-      cases u <;> simp [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh, W0_lin, W0,
+      cases u <;> simp only [WF_rv, WF_u, app_1_odd, S_rv, S_ra_tree, W_rv, mk_sh, W0_lin, W0,
         evenCeil] at hwf0 hw ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -3913,7 +4122,10 @@ theorem postD0_od_0_endStop0 : PostD0 (.od 0 0 (.endStop 0)) := by
   · simp [NotBadRD]
   · intro _; simp [W_safe, W_rv, W0_lin, W0, Wd]
   · intro m2
-    cases m2 <;> simp [app_1_even, W_safe, W_rv, W_ra_tree, W0_lin, W0, Wd] ; all_goals (try omega)
+    cases m2 <;> simp only [app_1_even, W_safe, W_rv, W_ra_tree, W0_lin, W0, Wd,
+      Tree.endStop.injEq, reduceCtorEq, ↓reduceIte, ite_true, ite_false, Nat.add_one_ne_zero,
+      Nat.succ_ne_zero, Nat.reduceEqDiff, zero_add, add_zero,
+      Nat.succ_eq_add_one] ; all_goals (try omega)
   · intro cd m
     refine ⟨?_, ?_, ?_, ?_⟩
     · cases hM : m + 2 * cd with
@@ -3922,7 +4134,7 @@ theorem postD0_od_0_endStop0 : PostD0 (.od 0 0 (.endStop 0)) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, W_rv, mk_stop, sub_c, tree_c, W0_lin, W0, Wd]
       | succ M =>
-        simp [set_c, app_1_odd, W_rv, mk_sh, W0_lin, W0, Wd]
+        simp only [set_c, app_1_odd, W_rv, mk_sh, W0_lin, W0, Wd]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3937,7 +4149,7 @@ theorem postD0_od_0_endStop0 : PostD0 (.od 0 0 (.endStop 0)) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, W_safe, W_rv, mk_stop, sub_c, tree_c, W0_lin, W0, Wd]
       | succ M =>
-        simp [set_c, app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd]
+        simp only [set_c, app_1_odd, W_safe, W_rv, mk_sh, W0_lin, W0, Wd]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3952,7 +4164,7 @@ theorem postD0_od_0_endStop0 : PostD0 (.od 0 0 (.endStop 0)) := by
         rcases this with ⟨rfl, rfl⟩
         simp [set_c, app_1_odd, S_rv, mk_stop, sub_c, tree_c, S_tree, Wd, stopOnePosBonus, evenCeil]
       | succ M =>
-        simp [set_c, app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil]
+        simp only [set_c, app_1_odd, S_rv, mk_sh, S_tree, W0, Wd, stopOnePosBonus, evenCeil]
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3962,9 +4174,10 @@ theorem postD0_od_0_endStop0 : PostD0 (.od 0 0 (.endStop 0)) := by
         all_goals (try exact not_false)
         all_goals (try omega)
     · intro rem hrem _ hwd_le _
-      simp [set_c, Wd, stopOnePosBonus] at hwd_le
+      simp only [set_c, Wd, stopOnePosBonus, ↓reduceIte, ite_true, ite_false] at hwd_le
       exact not_badRV_of_W_safe_le rem (m + 2 * cd) hu_st (by simp) hrem
-        (by simp [W_safe, W_rv, W0_lin, W0, Wd]; (try omega))
+        (by simp only [W_safe, W_rv, W0_lin, W0, Wd, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+          Nat.reduceEqDiff, Nat.reduceLeDiff, zero_add, add_zero]; (try omega))
 
 theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
     (hleaf : match w with
@@ -3976,8 +4189,8 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
   | endZero c =>
     have hc : c ≥ 1 := hw
     refine ⟨_, postRV_of_RA_direct m
-      (by simp [WF_rv, WF_u]; (try omega)) (sweep_u_endZero c hc) ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+      (by simp only [WF_rv, WF_u]; (try omega)) (sweep_u_endZero c hc) ?_ ?_ ?_ ?_⟩
+    · simp only [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3986,7 +4199,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -3995,7 +4208,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0]
+    · simp only [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4005,13 +4218,14 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hs hnb
-      simp [S_rv, S_ra_tree, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh, BadRoot] at hs hnb ⊢
+      simp only [S_rv, S_ra_tree, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh,
+        BadRoot] at hs hnb ⊢
       (try split_ifs at *); all_goals (try simp [BadRoot])
   | endStop c =>
     have hc : c ≥ 1 := hw
     refine ⟨_, postRV_of_RA_direct m
-      (by simp [WF_rv, WF_u]; (try omega)) (sweep_u_endStop c hc) ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+      (by simp only [WF_rv, WF_u]; (try omega)) (sweep_u_endStop c hc) ?_ ?_ ?_ ?_⟩
+    · simp only [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4020,7 +4234,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4029,7 +4243,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0]
+    · simp only [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4039,7 +4253,8 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hs hnb
-      simp [S_rv, S_ra_tree, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh, BadRoot] at hs hnb ⊢
+      simp only [S_rv, S_ra_tree, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh,
+        BadRoot] at hs hnb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4051,8 +4266,8 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
   | endOne c =>
     have hc : c ≥ 2 := hw
     refine ⟨_, postRV_of_RA_direct m
-      (by simp [WF_rv, WF_u]; (try omega)) (sweep_u_endOne c hc) ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+      (by simp only [WF_rv, WF_u]; (try omega)) (sweep_u_endOne c hc) ?_ ?_ ?_ ?_⟩
+    · simp only [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4061,7 +4276,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4070,7 +4285,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0, evenCeil]
+    · simp only [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4080,7 +4295,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hs hnb
-      simp [S_rv, S_ra_tree, W0, evenCeil, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh,
+      simp only [S_rv, S_ra_tree, W0, evenCeil, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh,
         BadRoot] at hs hnb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -4093,8 +4308,8 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
   | oneEnd c =>
     have hc : c ≥ 2 := hw
     refine ⟨_, postRV_of_RA_direct m
-      (by simp [WF_rv, WF_u]; (try omega)) (sweep_u_oneEnd c hc) ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+      (by simp only [WF_rv, WF_u]; (try omega)) (sweep_u_oneEnd c hc) ?_ ?_ ?_ ?_⟩
+    · simp only [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4103,7 +4318,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4112,7 +4327,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0, evenCeil]
+    · simp only [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4128,8 +4343,9 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
   | stopOne c =>
     have hc : c ≥ 1 := hw
     refine ⟨_, postRV_of_RA_direct m
-      (by simp [WF_rv, WF_u, WF_d]; (try omega)) (sweep_u_stopOne c hc) ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0, Wd]
+      (by simp only [WF_rv, WF_u, WF_d, and_true,
+        true_and]; (try omega)) (sweep_u_stopOne c hc) ?_ ?_ ?_ ?_⟩
+    · simp only [app_1_odd, W_rv, W_ra_tree, mk_sh, W0_lin, W0, Wd, and_true, true_and]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4138,7 +4354,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0, Wd]
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, mk_sh, W0_lin, W0, Wd]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4147,7 +4363,7 @@ theorem postRV_RA_leaves (m : Nat) (w : Tree) (hw : WF_u w)
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0, Wd, evenCeil]
+    · simp only [app_1_odd, S_rv, S_ra_tree, mk_sh, S_tree, W0, Wd, evenCeil]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4164,7 +4380,7 @@ theorem postRV_RA_od_pos (m : Nat) {d : Tree} (hd : WF_d d) (hpos : tree_c d ≥
   refine ⟨_,
     postRV_of_RA_direct m (rv0 :=
     .R_F 1 (.P_od (sub_c 1 d))) (WF_d_set_c _ hd) (sweep_P_od_pos hpos) ?_ ?_ ?_ ?_⟩
-  · cases d <;> simp [app_1_odd, W_rv, W_ra_od, sub_c, set_c, tree_c, Wd] at hpos ⊢
+  · cases d <;> simp only [app_1_odd, W_rv, W_ra_od, sub_c, set_c, tree_c, Wd] at hpos ⊢
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4173,7 +4389,7 @@ theorem postRV_RA_od_pos (m : Nat) {d : Tree} (hd : WF_d d) (hpos : tree_c d ≥
     all_goals (try split_ifs)
     all_goals (try exact not_false)
     all_goals (try omega)
-  · cases d <;> simp [app_1_odd, W_safe, W_rv, W_ra_od, sub_c, set_c, tree_c, Wd] at hpos ⊢
+  · cases d <;> simp only [app_1_odd, W_safe, W_rv, W_ra_od, sub_c, set_c, tree_c, Wd] at hpos ⊢
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4183,7 +4399,8 @@ theorem postRV_RA_od_pos (m : Nat) {d : Tree} (hd : WF_d d) (hpos : tree_c d ≥
     all_goals (try exact not_false)
     all_goals (try omega)
   · have h9 := Wd_ge_9 (set_c 0 d)
-    cases d <;> simp [app_1_odd, S_rv, S_ra_od, sub_c, set_c, tree_c, Wd, evenCeil] at hpos h9 ⊢
+    cases d <;> simp only [app_1_odd, S_rv, S_ra_od, sub_c, set_c, tree_c, Wd,
+      evenCeil] at hpos h9 ⊢
     all_goals (try omega)
   · intro rem hrem hs hnb
     cases d <;> simp [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, sub_c, set_c,
@@ -4205,23 +4422,37 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
   cases d with
   | od _ _ _ | sh _ _ _ => cases hbase
   | endZero c =>
-    simp [tree_c] at hc0; subst hc0
+    simp only [tree_c] at hc0; subst hc0
     refine ⟨_, postRV_of_RA_direct m (by simp [WF_rv, WF_u]) sweep_d0_endZero ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, W_ra_od]; (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od]; (try omega)
+    · simp only [app_1_odd, W_rv, W_ra_tree, W_ra_od, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
     · simp [app_1_odd, S_rv, S_ra_tree, S_ra_od]
     · intro rem hrem _ _; simp [app_1_odd, BadRV, show rem ≠ 0 by omega]
   | endStop c =>
-    simp [tree_c] at hc0; subst hc0
+    simp only [tree_c] at hc0; subst hc0
     refine ⟨_, postRV_of_RA_direct m (by simp [WF_rv, WF_u]) sweep_d0_endStop ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, W_ra_od]; (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od]; (try omega)
+    · simp only [app_1_odd, W_rv, W_ra_tree, W_ra_od, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
     · simp [app_1_odd, S_rv, S_ra_tree, S_ra_od]
     · intro rem hrem _ _; simp [app_1_odd, BadRV, show rem ≠ 0 by omega]
   | endOne c =>
-    simp [tree_c] at hc0; subst hc0
+    simp only [tree_c] at hc0; subst hc0
     refine ⟨_, postRV_of_RA_direct m (by simp [WF_rv, WF_u]) sweep_d0_endOne ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_od, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_rv, W_ra_od, mk_sh, W0_lin, W0, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4230,7 +4461,9 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_od, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_od, mk_sh, W0_lin, W0, reduceCtorEq, ↓reduceIte,
+        ite_true, ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4239,7 +4472,9 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · simp [app_1_odd, S_rv, S_ra_od, mk_sh, S_tree, W0]
+    · simp only [app_1_odd, S_rv, S_ra_od, mk_sh, S_tree, W0, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4249,7 +4484,7 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hs hnb
-      simp [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh, BadRoot] at hs hnb ⊢
+      simp only [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh, BadRoot] at hs hnb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4259,10 +4494,15 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try exact not_false)
       all_goals (try omega)
   | oneEnd c =>
-    simp [tree_c] at hc0; subst hc0
+    simp only [tree_c] at hc0; subst hc0
     refine ⟨_, postRV_of_RA_direct m (by simp [WF_rv, WF_u]) sweep_d0_oneEnd ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_od, mk_sh, W0_lin, W0]; (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_od, mk_sh, W0_lin, W0]
+    · simp only [app_1_odd, W_rv, W_ra_od, mk_sh, W0_lin, W0, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_od, mk_sh, W0_lin, W0, reduceCtorEq, ↓reduceIte,
+        ite_true, ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
       all_goals (try split_ifs)
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4281,7 +4521,9 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hs hnb
-      simp [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh, BadRoot] at hs hnb ⊢
+      simp only [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, mk_sh, BadRoot, and_false,
+        false_and, and_true, true_and, or_false, false_or, not_false_eq_true, not_true_eq_false,
+        Nat.reduceEqDiff, Nat.reduceLeDiff, zero_add, add_zero] at hs hnb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4291,15 +4533,21 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try exact not_false)
       all_goals (try omega)
   | stopOne c =>
-    simp [tree_c] at hc0; subst hc0
+    simp only [tree_c] at hc0; subst hc0
     refine ⟨_, postRV_of_RA_direct m (by simp [WF_rv, WF_u]) sweep_d0_stopOne ?_ ?_ ?_ ?_⟩
-    · simp [app_1_odd, W_rv, W_ra_tree, W_ra_od, W0]; (try omega)
-    · simp [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od, W0]; (try omega)
+    · simp only [app_1_odd, W_rv, W_ra_tree, W_ra_od, W0, reduceCtorEq, ↓reduceIte, ite_true,
+        ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
+    · simp only [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od, W0, reduceCtorEq, ↓reduceIte,
+        ite_true, ite_false, and_false, false_and, and_true, true_and, Nat.add_one_ne_zero,
+        Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff, eq_self]
+      (try omega)
     · simp [app_1_odd, S_rv, S_ra_tree, S_ra_od, W0, evenCeil]; (try omega)
     · intro rem hrem hs hnb
       simp [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd] at hs hnb ⊢; (try omega)
   | stop c d2 =>
-    simp [tree_c] at hc0; subst hc0
+    simp only [tree_c] at hc0; subst hc0
     rcases hd with ⟨hd0, hd1, hd2⟩
     have hu2 : WF_u (add_c 2 d2) := by
       cases d2 <;> simp [WF_d, WF_u, add_c, set_c, tree_c] at hd2 ⊢ <;> tauto
@@ -4307,7 +4555,7 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
     refine ⟨_,
       postRV_of_RA_direct m (rv0 :=
       .R_F 0 (.P_tree (add_c 2 d2))) hu2 (sweep_d0_stop_any d2) ?_ ?_ ?_ ?_⟩
-    · cases d2 <;> simp [app_1_odd, W_rv, W_ra_tree, W_ra_od, add_c, set_c, tree_c, W0,
+    · cases d2 <;> simp only [app_1_odd, W_rv, W_ra_tree, W_ra_od, add_c, set_c, tree_c, W0,
       Wd] at hd0 hd1 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -4317,7 +4565,7 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d2 <;> simp [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od, add_c, set_c, tree_c, W0,
+    · cases d2 <;> simp only [app_1_odd, W_safe, W_rv, W_ra_tree, W_ra_od, add_c, set_c, tree_c, W0,
       Wd] at hd0 hd1 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -4327,7 +4575,7 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d2 <;> simp [app_1_odd, S_rv, S_ra_tree, S_ra_od, add_c, set_c, tree_c, W0, Wd,
+    · cases d2 <;> simp only [app_1_odd, S_rv, S_ra_tree, S_ra_od, add_c, set_c, tree_c, W0, Wd,
       evenCeil] at hd0 hd1 h9 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -4338,8 +4586,12 @@ theorem postRV_RA_od_base0 (m : Nat) (d : Tree) (hd : WF_d d) (hc0 : tree_c d = 
       all_goals (try exact not_false)
       all_goals (try omega)
     · intro rem hrem hs hnb
-      cases d2 <;> simp [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, add_c, set_c,
-        tree_c, Wd, evenCeil] at hd0 hd1 h9 hs hnb ⊢
+      cases d2 <;> simp only [S_rv, S_ra_od, BadRV, show rem ≠ 0 by omega, app_1_odd, add_c, set_c,
+        tree_c, Wd, evenCeil, and_false, false_and, not_false_eq_true, not_true_eq_false, ne_eq,
+          zero_add, add_zero, Tree.endZero.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte,
+            ite_true, ite_false, and_true, true_and, or_false, false_or, eq_self,
+            Nat.add_one_ne_zero, Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff,
+            Nat.reduceLeDiff, Nat.reduceSub] at hd0 hd1 h9 hs hnb ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4360,7 +4612,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
   have hwf_rv : WF_rv (.R_A (m + 2 * c + 1) (.P_od (sub_c (c + 1) d))) := WF_d_set_c _ hd
   have h9 := Wd_ge_9 d
   have hws_le : W_safe (.R_A (m + 2 * c + 1) (.P_od (sub_c (c + 1) d))) ≤ W0 (.od c m d) + 2 := by
-    cases d <;> simp [W_safe, W_rv, W_ra_od, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
+    cases d <;> simp only [W_safe, W_rv, W_ra_od, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4372,7 +4624,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
   refine ⟨.R_A (m + 2 * c + 1) (.P_od (sub_c (c + 1) d)), hpart, hwf_rv, ?_, by simp, ?_, ?_, ?_,
     ?_, ?_⟩
   · intro _; simp [NotBadRD]
-  · cases d <;> simp [W_rv, W_ra_od, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
+  · cases d <;> simp only [W_rv, W_ra_od, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
     all_goals (try split_ifs)
     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
       stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4385,7 +4637,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
   · intro M _
     have hsub9 := Wd_ge_9 (sub_c (c + 1) d)
     refine ⟨?_, ?_, ?_⟩
-    · cases d <;> simp [app_1_odd, W_rv, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
+    · cases d <;> simp only [app_1_odd, W_rv, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4394,7 +4646,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d <;> simp [app_1_odd, W_safe, W_rv, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
+    · cases d <;> simp only [app_1_odd, W_safe, W_rv, W0, Wd, sub_c, set_c, tree_c] at hlt ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
         stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4403,7 +4655,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
       all_goals (try split_ifs)
       all_goals (try exact not_false)
       all_goals (try omega)
-    · cases d <;> simp [app_1_odd, S_rv, S_tree, W0, Wd, sub_c, set_c, tree_c, stopOnePosBonus,
+    · cases d <;> simp only [app_1_odd, S_rv, S_tree, W0, Wd, sub_c, set_c, tree_c, stopOnePosBonus,
       evenCeil] at hlt h9 hsub9 ⊢
       all_goals (try split_ifs at * )
       all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
@@ -4414,7 +4666,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
       all_goals (try exact not_false)
       all_goals (try omega)
   · intro c' M hc' _ hw0 _
-    simp [isLeaf] at hc'
+    simp only [isLeaf] at hc'
     exact not_badRV_of_W_safe_le c' M hwf_rv (by simp) hc' (by omega)
   · intro hr
     exfalso
@@ -4423,7 +4675,7 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
     · have hgt : Wd d ≥ 2 * tree_c d + 10 := by
         cases d with
         | endZero c | endStop c | endOne c | oneEnd c | stopOne c =>
-          simp [Wd, tree_c] at hlt ⊢
+          simp only [Wd, tree_c] at hlt ⊢
           all_goals (try split_ifs)
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4432,12 +4684,14 @@ theorem postU_od_lt_cd (c m : Nat) {d : Tree} (hc : c ≥ 2) (hd : WF_d d) (hlt 
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        | stop c d2 => have := Wd_ge_9 d2; simp [Wd, tree_c]; (try omega)
-        | od c m2 d2 => have := Wd_ge_9 d2; simp [Wd, tree_c]; (try omega)
-        | sh c m2 u2 => have := W0_ge_11 u2; simp [Wd, tree_c]; (try omega)
+        | stop c d2 => have := Wd_ge_9 d2; simp only [Wd, tree_c]; (try omega)
+        | od c m2 d2 => have := Wd_ge_9 d2; simp only [Wd, tree_c]; (try omega)
+        | sh c m2 u2 => have := W0_ge_11 u2; simp only [Wd, tree_c]; (try omega)
       have hrc := hr.1
       simp [WF_r_core] at hrc; (try omega)
 
+set_option maxHeartbeats 8000000 in
+-- Large case-splitting `simp`/`omega` proof over non-`R_A` `RVal` cases requires extra heartbeats.
 theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠ .R_A m p) :
     ∃ rvn, PostRV rv rvn := by
   cases rv with
@@ -4458,7 +4712,8 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
         · intro he
           cases t <;> simp [WF_u, add_c, set_c, tree_c] at ht he ; all_goals (try omega)
       · simp only [W_rv]; rw [W0_lin_add_c_one ht]
-      · cases t <;> simp [WF_u, W_safe, W_rv, W0_lin, W0, add_c, set_c, tree_c] at ht ⊢
+      · cases t <;> simp only [WF_u, W_safe, W_rv, W0_lin, W0, add_c, set_c, tree_c,
+        Tree.endStop.injEq, ne_eq, Nat.reduceLeDiff] at ht ⊢
         all_goals (try split_ifs)
         all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree, W_ra_od,
           stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4473,14 +4728,16 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
         | zero => simpa [BadRV] using hbad
         | succ r =>
           have hadd : add_c (r + 1) (add_c 1 t) = add_c (r + 1 + 1) t := by
-            cases t <;> simp [add_c, set_c, tree_c] ; all_goals (try omega)
+            cases t <;> simp only [add_c, set_c, tree_c, Tree.endZero.injEq, Tree.endStop.injEq,
+              Tree.endOne.injEq, Tree.oneEnd.injEq, Tree.stopOne.injEq, Tree.stop.injEq, and_true,
+              true_and, Tree.od.injEq, Tree.sh.injEq, ne_eq] ; all_goals (try omega)
           simpa [BadRV, hadd] using hbad
       · intro hg; cases t <;> simp [GoodRV, add_c, set_c] at hg ⊢
       · intro hg M
         have hw := W0_ge_11 t
         cases M with
         | zero =>
-          cases t <;> simp [WF_u, GoodRV, app_1_odd, add_c, sub_c, set_c, tree_c, mk_stop,
+          cases t <;> simp only [WF_u, GoodRV, app_1_odd, add_c, sub_c, set_c, tree_c, mk_stop,
             W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, stopOnePosBonus, evenCeil] at ht hg hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -4491,7 +4748,7 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
           all_goals (try exact not_false)
           all_goals (try omega)
         | succ M =>
-          cases t <;> simp [WF_u, GoodRV, app_1_odd, add_c, set_c, tree_c, mk_sh,
+          cases t <;> simp only [WF_u, GoodRV, app_1_odd, add_c, set_c, tree_c, mk_sh,
             W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, evenCeil] at ht hg hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -4516,8 +4773,12 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
         · unfold mk_stop; split_ifs <;> simp [NotBadRD]
         · have hw := W0_ge_11 u
           have hsub := Wd_sub_c_one_le hu
-          cases u <;> simp [WF_u, W_safe, W_rv, mk_stop, sub_c, set_c, tree_c, W0_lin, W0,
-            Wd] at hu hw hsub ⊢
+          cases u <;> simp only [WF_u, W_safe, W_rv, mk_stop, sub_c, set_c, tree_c, W0_lin, W0,
+            Wd, Tree.endZero.injEq, Tree.endStop.injEq, Tree.endOne.injEq, ↓reduceIte, ite_true,
+              ite_false, not_false_eq_true, not_true_eq_false, ne_eq, eq_self, Nat.reduceEqDiff,
+              Nat.reduceLeDiff, Nat.succ_eq_add_one, reduceCtorEq, and_false, false_and, and_true,
+                true_and, or_false, false_or, Nat.add_one_ne_zero, Nat.succ_ne_zero,
+                Nat.add_eq_zero_iff, Nat.reduceSub] at hu hw hsub ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4526,20 +4787,23 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · simp [S_rv]; (try omega)
+        · simp only [S_rv]; (try omega)
         · intro rem _ hbad
           cases rem with
           | zero => simpa [BadRV] using hbad
           | succ r =>
             have hadd : add_c (r + 1) (mk_stop 1 (sub_c 1 u)) = mk_stop (r + 1 + 1) (sub_c 1 u) :=
               by
-              unfold mk_stop; split_ifs <;> simp [add_c, set_c, tree_c] ; all_goals (try omega)
+              unfold mk_stop; split_ifs <;> simp only [add_c, set_c, tree_c, Tree.endStop.injEq,
+                Tree.stopOne.injEq, Tree.stop.injEq, and_true, true_and,
+                ne_eq] ; all_goals (try omega)
             simpa [BadRV, hadd] using hbad
         · intro hg
           have hsub0 : sub_c 1 u ≠ .endZero 0 := by
             intro he
             have hu1 : u = .endZero 1 := by
-              cases u <;> simp [sub_c, set_c, tree_c] at hc he ⊢ ; all_goals (try omega)
+              cases u <;> simp only [sub_c, set_c, tree_c, Tree.endZero.injEq, reduceCtorEq,
+                ne_eq] at hc he ⊢ ; all_goals (try omega)
             subst hu1; exact hg
           unfold mk_stop; simp [hsub0]; split_ifs <;> simp [GoodRV]
         · intro hg M
@@ -4548,9 +4812,12 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
           have hsub := Wd_sub_c_one_le hu
           cases M with
           | zero =>
-            cases u <;> simp [WF_u, app_1_odd, mk_stop, sub_c, set_c, tree_c,
+            cases u <;> simp only [WF_u, app_1_odd, mk_stop, sub_c, set_c, tree_c,
               W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, stopOnePosBonus,
-                evenCeil] at hu hnez hw hsub ⊢
+                evenCeil, Tree.endZero.injEq, Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq,
+                  ↓reduceIte, ite_true, ite_false, and_false, false_and, not_false_eq_true,
+                  not_true_eq_false, ne_eq, eq_self, Nat.reduceEqDiff, Nat.reduceLeDiff, zero_add,
+                  add_zero] at hu hnez hw hsub ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4560,8 +4827,11 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
             all_goals (try exact not_false)
             all_goals (try omega)
           | succ M =>
-            cases u <;> simp [WF_u, app_1_odd, mk_stop, mk_sh, sub_c, set_c, tree_c,
-              W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, evenCeil] at hu hnez hw hsub ⊢
+            cases u <;> simp only [WF_u, app_1_odd, mk_stop, mk_sh, sub_c, set_c, tree_c,
+              W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, evenCeil, Tree.endZero.injEq,
+                Tree.endStop.injEq, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte, ite_true,
+                ite_false, not_false_eq_true, not_true_eq_false, ne_eq, eq_self, Nat.reduceEqDiff,
+                Nat.reduceLeDiff, zero_add, add_zero, Nat.succ_eq_add_one] at hu hnez hw hsub ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4578,7 +4848,11 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
           WF_u_mk_sh 2 m (by omega) hu, ?_, by simp, W_rv_RF_pos_tree_spec m hu, ?_, ?_, ?_, ?_, ?_⟩
         · unfold mk_sh; split_ifs <;> simp [NotBadRD]
         · have hw := W0_ge_11 u
-          cases u <;> simp [WF_u, W_safe, W_rv, mk_sh, W0_lin, W0] at hu hw ⊢
+          cases u <;> simp only [WF_u, W_safe, W_rv, mk_sh, W0_lin, W0, and_false, false_and,
+            not_false_eq_true, not_true_eq_false, ne_eq, reduceCtorEq, ↓reduceIte, ite_true,
+              ite_false, and_true, true_and, or_false, false_or, eq_self, Nat.add_one_ne_zero,
+              Nat.succ_ne_zero, Nat.add_eq_zero_iff, Nat.reduceEqDiff, Nat.reduceLeDiff,
+              Nat.reduceSub] at hu hw ⊢
           all_goals (try split_ifs at * )
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4587,20 +4861,21 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · simp [S_rv]; (try omega)
+        · simp only [S_rv]; (try omega)
         · intro rem _ hbad
           cases rem with
           | zero => simpa [BadRV] using hbad
           | succ r =>
             have hadd : add_c (r + 1) (mk_sh 2 m u) = mk_sh (r + 1 + 1 + 1) m u := by
-              unfold mk_sh; split_ifs <;> simp [add_c, set_c, tree_c] ; all_goals (try omega)
+              unfold mk_sh; split_ifs <;> simp only [add_c, set_c, tree_c, Tree.oneEnd.injEq,
+                Tree.sh.injEq, and_true, true_and, ne_eq] ; all_goals (try omega)
             simpa [BadRV, hadd] using hbad
         · intro _; unfold mk_sh; split_ifs <;> simp [GoodRV]
         · intro _ M
           have hw := W0_ge_11 u
           cases M with
           | zero =>
-            cases u <;> simp [WF_u, app_1_odd, mk_stop, mk_sh, sub_c, set_c, tree_c,
+            cases u <;> simp only [WF_u, app_1_odd, mk_stop, mk_sh, sub_c, set_c, tree_c,
               W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, stopOnePosBonus, evenCeil] at hu hw ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -4611,7 +4886,7 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
             all_goals (try exact not_false)
             all_goals (try omega)
           | succ M =>
-            cases u <;> simp [WF_u, app_1_odd, mk_sh, S_rv, W_safe, W_rv, S_tree, W0_lin, W0,
+            cases u <;> simp only [WF_u, app_1_odd, mk_sh, S_rv, W_safe, W_rv, S_tree, W0_lin, W0,
               evenCeil] at hu hw ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
@@ -4626,8 +4901,9 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
         have hd9 := Wd_ge_9 d
         refine ⟨.R_D (.P_tree (.od 2 m d)), fun r h => sweepRV_01_RF_od m h,
           ⟨by omega, hd⟩, by simp [NotBadRD], by simp, ?_, ?_,
-          by simp [S_rv]; (try omega), ?_, fun _ => by simp [GoodRV], ?_⟩
-        · cases d <;> simp [W_rv, W0_lin, W0, Wd]
+          by simp only [S_rv]; (try omega), ?_, fun _ => by simp [GoodRV], ?_⟩
+        · cases d <;> simp only [W_rv, W0_lin, W0, Wd, Tree.endOne.injEq, reduceCtorEq, ↓reduceIte,
+          ite_true, ite_false, not_false_eq_true, not_true_eq_false, ne_eq]
           all_goals (try split_ifs)
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4636,7 +4912,8 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
           all_goals (try split_ifs)
           all_goals (try exact not_false)
           all_goals (try omega)
-        · cases d <;> simp [W_safe, W_rv, W0_lin, W0, Wd]
+        · cases d <;> simp only [W_safe, W_rv, W0_lin, W0, Wd, Tree.endOne.injEq, reduceCtorEq,
+          ↓reduceIte, ite_true, ite_false, not_false_eq_true, not_true_eq_false, ne_eq]
           all_goals (try split_ifs)
           all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
             W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4654,8 +4931,10 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
         · intro _ M
           cases M with
           | zero =>
-            cases d <;> simp [app_1_odd, mk_stop, sub_c, set_c, tree_c,
-              W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, stopOnePosBonus, evenCeil] at hd9 ⊢
+            cases d <;> simp only [app_1_odd, mk_stop, sub_c, set_c, tree_c,
+              W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd, stopOnePosBonus, evenCeil,
+                Tree.endOne.injEq, not_false_eq_true, not_true_eq_false, ne_eq, Nat.reduceLeDiff,
+                zero_add, add_zero] at hd9 ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4665,8 +4944,9 @@ theorem postRV_step_nonRA {rv : RVal} (hwf : WF_rv rv) (hnotRA : ∀ m p, rv ≠
             all_goals (try exact not_false)
             all_goals (try omega)
           | succ M =>
-            cases d <;> simp [app_1_odd, mk_sh, W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd,
-              evenCeil] at hd9 ⊢
+            cases d <;> simp only [app_1_odd, mk_sh, W_safe, W_rv, S_rv, S_tree, W0_lin, W0, Wd,
+              evenCeil, Tree.endOne.injEq, and_false, false_and, not_false_eq_true,
+                not_true_eq_false, ne_eq, Nat.reduceLeDiff] at hd9 ⊢
             all_goals (try split_ifs at * )
             all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
               W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4696,7 +4976,7 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
         have hmu_eq : W0 (.sh c m u2) + 3 = n := by simpa [M_u] using hmu
         have hlt_u2 : M_u u2 < n := by
           have hw2 := W0_ge_11 u2
-          cases u2 <;> simp [M_u, W0] at hmu_eq ⊢ ; all_goals (try omega)
+          cases u2 <;> simp only [M_u, W0] at hmu_eq ⊢ ; all_goals (try omega)
         obtain ⟨rv2, hsw2, hwf2, hnb2, _, hw2, _, hodd2, hbad2,
           _⟩ := (ih (M_u u2) hlt_u2).1 u2 hu2 rfl
         have hsw_init := sweepRV_app_1_odd m hwf2 hsw2
@@ -4708,18 +4988,18 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
         obtain ⟨how_init, hows_init, hos_init⟩ := hodd2 m hnot1
         have ih_step : ∀ rv', WF_rv rv' → W_rv rv' ≤ W0 (.sh c m u2) → ∃ rvn, PostRV rv' rvn := by
           intro rv' hwf' hw'
-          exact (ih (M_rv rv') (by simp [M_rv]; (try omega))).2.2 rv' hwf' rfl
+          exact (ih (M_rv rv') (by simp only [M_rv]; (try omega))).2.2 rv' hwf' rfl
         have hbudget : W_rv (app_1_odd m rv2) + 2 * (c - 1) ≤ W0 (.sh c m u2) := by
-          simp [W0]; (try omega)
+          simp only [W0]; (try omega)
         obtain ⟨rvf, hswf, hwff, hnbf, hnff, _, hwf_w, hwf_ws, hwf_s, hbad_f, hodd_f⟩ :=
           iter_app_01_pos (c - 1) (W0 (.sh c m u2)) ih_step hsw_init hwf_init hgood_init hbudget
         have hc_eq : c - 1 + 1 = c := by omega
         rw [hc_eq] at hswf hwf_w hwf_ws hwf_s hbad_f
         have hws_sh : W_safe rvf ≤ W0 (.sh c m u2) + 2 := by
-          simp [W0] at hows_init hwf_ws ⊢; (try omega)
+          simp only [W0] at hows_init hwf_ws ⊢; (try omega)
         refine ⟨rvf, ?_, hwff, fun _ => hnbf, hnff, ?_, ?_, ?_, ?_, ?_⟩
         · simpa [evalT_sh] using hswf
-        · simp [W0] at hbudget hwf_w ⊢; (try omega)
+        · simp only [W0] at hbudget hwf_w ⊢; (try omega)
         · simpa [isLeaf] using hws_sh
         · intro M _
           obtain ⟨how_f, hows_f, hos_f⟩ := hodd_f M
@@ -4727,7 +5007,7 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
           exact le_trans hos_f (max_le (le_max_left _ _) (le_trans (evenCeil_mono (by omega))
             (le_max_right _ _)))
         · intro c' M hc' _ hw0 _
-          simp [isLeaf] at hc'
+          simp only [isLeaf] at hc'
           exact not_badRV_of_W_safe_le c' M hwff hnff hc' (by omega)
         · intro hr
           rcases hr with ⟨⟨_, hsh_ge⟩, hnbr⟩
@@ -4754,7 +5034,7 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
           have hd0_wf : WF_d d0 := WF_d_set_c 0 hd
           have hd0_c : tree_c d0 = 0 := tree_c_set_c 0 d
           have hlt_d0 : M_d0 d0 < n := by
-            cases d <;> simp [d0, set_c, M_d0, W0, Wd] at hmu_eq ⊢ ; all_goals (try omega)
+            cases d <;> simp only [d0, set_c, M_d0, W0, Wd] at hmu_eq ⊢ ; all_goals (try omega)
           obtain ⟨rv0, hsw0, hwf0, hnb0, _, _, hodd0⟩ :=
             (ih (M_d0 d0) hlt_d0).2.1 d0 hd0_wf hd0_c rfl
           have hpref := sweep_od_prefix m hd hwf0 hsw0
@@ -4779,9 +5059,9 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               exact app_1_odd_pos_ne_RF0 _ rv0 p'
             have hws_eq : W_safe (app_1_odd (m + 2 * tree_c d) rv0) ≤ W0 (.od (tree_c d) m d) + 2
               := by
-              simp [W0]; (try omega)
+              simp only [W0]; (try omega)
             refine ⟨app_1_odd (m + 2 * tree_c d) rv0, hpref, hwf_init,
-              fun _ => notBadRD_app_1_odd _ _, hnf_eq, by simp [W0]; (try omega),
+              fun _ => notBadRD_app_1_odd _ _, hnf_eq, by simp only [W0]; (try omega),
               by simpa [isLeaf] using hws_eq, ?_, ?_, ?_⟩
             · intro M _
               have hm_pos : m + 2 * tree_c d = (m + 2 * tree_c d - 1) + 1 := by omega
@@ -4789,13 +5069,13 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               have hows_f := odd_wsafe_of_app_1_odd_pos M (m + 2 * tree_c d - 1) hwf0
               have hos_f := odd_S_of_app_1_odd_pos M (m + 2 * tree_c d - 1) hwf0
               rw [← hm_pos] at how_f hows_f hos_f
-              refine ⟨by simp [W0]; (try omega), by simp [W0]; (try omega), ?_⟩
+              refine ⟨by simp only [W0]; (try omega), by simp only [W0]; (try omega), ?_⟩
               have hmon :=
                 evenCeil_mono (show W_rv (app_1_odd (m + 2 * tree_c d) rv0) + 7 ≤ W0 (.od (tree_c
-                d) m d) + 9 by simp [W0]; (try omega))
+                d) m d) + 9 by simp only [W0]; (try omega))
               exact le_trans hos_f (max_le (le_max_left _ _) (le_trans hmon (le_max_right _ _)))
             · intro c' M hc' _ hw0 _
-              simp [isLeaf] at hc'
+              simp only [isLeaf] at hc'
               exact not_badRV_of_W_safe_le c' M hwf_init hnf_eq hc' (by omega)
             · intro hr
               exfalso
@@ -4804,7 +5084,7 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               · have hgt : Wd d ≥ 2 * tree_c d + 10 := by
                   cases d with
                   | endZero c | endStop c | endOne c | oneEnd c | stopOne c =>
-                    simp [Wd, tree_c] at hc ⊢
+                    simp only [Wd, tree_c] at hc ⊢
                     all_goals (try split_ifs)
                     all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od,
                       W_ra_tree, W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4813,20 +5093,20 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
                     all_goals (try split_ifs)
                     all_goals (try exact not_false)
                     all_goals (try omega)
-                  | stop c d2 => have := Wd_ge_9 d2; simp [Wd, tree_c]; (try omega)
-                  | od c m2 d2 => have := Wd_ge_9 d2; simp [Wd, tree_c]; (try omega)
-                  | sh c m2 u2 => have := W0_ge_11 u2; simp [Wd, tree_c]; (try omega)
+                  | stop c d2 => have := Wd_ge_9 d2; simp only [Wd, tree_c]; (try omega)
+                  | od c m2 d2 => have := Wd_ge_9 d2; simp only [Wd, tree_c]; (try omega)
+                  | sh c m2 u2 => have := W0_ge_11 u2; simp only [Wd, tree_c]; (try omega)
                 have hrc := hr.1
                 simp [WF_r_core] at hrc; (try omega)
           · have hgt : c > tree_c d := by omega
             have ih_step : ∀ rv', WF_rv rv' → W_rv rv' ≤ W0 (.od c m d) → ∃ rvn,
               PostRV rv' rvn := by
               intro rv' hwf' hw'
-              exact (ih (M_rv rv') (by simp [M_rv]; (try omega))).2.2 rv' hwf' rfl
+              exact (ih (M_rv rv') (by simp only [M_rv]; (try omega))).2.2 rv' hwf' rfl
             set k := c - tree_c d - 1
             have hk_eq : k + 1 = c - tree_c d := by omega
             have hbudget : W_rv (app_1_odd (m + 2 * tree_c d) rv0) + 2 * k ≤ W0 (.od c m d) := by
-              simp [W0]; (try omega)
+              simp only [W0]; (try omega)
             obtain ⟨rvf, hswf, hwff, hnbf, hnff, _, hwf_w, hwf_ws, hwf_s, hbad_f, hodd_f⟩ :=
               iter_app_01_pos k (W0 (.od c m d)) ih_step hpref hwf_init hgood_init hbudget
             rw [hk_eq] at hswf hwf_w hwf_ws hwf_s hbad_f
@@ -4838,7 +5118,7 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               rfl
             rw [heval_eq] at hswf
             have hws_od : W_safe rvf ≤ W0 (.od c m d) + 2 := by
-              simp [W0] at hows_init hwf_ws ⊢; (try omega)
+              simp only [W0] at hows_init hwf_ws ⊢; (try omega)
             refine ⟨rvf, hswf, hwff, fun _ => hnbf, hnff, by omega,
               by simpa [isLeaf] using hws_od, ?_, ?_, ?_⟩
             · intro M _
@@ -4849,7 +5129,7 @@ theorem master_branch_U (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
                 c m d) + 9 by omega)
               exact le_trans hos_f (max_le (le_max_left _ _) (le_trans hmon (le_max_right _ _)))
             · intro c' M hc' _ hw0 _
-              simp [isLeaf] at hc'
+              simp only [isLeaf] at hc'
               exact not_badRV_of_W_safe_le c' M hwff hnff hc' (by omega)
             · intro hr
               rcases hr with ⟨⟨_, hc_ez, hod_ge⟩, hnbr⟩
@@ -4883,28 +5163,28 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
     ∀ d0, WF_d d0 → tree_c d0 = 0 → M_d0 d0 = n → PostD0 d0 := by
       intro d0 hd0 hc0 hmd0
       cases d0 with
-      | endZero c => simp [tree_c] at hc0; subst hc0; exact postD0_endZero
-      | endStop c => simp [tree_c] at hc0; subst hc0; exact postD0_endStop
-      | endOne c => simp [tree_c] at hc0; subst hc0; exact postD0_endOne
-      | oneEnd c => simp [tree_c] at hc0; subst hc0; exact postD0_oneEnd
-      | stopOne c => simp [tree_c] at hc0; subst hc0; exact postD0_stopOne
-      | stop c d2 => simp [tree_c] at hc0; subst hc0; exact postD0_stop hd0
+      | endZero c => simp only [tree_c] at hc0; subst hc0; exact postD0_endZero
+      | endStop c => simp only [tree_c] at hc0; subst hc0; exact postD0_endStop
+      | endOne c => simp only [tree_c] at hc0; subst hc0; exact postD0_endOne
+      | oneEnd c => simp only [tree_c] at hc0; subst hc0; exact postD0_oneEnd
+      | stopOne c => simp only [tree_c] at hc0; subst hc0; exact postD0_stopOne
+      | stop c d2 => simp only [tree_c] at hc0; subst hc0; exact postD0_stop hd0
       | sh c m2 u2 =>
-        simp [tree_c] at hc0; subst hc0
+        simp only [tree_c] at hc0; subst hc0
         rcases hd0 with ⟨hnot1, hu2⟩
         have hmd0_eq : Wd (.sh 0 m2 u2) + 7 = n := by simpa [M_d0] using hmd0
         have hlt_u2 : M_u u2 < n := by
-          cases u2 <;> simp [M_u, Wd, W0] at hmd0_eq ⊢ ; all_goals (try omega)
+          cases u2 <;> simp only [M_u, Wd, W0] at hmd0_eq ⊢ ; all_goals (try omega)
         obtain ⟨rv2, hsw2, hwf2, hnb2, _, hw2, hws2, _, _, _⟩ := (ih (M_u u2) hlt_u2).1 u2 hu2 rfl
         have hsw_ev := sweepRV_app_1_even m2 hwf2 hsw2
         have hwf_ev := WF_rv_app_1_even m2 hwf2
         have hw_ev_le : W_rv (app_1_even m2 rv2) ≤ Wd (.sh 0 m2 u2) + 2 := by
           have he := W_rv_app_1_even_le m2 hwf2
-          simp [Wd]; (try omega)
+          simp only [Wd]; (try omega)
         have hws_ev_le : W_safe (app_1_even m2 rv2) ≤ Wd (.sh 0 m2 u2) + 2 := by
           cases m2 with
           | zero =>
-              simp [app_1_even, Wd] at hws2 ⊢
+              simp only [app_1_even, Wd] at hws2 ⊢
               all_goals (try split_ifs at hws2 )
               all_goals (try dsimp only [W0_lin, W0, Wd, S_tree, S_ra_tree, S_ra_od, W_ra_tree,
                 W_ra_od, stopOnePosBonus, isLeaf, evenCeil, tree_c, set_c] at *)
@@ -4915,8 +5195,8 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               all_goals (try omega)
           | succ m2' =>
             have hes := W_safe_app_1_even_pos m2' hwf2
-            simp [Wd]; (try omega)
-        have hlt_ev : M_rv (app_1_even m2 rv2) < n := by simp [M_rv]; (try omega)
+            simp only [Wd]; (try omega)
+        have hlt_ev : M_rv (app_1_even m2 rv2) < n := by simp only [M_rv]; (try omega)
         obtain ⟨rvn, hstep, hwfn, hnbn, hnfn, hwn, hwsn, _, _, _, hodd_n⟩ :=
           (ih (M_rv (app_1_even m2 rv2)) hlt_ev).2.2 (app_1_even m2 rv2) hwf_ev rfl
         have hsw_fin : SweepRV ((0 : Fin 2) >> evalT (.sh 0 m2 u2)) rvn := by
@@ -4933,7 +5213,8 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
         refine ⟨rvn, hsw_fin, hwfn, hnbn, fun _ => ⟨by omega, by omega⟩, ?_, ?_⟩
         · intro m
           cases m with
-          | zero => simp [app_1_even]; (try omega)
+          | zero => simp only [app_1_even, ↓reduceIte, ite_true, ite_false, ne_eq, zero_add,
+            add_zero]; (try omega)
           | succ m =>
             have he := W_rv_app_1_even_le (m + 1) hwfn
             have hes := W_safe_app_1_even_pos m hwfn
@@ -4941,7 +5222,7 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
         · intro cd m
           have hnez : set_c cd (.sh 0 m2 u2) ≠ .endZero 1 := by simp [set_c]
           have hlin : Wd (set_c cd (.sh 0 m2 u2)) = 2 * cd + Wd (.sh 0 m2 u2) := by
-            simp [set_c, Wd]; (try omega)
+            simp only [set_c, Wd]; (try omega)
           have hbonus0 : stopOnePosBonus (set_c cd (.sh 0 m2 u2)) = 0 := rfl
           simp only [hnez, ↓reduceIte, hlin, hbonus0, Nat.add_zero,
             show 2 * cd + Wd (.sh 0 m2 u2) + 11 - 2 * cd = Wd (.sh 0 m2 u2) + 11 by omega]
@@ -4954,13 +5235,14 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
           cases m2 with
           | zero =>
             have hw_ev0 : W_rv (app_1_even 0 rv2) ≤ Wd (.sh 0 0 u2) := by
-              simp [app_1_even, Wd]; (try omega)
+              simp only [app_1_even, Wd, ↓reduceIte, ite_true, ite_false, ne_eq, eq_self,
+                Nat.reduceEqDiff, zero_add, add_zero]; (try omega)
             have hwn0 : W_rv rvn ≤ Wd (.sh 0 0 u2) + 2 := by omega
             have how := W_rv_app_1_odd_le_4 (m + 2 * cd) hwfn
             have hows := W_safe_app_1_odd_le_4 (m + 2 * cd) hwfn hnfn hnbn.2
             have hos := S_rv_app_1_odd_le (m + 2 * cd) hwfn
             have hge24 : evenCeil (Wd (.sh 0 0 u2) + 11) ≥ 24 := by
-              unfold evenCeil; simp [Wd]; (try omega)
+              unfold evenCeil; simp only [Wd]; (try omega)
             have hmon := evenCeil_mono (show W_rv rvn + 9 ≤ Wd (.sh 0 0 u2) + 11 by omega)
             exact ⟨by omega, by omega, by omega, hbad_sh⟩
           | succ m2' =>
@@ -4968,13 +5250,13 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               cases rv2 <;> simp [app_1_even, GoodRV]
             obtain ⟨how, hows, hos⟩ := hodd_n hg_ev (m + 2 * cd)
             have hge24 : evenCeil (Wd (.sh 0 (m2' + 1) u2) + 11) ≥ 24 := by
-              unfold evenCeil; simp [Wd]; (try omega)
+              unfold evenCeil; simp only [Wd]; (try omega)
             have hmon :=
               evenCeil_mono (show W_rv (app_1_even (m2' + 1) rv2) + 9 ≤ Wd (.sh 0 (m2' + 1) u2) +
               11 by omega)
             exact ⟨by omega, by omega, by omega, hbad_sh⟩
       | od c m2 d2 =>
-        simp [tree_c] at hc0; subst hc0
+        simp only [tree_c] at hc0; subst hc0
         by_cases hes0 : m2 = 0 ∧ d2 = .endStop 0
         · rcases hes0 with ⟨rfl, rfl⟩; exact postD0_od_0_endStop0
         · by_cases hpos : tree_c d2 ≥ 1
@@ -4982,16 +5264,16 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
           · have hc2 : tree_c d2 = 0 := by omega
             have hmd0_eq : Wd (.od 0 m2 d2) + 7 = n := by simpa [M_d0] using hmd0
             have hlt_d2 : M_d0 d2 < n := by
-              cases d2 <;> simp [M_d0, Wd] at hmd0_eq ⊢ ; all_goals (try omega)
+              cases d2 <;> simp only [M_d0, Wd] at hmd0_eq ⊢ ; all_goals (try omega)
             obtain ⟨rv2, hsw2, hwf2, hnb2, hw2_not_es, hw2_ev, _⟩ :=
               (ih (M_d0 d2) hlt_d2).2.1 d2 hd0 hc2 rfl
             have hsw_ev := sweepRV_app_1_even m2 hwf2 hsw2
             have hwf_ev := WF_rv_app_1_even m2 hwf2
             have hw_ev_le : W_rv (app_1_even m2 rv2) ≤ Wd (.od 0 m2 d2) + 2 := by
-              have := (hw2_ev m2).1; simp [Wd]; (try omega)
+              have := (hw2_ev m2).1; simp only [Wd]; (try omega)
             have hws_ev_le : W_safe (app_1_even m2 rv2) ≤ Wd (.od 0 m2 d2) + 2 := by
-              have := (hw2_ev m2).2; simp [Wd]; (try omega)
-            have hlt_ev : M_rv (app_1_even m2 rv2) < n := by simp [M_rv]; (try omega)
+              have := (hw2_ev m2).2; simp only [Wd]; (try omega)
+            have hlt_ev : M_rv (app_1_even m2 rv2) < n := by simp only [M_rv]; (try omega)
             obtain ⟨rvn, hstep, hwfn, hnbn, hnfn, hwn, hwsn, _, _, _, hodd_n⟩ :=
               (ih (M_rv (app_1_even m2 rv2)) hlt_ev).2.2 (app_1_even m2 rv2) hwf_ev rfl
             have hsw_fin : SweepRV ((0 : Fin 2) >> evalT (.od 0 m2 d2)) rvn := by
@@ -5008,7 +5290,8 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
             refine ⟨rvn, hsw_fin, hwfn, hnbn, fun _ => ⟨by omega, by omega⟩, ?_, ?_⟩
             · intro m
               cases m with
-              | zero => simp [app_1_even]; (try omega)
+              | zero => simp only [app_1_even, ↓reduceIte, ite_true, ite_false, ne_eq, zero_add,
+                add_zero]; (try omega)
               | succ m =>
                 have he := W_rv_app_1_even_le (m + 1) hwfn
                 have hes := W_safe_app_1_even_pos m hwfn
@@ -5016,12 +5299,12 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
             · intro cd m
               have hnez : set_c cd (.od 0 m2 d2) ≠ .endZero 1 := by simp [set_c]
               have hlin : Wd (set_c cd (.od 0 m2 d2)) = 2 * cd + Wd (.od 0 m2 d2) := by
-                simp [set_c, Wd]; (try omega)
+                simp only [set_c, Wd]; (try omega)
               have hbonus0 : stopOnePosBonus (set_c cd (.od 0 m2 d2)) = 0 := rfl
               simp only [hnez, ↓reduceIte, hlin, hbonus0, Nat.add_zero,
                 show 2 * cd + Wd (.od 0 m2 d2) + 11 - 2 * cd = Wd (.od 0 m2 d2) + 11 by omega]
               have hge24 : evenCeil (Wd (.od 0 m2 d2) + 11) ≥ 24 := by
-                unfold evenCeil; simp [Wd]; (try omega)
+                unfold evenCeil; simp only [Wd]; (try omega)
               have hbad_od : ∀ rem, rem ≥ 1 → cd + rem ≥ 2 →
                   2 * cd + Wd (.od 0 m2 d2) ≤ 2 * (cd + rem) + 9 →
                   ¬ BadRoot (.od (cd + rem) m (set_c cd (.od 0 m2 d2))) →
@@ -5032,7 +5315,8 @@ theorem master_branch_D0 (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               | zero =>
                 have hes : d2 ≠ .endStop 0 := fun he => hes0 ⟨rfl, he⟩
                 have hw_ev0 : W_rv (app_1_even 0 rv2) ≤ Wd (.od 0 0 d2) := by
-                  have := (hw2_not_es hes).1; simp [app_1_even, Wd]; (try omega)
+                  have := (hw2_not_es hes).1; simp only [app_1_even, Wd, ↓reduceIte, ite_true,
+                    ite_false, ne_eq, eq_self, Nat.reduceEqDiff, zero_add, add_zero]; (try omega)
                 have hwn0 : W_rv rvn ≤ Wd (.od 0 0 d2) + 2 := by omega
                 have how := W_rv_app_1_odd_le_4 (m + 2 * cd) hwfn
                 have hows := W_safe_app_1_odd_le_4 (m + 2 * cd) hwfn hnfn hnbn.2
@@ -5072,16 +5356,18 @@ theorem master_branch_RV (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
             · simpa [W_rv, W_ra_tree] using how0
             · conv_rhs => dsimp only [S_rv, S_ra_tree]
               have hge24 : evenCeil (W0 (.stop c d) + 9) ≥ 24 := by
-                unfold evenCeil; simp [W0]; (try omega)
+                unfold evenCeil; simp only [W0]; (try omega)
               omega
             · intro rem hrem hs
               have hge := evenCeil_ge (W0 (.stop c d) + 9)
               simp only [S_rv, S_ra_tree] at hs
-              exact hbad0 rem (m + 1) (by simp [isLeaf]; (try omega)) (by simp) (by omega) (by
+              exact hbad0 rem (m + 1) (by simp only [isLeaf, reduceCtorEq, ↓reduceIte, ite_true,
+                ite_false, Bool.false_eq_true, ne_eq]; (try omega)) (by simp) (by omega) (by
                 simp [BadRoot])
           | od c m2 d2 =>
             have hlt : M_u (.od c m2 d2) < n := by
-              simp [M_u, M_rv, W_rv, W_ra_tree] at hmrv ⊢; (try omega)
+              simp only [M_u, M_rv, W_rv, W_ra_tree, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+                Bool.false_eq_true, ne_eq] at hmrv ⊢; (try omega)
             obtain ⟨rv0, hsw0, hwf0, hnb0, _, _, _, hodd0, hbad0, _⟩ :=
               (ih (M_u (.od c m2 d2)) hlt).1 (.od c m2 d2) hw rfl
             obtain ⟨how0, _, hos0⟩ := hodd0 m (by simp)
@@ -5091,16 +5377,18 @@ theorem master_branch_RV (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
             · simpa [W_rv, W_ra_tree] using how0
             · conv_rhs => dsimp only [S_rv, S_ra_tree]
               have hge24 : evenCeil (W0 (.od c m2 d2) + 9) ≥ 24 := by
-                unfold evenCeil; simp [W0]; (try omega)
+                unfold evenCeil; simp only [W0]; (try omega)
               omega
             · intro rem hrem hs
               have hge := evenCeil_ge (W0 (.od c m2 d2) + 9)
               simp only [S_rv, S_ra_tree] at hs
-              exact hbad0 rem (m + 1) (by simp [isLeaf]; (try omega)) (by simp) (by omega) (by
+              exact hbad0 rem (m + 1) (by simp only [isLeaf, reduceCtorEq, ↓reduceIte, ite_true,
+                ite_false, Bool.false_eq_true, ne_eq]; (try omega)) (by simp) (by omega) (by
                 simp [BadRoot])
           | sh c m2 u2 =>
             have hlt : M_u (.sh c m2 u2) < n := by
-              simp [M_u, M_rv, W_rv, W_ra_tree] at hmrv ⊢; (try omega)
+              simp only [M_u, M_rv, W_rv, W_ra_tree, reduceCtorEq, ↓reduceIte, ite_true, ite_false,
+                Bool.false_eq_true, ne_eq] at hmrv ⊢; (try omega)
             obtain ⟨rv0, hsw0, hwf0, hnb0, _, _, _, hodd0, hbad0, _⟩ :=
               (ih (M_u (.sh c m2 u2)) hlt).1 (.sh c m2 u2) hw rfl
             obtain ⟨how0, _, hos0⟩ := hodd0 m (by simp)
@@ -5110,12 +5398,13 @@ theorem master_branch_RV (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
             · simpa [W_rv, W_ra_tree] using how0
             · conv_rhs => dsimp only [S_rv, S_ra_tree]
               have hge24 : evenCeil (W0 (.sh c m2 u2) + 9) ≥ 24 := by
-                unfold evenCeil; simp [W0]; (try omega)
+                unfold evenCeil; simp only [W0]; (try omega)
               omega
             · intro rem hrem hs
               have hge := evenCeil_ge (W0 (.sh c m2 u2) + 9)
               simp only [S_rv, S_ra_tree] at hs
-              exact hbad0 rem (m + 1) (by simp [isLeaf]; (try omega)) (by simp) (by omega) (by
+              exact hbad0 rem (m + 1) (by simp only [isLeaf, reduceCtorEq, ↓reduceIte, ite_true,
+                ite_false, Bool.false_eq_true, ne_eq]; (try omega)) (by simp) (by omega) (by
                 simp [BadRoot])
         | P_od d =>
           have hd : WF_d d := hwf
@@ -5133,7 +5422,7 @@ theorem master_branch_RV (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
               have hcd0 : cd = 0 := by simpa [tree_c] using hc0
               subst hcd0
               have hlt : M_d0 (.od 0 m2 d2) < n := by
-                simp [M_d0, M_rv, W_rv, W_ra_od] at hmrv ⊢; (try omega)
+                simp only [M_d0, M_rv, W_rv, W_ra_od] at hmrv ⊢; (try omega)
               obtain ⟨rv0, hsw0, hwf0, hnb0, _, _, hodd0⟩ :=
                 (ih (M_d0 (.od 0 m2 d2)) hlt).2.1 (.od 0 m2 d2) hd rfl rfl
               obtain ⟨how0, _, hos0, _⟩ := hodd0 0 m
@@ -5146,19 +5435,19 @@ theorem master_branch_RV (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
                 have hnez : Tree.od 0 m2 d2 ≠ .endZero 1 := by simp
                 simp only [hnez, ↓reduceIte] at hos0
                 have hge24 : evenCeil (Wd (.od 0 m2 d2) + 11) ≥ 24 := by
-                  unfold evenCeil; simp [Wd]; (try omega)
+                  unfold evenCeil; simp only [Wd]; (try omega)
                 omega
               · intro rem hrem hs
                 obtain ⟨_, _, _, hbad0⟩ := hodd0 0 (m + 1)
                 have hge := evenCeil_ge (Wd (.od 0 m2 d2) + 11)
                 simp only [S_rv, S_ra_od, tree_c, set_c, Nat.mul_zero, Nat.zero_add] at hs
                 simpa [set_c] using hbad0 rem hrem (by omega)
-                  (by simp [set_c, stopOnePosBonus]; (try omega)) (by simp [set_c, BadRoot])
+                  (by simp only [set_c, stopOnePosBonus]; (try omega)) (by simp [set_c, BadRoot])
             | sh cd m2 u2 =>
               have hcd0 : cd = 0 := by simpa [tree_c] using hc0
               subst hcd0
               have hlt : M_d0 (.sh 0 m2 u2) < n := by
-                simp [M_d0, M_rv, W_rv, W_ra_od] at hmrv ⊢; (try omega)
+                simp only [M_d0, M_rv, W_rv, W_ra_od] at hmrv ⊢; (try omega)
               obtain ⟨rv0, hsw0, hwf0, hnb0, _, _, hodd0⟩ :=
                 (ih (M_d0 (.sh 0 m2 u2)) hlt).2.1 (.sh 0 m2 u2) hd rfl rfl
               obtain ⟨how0, _, hos0, _⟩ := hodd0 0 m
@@ -5172,14 +5461,14 @@ theorem master_branch_RV (n : Nat) (ih : ∀ m, m < n → MasterStmt m) :
                 have hnez : Tree.sh 0 m2 u2 ≠ .endZero 1 := by simp
                 simp only [hnez, ↓reduceIte] at hos0
                 have hge24 : evenCeil (Wd (.sh 0 m2 u2) + 11) ≥ 24 := by
-                  unfold evenCeil; simp [Wd]; (try omega)
+                  unfold evenCeil; simp only [Wd]; (try omega)
                 omega
               · intro rem hrem hs
                 obtain ⟨_, _, _, hbad0⟩ := hodd0 0 (m + 1)
                 have hge := evenCeil_ge (Wd (.sh 0 m2 u2) + 11)
                 simp only [S_rv, S_ra_od, tree_c, set_c, Nat.mul_zero, Nat.zero_add] at hs
                 simpa [set_c] using hbad0 rem hrem (by omega)
-                  (by simp [set_c, stopOnePosBonus]; (try omega)) (by simp [set_c, BadRoot])
+                  (by simp only [set_c, stopOnePosBonus]; (try omega)) (by simp [set_c, BadRoot])
 
 theorem master_ind (n : Nat) : MasterStmt n := by
   induction n using Nat.strongRecOn with

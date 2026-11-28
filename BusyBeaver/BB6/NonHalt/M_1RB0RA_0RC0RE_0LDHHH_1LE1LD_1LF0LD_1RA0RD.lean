@@ -116,7 +116,7 @@ theorem step_star_trans {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀
 
 theorem eq_state_head {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     {tm : Machine Γ Λ} {c1 c2 : Cfg Γ Λ}
-    (hq : c1.q = c2.q) (hh : c1.tape.head = c2.tape.head) (h : c1 = c2) : c1 [tm]⊢* c2 :=
+    (_hq : c1.q = c2.q) (_hh : c1.tape.head = c2.tape.head) (h : c1 = c2) : c1 [tm]⊢* c2 :=
   h ▸ ⟨0, rfl⟩
 
 theorem step_R {Λ : Type*} [Inhabited Λ]
@@ -160,7 +160,7 @@ abbrev lh : HalfTape := [1, 0, 1] +> default
 abbrev w_pre : BitWord := t ++ t ++ one
 
 @[simp] theorem d0_append_default : d0 +> (default : HalfTape) = default := by
-  simp [d0]
+  simp
 
 inductive Call where
   | ch
@@ -479,7 +479,7 @@ theorem numRun_of_digitVal (hb : BaseRules stepRel) {A_val H : Nat} {da : WordLi
       generalize hk : 0 = k0 at hN
       cases hN with
       | zero =>
-        have hd : d1 +> (default : HalfTape) = one +> default := by simp [d1, one]
+        have hd : d1 +> (default : HalfTape) = one +> default := by simp
         rw [hd]; exact Side.nil (one +> default)
       | odd _ => omega
       | even _ => omega
@@ -1453,7 +1453,7 @@ theorem baseRules_1RA0RD : BaseRules Step_1RA0RD where
   side_ch_blank := by
     refine Side.cons (fun l => ?_) (Side.nil _)
     simp only [cfgR_1RA0RD, cfgL_1RA0RD, callWord_1RA0RD, callState_1RA0RD, d1,
-      List.cons_append, List.nil_append, append_cons, append_nil, cons_zero_default]
+      append_cons, append_nil, cons_zero_default]
     execute
 
 theorem seg_ca_t_1RA0RD : Seg Step_1RA0RD [.ca] [.ch, .ch] t [1, 1, 0, 0, 0, 1, 1, 0, 0] :=
@@ -1467,12 +1467,12 @@ theorem seg_ch_mid_1RA0RD :
 theorem step_ca_1RA0RD (r : HalfTape) :
     (cfgL_1RA0RD lh r) [target]⊢⁺ (cfgR_1RA0RD ([1] +> default) .ca r) := by
   simp only [cfgR_1RA0RD, cfgL_1RA0RD, callWord_1RA0RD, callState_1RA0RD, lh,
-    List.cons_append, List.nil_append, append_cons, append_nil, cons_zero_default]; execute
+    append_cons, append_nil]; execute
 
 theorem step_ch_1RA0RD (r : HalfTape) :
     (cfgL_1RA0RD ([1] +> default) r) [target]⊢⁺ (cfgR_1RA0RD lh .ch r) := by
   simp only [cfgR_1RA0RD, cfgL_1RA0RD, callWord_1RA0RD, callState_1RA0RD, lh,
-    List.cons_append, List.nil_append, append_cons, append_nil, cons_zero_default]; execute
+    append_cons, append_nil]; execute
 
 theorem cycle_1RA0RD {r r' : HalfTape} (hI : NumRun Step_1RA0RD 12 r r') :
     (cfgAt_1RA0RD r) [target]⊢⁺ (cfgAt_1RA0RD (t +> r')) :=
@@ -1490,8 +1490,8 @@ theorem stem_1RA0RD : (init []) [target]⊢* cfgAt_1RA0RD (evalWords u0_A defaul
   have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = evalBCfg ⟨0, 0, [], []⟩ := rfl
   have h1 : evalBCfg c_end_1RA0RD = cfgAt_1RA0RD (evalWords u0_A default) := by
     unfold evalBCfg evalWindow c_end_1RA0RD cfgAt_1RA0RD cfgL_1RA0RD lh w_pre u0_A
-    simp only [List.replicate, List.cons_append, List.nil_append, evalWords, wordsToBits,
-      t, d1, d0, one, append_cons, append_nil, cons_zero_default]
+    simp only [List.cons_append, List.nil_append, evalWords, 
+      t, one, append_cons, append_nil, cons_zero_default]
     rfl
   rw [h0, ← h1]
   exact ⟨1107, Counter.bmultiStep_sound (tm := target) 1107 ⟨0, 0, [], []⟩ c_end_1RA0RD (by decide)⟩
@@ -1512,8 +1512,8 @@ theorem stem_1LA0LE :
       evalBCfg ⟨5, 0, [], []⟩ := rfl
   have h1 : evalBCfg c_end_1LA0LE = cfgAt_1RA0RD (evalWords u0_B default) := by
     unfold evalBCfg evalWindow c_end_1LA0LE cfgAt_1RA0RD cfgL_1RA0RD lh w_pre u0_B
-    simp only [List.replicate, List.cons_append, List.nil_append, evalWords, wordsToBits,
-      t, d1, d0, one, append_cons, append_nil, cons_zero_default]
+    simp only [List.replicate, List.cons_append, List.nil_append, evalWords, 
+      t, one, append_cons, append_nil, cons_zero_default]
     rfl
   rw [h0, ← h1]
   exact ⟨5370, Counter.bmultiStep_sound (tm := target) 5370 ⟨5, 0, [], []⟩ c_end_1LA0LE (by decide)⟩

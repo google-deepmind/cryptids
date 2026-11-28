@@ -14,6 +14,9 @@ public import BusyBeaver.Calculi.WordCalculusD
 public import BusyBeaver.Calculi.WordCalculusE
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RA_1RC0RA_1LD0LA_1LE0LD_1LF0LB_1REHHH
@@ -36,7 +39,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {Γ₀ Λ₀ α β γ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 def A : Fin 6 := 0
@@ -47,7 +49,6 @@ def E : Fin 6 := 4
 def F : Fin 6 := 5
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 80000000
 set_option maxRecDepth 200000
 @[simp] theorem zMz (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 0 = some config := rfl
 @[simp] theorem zMo (M : Machine Γ₀ Λ₀) (config : Cfg Γ₀ Λ₀) : multiStep M config 1 = step M config := rfl
@@ -241,7 +242,7 @@ abbrev one : BitWord := [1]
 abbrev lh : HalfTape := (1 : Fin 2) >> (0 : Fin 2) >> (1 : Fin 2) >> default
 abbrev w_pre : BitWord := t ++ one
 @[simp] theorem zDd : d0 +> (default : HalfTape) = default := by
-  simp [d0]
+  simp
 inductive Call where
   | ch
   | cj
@@ -317,13 +318,13 @@ theorem zS0 {ls1 ls2 ls3 : List Call} {w1 w2 v1 v2 : BitWord}
   rw [append_assoc,append_assoc]
   exact h1 (v1 +> r1) (v2 +> r2) (h2 r1 r2 h)
 theorem zS4 {c : Call} {w1 w2 : BitWord}
-    (h1 : ∀ l r,(zCR l c (w1 +> r)) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c (w1 +> r)) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c] [] w1 w2 := by
   intro r1 r2 h; cases h
   exact Side.cons (fun l => h1 l r1) (Side.nil _)
 theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid +> l) c_out r))
-    (h2 : ∀ l r,(zCL (mid +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid +> l) c_out r))
+    (h2 : ∀ l r, (zCL (mid +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c_out] w1 w2 := by
   intro r1 r2 h
   rcases h with _ | ⟨hc1,hnil⟩
@@ -331,9 +332,9 @@ theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
   refine Side.cons (fun l => ?_) (Side.nil _)
   exact zPt (h1 l r1) (zPt (hc1 (mid +> l)) (h2 l r2))
 theorem zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
-    (h2 : ∀ l r,(zCL (mid1 +> l) r) [target_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
-    (h3 : ∀ l r,(zCL (mid2 +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
+    (h2 : ∀ l r, (zCL (mid1 +> l) r) [target_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
+    (h3 : ∀ l r, (zCL (mid2 +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c1,c2] w1 w2 := by
   intro r1 r3 h
   rcases h with _ | ⟨hc1,hrest⟩
@@ -419,7 +420,7 @@ theorem H_T (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t := by
     have h_eq : (n + 1) * 2 = 2 + n * 2 := by omega
     rw [zLp,h_eq,z07]
     exact zSg z0f ih
-theorem zSa {w2 : BitWord} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
+theorem zSa {w2 : BitWord} (hw : Seg [.ch, .ch] [.ch] w2 w2) (n : Nat) :
     Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) w2 w2 := by
   induction n with
   | zero => exact z0a w2
@@ -479,7 +480,7 @@ theorem z0C (n : Nat) : Seg ([.cj] ++ [.ch] ^ (1 + n * 2)) ([.cp] ++ [.ch] ^ n) 
 theorem z0D : Side [.ch] default (d1 +> default) := by
   refine Side.cons (fun l => ?_) (Side.nil _)
   unfold zCR zCL zCw zCs d1
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil, z00]
   exact (csteps_fast false true l default (fun h => nomatch h) (by intro h; first | exact False.elim (Bool.noConfusion h) | rfl) 2 (2, .R, ([1] : List (Fin 2)), ([] : List (Fin 2))) (3, .L, ([] : List (Fin 2)), ([0, 1] : List (Fin 2))) rfl)
 theorem z0E : Seg [.ca] [.ch,.ch] t ((t ++ [0]) ++ t) :=
   zS5
@@ -499,12 +500,12 @@ theorem z0F : Seg [.ca,.ch] ([.cj] ++ [.ch] ^ 5) w_init (w_init ++ t) := by
 theorem z0G (r : HalfTape) :
     (zCL lh r) [target_tm]⊢⁺ (zCR ([1] +> default) .ca r) := by
   unfold zCL zCR lh zCw zCs
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil]
   exact (csteps_fast true false default r (by intro h; first | exact False.elim (Bool.noConfusion h) | rfl) (fun h => nomatch h) 18 (3, .L, ([1, 0, 1] : List (Fin 2)), ([0] : List (Fin 2))) (2, .R, ([1, 1, 1, 0, 1, 0, 1, 0] : List (Fin 2)), ([] : List (Fin 2))) rfl)
 theorem z0H (r : HalfTape) :
     (zCL ([1] +> default) r) [target_tm]⊢⁺ (zCR lh .ch r) := by
   unfold zCL zCR lh zCw zCs
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil]
   exact (csteps_fast true false default r (by intro h; first | exact False.elim (Bool.noConfusion h) | rfl) (fun h => nomatch h) 10 (3, .L, ([1] : List (Fin 2)), ([0] : List (Fin 2))) (2, .R, ([1, 1, 0, 1, 0] : List (Fin 2)), ([] : List (Fin 2))) rfl)
 open WordCalculus Word
 local notation "WordList" => List Word
@@ -607,33 +608,33 @@ theorem loc_z1R {a : Nat} {u : WordList} {b : Nat} {v : WordList} {l : Rat}
     intro p q hE _
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨k,[],[],0,0,Scan.nil k,Scan.nil k,rfl,by simp [wordScale]⟩
     | cons _ _ => simp at hE
   | T hI ih =>
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.T hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons V p q hP) with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
       exact ⟨c,V :: x,y,s1 * (1 / 2),t1,Scan.T hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
   | pair0 hI ih =>
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.pair0 hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       cases p with
       | nil =>
-        simp at hE; subst hE
+        simp only [List.nil_append] at hE; subst hE
         rcases hP with hP | ⟨r,hP⟩ <;> nomatch hP
       | cons s2 p =>
-        simp at hE; rcases hE with ⟨rfl,hE⟩
+        simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
         have hP' := splitCond_of_cons K p q (splitCond_of_cons Q (K :: p) q hP)
         rcases ih p q hE hP' with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
         exact ⟨c,V :: x,y,(1 + s1) * (1 / 2),t1,Scan.pair0 hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
@@ -641,16 +642,16 @@ theorem loc_z1R {a : Nat} {u : WordList} {b : Nat} {v : WordList} {l : Rat}
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.pair1 hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       cases p with
       | nil =>
-        simp at hE; subst hE
+        simp only [List.nil_append] at hE; subst hE
         rcases hP with hP | ⟨r,hP⟩ <;> nomatch hP
       | cons s2 p =>
-        simp at hE; rcases hE with ⟨rfl,hE⟩
+        simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
         have hP' := splitCond_of_cons Q p q (splitCond_of_cons Q (Q :: p) q hP)
         rcases ih p q hE hP' with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
         exact ⟨c,V :: x,y,(1 / 4) + s1 * (1 / 2),t1,Scan.pair1 hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
@@ -658,40 +659,40 @@ theorem loc_z1R {a : Nat} {u : WordList} {b : Nat} {v : WordList} {l : Rat}
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.short00 hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons K p q hP) with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
       exact ⟨c,K :: x,y,1 + s1 * 2,t1,Scan.short00 hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
   | short01 hI ih =>
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.short01 hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons Q p q hP) with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
       exact ⟨c,K :: x,y,s1 * 2,t1,Scan.short01 hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
   | short10 hI ih =>
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.short10 hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons K p q hP) with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
       exact ⟨c,Q :: x,y,1 + s1 * 2,t1,Scan.short10 hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
   | short11 hI ih =>
     intro p q hE hP
     cases p with
     | nil =>
-      simp at hE; subst hE
+      simp only [List.nil_append] at hE; subst hE
       exact ⟨_,[],_,0,_,Scan.nil _,Scan.short11 hI,rfl,by simp [wordScale]⟩
     | cons s p =>
-      simp at hE; rcases hE with ⟨rfl,hE⟩
+      simp only [List.cons_append, List.cons.injEq] at hE; rcases hE with ⟨rfl,hE⟩
       rcases ih p q hE (splitCond_of_cons Q p q hP) with ⟨c,x,y,s1,t1,hJ,hK,rfl,hL⟩
       exact ⟨c,Q :: x,y,s1 * 2,t1,Scan.short11 hJ,hK,rfl,by dsimp [wordScale]; rw [hL]; ring⟩
 theorem loc_z1S (r a b : Nat) (v : WordList) (l : Rat) (u : WordList) (z : Rat)
@@ -815,7 +816,7 @@ theorem loc_z1X (s c : Nat) (u : WordList) (A H a b : Nat) (v : WordList) (l : R
 theorem loc_z1Y (s : Nat) (ds : WordList) (A H k k' : Nat) (v : WordList) (a b : Rat)
     (hD : DigitVal A H ds)
     (hI : PhaseScan k (ds ++ [K]) k' v a b)
-    (hLow : ∃ c u,(0 < c /\ s <= c) /\ ds = List.replicate c Q ++ K :: u) :
+    (hLow : ∃ c u, (0 < c /\ s <= c) /\ ds = List.replicate c Q ++ K :: u) :
     wordMass v * ((2 ^ (s + s / 2) : Nat) : Rat) <= ((2 ^ (s + s / 2) : Nat) : Rat) + 2 * wordMassK ds /\
     a * ((2 ^ (s + s / 2) : Nat) : Rat) <= 4 * (((2 ^ (s + s / 2) : Nat) : Rat) + 2 * wordMassK ds) /\
     b * ((2 ^ (s + s / 2) : Nat) : Rat) <= 3 * (((2 ^ (s + s / 2) : Nat) : Rat) + 2 * wordMassK ds) := by
@@ -948,7 +949,7 @@ theorem loc_z26 (x p q s f : Rat) (hp : 0 < p) (hs : 0 <= s)
   nlinarith
 theorem loc_z27 (s : Nat) (ds : WordList) (A H k k' : Nat) (v : WordList) (a b sigma f : Rat)
     (hD : DigitVal A H ds) (hI : PhaseScan k (ds ++ [K]) k' v a b)
-    (hLow : ∃ c u,(0 < c /\ s <= c) /\ ds = List.replicate c Q ++ K :: u)
+    (hLow : ∃ c u, (0 < c /\ s <= c) /\ ds = List.replicate c Q ++ K :: u)
     (hSig : 0 <= sigma)
     (hBound : sigma * (((2 ^ (s + s / 2) : Nat) : Rat) + 2 * wordMassK ds) <= f * ((2 ^ (s + s / 2) : Nat) : Rat)) :
     sigma * wordMass v <= f /\ sigma * a <= 4 * f /\ sigma * b <= 3 * f := by
@@ -972,7 +973,7 @@ theorem loc_z2a : ((2 ^ 10 : Nat) : Rat) = 1024 := by norm_num
 theorem loc_z2b (p : Nat) (u ds : WordList) (A H k : Nat) (v : WordList) (a b : Rat) (s : Nat) (e f : Rat)
     (hI : PhaseScan 12 (List.replicate p V ++ K :: (u ++ ds ++ [K])) k v a b)
     (hD : DigitVal A H ds) (hCut : notEndsWithQ u = true)
-    (hLow : ∃ c w,(0 < c /\ s <= c) /\ ds = List.replicate c Q ++ K :: w)
+    (hLow : ∃ c w, (0 < c /\ s <= c) /\ ds = List.replicate c Q ++ K :: w)
     (hError : e = 2 * wordScale (List.replicate p V) * wordMass u)
     (hBound : (2 * wordScale (List.replicate p V) * wordScale u) * (((2 ^ (s + s / 2) : Nat) : Rat) + 2 * wordMassK ds) <= f * ((2 ^ (s + s / 2) : Nat) : Rat)) :
     ∃ w,v = List.replicate p V ++ Q :: w /\
@@ -1031,7 +1032,7 @@ theorem loc_z2b (p : Nat) (u ds : WordList) (A H k : Nat) (v : WordList) (a b : 
   · have hE1 : wordMass (V :: ((List.replicate p V ++ Q :: (x ++ y)) ++ [V])) =
         wordScale (List.replicate p V) * (1 / 2) +
         (2 * wordScale (List.replicate p V) * wordMass x + (2 * wordScale (List.replicate p V) * wordScale x) * wordMass y) * (1 / 2) := by
-      simp only [List.cons_append,List.append_assoc,wordMass,wordMass_append,wordScale,hMassP]
+      simp only [List.cons_append, List.append_assoc, wordMass, wordMass_append, hMassP]
       ring
     rw [hE1]
     linarith
@@ -1096,7 +1097,7 @@ theorem loc_z2f {u : WordList} {k : Nat} {v : WordList} {a b : Rat} {J A B carry
   rw [Nat.cast_add,Nat.cast_one,Nat.cast_add,Nat.cast_one]
   linarith
 theorem loc_z2g (J k carry : Nat) (alpha unit delta R : Rat)
-    (hPos : 0 < alpha) (hSmall : alpha <= 1 / 32) (hUnit : 0 < unit) (hTiny : unit <= alpha * (1 / 1024))
+    (_hPos : 0 < alpha) (hSmall : alpha <= 1 / 32) (hUnit : 0 < unit) (hTiny : unit <= alpha * (1 / 1024))
     (hHeight : unit * ((2 ^ J : Nat) : Rat) = 1)
     (hDl : (15 / 4) * alpha <= delta) (hDu : delta <= (17 / 4) * alpha)
     (hRl : alpha <= R) (hRu : R <= (5 / 4) * alpha)
@@ -1348,7 +1349,7 @@ theorem loc_z2v (u ds : WordList) (A H k k' : Nat) (v : WordList) (a b : Rat)
       _ = wordScale u * ((2 ^ H : Nat) : Rat) := by rw [hWidth]
       _ = 1 := hHeight
 theorem loc_z2w (p H : Nat) (alpha unit : Rat)
-    (hPH : p + 10 <= H) (hA : 0 < alpha) (hU : 0 < unit)
+    (hPH : p + 10 <= H) (_hA : 0 < alpha) (hU : 0 < unit)
     (hAp : alpha * ((2 ^ p : Nat) : Rat) = 1) (hUh : unit * ((2 ^ H : Nat) : Rat) = 1) :
     unit <= alpha * (1 / 1024) := by
   have hHigh_nat : 2 ^ (p + 10) <= 2 ^ H := Nat.pow_le_pow_right (by decide) hPH
@@ -1471,7 +1472,7 @@ theorem loc_z2E (u v : WordList) (h : notEndsWithQ (u ++ v) = true) : notEndsWit
   | nil => exact h
   | cons w u ih => exact ih (notEndsWithQ_of_cons w (u ++ v) h)
 theorem loc_z2F {n : Nat} {u : WordList} {b : Nat} {v : WordList}
-    (hI : WordEffect n u b v) (hEnd : ∃ w,u = w ++ [V]) :
+    (hI : WordEffect n u b v) (hEnd : ∃ w, u = w ++ [V]) :
     ∃ w,v = w ++ [V] := by
   rcases hEnd with ⟨w,rfl⟩
   rcases wordEffect_append_replicate_V_inv w 1 n b v hI with ⟨x,m,hE,_⟩
@@ -1526,8 +1527,8 @@ theorem loc_z2I (c : Nat) (mid : WordList) (hM : notEndsWithQ mid = true) :
       | succ c' => exact ih
 theorem loc_z2J {B H : Nat} {ds : WordList} {s t0 : Nat}
     (hD : DigitVal B H ds) (hZ : 0 < wordMassK ds)
-    (hLo : ∃ u,ds = List.replicate s Q ++ u)
-    (hHi : ∃ u,ds = u ++ List.replicate t0 Q) :
+    (hLo : ∃ u, ds = List.replicate s Q ++ u)
+    (hHi : ∃ u, ds = u ++ List.replicate t0 Q) :
     ∃ c mid n,ds = List.replicate c Q ++ K :: (mid ++ List.replicate n Q) /\
       notEndsWithQ mid = true /\ s <= c /\ t0 <= n := by
   rcases hLo with ⟨lo,hLo_eq⟩
@@ -1552,6 +1553,8 @@ theorem loc_z2K (p : Nat) (u : WordList) (carry : Nat) (eff : WordList)
     rw [heq] at hE ⊢
     rcases loc_z23 p u carry eff hE with ⟨v,hV,_⟩
     exact ⟨v,hV⟩
+set_option maxHeartbeats 2000000 in
+-- Large rational arithmetic context requires extra heartbeats for `nlinarith`/`linarith`.
 theorem loc_z2L {p : Nat} {orig : WordList} (hI : Good p orig) :
     ∃ out,loc_Step orig out /\ Good (1 + p) out := by
   rcases hI with ⟨H,u,A,da,carry,eff,B,db,tau,
@@ -1761,7 +1764,7 @@ def loc_z2R (w : Word) (n : Nat) : Word × Nat :=
     let m := n + 1
     (if m % 2 == 0 then K else Q,m / 2)
 theorem loc_z2S (w : Word) (n : Nat) (d : Word) (m : Nat)
-    (hE : loc_z2R w n = (d,m)) :
+    (hE : loc_z2R w n = (d, m)) :
     ∀ {u : WordList} {b : Nat} {v : WordList},
       WordEffect m u b v -> WordEffect n (w :: u) b (d :: v) := by
   intro u b v hI
@@ -1833,7 +1836,7 @@ def loc_z2V (e : Bool) (k : Nat) : Option (Word × Nat) :=
       some (Q,loc_z2P e (k / 4 - 1))
   else none
 theorem loc_z2W (e : Bool) (k : Nat) (d : Word) (k' : Nat) (u : WordList) (c : Nat) (v : WordList) (a b : Rat)
-    (hS : loc_z2V e k = some (d,k')) (hI : PhaseScan k' u c v a b) :
+    (hS : loc_z2V e k = some (d, k')) (hI : PhaseScan k' u c v a b) :
     ∃ x y,PhaseScan k (loc_z2Q e :: u) c (d :: v) x y := by
   dsimp [loc_z2V] at hS
   cases hk0 : (k == 0) with
@@ -1872,7 +1875,7 @@ def loc_z2X : WordList -> Bool
   | Q :: u => !loc_z2X u
 def loc_z2Y : WordList -> WordList -> Nat -> WordList -> Option (Nat × WordList)
   | [],_,_,_ => none
-  | _ :: fuel,[],k,acc => some (k,acc.reverseAux [])
+  | _ :: _,[],k,acc => some (k,acc.reverseAux [])
   | _ :: fuel,w :: u,k,acc =>
     if k == 0 then none
     else match w with
@@ -2071,7 +2074,7 @@ theorem loc_z34 (u pre rest : WordList)
     u = rest.reverseAux pre.reverse := by
   have h1 := loc_z33 pre u.reverse rest hE
   have h2 := congrArg List.reverse h1
-  simp [List.reverseAux_eq] at h2 ⊢
+  simp only [List.reverse_reverse, List.reverse_append, List.reverseAux_eq] at h2 ⊢
   exact h2
 def loc_zHn : WordList -> Nat -> Option Nat
   | [],h => some h
@@ -2131,10 +2134,10 @@ theorem loc_z37 (u : WordList) :
       exact ih (Q :: ds) p tail hE hD'
 def loc_z38 (u : WordList) : Option (WordList × WordList) :=
   loc_z36 (u.reverseAux []) []
-theorem loc_z39 (u p ds : WordList) (hE : loc_z38 u = some (p,ds)) :
+theorem loc_z39 (u p ds : WordList) (hE : loc_z38 u = some (p, ds)) :
     u = p ++ ds /\ ds.all loc_z2M = true /\ (∃ v,p = v ++ [V]) := by
   rcases loc_z37 (u.reverseAux []) [] p ds hE rfl with ⟨hU,hD,hEnd⟩
-  simp [List.reverseAux_eq] at hU
+  simp only [List.reverseAux_eq, List.append_nil, List.reverse_reverse] at hU
   exact ⟨hU,hD,hEnd⟩
 def loc_z3a (n : Nat) : Nat := (n + 1) / 2
 theorem loc_z3b (n : Nat) : (n : Rat) <= 2 * ((loc_z3a n : Nat) : Rat) := by
@@ -2191,7 +2194,7 @@ theorem loc_z3g :
 theorem loc_z3h {B H : Nat} {db u : WordList}
     (hD : DigitVal B H db)
     (hHeight : wordScale u * ((2 ^ H : Nat) : Rat) = 1)
-    (hHi : ∃ lo,db = lo ++ loc_z3f) :
+    (hHi : ∃ lo, db = lo ++ loc_z3f) :
     (3 / 2) * wordScale (List.replicate 16 V) <= wordScale u * wordMassK db /\
     wordScale u * wordMassK db <= (5 / 2) * wordScale (List.replicate 16 V) := by
   rcases hHi with ⟨lo,rfl⟩
@@ -2493,7 +2496,7 @@ theorem z3x {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hPos : 0 < A) :
       generalize hk : 0 = k0 at hN
       cases hN with
       | zero =>
-        have hd : d1 +> (default : HalfTape) = one +> default := by simp [d1,one]
+        have hd : d1 +> (default : HalfTape) = one +> default := by simp
         rw [hd]; exact Side.nil (one +> default)
       | odd _ => omega
       | even _ => omega
@@ -2880,7 +2883,7 @@ theorem z41 :
     (init []) [target_tm]⊢* zCf (evalWords loc_z3o default) := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = z3M z3X := rfl
   have h_end : z3M z3Y = zCf (evalWords loc_z3o default) := by
-    simp [z3M,z3Y,zCf,zCL,lh,w_init,t,d0,d1,one,loc_z3o,evalWords]
+    simp [z3M, z3Y, zCf, zCL, lh, w_init, t, one, loc_z3o, evalWords]
   refine ⟨2060,?_⟩
   rw [h_init,<- h_end]
   exact z40
@@ -2912,7 +2915,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 
 

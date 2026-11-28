@@ -193,7 +193,7 @@ private theorem pWord_0_1 : pWord 0 1 = [1, 1] := rfl
 private theorem encR_decPairR (z o c : ℕ) (ts : List RTok) :
     (pWord z o) +> encR (decPairR z o c ts) = encR (.pair z o c :: ts) := by
   cases c with
-  | zero => simp [decPairR, encR, pow_one_list]
+  | zero => simp [decPairR, encR]
   | succ c' =>
     simp only [decPairR, encR]
     rw [← ListBlank.append_pow_succ]
@@ -201,7 +201,7 @@ private theorem encR_decPairR (z o c : ℕ) (ts : List RTok) :
 private theorem encR_decMidR (c : ℕ) (ts : List RTok) :
     wRM +> encR (decMidR c ts) = encR (.mid c :: ts) := by
   cases c with
-  | zero => simp [decMidR, encR, pow_one_list]
+  | zero => simp [decMidR, encR]
   | succ c' =>
     simp only [decMidR, encR]
     rw [← ListBlank.append_pow_succ]
@@ -213,7 +213,7 @@ private theorem replicate_eq_pow {α : Type*} (n : ℕ) (a : α) :
 
 
 private theorem pWord_zero_eq (o : ℕ) : pWord 0 o = ([1] : List (Fin 2)) ^ (o + 1) := by
-  simp [pWord, replicate_eq_pow, pow_zero_list]
+  simp [pWord, replicate_eq_pow]
 
 
 private theorem encR_pushRM (k : ℕ) (R : List RTok) :
@@ -754,7 +754,7 @@ private theorem wT_pow_succ_0111 : ∀ (k : ℕ) (r : ListBlank (Fin 2)),
 
 private theorem wT_pow_succ_succ_split : ∀ (u : ℕ) (r : ListBlank (Fin 2)),
     (wT ^ (u + 2)) +> r = [0, 1] +> ([1] +> ((wT ^ (u + 1)) +> r))
-  | 0, r => by simp [pow_succ_list, pow_zero_list]; rfl
+  | 0, r => by simp [pow_succ_list]; rfl
   | u + 1, r => by
     have hl : (wT ^ (u + 1 + 2)) +> r = wT +> ((wT ^ (u + 2)) +> r) := by
       rw [ListBlank.append_pow_succ wT (u + 2)]
@@ -2272,7 +2272,7 @@ private theorem encSL_decPairL {v : Fin 5 → ℕ} {z o : ℕ} {c : SymN} {ts ou
   unfold symDecPairL at h
   rcases hd : symDec c with _ | c' | _
   · rw [hd] at h; injection h with h; subst h
-    simp [encSL, symDec_isZero hd, pow_one_list]
+    simp [encSL, symDec_isZero hd]
   · rw [hd] at h; injection h with h; subst h
     simp only [encSL, symDec_isSucc hd]
     rw [← ListBlank.append_pow_succ]
@@ -2284,7 +2284,7 @@ private theorem encSL_decMidL {v : Fin 5 → ℕ} {c : SymN} {ts out : List SymL
   unfold symDecMidL at h
   rcases hd : symDec c with _ | c' | _
   · rw [hd] at h; injection h with h; subst h
-    simp [encSL, symDec_isZero hd, pow_one_list]
+    simp [encSL, symDec_isZero hd]
   · rw [hd] at h; injection h with h; subst h
     simp only [encSL, symDec_isSucc hd]
     rw [← ListBlank.append_pow_succ]
@@ -2296,7 +2296,7 @@ private theorem encSR_decPairR {v : Fin 5 → ℕ} {z o : ℕ} {c : SymN} {ts ou
   unfold symDecPairR at h
   rcases hd : symDec c with _ | c' | _
   · rw [hd] at h; injection h with h; subst h
-    simp [encSR, symDec_isZero hd, pow_one_list]
+    simp [encSR, symDec_isZero hd]
   · rw [hd] at h; injection h with h; subst h
     simp only [encSR, symDec_isSucc hd]
     rw [← ListBlank.append_pow_succ]
@@ -2308,7 +2308,7 @@ private theorem encSR_decMidR {v : Fin 5 → ℕ} {c : SymN} {ts out : List SymR
   unfold symDecMidR at h
   rcases hd : symDec c with _ | c' | _
   · rw [hd] at h; injection h with h; subst h
-    simp [encSR, symDec_isZero hd, pow_one_list]
+    simp [encSR, symDec_isZero hd]
   · rw [hd] at h; injection h with h; subst h
     simp only [encSR, symDec_isSucc hd]
     rw [← ListBlank.append_pow_succ]
@@ -2382,10 +2382,10 @@ private theorem encSL_normL {v : Fin 5 → ℕ} {L out : List SymLTok}
     (h : symNormL L = some out) :
     encSL v out = encSL v L := by
   cases L with
-  | nil => simp [symNormL] at h; subst h; rfl
+  | nil => simp only [symNormL, Option.some.injEq] at h; subst h; rfl
   | cons t ts =>
     cases t with
-    | pair _ _ _ => simp [symNormL] at h; subst h; rfl
+    | pair _ _ _ => simp only [symNormL, Option.some.injEq] at h; subst h; rfl
     | mid c =>
       dsimp only [symNormL] at h
       rcases hd : symDecMidL c ts with _ | ts'
@@ -2425,7 +2425,7 @@ private theorem encSL_pushOnesL {v : Fin 5 → ℕ} {k : ℕ} {L out : List SymL
     (h : symPushOnesL k L = some out) :
     encSL v out = (([1] : List (Fin 2)) ^ k) +> encSL v L := by
   cases k with
-  | zero => simp [symPushOnesL] at h; subst h; rfl
+  | zero => simp only [symPushOnesL, Option.some.injEq] at h; subst h; rfl
   | succ k' =>
     cases L with
     | nil =>
@@ -2580,10 +2580,10 @@ private theorem encSR_normR {v : Fin 5 → ℕ} {R out : List SymRTok}
     (h : symNormR R = some out) :
     encSR v out = encSR v R := by
   cases R with
-  | nil => simp [symNormR] at h; subst h; rfl
+  | nil => simp only [symNormR, Option.some.injEq] at h; subst h; rfl
   | cons t ts =>
     cases t with
-    | pair _ _ _ => simp [symNormR] at h; subst h; rfl
+    | pair _ _ _ => simp only [symNormR, Option.some.injEq] at h; subst h; rfl
     | mid c =>
       dsimp only [symNormR] at h
       rcases hd : symDecMidR c ts with _ | ts'
@@ -2623,7 +2623,7 @@ private theorem encSR_pushOnesR {v : Fin 5 → ℕ} {k : ℕ} {R out : List SymR
     (h : symPushOnesR k R = some out) :
     encSR v out = (([1] : List (Fin 2)) ^ k) +> encSR v R := by
   cases k with
-  | zero => simp [symPushOnesR] at h; subst h; rfl
+  | zero => simp only [symPushOnesR, Option.some.injEq] at h; subst h; rfl
   | succ k' =>
     cases R with
     | nil =>
@@ -2816,7 +2816,7 @@ private theorem symSweepARAux_sound (v : Fin 5 → ℕ) :
     simp only [symSweepARAux, Option.some.injEq, Prod.mk.injEq] at h
     rcases h with ⟨rfl, rfl⟩
     have heq : encSR v [.pair 0 0 symZero] = [1] +> encSR v [] := by
-      simp [encSR, evalSymN_zero, pWord_0_0, pow_one_list]
+      simp [encSR, evalSymN_zero, pWord_0_0]
     rw [heq]; exact ReachesStar.refl _ _
   | .mid c :: rest, false, L, L', R', h => by
     dsimp only [symSweepARAux] at h
@@ -2832,7 +2832,7 @@ private theorem symSweepARAux_sound (v : Fin 5 → ℕ) :
       pWord_2_0, pWord_1_0, pow_one_list, pow_one_list]
     have hr : encSR v (.pair 0 0 symZero :: .pair 2 0 symZero :: rest') =
         [1, 0, 0, 1] +> encSR v rest' := by
-      simp [encSR, evalSymN_zero, pWord_0_0, pWord_2_0, pow_one_list]; rfl
+      simp [encSR, evalSymN_zero, pWord_0_0, pWord_2_0]; rfl
     rw [hr]
     have hl : wRM +> encSR v rest' =
         [0, 1] +> ([1, 0, 1] +> ([1, 0, 0, 1] +> encSR v rest')) := rfl
@@ -2849,7 +2849,7 @@ private theorem symSweepARAux_sound (v : Fin 5 → ℕ) :
     rw [← encSR_decMidR hd, encSL_pushLP h1, evalSymN_const, pWord_2_0]
     have hr : encSR v (.pair 0 0 symZero :: .pair 2 0 symZero :: rest') =
         [1] +> (wZ +> encSR v rest') := by
-      simp [encSR, evalSymN_zero, pWord_0_0, pWord_2_0, pow_one_list]
+      simp [encSR, evalSymN_zero, pWord_0_0, pWord_2_0]
     rw [hr]
     have hl : [1] +> (wRM +> encSR v rest') =
         [1] +> ((wT ^ 2) +> (wZ +> encSR v rest')) := rfl
@@ -2868,7 +2868,7 @@ private theorem symSweepARAux_sound (v : Fin 5 → ℕ) :
             simp only [Bool.false_eq_true, ite_false]
             simp only [ite_true] at ih
             have heq : encSR v (.pair 0 0 c :: rest) = [1] +> encSR v rest := by
-              simp [encSR, evalSymN_isZero hz, pWord_0_0, pow_one_list]
+              simp [encSR, evalSymN_isZero hz, pWord_0_0]
             rw [heq]; exact ih
           · rw [(ite_eq_right_of_eq_false _ _ (eq_false hz))] at h; try dsimp only at h
             simp only [Option.some.injEq, Prod.mk.injEq] at h
@@ -3975,7 +3975,7 @@ private theorem symTryDL1WZ_sound (v : Fin 5 →
       have hr : encSR v (.pair 1 0 cr :: R1) = [0, 1] +> encSR v rAfter := by
         rw [← encSR_decPairR hd, pWord_1_0]
       have houtL : encSL v (.pair 0 0 symZero :: lRest) = [1] +> encSL v lRest := by
-        simp [encSL, evalSymN_zero, pWord_0_0, pow_one_list]
+        simp [encSL, evalSymN_zero, pWord_0_0]
       rw [hl, hr, houtL, encSR_pushRP h2, encSR_pushRP h1, evalSymN_one, evalSymN_addConst,
         pWord_1_0, pWord_2_0, pow_one_list]
       exact ReachesIn.to_plus (by omega)
@@ -4030,7 +4030,7 @@ private theorem symTryEL1101_sound (v : Fin 5 →
       have hr : encSR v (.pair 1 0 cr :: R1) = [0, 1] +> encSR v rAfter := by
         rw [← encSR_decPairR hd, pWord_1_0]
       have houtL : encSL v (.pair 0 1 symZero :: lRest) = [1, 1] +> encSL v lRest := by
-        simp [encSL, evalSymN_zero, pWord_0_1, pow_one_list]
+        simp [encSL, evalSymN_zero, pWord_0_1]
       rw [hl, hr, houtL, encSR_pushRP h2, encSR_pushRP h1, evalSymN_one, evalSymN_addConst,
         pWord_1_0, pWord_2_0, pow_one_list]
       exact ReachesIn.to_plus (by omega)
@@ -4051,13 +4051,10 @@ private theorem symPeelLeadingWZL_spec (v : Fin 5 → ℕ) :
     let res := symPeelLeadingWZL cur z0
     evalSymN v z0 ≤ evalSymN v res.1 ∧
       encSL v cur = (wZ ^ (evalSymN v res.1 - evalSymN v z0)) +> encSL v res.2
-  | [], z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL, pow_zero_list, ListBlank.append]⟩
-  | .mid c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL, pow_zero_list,
-    ListBlank.append]⟩
-  | .pair 0 o c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL, pow_zero_list,
-    ListBlank.append]⟩
-  | .pair 1 o c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL, pow_zero_list,
-    ListBlank.append]⟩
+  | [], z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL]⟩
+  | .mid c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL]⟩
+  | .pair 0 o c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL]⟩
+  | .pair 1 o c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL]⟩
   | .pair 2 0 c :: rest, z0 => by
     simp only [symPeelLeadingWZL]; dsimp only [encSL]
     obtain ⟨hle, henc⟩ := symPeelLeadingWZL_spec v rest (symAdd z0 (symAddConst c 1))
@@ -4065,10 +4062,8 @@ private theorem symPeelLeadingWZL_spec (v : Fin 5 → ℕ) :
     refine ⟨by omega, ?_⟩
     rw [pWord_2_0, henc, pow_append_pow]
     congr 2; omega
-  | .pair 2 (o' + 1) c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL, pow_zero_list,
-    ListBlank.append]⟩
-  | .pair (z''' + 3) o c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL, pow_zero_list,
-    ListBlank.append]⟩
+  | .pair 2 (o' + 1) c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL]⟩
+  | .pair (z''' + 3) o c :: rest, z0 => ⟨Nat.le_refl _, by simp [symPeelLeadingWZL]⟩
 
 def symTryEraConv (L : List SymLTok) (R : List SymRTok) : Option SymState :=
   match L, R with
@@ -4314,7 +4309,7 @@ private theorem symScanStageMidR_spec (v : Fin 5 → ℕ) :
     split_ifs at h with hz
     simp only [Option.some.injEq, Prod.mk.injEq] at h
     rcases h with ⟨rfl, rfl⟩
-    simp [encSR, evalSymN_isZero hz, pWord_1_2, pow_one_list, encMidR]
+    simp [encSR, evalSymN_isZero hz, pWord_1_2, encMidR]
   | .pair 2 0 c :: rest, _, _, h => by
     simp only [symScanStageMidR] at h
     rcases hs : symScanStageMidR rest with _ | ⟨ms0, tail0⟩; · rw [hs] at h; cases h
@@ -4410,7 +4405,7 @@ private theorem symParseTowerD01_spec (v : Fin 5 → ℕ) :
       dsimp only [encSR, evalTower, buildAdvTowerD01]
       rw [evalSymN_isConst1 hc1, pWord_1_0, he1]
       dsimp only [encSR]; rw [evalSymN_isZero hz1, pWord_1_2, pow_one_list, he2]
-      simp [encR_pushRP, encSR_eq_encR_map, pWord_1_0, pWord_1_1, pWord_1_2, pow_one_list]
+      simp [encR_pushRP, encSR_eq_encR_map, pWord_1_0, pWord_1_1, pWord_1_2]
     | .pair 2 0 cz :: rest1', h =>
       simp only at h
       split_ifs at h with htf
@@ -4445,7 +4440,7 @@ private theorem symParseTowerD01_spec (v : Fin 5 → ℕ) :
     refine ⟨trivial, ?_⟩
     dsimp only [encSR, evalTower, buildAdvTowerD01]
     rw [evalSymN_isZero hz0, pWord_1_2, pow_one_list, he0]
-    simp [encR_pushRP, encSR_eq_encR_map, pWord_1_1, pWord_1_2, pow_one_list]
+    simp [encR_pushRP, encSR_eq_encR_map, pWord_1_1, pWord_1_2]
   | [], _, h | .mid _ :: _, _, h | .pair 0 _ _ :: _, _, h | .pair 1 1 _ :: _, _, h
   | .pair 1 (_ + 3) _ :: _, _, h | .pair (_ + 2) _ _ :: _, _, h => by cases h
 
@@ -4757,17 +4752,17 @@ private theorem symTryEraED01_sound (v : Fin 5 →
           eraECfg (ms.map (evalMidItem v)) (evalTower v tw) 0 := by
         dsimp only [evalSym, eraECfg]
         have hL : encSL v [.pair 0 0 c0, .pair 1 1 c1] = [1, 0, 1, 1] +> default := by
-          simp [encSL, evalSymN_isZero hz0, evalSymN_isZero hz1, pWord_0_0, pWord_1_1, pow_one_list]
+          simp [encSL, evalSymN_isZero hz0, evalSymN_isZero hz1, pWord_0_0, pWord_1_1]
           rfl
         have hR : encSR v (.pair 1 1 cr0 :: .pair 2 0 cz0 :: rRest0) =
             wT +> (wZ +> encSR v cur) := by
           rw [encSR, evalSymN_isZero hzr0, pWord_1_1, pow_one_list, ← encSR_decPairR hd, pWord_2_0]
-        rw [hL, hR, henc]; simp [pow_zero_list]
+        rw [hL, hR, henc]; simp
       have hend : evalSym v (.mE, [.pair 0 0 symZero, .pair 1 1 symZero], out) =
           eraECfg (ms.map (evalMidItem v)) (evalTower v tw) (evalSymN v K) := by
         dsimp only [evalSym, eraECfg]
         have hL : encSL v [.pair 0 0 symZero, .pair 1 1 symZero] = [1, 0, 1, 1] +> default := by
-          simp [encSL, evalSymN_zero, pWord_0_0, pWord_1_1, pow_one_list]; rfl
+          simp [encSL, evalSymN_zero, pWord_0_0, pWord_1_1]; rfl
         rw [hL, encSR_pushRP ho4, encSR_pushRP ho3, encSR_pushWRMSem ho2,
           encSR_symRebuildMR v _ _ _ ho1, encSR_pushRP ho0, symBuildAdvTowerD01_spec v hb,
           evalSymN_one, evalSymN_scale, pWord_1_1, pWord_2_0, pow_one_list, pow_one_list]
@@ -4891,7 +4886,7 @@ private theorem symTryEraL11D0Aux_sound (v : Fin 5 → ℕ)
         (evalSymN v K) (evalSymN v K) := by
     dsimp only [evalSym, eraL11Cfg]
     have htail : encSL v [.pair 1 1 symZero, .pair 1 0 symZero] = tailL0 := by
-      simp [encSL, evalSymN_zero, pWord_1_1, pWord_1_0, pow_one_list, tailL0]
+      simp [encSL, evalSymN_zero, pWord_1_1, pWord_1_0, tailL0]
     rw [encSL_pushLP h2, encSL_pushWLMSem h1, htail, evalSymN_one, pWord_1_0, pow_one_list,
       encSR_push1011R h7, encSR_pushRP h6, encSR_symRebuildMR v _ _ _ h5, encSR_pushRP h4,
       symBuildAdvTowerD01_spec v h3]
@@ -4943,7 +4938,7 @@ private theorem symTryEraL11D0_sound (v : Fin 5 →
           dsimp only [evalSym]
           congr 1
           simp [encSL, evalSymN_isZero hz0, evalSymN_isZero hz1, evalSymN_isZero hz2,
-            pWord_1_0, pWord_1_1, pow_one_list, tailL0]
+            pWord_1_0, pWord_1_1, tailL0]
         rw [hL]
         rcases hdm1 : symDivMod (symAddConst cm 1) 11 with _ | ⟨K, rem⟩
         · rw [hdm1] at h; try dsimp only at h
@@ -5012,12 +5007,12 @@ private theorem symTryAR10101WZ_sound (v : Fin 5 → ℕ) {L : List SymLTok} {R 
       have hrIn : encSR v (.pair 0 0 c0 :: .pair 1 0 c1 :: .pair 1 1 c2 :: .pair 2 0 cz :: rRest) =
           [1, 0, 1, 0, 1, 0, 1, 1] +> ((wZ ^ (evalSymN v cz + 1)) +> encSR v rRest) := by
         simp [encSR, evalSymN_isZero h0, evalSymN_isConst1 h1, evalSymN_isZero h2,
-          pWord_0_0, pWord_1_0, pWord_1_1, pWord_2_0, pow_succ_list, pow_zero_list]
+          pWord_0_0, pWord_1_0, pWord_1_1, pWord_2_0, pow_succ_list]
         rfl
       have hrOut : encSR v (.pair 0 0 symZero :: .pair 1 0 symOne :: .pair 1 1 symZero :: rRest) =
           [1, 0, 1, 0, 1, 0, 1, 1] +> encSR v rRest := by
         simp [encSR, evalSymN_zero, evalSymN_one, pWord_0_0, pWord_1_0, pWord_1_1,
-          pow_succ_list, pow_zero_list]
+          pow_succ_list]
         rfl
       rw [hrIn, hrOut]
       exact ReachesIn.to_plus (by omega) (step_ar_10101_wZ_pow (evalSymN v cz + 1) (encSL v L)

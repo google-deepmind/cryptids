@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.Excursion
 public import BusyBeaver.Calculi.Longitudinal
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1RC1LE_1LD0RA_1LF0LA_1LB0LC_HHH1RA
@@ -33,7 +36,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
@@ -42,7 +44,6 @@ abbrev C : Fin 6 := 2
 abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
-set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000000
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0=some config:=rfl
 @[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1=step M config:=rfl
@@ -65,7 +66,7 @@ set_option maxRecDepth 4000000
 @[simp] theorem pow_succ_list (l : List α) (n : ℕ) : l ^ (n + 1)=l ++ l ^ n:=rfl
 theorem qb (l : List α) (m n : ℕ) : l ^ (m + n)=l ^ m ++ l ^ n:= by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [pow_succ_list,Nat.succ_add,ih,List.append_assoc]
 theorem pow_shift (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
   induction n with
@@ -76,13 +77,13 @@ theorem pow_shift (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
   | zero => rfl
   | succ n ih => exact ih
 theorem commute_power {x v w : List (Fin 2)} {a b : ℕ}
-    (h : x ++ v ^ a=w ^ b ++ x) (k : ℕ) :
+    (h : x ++ v ^ a = w ^ b ++ x) (k : ℕ) :
     x ++ v ^ (k * a)=w ^ (k * b) ++ x:=
   BusyBeaver.Excursion.commute_pow_left h k
-theorem qD {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) :
+theorem qD {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w = true) :
     w +> default=default:=
   BusyBeaver.Longitudinal.BoundedConfig.all0_spec h
-theorem qJ {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) (n : ℕ) :
+theorem qJ {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w = true) (n : ℕ) :
     (w ^ n) +> default=default:= by
   induction n with
   | zero => rfl
@@ -231,15 +232,15 @@ theorem qB {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t1 u1 t2 u2 : ℕ}
   rcases qQ hr with ⟨r2,hr₁,hr₂⟩
   exact sideCalls_add (h₁ r1 r2 hr₁) (h₂ r2 r3 hr₂)
 theorem qj {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w2 : List (Fin 2)}
-    (h : ∀ l r,(([1,0,1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
+    (h : ∀ l r, (([1, 0, 1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
     q2 tm q 1 0 w1 w2:= by
   intro r1 r2 hr
   change r1=r2 at hr
   subst hr
   exact ⟨w2 +> r1,fun l => h l r1,rfl⟩
 theorem qG {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w_mid w2 : List (Fin 2)}
-    (hR : ∀ l r,(([1,0,1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (([1,0,1] +> w_mid +> l) {{q}}> r))
-    (hL : ∀ l r,((w_mid +> l) <{{q}} ([1] +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
+    (hR : ∀ l r, (([1, 0, 1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (([1, 0, 1] +> w_mid +> l) {{q}}> r))
+    (hL : ∀ l r, ((w_mid +> l) <{{q}} ([1] +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
     q2 tm q 1 1 w1 w2:= by
   intro r1 r2 hr
   rcases hr with ⟨r',hcall,rfl⟩
@@ -282,7 +283,7 @@ def qx : Digit → ℕ → Effect
     ⟨a.phase,take p + a.used,give p + a.given,qL p + a.sent⟩
 theorem total_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
+    (hone : ∀ p n, q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
     (t : ℕ) (p : Digit) (n : ℕ) :
     let a:=qx p t
     q2 tm q t a.sent (qn p ++ W ^ (a.used + n)) (W ^ a.given ++ qn a.phase ++ W ^ n):= by
@@ -357,7 +358,7 @@ theorem totalN_spec (p : Digit) (t : ℕ) : qy p t=qx p t:= by
   conv_rhs => rw [h_div,total_period]
 theorem totalN_rule {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
+    (hone : ∀ p n, q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
     (p : Digit) (t n : ℕ) (h : (qy p t).used ≤ n) :
     let a:=qy p t
     q2 tm q t a.sent (qn p ++ W ^ n) (W ^ a.given ++ qn a.phase ++ W ^ (n - a.used)):= by
@@ -387,8 +388,8 @@ def qU : ℕ → qv → Option (ℕ × qv)
         else none
 theorem batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
-    (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (h : qU t xs=some (e,ys)) :
+    (hone : ∀ p n, q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
+    (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (h : qU t xs = some (e, ys)) :
     q2 tm q t 0 (q9 xs) (W ^ e ++ q9 ys):= by
   induction xs generalizing t e ys with
   | nil =>
@@ -426,7 +427,7 @@ theorem batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
         have h3:=q6 h1 h2
         simpa only [q9,qb,List.append_assoc] using h3
 theorem calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hemit : ∀ r,(default <{{q}} ([1] +> r)) [tm]⊢* (([1,0,1] +> default) {{q}}> r))
+    (hemit : ∀ r, (default <{{q}} ([1] +> r)) [tm]⊢* (([1, 0, 1] +> default) {{q}}> r))
     (t : ℕ) (r r' : ListBlank (Fin 2)) (h : qd tm q t r r') :
     (([1,0,1] +> default) {{q}}> r) [tm]⊢* (([1,0,1] +> default) {{q}}> r'):= by
   induction t generalizing r with
@@ -438,11 +439,11 @@ theorem calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     rcases h with ⟨r1,hstep,hrest⟩
     exact q0 (hstep default) (q0 (hemit r1) (ih r1 hrest))
 theorem batch_root {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hemit : ∀ r,(default <{{q}} ([1] +> r)) [tm]⊢* (([1,0,1] +> default) {{q}}> r))
+    (hemit : ∀ r, (default <{{q}} ([1] +> r)) [tm]⊢* (([1, 0, 1] +> default) {{q}}> r))
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
+    (hone : ∀ p n, q2 tm q 1 (qL p) (qn p ++ W ^ (take p + n)) (W ^ (give p) ++ qn (next p) ++ W ^ n))
     (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (k : ℕ) (r : ListBlank (Fin 2))
-    (h : qU t xs=some (e,ys)) :
+    (h : qU t xs = some (e, ys)) :
     (([1,0,1] +> default) {{q}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
     (([1,0,1] +> default) {{q}}> ((W ^ (k + e)) +> (q9 ys) +> r)):= by
   apply calls_spec hemit t
@@ -475,7 +476,7 @@ def Runs.push (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Runs :=
 theorem Runs.push_spec (w : List (Fin 2)) (n : ℕ) (xs : Runs) :
     Runs.denote (Runs.push w n xs)=(w ^ n) +> Runs.denote xs:= by
   cases w with
-  | nil => simp [Runs.push,nil_pow_list]
+  | nil => simp [Runs.push]
   | cons b w' =>
     unfold Runs.push
     simp only [strictNat_eq]
@@ -529,7 +530,7 @@ theorem Runs.pop_spec (xs : Runs) :
         · rw [if_pos hn1]
           have hn_eq : n=1:=beq_iff_eq.mp hn1
           subst hn_eq
-          simp only [strictRuns_eq,Runs.push_spec,Runs.denote,pow_succ_list,pow_zero_list,List.append_nil,append_cons,append_assoc]
+          simp only [strictRuns_eq, Runs.push_spec, Runs.denote, pow_succ_list, pow_zero_list, List.append_nil, append_cons]
         · rw [if_neg hn1]
           have hn_pos : 0 < n:=Nat.pos_of_ne_zero (by intro h0; subst h0; exact hn0 rfl)
           have hn_eq : n=(n - 1) + 1:=(Nat.sub_add_cancel hn_pos).symm
@@ -537,7 +538,7 @@ theorem Runs.pop_spec (xs : Runs) :
           | nil =>
             simp only [strictNat_eq,Runs.denote]
             conv_lhs => rw [hn_eq,pow_succ_list]
-            simp [append_assoc]
+            simp
           | cons u v =>
             simp only [strictNat_eq,strictRuns_eq]
             rw [Runs.push_spec,Runs.push_spec,Runs.denote]
@@ -550,7 +551,7 @@ def strip_step : List (Fin 2) → List (Fin 2) → Option StripResult
   | [],v => some (.done v)
   | b :: w,[] => some (.more (b :: w))
   | b :: w,c :: v => if b == c then strip_step w v else none
-theorem strip_step_done {w v v' : List (Fin 2)} (h : strip_step w v=some (.done v')) :
+theorem strip_step_done {w v v' : List (Fin 2)} (h : strip_step w v = some (.done v')) :
     v=w ++ v':= by
   induction w generalizing v with
   | nil =>
@@ -567,7 +568,7 @@ theorem strip_step_done {w v v' : List (Fin 2)} (h : strip_step w v=some (.done 
       have hbc_eq : b=c:=beq_iff_eq.mp hbc
       subst hbc_eq
       simp [ih h]
-theorem strip_step_more {w v w' : List (Fin 2)} (h : strip_step w v=some (.more w')) :
+theorem strip_step_more {w v w' : List (Fin 2)} (h : strip_step w v = some (.more w')) :
     w=v ++ w':= by
   induction w generalizing v with
   | nil =>
@@ -590,7 +591,7 @@ def Runs.remove_slow : List (Fin 2) → Runs → Option Runs
     match Runs.pop xs with
     | (b',xs') => if b == b' then Runs.remove_slow w xs' else none
 theorem Runs.remove_slow_spec {w : List (Fin 2)} {xs ys : Runs}
-    (h : Runs.remove_slow w xs=some ys) :
+    (h : Runs.remove_slow w xs = some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   induction w generalizing xs with
   | nil =>
@@ -624,7 +625,7 @@ def Runs.remove_aux : ℕ → List (Fin 2) → Runs → Option Runs
         else
           q4 (m - 1) (fun m' => Runs.remove_aux fuel w' ((c :: v,m') :: ys))
 theorem Runs.remove_aux_spec {fuel : ℕ} {w : List (Fin 2)} {xs ys : Runs}
-    (h : Runs.remove_aux fuel w xs=some ys) :
+    (h : Runs.remove_aux fuel w xs = some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   induction fuel generalizing w xs ys with
   | zero => exact Runs.remove_slow_spec h
@@ -708,7 +709,7 @@ def Runs.remove_fast1 (w : List (Fin 2)) (xs : Runs) : Option Runs :=
     else none
   | _ => none
 theorem Runs.remove_fast1_spec {w : List (Fin 2)} {xs ys : Runs}
-    (h : Runs.remove_fast1 w xs=some ys) :
+    (h : Runs.remove_fast1 w xs = some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   rcases xs with _ | ⟨⟨v,_ | _ | m⟩,rest⟩
   · contradiction
@@ -758,7 +759,7 @@ def Runs.remove (w : List (Fin 2)) (xs : Runs) : Option Runs :=
   | some ys => some ys
   | none => Runs.remove_aux 16 w xs
 theorem Runs.remove_spec {w : List (Fin 2)} {xs ys : Runs}
-    (h : Runs.remove w xs=some ys) :
+    (h : Runs.remove w xs = some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   unfold Runs.remove at h
   cases hf : Runs.remove_fast1 w xs with
@@ -790,7 +791,7 @@ def Runs.skip_block (w : List (Fin 2)) (limit : ℕ) (x v : List (Fin 2)) (m : �
             else none))))
   else none
 theorem Runs.skip_block_spec {w : List (Fin 2)} {limit : ℕ} {x v : List (Fin 2)} {m : ℕ} {ys : Runs} {n : ℕ} {zs : Runs}
-    (h : Runs.skip_block w limit x v m ys=some (n,zs)) :
+    (h : Runs.skip_block w limit x v m ys = some (n, zs)) :
     n ≤ limit ∧ x +> (v ^ m) +> Runs.denote ys=(w ^ n) +> Runs.denote zs:= by
   unfold Runs.skip_block at h
   simp only [strictNat_eq,strictRuns_eq] at h
@@ -821,7 +822,7 @@ def Runs.skip_periodic (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Option (ℕ ×
   | [(v,m)] => Runs.skip_block w n [] v m []
   | [] => none
 theorem Runs.skip_periodic_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
-    (h : Runs.skip_periodic w n xs=some (k,ys)) :
+    (h : Runs.skip_periodic w n xs = some (k, ys)) :
     k ≤ n ∧ Runs.denote xs=(w ^ k) +> Runs.denote ys:= by
   unfold Runs.skip_periodic at h
   rcases xs with _ | ⟨⟨x,nx⟩,_ | ⟨⟨v,m⟩,ys'⟩⟩
@@ -846,7 +847,7 @@ def Runs.skip (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Option (ℕ × Runs) :=
       else q4 (m - n) (fun m' => some (n,(v,m') :: ys))
     else Runs.skip_periodic w n ((v,m) :: ys)
 theorem Runs.skip_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
-    (h : Runs.skip w n xs=some (k,ys)) :
+    (h : Runs.skip w n xs = some (k, ys)) :
     k ≤ n ∧ Runs.denote xs=(w ^ k) +> Runs.denote ys:= by
   rcases xs with _ | ⟨⟨v,m⟩,ys'⟩
   · contradiction
@@ -881,7 +882,7 @@ def Runs.remove_fast : ℕ → List (Fin 2) → ℕ → Runs → Option Runs
           q4 (n - 1) (fun n' => Runs.remove_fast fuel w n' ys)
         | none => none
 theorem Runs.remove_fast_spec {fuel : ℕ} {w : List (Fin 2)} {n : ℕ} {xs ys : Runs}
-    (h : Runs.remove_fast fuel w n xs=some ys) :
+    (h : Runs.remove_fast fuel w n xs = some ys) :
     Runs.denote xs=(w ^ n) +> Runs.denote ys:= by
   induction fuel generalizing n xs ys with
   | zero =>
@@ -922,7 +923,7 @@ def Runs.size : Runs → ℕ
 def Runs.zeros : Runs → Bool
   | [] => true
   | (w,_) :: xs => if BusyBeaver.Longitudinal.BoundedConfig.all0 w then Runs.zeros xs else false
-theorem Runs.zeros_spec {xs : Runs} (h : Runs.zeros xs=true) : Runs.denote xs=default:= by
+theorem Runs.zeros_spec {xs : Runs} (h : Runs.zeros xs = true) : Runs.denote xs=default:= by
   induction xs with
   | nil => rfl
   | cons wn xs ih =>
@@ -967,7 +968,7 @@ def RM.raw (tm : Machine (Fin 2) (Fin 6)) (c : RMConfig) : Option RMConfig :=
         q3 (Runs.push [b'] 1 c.left) (fun l' =>
           some ⟨l',r,q',.right⟩)
 theorem RM.raw_spec {tm : Machine (Fin 2) (Fin 6)} {c c' : RMConfig}
-    (h : RM.raw tm c=some c') :
+    (h : RM.raw tm c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   rcases c with ⟨l,r,q,d⟩
   unfold RM.raw at h
@@ -1071,8 +1072,8 @@ def q5 (tm : Machine (Fin 2) (Fin 6)) (s : Scan) : Prop :=
     | .left =>
       (((s.scan_in.reverse ^ n) +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
       (l <{{s.q}} (s.context +> (s.scan_out ^ n) +> r))
-theorem qo {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
-    (hbase : ∀ l r,((s.context.reverse +> l) {{s.q}}> (s.scan_in +> r)) [tm]⊢*
+theorem qo {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir = .right)
+    (hbase : ∀ l r, ((s.context.reverse +> l) {{s.q}}> (s.scan_in +> r)) [tm]⊢*
                     ((s.context.reverse +> s.scan_out.reverse +> l) {{s.q}}> r)) :
     q5 tm s:= by
   unfold q5
@@ -1087,8 +1088,8 @@ theorem qo {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
     have h2:=ih (s.scan_out.reverse +> l) r
     rw [← append_assoc (s.scan_out.reverse ^ n) s.scan_out.reverse l,pow_shift] at h2
     exact q0 h1 h2
-theorem qf {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.left)
-    (hbase : ∀ l r,((s.scan_in.reverse +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
+theorem qf {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir = .left)
+    (hbase : ∀ l r, ((s.scan_in.reverse +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
                     (l <{{s.q}} (s.context +> s.scan_out +> r))) :
     q5 tm s:= by
   unfold q5
@@ -1121,7 +1122,7 @@ def qr (s : Scan) (n : ℕ) (l r : Runs) : Option (Runs × Runs) :=
           some (l2,r')))
     | _,_ => none
 theorem qK {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {l r l' r' : Runs}
-    (hv : q5 tm s) (h : qr s n l r=some (l',r')) :
+    (hv : q5 tm s) (h : qr s n l r = some (l', r')) :
     (RMConfig.denote ⟨l,r,s.q,s.dir⟩) [tm]⊢* (RMConfig.denote ⟨l',r',s.q,s.dir⟩):= by
   unfold q5 at hv
   rcases s with ⟨q,d,sin,sout,ctx⟩
@@ -1174,7 +1175,7 @@ def use_scan (s : Scan) (n : ℕ) (c : RMConfig) : Option RMConfig :=
     | none => none
   else none
 theorem use_scan_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {c c' : RMConfig}
-    (hv : q5 tm s) (h : use_scan s n c=some c') :
+    (hv : q5 tm s) (h : use_scan s n c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold use_scan at h
   split_ifs at h with hq
@@ -1197,7 +1198,7 @@ def qh_slow (p : Digit) (n : ℕ) (r : Runs) : Option Runs :=
   match Runs.remove (qn p) r with
   | none => none
   | some r1 => qi W n r1
-theorem qh_slow_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_slow p n r=some r2) :
+theorem qh_slow_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_slow p n r = some r2) :
     Runs.denote r=(qn p) +> (W ^ n) +> Runs.denote r2:= by
   unfold qh_slow at h
   cases hr1 : Runs.remove (qn p) r with
@@ -1263,7 +1264,7 @@ def qh_one (p : Digit) (n : ℕ) (r : Runs) : Option Runs :=
       | _ => qh_slow p n r
     else qh_slow p n r
   | _ => qh_slow p n r
-theorem qh_one_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_one p n r=some r2) :
+theorem qh_one_spec {p : Digit} {n : ℕ} {r r2 : Runs} (h : qh_one p n r = some r2) :
     Runs.denote r=(qn p) +> (W ^ n) +> Runs.denote r2:= by
   rcases r with _ | ⟨⟨v,mv⟩,_ | ⟨⟨w,m⟩,rest⟩⟩
   · exact qh_slow_spec h
@@ -1332,7 +1333,7 @@ def qh : qv → Runs → Option Runs
     | none => none
     | some r2 => qh xs r2
 theorem qF {xs : qv} {r r' : Runs}
-    (h : qh xs r=some r') :
+    (h : qh xs r = some r') :
     Runs.denote r=(q9 xs) +> Runs.denote r':= by
   induction xs generalizing r with
   | nil =>
@@ -1468,7 +1469,7 @@ def qe_fast (w : List (Fin 2)) (r : Runs) : Option (ℕ × Runs) :=
       | _ => none
   | _ => none
 theorem qe_fast_spec {w : List (Fin 2)} {r s : Runs} {n : ℕ}
-    (h : qe_fast w r=some (n,s)) :
+    (h : qe_fast w r = some (n, s)) :
     Runs.denote r=(w ^ n) +> Runs.denote s:= by
   rcases r with _ | ⟨⟨v1,m1⟩,_ | ⟨⟨v2,m2⟩,rest2⟩⟩
   · contradiction
@@ -1646,7 +1647,7 @@ def match_digit (v : List (Fin 2)) : Option Digit :=
   else if v == [0,1,1,1,1,1,1,1,1,1] then some .D4
   else if v == [1,1,1,1,1,1,1,1,1,1,1,1] then some .D5
   else none
-theorem match_digit_spec {v : List (Fin 2)} {p : Digit} (h : match_digit v=some p) :
+theorem match_digit_spec {v : List (Fin 2)} {p : Digit} (h : match_digit v = some p) :
     v=qn p:= by
   unfold match_digit at h
   split_ifs at h with h0 h1 h2 h3 h4 h5
@@ -1888,7 +1889,7 @@ theorem push_qv_spec (p : Digit) (n : ℕ) (xs : qv) :
       all_goals (try cases m <;> try rfl)
       all_goals (
         unfold push_qv
-        simp only [strictNat_eq,q9,ih,pow_succ_list,pow_zero_list,List.nil_append,List.append_nil,← List.append_assoc]
+        simp only [q9, ih, pow_succ_list, pow_zero_list, List.append_nil, ← List.append_assoc]
         rfl)
 def qU_norm : ℕ → qv → Option (ℕ × qv)
   | t,[] => if Nat.beq t 0 then some (0,[]) else none
@@ -1905,7 +1906,7 @@ def qU_norm : ℕ → qv → Option (ℕ × qv)
           | none => none
         else none
 theorem qU_norm_spec {t : ℕ} {xs : qv} {e : ℕ} {ys : qv}
-    (h : qU_norm t xs=some (e,ys)) :
+    (h : qU_norm t xs = some (e, ys)) :
     ∃ ys0,qU t xs=some (e,ys0) ∧ q9 ys=q9 ys0:= by
   induction xs generalizing t e ys with
   | nil =>
@@ -1971,9 +1972,9 @@ def qv_loop : ℕ → ℕ → qv → ℕ × qv
           q4 (k + e) (fun k' => qv_loop fuel k' ys)
         | none => (k,xs))
 theorem qa1 {tm : Machine (Fin 2) (Fin 6)}
-    (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
-      (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
+    (hrule : ∀ t xs e ys k r, qU t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
     (fuel k : ℕ) (xs : qv) (r : ListBlank (Fin 2)) :
     let res:=qv_loop fuel k xs
     (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
@@ -2002,9 +2003,9 @@ theorem step7_post (rest : Runs) :
     (W ^ 1) +> Runs.denote (([0,1,1,1,1],1) :: rest):=rfl
 theorem step7_qU : qU 1 [(.D0,0)]=some (0,[(.D1,0)]):=rfl
 theorem step7_rule {tm : Machine (Fin 2) (Fin 6)}
-    (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
-      (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
+    (hrule : ∀ t xs e ys k r, qU t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
     (rest : Runs) :
     (([1,0,1] +> default) {{E}}> Runs.denote (([0],1) :: ([1],1) :: ([0],1) :: ([1],1) :: ([1,1,1,1,0,1,1,1,1],1) :: rest)) [tm]⊢*
     (([1,0,1] +> default) {{E}}> ((W ^ 1) +> Runs.denote (([0,1,1,1,1],1) :: rest))):= by
@@ -2019,10 +2020,10 @@ def qa0_wk (cnt k : ℕ) (l r_cells : Runs) : RMConfig :=
         q3 (Runs.push W k_new r2) (fun r3 =>
           ⟨l,r3,E,.right⟩))
 theorem qa0_wk_spec {tm : Machine (Fin 2) (Fin 6)}
-    (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
-      (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
-    (cnt k : ℕ) (l r_cells : Runs) (hl : Runs.denote l=[1,0,1] +> default) :
+    (hrule : ∀ t xs e ys k r, qU t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
+    (cnt k : ℕ) (l r_cells : Runs) (hl : Runs.denote l = [1, 0, 1] +> default) :
     (([1,0,1] +> default) {{E}}> ((W ^ k) +> Runs.denote r_cells)) [tm]⊢*
     (qa0_wk cnt k l r_cells).denote:= by
   unfold qa0_wk
@@ -2056,10 +2057,10 @@ def qa0 (cnt : ℕ) (c : RMConfig) : Option RMConfig :=
     | none => none
   else none
 theorem qa3 {tm : Machine (Fin 2) (Fin 6)}
-    (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
-      (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
-    {cnt : ℕ} {c c' : RMConfig} (h : qa0 cnt c=some c') :
+    (hrule : ∀ t xs e ys k r, qU t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
+    {cnt : ℕ} {c c' : RMConfig} (h : qa0 cnt c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qa0 at h
   split_ifs at h with hq
@@ -2147,10 +2148,10 @@ def qT (q : Fin 6) (c : RMConfig) : Option RMConfig :=
           | _,_ => none
   else none
 theorem qV {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hrule : ∀ t xs e ys k r,qU t xs=some (e,ys) →
-      (([1,0,1] +> default) {{q}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{q}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
-    {c c' : RMConfig} (h : qT q c=some c') :
+    (hrule : ∀ t xs e ys k r, qU t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{q}}> ((W ^ k) +> (q9 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{q}}> ((W ^ (k + e)) +> (q9 ys) +> r)))
+    {c c' : RMConfig} (h : qT q c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qT at h
   split_ifs at h with hq
@@ -2217,7 +2218,7 @@ def qc_zero (s : Scan) (c : RMConfig) : Option RMConfig :=
       | none => none
   else none
 theorem qc_zero_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {c c' : RMConfig}
-    (hv : q5 tm s) (h : qc_zero s c=some c') :
+    (hv : q5 tm s) (h : qc_zero s c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qc_zero at h
   split_ifs at h with hq
@@ -2272,7 +2273,7 @@ def qc (s : Scan) (keep : ℕ) (c : RMConfig) : Option RMConfig :=
     let src:=match s.dir with | .left => z.left | .right => z.right
     q4 ((qe 32 w src).1 - keep) (fun n => use_scan s n c)
 theorem q8 {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {keep : ℕ} {c c' : RMConfig}
-    (hv : q5 tm s) (h : qc s keep c=some c') :
+    (hv : q5 tm s) (h : qc s keep c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qc at h
   split_ifs at h with hk0
@@ -2334,7 +2335,7 @@ theorem emit (r : ListBlank (Fin 2)) :
     (default <{{E}} ([1] +> r)) [target_tm]⊢* (([1,0,1] +> default) {{E}}> r):= by
   dsimp [ListBlank.append]; execute90
 theorem batch_step (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (k : ℕ) (r : ListBlank (Fin 2))
-    (h : qU t xs=some (e,ys)) :
+    (h : qU t xs = some (e, ys)) :
     (([1,0,1] +> default) {{E}}> ((W ^ k) +> (q9 xs) +> r)) [target_tm]⊢*
     (([1,0,1] +> default) {{E}}> ((W ^ (k + e)) +> (q9 ys) +> r)) :=
   batch_root emit wall_1 one t xs e ys k r h
@@ -2385,7 +2386,7 @@ def run_raw (tm : Machine (Fin 2) (Fin 6)) : ℕ → RMConfig → Option RMConfi
     | some c' => run_raw tm n c'
     | none => none
 theorem run_raw_spec {n : ℕ} {c c' : RMConfig}
-    (h : run_raw target_tm n c=some c') :
+    (h : run_raw target_tm n c = some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction n generalizing c with
   | zero =>
@@ -2414,7 +2415,7 @@ def qs (op arg : ℕ) (c : RMConfig) : Option RMConfig :=
   | 12 => qa0 arg c
   | _ => none
 theorem qp {op arg : ℕ} {c c' : RMConfig}
-    (h : qs op arg c=some c') :
+    (h : qs op arg c = some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   unfold qs at h
   rcases op with _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | op
@@ -2439,7 +2440,7 @@ def qO : ℕ → ℕ → ℕ → RMConfig → Option RMConfig
     | some c' => qO n op arg c'
     | none => none
 theorem run_rep1_spec {n op arg : ℕ} {c c' : RMConfig}
-    (h : qO n op arg c=some c') :
+    (h : qO n op arg c = some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction n generalizing c with
   | zero =>
@@ -2461,7 +2462,7 @@ def qN : ℕ → ℕ → ℕ → ℕ → ℕ → RMConfig → Option RMConfig
       | none => none
     | none => none
 theorem run_rep2_spec {n op1 arg1 op2 arg2 : ℕ} {c c' : RMConfig}
-    (h : qN n op1 arg1 op2 arg2 c=some c') :
+    (h : qN n op1 arg1 op2 arg2 c = some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction n generalizing c with
   | zero =>
@@ -2487,7 +2488,7 @@ def exec_cmd (cmd : Cmd) (c : RMConfig) : Option RMConfig :=
   | .rep1 cnt op arg => qO cnt op arg c
   | .rep2 cnt op1 arg1 op2 arg2 => qN cnt op1 arg1 op2 arg2 c
 theorem exec_cmd_spec {cmd : Cmd} {c c' : RMConfig}
-    (h : exec_cmd cmd c=some c') :
+    (h : exec_cmd cmd c = some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   cases cmd with
   | one op arg => exact qp h
@@ -2500,7 +2501,7 @@ def q7 : List Cmd → RMConfig → Option RMConfig
     | some c' => q7 rest c'
     | none => none
 theorem q1 {cs : List Cmd} {c c' : RMConfig}
-    (h : q7 cs c=some c') :
+    (h : q7 cs c = some c') :
     (c.denote) [target_tm]⊢* (c'.denote):= by
   induction cs generalizing c with
   | nil =>
@@ -2517,7 +2518,7 @@ def isHalted (tm : Machine (Fin 2) (Fin 6)) (c : RMConfig) : Bool :=
     | .left => (Runs.pop c.left).1
     | .right => (Runs.pop c.right).1
   (tm c.state b).isNone
-theorem isHalted_spec {c : RMConfig} (h : isHalted target_tm c=true) :
+theorem isHalted_spec {c : RMConfig} (h : isHalted target_tm c = true) :
     (step target_tm c.denote).isNone:= by
   rcases c with ⟨l,r,q,d⟩
   unfold isHalted at h
@@ -2561,69 +2562,91 @@ def cfg_21 : RMConfig:=⟨[([1],1),([0],1),([1],1)],[([1,1,1,1,0,1,1,1,1,1],3948
 def cfg_22 : RMConfig:=⟨[([0,1,1,0,1,1,0,1,1,0],2562),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],127559),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],472754),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],9895534),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],41552292),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],164534363),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],818365794),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],12917351320),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],2461626521240),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],7534382598815),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],323792040899265),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],59717583658228),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],2494067760400877),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],13565891439548005),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],136593213923510385),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],601151640881267234),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],792950258971310194),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],737169832268197593),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],9254758433741799),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],1494258270704145199),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],3685171709879685247),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],34617925443173174206),([0,1],1),([1,0,1],4),([1,0,1,1,0,1,1,0],1),([0,1,1,0,1,1,0,1,1,0],378258698465341521),([0,1],1),([1,0,1],5),([1,0,1,1,0,0,1,1,0,1],5133246449848418304),([1],1),([0],1),([1],2),([0],2),([1],2),([0],1),([1],1)],[([1],2),([0],1),([1],5),([0],1),([1],4)],F,.left⟩
 def cmds_0 : List Cmd:=[.one 0 72,.one 1 0,.one 0 112,.one 1 0,.one 0 139,.one 1 0,.one 1 0,.one 0 35,.one 10 0,.one 0 97,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 2,.one 8 0,.one 0 121,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 89,.one 7 0,.one 0 145,.one 1 0,.one 1 0,.one 5 0,.one 11 0,.one 0 16,.one 8 0,.one 0 299,.one 1 0,.one 1 0,.one 5 0,.one 0 46,.one 8 0,.one 0 259,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 1,.one 3 0,.one 0 26,.one 4 0,.one 0 163,.one 1 0,.one 1 0,.one 5 0,.one 11 0,.one 0 155,.one 7 0,.one 0 265,.one 1 0,.one 1 0,.one 12 4,.one 5 0,.one 11 0,.one 0 16,.one 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.one 0 46,.one 8 0,.one 0 40,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 0 56,.one 10 0,.one 0 1,.one 3 0,.one 0 26,.one 4 0,.one 0 163,.one 1 0,.one 1 0,.one 5 0,.one 11 0,.one 3 0,.one 0 7,.one 2 0,.one 0 281,.one 1 0,.one 1 0,.one 12 4]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_0_ok : q7 cmds_0 cfg_0=some cfg_1:= by decide +kernel
 def cmds_1 : List Cmd:=[.one 5 0,.one 11 0,.one 3 0,.one 0 7,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 1 0,.one 5 0,.one 11 0,.one 3 0,.one 0 7,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.one 11 0,.one 3 0,.one 11 0,.one 0 73,.one 7 0,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 2 11 0 3 0,.one 0 46,.one 8 0,.rep2 2 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 12 1,.one 1 0,.one 5 0,.one 11 0,.one 3 0,.one 0 31,.one 8 0,.one 0 40,.one 2 0,.one 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 2 11 0 3 0,.one 0 26,.rep2 2 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 13]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_1_ok : q7 cmds_1 cfg_1=some cfg_2:= by decide +kernel
 def cmds_2 : List Cmd:=[.one 5 0,.rep2 2 11 0 3 0,.one 0 7,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 9,.one 5 0,.rep2 2 11 0 3 0,.one 11 0,.one 0 73,.one 7 0,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 3 11 0 3 0,.one 0 46,.one 8 0,.rep2 3 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 12 4,.one 5 0,.rep2 2 11 0 3 0,.one 0 31,.one 8 0,.one 0 40,.rep2 2 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 3 11 0 3 0,.one 0 26,.rep2 3 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 3 11 0 3 0,.one 0 7,.rep2 3 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 10]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_2_ok : q7 cmds_2 cfg_2=some cfg_3:= by decide +kernel
 def cmds_3 : List Cmd:=[.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 6,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 4 11 0 3 0,.one 11 0,.one 0 73,.one 7 0,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 10,.one 5 0,.rep2 4 11 0 3 0,.one 0 46,.one 8 0,.rep2 4 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 12 1,.one 5 0,.rep2 4 11 0 3 0,.one 0 31,.one 8 0,.one 0 40,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 5,.one 5 0,.rep2 4 11 0 3 0,.one 0 26,.rep2 4 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 4 11 0 3 0,.one 0 7,.rep2 4 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_3_ok : q7 cmds_3 cfg_3=some cfg_4:= by decide +kernel
 def cmds_4 : List Cmd:=[.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 12,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 7,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 5 11 0 3 0,.one 0 7,.rep2 5 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 13,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 8,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 6 11 0 3 0,.one 0 7,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_4_ok : q7 cmds_4 cfg_4=some cfg_5:= by decide +kernel
 def cmds_5 : List Cmd:=[.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 12,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 23,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 7 11 0 3 0,.one 11 0,.one 0 73,.one 7 0,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 14,.one 5 0,.rep2 6 11 0 3 0,.one 0 46,.one 8 0,.rep2 6 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_5_ok : q7 cmds_5 cfg_5=some cfg_6:= by decide +kernel
 def cmds_6 : List Cmd:=[.one 5 0,.rep2 6 11 0 3 0,.one 0 31,.one 8 0,.one 0 40,.rep2 6 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 7 11 0 3 0,.one 0 26,.rep2 7 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 7 11 0 3 0,.one 0 7,.rep2 7 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 14]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_6_ok : q7 cmds_6 cfg_6=some cfg_7:= by decide +kernel
 def cmds_7 : List Cmd:=[.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 28,.one 5 0,.rep2 8 11 0 3 0,.one 0 7,.rep2 8 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 15,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 12,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 9 11 0 3 0,.one 0 7,.rep2 9 2 0 7 0,.one 2 0,.one 0 35,.one 12 3]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_7_ok : q7 cmds_7 cfg_7=some cfg_8:= by decide +kernel
 def cmds_8 : List Cmd:=[.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 13,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 16,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 10,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 45]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_8_ok : q7 cmds_8 cfg_8=some cfg_9:= by decide +kernel
 def cmds_9 : List Cmd:=[.one 5 0,.rep2 10 11 0 3 0,.one 0 7,.rep2 10 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 37,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 41,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 1 0]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_9_ok : q7 cmds_9 cfg_9=some cfg_10:= by decide +kernel
 def cmds_10 : List Cmd:=[.one 1 0,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 4,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 17,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 38,.one 5 0,.rep2 11 11 0 3 0,.one 0 7,.rep2 11 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 40,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 18,.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 37]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_10_ok : q7 cmds_10 cfg_10=some cfg_11:= by decide +kernel
 def cmds_11 : List Cmd:=[.one 5 0,.rep2 12 11 0 3 0,.one 0 7,.rep2 12 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 22,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 37,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 22,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 39,.one 5 0,.rep2 13 11 0 3 0,.one 0 7,.rep2 13 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_11_ok : q7 cmds_11 cfg_11=some cfg_12:= by decide +kernel
 def cmds_12 : List Cmd:=[.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 23,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 43,.one 5 0,.rep2 14 11 0 3 0,.one 0 7,.rep2 14 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 5,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 18,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 48,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 23]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_12_ok : q7 cmds_12 cfg_12=some cfg_13:= by decide +kernel
 def cmds_13 : List Cmd:=[.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 43,.one 5 0,.rep2 15 11 0 3 0,.one 0 7,.rep2 15 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 19,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 44,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 23,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 48,.one 5 0,.rep2 16 11 0 3 0,.one 0 7,.rep2 16 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_13_ok : q7 cmds_13 cfg_13=some cfg_14:= by decide +kernel
 def cmds_14 : List Cmd:=[.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 17 11 0 3 0,.one 0 7,.rep2 17 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 25,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 24,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 26,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 50,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 49]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_14_ok : q7 cmds_14 cfg_14=some cfg_15:= by decide +kernel
 def cmds_15 : List Cmd:=[.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 4,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 20,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 56,.one 5 0,.rep2 18 11 0 3 0,.one 0 7,.rep2 18 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 28,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 58,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 56,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 51]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_15_ok : q7 cmds_15 cfg_15=some cfg_16:= by decide +kernel
 def cmds_16 : List Cmd:=[.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 29,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 84,.one 5 0,.rep2 19 11 0 3 0,.one 0 7,.rep2 19 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 29,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 60,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_16_ok : q7 cmds_16 cfg_16=some cfg_17:= by decide +kernel
 def cmds_17 : List Cmd:=[.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 64,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 27,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 63]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_17_ok : q7 cmds_17 cfg_17=some cfg_18:= by decide +kernel
 def cmds_18 : List Cmd:=[.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 63,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 105,.one 5 0,.rep2 20 11 0 3 0,.one 0 7,.rep2 20 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 21,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 33]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_18_ok : q7 cmds_18 cfg_18=some cfg_19:= by decide +kernel
 def cmds_19 : List Cmd:=[.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 29,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 59,.one 5 0,.rep2 21 11 0 3 0,.one 0 7,.rep2 21 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 32,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 66,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 28,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 3,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 30,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 28]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_19_ok : q7 cmds_19 cfg_19=some cfg_20:= by decide +kernel
 def cmds_20 : List Cmd:=[.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 65,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 35,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 14,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 36,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 95,.one 5 0,.rep2 22 11 0 3 0,.one 0 7,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 12 2]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_20_ok : q7 cmds_20 cfg_20=some cfg_21:= by decide +kernel
 def cmds_21 : List Cmd:=[.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 35,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 33,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 68,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 36,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 34,.one 5 0,.rep2 24 11 0 3 0,.one 0 7,.rep2 24 2 0 7 0,.one 2 0,.one 0 35,.one 12 2,.one 5 0,.rep2 25 11 0 3 0,.one 0 7,.rep2 25 2 0 7 0,.one 2 0,.one 0 35,.one 12 100,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 31,.one 5 0,.rep2 23 11 0 3 0,.one 0 7,.rep2 23 2 0 7 0,.one 2 0,.one 0 35,.one 12 35,.one 5 0,.rep2 22 11 0 3 0,.one 11 0,.one 0 155,.one 7 0,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 5 0,.rep2 23 11 0 3 0,.one 11 0,.one 0 2,.one 9 0,.one 6 0,.one 0 13,.rep2 22 2 0 7 0,.one 2 0,.one 0 35,.one 1 0,.one 1 0,.one 12 31,.one 1 0,.one 1 0,.one 5 0,.rep2 23 11 0 3 0,.one 0 66,.rep2 23 4 0 8 0,.one 4 0,.one 0 71,.one 1 0,.one 1 0,.one 0 36,.one 5 0,.rep2 23 11 0 3 0,.one 0 72]
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem chunk_21_ok : q7 cmds_21 cfg_21=some cfg_22:= by decide +kernel
 theorem halted_final : isHalted target_tm cfg_22=true:= by decide +kernel
 theorem init_eq_cfg_0 : cfg_0.denote=init []:=rfl
@@ -2636,7 +2659,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_halt : IsHalt target := by
   refine ⟨cfg_22.denote,?_,isHalted_spec halted_final⟩

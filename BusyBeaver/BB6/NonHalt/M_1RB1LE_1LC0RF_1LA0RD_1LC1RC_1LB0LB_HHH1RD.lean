@@ -41,7 +41,6 @@ local notation "Γ" => Fin 2
 local notation "Λ" => Fin 6
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 
 abbrev O : Fin 2 := 0
@@ -259,7 +258,8 @@ private theorem P_enter (n : ℕ) (r : ListBlank Γ) :
   have h7 := shift_C_zw (2 + n) ([I] +> default) (aw +> r)
   have h8 : ((uw ^ (2 + n) +> ([I] +> default)) {{C}}> (aw +> r)) [tm]⊢*
       (toDHCfg (fR, .right) ([I, I, I, I, I] +> (uw ^ (1 + n) +> ([I] +> default))) r) := by
-    have h := runSteps_spec tm 6 ⟨uw, aw, C, .right⟩ ⟨[I] ++ [I, I, I, I, I], [], C, .right⟩ (by decide)
+    have h := runSteps_spec tm 6 ⟨uw, aw, C, .right⟩
+      ⟨[I] ++ [I, I, I, I, I], [], C, .right⟩ (by decide)
       (uw ^ (1 + n) +> ([I] +> default)) r
     have h2n : uw ^ (2 + n) = uw ++ uw ^ (1 + n) := by
       rw [show (2 + n : ℕ) = (1 + n) + 1 by omega, pow_succ_list]
@@ -488,7 +488,8 @@ theorem zero_return (n k : ℕ) (r : ListBlank Γ) :
 
 theorem anchor_return (n k : ℕ) :
     (P n (zw +> (jw ^ k +> (zw +> ([I] +> default))))) [tm]⊢⁺
-      (P 0 (tw +> (lw ^ n +> (kw +> (tw +> (aw +> (bw +> (tw ^ k +> ([I, O, I] +> default))))))))) := by
+      (P 0 (tw +> (lw ^ n +> (kw +> (tw +> (aw +> (bw +>
+        (tw ^ k +> ([I, O, I] +> default))))))))) := by
   unfold P
   let l_base : ListBlank Γ := [I, I, I, I, I, I] +> (uw ^ (1 + n) +> ([I] +> default))
   have h1 := P_enter n (zw +> (jw ^ k +> (zw +> ([I] +> default))))
@@ -795,7 +796,7 @@ theorem G_almost (n : ℕ) :
   | succ n ih =>
     have h1 := (G_recycle (3 + 12 * q4 n) G4_T).concat ih
     have h2 := G3_T.concat (F_L.concat (.nil (mw ^ n)))
-    refine SegRLs.congr (SegRLs.trans_eq h1 h2 (by simp only [List.append_assoc]))
+    refine SegRLs.congr (SegRLs.trans_eq h1 h2 (by simp only []))
       ?_ rfl ?_ ?_
     · rw [← pow_add_list]
       congr 1
@@ -1187,7 +1188,8 @@ theorem family_column (a b : ℕ) :
   have h_sup := service_tail (tw ++ [O, O]) (SUPPLY (3 + a) (7 + 2 * b))
   have h_sup' : SegRLs tm (hf ^ (8 + 2 * e a b)) []
       (zw ++ (lw ++ tw ^ (24 + 2 * a + 2 * b) ++ zw ++ kw ++ tw ++ [O, O]))
-      (zw ++ jw ++ lw ++ mw ^ (7 + 2 * b) ++ rw ++ dw ++ cw ^ (3 + a) ++ dw ^ 2 ++ cw ++ tw ++ [O, O]) := by
+      (zw ++ jw ++ lw ++ mw ^ (7 + 2 * b) ++ rw ++ dw ++
+        cw ^ (3 + a) ++ dw ^ 2 ++ cw ++ tw ++ [O, O]) := by
     refine SegRLs.congr h_sup (by rw [supply_index a b]) rfl ?_ (by simp only [List.append_assoc])
     rw [show 7 + 2 * b + 11 + 2 * (3 + a) = 24 + 2 * a + 2 * b by omega]
     simp only [List.append_assoc]
@@ -1234,7 +1236,8 @@ theorem family_finish (a b : ℕ) :
   have h12 := SegRLs.trans_eq h1 h2 (by simp only [List.append_assoc])
   unfold family_mid family_end
   refine SegRLs.congr h12 ?_ rfl ?_ ?_
-  · exact pow_add2_eq hf (by rw [show 1 + (20 + 2 * e a b + 2 * b) = 21 + 2 * e a b + 2 * b by omega])
+  · exact pow_add2_eq hf
+      (by rw [show 1 + (20 + 2 * e a b + 2 * b) = 21 + 2 * e a b + 2 * b by omega])
   · rw [show 21 + 2 * e a b + 2 * b = 1 + (20 + 2 * e a b + 2 * b) by omega,
       show 3 + a = 2 + (1 + a) by omega]
     simp only [List.append_assoc]
@@ -1479,7 +1482,8 @@ theorem entry_before_anchor :
 
 theorem entry_after_anchor :
     (init []) [tm]⊢*
-      (P 0 (tw +> (lw ^ entry_m +> (kw +> (tw +> (aw +> (bw +> (tw ^ 10 +> ([I, O, I] +> default))))))))) :=
+      (P 0 (tw +> (lw ^ entry_m +> (kw +> (tw +> (aw +> (bw +>
+        (tw ^ 10 +> ([I, O, I] +> default))))))))) :=
   stepStar_trans entry_before_anchor (stepPlus_to_stepStar (anchor_return entry_m 10))
 
 theorem entry_m_count : entry_m = 1 + entry_first_calls := by
@@ -1629,6 +1633,8 @@ def third_f (n : ℕ) : ℕ :=
 def third_input (n : ℕ) : List Γ := zw ++ lw ++ tw ^ (n + 9) ++ third_u0
 def third_output (n : ℕ) : List Γ := zw ++ jw ++ lw ++ mw ^ n ++ rw ++ dw ++ cw ^ 2 ++ third_u2
 
+set_option maxHeartbeats 2000000 in
+-- `congr 1` unfolds large repeated-list expressions requiring extra heartbeats.
 theorem third_supply (n : ℕ) :
     SegRLs tm (hf ^ (third_f n)) [] (third_input n) (third_output n) := by
   have h := reset_supply n (n + 9) 8 entry8_calls third_u0 third_u1 third_u2
@@ -1688,7 +1694,8 @@ theorem third_finish (a b : ℕ) :
       (third_mid a b) (third_end a b) := by
   have h1 := F_T_service (20 + 2 * a + 2 * b) 2892 (service_tail third_u2 (PACKET 0))
   have h2 := service_tail (jw ^ 6 ++ mw ++ rw ++ third_u2) (F_normalize (20 + 2 * a + 2 * b))
-  have h12 := SegRLs.trans_eq h1 h2 (by simp only [pow_zero_list, List.append_nil, List.append_assoc])
+  have h12 := SegRLs.trans_eq h1 h2
+    (by simp only [pow_zero_list, List.append_nil, List.append_assoc])
   unfold third_mid third_end
   refine SegRLs.congr h12 ?_ rfl ?_ ?_
   · exact pow_add2_eq hf (by rw [show 1 + (20 + 2 * a + 2 * b) = 21 + 2 * a + 2 * b by omega])

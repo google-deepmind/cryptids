@@ -1252,7 +1252,7 @@ theorem step_T0 (a s : ℕ) (ha : 28 ≤ a) (hs : 16 ≤ s) (hi : 2 * a + 22 ≤
 theorem step_T1 (a b c d : ℕ) (ha : 24 ≤ a) (hb : 7 ≤ b) (hc : 6 ≤ c) (hd : 6 ≤ d)
     (h1 : 2 * a + 22 ≤ 5 * d) (h2 : 8 * a + 702 ≤ 50 * c + 65 * d)
     (h3 : 676 ≤ 40 * b + 26 * c + 17 * d + 49 * a)
-    (h4 : 261 ≤ 15 * d + 2 * a) (h5 : 4 * a + 29 ≤ 5 * b + 12 * c + 24 * d) :
+    (h4 : 261 ≤ 15 * d + 2 * a) (_h5 : 4 * a + 29 ≤ 5 * b + 12 * c + 24 * d) :
     ∃ c', ((cT1 a b c d) [target_tm]⊢⁺ c') ∧ P c' := by
   have e1 : a = 9 + (a - 9) := by omega
   have e2 : b = 7 + (b - 7) := by omega
@@ -1488,7 +1488,7 @@ theorem init_reaches_cP2 : (init []) [target_tm]⊢* cP2 14 37 11 := by
   rw [RunWin.eval_init]
   have hend : stem_s3.eval default default = cP2 14 37 11 := by
     simp only [stem_s3, RunWin.SymCfg.eval, RunWin.SymCursor.eval, cP2, P2,
-      Cfg.headLeft, ListBlank.head_default, ListBlank.tail_default,
+      ListBlank.head_default, ListBlank.tail_default,
       ListBlank.append_nil, ListBlank.append_append, List.append_assoc]
     rfl
   rw [← hend]

@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LE_1LC1RD_1LA0LC_1RA1RE_0RF0RB_1LCHHH
@@ -87,13 +90,13 @@ theorem pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 omit [Inhabited Γ] in
 @[simp] theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
   induction n with
-  | zero => simp [pow_zero_list]
+  | zero => simp
   | succ n ih =>
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
 theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
-  rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
+  rw [list_pow_add]; simp [pow_succ_list]
 
 @[simp] theorem listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
@@ -1076,7 +1079,7 @@ theorem Borrow_spec {w w' : List Bool} (hb : Borrow w w') (l r : ListBlank (Fin 
     have ht : l <+ l_tape (b :: false :: w) = l <+ l_tape w <+ Half 1 <+ Half (if b then 0 else 1) := by
       simp [l_tape, digit]
     have ht' : l <+ l_tape (true :: true :: w') = l <+ l_tape w' <+ ld0 ^ 1 := by
-      simp [l_tape, digit, ld0, Half, pow_succ_list, pow_zero_list]
+      simp [l_tape, digit, ld0, Half, pow_succ_list]
     rw [ht, ht']
     have s1 := ECarry (l <+ l_tape w) r (if b then 0 else 1)
     have s2 := ih l (ones ^ 6 +> r)
@@ -1237,7 +1240,7 @@ theorem num_normal : ∀ (n : Nat) {k : Nat} {w : List Bool},
     · rcases Num_inv_cons h with ⟨n0, o0, hn0, he0, h0⟩
       cases b
       · simp at he0; omega
-      · simp at he0
+      · simp only [↓reduceIte] at he0
         rcases Num_inv_cons h0 with ⟨n1, o1, hn1, he1, h1⟩
         have h1' : Num (2 * n) (2 ^ n - 1) o1 w1 :=
           Num_eq h1 (by omega) (by omega) rfl rfl
@@ -1609,7 +1612,7 @@ theorem ST_T100 {n e o : Nat} {w : List Bool} (h : Num n e (1 + o) w) :
   have s2 := Borrow_spec hb l (ones ^ 6 +> r)
   have s3 := SOnes (l <+ l_tape u) r 1
   have ht : l <+ l_tape (true :: true :: u) = l <+ l_tape u <+ ld0 ^ 1 := by
-    simp [l_tape, digit, ld0, Half, pow_succ_list, pow_zero_list]
+    simp [l_tape, digit, ld0, Half, pow_succ_list]
   rw [ht]
   exact stepPlus_trans s1 (stepPlus_stepStar_trans s2 s3)
 

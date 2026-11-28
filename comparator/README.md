@@ -20,7 +20,7 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   acceleration semantics (`IsClosedPatternSet`, `HasCollatzReduction`, `IsClosedStackPatternSet`,
   `HasStackedCollatzReduction`, `HasStackReduction`, `HasOdometerReduction`,
   `HasTransducerReduction`, `IsValidAcceleration`, `CollatzHalts`, `IsHalt`, `IsNotHalt`), and
-  `load_rle_machine%` once, and states all 752 `BB(6)` and `BB(3, 3)` holdout theorems
+  `load_rle_machine%` once, and states all 753 `BB(6)` and `BB(3, 3)` holdout theorems
   (`is_closed_pattern_set` / `is_closed_stack_pattern_set`, `has_collatz_reduction` /
   `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`,
   `has_transducer_reduction`, `is_closed_segmented_system`, `is_valid_acceleration`,

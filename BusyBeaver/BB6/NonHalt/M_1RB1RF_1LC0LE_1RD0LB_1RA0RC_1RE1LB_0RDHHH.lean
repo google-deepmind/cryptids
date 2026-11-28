@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RF_1LC0LE_1RD0LB_1RA0RC_1RE1LB_0RDHHH
@@ -25,7 +28,6 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option maxHeartbeats 4000000
 set_option maxRecDepth 8000
 
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
@@ -1126,7 +1128,7 @@ theorem dv_lt (P : List Tri) : dv P < 2 ^ P.length := by
 theorem dv_zeros (Z R : List Tri) (hZ : List.Forall dig0 Z) :
     dv (Z ++ R) = 2 ^ Z.length * dv R := by
   induction Z with
-  | nil => simp [dv]
+  | nil => simp
   | cons x Z ih =>
     rcases x with ⟨p, q, d⟩
     rw [List.forall_cons] at hZ
@@ -1278,12 +1280,12 @@ theorem ob_touch (ph : Phase) (c4 : Bool) (h i p q n tv : Nat)
   have hpow := pow_pos n
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
-    cases ph <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;>
+  · simp -failIfUnchanged only [PN] at hN ⊢
+    cases ph <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN ⊢) <;>
       ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega)
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢
+  · simp -failIfUnchanged only [PI] at hI ⊢
     rcases i with _ | _ | _ | i <;> try trivial
-    all_goals (cases ph <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢) <;> omega)
+    all_goals (cases ph <;> (try simp -failIfUnchanged only [] at hI ⊢) <;> omega)
 
 theorem ob_merge (ph : Phase) (c4 : Bool) (h i p q n u U : Nat)
     (hph : ph = .L1 ∨ ph = .L2 ∨ ph = .LX)
@@ -1296,7 +1298,7 @@ theorem ob_merge (ph : Phase) (c4 : Bool) (h i p q n u U : Nat)
   have hpowS := pow_S n
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
+  · simp -failIfUnchanged only [PN] at hN ⊢
     rw [hpowS] at hN
     rcases hph with rfl | rfl | rfl
     · have hL1' := hL1 rfl
@@ -1305,24 +1307,24 @@ theorem ob_merge (ph : Phase) (c4 : Bool) (h i p q n u U : Nat)
       all_goals (
         (try have := hc4' rfl)
         (try rw [pow_S] at hN hUu hL1' hpow ⊢)
-        (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hUu hL1' hpow ⊢)
+        (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN hUu hL1' hpow ⊢)
         (repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega)
     · cases c4 <;> (rcases n with _ | _ | n <;> try omega)
       all_goals (
         (try rw [pow_S] at hN hUu hpow ⊢)
-        (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢)
+        (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN ⊢)
         omega)
     · have hLX' := hLX rfl
       rcases n with _ | _ | n <;> omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢
+  · simp -failIfUnchanged only [PI] at hI ⊢
     rw [hpowS] at hI
     rcases i with _ | _ | _ | i <;> try trivial
     · have hi1' := hi1 rfl
       rcases hph with rfl | rfl | rfl
-      · have hL1' := hL1 rfl; (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢); omega
-      · (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢); omega
-      · have hLX' := hLX rfl; have hiX' := hiX rfl rfl; (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢); omega
-    · rcases hph with rfl | rfl | rfl <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢) <;> omega
+      · have hL1' := hL1 rfl; (try simp -failIfUnchanged only [] at hI ⊢); omega
+      · (try simp -failIfUnchanged only [] at hI ⊢); omega
+      · have hLX' := hLX rfl; have hiX' := hiX rfl rfl; (try simp -failIfUnchanged only [] at hI ⊢); omega
+    · rcases hph with rfl | rfl | rfl <;> (try simp -failIfUnchanged only [] at hI ⊢) <;> omega
 
 theorem ob_mt (c4 : Bool) (h i p q n : Nat) (hq : 2 ≤ q) (hi1 : i = 1 → 1 ≤ n)
     (hPC : PC .L2 c4 h i p q (n + 1) (2 * 2 ^ n)) :
@@ -1331,15 +1333,15 @@ theorem ob_mt (c4 : Bool) (h i p q n : Nat) (hq : 2 ≤ q) (hi1 : i = 1 → 1 �
   have hpowS := pow_S n
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
+  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte] at hN ⊢
     rw [hpowS] at hN
-    cases c4 <;> rcases n with _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;>
+    cases c4 <;> rcases n with _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN ⊢) <;>
       ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega)
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢
+  · simp -failIfUnchanged only [PI] at hI ⊢
     rw [hpowS] at hI
     rcases i with _ | _ | _ | i <;> try trivial
-    · have := hi1 rfl; (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢); omega
-    · (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢); omega
+    · have := hi1 rfl; (try simp -failIfUnchanged only [] at hI ⊢); omega
+    · (try simp -failIfUnchanged only [] at hI ⊢); omega
 
 theorem ob_fuse (ph : Phase) (c4 : Bool) (h h' k p p' q' n tv : Nat)
     (hph : ph = .L1 ∨ ph = .L2 ∨ ph = .LX) (hk : 3 ≤ k)
@@ -1348,10 +1350,10 @@ theorem ob_fuse (ph : Phase) (c4 : Bool) (h h' k p p' q' n tv : Nat)
   have hpow := pow_pos n
   rcases hPC with ⟨hp1, hq1, hN, _⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
-    rcases hph with rfl | rfl | rfl <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;>
+  · simp -failIfUnchanged only [PN] at hN ⊢
+    rcases hph with rfl | rfl | rfl <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN ⊢) <;>
       ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega)
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+  · simp -failIfUnchanged only [PI]
     rcases k with _ | _ | _ | k <;> try omega
     trivial
 
@@ -1360,7 +1362,7 @@ theorem ob_far (ph : Phase) (c4 : Bool) (h h' i j p q n tv : Nat)
     PC ph c4 h' j p q n tv := by
   rcases hPC with ⟨hp1, hq1, hN, _⟩
   refine ⟨hp1, hq1, hN, ?_⟩
-  simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+  simp -failIfUnchanged only [PI]
   rcases j with _ | _ | _ | j <;> try omega
   trivial
 
@@ -1373,20 +1375,20 @@ theorem ob_end (ph ph' : Phase) (h i p q n : Nat) (hph : endtr ph ph') (hn : 1 �
   have hpow := pow_pos n
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
-    rcases hph with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> rcases n with _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;> omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢
+  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte] at hN ⊢
+    rcases hph with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> rcases n with _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [] at hN ⊢) <;> omega
+  · simp -failIfUnchanged only [PI] at hI ⊢
     rcases i with _ | _ | _ | i <;> try trivial
-    all_goals (rcases hph with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢) <;> omega)
+    all_goals (rcases hph with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> (try simp -failIfUnchanged only [] at hI ⊢) <;> omega)
 
 theorem ob_end_top (ph ph' : Phase) (h i p q : Nat) (hph : endtr ph ph') (hi : 3 ≤ i)
     (hPC : PC ph false h i p (q + 2) 0 0) :
     PC ph' false (4 + h) i (p + 1) (q + 1) 0 0 := by
   rcases hPC with ⟨hp1, hq1, hN, _⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
-    rcases hph with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;> omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte] at hN ⊢
+    rcases hph with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> (try simp -failIfUnchanged only [] at hN ⊢) <;> omega
+  · simp -failIfUnchanged only [PI]
     rcases i with _ | _ | _ | i <;> try omega
     trivial
 
@@ -1397,13 +1399,13 @@ theorem ob_endlast (c4 : Bool) (h i p q n : Nat) (hq : 2 ≤ q)
   have hpowS := pow_S n
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
+  · simp -failIfUnchanged only [PN] at hN ⊢
     rw [hpowS] at hN
-    cases c4 <;> rcases n with _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;>
+    cases c4 <;> rcases n with _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN ⊢) <;>
       ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega)
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢
+  · simp -failIfUnchanged only [PI] at hI ⊢
     rw [hpowS] at hI
-    rcases i with _ | _ | _ | i <;> (try trivial) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢) <;> omega
+    rcases i with _ | _ | _ | i <;> (try trivial) <;> (try simp -failIfUnchanged only [] at hI ⊢) <;> omega
 
 theorem ob_x2 (h i p q n : Nat) (hn : 1 ≤ n) (hq : 2 ≤ q)
     (hPC : PC .T0 false h i p q n 0) :
@@ -1412,28 +1414,28 @@ theorem ob_x2 (h i p q n : Nat) (hn : 1 ≤ n) (hq : 2 ≤ q)
   have hpowS := pow_S n
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢
+  · simp -failIfUnchanged only [PN] at hN ⊢
     rw [hpowS]
-    rcases n with _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;> omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢
+    rcases n with _ | n <;> (try simp -failIfUnchanged only [] at hN ⊢) <;> omega
+  · simp -failIfUnchanged only [PI] at hI ⊢
     rw [hpowS]
-    rcases i with _ | _ | _ | i <;> (try trivial) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI ⊢) <;> omega
+    rcases i with _ | _ | _ | i <;> (try trivial) <;> (try simp -failIfUnchanged only [] at hI ⊢) <;> omega
 
 theorem ob_x2_top (h i p q : Nat) (hi : 3 ≤ i)
     (hPC : PC .T0 false h i p (q + 2) 0 0) :
     PC .E1t false (4 + h) i (p + 1) (q + 1) 1 2 := by
   rcases hPC with ⟨hp1, hq1, hN, _⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢; omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+  · simp -failIfUnchanged only [PN] at hN ⊢; omega
+  · simp -failIfUnchanged only [PI]
     rcases i with _ | _ | _ | i <;> try omega
     trivial
 
 theorem ob_x2_new (h i k : Nat) (hi : 3 ≤ i) (hk : 3 ≤ k) :
     PC .E1t false h i 3 k 0 1 := by
   refine ⟨by omega, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]; omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+  · simp -failIfUnchanged only [PN]; omega
+  · simp -failIfUnchanged only [PI]
     rcases i with _ | _ | _ | i <;> try omega
     trivial
 
@@ -1451,11 +1453,11 @@ theorem ob_ov_head (ph ph' : Phase) (c4' : Bool) (Xp : Nat → Prop) (h p1 q1 n 
   refine ⟨by omega, by omega, ?_, ?_⟩
   · rcases n with _ | _ | n <;> [skip; skip; have := pow_pos n] <;>
       rcases htr with ⟨rfl, rfl, rfl, _⟩ | ⟨rfl, rfl, rfl, _⟩ | ⟨rfl, rfl, rfl, _⟩ | ⟨rfl, rfl, rfl, _⟩ <;>
-      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at * <;>
+      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte] at * <;>
       ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega)
   · rcases n with _ | _ | n <;> [skip; skip; have := pow_pos n] <;>
       rcases htr with ⟨rfl, rfl, rfl, _⟩ | ⟨rfl, rfl, rfl, _⟩ | ⟨rfl, rfl, rfl, _⟩ | ⟨rfl, rfl, rfl, _⟩ <;>
-      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at * <;>
+      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte] at * <;>
       ((repeat' apply And.intro) <;> (try trivial) <;> omega)
 
 theorem ob_ov_step (ph ph' : Phase) (c4' : Bool) (Xp : Nat → Prop) (h i pp q p' q' m : Nat)
@@ -1469,18 +1471,18 @@ theorem ob_ov_step (ph ph' : Phase) (c4' : Bool) (Xp : Nat → Prop) (h i pp q p
   rcases hPC with ⟨hpp, hq, hN, hI⟩
   rcases hPC' with ⟨hp', hq', hN', hI'⟩
   refine ⟨hq, hp', ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' ⊢
+  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte] at hN hN' ⊢
     rw [hpowS] at hN ⊢
     rcases htr with ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩
     all_goals (rcases m with _ | _ | m <;> (try have := hX rfl) <;> (try rw [pow_S] at hN hN' hpow ⊢) <;> (try rw [pow_S] at hN hN' hpow ⊢) <;>
-      (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' hX ⊢) <;> ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega))
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+      (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN hN' hX ⊢) <;> ((repeat' apply And.intro) <;> (try trivial) <;> (try (apply nat_ge_or_mod2; intro _)) <;> omega))
+  · simp -failIfUnchanged only [PI]
     rcases i with _ | _ | i
     · omega
-    · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' hI hI' ⊢
+    · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte] at hN hN' hI hI' ⊢
       rw [hpowS] at hN hI ⊢
       rcases htr with ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩
-      all_goals (rcases m with _ | _ | m <;> (try rw [pow_S] at hN hN' hI hI' hpow ⊢) <;> (try rw [pow_S] at hN hN' hI hI' hpow ⊢) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' hI hI' hX ⊢) <;> omega)
+      all_goals (rcases m with _ | _ | m <;> (try rw [pow_S] at hN hN' hI hI' hpow ⊢) <;> (try rw [pow_S] at hN hN' hI hI' hpow ⊢) <;> (try simp -failIfUnchanged only [] at hN hN' hI hI' hX ⊢) <;> omega)
     · trivial
 
 theorem ob_ov_base (ph ph' : Phase) (c4' : Bool) (Xp : Nat → Prop) (h i pp q t : Nat)
@@ -1490,20 +1492,20 @@ theorem ob_ov_base (ph ph' : Phase) (c4' : Bool) (Xp : Nat → Prop) (h i pp q t
     PC ph' c4' 2 (i + 1) q (t + 1) 0 1 := by
   rcases hPC with ⟨hpp, hq, hN, hI⟩
   refine ⟨hq, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI ⊢
+  · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte] at hN hI ⊢
     rcases htr with ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩
     · have := ht2 (by decide); omega
     · have := ht2 (by decide); omega
     · have := ht2 (by decide); omega
     · have := ht1 rfl; omega
-  · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI ⊢
+  · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte] at hN hI ⊢
     rcases i with _ | _ | i
     · omega
     · rcases htr with ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl, rfl⟩
-      · have := ht2 (by decide); (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI ⊢); omega
-      · have := ht2 (by decide); (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI ⊢); omega
-      · have := ht2 (by decide); (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI ⊢); omega
-      · have := ht1 rfl; (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI ⊢); omega
+      · have := ht2 (by decide); (try simp -failIfUnchanged only [] at hN hI ⊢); omega
+      · have := ht2 (by decide); (try simp -failIfUnchanged only [] at hN hI ⊢); omega
+      · have := ht2 (by decide); (try simp -failIfUnchanged only [] at hN hI ⊢); omega
+      · have := ht1 rfl; (try simp -failIfUnchanged only [] at hN hI ⊢); omega
     · trivial
 
 theorem ob_x1_head (h p1 q1 n : Nat)
@@ -1512,10 +1514,10 @@ theorem ob_x1_head (h p1 q1 n : Nat)
   rcases hPC with ⟨hp1, hq1, hN, hI⟩
   refine ⟨by omega, by omega, ?_, ?_⟩
   · rcases n with _ | _ | n <;> [skip; skip; have := pow_pos n] <;>
-      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false, true_and, and_true] at * <;>
+      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero] at * <;>
       omega
   · rcases n with _ | _ | n <;> [skip; skip; have := pow_pos n] <;>
-      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false, true_and, and_true] at * <;>
+      simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, true_and] at * <;>
       omega
 
 theorem ob_x1_step (h i pp q p' q' m : Nat) (hi : 1 ≤ i)
@@ -1526,19 +1528,19 @@ theorem ob_x1_step (h i pp q p' q' m : Nat) (hi : 1 ≤ i)
   rcases hPC with ⟨hpp, hq, hN, hI⟩
   rcases hPC' with ⟨hp', hq', hN', hI'⟩
   refine ⟨hq, hp', ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' ⊢
+  · simp -failIfUnchanged only [PN] at hN hN' ⊢
     rw [pow_S (m + 2), pow_S (m + 1), pow_S m] at hN
     rw [pow_S (m + 1), pow_S m] at hN'
     rw [pow_S m]
-    rcases m with _ | m <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' ⊢) <;> omega
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false]
+    rcases m with _ | m <;> omega
+  · simp -failIfUnchanged only [PI]
     rcases i with _ | _ | i
     · omega
-    · simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' hI hI' ⊢
+    · simp -failIfUnchanged only [PN, PI] at hN hN' hI hI' ⊢
       rw [pow_S (m + 2), pow_S (m + 1), pow_S m] at hN hI
       rw [pow_S (m + 1), pow_S m] at hN'
       rw [pow_S m]
-      rcases m with _ | m <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hN' hI hI' ⊢) <;> omega
+      rcases m with _ | m <;> omega
     · trivial
 
 theorem ob_x1_base (h i pp q pa : Nat) (hi : 1 ≤ i)
@@ -1548,11 +1550,11 @@ theorem ob_x1_base (h i pp q pa : Nat) (hi : 1 ≤ i)
   rcases hPC with ⟨hpp, hq, hN, hI⟩
   rcases hPC' with ⟨hp', hq', hN', hI'⟩
   refine ⟨hq, by omega, ?_, ?_⟩
-  · simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at *
+  · simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero] at *
     (repeat' apply And.intro) <;> (try trivial) <;> omega
   · rcases i with _ | _ | i
     · omega
-    · simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at *
+    · simp -failIfUnchanged only [PN, PI, pow_S, Nat.pow_zero] at *
       omega
     · trivial
 -- List-level preservation and Jstep (Skelet1LikeC2_1RB1RF.v lines 720-1280)
@@ -1717,8 +1719,8 @@ theorem passq (ph : Phase) (c4 : Bool) (h i p q n tv : Nat)
     (hPC : PC ph c4 h i p q n tv) (ht : 2 ≤ tv) (ht2 : tv % 2 = 0) : 2 ≤ q := by
   have hpow := pow_pos n
   rcases hPC with ⟨hp, hq, hN, _⟩
-  simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN
-  cases ph <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN) <;> omega
+  simp -failIfUnchanged only [PN] at hN
+  cases ph <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN) <;> omega
 
 theorem Z_okL (ph : Phase) (c4 : Bool) (h : Nat) (Z : List Tri) (i : Nat) (x : Tri) (R : List Tri)
     (hZ : List.Forall dig0 Z) (hx : dig x = true)
@@ -1756,20 +1758,20 @@ theorem borrow1 (ph : Phase) (c4 : Bool) (h k p n tv : Nat)
   have hpow := pow_pos n
   rcases hPC with ⟨hp, hq, hN, hI⟩
   have hph : ph = .L1 ∨ ph = .L2 ∨ ph = .LX := by
-    simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN
+    simp -failIfUnchanged only [PN] at hN
     cases ph <;> try (first | exact Or.inl rfl | exact Or.inr (Or.inl rfl) | exact Or.inr (Or.inr rfl))
-    all_goals (rcases n with _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN) <;> omega)
+    all_goals (rcases n with _ | n <;> (try simp -failIfUnchanged only [] at hN) <;> omega)
   refine ⟨hph, ?_, ?_, ?_⟩
-  · simp -failIfUnchanged only [PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI
+  · simp -failIfUnchanged only [PI] at hI
     rcases k with _ | _ | _ | k <;> try omega
-    all_goals (rcases hph with rfl | rfl | rfl <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hI) <;> omega)
+    all_goals (rcases hph with rfl | rfl | rfl <;> (try simp -failIfUnchanged only [] at hI) <;> omega)
   · intro hL1; subst hL1
-    simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN
-    cases c4 <;> rcases n with _ | _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN ⊢) <;>
+    simp -failIfUnchanged only [PN] at hN
+    cases c4 <;> rcases n with _ | _ | n <;> (try rw [pow_S] at hN hpow ⊢) <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN ⊢) <;>
       ((repeat' apply And.intro) <;> (try intro _) <;> (try contradiction) <;> omega)
   · intro hLX; subst hLX
-    simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN
-    rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN) <;> omega
+    simp -failIfUnchanged only [PN] at hN
+    rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [] at hN) <;> omega
 
 theorem inv_Dec (ph : Phase) (c4 : Bool) (h : Nat) (Z : List Tri) (p q : Nat) (R : List Tri)
     (hZ : List.Forall dig0 Z)
@@ -1841,21 +1843,21 @@ theorem q2_V0 (ph : Phase) (c4 : Bool) (h i p q n : Nat)
     (hPC : PC ph c4 h i p q n 0) (hn : 1 ≤ n) (hX : ph = .LX → 2 ≤ n) : 2 ≤ q := by
   have hpow := pow_pos n
   rcases hPC with ⟨hp, hq, hN, _⟩
-  simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN
-  cases ph <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN) <;> try omega
+  simp -failIfUnchanged only [PN] at hN
+  cases ph <;> cases c4 <;> rcases n with _ | _ | n <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN) <;> try omega
   all_goals (have := hX rfl; omega)
 
 theorem p1_V0 (ph : Phase) (c4 : Bool) (h p q n : Nat)
     (hPC : PC ph c4 h 1 p q n 0) (hph : ph = .E2 ∨ ph = .E2t ∨ ph = .L2 ∨ ph = .LX) : 2 ≤ p := by
   have hpow := pow_pos n
   rcases hPC with ⟨hp, hq, hN, hI⟩
-  simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI
+  simp -failIfUnchanged only [PN, PI] at hN hI
   rcases hph with rfl | rfl | rfl | rfl <;> cases c4 <;> rcases n with _ | _ | n <;>
-    (try rw [pow_S] at hN hI hpow) <;> (try simp -failIfUnchanged only [PN, PI, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN hI) <;> omega
+    (try rw [pow_S] at hN hI hpow) <;> (try simp -failIfUnchanged only [Bool.false_eq_true, ↓reduceIte] at hN hI) <;> omega
 
 theorem L2_c4_V0 (h i p q : Nat) (hPC : PC .L2 true h i p q 0 0) : False := by
   rcases hPC with ⟨_, _, hN, _⟩
-  simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN
+  simp -failIfUnchanged only [PN, ↓reduceIte] at hN
   omega
 
 theorem AllI_okRO (ph : Phase) (c4 : Bool) (h : Nat) (Z : List Tri) (i : Nat)
@@ -2282,7 +2284,7 @@ theorem Jstep (s : St) (hs : J s) : ∃ s', ((Cf s) [target_tm]⊢⁺ (Cf s')) �
       rcases hT with ⟨rfl, rfl⟩
       rcases exists_last hP with ⟨Z, ⟨p, q, d⟩, rfl⟩
       rcases last_pc .E1 false h Z p q d h0 hA with ⟨rfl, hy⟩
-      have hq : 2 ≤ q := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN; omega
+      have hq : 2 ≤ q := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN] at hN; omega
       rcases q with _ | _ | q; · omega
       · omega
       have hZL : List.Forall okL Z := Z_okL_V0 .E1 false h (p, q + 2, false) (by decide) Z 1 h0 hA
@@ -2315,7 +2317,7 @@ theorem Jstep (s : St) (hs : J s) : ∃ s', ((Cf s) [target_tm]⊢⁺ (Cf s')) �
       rcases hT with ⟨rfl, rfl⟩
       rcases exists_last hP with ⟨Z, ⟨p, q, d⟩, rfl⟩
       rcases last_pc .E1t false h Z p q d h0 hA with ⟨rfl, hy⟩
-      have hq : 2 ≤ q := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN; omega
+      have hq : 2 ≤ q := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN] at hN; omega
       rcases q with _ | _ | q; · omega
       · omega
       have hZL : List.Forall okL Z := Z_okL_V0 .E1t false h (p, q + 2, false) (by decide) Z 1 h0 hA
@@ -2343,7 +2345,7 @@ theorem Jstep (s : St) (hs : J s) : ∃ s', ((Cf s) [target_tm]⊢⁺ (Cf s')) �
       rcases hT with ⟨⟨k, rfl, hk⟩, rfl⟩
       rcases exists_last hP with ⟨Z, ⟨p, q, d⟩, rfl⟩
       rcases last_pc .T0 false h Z p q d h0 hA with ⟨rfl, hy⟩
-      have hq : 2 ≤ q := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN; omega
+      have hq : 2 ≤ q := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN] at hN; omega
       rcases q with _ | _ | q; · omega
       · omega
       rcases k with _ | k; · omega
@@ -2356,7 +2358,7 @@ theorem Jstep (s : St) (hs : J s) : ∃ s', ((Cf s) [target_tm]⊢⁺ (Cf s')) �
       dsimp [TC] at hT; subst hT
       rcases exists_last hP with ⟨Z, ⟨p, q, d⟩, rfl⟩
       rcases last_pc .L1 c4 h Z p q d h0 hA with ⟨rfl, hy⟩
-      have hq : q = 1 := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN; omega
+      have hq : q = 1 := by rcases hy with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN] at hN; omega
       subst hq
       have hZL : List.Forall okL Z := Z_okL_V0 .L1 c4 h (p, 1, false) (by decide) Z 1 h0 hA
       rcases Forall_snoc_inv dig0 Z (p, 1, false) h0 with ⟨hZ, _⟩
@@ -2413,8 +2415,8 @@ theorem Jstep (s : St) (hs : J s) : ∃ s', ((Cf s) [target_tm]⊢⁺ (Cf s')) �
         have hB := AllI_app (PCx .LX false h) Z 2 [(pa, qa, false), (pb, qb, false)] hA2
         dsimp [AllI, PCx, Lift, List.length, dv, bv] at hB
         rcases hB with ⟨ha, hb, _⟩
-        have hqa : qa = 1 := by rcases ha with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN; omega
-        have hqb : qb = 1 := by rcases hb with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN, Bool.false_eq_true, ↓reduceIte, ite_true, ite_false] at hN; omega
+        have hqa : qa = 1 := by rcases ha with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN] at hN; omega
+        have hqb : qb = 1 := by rcases hb with ⟨_, _, hN, _⟩; simp -failIfUnchanged only [PN] at hN; omega
         subst hqa; subst hqb
         have hpa : 1 ≤ pa := ha.1
         rcases pa with _ | pa; · omega
@@ -2434,7 +2436,7 @@ theorem Jstep (s : St) (hs : J s) : ∃ s', ((Cf s) [target_tm]⊢⁺ (Cf s')) �
 theorem J_base : J ⟨2, base, .TN, .E1, false⟩ := by
   dsimp [J, base, TC, AllI, PCx, Lift, PC, PN, PI, dv, bv, List.length]
   refine ⟨(by intro h'; nomatch h'), ⟨rfl, rfl⟩, ?_⟩
-  simp only [Bool.false_eq_true, ↓reduceIte]; decide
+  simp only []; decide
 def InvCfg (cfg : Cfg (Fin 2) (Fin 6)) : Prop :=
   ∃ s : St, cfg = Cf s ∧ J s
 

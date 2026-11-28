@@ -66,7 +66,6 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 2000
 
 open scoped BusyBeaver.ProofKit
@@ -241,7 +240,7 @@ theorem step_F_b2_k0_0082 (c : Nat) :
     (F_0082 2 0 (c + 1)) [target_tm]⊢⁺ (F_0082 5 0 c) := by
   unfold F_0082
   rw [zPsr ([1] : List (Fin 2)) c default]
-  simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+  simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
     ListBlank.append]
   execute
 
@@ -283,7 +282,7 @@ theorem F_R_b1_to_D100 (k : Nat) (r : ListBlank (Fin 2)) :
       [target_tm]⊢⁺
       ((default : ListBlank (Fin 2)) {{F}}>
         ([0, 0] +> ([1, 0] +> (([1, 0] : List (Fin 2)) ^ k +> r)))) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   rw [<- zPsr ([1, 0] : List (Fin 2)) k r] at h2
@@ -304,7 +303,7 @@ theorem F_R_b3_to_D100 (b k : Nat) (r : ListBlank (Fin 2)) :
       [target_tm]⊢⁺
       ((((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ (b + 1)) <+ [0]) {{D}}>
         ([1, 0, 0] +> (([1, 0] : List (Fin 2)) ^ k +> r))) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   have h3 := shift_D_right_100_0082 k
@@ -322,7 +321,7 @@ theorem D100_0_11 (k : Nat) (r : ListBlank (Fin 2)) :
       (((((default : ListBlank (Fin 2)) <+ ([0, 1] : List (Fin 2)) ^ k) <+ ([0, 1] : List (Fin 2))
         ^ 1) <+ [1]) {{F}}>
         ([0, 0] +> r)) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   rw [<- zPl default ([0, 1] : List (Fin 2)) k 1,
@@ -339,7 +338,7 @@ theorem D100_succ_11 (b k : Nat) (r : ListBlank (Fin 2)) :
         2)) ^ k) <+
         ([1, 0] : List (Fin 2)) ^ 2) {{F}}>
         ([0, 0] +> r)) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   rw [<- zPl ((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ (b + 1)) ([1, 0] : List (Fin
@@ -358,7 +357,7 @@ theorem D100_nil_to_C_bounce (b k : Nat) :
         (Fin 2)) ^ k) <+
         ([0, 1] : List (Fin 2)) ^ 1) {{C}}>
         ([1] +> (([1] : List (Fin 2)) ^ 1 +> default))) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   rw [<- zPl (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ [0]) ([0, 1] : List
@@ -384,7 +383,7 @@ theorem D100_one_to_C_bounce (b k : Nat) :
         (Fin 2)) ^ k) <+
         ([0, 1] : List (Fin 2)) ^ 2) {{C}}>
         ([1] +> (([1] : List (Fin 2)) ^ 1 +> default))) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   rw [<- zPl (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ [0]) ([0, 1] : List
@@ -410,7 +409,7 @@ theorem D100_01_to_C_bounce (b k : Nat) (r : ListBlank (Fin 2)) :
         (Fin 2)) ^ k) <+
         ([0, 1] : List (Fin 2)) ^ 1) {{C}}>
         ([1] +> (([1] : List (Fin 2)) ^ 2 +> r))) := by
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   rw [<- zPl (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) <+ [0]) ([0, 1] : List
@@ -428,14 +427,14 @@ theorem C_bounce_0 (s : ListBlank (Fin 2)) :
     (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ 3) {{E}}> s) := by
   unfold C_bounce
   simp only [zPz, zLan]
-  simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+  simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
     ListBlank.append]
   execute
 theorem C_bounce_1 (s : ListBlank (Fin 2)) :
     (C_bounce 1 s) [target_tm]⊢⁺
     (((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ 5) {{E}}> s) := by
   unfold C_bounce
-  simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+  simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
     ListBlank.append]
   execute
 
@@ -446,20 +445,20 @@ theorem C_bounce_3 (b : Nat) (s : ListBlank (Fin 2)) :
   simp only [zPz, zLan]
   have hb : b + 3 = (b + 1) + 2 := by omega
   rw [hb, zPl default ([1] : List (Fin 2)) (b + 1) 2]
-  simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+  simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
     ListBlank.append]
   execute
 theorem step_F_ksucc_c0 (b k : Nat) :
     (F_0082 b (k + 1) 0) [target_tm]⊢⁺ (F_0082 b k 1) := by
   unfold F_0082
   rw [zPl ((default : ListBlank (Fin 2)) <+ ([1] : List (Fin 2)) ^ b) ([1, 0] : List (Fin 2)) k 1]
-  simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+  simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
     ListBlank.append]
   execute
 theorem step_F_b2_k0_c0 :
     (F_0082 2 0 0) [target_tm]⊢⁺ (F_0082 3 0 3) := by
   unfold F_0082
-  simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+  simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
     ListBlank.append]
   execute
 
@@ -477,7 +476,7 @@ theorem step_F_R_b2_one (k : Nat) (r : ListBlank (Fin 2)) :
         ([0, 0] +> (([0, 1] : List (Fin 2)) ^ k +> r))) := by
     rw [zPa1 ([0, 1] : List (Fin 2)) k r,
       zPsr ([0, 1] : List (Fin 2)) k r]
-    simp only [list_pow_succ, list_pow_zero, list_pow_one, List.cons_append, List.nil_append,
+    simp only [list_pow_succ, list_pow_zero, List.cons_append, List.nil_append,
       ListBlank.append]
     execute
   exact zSpp h1 h2
@@ -1653,6 +1652,7 @@ def A10_79_gen (p0_exp s_exp : ℕ) : ℕ :=
   12 * 2 ^ (p0_exp + p0_exp + 1) + 2 * (522912268114 * 2 ^ s_exp) * 2 ^ (p0_exp + 2) - 2
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem era9_79_core (p0_exp s_exp y91 r9 E9 y9 Q R QR kv ma m_rem2 A_next : ℕ)
     (hp0 : p0_exp = 1438155) (hs : s_exp = 736251) (hy91 : y91 = 701901)
     (hr9 : r9 = s_exp + (p0_exp + 2))
@@ -1740,6 +1740,7 @@ def SubTowerInv (M K : ℕ) : Prop :=
   M ≥ 128 ∧ K ≥ 2 ∧ 4 * K + 4 * M + 4 ≤ 2 ^ (M - 2)
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 private theorem era10_hy0_poly (P0 S D0 SD0 D02 P02 P0S X Y E : ℕ)
     (hD02 : D02 = D0 * D0)
     (hSD0 : SD0 = S * D0)
@@ -1778,6 +1779,7 @@ private theorem era10_hy0_poly (P0 S D0 SD0 D02 P02 P0S X Y E : ℕ)
   omega
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem era10_step_core
     (a0 n D0 D02 S SD0 P0 P0S P02 k0 kz z E y Q r R QR KZR kv ma m_rem2 M11 A_next : ℕ)
     (hD0 : D0 ≥ 522912268115)
@@ -1847,6 +1849,7 @@ theorem era10_step_core
     omega
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem era10_full_core
     (p0_exp s_exp d_exp D0 D02 S SD0 P0 P0S P02 Q R QR k0 kz z E y r KZR kv ma m_rem2 M11 : ℕ)
     (hp0 : p0_exp = 1438155) (hs : s_exp = 736251) (hd : d_exp = 34345)
@@ -2011,6 +2014,7 @@ theorem era10_79_gen (p0_exp s_exp d_exp : ℕ)
     hp0 hs hd rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl rfl⟩
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem sub_tower_step_core
     (M K P P2 n k0 kz z E y Q r R QR KZR kv ma m_rem2 M' K' a0 A_next : ℕ)
     (hM : M ≥ 128) (hK : K ≥ 2) (hP_bound : 4 * K + 4 * M + 4 ≤ 2 ^ (M - 2))

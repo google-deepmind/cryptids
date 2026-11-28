@@ -29,7 +29,6 @@ local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 2000000
 
 @[simp] theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 0 = some config := rfl
@@ -92,8 +91,12 @@ macro "finish" : tactic =>
   `(tactic| try exact ⟨0, rfl⟩)
 macro "step" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z03 (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
-    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt])
+    refine z03 (by
+      (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft,
+        Turing.ListBlank.head_cons, zDh])
+      rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,
+      Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt])
 macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | exact ⟨0, rfl⟩ | step)))
 
@@ -111,7 +114,7 @@ abbrev U : zF := [0, 1]
 abbrev V : zF := [1, 0]
 abbrev O : zF := [1, 1]
 
-@[simp] theorem zZd : Z +> (default : zB) = default := by simp [Z]
+@[simp] theorem zZd : Z +> (default : zB) = default := by simp
 
 open BusyBeaver.Longitudinal (DH0 toDHCfg SideRLs SegRLs)
 open BusyBeaver.Longitudinal.BoundedConfig (segRLs_c_spec)
@@ -200,7 +203,7 @@ theorem Num_even (n : Nat) {r : zB} (h : Num (n * 2) r) : ∃ s, r = Z +> s ∧ 
   | nil =>
     have hn : n = 0 := by omega
     subst hn
-    exact ⟨default, by simp [Z], Num.nil⟩
+    exact ⟨default, by simp, Num.nil⟩
   | @zero n0 s h0 =>
     have hn : n0 = n := by omega
     subst hn
@@ -438,7 +441,6 @@ theorem counts (l : zB) (a a0 q n : Nat) {r : zB} (h : Num (1 + n * 2) r) :
     have ha : 0 * 2 + a0 = a0 := by omega
     have hq : 1 + q + 0 * 2 = 1 + q := by omega
     rw [ha, hq]
-    finish
   | succ a ih =>
     rcases count0 l (1 + (a * 2 + a0)) q n h with ⟨r1, hN1, h1⟩
     have hN1' : Num (1 + (1 + n) * 2) r1 := Num_eq hN1 (by omega) rfl
@@ -567,7 +569,7 @@ theorem resumeB2_base (l r : zB) :
 theorem resumeB2 (d : Nat) (l r : zB) :
     (((U ^ 2) +> l) <{{B}} ((U ^ d) +> r)) [target_tm]⊢*
       (((V ^ (1 + d)) +> (O +> l)) {{A}}> r) := by
-  have h2 : (U ^ 2) +> l = U +> (U +> l) := by simp [zLp, append_assoc]
+  have h2 : (U ^ 2) +> l = U +> (U +> l) := by simp [zLp]
   rw [h2]
   refine zSt (resumeB2_base l ((U ^ d) +> r)) ?_
   simpa only [z09 V d (O +> l)] using shiftR_A_U d (V +> (O +> l)) r
@@ -615,7 +617,6 @@ theorem internal_pairs (k : Nat) {j n : Nat} {w : zF} (h : Bits j n w) (hb : n +
     have hc : 0 * 2 + c = c := by omega
     have hd : 2 + d + 0 * 2 = 2 + d := by omega
     rw [hc, hd]
-    finish
   | succ k ih =>
     rcases internal_pair h (by omega) with ⟨w1, hN1, h1⟩
     rcases ih hN1 (by omega) with ⟨w2, hN2, h2⟩
@@ -693,7 +694,8 @@ theorem enter (b j : Nat) (r : zB) :
   refine zSt hShift1 ?_
   refine zSt (overflow_start ((V ^ (1 + b)) +> (O +> (Z +> (O +> ((O ^ (1 + j)) +> (Z +> r))))))) ?_
   rw [← z07 V (1 + b)]
-  have hSweep := shiftR_F_V (1 + (1 + b)) (V +> default) (O +> (Z +> (O +> ((O ^ (1 + j)) +> (Z +> r)))))
+  have hSweep := shiftR_F_V (1 + (1 + b)) (V +> default)
+    (O +> (Z +> (O +> ((O ^ (1 + j)) +> (Z +> r)))))
   rw [z09 V (1 + (1 + b)) default] at hSweep
   have hb3 : 1 + (1 + (1 + b)) = 3 + b := by omega
   rw [hb3] at hSweep
@@ -717,7 +719,7 @@ theorem sweep_B_U (d : Nat) (r : zB) :
       (([1] +> ((U ^ d) +> default)) {{F}}> ([1] +> r)) := by
   have h1 : (default <{{B}} ((U ^ d) +> r)) [target_tm]⊢*
       (([1] +> default) {{F}}> ([1] +> ((U ^ d) +> r))) := by
-    simp only [append_cons, append_nil, z00]
+    simp only [append_cons, append_nil]
     execute
   refine zSt h1 ?_
   rw [rot_U_V d r, rot_U_V d default]
@@ -739,7 +741,7 @@ theorem start_internal (b j : Nat) (r : zB) :
       Internal default (5 + b) 2 (O ++ (Z ^ j)) (O +> r) := by
     unfold Internal
     have hV2 : (V ^ 2) +> ((U ^ (5 + b)) +> default) = V +> (V +> ((U ^ (5 + b)) +> default)) := by
-      simp [zLp, append_assoc]
+      simp [zLp]
     have hR : O +> (V +> ((Z ^ j) +> (O +> r))) = [1] +> ((O ++ (Z ^ j)) +> ([0] +> (O +> r))) := by
       rw [append_assoc O (Z ^ j) ([0] +> (O +> r)), ← rot_Z j (O +> r)]
       rfl
@@ -805,7 +807,7 @@ theorem branch1 (b m : Nat) (r : zB) (hN : Num (1 + m * 4) r) (hB : m ≤ 1 + b)
 theorem bridge2 (l : zB) (a : Nat) (r : zB) :
     (S0 l a 1 (Z +> (Z +> r))) [target_tm]⊢* (S0 l a 2 (O +> r)) := by
   unfold S0
-  simp only [z06, zLp, z05, append_nil, append_assoc, Z, O, U, append_cons]
+  simp only [zLp, z05, append_nil, append_assoc, Z, O, U, append_cons]
   execute
 
 theorem bridge3 (l : zB) (a : Nat) (r : zB) :
@@ -910,7 +912,6 @@ theorem fourth_zero (b m : Nat) {r : zB} (hN : Num m r) (hB : m + 4 ≤ (8 + b) 
     have hb8 : 4 + (4 + b) = 8 + b := by omega
     rw [hb8]
   rw [hEq]
-  finish
 
 theorem index_power (j : Nat) : j ≤ 2 ^ j := by
   induction j with
@@ -974,15 +975,14 @@ theorem fourth_positive (b j m : Nat) {r : zB} (hN : Num m r)
     have hb9 : 1 + (1 + j) + 2 ^ j * 2 + (7 + b - 2 ^ (1 + j)) = 9 + b + j := by omega
     rw [hb9]
   rw [hEq]
-  finish
 
 theorem Num_run {n : Nat} {r : zB} (h : Num n r) :
     ∃ j m s, r = (O ^ j) +> (Z +> s) ∧ Num m s ∧ 1 + n = 2 ^ j * (1 + m * 2) := by
   induction h with
   | nil =>
-    exact ⟨0, 0, default, by simp [z05, Z], Num.nil, by omega⟩
+    exact ⟨0, 0, default, by simp, Num.nil, by omega⟩
   | @zero n r hN _ =>
-    exact ⟨0, n, r, by simp [z05], hN, by omega⟩
+    exact ⟨0, n, r, by simp, hN, by omega⟩
   | @one n r _ ih =>
     rcases ih with ⟨j, m, s, rfl, hNs, hEq⟩
     refine ⟨1 + j, m, s, by rw [z07 O j (Z +> s)], hNs, ?_⟩
@@ -1042,7 +1042,8 @@ theorem start_to_K1 : (init []) [target_tm]⊢* K 1 (O +> default) := by
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine Counter.does_not_halt_of_invariant
     (Inv := fun c => ∃ b r, c = K b r ∧ Safe b r)
-    ⟨K 1 (O +> default), start_to_K1, 1, O +> default, rfl, le_refl 1, 0, Num.one Num.nil, by omega⟩ ?_
+    ⟨K 1 (O +> default), start_to_K1, 1, O +> default, rfl, le_refl 1, 0,
+      Num.one Num.nil, by omega⟩ ?_
   rintro _ ⟨b, r, rfl, hSafe⟩
   rcases closed hSafe with ⟨b', r', hSafe', hStep⟩
   exact ⟨K b' r', hStep, b', r', rfl, hSafe'⟩

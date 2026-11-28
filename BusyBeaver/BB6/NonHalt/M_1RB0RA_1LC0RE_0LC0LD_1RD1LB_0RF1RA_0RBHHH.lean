@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1LC0RE_0LC0LD_1RD1LB_0RF1RA_0RBHHH
@@ -34,7 +37,6 @@ local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 2000000
 
 @[simp] private theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 0 = some config := rfl
@@ -102,10 +104,10 @@ private abbrev w1d0 : zF := [1, 0, 0, 0]
 private abbrev w1d1 : zF := [1, 1, 0, 0]
 private abbrev lh : zB := [1] +> default
 
-@[simp] private theorem zDd : d0 +> (default : zB) = default := by simp [d0]
+@[simp] private theorem zDd : d0 +> (default : zB) = default := by simp
 
-private theorem z1_eq : [1] +> (d1 +> (default : zB)) = ld +> default := by simp [d1, ld]
-private theorem z0_eq : [1] +> (d0 +> (default : zB)) = d1 +> default := by simp [d0, d1]
+private theorem z1_eq : [1] +> (d1 +> (default : zB)) = ld +> default := by simp
+private theorem z0_eq : [1] +> (d0 +> (default : zB)) = d1 +> default := by simp
 
 private inductive Call where
   | ch
@@ -818,7 +820,10 @@ private theorem Good_step {tp : H} {k : Nat} {r : List RD} (hG : Good tp k r) :
   induction hG with
   | @hx_ld k r r1 Hi _ ih =>
     intro j rK tq q E htq
-    have h_hx : tq = H.hx := by rcases htq with rfl | ⟨_, h⟩; rfl; cases h
+    have h_hx : tq = H.hx := by
+      rcases htq with rfl | ⟨_, h⟩
+      · rfl
+      · cases h
     subst h_hx
     rcases inv_hx_ld E with ⟨r1', rK', Hi', E', rfl⟩
     rw [RIncs_fun Hi' Hi] at E'
@@ -827,7 +832,10 @@ private theorem Good_step {tp : H} {k : Nat} {r : List RD} (hG : Good tp k r) :
     exact ⟨RD.LD :: r2, RIncs.hx_ld J I2⟩
   | @hx_d1 k r _ ih =>
     intro j rK tq q E htq
-    have h_hx : tq = H.hx := by rcases htq with rfl | ⟨_, h⟩; rfl; cases h
+    have h_hx : tq = H.hx := by
+      rcases htq with rfl | ⟨_, h⟩
+      · rfl
+      · cases h
     subst h_hx
     rcases inv_hx_d1 E with ⟨rK', E', rfl⟩
     rcases RIncs_step E' (by decide) with ⟨rK'', J, E''⟩
@@ -835,7 +843,10 @@ private theorem Good_step {tp : H} {k : Nat} {r : List RD} (hG : Good tp k r) :
     exact ⟨RD.LD :: r2, RIncs.hx_ld J I2⟩
   | @hx_d0 k r _ ih =>
     intro j rK tq q E htq
-    have h_hx : tq = H.hx := by rcases htq with rfl | ⟨_, h⟩; rfl; cases h
+    have h_hx : tq = H.hx := by
+      rcases htq with rfl | ⟨_, h⟩
+      · rfl
+      · cases h
     subst h_hx
     rcases inv_hx_d0 E with ⟨rK', E', rfl⟩
     rcases RIncs_step E' (by decide) with ⟨rK'', J, E''⟩

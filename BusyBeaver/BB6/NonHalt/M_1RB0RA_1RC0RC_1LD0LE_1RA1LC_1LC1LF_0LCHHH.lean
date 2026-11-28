@@ -12,6 +12,9 @@ public import BusyBeaver.Calculi.WordCalculusG
 public import BusyBeaver.Calculi.WordCalculusH
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1RC0RC_1LD0LE_1RA1LC_1LC1LF_0LCHHH
@@ -39,7 +42,6 @@ abbrev F : Fin 6 := 5
 @[reducible] def tm : Machine (Fin 2) (Fin 6) := target_tm
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 8000000
 
 open WordVKQ Word
 
@@ -76,28 +78,28 @@ abbrev Seg := SegP callStep
 
 theorem seg_ch_V : Seg [.ch] [.ch, .ch] V_u V_u :=
   segP_of_step_two (mid1 := [1, 0, 1, 1]) (mid2 := [1, 0, 1, 0])
-    (fun u r => by unfold zCR zCs V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs V_u; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL zCR zCs; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL V_u; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_V : Seg [.ca] [.ch] V_u Vp :=
   segP_of_step_one (mid := [0, 1, 0, 1])
-    (fun u r => by unfold zCR zCs V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs V_u; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Vp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_Vp : Seg [.ca] [.ca, .ca] Vp Vp :=
   segP_of_step_two (mid1 := [0, 1, 1, 1]) (mid2 := [0, 1, 0, 1])
-    (fun u r => by unfold zCR zCs Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs Vp; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL zCR zCs; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Vp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_K : Seg [.ch] [] K_u Q_u :=
-  segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_Q : Seg [.ch] [.ch] Q_u K_u :=
   segP_of_step_one (mid := [1, 1])
-    (fun u r => by unfold zCR zCs Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL K_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs Q_u; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL K_u; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_VpQ : Seg [.ca] [.ca] (Vp ++ Q_u) (Kp ++ Vp) :=
   segP_of_step_one (mid := [0, 1, 0, 1, 1, 1])
@@ -110,16 +112,16 @@ theorem seg_ca_KpVp : Seg [.ca] [] (Kp ++ Vp) (Qp ++ Vp) :=
 theorem seg_ca_QpVp : Seg [.ca] [.ca, .ca] (Qp ++ Vp) (Kp ++ Vp) :=
   segP_of_step_two (mid1 := [0, 1, 1, 1, 1, 1]) (mid2 := [0, 1, 0, 1, 1, 1])
     (fun u r => by unfold zCR zCs Qp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL zCR zCs; simp only [append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Kp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
 theorem seg_ca_Kp : Seg [.ca] [] Kp Qp :=
-  segP_of_step_nil (fun u r => by unfold zCR zCL zCs Kp Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs Kp Qp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_Qp : Seg [.ca] [.ca] Qp Kp :=
   segP_of_step_one (mid := [1, 1])
-    (fun u r => by unfold zCR zCs Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Kp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs Qp; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Kp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_KQ : Seg [.ca] [] (K_u ++ Q_u) Vp :=
   segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
@@ -127,7 +129,7 @@ theorem seg_ca_KQ : Seg [.ca] [] (K_u ++ Q_u) Vp :=
 theorem seg_ca_QQ : Seg [.ca] [.ca] (Q_u ++ Q_u) Vp :=
   segP_of_step_one (mid := [0, 1, 0, 1])
     (fun u r => by unfold zCR zCs Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Vp; simp only [append_cons, append_nil]; execute)
 
 
 -- Turnaround zP0..zP126
@@ -260,511 +262,511 @@ abbrev tr126 : BitWord := [0,1,0,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1
 
 theorem zP0 (w : HalfTape) : (zCf w) [tm]⊢⁺ (zCR w .ca (tr1 +> default)) := by
   unfold zCf zCR zCs pref_cap tr1
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP1 (w : HalfTape) : (zCL w (tr1 +> default)) [tm]⊢⁺ (zCR w .ca (tr2 +> default)) := by
   unfold zCL zCR zCs tr1 tr2
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP2 (w : HalfTape) : (zCL w (tr2 +> default)) [tm]⊢⁺ (zCR w .ca (tr3 +> default)) := by
   unfold zCL zCR zCs tr2 tr3
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP3 (w : HalfTape) : (zCL w (tr3 +> default)) [tm]⊢⁺ (zCR w .ca (tr4 +> default)) := by
   unfold zCL zCR zCs tr3 tr4
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP4 (w : HalfTape) : (zCL w (tr4 +> default)) [tm]⊢⁺ (zCR w .ca (tr5 +> default)) := by
   unfold zCL zCR zCs tr4 tr5
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP5 (w : HalfTape) : (zCL w (tr5 +> default)) [tm]⊢⁺ (zCR w .ca (tr6 +> default)) := by
   unfold zCL zCR zCs tr5 tr6
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP6 (w : HalfTape) : (zCL w (tr6 +> default)) [tm]⊢⁺ (zCR w .ca (tr7 +> default)) := by
   unfold zCL zCR zCs tr6 tr7
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP7 (w : HalfTape) : (zCL w (tr7 +> default)) [tm]⊢⁺ (zCR w .ca (tr8 +> default)) := by
   unfold zCL zCR zCs tr7 tr8
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP8 (w : HalfTape) : (zCL w (tr8 +> default)) [tm]⊢⁺ (zCR w .ca (tr9 +> default)) := by
   unfold zCL zCR zCs tr8 tr9
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP9 (w : HalfTape) : (zCL w (tr9 +> default)) [tm]⊢⁺ (zCR w .ca (tr10 +> default)) := by
   unfold zCL zCR zCs tr9 tr10
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP10 (w : HalfTape) : (zCL w (tr10 +> default)) [tm]⊢⁺ (zCR w .ca (tr11 +> default)) := by
   unfold zCL zCR zCs tr10 tr11
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP11 (w : HalfTape) : (zCL w (tr11 +> default)) [tm]⊢⁺ (zCR w .ca (tr12 +> default)) := by
   unfold zCL zCR zCs tr11 tr12
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP12 (w : HalfTape) : (zCL w (tr12 +> default)) [tm]⊢⁺ (zCR w .ca (tr13 +> default)) := by
   unfold zCL zCR zCs tr12 tr13
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP13 (w : HalfTape) : (zCL w (tr13 +> default)) [tm]⊢⁺ (zCR w .ca (tr14 +> default)) := by
   unfold zCL zCR zCs tr13 tr14
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP14 (w : HalfTape) : (zCL w (tr14 +> default)) [tm]⊢⁺ (zCR w .ca (tr15 +> default)) := by
   unfold zCL zCR zCs tr14 tr15
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP15 (w : HalfTape) : (zCL w (tr15 +> default)) [tm]⊢⁺ (zCR w .ca (tr16 +> default)) := by
   unfold zCL zCR zCs tr15 tr16
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP16 (w : HalfTape) : (zCL w (tr16 +> default)) [tm]⊢⁺ (zCR w .ca (tr17 +> default)) := by
   unfold zCL zCR zCs tr16 tr17
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP17 (w : HalfTape) : (zCL w (tr17 +> default)) [tm]⊢⁺ (zCR w .ca (tr18 +> default)) := by
   unfold zCL zCR zCs tr17 tr18
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP18 (w : HalfTape) : (zCL w (tr18 +> default)) [tm]⊢⁺ (zCR w .ca (tr19 +> default)) := by
   unfold zCL zCR zCs tr18 tr19
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP19 (w : HalfTape) : (zCL w (tr19 +> default)) [tm]⊢⁺ (zCR w .ca (tr20 +> default)) := by
   unfold zCL zCR zCs tr19 tr20
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP20 (w : HalfTape) : (zCL w (tr20 +> default)) [tm]⊢⁺ (zCR w .ca (tr21 +> default)) := by
   unfold zCL zCR zCs tr20 tr21
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP21 (w : HalfTape) : (zCL w (tr21 +> default)) [tm]⊢⁺ (zCR w .ca (tr22 +> default)) := by
   unfold zCL zCR zCs tr21 tr22
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP22 (w : HalfTape) : (zCL w (tr22 +> default)) [tm]⊢⁺ (zCR w .ca (tr23 +> default)) := by
   unfold zCL zCR zCs tr22 tr23
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP23 (w : HalfTape) : (zCL w (tr23 +> default)) [tm]⊢⁺ (zCR w .ca (tr24 +> default)) := by
   unfold zCL zCR zCs tr23 tr24
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP24 (w : HalfTape) : (zCL w (tr24 +> default)) [tm]⊢⁺ (zCR w .ca (tr25 +> default)) := by
   unfold zCL zCR zCs tr24 tr25
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP25 (w : HalfTape) : (zCL w (tr25 +> default)) [tm]⊢⁺ (zCR w .ca (tr26 +> default)) := by
   unfold zCL zCR zCs tr25 tr26
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP26 (w : HalfTape) : (zCL w (tr26 +> default)) [tm]⊢⁺ (zCR w .ca (tr27 +> default)) := by
   unfold zCL zCR zCs tr26 tr27
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP27 (w : HalfTape) : (zCL w (tr27 +> default)) [tm]⊢⁺ (zCR w .ca (tr28 +> default)) := by
   unfold zCL zCR zCs tr27 tr28
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP28 (w : HalfTape) : (zCL w (tr28 +> default)) [tm]⊢⁺ (zCR w .ca (tr29 +> default)) := by
   unfold zCL zCR zCs tr28 tr29
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP29 (w : HalfTape) : (zCL w (tr29 +> default)) [tm]⊢⁺ (zCR w .ca (tr30 +> default)) := by
   unfold zCL zCR zCs tr29 tr30
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP30 (w : HalfTape) : (zCL w (tr30 +> default)) [tm]⊢⁺ (zCR w .ca (tr31 +> default)) := by
   unfold zCL zCR zCs tr30 tr31
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP31 (w : HalfTape) : (zCL w (tr31 +> default)) [tm]⊢⁺ (zCR w .ca (tr32 +> default)) := by
   unfold zCL zCR zCs tr31 tr32
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP32 (w : HalfTape) : (zCL w (tr32 +> default)) [tm]⊢⁺ (zCR w .ca (tr33 +> default)) := by
   unfold zCL zCR zCs tr32 tr33
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP33 (w : HalfTape) : (zCL w (tr33 +> default)) [tm]⊢⁺ (zCR w .ca (tr34 +> default)) := by
   unfold zCL zCR zCs tr33 tr34
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP34 (w : HalfTape) : (zCL w (tr34 +> default)) [tm]⊢⁺ (zCR w .ca (tr35 +> default)) := by
   unfold zCL zCR zCs tr34 tr35
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP35 (w : HalfTape) : (zCL w (tr35 +> default)) [tm]⊢⁺ (zCR w .ca (tr36 +> default)) := by
   unfold zCL zCR zCs tr35 tr36
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP36 (w : HalfTape) : (zCL w (tr36 +> default)) [tm]⊢⁺ (zCR w .ca (tr37 +> default)) := by
   unfold zCL zCR zCs tr36 tr37
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP37 (w : HalfTape) : (zCL w (tr37 +> default)) [tm]⊢⁺ (zCR w .ca (tr38 +> default)) := by
   unfold zCL zCR zCs tr37 tr38
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP38 (w : HalfTape) : (zCL w (tr38 +> default)) [tm]⊢⁺ (zCR w .ca (tr39 +> default)) := by
   unfold zCL zCR zCs tr38 tr39
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP39 (w : HalfTape) : (zCL w (tr39 +> default)) [tm]⊢⁺ (zCR w .ca (tr40 +> default)) := by
   unfold zCL zCR zCs tr39 tr40
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP40 (w : HalfTape) : (zCL w (tr40 +> default)) [tm]⊢⁺ (zCR w .ca (tr41 +> default)) := by
   unfold zCL zCR zCs tr40 tr41
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP41 (w : HalfTape) : (zCL w (tr41 +> default)) [tm]⊢⁺ (zCR w .ca (tr42 +> default)) := by
   unfold zCL zCR zCs tr41 tr42
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP42 (w : HalfTape) : (zCL w (tr42 +> default)) [tm]⊢⁺ (zCR w .ca (tr43 +> default)) := by
   unfold zCL zCR zCs tr42 tr43
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP43 (w : HalfTape) : (zCL w (tr43 +> default)) [tm]⊢⁺ (zCR w .ca (tr44 +> default)) := by
   unfold zCL zCR zCs tr43 tr44
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP44 (w : HalfTape) : (zCL w (tr44 +> default)) [tm]⊢⁺ (zCR w .ca (tr45 +> default)) := by
   unfold zCL zCR zCs tr44 tr45
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP45 (w : HalfTape) : (zCL w (tr45 +> default)) [tm]⊢⁺ (zCR w .ca (tr46 +> default)) := by
   unfold zCL zCR zCs tr45 tr46
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP46 (w : HalfTape) : (zCL w (tr46 +> default)) [tm]⊢⁺ (zCR w .ca (tr47 +> default)) := by
   unfold zCL zCR zCs tr46 tr47
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP47 (w : HalfTape) : (zCL w (tr47 +> default)) [tm]⊢⁺ (zCR w .ca (tr48 +> default)) := by
   unfold zCL zCR zCs tr47 tr48
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP48 (w : HalfTape) : (zCL w (tr48 +> default)) [tm]⊢⁺ (zCR w .ca (tr49 +> default)) := by
   unfold zCL zCR zCs tr48 tr49
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP49 (w : HalfTape) : (zCL w (tr49 +> default)) [tm]⊢⁺ (zCR w .ca (tr50 +> default)) := by
   unfold zCL zCR zCs tr49 tr50
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP50 (w : HalfTape) : (zCL w (tr50 +> default)) [tm]⊢⁺ (zCR w .ca (tr51 +> default)) := by
   unfold zCL zCR zCs tr50 tr51
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP51 (w : HalfTape) : (zCL w (tr51 +> default)) [tm]⊢⁺ (zCR w .ca (tr52 +> default)) := by
   unfold zCL zCR zCs tr51 tr52
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP52 (w : HalfTape) : (zCL w (tr52 +> default)) [tm]⊢⁺ (zCR w .ca (tr53 +> default)) := by
   unfold zCL zCR zCs tr52 tr53
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP53 (w : HalfTape) : (zCL w (tr53 +> default)) [tm]⊢⁺ (zCR w .ca (tr54 +> default)) := by
   unfold zCL zCR zCs tr53 tr54
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP54 (w : HalfTape) : (zCL w (tr54 +> default)) [tm]⊢⁺ (zCR w .ca (tr55 +> default)) := by
   unfold zCL zCR zCs tr54 tr55
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP55 (w : HalfTape) : (zCL w (tr55 +> default)) [tm]⊢⁺ (zCR w .ca (tr56 +> default)) := by
   unfold zCL zCR zCs tr55 tr56
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP56 (w : HalfTape) : (zCL w (tr56 +> default)) [tm]⊢⁺ (zCR w .ca (tr57 +> default)) := by
   unfold zCL zCR zCs tr56 tr57
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP57 (w : HalfTape) : (zCL w (tr57 +> default)) [tm]⊢⁺ (zCR w .ca (tr58 +> default)) := by
   unfold zCL zCR zCs tr57 tr58
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP58 (w : HalfTape) : (zCL w (tr58 +> default)) [tm]⊢⁺ (zCR w .ca (tr59 +> default)) := by
   unfold zCL zCR zCs tr58 tr59
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP59 (w : HalfTape) : (zCL w (tr59 +> default)) [tm]⊢⁺ (zCR w .ca (tr60 +> default)) := by
   unfold zCL zCR zCs tr59 tr60
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP60 (w : HalfTape) : (zCL w (tr60 +> default)) [tm]⊢⁺ (zCR w .ca (tr61 +> default)) := by
   unfold zCL zCR zCs tr60 tr61
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP61 (w : HalfTape) : (zCL w (tr61 +> default)) [tm]⊢⁺ (zCR w .ca (tr62 +> default)) := by
   unfold zCL zCR zCs tr61 tr62
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP62 (w : HalfTape) : (zCL w (tr62 +> default)) [tm]⊢⁺ (zCR w .ca (tr63 +> default)) := by
   unfold zCL zCR zCs tr62 tr63
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP63 (w : HalfTape) : (zCL w (tr63 +> default)) [tm]⊢⁺ (zCR w .ca (tr64 +> default)) := by
   unfold zCL zCR zCs tr63 tr64
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP64 (w : HalfTape) : (zCL w (tr64 +> default)) [tm]⊢⁺ (zCR w .ca (tr65 +> default)) := by
   unfold zCL zCR zCs tr64 tr65
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP65 (w : HalfTape) : (zCL w (tr65 +> default)) [tm]⊢⁺ (zCR w .ca (tr66 +> default)) := by
   unfold zCL zCR zCs tr65 tr66
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP66 (w : HalfTape) : (zCL w (tr66 +> default)) [tm]⊢⁺ (zCR w .ca (tr67 +> default)) := by
   unfold zCL zCR zCs tr66 tr67
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP67 (w : HalfTape) : (zCL w (tr67 +> default)) [tm]⊢⁺ (zCR w .ca (tr68 +> default)) := by
   unfold zCL zCR zCs tr67 tr68
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP68 (w : HalfTape) : (zCL w (tr68 +> default)) [tm]⊢⁺ (zCR w .ca (tr69 +> default)) := by
   unfold zCL zCR zCs tr68 tr69
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP69 (w : HalfTape) : (zCL w (tr69 +> default)) [tm]⊢⁺ (zCR w .ca (tr70 +> default)) := by
   unfold zCL zCR zCs tr69 tr70
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP70 (w : HalfTape) : (zCL w (tr70 +> default)) [tm]⊢⁺ (zCR w .ca (tr71 +> default)) := by
   unfold zCL zCR zCs tr70 tr71
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP71 (w : HalfTape) : (zCL w (tr71 +> default)) [tm]⊢⁺ (zCR w .ca (tr72 +> default)) := by
   unfold zCL zCR zCs tr71 tr72
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP72 (w : HalfTape) : (zCL w (tr72 +> default)) [tm]⊢⁺ (zCR w .ca (tr73 +> default)) := by
   unfold zCL zCR zCs tr72 tr73
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP73 (w : HalfTape) : (zCL w (tr73 +> default)) [tm]⊢⁺ (zCR w .ca (tr74 +> default)) := by
   unfold zCL zCR zCs tr73 tr74
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP74 (w : HalfTape) : (zCL w (tr74 +> default)) [tm]⊢⁺ (zCR w .ca (tr75 +> default)) := by
   unfold zCL zCR zCs tr74 tr75
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP75 (w : HalfTape) : (zCL w (tr75 +> default)) [tm]⊢⁺ (zCR w .ca (tr76 +> default)) := by
   unfold zCL zCR zCs tr75 tr76
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP76 (w : HalfTape) : (zCL w (tr76 +> default)) [tm]⊢⁺ (zCR w .ca (tr77 +> default)) := by
   unfold zCL zCR zCs tr76 tr77
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP77 (w : HalfTape) : (zCL w (tr77 +> default)) [tm]⊢⁺ (zCR w .ca (tr78 +> default)) := by
   unfold zCL zCR zCs tr77 tr78
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP78 (w : HalfTape) : (zCL w (tr78 +> default)) [tm]⊢⁺ (zCR w .ca (tr79 +> default)) := by
   unfold zCL zCR zCs tr78 tr79
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP79 (w : HalfTape) : (zCL w (tr79 +> default)) [tm]⊢⁺ (zCR w .ca (tr80 +> default)) := by
   unfold zCL zCR zCs tr79 tr80
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP80 (w : HalfTape) : (zCL w (tr80 +> default)) [tm]⊢⁺ (zCR w .ca (tr81 +> default)) := by
   unfold zCL zCR zCs tr80 tr81
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP81 (w : HalfTape) : (zCL w (tr81 +> default)) [tm]⊢⁺ (zCR w .ca (tr82 +> default)) := by
   unfold zCL zCR zCs tr81 tr82
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP82 (w : HalfTape) : (zCL w (tr82 +> default)) [tm]⊢⁺ (zCR w .ca (tr83 +> default)) := by
   unfold zCL zCR zCs tr82 tr83
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP83 (w : HalfTape) : (zCL w (tr83 +> default)) [tm]⊢⁺ (zCR w .ca (tr84 +> default)) := by
   unfold zCL zCR zCs tr83 tr84
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP84 (w : HalfTape) : (zCL w (tr84 +> default)) [tm]⊢⁺ (zCR w .ca (tr85 +> default)) := by
   unfold zCL zCR zCs tr84 tr85
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP85 (w : HalfTape) : (zCL w (tr85 +> default)) [tm]⊢⁺ (zCR w .ca (tr86 +> default)) := by
   unfold zCL zCR zCs tr85 tr86
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP86 (w : HalfTape) : (zCL w (tr86 +> default)) [tm]⊢⁺ (zCR w .ca (tr87 +> default)) := by
   unfold zCL zCR zCs tr86 tr87
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP87 (w : HalfTape) : (zCL w (tr87 +> default)) [tm]⊢⁺ (zCR w .ca (tr88 +> default)) := by
   unfold zCL zCR zCs tr87 tr88
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP88 (w : HalfTape) : (zCL w (tr88 +> default)) [tm]⊢⁺ (zCR w .ca (tr89 +> default)) := by
   unfold zCL zCR zCs tr88 tr89
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP89 (w : HalfTape) : (zCL w (tr89 +> default)) [tm]⊢⁺ (zCR w .ca (tr90 +> default)) := by
   unfold zCL zCR zCs tr89 tr90
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP90 (w : HalfTape) : (zCL w (tr90 +> default)) [tm]⊢⁺ (zCR w .ca (tr91 +> default)) := by
   unfold zCL zCR zCs tr90 tr91
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP91 (w : HalfTape) : (zCL w (tr91 +> default)) [tm]⊢⁺ (zCR w .ca (tr92 +> default)) := by
   unfold zCL zCR zCs tr91 tr92
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP92 (w : HalfTape) : (zCL w (tr92 +> default)) [tm]⊢⁺ (zCR w .ca (tr93 +> default)) := by
   unfold zCL zCR zCs tr92 tr93
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP93 (w : HalfTape) : (zCL w (tr93 +> default)) [tm]⊢⁺ (zCR w .ca (tr94 +> default)) := by
   unfold zCL zCR zCs tr93 tr94
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP94 (w : HalfTape) : (zCL w (tr94 +> default)) [tm]⊢⁺ (zCR w .ca (tr95 +> default)) := by
   unfold zCL zCR zCs tr94 tr95
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP95 (w : HalfTape) : (zCL w (tr95 +> default)) [tm]⊢⁺ (zCR w .ca (tr96 +> default)) := by
   unfold zCL zCR zCs tr95 tr96
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP96 (w : HalfTape) : (zCL w (tr96 +> default)) [tm]⊢⁺ (zCR w .ca (tr97 +> default)) := by
   unfold zCL zCR zCs tr96 tr97
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP97 (w : HalfTape) : (zCL w (tr97 +> default)) [tm]⊢⁺ (zCR w .ca (tr98 +> default)) := by
   unfold zCL zCR zCs tr97 tr98
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP98 (w : HalfTape) : (zCL w (tr98 +> default)) [tm]⊢⁺ (zCR w .ca (tr99 +> default)) := by
   unfold zCL zCR zCs tr98 tr99
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP99 (w : HalfTape) : (zCL w (tr99 +> default)) [tm]⊢⁺ (zCR w .ca (tr100 +> default)) := by
   unfold zCL zCR zCs tr99 tr100
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP100 (w : HalfTape) : (zCL w (tr100 +> default)) [tm]⊢⁺ (zCR w .ca (tr101 +> default)) := by
   unfold zCL zCR zCs tr100 tr101
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP101 (w : HalfTape) : (zCL w (tr101 +> default)) [tm]⊢⁺ (zCR w .ca (tr102 +> default)) := by
   unfold zCL zCR zCs tr101 tr102
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP102 (w : HalfTape) : (zCL w (tr102 +> default)) [tm]⊢⁺ (zCR w .ca (tr103 +> default)) := by
   unfold zCL zCR zCs tr102 tr103
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP103 (w : HalfTape) : (zCL w (tr103 +> default)) [tm]⊢⁺ (zCR w .ca (tr104 +> default)) := by
   unfold zCL zCR zCs tr103 tr104
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP104 (w : HalfTape) : (zCL w (tr104 +> default)) [tm]⊢⁺ (zCR w .ca (tr105 +> default)) := by
   unfold zCL zCR zCs tr104 tr105
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP105 (w : HalfTape) : (zCL w (tr105 +> default)) [tm]⊢⁺ (zCR w .ca (tr106 +> default)) := by
   unfold zCL zCR zCs tr105 tr106
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP106 (w : HalfTape) : (zCL w (tr106 +> default)) [tm]⊢⁺ (zCR w .ca (tr107 +> default)) := by
   unfold zCL zCR zCs tr106 tr107
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP107 (w : HalfTape) : (zCL w (tr107 +> default)) [tm]⊢⁺ (zCR w .ca (tr108 +> default)) := by
   unfold zCL zCR zCs tr107 tr108
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP108 (w : HalfTape) : (zCL w (tr108 +> default)) [tm]⊢⁺ (zCR w .ca (tr109 +> default)) := by
   unfold zCL zCR zCs tr108 tr109
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP109 (w : HalfTape) : (zCL w (tr109 +> default)) [tm]⊢⁺ (zCR w .ca (tr110 +> default)) := by
   unfold zCL zCR zCs tr109 tr110
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP110 (w : HalfTape) : (zCL w (tr110 +> default)) [tm]⊢⁺ (zCR w .ca (tr111 +> default)) := by
   unfold zCL zCR zCs tr110 tr111
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP111 (w : HalfTape) : (zCL w (tr111 +> default)) [tm]⊢⁺ (zCR w .ca (tr112 +> default)) := by
   unfold zCL zCR zCs tr111 tr112
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP112 (w : HalfTape) : (zCL w (tr112 +> default)) [tm]⊢⁺ (zCR w .ca (tr113 +> default)) := by
   unfold zCL zCR zCs tr112 tr113
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP113 (w : HalfTape) : (zCL w (tr113 +> default)) [tm]⊢⁺ (zCR w .ca (tr114 +> default)) := by
   unfold zCL zCR zCs tr113 tr114
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP114 (w : HalfTape) : (zCL w (tr114 +> default)) [tm]⊢⁺ (zCR w .ca (tr115 +> default)) := by
   unfold zCL zCR zCs tr114 tr115
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP115 (w : HalfTape) : (zCL w (tr115 +> default)) [tm]⊢⁺ (zCR w .ca (tr116 +> default)) := by
   unfold zCL zCR zCs tr115 tr116
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP116 (w : HalfTape) : (zCL w (tr116 +> default)) [tm]⊢⁺ (zCR w .ca (tr117 +> default)) := by
   unfold zCL zCR zCs tr116 tr117
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP117 (w : HalfTape) : (zCL w (tr117 +> default)) [tm]⊢⁺ (zCR w .ca (tr118 +> default)) := by
   unfold zCL zCR zCs tr117 tr118
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP118 (w : HalfTape) : (zCL w (tr118 +> default)) [tm]⊢⁺ (zCR w .ca (tr119 +> default)) := by
   unfold zCL zCR zCs tr118 tr119
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP119 (w : HalfTape) : (zCL w (tr119 +> default)) [tm]⊢⁺ (zCR w .ca (tr120 +> default)) := by
   unfold zCL zCR zCs tr119 tr120
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP120 (w : HalfTape) : (zCL w (tr120 +> default)) [tm]⊢⁺ (zCR w .ca (tr121 +> default)) := by
   unfold zCL zCR zCs tr120 tr121
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP121 (w : HalfTape) : (zCL w (tr121 +> default)) [tm]⊢⁺ (zCR w .ca (tr122 +> default)) := by
   unfold zCL zCR zCs tr121 tr122
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP122 (w : HalfTape) : (zCL w (tr122 +> default)) [tm]⊢⁺ (zCR w .ca (tr123 +> default)) := by
   unfold zCL zCR zCs tr122 tr123
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP123 (w : HalfTape) : (zCL w (tr123 +> default)) [tm]⊢⁺ (zCR w .ca (tr124 +> default)) := by
   unfold zCL zCR zCs tr123 tr124
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP124 (w : HalfTape) : (zCL w (tr124 +> default)) [tm]⊢⁺ (zCR w .ca (tr125 +> default)) := by
   unfold zCL zCR zCs tr124 tr125
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP125 (w : HalfTape) : (zCL w (tr125 +> default)) [tm]⊢⁺ (zCR w .ca (tr126 +> default)) := by
   unfold zCL zCR zCs tr125 tr126
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 theorem zP126 (w : HalfTape) : (zCL w (tr126 +> default)) [tm]⊢⁺ (zCf ([1, 1, 0] +> w)) := by
   unfold zCL zCf tr126 pref_cap
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 -- Section 2: Words, Shift Identity, DigitVal, Parse, Scan, Step
@@ -1025,7 +1027,7 @@ theorem init_to_u0 : (init []) [tm]⊢* zCf (evalWords u_0 default) := by
   have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = evalCCfgVKQ zInitCCfg := rfl
   have h1 : evalCCfgVKQ zHitCCfg = zCf (evalWords u_0 default) := by
     dsimp [evalCCfgVKQ, zHitCCfg, zCf, pref_cap, u_0, evalWords, V_u, K_u, Q_u]
-    simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq, default_head_vkq, default_tail_vkq]
+    simp only [zero_cons_default_vkq]
   have hPlus := stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_0) (stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_1) (stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_2) (stepPlus_trans_vkq (zTc (by decide : 0 < 1000) zCm_init_3) (zTc (by decide : 0 < 347) zCm_init_4))))
   rw [<- h0, h1] at hPlus
   exact stepStar_of_stepPlus_vkq hPlus
@@ -1272,7 +1274,7 @@ theorem force_a_top {p_w ds_mid : List Word} {ap gp m A_mid a_top g_mid : Nat}
 
 theorem bound_b_mid0 {p_w v_p ds_mid : List Word}
     {ap bp gp m A_mid b_mid0 : Nat}
-    (hm : 11 <= m)
+    (_hm : 11 <= m)
     (hS_p : Scan a_head b_head p_w ap bp v_p gp)
     (hbp : 3 <= bp)
     (hz13 : wordScale p_w * ((2 ^ m : Nat) : Rat) = 512)
@@ -1380,7 +1382,7 @@ theorem bound_zW_p' {p_w v_p ds_mid v_mid : List Word}
   linarith
 
 theorem bound_b_end_digitVal {w_all v_w : List Word} {b_top g_w k : Nat}
-    (hk : 1 <= k)
+    (_hk : 1 <= k)
     (hb_top : 2 <= b_top)
     (hS_w : Scan a_head b_head w_all (2 ^ 21) b_top v_w g_w)
     (hz13_vw : wordScale v_w * ((2 ^ k : Nat) : Rat) = 1)

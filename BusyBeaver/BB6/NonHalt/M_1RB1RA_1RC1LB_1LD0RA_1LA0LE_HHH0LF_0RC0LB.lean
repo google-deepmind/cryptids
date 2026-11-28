@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RA_1RC1LB_1LD0RA_1LA0LE_HHH0LF_0RC0LB
@@ -39,7 +42,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
@@ -858,6 +860,7 @@ theorem runCRTwo_reach {c1 s1 s2 : ℕ} {L R L' R' : List ℕ}
 
 set_option maxRecDepth 400000 in
 set_option maxHeartbeats 400000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem runCRTwo_to_cap :
     runCRTwo 180 500 355 [4, 1] [] = .next [4 * 38379 + 5, 1] [] := rfl
 
@@ -893,7 +896,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 
 

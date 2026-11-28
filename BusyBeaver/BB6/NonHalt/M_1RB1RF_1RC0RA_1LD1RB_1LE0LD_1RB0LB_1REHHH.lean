@@ -43,13 +43,13 @@ theorem segRules_1rehhh_c : SegRules (callStep target fCR_1rehhh_c fCL_1rehhh_c)
 theorem step_ca_1rehhh_c (r : HalfTape) :
     (fCL_1rehhh_c lh r) [target]⊢⁺ (fCR_1rehhh_c ([1] +> default) .ca r) := by
   unfold fCL_1rehhh_c fCR_1rehhh_c cfgCL cfgCR callState callWord lh
-  simp only [↓reduceIte, Bool.false_eq_true, append_cons, append_nil]
+  simp only [↓reduceIte, append_cons, append_nil]
   execute -- step_ca for 1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1REHHH
 
 theorem step_ch_1rehhh_c (r : HalfTape) :
     (fCL_1rehhh_c ([1] +> default) r) [target]⊢⁺ (fCR_1rehhh_c lh .ch r) := by
   unfold fCL_1rehhh_c fCR_1rehhh_c cfgCL cfgCR callState callWord lh
-  simp only [↓reduceIte, Bool.false_eq_true, append_cons, append_nil]
+  simp only [↓reduceIte, append_cons, append_nil]
   execute -- step_ch for 1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1REHHH
 
 theorem step_init_1rehhh_c :
@@ -57,7 +57,7 @@ theorem step_init_1rehhh_c :
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
   unfold fCL_1rehhh_c initTape cfgCL lh t d1 d0
-  simp only [↓reduceIte, Bool.false_eq_true, append_cons, append_nil]
+  simp only [↓reduceIte, append_cons, append_nil]
   execute -- step_init for 1RB1RF_1RC0RA_1LD1RB_1LE0LD_1RB0LB_1REHHH
 
 end

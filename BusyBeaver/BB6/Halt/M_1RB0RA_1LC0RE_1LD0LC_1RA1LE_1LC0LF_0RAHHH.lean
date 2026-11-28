@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1LC0RE_1LD0LC_1RA1LE_1LC0LF_0RAHHH
@@ -29,7 +32,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 800000
 variable {α β γ : Type*} [Inhabited α] [Inhabited β] [Inhabited γ]
 
 namespace Solution
@@ -37,11 +39,9 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 800000
 
 set_option autoImplicit true
 set_option maxRecDepth 2000000
-set_option maxHeartbeats 800000
 
 def A : Fin 6 := 0
 def B : Fin 6 := 1
@@ -49,7 +49,6 @@ def C : Fin 6 := 2
 def D : Fin 6 := 3
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
-set_option maxHeartbeats 800000
 
 def tm15 : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.left)
@@ -114,7 +113,7 @@ set_option linter.unusedSectionVars false
 @[simp] theorem z0j (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 theorem z0k (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [z0j, Nat.succ_add, ih, List.append_assoc]
 theorem z0l (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
@@ -172,7 +171,7 @@ theorem z0y' (d0 d1 : zF) (len n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n + 1) * 2 ^ 0 - 1 = n := by omega
-    simp [h1]
+    simp
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 ≤ (n + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -211,7 +210,7 @@ theorem MC_lsb_1 (h n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n + 1) * 2 ^ 0 - 1 = n := by omega
-    simp [h1]
+    simp
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 ≤ (n + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -823,7 +822,7 @@ theorem pop_word_sound (pat w : Nat) (s s' : Stack) (h : pop_word pat w s = some
     stack_to_tape s = word_of pat w +> stack_to_tape s' := by
   induction w generalizing pat s with
   | zero =>
-    simp [pop_word] at h
+    simp only [pop_word, Option.some.injEq] at h
     subst h; rfl
   | succ w ih =>
     simp only [pop_word, with_prod_eq] at h
@@ -1017,7 +1016,7 @@ theorem z0o_pad_zero (xs : PartList) (extra : Nat) (r : zB) :
     z0o ld0 ld1 (bsize_parts xs + extra) (eval_lsb xs) r =
       z0o ld0 ld1 (bsize_parts xs) (eval_lsb xs) ((ld1 ^ extra) +> r) := by
   induction xs with
-  | nil => simp [bsize_parts, eval_lsb, z0o, z0u]
+  | nil => simp [bsize_parts, eval_lsb, z0u]
   | cons p xs ih =>
     rcases p with ⟨b, k⟩
     simp only [bsize_parts, eval_lsb]
@@ -1327,7 +1326,7 @@ theorem parse_r_sound (fuel limit : Nat) (s : Stack)
           rw [hstep] at hne
           dsimp only at hne ⊢
           by_cases hp0 : (pop1 (top :: rest)).1 = 0
-          · simp only [hp0, ↓reduceIte, bsize_parts, eval_lsb, MC]
+          · simp only [hp0, ↓reduceIte, bsize_parts, eval_lsb]
             refine ⟨by omega, ?_⟩
             rw [pop1_sound (top :: rest), hp0]; rfl
           · simp [hp0] at hne
@@ -1421,7 +1420,7 @@ theorem eval_split_part (p : Bool) (k n : Nat) (rest : PartList) (hn : n ≤ k) 
       rw [hd]; omega
   · have heq : k = n := by omega
     subst heq
-    simp [hlt, eval_lsb]
+    simp [eval_lsb]
 
 theorem bsize_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤ n) :
     bsize_parts (sub_chunk_out px qy c n out) ≤ n + bsize_parts out := by
@@ -1597,7 +1596,7 @@ theorem eval_build_vprime (n m' : Nat) :
   dsimp only
   by_cases h1 : 1 < m' + 1
   · simp only [h1, ↓reduceIte, eval_cons_lsb, eval_lsb, Nat.add_sub_cancel,
-      Nat.mul_zero, Nat.zero_mul, Nat.add_zero, Bool.false_eq_true, Nat.zero_add, Nat.pow_one]
+      Nat.zero_mul, Nat.add_zero, Bool.false_eq_true, Nat.zero_add, Nat.pow_one]
     rw [Nat.mul_assoc, ← Nat.pow_succ]
   · have hm0 : m' = 0 := by omega
     subst hm0
@@ -1868,7 +1867,7 @@ theorem try_absorb_stack_sound (kfuel : Nat) (s s' : MState) (h : try_absorb_sta
     | some pair_out =>
       rcases pair_out with ⟨m_use, out⟩
       rw [habs] at h
-      simp only [with_prod_eq, with_list_eq, with_nat_eq] at h
+      simp only [] at h
       split_ifs at h with hm_act
       simp only [some_mstate_eq, Option.some.injEq] at h; subst h
       have hmin_pos : 1 ≤ m_init := by dsimp [m_init, k, res_r, lim_r, res_m, res1] at hmin0 ⊢; omega
@@ -1941,7 +1940,7 @@ theorem step_prim_sound (s s' : MState) (h : step_prim s = some s') :
       rw [htm] at h
       cases d with
       | left =>
-        simp only [with_prod_eq, some_mstate_eq, Option.some.injEq] at h
+        simp only [some_mstate_eq, Option.some.injEq] at h
         subst h
         refine z0P tm15 _ _ ?_
         unfold mstate_to_cfg step
@@ -2086,7 +2085,7 @@ theorem run_m_sound (fuel : Nat) (s s' : MState) (h : run_m fuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   induction fuel generalizing s with
   | zero =>
-    simp [run_m] at h; subst h; exact ⟨0, rfl⟩
+    simp only [run_m, Option.some.injEq] at h; subst h; exact ⟨0, rfl⟩
   | succ fuel ih =>
     simp only [run_m, maybe_norm_eq] at h
     cases hs : step_m s with
@@ -2114,25 +2113,25 @@ theorem run_m_trans {m n : Nat} {s1 s2 s3 : MState}
     run_m (m + n) s1 = some s3 := by
   induction m generalizing s1 with
   | zero =>
-    simp [run_m] at h1; subst h1; simpa using! h2
+    simp only [run_m, Option.some.injEq] at h1; subst h1; simpa using! h2
   | succ m ih =>
     simp only [run_m, Nat.succ_add] at h1 ⊢
     cases hs : step_m s1 with
     | none => simp [hs] at h1
-    | some s' => simp [hs, maybe_norm_eq] at h1 ⊢; exact ih h1
+    | some s' => simp only [hs, maybe_norm_eq] at h1 ⊢; exact ih h1
 
 def MReach (s1 s2 : MState) : Prop :=
   ∃ fuel, run_m fuel s1 = some s2
 
-noncomputable def mkBlock_f_p  : Nat → Nat → Nat → Block :=
+noncomputable def mkBlock_f_p : Nat → Nat → Nat → Block :=
 fun p w l =>
   @Nat.rec (fun _ => Block) ⟨0, 0, 0⟩ (fun p' _ =>
     @Nat.rec (fun _ => Block) ⟨0, 0, 0⟩ (fun w' _ =>
       @Nat.rec (fun _ => Block) ⟨0, 0, 0⟩ (fun l' _ =>
         ⟨p', w', l'⟩) (Nat.add 1 l)) (Nat.add 1 w)) (Nat.add 1 p)
-noncomputable def rot1_f_p  : Nat → Nat → Nat :=
+noncomputable def rot1_f_p : Nat → Nat → Nat :=
 fun w p => Nat.add (Nat.shiftRight p 1) (Nat.mul (Nat.land p 1) (Nat.shiftLeft 1 (Nat.sub w 1)))
-noncomputable def rot_mod_f_p  : Nat → Nat → Nat → Nat :=
+noncomputable def rot_mod_f_p : Nat → Nat → Nat → Nat :=
 fun w n p =>
   @Bool.rec (fun _ => Nat)
     (@Bool.rec (fun _ => Nat)
@@ -2145,7 +2144,7 @@ fun w n p =>
       (Bool.and (Nat.ble 2 w) (Bool.and (Nat.ble w 4) (Bool.and (Nat.ble p 15) (Nat.ble p (Nat.sub (Nat.shiftLeft 1 w) 1))))))
     p
     (Bool.or (Nat.beq p 0) (Bool.and (Nat.beq w 1) (Nat.beq p 1)))
-noncomputable def bit_of_bool_f_p  : Nat → Bool :=
+noncomputable def bit_of_bool_f_p : Nat → Bool :=
 fun x => Nat.beq (Nat.land x 1) 1
 noncomputable def push_stack_aux_f_p (mkBlock_f : Nat → Nat → Nat → Block) (rot_mod_f : Nat → Nat → Nat → Nat) : Block → Stack → Stack :=
 fun b s =>
@@ -2196,7 +2195,7 @@ fun pat w s =>
       @Bool.rec (fun _ => Option Stack) none (ih (Nat.shiftRight pat 1) res.2)
         (Bool.not (Bool.xor res.1 (bit_of_bool_f pat))))
     w pat s
-noncomputable def fast_match_f_p  : Nat → Nat → Block → Bool :=
+noncomputable def fast_match_f_p : Nat → Nat → Block → Bool :=
 fun pat w top =>
   @Bool.rec (fun _ => Bool)
     (0 < w && w ≤ top.len && rot_k top.width w top.pat == top.pat &&
@@ -2233,12 +2232,12 @@ fun pat w fuel limit s =>
         (0, s)
         (Nat.beq limit 0))
     fuel limit s
-noncomputable def mkPart_f_p  : Bool → Nat → PartList → PartList :=
+noncomputable def mkPart_f_p : Bool → Nat → PartList → PartList :=
 fun b k xs =>
   @Nat.rec (fun _ => PartList) xs (fun k' _ =>
     @Bool.rec (fun _ => PartList) ((b, Nat.add 1 k') :: xs) []
       (Bool.and (Bool.not b) (match xs with | [] => true | _ => false))) k
-noncomputable def bsize_parts_f_p  : PartList → Nat :=
+noncomputable def bsize_parts_f_p : PartList → Nat :=
 @List.rec (Bool × Nat) (fun _ => Nat) 0 (fun hd _ ih => Nat.add hd.2 ih)
 noncomputable def put_l_parts_f_p (push_stack_f : Nat → Nat → Nat → Stack → Stack) : PartList → Stack → Stack :=
 @List.rec (Bool × Nat) (fun _ => Stack → Stack)
@@ -2689,11 +2688,11 @@ theorem drop_stack_p_eq
     simp only [ih]
     simp only [bool_rec_eq, nat_beq_def, nat_ble_def, nat_sub_def, with_nat_eq]
     by_cases hn : n = 0
-    · simp only [hn, beq_self_eq_true, if_true_eq_true, ↓reduceIte]
+    · simp only [hn, beq_self_eq_true, ↓reduceIte]
     · have hne : (n == 0) = false := beq_eq_false_iff_ne.mpr hn
       rw [hne]; simp only [if_false_eq_true, hn, ↓reduceIte]
       by_cases hle : top.len ≤ n
-      · simp only [hle, decide_true, if_true_eq_true, ↓reduceIte]
+      · simp only [hle, decide_true, ↓reduceIte]
       · simp only [hle, decide_false, if_false_eq_true, ↓reduceIte]
 
 theorem pop1_b_p_eq
@@ -2710,11 +2709,11 @@ theorem pop1_b_p_eq
     simp only [ih]
     simp only [bool_rec_eq, nat_beq_def, nat_sub_def, with_nat_eq]
     by_cases h0 : top.len = 0
-    · simp only [h0, beq_self_eq_true, if_true_eq_true, ↓reduceIte]
+    · simp only [h0, beq_self_eq_true, ↓reduceIte]
     · have hne0 : (top.len == 0) = false := beq_eq_false_iff_ne.mpr h0
       rw [hne0]; simp only [if_false_eq_true, h0, ↓reduceIte]
       by_cases h1 : top.len = 1
-      · simp only [h1, beq_self_eq_true, if_true_eq_true, ↓reduceIte]
+      · simp only [h1, beq_self_eq_true, ↓reduceIte]
       · have hne1 : (top.len == 1) = false := beq_eq_false_iff_ne.mpr h1
         rw [hne1]; simp only [if_false_eq_true, h1, ↓reduceIte]
 
@@ -3778,7 +3777,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 800000
 
 public section
 

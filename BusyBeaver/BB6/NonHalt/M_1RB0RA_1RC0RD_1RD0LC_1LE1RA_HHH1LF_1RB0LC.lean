@@ -62,7 +62,6 @@ def target_tm : Machine (Fin 2) (Fin 6)
 
 -- BEGIN EXPLORATORY DEFINITIONS AND LEMMAS
 
-set_option maxHeartbeats 1600000
 set_option maxRecDepth 4000
 
 /-- Canonical E1 donor machine `#762` (`1RB0LA_1LC1RF_---1LD_1RE0LA_1RA0RB_1RE0RF`). -/
@@ -392,7 +391,7 @@ theorem loop_3b (m a b : ℕ) {r r' : ListBlank (Fin 2)}
   induction m generalizing a r with
   | zero =>
     cases hBs
-    simpa using (Counter.stepStar_refl tm762 _)
+    simp
   | succ m ih =>
     rw [List.replicate_succ] at hBs
     cases hBs with
@@ -486,7 +485,7 @@ theorem era_step (k : ℕ) (hk : 3 ≤ k) {r r' : ListBlank (Fin 2)}
           have hb_eq : 0 + 3 * m = 3 * m := by omega
           rw [hb_eq, h7_eq] at s7
           have h_l1 : l101 ^ 1 +> default = l101 +> default := by
-            simp [Counter.pow_succ_list, Counter.pow_zero_list]
+            simp [Counter.pow_succ_list]
           rw [← h_l1] at s1 s2
           exact stepPlus_trans_local s1 (stepPlus_trans_local s2
             (stepPlus_trans_local s3 (stepPlus_trans_local s4
@@ -509,7 +508,7 @@ theorem era_step (k : ℕ) (hk : 3 ≤ k) {r r' : ListBlank (Fin 2)}
           have h5_b : 2 + 3 * m = 3 * m + 2 := by omega
           rw [h5_b] at s5
           have h_l1 : l101 ^ 1 +> default = l101 +> default := by
-            simp [Counter.pow_succ_list, Counter.pow_zero_list]
+            simp [Counter.pow_succ_list]
           rw [← h_l1] at s1 s2
           have hf_eq : 3 * m + 2 + 3 = 3 * m + 4 + 1 := by omega
           rw [hf_eq] at s6
@@ -536,7 +535,7 @@ theorem era_step (k : ℕ) (hk : 3 ≤ k) {r r' : ListBlank (Fin 2)}
           have h7_a : 3 + 3 * m = 3 * m + 3 := by omega
           rw [h7_b, h7_a] at s7
           have h_l1 : l101 ^ 1 +> default = l101 +> default := by
-            simp [Counter.pow_succ_list, Counter.pow_zero_list]
+            simp [Counter.pow_succ_list]
           rw [← h_l1] at s1 s2
           have hf_eq : 3 * m + 3 + 3 = 3 * m + 5 + 1 := by omega
           rw [hf_eq] at s8
@@ -664,7 +663,7 @@ theorem isSafeZero_of_allPos {gs : List ℕ} (h : ∀ x ∈ gs, 1 ≤ x) :
           cases r with
           | zero => exact absurd (h 0 (by simp)) (by decide)
           | succ m =>
-            simp [isSafeZero, stripLZ, isAllPos]
+            simp only [isSafeZero, stripLZ, isAllPos]
             exact isAllPos_eq_true_iff.mpr (fun x hx => h x (by simp [hx]))
       | succ n' =>
         simp [isSafeZero, stripLZ, isAllPos, hpos]
@@ -2173,6 +2172,8 @@ def Inv2 (st : St2) (c : ℕ) (po pi : ℚ) : Prop :=
   | .p1E => c = 0 ∧ po ≤ 3 ∧ po ≤ pi - 1
   | .pE1 => 3 * (c : ℚ) + po ≤ 3 * pi + 3 ∧ 2 * po ≤ 3 * (c : ℚ) + 9
 
+set_option maxHeartbeats 1600000 in
+-- Large case split across `St2` and residues mod 3 requires extra heartbeats.
 theorem inv2_step (st : St2) (c g : ℕ) (po pi : ℚ)
     (hinv : Inv2 st c po pi) (hgpos : 1 ≤ g) (hgood : 2 * pi ≤ 3 * (g : ℚ) + 3) :
     minGap2 st ≤ g ∧
@@ -2496,7 +2497,11 @@ theorem inv2_step (st : St2) (c g : ℕ) (po pi : ℚ)
           exact_mod_cast (show g' = 3 * (g' / 3) by omega)
         simp only [minGap2, step2, step2From0E, h0, beq_self_eq_true, ↓reduceIte, def2,
           endP, nextP, Inv2, AdjGoodFrom]
-        refine ⟨by omega, (fun x hx => by simp at hx; rcases hx with rfl | rfl <;> omega), rfl,
+        refine ⟨by omega, fun x hx => by
+            rcases List.mem_cons.mp hx with rfl | hx
+            · omega
+            · cases List.mem_singleton.mp hx; omega,
+          rfl,
           ⟨by linarith, by norm_num; linarith, trivial⟩,
           by norm_num; linarith, by linarith, hq_pos, by norm_num; linarith,
           by linarith, by norm_num; linarith⟩
@@ -2507,7 +2512,11 @@ theorem inv2_step (st : St2) (c g : ℕ) (po pi : ℚ)
         have hne0 : (1 == 0) = false := rfl
         simp only [minGap2, step2, step2From0E, h1, hne0, Bool.false_eq_true, ↓reduceIte,
           beq_self_eq_true, def2, endP, nextP, Inv2, AdjGoodFrom]
-        refine ⟨by omega, (fun x hx => by simp at hx; rcases hx with rfl | rfl <;> omega), rfl,
+        refine ⟨by omega, fun x hx => by
+            rcases List.mem_cons.mp hx with rfl | hx
+            · omega
+            · cases List.mem_singleton.mp hx; omega,
+          rfl,
           ⟨by linarith, by norm_num; linarith, trivial⟩,
           by norm_num; linarith, by linarith, by norm_num; linarith⟩
       · have hq : g' + 5 = 3 * ((g' + 3) / 3) + 4 := by omega
@@ -2518,7 +2527,11 @@ theorem inv2_step (st : St2) (c g : ℕ) (po pi : ℚ)
         have hne1 : (2 == 1) = false := rfl
         simp only [minGap2, step2, step2From0E, h2, hne0, hne1, Bool.false_eq_true, ↓reduceIte,
           def2, endP, nextP, Inv2, AdjGoodFrom]
-        refine ⟨by omega, (fun x hx => by simp at hx; rcases hx with rfl | rfl <;> omega), rfl,
+        refine ⟨by omega, fun x hx => by
+            rcases List.mem_cons.mp hx with rfl | hx
+            · omega
+            · cases List.mem_singleton.mp hx; omega,
+          rfl,
           ⟨by linarith, by norm_num; linarith, trivial⟩,
           by norm_num; linarith, by linarith, hq_pos, by norm_num; linarith,
           by linarith, by norm_num; linarith⟩
@@ -2640,7 +2653,11 @@ theorem inv2_tail (st : St2) (c t : ℕ) (po pi : ℚ) (hinv : Inv2 st c po pi) 
       exact ⟨(fun x hx => by simp at hx; omega), by omega, ⟨by linarith, trivial⟩⟩
     | t' + 5 =>
       simp only [step2Tail, step2Tail0E, def2, AdjGoodFrom, List.length_cons, List.length_nil]
-      exact ⟨(fun x hx => by simp at hx; rcases hx with rfl | rfl <;> omega), by omega,
+      exact ⟨fun x hx => by
+          rcases List.mem_cons.mp hx with rfl | hx
+          · omega
+          · cases List.mem_singleton.mp hx; omega,
+        by omega,
         ⟨by linarith, by simp [nextP]; linarith, trivial⟩⟩
   | p11 => simp [step2Tail, def2, AdjGoodFrom]
   | p1E =>
@@ -2779,7 +2796,10 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
         have hinv0 : Inv1 .s0 0 0 pi := ⟨le_refl 0, hpi.1, rfl, by linarith⟩
         have hgood_all := inv1_full .s0 0 ((g' + 6) :: rest) t 0 pi hinv0
           ⟨h1, hrest_g⟩ (safe1_of_allPos .s0 ((g' + 6) :: rest) (by
-            intro x hx; rcases List.mem_cons.mp hx with rfl | hx'; omega; exact hrest_pos x hx'))
+            intro x hx
+            rcases List.mem_cons.mp hx with rfl | hx'
+            · omega
+            · exact hrest_pos x hx'))
         have hrem : (g' + 6) % 3 = 0 ∨ (g' + 6) % 3 = 1 ∨ (g' + 6) % 3 = 2 := by omega
         rcases hrem with h0 | h1m | h2m
         · -- emits q >= 2 immediately -> all subsequent elements >= 1!
@@ -2795,7 +2815,9 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
           have hall_rest := adjGood_no_zero_of_gt hrest_ag hp_gt
           have hok : isSafeZero (((g' + 6) / 3) :: (run1Full .s0 0 rest t).1) = true :=
             isSafeZero_of_allPos (fun x hx => by
-              rcases List.mem_cons.mp hx with rfl | hx'; omega; exact hall_rest x hx')
+              rcases List.mem_cons.mp hx with rfl | hx'
+              · omega
+              · exact hall_rest x hx')
           rw [hok] at hbad; cases hbad
         · -- goes to s1 -> all subsequent elements >= 1!
           have hne0 : (1 == 0) = false := rfl
@@ -2842,7 +2864,9 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
               have hall_rest := adjGood_no_zero_of_gt hrest_ag hp_gt
               have hok : isSafeZero (((g' + 6) / 3) :: tail_em) = true :=
                 isSafeZero_of_allPos (fun x hx => by
-                  rcases List.mem_cons.mp hx with rfl | hx'; omega; exact hall_rest x hx')
+                  rcases List.mem_cons.mp hx with rfl | hx'
+                  · omega
+                  · exact hall_rest x hx')
               rw [hok] at hbad; cases hbad
     · -- st = .s4 (`40`)
       have hpi2 : 2 ≤ pi := hpi.2 rfl
@@ -2868,7 +2892,7 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
           have : (run1Full .s4 0 (2 :: rest) t).1 = [0] ++ (run1Full .s1 0 rest t).1 := by
             simp [run1Full, run1Aux, step1]
           rw [this]
-          exact isSafeZero_zeros_append (fun x hx => by simp at hx; exact hx)
+          exact isSafeZero_zeros_append (fun _ hx => List.mem_singleton.mp hx)
             (isSafeZero_of_allPos hall)
         rw [hok] at hbad; cases hbad
       | 3 =>
@@ -2896,7 +2920,7 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
           have : (run1Full .s4 0 (5 :: rest) t).1 = [0] ++ (run1Full .s1 1 rest t).1 := by
             simp [run1Full, run1Aux, step1]
           rw [this]
-          exact isSafeZero_zeros_append (fun x hx => by simp at hx; exact hx)
+          exact isSafeZero_zeros_append (fun _ hx => List.mem_singleton.mp hx)
             (isSafeZero_of_allPos hall)
         rw [hok] at hbad; cases hbad
       | 6 =>
@@ -2911,7 +2935,10 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
           ⟨le_refl 0, hpi.1, hpi2, by norm_num; linarith, by norm_num⟩
         have hgood_all := inv1_full .s4 0 ((g' + 7) :: rest) t 0 pi hinv4
           ⟨h1, hrest_g⟩ (safe1_of_allPos .s4 ((g' + 7) :: rest) (by
-            intro x hx; rcases List.mem_cons.mp hx with rfl | hx'; omega; exact hrest_pos x hx'))
+            intro x hx
+            rcases List.mem_cons.mp hx with rfl | hx'
+            · omega
+            · exact hrest_pos x hx'))
         have hrem : (g' + 6) % 3 = 0 ∨ (g' + 6) % 3 = 1 ∨ (g' + 6) % 3 = 2 := by omega
         rcases hrem with h0 | h1m | h2m
         · have heq_list : (run1Full .s4 0 ((g' + 7) :: rest) t).1 =
@@ -2927,9 +2954,11 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
             linarith
           have hall_rest := adjGood_no_zero_of_gt hrest_ag hp_gt
           have hok : isSafeZero (0 :: ((g' + 6) / 3) :: (run1Full .s0 0 rest t).1) = true :=
-            isSafeZero_zeros_append (zs := [0]) (fun x hx => by simp at hx; exact hx)
+            isSafeZero_zeros_append (zs := [0]) (fun _ hx => List.mem_singleton.mp hx)
               (isSafeZero_of_allPos (fun x hx => by
-                rcases List.mem_cons.mp hx with rfl | hx'; omega; exact hall_rest x hx'))
+                rcases List.mem_cons.mp hx with rfl | hx'
+                · omega
+                · exact hall_rest x hx'))
           rw [hok] at hbad; cases hbad
         · have hne0 : (1 == 0) = false := rfl
           have heq_list : (run1Full .s4 0 ((g' + 7) :: rest) t).1 =
@@ -2937,7 +2966,7 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
             simp [run1Full, run1Aux, step1, h1m, hne0]
           rw [heq_list] at hbad
           have hok : isSafeZero (0 :: (run1Full .s1 ((g' + 6) / 3) rest t).1) = true :=
-            isSafeZero_zeros_append (zs := [0]) (fun x hx => by simp at hx; exact hx)
+            isSafeZero_zeros_append (zs := [0]) (fun _ hx => List.mem_singleton.mp hx)
               (isSafeZero_of_allPos
                 (run1Full_from_s1_allPos .s1 ((g' + 6) / 3) rest t (Or.inl rfl) hrest_pos))
           rw [hok] at hbad; cases hbad
@@ -2956,7 +2985,7 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
             | zero => simp [run1Full, run1Aux, step1Tail, isSafeZero, stripLZ] at hbad
             | succ t' =>
               have hok : isSafeZero (0 :: (run1Full .s4 ((g' + 6) / 3) [] (t' + 1)).1) = true :=
-                isSafeZero_zeros_append (zs := [0]) (fun x hx => by simp at hx; exact hx) (by
+                isSafeZero_zeros_append (zs := [0]) (fun _ hx => List.mem_singleton.mp hx) (by
                   simp only [run1Full, run1Aux, step1Tail, List.nil_append]
                   exact isSafeZero_of_allPos (fun x hx => by simp at hx; omega))
               rw [hok] at hbad; cases hbad
@@ -2979,9 +3008,11 @@ theorem phase0_find_entry (st : St1) (gs : List ℕ) (t : ℕ) (pi : ℚ)
                 linarith
               have hall_rest := adjGood_no_zero_of_gt hrest_ag hp_gt
               have hok : isSafeZero (0 :: ((g' + 6) / 3) :: tail_em) = true :=
-                isSafeZero_zeros_append (zs := [0]) (fun x hx => by simp at hx; exact hx)
+                isSafeZero_zeros_append (zs := [0]) (fun _ hx => List.mem_singleton.mp hx)
                   (isSafeZero_of_allPos (fun x hx => by
-                    rcases List.mem_cons.mp hx with rfl | hx'; omega; exact hall_rest x hx'))
+                    rcases List.mem_cons.mp hx with rfl | hx'
+                    · omega
+                    · exact hall_rest x hx'))
               rw [hok] at hbad; cases hbad
 
 /-- **Master Stream Execution Theorem** (strong induction on `(gs.length, gs.sum + t)`):
@@ -3074,8 +3105,9 @@ theorem main_stream : ∀ (n : ℕ) (m : ℕ) (gs : List ℕ) (t : ℕ),
               cases hst_end : (run1Aux .s0 0 gs0).1 with
               | s1 =>
                 have hlt_len : res1.1.length < gs0.length := by
-                  show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0
-                    gs0).2.1 t).1).length < gs0.length
+                  change ((run1Aux .s0 0 gs0).2.2 ++
+                    (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 t).1).length <
+                    gs0.length
                   rw [hst_end] at hdef ⊢
                   simp only [step1Tail, def1, List.append_nil] at hdef ⊢
                   omega
@@ -3084,8 +3116,9 @@ theorem main_stream : ∀ (n : ℕ) (m : ℕ) (gs : List ℕ) (t : ℕ),
                   (by omega) (le_refl _) hgood1 hsf1
               | sE =>
                 have hlt_len : res1.1.length < gs0.length := by
-                  show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0
-                    gs0).2.1 t).1).length < gs0.length
+                  change ((run1Aux .s0 0 gs0).2.2 ++
+                    (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 t).1).length <
+                    gs0.length
                   rw [hst_end] at hdef ⊢
                   simp only [def1, List.length_append] at hdef ⊢
                   cases t <;> simp [step1Tail] <;> omega
@@ -3094,16 +3127,16 @@ theorem main_stream : ∀ (n : ℕ) (m : ℕ) (gs : List ℕ) (t : ℕ),
                   (by omega) (le_refl _) hgood1 hsf1
               | s0 =>
                 have hlen_le : res1.1.length ≤ n := by
-                  show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0
-                    gs0).2.1 t).1).length ≤ n
+                  change ((run1Aux .s0 0 gs0).2.2 ++
+                    (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 t).1).length ≤ n
                   rw [hst_end] at hdef ⊢
                   simp only [step1Tail, def1, List.append_nil] at hdef ⊢
                   omega
                 have hbud := run1Aux_stay_base3_budget .s0 0 gs0 hsafe1
                   (Or.inl hst_end) (Or.inl rfl)
                 have hsum_lt : res1.1.sum + res1.2 < m := by
-                  show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0
-                    gs0).2.1 t).1).sum +
+                  change ((run1Aux .s0 0 gs0).2.2 ++
+                    (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 t).1).sum +
                     (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 t).2 < m
                   rw [hst_end]
                   simp only [step1Tail, List.append_nil]
@@ -3114,8 +3147,9 @@ theorem main_stream : ∀ (n : ℕ) (m : ℕ) (gs : List ℕ) (t : ℕ),
                 cases t with
                 | zero =>
                   have hlt_len : res1.1.length < gs0.length := by
-                    show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0
-                      0 gs0).2.1 0).1).length < gs0.length
+                    change ((run1Aux .s0 0 gs0).2.2 ++
+                      (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 0).1).length <
+                      gs0.length
                     rw [hst_end] at hdef ⊢
                     simp only [step1Tail, def1, List.append_nil] at hdef ⊢
                     omega
@@ -3124,16 +3158,18 @@ theorem main_stream : ∀ (n : ℕ) (m : ℕ) (gs : List ℕ) (t : ℕ),
                     (by omega) (le_refl _) hgood1 hsf1
                 | succ t' =>
                   have hlen_le : res1.1.length ≤ n := by
-                    show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0
-                      0 gs0).2.1 (t' + 1)).1).length ≤ n
+                    change ((run1Aux .s0 0 gs0).2.2 ++
+                      (step1Tail (run1Aux .s0 0 gs0).1
+                        (run1Aux .s0 0 gs0).2.1 (t' + 1)).1).length ≤ n
                     rw [hst_end] at hdef ⊢
                     simp only [step1Tail, def1, List.length_append, List.length_singleton] at hdef ⊢
                     omega
                   have hbud := run1Aux_stay_base3_budget .s0 0 gs0 hsafe1
                     (Or.inr hst_end) (Or.inl rfl)
                   have hsum_lt : res1.1.sum + res1.2 < m := by
-                    show ((run1Aux .s0 0 gs0).2.2 ++ (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0
-                      0 gs0).2.1 (t' + 1)).1).sum +
+                    change ((run1Aux .s0 0 gs0).2.2 ++
+                      (step1Tail (run1Aux .s0 0 gs0).1
+                        (run1Aux .s0 0 gs0).2.1 (t' + 1)).1).sum +
                       (step1Tail (run1Aux .s0 0 gs0).1 (run1Aux .s0 0 gs0).2.1 (t' + 1)).2 < m
                     rw [hst_end]
                     simp only [step1Tail, List.sum_append, List.sum_singleton]
@@ -3393,7 +3429,7 @@ theorem tailSeq347_cons_prefix (N : ℕ) :
     | succ k ih =>
       rcases ih with ⟨rest, hrest, hpos⟩
       refine ⟨rest ++ [(18 + (k + 2)) / 3 + 1], ?_, ?_⟩
-      · show tailSeq347 (k + 2) ++ [(18 + (k + 2)) / 3 + 1] =
+      · change tailSeq347 (k + 2) ++ [(18 + (k + 2)) / 3 + 1] =
             7 :: 7 :: (rest ++ [(18 + (k + 2)) / 3 + 1])
         rw [hrest]
         rfl
@@ -3412,7 +3448,7 @@ theorem run1_tailSeq347_safe (N : ℕ) :
         [0] ++ (2 :: (run1Full .s1 2 rest 0).1) := by
       simp [run1Full, run1Aux, step1]
     rw [heq]
-    apply isSafeZero_zeros_append (fun x hx => by simp at hx; exact hx)
+    apply isSafeZero_zeros_append (fun _ hx => List.mem_singleton.mp hx)
     have hall := run1Full_from_s1_allPos .s1 2 rest 0 (Or.inl rfl) hpos
     exact isSafeZero_of_allPos (fun x hx => by
       rcases List.mem_cons.mp hx with rfl | hx'

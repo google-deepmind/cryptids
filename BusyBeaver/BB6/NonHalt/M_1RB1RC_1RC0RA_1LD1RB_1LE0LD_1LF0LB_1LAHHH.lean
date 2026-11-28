@@ -32,7 +32,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {Γ₀ Λ₀ α β γ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 open WordCalculus Word WordCanonBR WordCanonBR.BRIncs WordCanonBR.Choice
@@ -292,9 +291,9 @@ theorem z0E : (c_to_cfg zCk0) [canon_tm]⊢⁺ (cfgCanon (evalWords loc_z29 defa
     (stepPlus_trans_canon zCk_step2
     (stepPlus_trans_canon zCk_step3 zCk_step4))
   have heq : c_to_cfg zCk4 = cfgCanon (evalWords loc_z29 default) := by
-    simp only [c_to_cfg, C, WordCanonBR.C, zCk4, zCf, cfgCanon, zCL, cfgLeft, lh, w_base, w_word,
+    simp only [c_to_cfg, C, WordCanonBR.C, zCk4, zCf, cfgCanon, zCL, lh, w_base, w_word,
         w_rest, loc_z29, evalWords, t, d0, d1, one, List.cons_append, List.nil_append,
-        append_cons, append_nil, z00, zero_cons_default_canon,
+        append_cons, append_nil, z00, 
       Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   rwa [heq] at h_all
 

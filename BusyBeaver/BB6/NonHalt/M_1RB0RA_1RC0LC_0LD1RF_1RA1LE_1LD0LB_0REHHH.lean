@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.WordCalculusF
 public import BusyBeaver.Calculi.WordCalculusG
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1RC0LC_0LD1RF_1RA1LE_1LD0LB_0REHHH
@@ -29,7 +32,6 @@ variable {Γ₀ Λ₀ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 @[reducible] def tm : Machine (Fin 2) (Fin 6) := target_tm
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 set_option exponentiation.threshold 2048
 
@@ -140,98 +142,98 @@ theorem zSC4 {c_in c1 c2 c3 c4 : Call} {w1 w2 mid1 mid2 mid3 mid4 : BitWord}
 
 theorem seg_cf_1 : Seg [.cf] [] [1] [1] :=
   zSC0 
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_Q_ch : Seg [.cb] [.ch] [1, 0] [1, 0] :=
   zSC1 (mid1 := [0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_Vj_nil : Seg [.cb] [] [1, 0, 0, 0] [1, 0, 0, 1] :=
   zSC0 
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_Va_dbl : Seg [.cb] [.cb, .cf, .cb, .cf] [1, 0, 0, 1] [1, 0, 0, 1] :=
   zSC4 (mid1 := [1, 1, 0, 1]) (mid2 := [1, 1, 0, 1]) (mid3 := [0, 1, 0, 1]) (mid4 := [0, 1, 0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_Va_ch : Seg [.cb] [.ch] [1, 0, 0, 1] [1, 0, 0, 0] :=
   zSC1 (mid1 := [1, 1, 0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_11_ckch : Seg [.cb] [.ck, .ch] [1, 1] [1, 0] :=
   zSC2 (mid1 := [0, 1]) (mid2 := [0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_V_cf : Seg [.cb] [.cf] [1, 1, 0, 0] [1, 0, 0, 1] :=
   zSC1 (mid1 := [0, 1, 0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_cb_V_ck : Seg [.cb] [.ck, .cb, .cf] [1, 1, 0, 0] [1, 0, 0, 1] :=
   zSC3 (mid1 := [0, 1, 0, 1]) (mid2 := [0, 1, 0, 1]) (mid3 := [0, 1, 0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_K : Seg [.ch] [] [0, 0] [0, 1] :=
   zSC0 
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_Qp_dbl : Seg [.ch] [.cb, .cf, .cb, .cf] [0, 1] [0, 1] :=
   zSC4 (mid1 := [1, 1]) (mid2 := [1, 1]) (mid3 := [0, 1]) (mid4 := [0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_Qp_ch : Seg [.ch] [.ch] [0, 1] [0, 0] :=
   zSC1 (mid1 := [1, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_Vp_ch : Seg [.ch] [.ch, .ch] [0, 1, 1, 0] [0, 1, 1, 0] :=
   zSC2 (mid1 := [0, 1, 1, 1]) (mid2 := [0, 1, 0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_Q_cbcf : Seg [.ch] [.cb, .cf] [1, 0] [0, 1] :=
   zSC2 (mid1 := [0, 1]) (mid2 := [0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_11_cf : Seg [.ch] [.cf] [1, 1] [0, 1] :=
   zSC1 (mid1 := [0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_11_ck : Seg [.ch] [.ck, .cb, .cf] [1, 1] [0, 1] :=
   zSC3 (mid1 := [0, 1]) (mid2 := [0, 1]) (mid3 := [0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_V_ckch : Seg [.ch] [.ck, .ch] [1, 1, 0, 0] [0, 1, 1, 0] :=
   zSC2 (mid1 := [0, 1, 0, 1]) (mid2 := [0, 1, 0, 1])
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ck_K : Seg [.ck] [] [0, 0] [1, 1] :=
   zSC0 
-    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by dsimp only [zCR, zCL, zInQ, zInB, zExQ, zExB]; simp only [append_cons, append_nil]; execute)
 
 abbrev pairA : List Call := [.cb, .cf]
 
@@ -353,7 +355,7 @@ theorem raw_PureA_V_half0 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 0) (h2 : n
   rw [h1, h_out, zLp1]
   exact segP_append_calls seg_pairA_V_cf (seg_pairA_odd_Va q)
 
-theorem raw_PureA_V_half1 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 = n1 / 2) :
+theorem raw_PureA_V_half1 {n1 n2 : Nat} (_hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 = n1 / 2) :
     Seg (pairA ^ n1) ([.cf] ++ [.ch] ^ n2) V_u [1, 0, 0, 1] := by
   have h1 : n1 = 1 + n2 * 2 := by omega
   rw [h1, zLp1]
@@ -428,7 +430,7 @@ theorem raw_CkH_K_half0 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 0) (h2 : n2 
     segP_append_calls seg_ch_11_cf (seg_ch_Qp_odd q)
   simpa using segP_append_calls seg_ck_K hh
 
-theorem raw_CkH_K_half1 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 = n1 / 2) :
+theorem raw_CkH_K_half1 {n1 n2 : Nat} (_hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 = n1 / 2) :
     Seg ([.ck] ++ [.ch] ^ n1) ([.cf] ++ [.ch] ^ n2) K_u [0, 1] := by
   have h1 : n1 = 1 + n2 * 2 := by omega
   rw [h1, zLp1]
@@ -436,12 +438,12 @@ theorem raw_CkH_K_half1 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 
     segP_append_calls seg_ch_11_cf (seg_ch_Qp_even n2)
   simpa using segP_append_calls seg_ck_K hh
 
-theorem raw_PureH_K_half0 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 0) (h2 : n2 = n1 / 2) :
+theorem raw_PureH_K_half0 {n1 n2 : Nat} (_hn : 2 <= n1) (hp : n1 % 2 = 0) (h2 : n2 = n1 / 2) :
     Seg ([.ch] ^ n1) ([.ch] ^ n2) K_u [0, 0] := by
   have h1 : n1 = n2 * 2 := by omega
   rw [h1]; exact seg_ch_K_even n2
 
-theorem raw_PureH_K_half1 {n1 n2 : Nat} (hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 = n1 / 2) :
+theorem raw_PureH_K_half1 {n1 n2 : Nat} (_hn : 2 <= n1) (hp : n1 % 2 = 1) (h2 : n2 = n1 / 2) :
     Seg ([.ch] ^ n1) ([.ch] ^ n2) K_u [0, 1] := by
   have h1 : n1 = 1 + n2 * 2 := by omega
   rw [h1]; exact seg_ch_K_odd n2
@@ -476,19 +478,19 @@ theorem raw_CfH_Q_dbl1 {n1 n2 : Nat} (hn : 2 <= n1) (h2 : n2 = 2 * n1 - 1) :
 
 -- 7-leg Hub Turnaround (`pairA ^ 3` = 6 subcalls)
 theorem zP0 (w : HalfTape) : (zCf w) [tm]⊢⁺ (zCR w .cb ([0, 1] +> default)) := by
-  unfold zCf zCR zInQ zInB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCf zCR zInQ zInB; simp only [append_cons, append_nil]; execute
 theorem zP1 (w : HalfTape) : (zCL w .cb ([0, 1] +> default)) [tm]⊢⁺ (zCR w .cf ([0, 1] +> default)) := by
-  unfold zCL zCR zInQ zInB zExQ zExB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCL zCR zInQ zInB zExQ zExB; simp only [append_cons, append_nil]; execute
 theorem zP2 (w : HalfTape) : (zCL w .cf ([0, 1] +> default)) [tm]⊢⁺ (zCR w .cb ([1, 1, 0, 1] +> default)) := by
-  unfold zCL zCR zInQ zInB zExQ zExB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCL zCR zInQ zInB zExQ zExB; simp only [append_cons, append_nil]; execute
 theorem zP3 (w : HalfTape) : (zCL w .cb ([1, 1, 0, 1] +> default)) [tm]⊢⁺ (zCR w .cf ([1, 1, 0, 1] +> default)) := by
-  unfold zCL zCR zInQ zInB zExQ zExB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCL zCR zInQ zInB zExQ zExB; simp only [append_cons, append_nil]; execute
 theorem zP4 (w : HalfTape) : (zCL w .cf ([1, 1, 0, 1] +> default)) [tm]⊢⁺ (zCR w .cb ([0, 1, 0, 1] +> default)) := by
-  unfold zCL zCR zInQ zInB zExQ zExB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCL zCR zInQ zInB zExQ zExB; simp only [append_cons, append_nil]; execute
 theorem zP5 (w : HalfTape) : (zCL w .cb ([0, 1, 0, 1] +> default)) [tm]⊢⁺ (zCR w .cf ([0, 1, 0, 1] +> default)) := by
-  unfold zCL zCR zInQ zInB zExQ zExB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCL zCR zInQ zInB zExQ zExB; simp only [append_cons, append_nil]; execute
 theorem zP6 (w : HalfTape) : (zCL w .cf ([0, 1, 0, 1] +> default)) [tm]⊢⁺ (zCf ([1, 1, 0, 0, 1] +> w)) := by
-  unfold zCL zCf zExQ zExB; simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]; execute
+  unfold zCL zCf zExQ zExB; simp only [append_cons, append_nil]; execute
 
 theorem Side_turnaround {w w' : HalfTape} (h : Side (pairA ^ 3) w w') :
     (zCf w) [tm]⊢⁺ (zCf ([1, 1, 0, 0, 1] +> w')) := by
@@ -1029,7 +1031,7 @@ theorem evalAffineScan_sound :
       simp only [evalAffineScan] at h
       split_ifs at h with hc
       simp only [Bool.and_eq_true, decide_eq_true_eq] at hc
-      simp at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
+      simp only [Option.some.injEq, Prod.mk.injEq] at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
       exact Scan.nil m s _ hc.1 (by omega)
     | cons _ _ => unfold evalAffineScan at h; contradiction
   | cons r rs ih =>
@@ -1041,7 +1043,7 @@ theorem evalAffineScan_sound :
       unfold evalAffineScan at h
       cases hcond : (m == rInMode r && w == rWord r && modeMatches m (dfaStep w (dfaRun u s)) && 2 <= cb)
       · rw [hcond] at h; simp at h
-      · rw [hcond, if_pos rfl] at h
+      · rw [hcond, ite_eq_left rfl] at h
         simp only [Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] at hcond
         rcases hcond with ⟨⟨⟨rfl, rfl⟩, hm1⟩, hcb⟩
         cases hk : rKind r <;> simp only [hk] at h
@@ -1050,7 +1052,7 @@ theorem evalAffineScan_sound :
           | none => rw [hrec] at h; contradiction
           | some val =>
             rw [hrec] at h; rcases val with ⟨me, mbe, cbe, v1, g1⟩
-            simp at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
+            simp only [Option.some.injEq, Prod.mk.injEq] at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
             have hI := ih _ _ _ _ _ _ _ _ _ _ q hrec
             have hm_eq : 2 * mb * q = 2 * (mb * q) := by ring
             have h_eq : 2 * mb * q + (2 * cb - 2) = 2 * (mb * q + cb) - 2 := by omega
@@ -1061,7 +1063,7 @@ theorem evalAffineScan_sound :
           | none => rw [hrec] at h; contradiction
           | some val =>
             rw [hrec] at h; rcases val with ⟨me, mbe, cbe, v1, g1⟩
-            simp at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
+            simp only [Option.some.injEq, Prod.mk.injEq] at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
             have hI := ih _ _ _ _ _ _ _ _ _ _ q hrec
             have hm_eq : 2 * mb * q = 2 * (mb * q) := by ring
             have h_eq : 2 * mb * q + (2 * cb - 1) = 2 * (mb * q + cb) - 1 := by omega
@@ -1072,19 +1074,19 @@ theorem evalAffineScan_sound :
           | none => rw [hrec] at h; contradiction
           | some val =>
             rw [hrec] at h; rcases val with ⟨me, mbe, cbe, v1, g1⟩
-            simp at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
+            simp only [Option.some.injEq, Prod.mk.injEq] at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
             have hI := ih _ _ _ _ _ _ _ _ _ _ q hrec
             exact Scan.step rfl hm1 (by rw [hk]; exact ⟨by omega, rfl⟩) hI
         · -- half0
           cases hp0 : (mb % 2 == 0 && cb % 2 == 0)
           · rw [hp0] at h; simp at h
-          · rw [hp0, if_pos rfl] at h
+          · rw [hp0, ite_eq_left rfl] at h
             simp only [Bool.and_eq_true, beq_iff_eq] at hp0
             cases hrec : evalAffineScan rs (rOutMode r) s (mb / 2) (cb / 2) u with
             | none => rw [hrec] at h; contradiction
             | some val =>
               rw [hrec] at h; rcases val with ⟨me, mbe, cbe, v1, g1⟩
-              simp at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
+              simp only [Option.some.injEq, Prod.mk.injEq] at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
               have hI := ih _ _ _ _ _ _ _ _ _ _ q hrec
               have hm2 : 2 * (mb / 2) = mb := by omega
               have hm_eq : 2 * (mb / 2 * q) = mb * q := by
@@ -1096,13 +1098,13 @@ theorem evalAffineScan_sound :
         · -- half1
           cases hp1 : (mb % 2 == 0 && cb % 2 == 1)
           · rw [hp1] at h; simp at h
-          · rw [hp1, if_pos rfl] at h
+          · rw [hp1, ite_eq_left rfl] at h
             simp only [Bool.and_eq_true, beq_iff_eq] at hp1
             cases hrec : evalAffineScan rs (rOutMode r) s (mb / 2) (cb / 2) u with
             | none => rw [hrec] at h; contradiction
             | some val =>
               rw [hrec] at h; rcases val with ⟨me, mbe, cbe, v1, g1⟩
-              simp at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
+              simp only [Option.some.injEq, Prod.mk.injEq] at h; rcases h with ⟨rfl, rfl, rfl, rfl, rfl⟩
               have hI := ih _ _ _ _ _ _ _ _ _ _ q hrec
               have hm2 : 2 * (mb / 2) = mb := by omega
               have hm_eq : 2 * (mb / 2 * q) = mb * q := by
@@ -1977,7 +1979,7 @@ def u_0 : List Word := [V, Q]
 
 theorem init_to_u0 : (init []) [tm]⊢⁺ (zCf (evalWords u_0 default)) := by
   dsimp only [init, u_0, zCf, evalWords, V_u, Q_u]
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil, zero_cons_default_vkq]
   execute
 
 def u_1 : List Word := [V,V,V,K,K,Q]

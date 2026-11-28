@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RCHHH
@@ -31,7 +34,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 def A : Fin 6 := 0
@@ -51,7 +53,6 @@ def F : Fin 6 := 5
 -- ============================================================================
 /- Transition function for holdout_0010: `1RB0LA_0RC1LE_0RD1RE_1LA1RF_1RB0LD_1RC---` -/
 
-set_option maxHeartbeats 8000000
 
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
 @[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
@@ -337,7 +338,7 @@ theorem Eval_success_properties {W : word} {r : result} (E : Eval W r) :
   | large g U =>
     intro V hV; injection hV with hV; subst hV
     refine ⟨⟨1, g :: U, rfl, by decide, by decide⟩, ?_⟩
-    simp only [Pplus, label_weight_period, label_weight]; omega
+    simp only [Pplus, label_weight]; omega
   | zero =>
     intro V hV; injection hV with hV; subst hV
     exact ⟨⟨2, [2], rfl, by decide, by decide⟩, by decide⟩
@@ -1122,7 +1123,7 @@ theorem selected_numeric_endpoint_nonhalting :
 def fast_power : Nat → Nat → word → Option word
   | 0, _, _ => none
   | _ + 1, 0, w => some w
-  | fuel + 1, p + 1, [] => some (numeral (p + 1))
+  | _ + 1, p + 1, [] => some (numeral (p + 1))
   | _ + 1, _ + 1, 0 :: _ => none
   | fuel + 1, p + 1, 1 :: u =>
     if (p + 1) % 2 == 1 then
@@ -2135,8 +2136,7 @@ theorem f_embedding_some {u v : word} (h : f u = some v) (k : Nat) (l : ListBlan
 
 theorem init_to_reset : (init []) [target_tm]⊢⁺ (reset default []) := by
   unfold init reset word_tape
-  simp only [Tape.mk₁, Tape.mk₂, Tape.mk', listblank_append_cons, listblank_append_nil,
-    zero_cons_default, default_head, default_tail]
+  simp only [Tape.mk₁, Tape.mk₂, Tape.mk', listblank_append_cons, listblank_append_nil]
   execute
 
 theorem default_append_zero : (default : ListBlank (Fin 2)) <+ ([0] : List (Fin 2)) = default := by
@@ -2177,10 +2177,10 @@ theorem T3_embedding {w z : word} (h : T 3 (some w) = some z) :
   simp only [power, opF, bind_res] at h
   rcases h1 : f w with _ | u
   · rw [h1] at h; cases h
-  · rw [h1] at h; simp only [bind_res] at h
+  · rw [h1] at h; simp only [] at h
     rcases h2 : f u with _ | v
     · rw [h2] at h; cases h
-    · rw [h2] at h; simp only [bind_res] at h
+    · rw [h2] at h; simp only [] at h
       rcases h3 : f v with _ | y
       · rw [h3] at h; cases h
       · rw [h3] at h; simp only [Z, pfx, Option.map] at h
@@ -2231,12 +2231,10 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine nonhalt_of_chain target_tm (fun k => reset default (T3_word k)) ?_ ?_
-  · dsimp -failIfUnchanged only
-    rw [T3_word_zero]
+  · rw [T3_word_zero]
     exact stepPlus_stepStar init_to_reset
   · intro k
     exact T3_embedding (T3_word_step k)

@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LF_1LC1RB_1RE1LD_1LB0LC_1LA0RE_1LDHHH
@@ -30,7 +33,6 @@ set_option linter.dupNamespace false
 set_option linter.unnecessarySimpa false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 def A : Fin 6 := 0
@@ -62,7 +64,7 @@ def z00 : Machine (Fin 2) (Fin 6)
 theorem z01 (M : Machine zG_ zL_) (config : Cfg zG_ zL_) (n : Nat) :
     multiStep M config (n + 1) = Option.bind (step M config) (fun c' => multiStep M c' n) := by
   induction n generalizing config with
-  | zero => simp [zMo,zMz]
+  | zero => simp
   | succ n ih =>
     rw [zMs,ih]
     cases step M config <;> simp [zMs]
@@ -223,7 +225,7 @@ theorem z0q (d0 d1 : zF) (len n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n * 2 + 1) * 2 ^ 0 - 1 = n * 2 := by simp
-    simp [h1,z0l]
+    simp [z0l]
   | succ i ih =>
     have hp := z0h i
     have hpos : 1 <= (n * 2 + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -320,7 +322,7 @@ theorem z0A (tm : Machine (Fin 2) (Fin 6)) (b1 b2 b3 : Bool)
   · exact zPs (zPt h1 h2)
   · exact zPt h1 h2
 theorem z0B (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (l0 w0 w0' : zF)
-    (H : ∀ l r,((w0 +> l) <{{q}} (l0 +> r)) [tm]⊢* (l <{{q}} (l0 +> w0' +> r)))
+    (H : ∀ l r, ((w0 +> l) <{{q}} (l0 +> r)) [tm]⊢* (l <{{q}} (l0 +> w0' +> r)))
     (n : Nat) (l r : zB) :
     (((w0 ^ n) +> l) <{{q}} (l0 +> r)) [tm]⊢* (l <{{q}} (l0 +> (w0' ^ n) +> r)) := by
   induction n generalizing l r with
@@ -332,7 +334,7 @@ theorem z0B (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (l0 w0 w0' : zF)
     rw [<- append_assoc (w0' ^ n) w0' r,z0a] at h2
     exact zSt h1 h2
 theorem z0C (tm : Machine (Fin 2) (Fin 6)) (q : Fin 6) (l0 w0 w0' : zF)
-    (H : ∀ l r,((l0 +> l) {{q}}> (w0 +> r)) [tm]⊢* ((l0 +> w0' +> l) {{q}}> r))
+    (H : ∀ l r, ((l0 +> l) {{q}}> (w0 +> r)) [tm]⊢* ((l0 +> w0' +> l) {{q}}> r))
     (n : Nat) (l r : zB) :
     ((l0 +> l) {{q}}> ((w0 ^ n) +> r)) [tm]⊢* ((l0 +> (w0' ^ n) +> l) {{q}}> r) := by
   induction n generalizing l r with
@@ -1874,7 +1876,7 @@ theorem z2E (n : Nat) (l : zB) :
     (ld0 ^ n) +> ld1 +> l = LC (1 + n) (2 ^ n - 1) l := by
   have h := z2w 0 0 n l
   unfold LC at h ⊢
-  simp [z0i] at h
+  simp only [z0i, Nat.zero_add, Nat.zero_mul, Nat.one_mul] at h
   exact h
 theorem z2F (len k a c e : Nat) (l : zB)
     (hk : k < 2 ^ len) (ha : 1 <= a) (hc : 1 <= c) (he : e <= 1) :
@@ -3337,7 +3339,7 @@ theorem z45 {extra : Bool} {L t u gap : Nat} {a : List cell} {E : Nat}
   | full _ _ _ _ _ _ _ _ _ _ _ _ _ => intro _; exact good.nil
   | split l q h a b p e hqh hp he ha hb hlt =>
     intro hsafe
-    simp [zSi,allowed,z1P,danger] at hsafe
+    simp only [zSi, Bool.false_eq_true, ↓reduceIte, allowed, z1P, danger] at hsafe
     exact z43 (b - 1) (a + p - e) (by omega) (by unfold z1P at *; omega)
   | extra_odd l q h a b p hqh hp =>
     intro hsafe
@@ -3400,7 +3402,7 @@ theorem z4b (extra : Bool) (L t u : Nat) (hsafe : zSi extra t u) :
   have hpad : q + (1 - q) = 1 := by omega
   cases extra with
   | true =>
-    simp [zSi,main] at hsafe
+    simp only [zSi, ↓reduceIte, main] at hsafe
     rcases z49 t with ⟨a,e,ht_eq,he⟩
     rcases z4a u (by omega) with ⟨b,p,hu_eq,hp⟩
     rcases e with _ | _ | e
@@ -3425,10 +3427,10 @@ theorem z4b (extra : Bool) (L t u : Nat) (hsafe : zSi extra t u) :
         block.extra_odd l q (1 - q) a b p hpad hp⟩
     · omega
   | false =>
-    simp [zSi,allowed,z1P,danger] at hsafe
+    simp only [zSi, Bool.false_eq_true, ↓reduceIte, allowed, z1P, danger] at hsafe
     by_cases ht0 : t = 0
     · subst ht0
-      simp at hsafe
+      simp only [ne_eq, Prod.mk.injEq, true_and] at hsafe
       have hu2 : 2 <= u := by omega
       by_cases hu_eq2 : u = 2
       · subst hu_eq2
@@ -3870,7 +3872,7 @@ def zDc (extra : Bool) (L k t u : Nat) : Cfg (Fin 2) (Fin 6) :=
     ((o1 ^ u) +> z +> (o1 ^ t) +> (if extra then z +> d +> default else default)))
 theorem z4K {extra : Bool} {t u : Nat} {l r : List Queue.cell} (E v : Nat)
     (hc : Queue.consume extra t u l r) (hr : r ≠ [])
-    (hd : zDg (Queue.width ⟨r,E⟩) v (zFw ⟨r,E⟩)) :
+    (hd : zDg (Queue.width ⟨r, E⟩) v (zFw ⟨r, E⟩)) :
     (config ⟨l,E⟩) [z00]⊢⁺
     (zDc extra (Queue.width ⟨l,E⟩) ((v + 1) * 2 ^ (t + u + (if extra then 3 else 1)) - 1) t u) := by
   have hw := z4J E hc hr
@@ -3915,7 +3917,7 @@ theorem z4L {extra : Bool} {t u : Nat} {l r : List Queue.cell}
 theorem z4M {extra : Bool} {t u : Nat} {l r : List Queue.cell}
     (E gap : Nat) (a : List Queue.cell) (E' : Nat)
     (hc : Queue.consume extra t u l r) (hr : r ≠ [])
-    (hreturn : zDr extra (Queue.width ⟨l,E⟩) t u gap a E') :
+    (hreturn : zDr extra (Queue.width ⟨l, E⟩) t u gap a E') :
     (config ⟨l,E⟩) [z00]⊢⁺
     (config ⟨r ++ (t + u + (if extra then 3 else 1) + E,gap) :: a,E'⟩) := by
   rcases z4x ⟨r,E⟩ hr with ⟨v,hv⟩
@@ -3941,7 +3943,7 @@ theorem z4M {extra : Bool} {t u : Nat} {l r : List Queue.cell}
 theorem z4N (extra : Bool) (L t u gap : Nat) (a : List Queue.cell) (E s v : Nat)
     (hs : s = zPw gap a E)
     (hv : zPv gap a E = 2 ^ (s - 1) + v)
-    (hrun : ∀ k,k < 2 ^ L ->
+    (hrun : ∀ k, k < 2 ^ L ->
       (zDc extra L k t u) [z00]⊢*
       (z18 (LC (L + s) 0 ldh) (RC (k * 2 ^ s + 2 ^ (s - 1) + v)))) :
     zDr extra L t u gap a E := by
@@ -4444,7 +4446,7 @@ theorem block_returns_local {extra : Bool} {L t u gap : Nat} {a : List Queue.cel
     exact z4T L t u s e (by omega) (by omega) ht hu he hs
   | one_odd l q h b hqh =>
     intro hL hsafe
-    simp [zLi] at hsafe
+    simp only [zLi, Bool.false_eq_true, ↓reduceIte, true_implies] at hsafe
     have hb : 1 <= b := by omega
     have h1 : b * 2 + 1 = 3 + (b - 1) * 2 := by omega
     have h2 : b + 1 + h = (b - 1) + 2 + h := by omega
@@ -4452,7 +4454,7 @@ theorem block_returns_local {extra : Bool} {L t u gap : Nat} {a : List Queue.cel
     exact z4U l q h (b - 1) hqh hL
   | one_even l q h j hqh =>
     intro hL hsafe
-    simp [zLi] at hsafe
+    simp only [zLi, Bool.false_eq_true, ↓reduceIte, true_implies] at hsafe
     have hj : 2 <= j := by omega
     have h1 : j * 2 + 2 = 4 + (j - 1) * 2 := by omega
     have h2 : j - 2 = (j - 1) - 1 := by omega
@@ -4880,7 +4882,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg ⟨n,hn⟩

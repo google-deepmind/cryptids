@@ -285,7 +285,7 @@ private theorem rewindD_odd (L R : List ℕ) (m : ℕ) :
   rw [← ListBlank.append_pow_add]
   have h_eq : 2 * (3 * m + 3) + 2 = 3 * (2 * m + 2) + 2 := by omega
   rw [h_eq]
-  exact ⟨0, by simp [Cfg.headLeft]⟩
+  exact ⟨0, by simp⟩
 
 private theorem rule_even_bump (L : List ℕ) (j : ℕ) :
     (cfg_SweepR ((2 * j) :: L) []) [target]⊢⁺ (cfg_SweepR ((2 * j + 1) :: L) []) :=

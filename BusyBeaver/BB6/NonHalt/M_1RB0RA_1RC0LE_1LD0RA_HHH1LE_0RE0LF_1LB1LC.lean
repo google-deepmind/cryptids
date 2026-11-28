@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_1RC0LE_1LD0RA_HHH1LE_0RE0LF_1LB1LC
@@ -40,7 +43,6 @@ theorem target_eq : target = target_tm := by
   funext q s
   fin_cases q <;> fin_cases s <;> rfl
 set_option maxRecDepth 200000
-set_option maxHeartbeats 4000000
 namespace M23
 open List
 inductive St | A | B | C | D | E | F | H
@@ -138,20 +140,20 @@ theorem stepB_frame {c c' : Cfg} (Lt Rt : List Bool) (h : stepB c = some c') :
     first
     | (cases R with
         | nil => simp at h
-        | cons r rs => simp at h; subst h; simp [ext, step, mR])
+        | cons r rs => simp only [List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h; simp [ext, step, mR])
     | (cases L with
         | nil => simp at h
-        | cons l ls => simp at h; subst h; simp [ext, step, mL])
-    | (simp at h; subst h; simp [ext, step])
+        | cons l ls => simp only [List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h; simp [ext, step, mL])
+    | (simp only [Option.some.injEq] at h; subst h; simp [ext, step])
 theorem runB_frame (n : Nat) (Lt Rt : List Bool) :
     ∀ {c c' : Cfg}, runB n c = some c' → run n (ext c Lt Rt) = ext c' Lt Rt := by
   induction n with
-  | zero => intro c c' h; simp [runB] at h; subst h; rfl
+  | zero => intro c c' h; simp only [runB, Option.some.injEq] at h; subst h; rfl
   | succ n ih =>
     intro c c' h
     simp only [runB, Option.bind_eq_some_iff] at h
     obtain ⟨c1, h1, h2⟩ := h
-    show run n (step (ext c Lt Rt)) = _
+    change run n (step (ext c Lt Rt)) = _
     rw [stepB_frame Lt Rt h1]
     exact ih h2
 abbrev X : List Bool := [false, false, true]
@@ -199,7 +201,7 @@ theorem leftEnd1 (R : List Bool) :
   simp [run, step, mR, mL]
 theorem leftEnd2 (R : List Bool) :
     run 4 ⟨.B, [true], false, R⟩ = ⟨.C, [], false, U ++ true :: R⟩ := by
-  simp [run, step, mR, mL]
+  simp [run, step, mL]
 def wordHyp (W' : List Bool) (a J J' : Nat) (V : List Bool) : Prop :=
   runB a ⟨.A, pw J X, false, true :: W'⟩ = some ⟨.B, true :: pw J' X, false, V⟩
 def evSteps (k a m : Nat) : Nat := 3 + 3 * (k + 1) + 4 + 3 * k + 5 + 3 * (k + 1) + a + 3 * m + 4
@@ -263,7 +265,6 @@ theorem stepB1_eq (c : Cfg) : stepB1 c = stepB c := by
   cases st <;> cases h <;> first
     | (cases R <;> rfl)
     | (cases L <;> rfl)
-    | rfl
 def stepFastA (L R : List Bool) : Option Cfg :=
   match R with
   | true :: true :: false :: true :: true :: false :: R' =>
@@ -386,15 +387,15 @@ theorem stepB_ext {c c' : Cfg} (Lt Rt : List Bool) (h : stepB c = some c') :
     first
     | (cases R with
         | nil => simp at h
-        | cons r rs => simp at h; subst h; simp [step, mR])
+        | cons r rs => simp only [List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h; simp [step, mR])
     | (cases L with
         | nil => simp at h
-        | cons l ls => simp at h; subst h; simp [step, mL])
-    | (simp at h; subst h; simp [step])
+        | cons l ls => simp only [List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h; simp [step, mL])
+    | (simp only [Option.some.injEq] at h; subst h; simp [step])
 theorem runB_ext (n : Nat) (Lt Rt : List Bool) :
     ∀ {c c' : Cfg}, runB n c = some c' → runB n (ext c Lt Rt) = some (ext c' Lt Rt) := by
   induction n with
-  | zero => intro c c' h; simp [runB] at h ⊢; subst h; rfl
+  | zero => intro c c' h; simp only [runB, Option.some.injEq] at h ⊢; subst h; rfl
   | succ n ih =>
     intro c c' h
     simp only [runB, Option.bind_eq_some_iff] at h ⊢
@@ -699,7 +700,7 @@ theorem evStep_sound {p p' : Nat × List Bool} (h : evStep p = some p') :
   | none => simp [evStep, hn, hw] at h
   | some r =>
     obtain ⟨J', V⟩ := r
-    simp only [evStep, hn, if_true, hw, Option.some.injEq] at h
+    simp only [evStep, hn, ite_true, hw, Option.some.injEq] at h
     subst h
     obtain ⟨k, rfl⟩ : ∃ k, n = k + 2 := ⟨n - 2, by omega⟩
     obtain ⟨a, ev⟩ := M23.event_map_fast k 450 J' (W' ++ List.replicate PAD false) V hw
@@ -711,7 +712,7 @@ theorem evStep_sound {p p' : Nat × List Bool} (h : evStep p = some p') :
       refine ⟨rfl, rfl, rfl, ?_⟩
       show eqv _ _
       apply eqv_append
-      show strip _ = strip _
+      change strip _ = strip _
       rw [← List.cons_append]; exact (eqv_pad _ _).symm
     have e2 := run_eqvC M (M23.evSteps k a (J' + k)) e1
     rw [← hr] at e2
@@ -2457,7 +2458,7 @@ theorem evStep_shift (d : Nat) {n n' : Nat} {W W' : List Bool}
   | none => simp [evStep, hn, hw] at h
   | some r =>
     obtain ⟨J', V⟩ := r
-    simp only [evStep, hn, hnd, if_true, hw, Option.some.injEq, Prod.mk.injEq] at h ⊢
+    simp only [evStep, hn, hnd, ite_true, hw, Option.some.injEq, Prod.mk.injEq] at h ⊢
     obtain ⟨rfl, rfl⟩ := h
     refine ⟨?_, rfl⟩
     omega
@@ -2491,7 +2492,7 @@ theorem suffixStep_sound {P S S' : List Bool} (n : Nat) (hn : 2 ≤ n)
       refine ⟨rfl, rfl, rfl, ?_⟩
       show eqv _ _
       apply eqv_append
-      show strip _ = strip _
+      change strip _ = strip _
       rw [← List.cons_append]; exact (eqv_pad _ _).symm
     have e2 := run_eqvC M (M23.evSteps k a (k + 2)) e1
     rw [← hr] at e2
@@ -3341,7 +3342,6 @@ abbrev F : Fin 6 := 5
 @[reducible] def M : Machine (Fin 2) (Fin 6) := target_tm
 @[reducible] def holdout_0441_tm : Machine (Fin 2) (Fin 6) := target_tm
 set_option maxRecDepth 200000
-set_option maxHeartbeats 4000000
 def b2f : Bool → Fin 2
   | false => 0
   | true => 1

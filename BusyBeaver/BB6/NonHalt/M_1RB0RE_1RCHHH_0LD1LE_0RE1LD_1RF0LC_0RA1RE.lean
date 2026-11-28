@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1RCHHH_0LD1LE_0RE1LD_1RF0LC_0RA1RE
@@ -161,7 +164,7 @@ theorem stepSym_sound (bl br : Bool) (s s' : SymCfg) (L R : ListBlank (Fin 2))
         | cons r0 rs =>
           simp only [popSym, Option.some.injEq] at h
           subst h
-          simp [step, realCfg, mkC, htm, Tape.write, Tape.move, Tape.mk', realTape,
+          simp [step, realCfg, mkC, htm, Tape.write, Tape.move, realTape,
             realTape_pushSym bl w l L hL]
         | nil =>
           cases br with
@@ -170,7 +173,7 @@ theorem stepSym_sound (bl br : Bool) (s s' : SymCfg) (L R : ListBlank (Fin 2))
             simp only [popSym, ↓reduceIte, Option.some.injEq] at h
             subst h
             rw [hR rfl]
-            simp [step, realCfg, mkC, htm, Tape.write, Tape.move, Tape.mk', realTape,
+            simp [step, realCfg, mkC, htm, Tape.write, Tape.move, realTape,
               realTape_pushSym bl w l L hL]
       | left =>
         simp only [htm] at h
@@ -178,7 +181,7 @@ theorem stepSym_sound (bl br : Bool) (s s' : SymCfg) (L R : ListBlank (Fin 2))
         | cons l0 ls =>
           simp only [popSym, Option.some.injEq] at h
           subst h
-          simp [step, realCfg, mkC, htm, Tape.write, Tape.move, Tape.mk', realTape,
+          simp [step, realCfg, mkC, htm, Tape.write, Tape.move, realTape,
             realTape_pushSym br w r R hR]
         | nil =>
           cases bl with
@@ -187,7 +190,7 @@ theorem stepSym_sound (bl br : Bool) (s s' : SymCfg) (L R : ListBlank (Fin 2))
             simp only [popSym, ↓reduceIte, Option.some.injEq] at h
             subst h
             rw [hL rfl]
-            simp [step, realCfg, mkC, htm, Tape.write, Tape.move, Tape.mk', realTape,
+            simp [step, realCfg, mkC, htm, Tape.write, Tape.move, realTape,
               realTape_pushSym br w r R hR]
 
 theorem runSym_sound (bl br : Bool) (n : Nat) (s s' : SymCfg) (L R : ListBlank (Fin 2))
@@ -903,6 +906,7 @@ theorem exp_ident_2 (k : Nat) : dbl (expLen (k + 2)) + 0 + 3 = expLen (k + 3) + 
   simp only [expLen, expBase, dbl]
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem step4_A (b q : Nat) (T : ListBlank (Fin 2)) :
     (mkC 4 1 (L_init b) (1 >> pairOnes (q + 14) (0 >> 0 >> 1 >> T))) [target_tm]⊢⁺
     (mkC 0 1 (0 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 1 >> 0 >> 0 >> 1 >> ozTail (q + 7) (0 >> 1 >> 0 >> 1 >> w7Run (b + 1) Z_base)) T) := by
@@ -939,6 +943,7 @@ theorem step4_A (b q : Nat) (T : ListBlank (Fin 2)) :
             (step_plus_trans h12 h13))))))
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem step4_D (b : Nat) (R : ListBlank (Fin 2)) :
     (mkC 4 1 (ozTail 6 (w7Run (b + 1) Z_base)) (1 >> R)) [target_tm]⊢⁺
     (mkC 0 1 (L_init (b + 2)) R) := by
@@ -965,6 +970,7 @@ theorem step4_D (b : Nat) (R : ListBlank (Fin 2)) :
           (step_plus_trans h10 h11)))))
 
 set_option maxHeartbeats 1000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem epoch_step (k b : Nat) : (S_inv k b) [target_tm]⊢⁺ (S_inv (k + 2) (b + 2)) := by
   let q := dbl (dbl (expBase k))
   have h1 : (S_inv k b) [target_tm]⊢⁺ (mkC 4 1 (L_init b) (1 >> towerTail (k + 3))) :=

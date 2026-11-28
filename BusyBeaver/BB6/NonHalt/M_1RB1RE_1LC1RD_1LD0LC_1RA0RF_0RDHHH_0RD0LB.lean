@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1LC1RD_1LD0LC_1RA0RF_0RDHHH_0RD0LB
@@ -26,7 +29,6 @@ end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 set_option maxRecDepth 2000000
-set_option maxHeartbeats 20000000
 
 theorem _jb_zero_cons_default : ((0 : Fin 2) >> (default : ListBlank (Fin 2))) = default := by
   apply Turing.ListBlank.ext; intro i; cases i <;> rfl
@@ -49,7 +51,6 @@ theorem _jb_tail_append_cons (a : Fin 2) (l : List (Fin 2)) (s : ListBlank (Fin 
 -- Differing transition(s): D.F0=0LB vs M.F0=0RA 
 -- ============================================================================
 
-set_option maxHeartbeats 20000000
 set_option maxRecDepth 2000000
 
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl

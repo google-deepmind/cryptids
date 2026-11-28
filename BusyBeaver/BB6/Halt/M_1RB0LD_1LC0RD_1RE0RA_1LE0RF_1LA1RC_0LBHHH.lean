@@ -11,6 +11,9 @@ public import BusyBeaver.Calculi.Excursion
 public import BusyBeaver.Calculi.Longitudinal
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1LC0RD_1RE0RA_1LE0RF_1LA1RC_0LBHHH
@@ -48,7 +51,6 @@ abbrev qc : Machine (Fin 2) (Fin 6)
   | 4,1 => some (some 2,Stmt.write 1 Dir.left)
   | 5,0 => some (some 1,Stmt.write 0 Dir.right)
   | 5,1 => none
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0=some config:=rfl
 @[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1=step M config:=rfl
@@ -71,7 +73,7 @@ set_option maxRecDepth 200000
 @[simp] theorem pow_succ_list {α : Type*} (l : List α) (n : ℕ) : l ^ (n + 1)=l ++ l ^ n:=rfl
 theorem qb {α : Type*} (l : List α) (m n : ℕ) : l ^ (m + n)=l ^ m ++ l ^ n:= by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [pow_succ_list,Nat.succ_add,ih,List.append_assoc]
 theorem pow_shift {α : Type*} (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
   induction n with
@@ -82,13 +84,13 @@ theorem pow_shift {α : Type*} (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):
   | zero => rfl
   | succ n ih => exact ih
 theorem commute_power {x v w : List (Fin 2)} {a b : ℕ}
-    (h : x ++ v ^ a=w ^ b ++ x) (k : ℕ) :
+    (h : x ++ v ^ a = w ^ b ++ x) (k : ℕ) :
     x ++ v ^ (k * a)=w ^ (k * b) ++ x:=
   BusyBeaver.Excursion.commute_pow_left h k
-theorem qD {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) :
+theorem qD {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w = true) :
     w +> default=default:=
   BusyBeaver.Longitudinal.BoundedConfig.all0_spec h
-theorem qM {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w=true) (n : ℕ) :
+theorem qM {w : List (Fin 2)} (h : BusyBeaver.Longitudinal.BoundedConfig.all0 w = true) (n : ℕ) :
     (w ^ n) +> default=default:= by
   induction n with
   | zero => rfl
@@ -237,15 +239,15 @@ theorem qB {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {t1 u1 t2 u2 : ℕ}
   rcases qT hr with ⟨r2,hr₁,hr₂⟩
   exact sideCalls_add (h₁ r1 r2 hr₁) (h₂ r2 r3 hr₂)
 theorem qk {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w2 : List (Fin 2)}
-    (h : ∀ l r,(([1,0,1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
+    (h : ∀ l r, (([1, 0, 1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
     q2 tm q 1 0 w1 w2:= by
   intro r1 r2 hr
   change r1=r2 at hr
   subst hr
   exact ⟨w2 +> r1,fun l => h l r1,rfl⟩
 theorem qJ {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6} {w1 w_mid w2 : List (Fin 2)}
-    (hR : ∀ l r,(([1,0,1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (([1,0,1] +> w_mid +> l) {{q}}> r))
-    (hL : ∀ l r,((w_mid +> l) <{{q}} ([1] +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
+    (hR : ∀ l r, (([1, 0, 1] +> l) {{q}}> (w1 +> r)) [tm]⊢* (([1, 0, 1] +> w_mid +> l) {{q}}> r))
+    (hL : ∀ l r, ((w_mid +> l) <{{q}} ([1] +> r)) [tm]⊢* (l <{{q}} ([1] +> w2 +> r))) :
     q2 tm q 1 1 w1 w2:= by
   intro r1 r2 hr
   rcases hr with ⟨r',hcall,rfl⟩
@@ -288,7 +290,7 @@ def qx : Digit → ℕ → Effect
     ⟨a.phase,take p + a.used,give p + a.given,qO p + a.sent⟩
 theorem total_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
+    (hone : ∀ p n, q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
     (t : ℕ) (p : Digit) (n : ℕ) :
     let a:=qx p t
     q2 tm q t a.sent (qo p ++ W ^ (a.used + n)) (W ^ a.given ++ qo a.phase ++ W ^ n):= by
@@ -354,7 +356,7 @@ theorem totalN_spec (p : Digit) (t : ℕ) : qy p t=qx p t:= by
   conv_rhs => rw [h_div,total_period]
 theorem totalN_rule {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
+    (hone : ∀ p n, q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
     (p : Digit) (t n : ℕ) (h : (qy p t).used ≤ n) :
     let a:=qy p t
     q2 tm q t a.sent (qo p ++ W ^ n) (W ^ a.given ++ qo a.phase ++ W ^ (n - a.used)):= by
@@ -382,8 +384,8 @@ def qZ : ℕ → qv → Option (ℕ × qv)
       else none
 theorem batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
-    (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (h : qZ t xs=some (e,ys)) :
+    (hone : ∀ p n, q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
+    (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (h : qZ t xs = some (e, ys)) :
     q2 tm q t 0 (q8 xs) (W ^ e ++ q8 ys):= by
   induction xs generalizing t e ys with
   | nil =>
@@ -414,7 +416,7 @@ theorem batch_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
       have h3:=q5 h1 h2
       simpa only [q8,qb,List.append_assoc] using h3
 theorem calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hemit : ∀ r,(default <{{q}} ([1] +> r)) [tm]⊢* (([1,0,1] +> default) {{q}}> r))
+    (hemit : ∀ r, (default <{{q}} ([1] +> r)) [tm]⊢* (([1, 0, 1] +> default) {{q}}> r))
     (t : ℕ) (r r' : ListBlank (Fin 2)) (h : qd tm q t r r') :
     (([1,0,1] +> default) {{q}}> r) [tm]⊢* (([1,0,1] +> default) {{q}}> r'):= by
   induction t generalizing r with
@@ -426,11 +428,11 @@ theorem calls_spec {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
     rcases h with ⟨r1,hstep,hrest⟩
     exact q0 (hstep default) (q0 (hemit r1) (ih r1 hrest))
 theorem batch_root {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hemit : ∀ r,(default <{{q}} ([1] +> r)) [tm]⊢* (([1,0,1] +> default) {{q}}> r))
+    (hemit : ∀ r, (default <{{q}} ([1] +> r)) [tm]⊢* (([1, 0, 1] +> default) {{q}}> r))
     (hwall1 : q2 tm q 1 1 W W)
-    (hone : ∀ p n,q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
+    (hone : ∀ p n, q2 tm q 1 (qO p) (qo p ++ W ^ (take p + n)) (W ^ (give p) ++ qo (next p) ++ W ^ n))
     (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (k : ℕ) (r : ListBlank (Fin 2))
-    (h : qZ t xs=some (e,ys)) :
+    (h : qZ t xs = some (e, ys)) :
     (([1,0,1] +> default) {{q}}> ((W ^ k) +> (q8 xs) +> r)) [tm]⊢*
     (([1,0,1] +> default) {{q}}> ((W ^ (k + e)) +> (q8 ys) +> r)):= by
   apply calls_spec hemit t
@@ -463,7 +465,7 @@ def Runs.push (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Runs :=
 theorem Runs.push_spec (w : List (Fin 2)) (n : ℕ) (xs : Runs) :
     Runs.denote (Runs.push w n xs)=(w ^ n) +> Runs.denote xs:= by
   cases w with
-  | nil => simp [Runs.push,nil_pow_list]
+  | nil => simp [Runs.push]
   | cons b w' =>
     unfold Runs.push
     simp only [strictNat_eq]
@@ -471,7 +473,7 @@ theorem Runs.push_spec (w : List (Fin 2)) (n : ℕ) (xs : Runs) :
     · have hn0 : n=0:=beq_iff_eq.mp hn
       subst hn0
       simp
-    · rw [if_neg hn]
+    · rw [ite_eq_right hn]
       cases xs with
       | nil => rfl
       | cons vm ys =>
@@ -480,8 +482,8 @@ theorem Runs.push_spec (w : List (Fin 2)) (n : ℕ) (xs : Runs) :
         by_cases hv : ((b :: w') == v)=true
         · have hv_eq : b :: w'=v:=beq_iff_eq.mp hv
           subst hv_eq
-          rw [if_pos hv,Runs.denote,Runs.denote,qb,append_assoc]
-        · rw [if_neg hv]; rfl
+          rw [ite_eq_left hv,Runs.denote,Runs.denote,qb,append_assoc]
+        · rw [ite_eq_right hv]; rfl
 def Runs.pop : Runs → Fin 2 × Runs
   | [] => (0,[])
   | ([],_) :: xs => Runs.pop xs
@@ -512,16 +514,16 @@ theorem Runs.pop_spec (xs : Runs) :
       · have hn0 : n=0:=beq_iff_eq.mp hn
         subst hn0
         simpa [Runs.denote] using ih
-      · rw [if_neg hn]
+      · rw [ite_eq_right hn]
         by_cases hn1 : (n == 1)=true
-        · rw [if_pos hn1]
+        · rw [ite_eq_left hn1]
           have hn1_eq : n=1:=beq_iff_eq.mp hn1
           subst hn1_eq
           cases w with
           | nil => simp [Runs.denote,pow_succ_list]
           | cons b2 w' =>
             simp [strictRuns_eq,Runs.push_spec,Runs.denote,pow_succ_list]
-        · rw [if_neg hn1]
+        · rw [ite_eq_right hn1]
           simp only [strictNat_eq,strictRuns_eq]
           rw [Runs.push_spec,Runs.push_spec,Runs.denote]
           have hn_pos : 0 < n:=Nat.pos_of_ne_zero (by intro h0; subst h0; exact hn rfl)
@@ -534,7 +536,7 @@ def Runs.remove : List (Fin 2) → Runs → Option Runs
     match Runs.pop xs with
     | (b',xs') => if b == b' then Runs.remove w xs' else none
 theorem Runs.remove_spec {w : List (Fin 2)} {xs ys : Runs}
-    (h : Runs.remove w xs=some ys) :
+    (h : Runs.remove w xs = some ys) :
     Runs.denote xs=w +> Runs.denote ys:= by
   induction w generalizing xs with
   | nil =>
@@ -616,11 +618,11 @@ theorem Runs.remove_word_spec {fuel : ℕ} {w : List (Fin 2)} {xs ys : Runs}
         rcases vn with ⟨v, nv⟩
         unfold Runs.remove_word at h
         by_cases hnv : (nv == 0) = true
-        · rw [if_pos hnv] at h
+        · rw [ite_eq_left hnv] at h
           have hnv0 : nv = 0 := beq_iff_eq.mp hnv
           subst hnv0
           simpa [Runs.denote] using ih h
-        · rw [if_neg hnv] at h
+        · rw [ite_eq_right hnv] at h
           have hnv_pos : 0 < nv := Nat.pos_of_ne_zero (by intro h0; subst h0; exact hnv rfl)
           have hnv_eq : nv = 1 + (nv - 1) := (Nat.add_sub_of_le hnv_pos).symm
           have h_v_pow : v ^ nv = v ++ v ^ (nv - 1) := by
@@ -690,12 +692,12 @@ def Runs.skip_block (w : List (Fin 2)) (limit : ℕ) (x v : List (Fin 2)) (m : �
             else none
           else none))))
 theorem Runs.skip_block_spec {w : List (Fin 2)} {limit : ℕ} {x v : List (Fin 2)} {m : ℕ} {ys : Runs} {n : ℕ} {zs : Runs}
-    (h : Runs.skip_block w limit x v m ys=some (n,zs)) :
+    (h : Runs.skip_block w limit x v m ys = some (n, zs)) :
     n ≤ limit ∧ x +> (v ^ m) +> Runs.denote ys=(w ^ n) +> Runs.denote zs:= by
   unfold Runs.skip_block at h
   simp only [strictNat_eq,strictRuns_eq] at h
   by_cases hlen : (w.length == v.length) = true
-  · rw [if_pos hlen] at h
+  · rw [ite_eq_left hlen] at h
     split_ifs at h with heq hm_lim hm_pos hlim_pos
     · injection h with hpair; injection hpair with hn hzs; subst hn hzs
       refine ⟨hm_lim, ?_⟩
@@ -718,7 +720,7 @@ theorem Runs.skip_block_spec {w : List (Fin 2)} {limit : ℕ} {x v : List (Fin 2
       simp only [Nat.mul_one] at hk_comm
       conv_lhs => rw [hm_eq, qb]
       rw [append_assoc (v ^ limit), ← append_assoc x, hk_comm, append_assoc]
-  · rw [if_neg hlen] at h
+  · rw [ite_eq_right hlen] at h
     split_ifs at h with hk hkb hka heq
     injection h with hpair
     injection hpair with hn hzs
@@ -743,7 +745,7 @@ def Runs.skip_periodic (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Option (ℕ ×
   | [(v,m)] => Runs.skip_block w n [] v m []
   | [] => none
 theorem Runs.skip_periodic_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
-    (h : Runs.skip_periodic w n xs=some (k,ys)) :
+    (h : Runs.skip_periodic w n xs = some (k, ys)) :
     k ≤ n ∧ Runs.denote xs=(w ^ k) +> Runs.denote ys:= by
   unfold Runs.skip_periodic at h
   rcases xs with _ | ⟨⟨x,nx⟩,_ | ⟨⟨v,m⟩,ys'⟩⟩
@@ -767,7 +769,7 @@ def Runs.skip (w : List (Fin 2)) (n : ℕ) (xs : Runs) : Option (ℕ × Runs) :=
             some (k,zs))))
     else Runs.skip_periodic w n ((v,m) :: ys)
 theorem Runs.skip_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : Runs}
-    (h : Runs.skip w n xs=some (k,ys)) :
+    (h : Runs.skip w n xs = some (k, ys)) :
     k ≤ n ∧ Runs.denote xs=(w ^ k) +> Runs.denote ys:= by
   rcases xs with _ | ⟨⟨v,m⟩,ys'⟩
   · contradiction
@@ -784,7 +786,7 @@ theorem Runs.skip_spec {w : List (Fin 2)} {n : ℕ} {xs : Runs} {k : ℕ} {ys : 
       have hm_eq : m=min n m + (m - min n m):=(Nat.add_sub_of_le (Nat.min_le_right n m)).symm
       rw [← hm_eq]
     · exact Runs.skip_periodic_spec h
-def Runs.remove_fast_step (fuel : ℕ) (w : List (Fin 2)) (n : ℕ) (xs : Runs) (rec : ℕ → Runs → Option Runs) : Option Runs :=
+def Runs.remove_fast_step (_fuel : ℕ) (w : List (Fin 2)) (n : ℕ) (xs : Runs) (rec : ℕ → Runs → Option Runs) : Option Runs :=
   match Runs.skip w n xs with
   | some (k,ys) => q4 (n - k) (fun n' => rec n' ys)
   | none =>
@@ -829,7 +831,7 @@ theorem Runs.remove_fast_step_spec {fuel : ℕ} {w : List (Fin 2)} {n : ℕ} {xs
       conv_rhs => rw [hn_eq,pow_succ_list,append_assoc]
 
 theorem Runs.remove_fast_spec {fuel : ℕ} {w : List (Fin 2)} {n : ℕ} {xs ys : Runs}
-    (h : Runs.remove_fast fuel w n xs=some ys) :
+    (h : Runs.remove_fast fuel w n xs = some ys) :
     Runs.denote xs=(w ^ n) +> Runs.denote ys:= by
   induction fuel generalizing n xs ys with
   | zero =>
@@ -870,7 +872,7 @@ def Runs.size : Runs → ℕ
 def Runs.zeros : Runs → Bool
   | [] => true
   | (w,_) :: xs => if BusyBeaver.Longitudinal.BoundedConfig.all0 w then Runs.zeros xs else false
-theorem Runs.zeros_spec {xs : Runs} (h : Runs.zeros xs=true) : Runs.denote xs=default:= by
+theorem Runs.zeros_spec {xs : Runs} (h : Runs.zeros xs = true) : Runs.denote xs=default:= by
   induction xs with
   | nil => rfl
   | cons wn xs ih =>
@@ -915,7 +917,7 @@ def RM.raw (tm : Machine (Fin 2) (Fin 6)) (c : RMConfig) : Option RMConfig :=
         q3 (Runs.push [b'] 1 c.left) (fun l' =>
           some ⟨l',r,q',.right⟩)
 theorem RM.raw_spec {tm : Machine (Fin 2) (Fin 6)} {c c' : RMConfig}
-    (h : RM.raw tm c=some c') :
+    (h : RM.raw tm c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   rcases c with ⟨l,r,q,d⟩
   unfold RM.raw at h
@@ -1019,8 +1021,8 @@ def q7 (tm : Machine (Fin 2) (Fin 6)) (s : Scan) : Prop :=
     | .left =>
       (((s.scan_in.reverse ^ n) +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
       (l <{{s.q}} (s.context +> (s.scan_out ^ n) +> r))
-theorem qI {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
-    (hbase : ∀ l r,((s.context.reverse +> l) {{s.q}}> (s.scan_in +> r)) [tm]⊢*
+theorem qI {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir = .right)
+    (hbase : ∀ l r, ((s.context.reverse +> l) {{s.q}}> (s.scan_in +> r)) [tm]⊢*
                     ((s.context.reverse +> s.scan_out.reverse +> l) {{s.q}}> r)) :
     q7 tm s:= by
   unfold q7
@@ -1035,8 +1037,8 @@ theorem qI {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.right)
     have h2:=ih (s.scan_out.reverse +> l) r
     rw [← append_assoc (s.scan_out.reverse ^ n) s.scan_out.reverse l,pow_shift] at h2
     exact q0 h1 h2
-theorem qg {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir=.left)
-    (hbase : ∀ l r,((s.scan_in.reverse +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
+theorem qg {tm : Machine (Fin 2) (Fin 6)} {s : Scan} (hd : s.dir = .left)
+    (hbase : ∀ l r, ((s.scan_in.reverse +> l) <{{s.q}} (s.context +> r)) [tm]⊢*
                     (l <{{s.q}} (s.context +> s.scan_out +> r))) :
     q7 tm s:= by
   unfold q7
@@ -1069,7 +1071,7 @@ def qr (s : Scan) (n : ℕ) (l r : Runs) : Option (Runs × Runs) :=
           some (l2,r')))
     | _,_ => none
 theorem qN {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {l r l' r' : Runs}
-    (hv : q7 tm s) (h : qr s n l r=some (l',r')) :
+    (hv : q7 tm s) (h : qr s n l r = some (l', r')) :
     (RMConfig.denote ⟨l,r,s.q,s.dir⟩) [tm]⊢* (RMConfig.denote ⟨l',r',s.q,s.dir⟩):= by
   unfold q7 at hv
   rcases s with ⟨q,d,sin,sout,ctx⟩
@@ -1122,7 +1124,7 @@ def use_scan (s : Scan) (n : ℕ) (c : RMConfig) : Option RMConfig :=
     | none => none
   else none
 theorem use_scan_spec {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {n : ℕ} {c c' : RMConfig}
-    (hv : q7 tm s) (h : use_scan s n c=some c') :
+    (hv : q7 tm s) (h : use_scan s n c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold use_scan at h
   split_ifs at h with hq
@@ -1203,7 +1205,7 @@ def qi : qv → Runs → Option Runs
       | none => none
       | some r2 => qi xs r2
 theorem qF {xs : qv} {r r' : Runs}
-    (h : qi xs r=some r') :
+    (h : qi xs r = some r') :
     Runs.denote r=(q8 xs) +> Runs.denote r':= by
   induction xs generalizing r with
   | nil =>
@@ -1258,11 +1260,11 @@ def qC (q : Fin 6) (u : List (Fin 2)) (t k : ℕ) (xs : qv) (c : RMConfig) : Opt
     | _,_,_ => none
   else none
 theorem qP {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hrule : ∀ t xs e ys k r,qZ t xs=some (e,ys) →
-      (([1,0,1] +> default) {{q}}> ((W ^ k) +> (q8 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{q}}> ((W ^ (k + e)) +> (q8 ys) +> r)))
+    (hrule : ∀ t xs e ys k r, qZ t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{q}}> ((W ^ k) +> (q8 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{q}}> ((W ^ (k + e)) +> (q8 ys) +> r)))
     {t k : ℕ} {xs : qv} {c c' : RMConfig}
-    (h : qC q [1,0,1] t k xs c=some c') :
+    (h : qC q [1, 0, 1] t k xs c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qC at h
   split_ifs at h with hq
@@ -1438,10 +1440,10 @@ def qY (q : Fin 6) (c : RMConfig) : Option RMConfig :=
   | some (t,k,xs) => qC q [1,0,1] t k xs c
   | none => none
 theorem qa0 {tm : Machine (Fin 2) (Fin 6)} {q : Fin 6}
-    (hrule : ∀ t xs e ys k r,qZ t xs=some (e,ys) →
-      (([1,0,1] +> default) {{q}}> ((W ^ k) +> (q8 xs) +> r)) [tm]⊢*
-      (([1,0,1] +> default) {{q}}> ((W ^ (k + e)) +> (q8 ys) +> r)))
-    {c c' : RMConfig} (h : qY q c=some c') :
+    (hrule : ∀ t xs e ys k r, qZ t xs = some (e, ys) →
+      (([1, 0, 1] +> default) {{q}}> ((W ^ k) +> (q8 xs) +> r)) [tm]⊢*
+      (([1, 0, 1] +> default) {{q}}> ((W ^ (k + e)) +> (q8 ys) +> r)))
+    {c c' : RMConfig} (h : qY q c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qY at h
   cases hp : qK c with
@@ -1456,7 +1458,7 @@ def qe (s : Scan) (keep : ℕ) (c : RMConfig) : Option RMConfig :=
   let src:=match s.dir with | .left => z.left | .right => z.right
   q4 ((qf 32 w src).1 - keep) (fun n => use_scan s n c)
 theorem q9 {tm : Machine (Fin 2) (Fin 6)} {s : Scan} {keep : ℕ} {c c' : RMConfig}
-    (hv : q7 tm s) (h : qe s keep c=some c') :
+    (hv : q7 tm s) (h : qe s keep c = some c') :
     (c.denote) [tm]⊢* (c'.denote):= by
   unfold qe at h
   simp only [strictNat_eq] at h
@@ -1541,7 +1543,7 @@ theorem emit (r : ListBlank (Fin 2)) :
     (default <{{C}} ([1] +> r)) [qc]⊢* (([1,0,1] +> default) {{C}}> r):= by
   dsimp -failIfUnchanged [ListBlank.append]; execute90
 theorem batch_step (t : ℕ) (xs : qv) (e : ℕ) (ys : qv) (k : ℕ) (r : ListBlank (Fin 2))
-    (h : qZ t xs=some (e,ys)) :
+    (h : qZ t xs = some (e, ys)) :
     (([1,0,1] +> default) {{C}}> ((W ^ k) +> (q8 xs) +> r)) [qc]⊢*
     (([1,0,1] +> default) {{C}}> ((W ^ (k + e)) +> (q8 ys) +> r)) :=
   batch_root emit wall_1 one t xs e ys k r h
@@ -1584,7 +1586,7 @@ def run_raw (tm : Machine (Fin 2) (Fin 6)) : ℕ → RMConfig → Option RMConfi
     | some c' => run_raw tm n c'
     | none => none
 theorem run_raw_spec {n : ℕ} {c c' : RMConfig}
-    (h : run_raw qc n c=some c') :
+    (h : run_raw qc n c = some c') :
     (c.denote) [qc]⊢* (c'.denote):= by
   induction n generalizing c with
   | zero =>
@@ -1610,7 +1612,7 @@ def qs (op arg : ℕ) (c : RMConfig) : Option RMConfig :=
   | 9 => qe scan_7 arg c
   | _ => none
 theorem qp {op arg : ℕ} {c c' : RMConfig}
-    (h : qs op arg c=some c') :
+    (h : qs op arg c = some c') :
     (c.denote) [qc]⊢* (c'.denote):= by
   unfold qs at h
   rcases op with _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | op
@@ -1632,7 +1634,7 @@ def qR : ℕ → ℕ → ℕ → RMConfig → Option RMConfig
     | some c' => qR n op arg c'
     | none => none
 theorem run_rep1_spec {n op arg : ℕ} {c c' : RMConfig}
-    (h : qR n op arg c=some c') :
+    (h : qR n op arg c = some c') :
     (c.denote) [qc]⊢* (c'.denote):= by
   induction n generalizing c with
   | zero =>
@@ -1654,7 +1656,7 @@ def qQ : ℕ → ℕ → ℕ → ℕ → ℕ → RMConfig → Option RMConfig
       | none => none
     | none => none
 theorem run_rep2_spec {n op1 arg1 op2 arg2 : ℕ} {c c' : RMConfig}
-    (h : qQ n op1 arg1 op2 arg2 c=some c') :
+    (h : qQ n op1 arg1 op2 arg2 c = some c') :
     (c.denote) [qc]⊢* (c'.denote):= by
   induction n generalizing c with
   | zero =>
@@ -1699,7 +1701,7 @@ theorem norm_qv_spec (xs : qv) : q8 (norm_qv xs) = q8 xs := by
       rcases hrest : norm_qv rest with _ | ⟨⟨p2, n2⟩, tail⟩
       · simp [q8, ← ih, hrest]
       · cases p <;> cases p2 <;>
-        simp [q8, qo, pow_zero_list, List.append_assoc, ← ih, hrest]
+        simp [q8, qo, ← ih, hrest]
     · simp [q8, ih]
 
 def qZ_fast : ℕ → qv → Option (ℕ × qv)
@@ -1805,7 +1807,7 @@ def qC_many (q : Fin 6) (u : List (Fin 2)) (ts : List ℕ) (k : ℕ) (xs : qv) (
   else none
 
 theorem qP_many {ts : List ℕ} {k : ℕ} {xs : qv} {c c' : RMConfig}
-    (h : qC_many C [1,0,1] ts k xs c = some c') :
+    (h : qC_many C [1, 0, 1] ts k xs c = some c') :
     (c.denote) [qc]⊢* (c'.denote) := by
   unfold qC_many at h
   split_ifs at h with hq
@@ -1836,7 +1838,7 @@ theorem qP_many {ts : List ℕ} {k : ℕ} {xs : qv} {c c' : RMConfig}
         | none => rw [hrc] at h; contradiction
         | some r1 =>
           rw [hrc] at h
-          simp only [strictNat_eq, strictRuns_eq] at h
+          simp only [strictRuns_eq] at h
           injection h with hc'; subst hc'
           unfold RMConfig.denote
           dsimp -failIfUnchanged only
@@ -2038,7 +2040,7 @@ def exec_cmd (cmd : Cmd) (c : RMConfig) : Option RMConfig :=
   | .scan op n => qs_direct op n c
   | .scan2 op1 op2 ns => qQ_direct op1 op2 ns c
 theorem exec_cmd_spec {cmd : Cmd} {c c' : RMConfig}
-    (h : exec_cmd cmd c=some c') :
+    (h : exec_cmd cmd c = some c') :
     (c.denote) [qc]⊢* (c'.denote):= by
   cases cmd with
   | one op arg => exact qp h
@@ -2054,7 +2056,7 @@ def q6 : List Cmd → RMConfig → Option RMConfig
     | some c' => q6 rest c'
     | none => none
 theorem q1 {cs : List Cmd} {c c' : RMConfig}
-    (h : q6 cs c=some c') :
+    (h : q6 cs c = some c') :
     (c.denote) [qc]⊢* (c'.denote):= by
   induction cs generalizing c with
   | nil =>
@@ -2071,7 +2073,7 @@ def isHalted (tm : Machine (Fin 2) (Fin 6)) (c : RMConfig) : Bool :=
     | .left => (Runs.pop c.left).1
     | .right => (Runs.pop c.right).1
   (tm c.state b).isNone
-theorem isHalted_spec {c : RMConfig} (h : isHalted qc c=true) :
+theorem isHalted_spec {c : RMConfig} (h : isHalted qc c = true) :
     (step qc c.denote).isNone:= by
   rcases c with ⟨l,r,q,d⟩
   unfold isHalted at h
@@ -2090,7 +2092,6 @@ theorem isHalted_spec {c : RMConfig} (h : isHalted qc c=true) :
     cases htm : qc q (Runs.pop r).1 with
     | none => rfl
     | some _ => rw [htm] at h; contradiction
-set_option maxHeartbeats 4000000
 def cfg_0 : RMConfig:=⟨[],[],A,.right⟩
 def cfg_1 : RMConfig:=⟨[([1],1),([0],1),([1],1)],[([1,1,1,1,0,1,1,1,1,1],14),([1,1,1,1,1,1,1,1,1,1,1,1],1),([1,1,1,1,0,1,1,1,1,1],8),([1],3)],C,.right⟩
 def cfg_2 : RMConfig:=⟨[([1],1),([0],1),([1],1)],[([1,1,1,1,0,1,1,1,1,1],241),([1,1,1,1,1,1,1,1,1,1,1,1],1),([1,1,1,1,0,1,1,1,1,1],53),([1,1,1,1,1,1,1,1,1,1,1,1],1),([1,1,1,1,0,1,1,1,1,1],5),([1],3)],C,.right⟩

@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RB_1RC1LC_0LD1RA_1LF1LE_0LA1LC_1LBHHH
@@ -33,7 +36,6 @@ def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
 
-set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000
 
 @[simp] theorem zero_cons_default : (0 : Fin 2) >> default = default := by

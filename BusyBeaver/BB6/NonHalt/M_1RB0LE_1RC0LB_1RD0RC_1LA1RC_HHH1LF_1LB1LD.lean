@@ -892,7 +892,7 @@ private theorem drain_B1_iter (b : ℕ) :
   induction b with
   | zero =>
     intro k r
-    simpa using stepStar_refl target_tm _
+    simp
   | succ b ih =>
     intro k r
     have hidx : 2 * (b + 1) + k = (2 * b + k) + 2 := by omega

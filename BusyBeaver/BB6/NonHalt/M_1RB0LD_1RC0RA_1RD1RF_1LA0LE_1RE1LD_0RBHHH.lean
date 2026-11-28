@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LD_1RC0RA_1RD1RF_1LA0LE_1RE1LD_0RBHHH
@@ -25,7 +28,6 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 2000
 
 -- ============================================================================
@@ -814,7 +816,7 @@ theorem PassesL (Z : List Tri) (hZ : ∀ x ∈ Z, okL x) (l r : ListBlank (Fin 2
       cases q with
       | zero => omega
       | succ q =>
-        simp only [LP, RP, touch, sd]
+        simp only [LP]
         have h1 := ih (fun y hy => hZ y (List.mem_cons_of_mem _ hy)) (reg p (q + 2) l) r
         have h2 := PassL l p q (RP (Z.map touch) r)
         simp only [reg] at h1
@@ -1204,7 +1206,7 @@ theorem dv_lt (P : List Tri) : dv P < 2 ^ P.length := by
 theorem dv_zeros (Z R : List Tri) (hZ : ∀ x ∈ Z, dig0 x) :
     dv (Z ++ R) = 2 ^ Z.length * dv R := by
   induction Z with
-  | nil => simp [dv]; try omega
+  | nil => simp; try omega
   | cons x Z ih =>
     rcases x with ⟨p, q, d⟩
     have hd : d = false := hZ (p, q, d) List.mem_cons_self
@@ -1216,12 +1218,12 @@ theorem dv_zeros (Z R : List Tri) (hZ : ∀ x ∈ Z, dig0 x) :
 theorem dv_tz (Z R : List Tri) (hZ : ∀ x ∈ Z, dig0 x) :
     dv (Z.map touch ++ R) + 1 = 2 ^ Z.length + 2 ^ Z.length * dv R := by
   induction Z with
-  | nil => simp [dv]; omega
+  | nil => simp; omega
   | cons x Z ih =>
     rcases x with ⟨p, q, d⟩
     have hd : d = false := hZ (p, q, d) List.mem_cons_self
     subst hd
-    simp [dv, touch, bv]
+    simp only [List.map_cons, touch, Bool.not_false, List.cons_append, dv, bv, ↓reduceIte, List.length_cons]
     have ih' := ih (fun y hy => hZ y (List.mem_cons_of_mem _ hy))
     rw [pow_S, Nat.mul_assoc]
     omega
