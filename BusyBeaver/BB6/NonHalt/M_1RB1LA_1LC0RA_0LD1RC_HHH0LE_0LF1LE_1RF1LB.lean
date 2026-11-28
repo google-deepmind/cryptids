@@ -214,7 +214,7 @@ theorem mkStackRules (tm : Machine (Fin 2) (Fin 6)) (stC stD stF : Fin 6) (bot :
     intro a l r
     induction a generalizing r with
     | zero =>
-      simp only [ones_zero_eq, pow_succ_eq, pow_zero_eq, List.singleton_append,
+      simp only [pow_succ_eq, pow_zero_eq, List.singleton_append,
         append_cons, append_nil]
       exact h_F0 l r
     | succ a ih =>
@@ -247,7 +247,7 @@ theorem mkStackRules (tm : Machine (Fin 2) (Fin 6)) (stC stD stF : Fin 6) (bot :
     intro d l r
     induction d generalizing l with
     | zero =>
-      simp only [ones_zero_eq, pow_succ_eq, pow_zero_eq, List.singleton_append,
+      simp only [pow_succ_eq, pow_zero_eq, List.singleton_append,
         append_cons, append_nil]
       exact h_D0 l r
     | succ d ih =>
@@ -366,7 +366,7 @@ theorem mkStackRules (tm : Machine (Fin 2) (Fin 6)) (stC stD stF : Fin 6) (bot :
     rw [hb3]
     have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{0}}> (s0 ∷ default)) := by
       simp only [init, Tape.mk₁, Tape.mk₂, Tape.mk', zero_cons_default, default_head, default_tail]
-      congr 1 <;> (apply Turing.ListBlank.ext; intro _; rfl)
+      congr 1
     rw [h0]
     exact stepPlus_trans (stepPlus_trans (stepPlus_trans h_init1 h_init2) h_init3) h_init4
 

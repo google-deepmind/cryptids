@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RF_1LC1RE_1LD0LC_0LE0RE_1RA1LD_1RBHHH
@@ -29,7 +32,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
@@ -41,7 +43,6 @@ abbrev F : Fin 6 := 5
 variable {zG_ zL_ : Type*} [Inhabited zG_] [Inhabited zL_]
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
-set_option maxHeartbeats 8000000
 namespace Sparse
 abbrev num := List (Nat × Int)
 def pow2 (n : Nat) : Int := (2 : Int) ^ n
@@ -64,7 +65,7 @@ theorem z02 {n : Nat} (h : 16 < n) : (65536 : Int) <= pow2 n := by
   have h1 : (65536 : Int) = (2 : Int) ^ 16 := by norm_num
   rw [h1]
   exact pow_le_pow_right₀ (by norm_num) (by omega)
-theorem z03 {n : Nat} {c q : Int} {bz : Bool} (h : z01 n c = some (q,bz)) :
+theorem z03 {n : Nat} {c q : Int} {bz : Bool} (h : z01 n c = some (q, bz)) :
     ∃ r,c = pow2 n * q + r /\ 0 <= r /\ r < pow2 n /\ (bz = true <-> r = 0) := by
   unfold z01 at h
   have hp := zPp n
@@ -164,7 +165,7 @@ def z08 (xs : num) : Option Int := z06 xs 0 0
 theorem z09 {xs : num} {s : Int} (h : z08 xs = some s) :
     cmp0 (value xs) = s := by
   rcases z07 h with ⟨v,hv,hs⟩
-  have hv1 : value xs = v := by simp [pow2] at hv; exact hv
+  have hv1 : value xs = v := by simp only [pow2, pow_zero, one_mul] at hv; exact hv
   simpa [hv1] using hs
 def z0a (e : Nat) (c : Int) : num -> num
   | [] => [(e,c)]
@@ -275,7 +276,7 @@ theorem leb_spec {xs ys : num} (h : leb xs ys = true) : value xs <= value ys := 
   rcases h with h | h
   · have hcmp := compare_spec h
     unfold cmp0 at hcmp
-    split_ifs at hcmp <;> omega
+    split_ifs at hcmp; omega
   · have hcmp := compare_spec h
     unfold cmp0 at hcmp
     split_ifs at hcmp <;> omega
@@ -296,7 +297,7 @@ def split (xs : num) : Option (Nat × num) :=
     if nonnegative u then
       if eqb xs (shift e (add (shift 1 u) (small 1))) then some (e,u) else none
     else none
-theorem split_spec {xs : num} {e : Nat} {u : num} (h : split xs = some (e,u)) :
+theorem split_spec {xs : num} {e : Nat} {u : num} (h : split xs = some (e, u)) :
     0 <= value u /\ value xs = pow2 e * (value u * 2 + 1) := by
   unfold split nonnegative at h
   cases hp : pack xs with
@@ -323,7 +324,7 @@ def half (xs : num) : Option (Bool × num) :=
     else if eqb xs (add (shift 1 u) (small 1)) then some (true,u)
     else none
   else none
-theorem half_spec {xs : num} {odd : Bool} {u : num} (h : half xs = some (odd,u)) :
+theorem half_spec {xs : num} {odd : Bool} {u : num} (h : half xs = some (odd, u)) :
     0 <= value u /\ value xs = value u * 2 + (if odd then 1 else 0) := by
   unfold half nonnegative at h
   dsimp only at h
@@ -495,7 +496,7 @@ end Forward13
 @[simp] theorem z0j (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 theorem z0k (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [z0j,Nat.succ_add,ih,List.append_assoc]
 theorem z0l (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
@@ -566,7 +567,7 @@ theorem z0y (d0 d1 : zF) (len n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n * 2 + 1) * 2 ^ 0 - 1 = n * 2 := by simp
-    simp [h1,z0s]
+    simp [z0s]
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 <= (n * 2 + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -582,7 +583,7 @@ theorem z0y' (d0 d1 : zF) (len n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n + 1) * 2 ^ 0 - 1 = n := by omega
-    simp [h1]
+    simp
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 <= (n + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -620,7 +621,7 @@ theorem z0D (d0 d1 dw : zF) (len n i : Nat) (r : zB) :
   cases i with
   | zero =>
     have h1 : (n * 2 + 1) * 2 ^ 0 - 1 = n * 2 := by simp
-    simp [h1,z0z]
+    simp [z0z]
   | succ i =>
     have hp := z0v i
     have hpos : 1 <= (n * 2 + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -675,7 +676,7 @@ theorem z0L {d0 d1 : zF} (hd0 : d0 +> default = default) (n i : Nat) :
   induction i with
   | zero =>
     have h1 : (n * 2 + 1) * 2 ^ 0 - 1 = n * 2 := by simp
-    simp [h1,z0H hd0]
+    simp [z0H hd0]
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 <= (n * 2 + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -1190,7 +1191,7 @@ def MC (h n : Nat) (r : zB) : zB := z0p [0] [1] [0,0] h n r
 def RC1 (h n m : Nat) : zB := MC h n (rd1 +> RC m)
 def RC2 (h n m : Nat) : zB := MC h n ([0] +> rd1 +> RC m)
 def RC' (h n : Nat) : zB := MC h n ([1,0,1] +> default)
-theorem z1B : rd0 +> default = default := by simp [rd0]
+theorem z1B : rd0 +> default = default := by simp
 theorem z1C : [1] +> RC 0 = RC 1 := by
   simp [RC,z0F,z0G,rd1]
 theorem z1D : [0,0] +> RC 0 = RC 0 := by
@@ -1367,7 +1368,7 @@ theorem z23' (len h : Nat) :
   rw [h1,h2,z0y' [0,0,0] [0,0,1] 1 0 h]
   have h3 : z0o [0,0,0] [0,0,1] 1 0 ([0] +> rd1 +> default) =
       [0] +> [0] +> [1,0,1] +> default := by
-    simp [z0u,rd1]
+    simp [z0u]
   rw [h3,Nat.add_comm len 1]
   change (z0U ((ld1 ^ len) +> ldh) ([1] +> (rd0 ^ h) +> ([0] +> ([0] +> [1,0,1] +> default)))) [target_tm]⊢⁺
     (z0V ((ld0 ^ (1 + len)) +> ldh) ((rd0 ^ h) +> ([0] +> [1,0,1] +> default)))
@@ -1637,14 +1638,14 @@ theorem z2E {x y : Sparse.num} (h : Forward13.lt x y = true) :
   rw [beq_iff_eq] at h
   have hcmp := Sparse.compare_spec h
   unfold Sparse.cmp0 at hcmp
-  split_ifs at hcmp <;> omega
+  split_ifs at hcmp; omega
 theorem z2F {x : Sparse.num} (h : Sparse.nonnegative x = true) :
     0 <= Sparse.value x := by
   have h1 := Sparse.leb_spec h
   simpa [Sparse.value] using h1
 theorem z2G (w : Nat) : 0 <= Sparse.value (Forward13.full w) := by
   rw [z2x]; have := Sparse.zPp w; omega
-theorem z2H {m : Sparse.num} {i : Nat} {u : Sparse.num} (h : Sparse.split m = some (i,u)) :
+theorem z2H {m : Sparse.num} {i : Nat} {u : Sparse.num} (h : Sparse.split m = some (i, u)) :
     0 <= Sparse.value u /\ z2r m = (z2r u * 2 + 1) * 2 ^ i := by
   rcases Sparse.split_spec h with ⟨hu,hm⟩
   refine ⟨hu,?_⟩
@@ -1656,7 +1657,7 @@ theorem z2H {m : Sparse.num} {i : Nat} {u : Sparse.num} (h : Sparse.split m = so
     unfold Sparse.pow2 at hm
     linarith
   exact Int.ofNat.inj h_eq
-theorem z2I {m : Sparse.num} {b : Bool} {u : Sparse.num} (h : Sparse.half m = some (b,u)) :
+theorem z2I {m : Sparse.num} {b : Bool} {u : Sparse.num} (h : Sparse.half m = some (b, u)) :
     0 <= Sparse.value u /\ z2r m = z2r u * 2 + (if b then 1 else 0) := by
   rcases Sparse.half_spec h with ⟨hu,hm⟩
   refine ⟨hu,?_⟩
@@ -1883,8 +1884,8 @@ theorem z2X {w : Nat} {k m : Sparse.num} {y : Forward13.State}
         rfl
       rw [h_sub,hm,z2i]
 theorem z2Y {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward13.State}
-    (hg : Forward13.good ⟨.R,w,k,h,n,m⟩ = true)
-    (hs : Forward13.step_state ⟨.R,w,k,h,n,m⟩ = .next y) :
+    (hg : Forward13.good ⟨.R, w, k, h, n, m⟩ = true)
+    (hs : Forward13.step_state ⟨.R, w, k, h, n, m⟩ = .next y) :
     (z2P ⟨.R,w,k,h,n,m⟩) [target_tm]⊢* (z2P y) := by
   rcases z2R hg with ⟨hw,hk,hcap,hm⟩
   dsimp only at hw hk hcap hm
@@ -1901,8 +1902,8 @@ theorem z2Y {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward
   rw [h0,h1]
   exact z2e w (z2r k) (z2r m) hk_lt
 theorem z2Z {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward13.State}
-    (_hg : Forward13.good ⟨.A,w,k,h,n,m⟩ = true)
-    (hs : Forward13.step_state ⟨.A,w,k,h,n,m⟩ = .next y) :
+    (_hg : Forward13.good ⟨.A, w, k, h, n, m⟩ = true)
+    (hs : Forward13.step_state ⟨.A, w, k, h, n, m⟩ = .next y) :
     (z2P ⟨.A,w,k,h,n,m⟩) [target_tm]⊢* (z2P y) := by
   dsimp only [Forward13.step_state] at hs
   cases hhalf : Sparse.half m with
@@ -1917,8 +1918,8 @@ theorem z2Z {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward
       exact zPs (z20 w (z2r k) (z2r u))
     · contradiction
 theorem z30 {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward13.State}
-    (hg : Forward13.good ⟨.L,w,k,h,n,m⟩ = true)
-    (hs : Forward13.step_state ⟨.L,w,k,h,n,m⟩ = .next y) :
+    (hg : Forward13.good ⟨.L, w, k, h, n, m⟩ = true)
+    (hs : Forward13.step_state ⟨.L, w, k, h, n, m⟩ = .next y) :
     (z2P ⟨.L,w,k,h,n,m⟩) [target_tm]⊢* (z2P y) := by
   rcases z2R hg with ⟨hw,hk,hcap,hm⟩
   dsimp only at hw hk hcap hm
@@ -1982,8 +1983,8 @@ theorem z30 {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward
         simp only [↓reduceIte]
         exact zPs (z1K w (z2r u))
 theorem z31 {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward13.State}
-    (hg : Forward13.good ⟨.T2,w,k,h,n,m⟩ = true)
-    (hs : Forward13.step_state ⟨.T2,w,k,h,n,m⟩ = .next y) :
+    (hg : Forward13.good ⟨.T2, w, k, h, n, m⟩ = true)
+    (hs : Forward13.step_state ⟨.T2, w, k, h, n, m⟩ = .next y) :
     (z2P ⟨.T2,w,k,h,n,m⟩) [target_tm]⊢* (z2P y) := by
   rcases z2R hg with ⟨hw,hk,hcap,hm⟩
   dsimp only at hw hk hcap hm
@@ -2036,8 +2037,8 @@ theorem z31 {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward
     rw [hh,hw_eq]
     exact zPs (z1Z w (z2r b) a (z2r m) (by omega))
 theorem z32 {w : Nat} {k : Sparse.num} {h : Nat} {n m : Sparse.num} {y : Forward13.State}
-    (hg : Forward13.good ⟨.T1,w,k,h,n,m⟩ = true)
-    (hs : Forward13.step_state ⟨.T1,w,k,h,n,m⟩ = .next y) :
+    (hg : Forward13.good ⟨.T1, w, k, h, n, m⟩ = true)
+    (hs : Forward13.step_state ⟨.T1, w, k, h, n, m⟩ = .next y) :
     (z2P ⟨.T1,w,k,h,n,m⟩) [target_tm]⊢* (z2P y) := by
   rcases z2R hg with ⟨hw,hk,hcap,hm⟩
   dsimp only at hw hk hcap hm
@@ -2225,7 +2226,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_halt : IsHalt target := by
   exact z2p z37 (z36 175 Forward13.seed Forward13.numerical_halt)

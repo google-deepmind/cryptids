@@ -184,7 +184,7 @@ private theorem noFactor_010_oRun (o : ℕ) (t : zB) (ht : WordRunStack.NoFactor
     exact WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (1 : Fin 2) _ h1 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
   | succ o ih =>
-    simp only [oRun_zero, oRun_succ, ListBlank.append]
+    simp only [oRun_succ, ListBlank.append]
     exact WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (1 : Fin 2) _ ih 0 (by decide)
       (by rw [WordRunStack.nth_cons_zero]; decide)
 
@@ -202,7 +202,7 @@ private theorem noFactor_010_rWord (z o : ℕ) (t : zB) (ht : WordRunStack.NoFac
       rw [WordRunStack.nth_cons_succ, oRun_nth_one]
       decide
     | succ z =>
-      simp only [rWord_zero, rWord_succ, ListBlank.append] at ih ⊢
+      simp only [rWord_succ, ListBlank.append] at ih ⊢
       refine WordRunStack.noFactor_cons_of_nth_ne [0, 1, 0] (0 : Fin 2) _ ih 1 (by decide) ?_
       simp only [WordRunStack.nth_cons_succ, WordRunStack.nth_cons_zero]
       decide
@@ -231,13 +231,13 @@ private theorem zWord_ne_zero : ∀ k : ℕ, zWord k ≠ [(0 : Fin 2)]
 private theorem oRun_len (o : ℕ) : 2 ≤ (oRun o).length := by
   induction o with
   | zero => decide
-  | succ _ ih => simp [oRun_zero, oRun_succ]; omega
+  | succ _ ih => simp [oRun_succ]; omega
 
 private theorem rWord_len : ∀ p : ℕ × ℕ, 2 ≤ (rWord p).length
   | (0, o) => by simp only [rWord_zero]; exact oRun_len o
   | (z + 1, o) => by
       have ih := rWord_len (z, o)
-      simp only [rWord_zero, rWord_succ, List.length_cons]
+      simp only [rWord_succ, List.length_cons]
       omega
 
 private theorem rWord_ne_nil (p : ℕ × ℕ) : rWord p ≠ [] := by

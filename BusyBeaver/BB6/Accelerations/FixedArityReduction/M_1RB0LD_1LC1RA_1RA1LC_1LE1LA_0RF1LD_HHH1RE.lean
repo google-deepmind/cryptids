@@ -307,7 +307,7 @@ private theorem sweep_EF (n : Nat) (l : ListBlank (Fin 2)) (r : ListBlank (Fin 2
       0] : List (Fin 2))^n +> r⟩⟩ := by
       unfold cfg_start
       rw [h_pow_left]
-      simp [Cfg.headRight, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+      simp [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
     have h_step1 : cfg_start [target]⊢⁺ cfg_middle := by
       rw [h_start_eq]
       unfold cfg_middle
@@ -368,7 +368,7 @@ private theorem rule_even_0 (g h : Nat) (hg : g % 2 = 0) (hg_ge : g ≥ 2) (hh :
         (default : ListBlank (Fin 2))) )) := by
       have h_ge : 2*(k-1)+2 ≥ 1 := by omega
       rw [unfold_pow_1 (2*(k-1)+2) h_ge]
-      simp [Cfg.headLeft, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+      simp [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
     have h_RHS : ⟨some D, ⟨1, (1 : Fin 2) >> (default : ListBlank (Fin 2)), ([0,
       1] : List (Fin 2))^(k-1) +> (0 : Fin 2) >> (([1] : List (Fin 2))^(h-1)
       +> (default : ListBlank (Fin 2)))⟩⟩ =
@@ -376,7 +376,7 @@ private theorem rule_even_0 (g h : Nat) (hg : g % 2 = 0) (hg_ge : g ≥ 2) (hh :
         1] : List (Fin 2))^(k-1) +> (0 : Fin 2) >> (([1] : List (Fin 2))^(h-1)
         +> (default : ListBlank (Fin 2))) )) := by
       rw [unfold_pow_1 2 (by omega)]
-      simp [Cfg.headLeft, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, list_pow_succ,
+      simp [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, list_pow_succ,
         list_pow_zero, List.append_nil]
     rw [h_LHS, h_RHS]
     exact sweep_loop_gen default 2 (k-1) ((0 : Fin 2) >> (([1] : List (Fin 2))^(h-1)
@@ -421,7 +421,7 @@ private theorem rule_even_0 (g h : Nat) (hg : g % 2 = 0) (hg_ge : g ≥ 2) (hh :
         rw [show k+1 = 1 + k by omega, list_pow_add, ListBlank.append_assoc]
         rfl
       rw [h_eq, h_RF_eq]
-      simp [Cfg.headRight, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+      simp [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
     have h_s7_eq : ⟨some F, ⟨1, ([0,
       1] : List (Fin 2))^(k+1) +> (0 : Fin 2) >> (default : ListBlank (Fin 2)),
       ([1] : List (Fin 2))^(h-2) +> (default : ListBlank (Fin 2))⟩⟩ =
@@ -432,7 +432,7 @@ private theorem rule_even_0 (g h : Nat) (hg : g % 2 = 0) (hg_ge : g ≥ 2) (hh :
       have h_h1_ge1 : h - 1 ≥ 1 := by omega
       rw [unfold_pow_1 (h-1) h_h1_ge1]
       rw [show h-1-1 = h-2 by omega]
-      simp [Cfg.headRight, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
+      simp [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
     rw [h_s6_eq, h_s7_eq]
     exact sweep_EF (k+1) ((0 : Fin 2) >> (default : ListBlank (Fin 2))) (([1] : List (Fin 2))^(h-1)
       +> (default : ListBlank (Fin 2)))
@@ -617,7 +617,7 @@ private theorem rule_even_0_h2 (k : Nat) (hk : k ≥ 1) :
       (([0, 1] : List (Fin 2)) +> default) {{F}}>
         (([1, 0] : List (Fin 2))^k +> (1 : Fin 2) >> (default : ListBlank (Fin 2))) := by
     rw [h_pow_k]
-    simp [Cfg.headRight]
+    simp
   -- Phase 3: after the `F` sweep (`step_F_sweep_halt`), two more steps reach the halting
   -- configuration.
   have h_phase3 : (⟨some F, ⟨((1 : Fin 2) >> (default : ListBlank (Fin 2))).head,
@@ -1050,7 +1050,7 @@ private theorem rule_odd_0 (g h : Nat) (hg : g % 2 = 1) (hh : h ≥ 2) :
         have h_calc : 2 * (k + 2) + 1 = 2 * k + 5 := by omega
         rw [h_calc] at h_apply
         rw [h_unfold] at h_apply
-        simp only [Cfg.headLeft, ListBlank.head_cons, ListBlank.tail_cons] at h_apply
+        simp only [ListBlank.head_cons, ListBlank.tail_cons] at h_apply
         exact h_apply
       have h_step_D_A : (⟨some D, ⟨1, default, ([0,
         1] : List (Fin 2))^(k + 2) +> ((0 : Fin 2) >> (([1] : List (Fin 2))^(h-1)
@@ -1093,7 +1093,7 @@ private theorem rule_odd_0 (g h : Nat) (hg : g % 2 = 1) (hh : h ≥ 2) :
             rw [list_pow_one]
           rw [h_combine]
         rw [h_left_eq] at h_apply
-        simp only [Cfg.headRight, ListBlank.head_cons, ListBlank.tail_cons] at h_apply
+        simp only [ListBlank.head_cons, ListBlank.tail_cons] at h_apply
         exact h_apply
       have h_step_B_A : (⟨some B, ⟨(([1] : List (Fin 2))^(h-1) +> default).head,
         ([1] : List (Fin 2))^(2 * k + 7) +> default,

@@ -7,6 +7,9 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
@@ -295,11 +298,11 @@ theorem stop_halt (r : ListBlank (Fin 2)) : SideHalt ([0, 0, 1, 1] +> r) := by
 
 theorem default_eq_zero_one :
     (default : ListBlank (Fin 2)) = ([0] : List (Fin 2)) +> default := by
-  simp [zero_cons_default]
+  simp
 
 theorem default_eq_zero_three :
     (default : ListBlank (Fin 2)) = ([0, 0, 0] : List (Fin 2)) +> default := by
-  simp [zero_cons_default]
+  simp
 
 theorem emit_side (b : Bool) {r r' : ListBlank (Fin 2)} (h : Side b r r') :
     (start r) [holdout_0451_tm]⊢* (start ((if b then [0, 1, 0] else W) +> r')) := by
@@ -507,7 +510,7 @@ theorem batch_steps {t : ℕ} {xs : List (Bool × ℕ)} {e : ℕ} {ys : List (Bo
   | zero =>
     rcases batch_zero h with ⟨rfl, hys⟩
     subst hys
-    simpa using! reaches_refl _
+    simp
   | succ t ih =>
     rcases batch_split h with ⟨f, zs, g, hB1, hB2, rfl⟩
     have h1 := batch_one_start hB1 k
@@ -852,7 +855,7 @@ theorem prepend_cell_to_packed_spec (p : Bool) (raw_n : Nat) (ys : FastCells)
       unfold prepend_cell_to_packed
       dsimp only
       have hp_mod : Nat.beq (Nat.mod (Nat.add (Nat.mul 2 v) (bval(p))) 2) 1 = p := by
-        cases p <;> simp [Nat.beq] <;> omega
+        cases p <;> simp [Nat.beq]
       have hv_div : Nat.div (Nat.add (Nat.mul 2 v) (bval(p))) 2 = v := by
         cases p <;> dsimp <;> omega
       have hm_eq : Nat.sub (Nat.add (Nat.sub (Nat.add raw_n (Nat.mul 2 v)) (Nat.mul 2 (Nat.div v 2)))

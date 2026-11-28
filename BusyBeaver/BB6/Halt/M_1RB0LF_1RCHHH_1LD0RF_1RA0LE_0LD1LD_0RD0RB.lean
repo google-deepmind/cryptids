@@ -37,7 +37,6 @@ open Counter
 namespace Solution
 
 set_option maxRecDepth 200000
-set_option maxHeartbeats 2000000
 
 @[simp] theorem init_nil : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) =
     ⟨some A, ⟨0, default, default⟩⟩ := rfl
@@ -50,7 +49,8 @@ def encWord : LD → List (Fin 2)
   | .W0 => [1, 0, 0]
   | .W1 => [1, 1, 1]
 
-/-- Left tape encoding with the invariant MSB sentinel `[.W1, .W1]` (`[1, 1, 1, 1, 1, 1]`) built in. -/
+/-- Left tape encoding with the invariant MSB sentinel
+`[.W1, .W1]` (`[1, 1, 1, 1, 1, 1]`) built in. -/
 def Lmp (x : List LD) : ListBlank (Fin 2) :=
   encTape encWord ([1, 1, 1, 1, 1, 1] +> default) x
 
@@ -93,7 +93,8 @@ def cfgC (l r : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 -- ============================================================================
 
 macro "step1" : tactic => `(tactic| (
-  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, cfgL, cfgR, cfgC, RC, Lmp_W0, Lmp_W1, Lmp_nil,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, cfgL, cfgR, cfgC, RC,
+    Lmp_W0, Lmp_W1, Lmp_nil,
     Lmp_head, Lmp_cons_tail,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
@@ -109,7 +110,8 @@ macro "step1" : tactic => `(tactic| (
 
 macro "run_steps" n:num : tactic => `(tactic| (
   iterate $n step1
-  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, cfgL, cfgR, cfgC, RC, Lmp_W0, Lmp_W1, Lmp_nil,
+  simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, cfgL, cfgR, cfgC, RC,
+    Lmp_W0, Lmp_W1, Lmp_nil,
     Lmp_head, Lmp_cons_tail,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
@@ -236,7 +238,8 @@ theorem LIncsP_pow9_bound {n : ℕ} {xs xs' : List LD} (h : LIncsP n xs xs') :
   have h7 := LIncsP.w10 h6
   have h8 := LIncsP.w10 h7
   have h9 := LIncsP.w10 h8
-  have heq : 2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * n + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1 =
+  have heq :
+      2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * (2 * n + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1) + 1 =
       512 * n + 511 := by omega
   rwa [heq] at h9
 
@@ -282,7 +285,8 @@ theorem lov_w0_iter : ∀ (m : ℕ) (y : List LD) (r : ListBlank (Fin 2)),
 theorem full_overflow_step {w y : List LD} (m : ℕ) (h : LOv2 w [.W0, .W0] y) :
     (cfgL (Lmp w) (RC (m + 1))) [target_tm]⊢*
       (cfgL (Lmp ((([.W1] : List LD) ^ m) ++ y)) (RC 0)) := by
-  refine stepStar_trans (LOv2_correct h ((([0, 1, 1] : List (Fin 2)) ^ (m + 1)) +> ([0, 1] +> default))) ?_
+  refine stepStar_trans
+    (LOv2_correct h ((([0, 1, 1] : List (Fin 2)) ^ (m + 1)) +> ([0, 1] +> default))) ?_
   refine stepStar_trans (lov_w0_iter (m + 1) y ([0, 1] +> default)) ?_
   rw [pow_succ_list, List.singleton_append, List.cons_append]
   exact ⟨13, lov_finish_13 ((([.W1] : List LD) ^ m) ++ y)⟩
@@ -327,7 +331,8 @@ def cmultiStepChunk : ℕ → ℕ → CCfg (Fin 2) (Fin 6) → Option (CCfg (Fin
   | 0, _, c => some c
   | k + 1, m, c => (cmultiStep target_tm m c).bind (cmultiStepChunk k m)
 
-theorem cmultiStepChunk_sound : ∀ (k m : ℕ) (c c' : CCfg (Fin 2) (Fin 6)) (r_tail : ListBlank (Fin 2)),
+theorem cmultiStepChunk_sound :
+    ∀ (k m : ℕ) (c c' : CCfg (Fin 2) (Fin 6)) (r_tail : ListBlank (Fin 2)),
     cmultiStepChunk k m c = some c' → (evalCCfg r_tail c) [target_tm]⊢^{m * k} (evalCCfg r_tail c')
   | 0, m, c, c', _, h => by
     injection h with h'; subst h'; simp
@@ -342,7 +347,7 @@ theorem cmultiStepChunk_sound : ∀ (k m : ℕ) (c c' : CCfg (Fin 2) (Fin 6)) (r
 theorem init_to_x2 : (init []) [target_tm]⊢* (cfgL (Lmp x2) (RC 2)) := by
   have h_eq1 : (init ([] : List (Fin 2)) : Cfg (Fin 2) (Fin 6)) = evalCCfg default c_init_104 := by
     rw [init_nil]
-    simp [evalCCfg, evalWindow, c_init_104, zeros_append_default]
+    simp [evalCCfg, evalWindow, c_init_104]
   have h_eq2 : evalCCfg default c_x2 = cfgL (Lmp x2) (RC 2) := rfl
   have h_steps : cmultiStepChunk 6 901 c_init_104 = some c_x2 := by decide
   rw [h_eq1, ← h_eq2]
@@ -384,7 +389,8 @@ theorem LInc_round_tail (m : ℕ) (s : List LD) :
 
 theorem chain_round_step_aux {r m : ℕ} (hr : r ≤ 8) (hm : m ≥ 26)
     {T T₀' u u' W' : List LD}
-    (h_10 : LIncsP m ((([.W1, .W0] : List LD) ^ 10) ++ (T ++ u)) ((([.W1, .W1] : List LD) ^ 10) ++ W'))
+    (h_10 : LIncsP m ((([.W1, .W0] : List LD) ^ 10) ++ (T ++ u))
+      ((([.W1, .W1] : List LD) ^ 10) ++ W'))
     (h_ov : LOv2 W' [.W0, .W0] ([.W0, .W0, .W1, .W0] ++ (T₀' ++ u')))
     (h_ct0 : ChainTail r T₀') :
     ∃ T', ChainTail r T' ∧
@@ -491,7 +497,7 @@ theorem msb_13_halt (r : ListBlank (Fin 2)) :
   refine ⟨evalCCfg r c_msb_halt, ?_, ?_⟩
   · rw [h_start]
     exact ⟨896, cmultiStep_sound 896 c_msb_start c_msb_halt r h_896⟩
-  · simp [step, evalCCfg, evalWindow, h_q, h_cur, B, target_tm]; rfl
+  · simp [step, h_q, h_cur, B, target_tm]; rfl
 
 -- ============================================================================
 -- Section 6.9: Top-Level Halting Theorem (`proved_is_halt`)

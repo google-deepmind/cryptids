@@ -14,6 +14,9 @@ public import BusyBeaver.Calculi.WordCalculusD
 public import BusyBeaver.Calculi.WordCalculusE
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_1LC0LF_1RD1LB_1RE0RD_1LB0RB_1LB0LA
@@ -36,7 +39,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 2000000
 variable {α β γ : Type*} [Inhabited α] [Inhabited β] [Inhabited γ]
 
 namespace Solution
@@ -44,13 +46,11 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 2000000
 
 set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 2000000
 
 variable {Γ₀ Λ₀ α β γ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 def A : Fin 6 := 0
@@ -61,7 +61,6 @@ def E : Fin 6 := 4
 def F : Fin 6 := 5
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 2000000
 @[simp] theorem zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0=some config:=rfl
 @[simp] theorem zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1=step M config:=rfl
 @[simp] theorem zMs (M : Machine Γ Λ) (config : Cfg Γ Λ) (n : Nat) :
@@ -138,7 +137,7 @@ abbrev one : BitWord:=[1]
 abbrev lh : HalfTape:=[1,1,0,1,0,1] +> default
 abbrev w_pre : BitWord:=t
 @[simp] theorem zDd : d0 +> (default : HalfTape)=default:= by
-  simp [d0]
+  simp
 inductive Call where
   | ch
   | cj
@@ -213,13 +212,13 @@ theorem zS0 {ls1 ls2 ls3 : List Call} {w1 w2 v1 v2 : BitWord}
   rw [append_assoc,append_assoc]
   exact h1 (v1 +> r1) (v2 +> r2) (h2 r1 r2 h)
 theorem zS4 {c : Call} {w1 w2 : BitWord}
-    (h1 : ∀ l r,(zCR l c (w1 +> r)) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c (w1 +> r)) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c] [] w1 w2:= by
   intro r1 r2 h; cases h
   exact Side.cons (fun l => h1 l r1) (Side.nil _)
 theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid +> l) c_out r))
-    (h2 : ∀ l r,(zCL (mid +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid +> l) c_out r))
+    (h2 : ∀ l r, (zCL (mid +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c_out] w1 w2:= by
   intro r1 r2 h
   rcases h with _ | ⟨hc1,hnil⟩
@@ -227,9 +226,9 @@ theorem zS2 {c_in c_out : Call} {w1 w2 mid : BitWord}
   refine Side.cons (fun l => ?_) (Side.nil _)
   exact zPt (h1 l r1) (zPt (hc1 (mid +> l)) (h2 l r2))
 theorem zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : BitWord}
-    (h1 : ∀ l r,(zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
-    (h2 : ∀ l r,(zCL (mid1 +> l) r) [target_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
-    (h3 : ∀ l r,(zCL (mid2 +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
+    (h1 : ∀ l r, (zCR l c_in (w1 +> r)) [target_tm]⊢⁺ (zCR (mid1 +> l) c1 r))
+    (h2 : ∀ l r, (zCL (mid1 +> l) r) [target_tm]⊢⁺ (zCR (mid2 +> l) c2 r))
+    (h3 : ∀ l r, (zCL (mid2 +> l) r) [target_tm]⊢⁺ (zCL l (w2 +> r))) :
     Seg [c_in] [c1,c2] w1 w2:= by
   intro r1 r3 h
   rcases h with _ | ⟨hc1,hrest⟩
@@ -242,16 +241,16 @@ theorem zS5 {c_in c1 c2 : Call} {w1 w2 mid1 mid2 : BitWord}
         (zPt (hc2 (mid2 +> l)) (h3 l r3))))
 theorem z0n : Seg [.cp] [.ch] t (t ++ [0]) :=
   zS2 (mid:=[1,1,0,1,0])
-    (fun l r => by unfold zCR zCw zCs t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
+    (fun l r => by unfold zCR zCw zCs t; simp only [append_cons, append_nil]; execute)
     (fun l r => by unfold zCL t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
 theorem z0o : Seg [.cj] [.ch] t (t ++ one) :=
   zS2 (mid:=[1,1,0,1,1])
-    (fun l r => by unfold zCR zCw zCs t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
+    (fun l r => by unfold zCR zCw zCs t; simp only [append_cons, append_nil]; execute)
     (fun l r => by unfold zCL t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
 theorem z0p : Seg [.ch] [.cj] (t ++ [0]) t :=
   zS2 (mid:=[1,0,1,0])
     (fun l r => by unfold zCR zCw zCs t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
-    (fun l r => by unfold zCL t; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
+    (fun l r => by unfold zCL t; simp only [append_cons, append_nil]; execute)
 theorem zH2 : Seg [.ch] [.cj,.ch] (t ++ one) t :=
   zS5 (mid1:=[1,0,1,1]) (mid2:=[1,0,1,0])
     (fun l r => by unfold zCR zCw zCs t one; simp only [List.cons_append,List.nil_append,append_cons,append_nil]; execute)
@@ -302,7 +301,7 @@ theorem H_T (n : Nat) : Seg ([Call.ch] ^ n) ([Call.ch] ^ (n * 2)) t t:= by
     have h_eq : (n + 1) * 2=2 + n * 2:= by omega
     rw [zLp,h_eq,z0i]
     exact zSg z0q ih
-theorem zSa {w2 : BitWord} (hw : Seg [.ch,.ch] [.ch] w2 w2) (n : Nat) :
+theorem zSa {w2 : BitWord} (hw : Seg [.ch, .ch] [.ch] w2 w2) (n : Nat) :
     Seg ([Call.ch] ^ (n * 2)) ([Call.ch] ^ n) w2 w2:= by
   induction n with
   | zero => exact z0l w2
@@ -362,9 +361,9 @@ theorem z0N (n : Nat) : Seg ([.cj] ++ [.ch] ^ (1 + n * 2)) ([.cp] ++ [.ch] ^ n) 
 theorem z0O : Side [.ch] default (d1 +> default):= by
   refine Side.cons (fun l => ?_) (Side.nil _)
   unfold zCR zCL zCw zCs d1
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil, z00]
   execute
-theorem z0P {r1 r3 : HalfTape} (h : Side [.ch,.ch] r1 r3) :
+theorem z0P {r1 r3 : HalfTape} (h : Side [.ch, .ch] r1 r3) :
     Side [.ca] r1 (t +> r3):= by
   rcases h with _ | ⟨hc1,hrest⟩
   rcases hrest with _ | ⟨hc2,hnil⟩
@@ -372,7 +371,7 @@ theorem z0P {r1 r3 : HalfTape} (h : Side [.ch,.ch] r1 r3) :
   refine Side.cons (fun l => ?_) (Side.nil _)
   have h0 : zCR l .ca r1=zCR ([1,0,1,1] +> l) .ch r1:= by
     unfold zCR zCw zCs
-    simp only [List.cons_append,List.nil_append,append_cons,append_nil]
+    simp only [append_cons, append_nil]
   have h2 : ∀ r,(zCL ([1,0,1,1] +> l) r) [target_tm]⊢⁺ (zCR ([1,0,1,0] +> l) .ch r):= by
     intro r; unfold zCL zCR zCw zCs; simp only [append_cons,append_nil]; execute
   have h3 : (zCL ([1,0,1,0] +> l) r3) [target_tm]⊢⁺ (zCL l (t +> r3)):= by
@@ -393,12 +392,12 @@ theorem z0Q : Seg [.cj,.ca] ([.ch,.cj] ++ [.ch] ^ 3) w_pre (w_pre ++ t):= by
 theorem z0R (r : HalfTape) :
     (zCL lh r) [target_tm]⊢⁺ (zCR ([1,0,1,0,1,0,1] +> default) .cj r):= by
   unfold zCL zCR lh zCw zCs
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil]
   execute
 theorem z0S (r : HalfTape) :
     (zCL ([1,0,1,0,1,0,1] +> default) r) [target_tm]⊢⁺ (zCR lh .ca r):= by
   unfold zCL zCR lh zCw zCs
-  simp only [List.cons_append,List.nil_append,append_cons,append_nil,z00]
+  simp only [append_cons, append_nil]
   execute
 open WordCalculus
 open WordCalculus.Word
@@ -557,7 +556,7 @@ theorem z49 {n : Nat} {r r' : HalfTape}
         have heq2 : (n + 1) * 2=2 + n * 2:= by omega
         rw [heq2]; exact Num.even n
       simpa using hI [] _ hN2
-theorem z4a {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hZ : A=0) :
+theorem z4a {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hZ : A = 0) :
     evalWords da default=default:= by
   induction hD with
   | nil => rfl
@@ -587,7 +586,7 @@ theorem z4b {A H : Nat} {da : WordList} (hD : DigitVal A H da) (hPos : 0 < A) :
       generalize hk : 0=k0 at hN
       cases hN with
       | zero =>
-        have hd : d1 +> (default : HalfTape)=one +> default:= by simp [d1,one]
+        have hd : d1 +> (default : HalfTape)=one +> default:= by simp
         rw [hd]; exact Side.nil (one +> default)
       | odd _ => omega
       | even _ => omega
@@ -901,7 +900,7 @@ theorem z4m {orig out : WordList} (hS : LowerStep orig out) :
     rw [wordsToBits_append_tape,wordsToBits_append_tape,evalWords_append,z4l] at hSide
     refine ⟨evalWords (v ++ V :: da) default,?_,rfl⟩
     rwa [evalWords_append]
-theorem z4n {r r' : HalfTape} (hI : Side ([.ch,.cj] ++ [.ch] ^ 3) r r') :
+theorem z4n {r r' : HalfTape} (hI : Side ([.ch, .cj] ++ [.ch] ^ 3) r r') :
     (zCf r) [target_tm]⊢⁺ zCf (t +> r'):= by
   have hS:=zSc z0Q hI
   rcases hS with _ | ⟨hcj,hrest⟩
@@ -1035,7 +1034,7 @@ theorem z5z :
   have h0 : (init [] : Cfg (Fin 2) (Fin 6))=z04 z4q:=rfl
   have h2 : z04 z4Z=zCf (evalWords z3R default):= by
     unfold z04 z4Z zCf zCL lh w_pre z3R
-    simp only [List.replicate,List.cons_append,List.nil_append,evalWords,wordsToBits,t,d1,d0,one,append_cons,append_nil,z00]
+    simp only [List.replicate, List.cons_append, List.nil_append, evalWords, t, append_cons, append_nil, z00]
     rfl
   have hPlus : (z04 z4q) [target_tm]⊢⁺ (z04 z4Z) :=
     zPt (zTc (by decide) z50)
@@ -1077,7 +1076,7 @@ theorem z5z :
   rcases hPlus with ⟨n,_,hn⟩
   exact ⟨n,hn⟩
 theorem zIm {c c' : Cfg (Fin 2) (Fin 6)} {j d : Nat}
-    (h : multiStep target_tm c (j + d)=some c') :
+    (h : multiStep target_tm c (j + d) = some c') :
     (multiStep target_tm c j).isSome:= by
   rw [zMa] at h
   cases h_j : multiStep target_tm c j with
@@ -1109,7 +1108,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 2000000
 
 
 

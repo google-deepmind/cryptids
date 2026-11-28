@@ -2461,75 +2461,55 @@ private theorem inv_entry : Inv 15 39 165 := by
 private theorem checkTurn_all (u : ℕ) (hu : u < 62) : checkTurn u = true := by
   by_cases h0 : u < 7
   · exact checkRange_spec checkTurn 7 0 u checkTurn_0_ok (by omega) (by omega)
-  ·
-    by_cases h1 : u < 12
+  · by_cases h1 : u < 12
     · exact checkRange_spec checkTurn 5 7 u checkTurn_1_ok (by omega) (by omega)
-    ·
-      by_cases h2 : u < 17
+    · by_cases h2 : u < 17
       · exact checkRange_spec checkTurn 5 12 u checkTurn_2_ok (by omega) (by omega)
-      ·
-        by_cases h3 : u < 19
+      · by_cases h3 : u < 19
         · exact checkRange_spec checkTurn 2 17 u checkTurn_3_ok (by omega) (by omega)
-        ·
-          by_cases h4 : u < 22
+        · by_cases h4 : u < 22
           · exact checkRange_spec checkTurn 3 19 u checkTurn_4_ok (by omega) (by omega)
-          ·
-            by_cases h5 : u < 26
+          · by_cases h5 : u < 26
             · exact checkRange_spec checkTurn 4 22 u checkTurn_5_ok (by omega) (by omega)
-            ·
-              by_cases h6 : u < 28
+            · by_cases h6 : u < 28
               · exact checkRange_spec checkTurn 2 26 u checkTurn_6_ok (by omega) (by omega)
-              ·
-                by_cases h7 : u < 31
+              · by_cases h7 : u < 31
                 · exact checkRange_spec checkTurn 3 28 u checkTurn_7_ok (by omega) (by omega)
-                ·
-                  by_cases h8 : u < 36
+                · by_cases h8 : u < 36
                   · exact checkRange_spec checkTurn 5 31 u checkTurn_8_ok (by omega) (by omega)
-                  ·
-                    by_cases h9 : u < 39
+                  · by_cases h9 : u < 39
                     · exact checkRange_spec checkTurn 3 36 u checkTurn_9_ok (by omega) (by omega)
-                    ·
-                      by_cases h10 : u < 42
+                    · by_cases h10 : u < 42
                       · exact checkRange_spec checkTurn 3 39 u checkTurn_10_ok (by omega) (by omega)
-                      ·
-                        by_cases h11 : u < 44
+                      · by_cases h11 : u < 44
                         · exact checkRange_spec checkTurn 2 42 u checkTurn_11_ok (by omega)
                             (by omega)
-                        ·
-                          by_cases h12 : u < 45
+                        · by_cases h12 : u < 45
                           · exact checkRange_spec checkTurn 1 44 u checkTurn_12_ok (by omega)
                               (by omega)
-                          ·
-                            by_cases h13 : u < 46
+                          · by_cases h13 : u < 46
                             · exact checkRange_spec checkTurn 1 45 u checkTurn_13_ok (by omega)
                                 (by omega)
-                            ·
-                              by_cases h14 : u < 48
+                            · by_cases h14 : u < 48
                               · exact checkRange_spec checkTurn 2 46 u checkTurn_14_ok (by omega)
                                   (by omega)
-                              ·
-                                by_cases h15 : u < 55
+                              · by_cases h15 : u < 55
                                 · exact checkRange_spec checkTurn 7 48 u checkTurn_15_ok
                                     (by omega) (by omega)
-                                ·
-                                  by_cases h16 : u < 59
+                                · by_cases h16 : u < 59
                                   · exact checkRange_spec checkTurn 4 55 u checkTurn_16_ok
                                       (by omega) (by omega)
-                                  ·
-                                    exact checkRange_spec checkTurn 3 59 u checkTurn_17_ok 
+                                  · exact checkRange_spec checkTurn 3 59 u checkTurn_17_ok 
                                       (by omega) (by omega)
 
 private theorem checkMerge_all (i : ℕ) (hi : i < 36) : checkMerge i = true := by
   by_cases h0 : i < 13
   · exact checkRange_spec checkMerge 13 0 i checkMerge_0_ok (by omega) (by omega)
-  ·
-    by_cases h1 : i < 20
+  · by_cases h1 : i < 20
     · exact checkRange_spec checkMerge 7 13 i checkMerge_1_ok (by omega) (by omega)
-    ·
-      by_cases h2 : i < 32
+    · by_cases h2 : i < 32
       · exact checkRange_spec checkMerge 12 20 i checkMerge_2_ok (by omega) (by omega)
-      ·
-        exact checkRange_spec checkMerge 4 32 i checkMerge_3_ok (by omega) (by omega)
+      · exact checkRange_spec checkMerge 4 32 i checkMerge_3_ok (by omega) (by omega)
 
 theorem attractor_closed (cfg : Cfg (Fin 2) (Fin 6)) (h : InAttractor cfg) :
     ∃ cfg', ReachesPlus target_tm cfg cfg' ∧ InAttractor cfg' := by

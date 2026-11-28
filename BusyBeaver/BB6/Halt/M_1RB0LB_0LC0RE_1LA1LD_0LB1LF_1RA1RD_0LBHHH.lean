@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LB_0LC0RE_1LA1LD_0LB1LF_1RA1RD_0LBHHH
@@ -30,7 +33,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 def A : Fin 6 := 0
@@ -43,7 +45,6 @@ def F : Fin 6 := 5
 -- Section 5: Specific Turing Machine: Suspect 117 (Holdout #737)
 -- ============================================================================
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 -- ============================================================================
 -- Section 6: Four Sound Concrete Steppers (`wstep`, `cstep`, `rcstep`, `bstep`)
@@ -1228,7 +1229,6 @@ theorem stepR1Star_same_pow : ∀ (c : Nat) (w : List Tok) (phase : Bool) (l : L
     have h1 := stepR1StarWord_sound w phase l hw hR' k1
     rw [hsame] at h1
     refine stepStar_trans h1 ?_
-    dsimp -failIfUnchanged only
     have ih := stepR1Star_same_pow c w phase (wordL (stepR1StarWord w phase).1 +> l) hw hsame hR
       (k1 + 2 * (stepR1StarWord w phase).2.1)
     have hadd : k1 + 2 * (stepR1StarWord w phase).2.1 + 2 * (c * (stepR1StarWord w phase).2.1) =
@@ -1263,12 +1263,10 @@ theorem stepR1Star_alt_pow : ∀ (q : Nat) (w : List Tok) (phase : Bool) (l : Li
     have hR1 : HasRoundtrip (fun k => wordR w +> (((wordR w) ^ (2 * q)) +> R k)) :=
       hasRoundtrip_word w hw hR2
     refine stepStar_trans (stepR1StarWord_sound w phase l hw hR1 k1) ?_
-    dsimp -failIfUnchanged only
     refine stepStar_trans
       (stepR1StarWord_sound w (stepR1StarWord w phase).2.2
         (wordL (stepR1StarWord w phase).1 +> l) hw hR2
         (k1 + 2 * (stepR1StarWord w phase).2.1)) ?_
-    dsimp -failIfUnchanged only
     rw [halt]
     have ih := stepR1Star_alt_pow q w phase
       (wordL ((stepR1StarWord w (stepR1StarWord w phase).2.2).1 ++
@@ -1342,7 +1340,6 @@ theorem sweepStarLoop_sound : ∀ (rs : Rle) (rle : Rle) (phase : Bool) (totalRe
       simp only [↓reduceIte, evalRStack_cons]
       refine stepStar_trans
         (stepR1Star_same_pow count item phase (evalRle rle) hitem hsame hR_rest (k1 + 2 * totalRes)) ?_
-      dsimp -failIfUnchanged only
       have hadd : k1 + 2 * totalRes + 2 * (count * (stepR1StarWord item phase).2.1) =
           k1 + 2 * (totalRes + count * (stepR1StarWord item phase).2.1) := by omega
       rw [hadd, ← evalRle_pushRle]
@@ -1367,7 +1364,6 @@ theorem sweepStarLoop_sound : ∀ (rs : Rle) (rle : Rle) (phase : Bool) (totalRe
         hasRoundtrip_pow rem item hitem hR_rest
       refine stepStar_trans
         (stepR1Star_alt_pow q item phase (evalRle rle) hitem halt hR_rem (k1 + 2 * totalRes)) ?_
-      dsimp -failIfUnchanged only
       rw [← evalRle_pushRle]
       have hadd1 : k1 + 2 * totalRes +
           2 * (q * ((stepR1StarWord item phase).2.1 +
@@ -1383,7 +1379,6 @@ theorem sweepStarLoop_sound : ∀ (rs : Rle) (rle : Rle) (phase : Bool) (totalRe
       · simp only [beq_self_eq_true, ↓reduceIte, pow_succ_list, pow_zero_list, List.append_nil]
         refine stepStar_trans
           (stepR1StarWord_sound item phase _ hitem hR_rest _) ?_
-        dsimp -failIfUnchanged only
         rw [← evalRle_pushRle_one]
         have hadd2 : k1 + 2 * (totalRes + q * ((stepR1StarWord item phase).2.1 +
               (stepR1StarWord item (stepR1StarWord item phase).2.2).2.1)) +
@@ -1995,7 +1990,6 @@ theorem special_ZTM_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Li
     refine stepStar_trans (hR (tokL .P +> (tokL .M +> (tokL .T +> (((tokL .Z) ^ (n + 1)) +> l)))) k1) ?_
     refine stepStar_trans ⟨_, carry_P (tokL .M +> (tokL .T +> (((tokL .Z) ^ (n + 1)) +> l))) (R (k1 + 2))⟩ ?_
     refine stepStar_trans (special_ZTM_loop n l (hasRoundtrip_P hR) (k1 + 2)) ?_
-    dsimp -failIfUnchanged only
     refine stepStar_trans ⟨_, r0_P (((tokL .P) ^ (n + 1)) +> (tokL .M +> (tokL .T +> l))) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .P) (n + 1)]
@@ -2014,7 +2008,6 @@ theorem special_PT_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Lis
     refine stepStar_trans (hR (tokL .P +> (tokL .T +> (((tokL .P) ^ (n + 1)) +> l))) k1) ?_
     refine stepStar_trans ⟨_, carry_P (tokL .T +> (((tokL .P) ^ (n + 1)) +> l)) (R (k1 + 2))⟩ ?_
     refine stepStar_trans (special_PT_loop n l (hasRoundtrip_P hR) (k1 + 2)) ?_
-    dsimp -failIfUnchanged only
     refine stepStar_trans ⟨_, r0_P (((tokL .P) ^ (n + 1)) +> (tokL .T +> l)) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .P) (n + 1)]
@@ -2033,7 +2026,6 @@ theorem special_ZTW_loop : ∀ (n : Nat) (l : ListBlank (Fin 2)) {R : Nat → Li
     refine stepStar_trans (hR (tokL .Z +> (tokL .W +> (tokL .T +> (((tokL .Z) ^ (n + 1)) +> l)))) k1) ?_
     refine stepStar_trans ⟨_, carry_Z (tokL .W +> (tokL .T +> (((tokL .Z) ^ (n + 1)) +> l))) (R (k1 + 2))⟩ ?_
     refine stepStar_trans (special_ZTW_loop n l (hasRoundtrip_Z hR) (k1 + 2)) ?_
-    dsimp -failIfUnchanged only
     refine stepStar_trans ⟨_, r0_Z (((tokL .Z) ^ (n + 1)) +> (tokL .W +> (tokL .T +> l))) (R (k1 + 2 + 2 * n))⟩ ?_
     have hadd : k1 + 2 + 2 * n = k1 + 2 * (n + 1) := by omega
     rw [hadd, ← listblank_append_assoc, ← pow_succ_list (tokL .Z) (n + 1)]
@@ -2173,7 +2165,7 @@ theorem stepSpecialLoops_sound (r2 rStack : Rle) (k1 : Nat) (res : StepCarryRes)
               ⟨_, r0_P (((tokL .Z) ^ (mVal - 1)) +> (tokL .M +> (tokL .W +> (tokL .T +> evalRle r4)))) (evalRStack rStack (evalWK k1))⟩ ?_
             have hr5 : tokL .P +> (((tokL .Z) ^ (mVal - 1)) +> (tokL .M +> (tokL .W +> (tokL .T +> evalRle r4)))) =
                 evalRle (pushRle [.P] 1 (pushRle [.Z] (mVal - 1) (pushToksLtr [.T, .W, .M] r4))) := by
-              simp [pushToksLtr, evalRle_pushRle, wordL_cons, wordL_nil, pow_succ_list, pow_zero_list]
+              simp [pushToksLtr, evalRle_pushRle, wordL_cons, wordL_nil, pow_succ_list]
             rw [← hm1, hr5]
             exact finishTurn_sound _ .R0 rStack k1 hne
           | none =>
@@ -2271,6 +2263,7 @@ open Solution
 
 set_option maxRecDepth 4000000 in
 set_option maxHeartbeats 8000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem runCarry_2605 : runCarry 2605 initRle 1 = true := rfl
 
 

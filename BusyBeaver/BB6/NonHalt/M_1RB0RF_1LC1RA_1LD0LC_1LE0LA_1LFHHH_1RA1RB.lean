@@ -32,7 +32,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {Γ₀ Λ₀ α β γ : Type*} [Inhabited Γ₀] [Inhabited Λ₀]
 open WordCalculus Word WordCanonBR WordCanonBR.BRIncs WordCanonBR.Choice
@@ -382,8 +381,8 @@ theorem z0E_0539 : (c_to_cfg zCk0_0539) [canon_tm]⊢⁺ (cfgCanon (evalWords z2
     (stepPlus_trans_canon zCk_step3_0539 zCk_step4_0539))
   have heq1 : c_to_cfg zCk4_0539 = cfgLeft lh (w_pre3 +> evalWords zRem1Pad_0539 default) := by
     simp only [c_to_cfg, C, WordCanonBR.C, zCk4_0539, zCL, cfgLeft, lh, w_pre3, w_pre3_rest,
-        w_word, zRem1Pad_0539, evalWords, t, d0, d1, one, List.cons_append, List.nil_append,
-        append_cons, append_nil, z00, zero_cons_default_canon,
+        w_word, zRem1Pad_0539, evalWords, t, d1, List.cons_append, List.nil_append,
+        append_cons, append_nil, z00, 
       Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
   rw [heq1] at h_all
   have h_h1 := zH1_0539
@@ -395,8 +394,8 @@ theorem z0E_0539 : (c_to_cfg zCk0_0539) [canon_tm]⊢⁺ (cfgCanon (evalWords z2
     simpa only [append_nil] using! numSide_of_brIncs h_b1 [] ([.cp] ++ [.ch] ^ 2) (Num.odd 2)
   have h_turn1 := stepPlus_word_pre3_full (by have h := side_append h_h1 h_s1; exact h)
   have heq2 : t +> evalWords zOut1_0539 default = evalWords zRem2Pad_0539 default := by
-    simp only [zOut1_0539, zRem2Pad_0539, evalWords, t, d0, d1, List.cons_append, 
-        List.nil_append, append_cons, append_nil, z00, zero_cons_default_canon]
+    simp only [zOut1_0539, zRem2Pad_0539, evalWords, t, 
+        append_cons, append_nil, z00]
   rw [heq2] at h_turn1
   have h_h2 := zH2_0539
   have h_b2_0 := zB2_0539
@@ -407,8 +406,8 @@ theorem z0E_0539 : (c_to_cfg zCk0_0539) [canon_tm]⊢⁺ (cfgCanon (evalWords z2
         append_nil] using! numSide_of_brIncs h_b2 [] ([.cj] ++ [.ch] ^ 1) (Num.even 1)
   have h_turn2 := stepPlus_word_pre5_full (side_append h_h2 h_s2)
   have heq3 : t +> evalWords zOut2_0539 default = evalWords zRem3Pad_0539 default := by
-    simp only [zOut2_0539, zRem3Pad_0539, evalWords, t, d0, d1, List.cons_append, 
-        List.nil_append, append_cons, append_nil, z00, zero_cons_default_canon]
+    simp only [zOut2_0539, zRem3Pad_0539, evalWords, t, 
+        append_cons, append_nil, z00]
   rw [heq3] at h_turn2
   have h_h3 := zH3_0539
   have h_turn3 := stepPlus_word_pre_full h_h3

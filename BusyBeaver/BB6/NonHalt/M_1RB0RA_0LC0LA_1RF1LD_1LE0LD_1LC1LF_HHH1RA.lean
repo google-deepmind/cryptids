@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RA_0LC0LA_1RF1LD_1LE0LD_1LC1LF_HHH1RA
@@ -29,7 +32,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 namespace M8
 inductive St | A | B | C | D | E | F | H
@@ -76,7 +78,7 @@ theorem run_H (n : Nat) (c : Cfg) (h : c.st = .H) : run n c = c := by
     simp only [run]
     have : step c = c := by
       obtain ⟨s, L, x, R⟩ := c
-      simp at h; subst h; cases x <;> rfl
+      dsimp only at h; subst h; cases x <;> rfl
     rw [this, ih]
 end M8
 namespace M8
@@ -106,20 +108,20 @@ theorem stepB_frame {c c' : Cfg} (Lt Rt : List Bool) (h : stepB c = some c') :
     first
     | (cases R with
         | nil => simp at h
-        | cons r rs => simp at h; subst h; simp [ext, step, mR])
+        | cons r rs => simp only [List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h; simp [ext, step, mR])
     | (cases L with
         | nil => simp at h
-        | cons l ls => simp at h; subst h; simp [ext, step, mL])
-    | (simp at h; subst h; simp [ext, step])
+        | cons l ls => simp only [List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h; simp [ext, step, mL])
+    | (simp only [Option.some.injEq] at h; subst h; simp [ext, step])
 theorem runB_frame (n : Nat) (Lt Rt : List Bool) :
     ∀ {c c' : Cfg}, runB n c = some c' -> run n (ext c Lt Rt) = ext c' Lt Rt := by
   induction n with
-  | zero => intro c c' h; simp [runB] at h; subst h; rfl
+  | zero => intro c c' h; simp only [runB, Option.some.injEq] at h; subst h; rfl
   | succ n ih =>
     intro c c' h
     simp only [runB, Option.bind_eq_some_iff] at h
     obtain ⟨c1, h1, h2⟩ := h
-    show run n (step (ext c Lt Rt)) = _
+    change run n (step (ext c Lt Rt)) = _
     rw [stepB_frame Lt Rt h1]
     exact ih h2
 theorem frame {n : Nat} {s s' : St} {L h R L' h' R'} (Lt Rt : List Bool)
@@ -181,7 +183,7 @@ theorem trim_append_blank (l p : List Bool) (hp : ∀ x ∈ p, x = false) : trim
   | nil => exact trim_blank p hp
   | cons x xs ih => simp [ih]
 theorem trim_append_repl (l : List Bool) (n : Nat) : trim (l ++ List.replicate n false) = trim l :=
-  trim_append_blank l _ (fun x hx => (List.mem_replicate.1 hx).2)
+  trim_append_blank l _ (fun _ hx => (List.mem_replicate.1 hx).2)
 theorem PE_pad (s : St) (L R : List Bool) (h : Bool) (a b : Nat) :
     PE ⟨s, L ++ List.replicate a false, h, R ++ List.replicate b false⟩ ⟨s, L, h, R⟩ :=
   ⟨rfl, rfl, trim_append_repl L a, trim_append_repl R b⟩
@@ -311,7 +313,7 @@ theorem cdig1 (L R : List Bool) : run 5 (dc (rdig .o ++ L) R) = ac (rdig .t ++ L
   simp only [dc, rdig, List.cons_append, List.nil_append, List.tail_cons, List.headD_cons] at h ⊢
   rw [h, astep]
 theorem erase (L R : List Bool) : run 3 (ac L ([true, true, true] ++ R)) = ac ([false, false, false] ++ L) R := by
-  show run 1 (run 1 (run 1 ⟨.A, L, true, [true, true] ++ R⟩)) = _
+  change run 1 (run 1 (run 1 ⟨.A, L, true, [true, true] ++ R⟩)) = _
   rfl
 theorem cnt (ds : List Dg) (hok : lowOk ds = true) (L R : List Bool) :
     run (6 * tz ds + 5) (dc (Sr ds ++ L) R) = ac (Sr (inc ds) ++ L) R := by
@@ -809,7 +811,7 @@ theorem dig_pos (n : Nat) (h : n ≠ 0) : dig n = dg (n % 3) :: dig (n / 3) := b
   rw [dig]; simp [h]
 theorem trim_Sr_dig (ds : List Dg) : trim (Sr ds) = trim (Sr (dig (val ds))) := by
   induction ds with
-  | nil => show trim (Sr []) = trim (Sr (dig 0)); rw [dig_zero]
+  | nil => change trim (Sr []) = trim (Sr (dig 0)); rw [dig_zero]
   | cons d r ih =>
     rw [val_cons]
     by_cases h0 : dv d + 3 * val r = 0
@@ -821,7 +823,7 @@ theorem trim_Sr_dig (ds : List Dg) : trim (Sr ds) = trim (Sr (dig (val ds))) := 
       simp [rdig, ih, cons']
     · rw [dig_pos _ h0, Sr_cons, Sr_cons]
       have e1 : dg ((dv d + 3 * val r) % 3) = d := by
-        cases d <;> simp [dv, dg] <;> omega
+        cases d <;> simp [dv, dg]
       have e2 : (dv d + 3 * val r) / 3 = val r := by cases d <;> simp [dv] <;> omega
       rw [e1, e2]
       exact trim_append_congr _ ih
@@ -892,9 +894,9 @@ theorem shl_eq (n : Nat) (hn : n ≠ 0) :
       simp only [List.cons_append, List.nil_append] at this ⊢
       rw [<- this]
     · by_cases h1 : n % 3 = 1
-      · simp [h0, h1, dg, rdig, Sr_cons]
+      · simp [h1, dg, rdig, Sr_cons]
       · have h2 : n % 3 = 2 := by omega
-        simp [h0, h1, h2, dg, rdig, Sr_cons]
+        simp [h2, dg, rdig, Sr_cons]
 theorem sh_tape (n : Nat) : trim ([false] ++ Sr (dig n)) = trim (ctape (shv n)) := by
   by_cases hn : n = 0
   · subst hn; simp [shv, ctape, dig_zero, cons']
@@ -917,30 +919,31 @@ theorem Adv.pe_right {c d d' : Cfg} (h2 : Adv c d) (h : PE d d') : Adv c d' := b
   exact ⟨n, hn, e.trans h⟩
 theorem PE_dc {L L' : List Bool} (h : trim L = trim L') (R : List Bool) : PE (dc L R) (dc L' R) := by
   refine ⟨rfl, ?_, ?_, rfl⟩
-  · show L.headD false = L'.headD false
+  · change L.headD false = L'.headD false
     rw [<- trim_headD, h, trim_headD]
-  · show trim L.tail = trim L'.tail
+  · change trim L.tail = trim L'.tail
     rw [trim_tail, h, trim_tail]
 theorem PE_hc {P P' : List Bool} (h : trim P = trim P') (R : List Bool) : PE (hc P R) (hc P' R) := by
   refine ⟨rfl, rfl, ?_, rfl⟩
-  show trim (true :: P) = trim (true :: P')
+  change trim (true :: P) = trim (true :: P')
   simp [h]
 theorem PE_hcR (P : List Bool) {R R' : List Bool} (h : trim R = trim R') : PE (hc P R) (hc P R') := by
   refine ⟨rfl, rfl, rfl, ?_⟩
-  show trim ([true, true] ++ R) = trim ([true, true] ++ R')
+  change trim ([true, true] ++ R) = trim ([true, true] ++ R')
   exact trim_append_congr _ h
 theorem PE_dc_R {S R R' : List Bool} (h : R = R') : PE (dc S R) (dc S R') := h ▸ PE.refl _
 theorem trim_zpad (l : List Bool) (ds : List Dg) (n : Nat) :
     trim (l ++ Sr (ds ++ List.replicate n .z)) = trim (l ++ Sr ds) := by
   rw [Sr_append, <- List.append_assoc, trim_append_blank]
   intro x hx
-  simp [Sr, rdig, List.mem_flatMap, List.mem_replicate] at hx
-  exact hx.2
+  simp only [Sr, List.mem_flatMap, List.mem_replicate] at hx
+  rcases hx with ⟨_, ⟨_, rfl⟩, hx⟩
+  simpa [rdig] using hx
 def tl (bs : List Nat) : List (Bool × Nat) := bs.map (fun b => (true, b))
 theorem lad_tl (bs : List Nat) (M : List (Bool × Nat)) : lad (tl bs ++ M) = rtt bs (lad M) := by
   induction bs with
   | nil => rfl
-  | cons b bs ih => simp [tl, lad, rtt] at ih ⊢; rw [ih]
+  | cons b bs ih => simp only [tl, lad, rtt, List.map_cons, List.cons_append, ↓reduceIte] at ih ⊢; rw [ih]
 theorem rtt_app (bs : List Nat) (R Y : List Bool) : rtt bs R ++ Y = rtt bs (R ++ Y) := by
   induction bs with
   | nil => rfl
@@ -968,11 +971,11 @@ theorem lad_lincT (bs : List Nat) (hbs : bs ≠ []) (M : List (Bool × Nat)) :
   | cons b bs ih =>
     cases bs with
     | nil =>
-      simp only [lincT, List.cons_append, List.nil_append, lad, E, if_false]
+      simp only [lincT, List.cons_append, List.nil_append, lad, E]
       rw [pw_add]; simp [List.append_assoc]
     | cons b' bs =>
       have := ih (by simp)
-      simp only [lincT, List.cons_append, lad, if_false] at this ⊢
+      simp only [lincT, List.cons_append, lad] at this ⊢
       rw [this]; simp [E, List.append_assoc]
 theorem linc_tl (bs : List Nat) (hb : ∀ b ∈ bs, 2 ≤ b) (B : Nat) :
     linc B (tl bs) = (B - 2, bs.map (fun b => (false, b)) ++ [(false, 2)]) := by
@@ -1049,7 +1052,7 @@ theorem lphase (k m : Nat) (hkm : 1 ≤ k + m) (S : List Bool) (L : List (Bool �
       (by omega) |>.pe_right ?_
     rw [show k + 1 + m - 2 = n by omega]
     apply PE_dc_R
-    simp [lad, pw_add, List.append_assoc]
+    simp [lad, List.append_assoc]
 theorem lowOk_app_z (l : List Dg) : lowOk (l ++ [.z]) = true := by
   induction l with
   | nil => rfl
@@ -1077,7 +1080,7 @@ theorem lowOk_false_rep (lo : List Dg) (h : lowOk lo = false) : lo = List.replic
     cases d with
     | z => simp [lowOk] at h
     | o => simp [lowOk] at h
-    | t => simp only [lowOk] at h; simp [List.replicate_succ]; exact ih h
+    | t => simp only [lowOk] at h; simp only [List.length_cons, List.replicate_succ, List.cons.injEq, true_and]; exact ih h
 theorem val_inc2pad (v : Nat) :
     ∃ d0 r, inc (inc (dig v ++ [.z, .z, .z])) = d0 :: r /\ lowOk r = true /\ dv d0 + 3 * val r = v + 2 /\
       lowOk (dig v ++ [.z, .z, .z]) = true /\ lowOk (inc (dig v ++ [.z, .z, .z])) = true := by
@@ -1230,7 +1233,7 @@ def okS (S : AS) : Prop :=
 theorem sim (S : AS) (h : okS S) : Adv (tape S) (tape (mstep S)) := by
   obtain ⟨h1, h2, h3⟩ := h
   have a1 := lphase S.k S.m h1 (ctape S.C) S.L h2
-  show Adv (hc (pw Rr S.k ++ ctape S.C) (pw Lu S.m ++ lad S.L)) _
+  change Adv (hc (pw Rr S.k ++ ctape S.C) (pw Lu S.m ++ lad S.L)) _
   unfold mstep
   revert h3 a1
   generalize linc (S.k + 1 + S.m) S.L = q
@@ -1305,7 +1308,7 @@ theorem Lam_even (l a : Nat) :
   rw [e1, e2]; simp
 theorem Lam_blocks (l N : Nat) : ∀ x ∈ Lam l N, 2 ≤ x.2 := by
   induction l generalizing N with
-  | zero => intro x hx; simp [Lam] at hx; subst hx; simp
+  | zero => intro x hx; simp only [Lam, List.mem_singleton] at hx; subst hx; simp
   | succ l ih =>
     intro x hx
     simp only [Lam, List.mem_cons] at hx
@@ -1526,20 +1529,20 @@ theorem epoch_start (S : AS) (h : PreInv S) :
     · simp only [absStep, h0, if_true]; omega
     · simp only [absStep, h0, if_true]; (try unfold EE); omega
     · simp only [absStep, h0, if_true, Nat.sub_zero]; exact hp
-    · (try unfold EE); omega
-    · (try unfold EE); omega
+    · omega
+    · omega
   · by_cases h2 : (v + 2) % 3 = 2
     · obtain ⟨j, Vr, hp, b1, b2⟩ := shv_pend ((v + 2) / 3 + 2) (by omega)
       have hne : (v + 2) % 3 ≠ 0 := h0
       have h20 : ¬ ((2 : Nat) = 0) := by decide
       refine ⟨l, a, j + 1, Vr, ha, hok, ⟨?_, ?_, Or.inl ⟨by omega, ?_, Or.inr ?_⟩⟩, ?_, ?_, hE⟩
-      · simp only [absStep, hne, h2, h20, if_false, if_true]; exact (epL_zero l a ha).symm
-      · simp only [absStep, hne, h2, h20, if_false, if_true]; omega
-      · simp only [absStep, hne, h2, h20, if_false, if_true]; (try unfold EE); omega
-      · simp only [absStep, hne, h2, h20, if_false, if_true, Nat.sub_zero]
+      · simp only [absStep, h2, h20, if_false, if_true]; exact (epL_zero l a ha).symm
+      · simp only [absStep, h2, h20, if_false, if_true]; omega
+      · simp only [absStep, h2, h20, if_false, if_true]; (try unfold EE); omega
+      · simp only [absStep, h2, h20, if_false, if_true, Nat.sub_zero]
         exact ⟨_, j, rfl, rfl, hp⟩
-      · (try unfold EE); omega
-      · (try unfold EE); omega
+      · omega
+      · omega
     · have h1 : (v + 2) % 3 = 1 := by omega
       obtain ⟨j, Vr, hp, b1, b2⟩ := shv_pend ((v + 2) / 3 + 1) (by omega)
       have hne : (v + 2) % 3 ≠ 0 := h0
@@ -1548,8 +1551,8 @@ theorem epoch_start (S : AS) (h : PreInv S) :
       · simp only [absStep, hne, h2, if_false]; omega
       · simp only [absStep, hne, h2, if_false]; (try unfold EE); omega
       · simp only [absStep, hne, h2, if_false, Nat.sub_zero]; exact hp
-      · (try unfold EE); omega
-      · (try unfold EE); omega
+      · omega
+      · omega
 def itr : Nat -> AS -> AS
   | 0, S => S
   | n + 1, S => mstep (itr n S)
@@ -1564,7 +1567,7 @@ theorem epoch_iter (l a R Vr : Nat) (S0 : AS) (ha : a < 2 ^ (l + 1)) (hR : R + 1
     intro hi
     obtain ⟨h1, h2⟩ := ih (by omega)
     obtain ⟨hok, h3⟩ := epoch_step l a R Vr i _ ha hR (by omega) h1
-    show EpInv l a R Vr (i + 1) (mstep (itr i S0)) /\ (i + 1 = 0 \/ Adv (tape S0) (tape (mstep (itr i S0))))
+    change EpInv l a R Vr (i + 1) (mstep (itr i S0)) /\ (i + 1 = 0 \/ Adv (tape S0) (tape (mstep (itr i S0))))
     refine ⟨h3, Or.inr ?_⟩
     rcases h2 with h2 | h2
     · subst h2; exact sim _ hok
@@ -1797,7 +1800,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   intro cfg ⟨n, hn⟩

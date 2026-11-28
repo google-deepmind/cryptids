@@ -7,6 +7,9 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
@@ -54,7 +57,7 @@ local notation "zF" => List (Fin 2)
 @[simp] theorem z0j {α : Type*} (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 theorem z0k {α : Type*} (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [z0j, Nat.succ_add, ih, List.append_assoc]
 theorem z0l {α : Type*} (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
@@ -327,7 +330,7 @@ def push1_nil (b : Bool) (n : Nat) : RTape :=
 def push1_cons_diff (b : Bool) (n : Nat) (b0 : Bool) (n0 : Nat) (rest : RTape) : RTape :=
   bindNat n (fun n' => RTape.cons b n' (RTape.cons b0 n0 rest))
 
-def push1_cons_same (b : Bool) (n : Nat) (b0 : Bool) (n0 : Nat) (rest : RTape) : RTape :=
+def push1_cons_same (_b : Bool) (n : Nat) (b0 : Bool) (n0 : Nat) (rest : RTape) : RTape :=
   bindNat (Nat.add n n0) (fun s => RTape.cons b0 s rest)
 
 def push1_branch (eq : Bool) : Bool → Nat → Bool → Nat → RTape → RTape :=

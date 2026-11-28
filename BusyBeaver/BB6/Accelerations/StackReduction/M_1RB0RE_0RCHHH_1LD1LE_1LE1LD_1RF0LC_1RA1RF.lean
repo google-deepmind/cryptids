@@ -585,7 +585,7 @@ private theorem step_RetD_encStack_cons_halt (L : List ℕ) (c : ℕ) (R'' : Lis
     (step target (RetD L (encStack (c :: R'')))).isNone = true := by
   rcases c with _ | c' <;>
   · unfold RetD
-    simp only [Cfg.headRight, encStack_zero, encStack_succ, ListBlank.head_cons,
+    simp only [encStack_zero, encStack_succ, ListBlank.head_cons,
       ListBlank.tail_cons]
     rfl
 

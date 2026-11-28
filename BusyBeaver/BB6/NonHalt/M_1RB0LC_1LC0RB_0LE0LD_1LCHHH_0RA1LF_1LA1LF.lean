@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LC_1LC0RB_0LE0LD_1LCHHH_0RA1LF_1LA1LF
@@ -23,7 +26,6 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 
 def iterOpt {α : Type*} (f : α → Option α) : ℕ → α → Option α
@@ -236,76 +238,76 @@ theorem step_blk_correct (c c' : BlkCfg) (h : step_blk c = some c') :
   cases m with
   | h11D =>
     rcases B with _ | ⟨a, B'⟩
-    · simp [step_blk] at h; subst h
+    · simp only [step_blk, Option.some.injEq] at h; subst h
       exact ⟨3, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
     · rcases a with _ | a
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨3, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
   | h10B =>
     rcases B with _ | ⟨a, B'⟩
-    · simp [step_blk] at h; subst h
+    · simp only [step_blk, Option.some.injEq] at h; subst h
       exact ⟨14, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
     · rcases a with _ | _ | _ | _ | a
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨7, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨8, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨14, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
   | h100F =>
     rcases B with _ | ⟨a, B'⟩
-    · simp [step_blk] at h; subst h
+    · simp only [step_blk, Option.some.injEq] at h; subst h
       exact ⟨9, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
     · rcases a with _ | _ | _ | a
       · simp [step_blk] at h
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨3, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨9, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
   | h10F =>
     rcases B with _ | ⟨a, B'⟩
-    · simp [step_blk] at h; subst h
+    · simp only [step_blk, Option.some.injEq] at h; subst h
       exact ⟨9, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
     · rcases a with _ | _ | _ | a
       · simp [step_blk] at h
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨3, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨9, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
   | h1E =>
     rcases B with _ | ⟨a, B'⟩
-    · simp [step_blk] at h; subst h
+    · simp only [step_blk, Option.some.injEq] at h; subst h
       exact ⟨1, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
     · rcases a with _ | a
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
   | hL =>
     rcases B with _ | ⟨a, B'⟩
     · simp [step_blk] at h
     · rcases l with _ | ⟨tok, l'⟩
-      · simp [step_blk] at h; subst h
+      · simp only [step_blk, Option.some.injEq] at h; subst h
         exact ⟨9, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
       · cases tok with
         | L00 =>
-          simp [step_blk] at h; subst h
+          simp only [step_blk, Option.some.injEq] at h; subst h
           exact ⟨9, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
         | L10 =>
-          simp [step_blk] at h; subst h
+          simp only [step_blk, Option.some.injEq] at h; subst h
           exact ⟨6, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
         | L1 =>
-          simp [step_blk] at h; subst h
+          simp only [step_blk, Option.some.injEq] at h; subst h
           exact ⟨1, by omega, by simp [decode_blk, multiStep_succ', multiStep_zero]⟩
 
 -- ----------------------------------------------------------------------------
@@ -430,81 +432,81 @@ theorem step_5mode_correct (c c' : Cfg5)
   cases m with
   | hL =>
     rcases ls with _ | ⟨sb, lsp⟩
-    · simp [step_5mode] at h; subst h
+    · simp only [step_5mode, Option.some.injEq] at h; subst h
       exact ⟨2, by omega, rfl⟩
     · cases sb with
       | A k =>
-        simp [step_5mode] at h; subst h
+        simp only [step_5mode, Option.some.injEq] at h; subst h
         refine ⟨k + 1, by omega, ?_⟩
         simp only [Phi, evalSB_A]
         exact iterOpt_trans (pop_L1_run_zero k (.L10 :: evalSB lsp) rs) rfl
       | B k =>
         rcases k with _ | k
-        · simp [step_5mode] at h; subst h
+        · simp only [step_5mode, Option.some.injEq] at h; subst h
           exact ⟨2, by omega, rfl⟩
-        · simp [step_5mode] at h; subst h
+        · simp only [step_5mode, Option.some.injEq] at h; subst h
           refine ⟨(k + 1) + 3, by omega, ?_⟩
           simp only [Phi, evalSB_B]
           exact iterOpt_trans (pop_L1_run_zero (k + 1) (.L00 :: evalSB lsp) rs) rfl
   | h10B =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h
+    · simp only [step_5mode, Option.some.injEq] at h; subst h
       exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
     · rcases r0 with _ | _ | _ | _ | _ | a
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
   | h100F =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h
+    · simp only [step_5mode, Option.some.injEq] at h; subst h
       exact ⟨2, by omega, by simp [Phi, step_blk]⟩
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_5mode] at h
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk]⟩
   | h10F =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h
+    · simp only [step_5mode, Option.some.injEq] at h; subst h
       exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_5mode] at h
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
   | h1E =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h
+    · simp only [step_5mode, Option.some.injEq] at h; subst h
       exact ⟨2, by omega, by simp [Phi, step_blk]⟩
     · rcases r0 with _ | _ | a
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨1, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk, evalSB_incTop hls]⟩
-      · simp [step_5mode] at h; subst h
+      · simp only [step_5mode, Option.some.injEq] at h; subst h
         exact ⟨2, by omega, by simp [Phi, step_blk]⟩
 
 -- ----------------------------------------------------------------------------
@@ -651,58 +653,58 @@ theorem step_sq_preserves_guard (c c' : CfgSq)
   cases m with
   | hL =>
     rcases ls with _ | ⟨sb, lsp⟩
-    · simp [step_sq] at h; subst h; simp
+    · simp only [step_sq, Option.some.injEq] at h; subst h; simp
     · cases sb with
       | A k =>
         rcases k with _ | k
         · rcases lsp with _ | ⟨sb2, lsp2⟩
-          · simp [step_sq] at h; subst h; simp
+          · simp only [step_sq, Option.some.injEq] at h; subst h; simp
           · cases sb2 with
             | A k2 =>
               rcases k2 with _ | _ | _ | k2
-              · simp [step_sq] at h; subst h; simp
-              · simp [step_sq] at h; subst h; simp
+              · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+              · simp only [step_sq, Option.some.injEq] at h; subst h; simp
               · rcases lsp2 with _ | ⟨sb3, lsp3⟩
-                · simp [step_sq] at h; subst h; simp
-                · simp [step_sq] at h; subst h; simp
-              · simp [step_sq] at h; subst h; simp
-            | B k2 => simp [step_sq] at h; subst h; simp
-        · simp [step_sq] at h; subst h; simp
+                · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+                · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+              · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+            | B k2 => simp only [step_sq, Option.some.injEq] at h; subst h; simp
+        · simp only [step_sq, Option.some.injEq] at h; subst h; simp
       | B k =>
         rcases k with _ | k
-        · simp [step_sq] at h; subst h; simp
-        · simp [step_sq] at h; subst h; simp
+        · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+        · simp only [step_sq, Option.some.injEq] at h; subst h; simp
   | h10B =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h; simp
+    · simp only [step_sq, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | _ | _ | _ | a <;>
-        (simp [step_sq] at h; subst h; intro _; first | exact hls | exact incTop_nonempty _ _ | simp)
+        (simp only [step_sq, Option.some.injEq] at h; subst h; intro _; first | exact hls | exact incTop_nonempty _ _ | simp)
   | h100F =>
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h; simp
+    · simp only [step_sq, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_sq] at h
-      · simp [step_sq] at h; subst h; simp
-      · simp [step_sq] at h; subst h; simp
-      · simp [step_sq] at h; subst h; simp
-      · simp [step_sq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
   | h10F =>
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h; simp
+    · simp only [step_sq, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_sq] at h
-      · simp [step_sq] at h; subst h; simp
-      · simp [step_sq] at h; subst h; simp
-      · simp [step_sq] at h; subst h; simp
-      · simp [step_sq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
   | h1E =>
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h; simp
+    · simp only [step_sq, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | a
-      · simp [step_sq] at h; subst h; intro _; exact incTop_nonempty _ _
-      · simp [step_sq] at h; subst h; intro _; exact incTop_nonempty _ _
-      · simp [step_sq] at h; subst h; simp
+      · simp only [step_sq, Option.some.injEq] at h; subst h; intro _; exact incTop_nonempty _ _
+      · simp only [step_sq, Option.some.injEq] at h; subst h; intro _; exact incTop_nonempty _ _
+      · simp only [step_sq, Option.some.injEq] at h; subst h; simp
 
 
 def decode_sq (n : ℕ) (c : CfgSq) : Cfg (Fin 2) (Fin 6) :=
@@ -727,88 +729,88 @@ theorem step_sq_lift (n : ℕ) (c c' : CfgSq)
   cases m with
   | hL =>
     rcases ls with _ | ⟨sb, lsp⟩
-    · simp [step_sq] at h; subst h
+    · simp only [step_sq, Option.some.injEq] at h; subst h
       exact ⟨n, 4 * n + 11, by omega, spine_bounce_stationary n rs⟩
     · cases sb with
       | A k =>
         rcases k with _ | k
         · rcases lsp with _ | ⟨sb2, lsp2⟩
-          · simp [step_sq] at h; subst h
+          · simp only [step_sq, Option.some.injEq] at h; subst h
             exact ⟨n, 1, by omega, rfl⟩
           · cases sb2 with
             | A k2 =>
               rcases k2 with _ | _ | _ | k2
-              · simp [step_sq] at h; subst h
+              · simp only [step_sq, Option.some.injEq] at h; subst h
                 exact ⟨n, 1, by omega, rfl⟩
-              · simp [step_sq] at h; subst h
+              · simp only [step_sq, Option.some.injEq] at h; subst h
                 exact ⟨n, 1, by omega, rfl⟩
               · rcases lsp2 with _ | ⟨sb3, lsp3⟩
-                · simp [step_sq] at h; subst h
+                · simp only [step_sq, Option.some.injEq] at h; subst h
                   exact ⟨n + 1, 4 * n + 15, by omega, spine_bounce_absorb n rs⟩
-                · simp [step_sq] at h; subst h
+                · simp only [step_sq, Option.some.injEq] at h; subst h
                   exact ⟨n, 1, by omega, rfl⟩
-              · simp [step_sq] at h; subst h
+              · simp only [step_sq, Option.some.injEq] at h; subst h
                 exact ⟨n, 1, by omega, rfl⟩
             | B k2 =>
-              simp [step_sq] at h; subst h
+              simp only [step_sq, Option.some.injEq] at h; subst h
               exact ⟨n, 1, by omega, rfl⟩
-        · simp [step_sq] at h; subst h
+        · simp only [step_sq, Option.some.injEq] at h; subst h
           exact ⟨n, 1, by omega, rfl⟩
       | B k =>
         rcases k with _ | k
-        · simp [step_sq] at h; subst h
+        · simp only [step_sq, Option.some.injEq] at h; subst h
           exact ⟨n, 1, by omega, rfl⟩
-        · simp [step_sq] at h; subst h
+        · simp only [step_sq, Option.some.injEq] at h; subst h
           exact ⟨n, 1, by omega, rfl⟩
   | h10B =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h
+    · simp only [step_sq, Option.some.injEq] at h; subst h
       exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
     · rcases r0 with _ | _ | _ | _ | _ | a <;>
-        (simp [step_sq] at h; subst h;
+        (simp only [step_sq, Option.some.injEq] at h; subst h;
          exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩)
   | h100F =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h
+    · simp only [step_sq, Option.some.injEq] at h; subst h
       exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_sq] at h
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
   | h10F =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h
+    · simp only [step_sq, Option.some.injEq] at h; subst h
       exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_sq] at h
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
   | h1E =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_sq] at h; subst h
+    · simp only [step_sq, Option.some.injEq] at h; subst h
       exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
     · rcases r0 with _ | _ | a
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode, incTop_append hls]⟩
-      · simp [step_sq] at h; subst h
+      · simp only [step_sq, Option.some.injEq] at h; subst h
         exact ⟨n, 1, by omega, by simp [Psi_sq, step_5mode]⟩
 
 
@@ -1104,7 +1106,7 @@ theorem iterOpt_step_blk_plus {j : ℕ} (hj : j > 0) {b₁ b₂ : BlkCfg}
     rcases hs : step_blk b₁ with _ | bm
     · simp [hs] at h
     · rcases j with _ | j'
-      · simp [hs] at h; subst h
+      · simp only [iterOpt_succ, hs, option_some_bind, iterOpt_zero, Option.some.injEq] at h; subst h
         exact step_blk_correct b₁ bm hs
       · simp only [iterOpt_succ, hs, option_some_bind] at h
         exact stepPlus_trans (step_blk_correct b₁ bm hs) (ih (by omega) h)
@@ -1117,42 +1119,42 @@ theorem step_5mode_preserves_guard (c c' : Cfg5)
   cases m with
   | hL =>
     rcases ls with _ | ⟨sb, lsp⟩
-    · simp [step_5mode] at h; subst h; simp
+    · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
     · cases sb with
-      | A k => simp [step_5mode] at h; subst h; simp
+      | A k => simp only [step_5mode, Option.some.injEq] at h; subst h; simp
       | B k =>
-        rcases k with _ | k <;> (simp [step_5mode] at h; subst h; simp)
+        rcases k with _ | k <;> (simp only [step_5mode, Option.some.injEq] at h; subst h; simp)
   | h10B =>
     have hls : ls ≠ [] := hguard (by intro hc; cases hc)
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h; simp
+    · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | _ | _ | _ | a <;>
-        (simp [step_5mode] at h; subst h; intro _; first | exact hls | exact incTop_nonempty _ _ | simp)
+        (simp only [step_5mode, Option.some.injEq] at h; subst h; intro _; first | exact hls | exact incTop_nonempty _ _ | simp)
   | h100F =>
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h; simp
+    · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_5mode] at h
-      · simp [step_5mode] at h; subst h; simp
-      · simp [step_5mode] at h; subst h; simp
-      · simp [step_5mode] at h; subst h; simp
-      · simp [step_5mode] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
   | h10F =>
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h; simp
+    · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | _ | _ | a
       · simp [step_5mode] at h
-      · simp [step_5mode] at h; subst h; simp
-      · simp [step_5mode] at h; subst h; simp
-      · simp [step_5mode] at h; subst h; simp
-      · simp [step_5mode] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
   | h1E =>
     rcases rs with _ | ⟨r0, rsp⟩
-    · simp [step_5mode] at h; subst h; simp
+    · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
     · rcases r0 with _ | _ | a
-      · simp [step_5mode] at h; subst h; intro _; exact incTop_nonempty _ _
-      · simp [step_5mode] at h; subst h; intro _; exact incTop_nonempty _ _
-      · simp [step_5mode] at h; subst h; simp
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; intro _; exact incTop_nonempty _ _
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; intro _; exact incTop_nonempty _ _
+      · simp only [step_5mode, Option.some.injEq] at h; subst h; simp
 
 theorem iterOpt_step_5mode_lift {k : ℕ} (hk : k > 0) {c₁ c₂ : Cfg5}
     (hguard : c₁.1 ≠ .hL → c₁.2.1 ≠ [])
@@ -1166,7 +1168,7 @@ theorem iterOpt_step_5mode_lift {k : ℕ} (hk : k > 0) {c₁ c₂ : Cfg5}
     · obtain ⟨j, hj, hblk⟩ := step_5mode_correct c₁ cm hguard hs
       have hp1 := iterOpt_step_blk_plus hj hblk
       rcases k with _ | k'
-      · simp [hs] at h; subst h; exact hp1
+      · simp only [iterOpt_succ, hs, option_some_bind, iterOpt_zero, Option.some.injEq] at h; subst h; exact hp1
       · simp only [iterOpt_succ, hs, option_some_bind] at h
         have hg' := step_5mode_preserves_guard c₁ cm hguard hs
         exact stepPlus_trans hp1 (ih (by omega) hg' h)
@@ -1184,7 +1186,7 @@ theorem iterOpt_step_sq_lift {k : ℕ} (hk : k > 0) (n : ℕ) {c₁ c₂ : CfgSq
       have hp1 : (decode_sq n c₁) [target_tm]⊢⁺ (decode_sq n_mid cm) :=
         iterOpt_step_5mode_lift hj (psi_sq_guard n c₁) h5
       rcases k with _ | k'
-      · simp [hs] at h; subst h; exact ⟨n_mid, hp1⟩
+      · simp only [iterOpt_succ, hs, option_some_bind, iterOpt_zero, Option.some.injEq] at h; subst h; exact ⟨n_mid, hp1⟩
       · simp only [iterOpt_succ, hs, option_some_bind] at h
         have hg' := step_sq_preserves_guard c₁ cm hguard hs
         obtain ⟨n', hp2⟩ := ih (by omega) n_mid hg' h
@@ -1446,9 +1448,9 @@ theorem psiShift_psiTilde_add (w z k : ℕ) :
     psiShift (psiTilde w z).1 ((psiTilde w z).2 + 2 * k) = (w, z + 2 * k + 4) := by
   rcases Nat.mod_two_eq_zero_or_one w with hw | hw
   · have h1 : psiTilde w z = (w + 1, z) := by simp [psiTilde, hw]
-    rw [h1]; dsimp [psiShift]; rw [if_neg (by omega)]
+    rw [h1]; dsimp [psiShift]; rw [ite_eq_right (by omega)]
   · have h1 : psiTilde w z = (w - 1, z + 2) := by simp [psiTilde, hw]
-    rw [h1]; dsimp [psiShift]; rw [if_pos (by omega)]; exact Prod.ext (by omega) (by omega)
+    rw [h1]; dsimp [psiShift]; rw [ite_eq_left (by omega)]; exact Prod.ext (by omega) (by omega)
 
 
 theorem exit_3_2 (R : List ℕ) :
@@ -1504,7 +1506,7 @@ theorem splitTwo_odd (m : ℕ) (hm : m % 2 = 1) : splitTwo m = (0, m) := by
   rcases m with _ | m
   · omega
   · dsimp [splitTwo, splitTwoAux]
-    rw [if_neg (by omega)]
+    rw [ite_eq_right (by omega)]
 
 
 theorem splitTwo_two_mul (m : ℕ) (hm : m ≥ 1) :
@@ -1513,7 +1515,7 @@ theorem splitTwo_two_mul (m : ℕ) (hm : m ≥ 1) :
   unfold splitTwo
   rw [h2m]
   try dsimp [splitTwoAux]
-  rw [if_pos (by omega), show (2 * m - 1 + 1) / 2 = m by omega]
+  rw [ite_eq_left (by omega), show (2 * m - 1 + 1) / 2 = m by omega]
   rw [splitTwoAux_eq (2 * m - 1) m m hm (by omega) (le_refl m)]
 
 
@@ -2491,7 +2493,7 @@ theorem phase1_to_M2 (s : OddState) (hs : InSodd s) :
         simp only [R_mid, show (2 : ℕ) ≠ 0 by decide, ↓reduceIte, show 2 * sc + 1 - 1 = 2 * sc by omega] at h1
         have h2 := H_drain m (2 * sc) 1 0 (by decide) (Or.inl rfl)
         have hpsi : psiTilde (2 * sc) 1 = (2 * sc + 1, 1) := by
-          unfold psiTilde; rw [if_pos (by omega)]
+          unfold psiTilde; rw [ite_eq_left (by omega)]
         rw [hpsi] at h2
         have htot : SqReachesPlus (enc_odd (2 * m + 1) 1 (2 * sc + 1) 2) (M2_sq 0 (2 * sc + 1) (1 + 2 * m + 2) 0) :=
           sqReachesPlus_trans h1 h2
@@ -2963,9 +2965,9 @@ theorem R_odd_sound (s s' : OddState) (hs : InSodd s) (hr : R_odd s = some s') :
             (w₁ = s.c ∧ Z₁ = s.a + 2 ∧ (s.b % 2 = 1 ∧ s.d = 2)) := by
           dsimp only [w₁, Z₁]; split_ifs <;> omega
         rcases hwZ with ⟨hw, hZ, hbd⟩ | ⟨hw, hZ, hbd⟩ | ⟨hw, hZ, hbd⟩
-        · rw [hw, hZ, if_neg hbd]; dsimp only [psiTilde]; split_ifs <;> omega
-        · rw [hw, hZ, if_neg hbd]; dsimp only [psiTilde]; split_ifs <;> omega
-        · rw [hw, hZ, if_pos hbd]; dsimp only [psiTilde]; split_ifs <;> omega
+        · rw [hw, hZ, ite_eq_right hbd]; dsimp only [psiTilde]; split_ifs <;> omega
+        · rw [hw, hZ, ite_eq_right hbd]; dsimp only [psiTilde]; split_ifs <;> omega
+        · rw [hw, hZ, ite_eq_left hbd]; dsimp only [psiTilde]; split_ifs <;> omega
       rw [hB0, hC0] at hp2
       set B₀ := s.c - sigma_true s.b s.d
       set C₀ := m + s.a + (if s.b % 2 = 1 ∧ s.d = 2 then 2 else 0)
@@ -3042,8 +3044,8 @@ theorem R_odd_props (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
           (s.b % 4 = 1 ∧ s' = ⟨a_next_of s, s.c + s.d / 2, s.a + a_next_of s + 1, 2 - s.d⟩) ∨
           (s.b % 4 ≠ 1 ∧ s' = ⟨a_next_of s, s.c + 1 - s.d / 2, s.a + a_next_of s - 1 + s.d, 2 - s.d⟩) := by
         by_cases hb4 : s.b % 4 = 1
-        · rw [if_pos hb4, if_pos hb4] at hr; exact Or.inl ⟨hb4, hr.symm⟩
-        · rw [if_neg hb4, if_neg hb4] at hr; exact Or.inr ⟨hb4, hr.symm⟩
+        · rw [ite_eq_left hb4, ite_eq_left hb4] at hr; exact Or.inl ⟨hb4, hr.symm⟩
+        · rw [ite_eq_right hb4, ite_eq_right hb4] at hr; exact Or.inr ⟨hb4, hr.symm⟩
       rcases hb4_cases with ⟨hb4, rfl⟩ | ⟨hb4, rfl⟩ <;> rcases hd with hd0 | hd2
       all_goals
         dsimp only [InSdom, InSodd]
@@ -3075,10 +3077,10 @@ theorem R_odd_props (s s' : OddState) (hs : InSdom s) (hr : R_odd s = some s') :
           (M % 2 ≠ 0 ∧ ¬(s.b % 2 = 1 ∧ s.d = 2) ∧
             s' = ⟨a_next_of s, M, 2 * m - a_next_of s + s.a + 2 * nu_of s + 0 + 2 - 1, 2 - s.d⟩) := by
         by_cases hM : M % 2 = 0 <;> by_cases hbd : s.b % 2 = 1 ∧ s.d = 2
-        · rw [if_pos hM, if_pos hbd, if_pos hM] at hr; exact Or.inl ⟨hM, hbd, hr.symm⟩
-        · rw [if_pos hM, if_neg hbd, if_pos hM] at hr; exact Or.inr (Or.inl ⟨hM, hbd, hr.symm⟩)
-        · rw [if_neg hM, if_pos hbd, if_neg hM] at hr; exact Or.inr (Or.inr (Or.inl ⟨hM, hbd, hr.symm⟩))
-        · rw [if_neg hM, if_neg hbd, if_neg hM] at hr; exact Or.inr (Or.inr (Or.inr ⟨hM, hbd, hr.symm⟩))
+        · rw [ite_eq_left hM, ite_eq_left hbd, ite_eq_left hM] at hr; exact Or.inl ⟨hM, hbd, hr.symm⟩
+        · rw [ite_eq_left hM, ite_eq_right hbd, ite_eq_left hM] at hr; exact Or.inr (Or.inl ⟨hM, hbd, hr.symm⟩)
+        · rw [ite_eq_right hM, ite_eq_left hbd, ite_eq_right hM] at hr; exact Or.inr (Or.inr (Or.inl ⟨hM, hbd, hr.symm⟩))
+        · rw [ite_eq_right hM, ite_eq_right hbd, ite_eq_right hM] at hr; exact Or.inr (Or.inr (Or.inr ⟨hM, hbd, hr.symm⟩))
       rcases hs'_cases with ⟨hM, hbd, rfl⟩ | ⟨hM, hbd, rfl⟩ | ⟨hM, hbd, rfl⟩ | ⟨hM, hbd, rfl⟩
       all_goals
         dsimp only [InSdom, InSodd]

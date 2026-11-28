@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_1LC0RC_0LD0LC_1RE1RA_0RD1LF_0LE0LF
@@ -25,7 +28,6 @@ abbrev target : Machine (Fin 2) (Fin 6) := machine.toBB
 end
 
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 2000
 
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl

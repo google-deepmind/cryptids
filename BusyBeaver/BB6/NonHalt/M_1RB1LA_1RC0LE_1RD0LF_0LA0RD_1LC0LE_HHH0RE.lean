@@ -28,6 +28,7 @@ open TM24Donor Records Stack Cap
 abbrev target_tm : Machine (Fin 2) (Fin 6) := target
 
 set_option maxHeartbeats 2000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 set_option maxRecDepth 200000 in
 theorem init_to_active :
     (init []) [target_tm]⊢* active (SCap C0) (REnd (seed_offset ++ [1])) := by

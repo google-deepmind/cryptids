@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LB_1LC0LF_1LD0RC_1RE0LA_1RE1RC_HHH0LE
@@ -31,7 +34,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
@@ -55,7 +57,6 @@ abbrev F : Fin 6 := 5
 -- Section 6: Proof of holdout_0203_nonhalt
 -- ============================================================================
 
-set_option maxHeartbeats 8000000
 
 @[simp] theorem zMz (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
 @[simp] theorem zMo (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
@@ -265,19 +266,19 @@ theorem calls_app {h1 h2 h3 : Head0} {w1 w2 w3 w4 : List (Fin 2)}
 
 -- Base return segments
 theorem f_zero : segLR hf [0] [0, 0] := by
-  intro l r; unfold cfgL cfgR hf; simp only [zCal, zLac, zLan]; execute
+  intro l r; unfold cfgL cfgR hf; simp only [zLac, zLan]; execute
 
 theorem h_zero : segLR hh [0, 0, 0] [1, 1, 0, 1, 1] := by
-  intro l r; unfold cfgL cfgR hh; simp only [zCal, zLac, zLan]; execute
+  intro l r; unfold cfgL cfgR hh; simp only [zLac, zLan]; execute
 
 theorem h_one : segLR hh [0, 1] [1, 1, 0, 0] := by
-  intro l r; unfold cfgL cfgR hh; simp only [zCal, zLac, zLan]; execute
+  intro l r; unfold cfgL cfgR hh; simp only [zLac, zLan]; execute
 
 -- Base and inductive call segments
 theorem t_zeros_step : Calls ht ht [0] [0] := by
   refine ⟨[1], fun l r => ?_, fun l r => ?_⟩
-  · refine zPs ?_; unfold cfgL ht; simp only [zCal, zLac, zLan]; execute
-  · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgL ht; simp only [zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgR; simp only [zLac, zLan]; execute
 
 theorem t_zeros (n : Nat) : Calls ht ht (([0] : List (Fin 2))^n) (([0] : List (Fin 2))^n) := by
   induction n with
@@ -288,8 +289,8 @@ theorem t_zeros (n : Nat) : Calls ht ht (([0] : List (Fin 2))^n) (([0] : List (F
 
 theorem t_four_step : Calls ht ht [1, 1, 1, 1] [1, 1, 1, 1] := by
   refine ⟨[1, 0, 1, 0], fun l r => ?_, fun l r => ?_⟩
-  · refine zPs ?_; unfold cfgL ht; simp only [zCal, zLac, zLan]; execute
-  · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgL ht; simp only [zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgR; simp only [zLac, zLan]; execute
 
 theorem t_four_pow (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(q * 4)) (([1] : List (Fin 2))^(q * 4)) := by
   induction q with
@@ -310,8 +311,8 @@ theorem t_four (q : Nat) : Calls ht ht (([1] : List (Fin 2))^(4 + q * 4)) (([1] 
 
 theorem t_one_base : Calls ht hf [1] [1, 1, 1, 1] := by
   refine ⟨[1, 0, 1, 0], fun l r => ?_, ?_⟩
-  · refine zPs ?_; unfold cfgL ht hf; simp only [zCal, zLac, zLan]; execute
-  · intro l r; unfold cfgR; refine zPs ?_; simp only [zCal, zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgL ht hf; simp only [zLac, zLan]; execute
+  · intro l r; unfold cfgR; refine zPs ?_; simp only [zLac, zLan]; execute
 
 theorem t_one (q : Nat) : Calls ht hf (([1] : List (Fin 2))^(1 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
   have h1 : ([1] : List (Fin 2))^(1 + q * 4) = ([1] : List (Fin 2))^(q * 4) ++ [1] := by
@@ -325,8 +326,8 @@ theorem t_one (q : Nat) : Calls ht hf (([1] : List (Fin 2))^(1 + q * 4)) (([1] :
 
 theorem t_two_base : Calls ht hh [1, 1] [1, 1, 1, 1] := by
   refine ⟨[1, 0, 1, 0], fun l r => ?_, ?_⟩
-  · refine zPs ?_; unfold cfgL ht hh; simp only [zCal, zLac, zLan]; execute
-  · intro l r; unfold cfgR; refine zPs ?_; simp only [zCal, zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgL ht hh; simp only [zLac, zLan]; execute
+  · intro l r; unfold cfgR; refine zPs ?_; simp only [zLac, zLan]; execute
 
 theorem t_two (q : Nat) : Calls ht hh (([1] : List (Fin 2))^(2 + q * 4)) (([1] : List (Fin 2))^(4 + q * 4)) := by
   have h1 : ([1] : List (Fin 2))^(2 + q * 4) = ([1] : List (Fin 2))^(q * 4) ++ [1, 1] := by
@@ -340,8 +341,8 @@ theorem t_two (q : Nat) : Calls ht hh (([1] : List (Fin 2))^(2 + q * 4)) (([1] :
 
 theorem h_two_four_base : Calls hh ht [0, 0, 1, 1, 1, 1] [1, 1, 0, 0] := by
   refine ⟨[1, 1, 1, 0], fun l r => ?_, fun l r => ?_⟩
-  · refine zPs ?_; unfold cfgL hh ht; simp only [zCal, zLac, zLan]; execute
-  · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgL hh ht; simp only [zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgR; simp only [zLac, zLan]; execute
 
 theorem h_two_four (q : Nat) : Calls hh ht ([0, 0] ++ ([1] : List (Fin 2))^(4 + q * 4)) ([1, 1, 0, 0] ++ ([1] : List (Fin 2))^(q * 4)) := by
   have h1 : ([0, 0] ++ ([1] : List (Fin 2))^(4 + q * 4)) = [0, 0, 1, 1, 1, 1] ++ ([1] : List (Fin 2))^(q * 4) := by
@@ -351,8 +352,8 @@ theorem h_two_four (q : Nat) : Calls hh ht ([0, 0] ++ ([1] : List (Fin 2))^(4 + 
 
 theorem h_two_one_base : Calls hh hf [0, 0, 1] [1, 1, 0, 0] := by
   refine ⟨[1, 1, 1, 0], fun l r => ?_, fun l r => ?_⟩
-  · refine zPs ?_; unfold cfgL hh hf; simp only [zCal, zLac, zLan]; execute
-  · refine zPs ?_; unfold cfgR; simp only [zCal, zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgL hh hf; simp only [zLac, zLan]; execute
+  · refine zPs ?_; unfold cfgR; simp only [zLac, zLan]; execute
 
 theorem h_two_one (q : Nat) : Calls hh hf ([0, 0] ++ ([1] : List (Fin 2))^(1 + q * 4)) ([1, 1, 0, 0] ++ ([1] : List (Fin 2))^(q * 4)) := by
   cases q with
@@ -372,12 +373,12 @@ theorem h_two_one (q : Nat) : Calls hh hf ([0, 0] ++ ([1] : List (Fin 2))^(1 + q
 
 theorem h_two : Calls hh ht [1, 1] [] := by
   refine ⟨[], fun l r => ?_, fun l r => ⟨0, by simp⟩⟩
-  refine zPs ?_; unfold cfgL hh ht; simp only [zCal, zLac, zLan]; execute
+  refine zPs ?_; unfold cfgL hh ht; simp only [zLac, zLan]; execute
 
 -- Blank divergence for ht
 theorem t_blank_step (r : ListBlank (Fin 2)) :
     (cfgL ht default r) [target_tm]⊢⁺ (cfgL ht default ((1 : Fin 2) >> r)) := by
-  unfold cfgL ht; simp only [zCal, zLac, zLan]; execute
+  unfold cfgL ht; simp only [zLac, zLan]; execute
 
 theorem t_blank_reach (n : Nat) (r : ListBlank (Fin 2)) :
     ∃ N ≥ n, (multiStep target_tm (cfgL ht default r) N).isSome := by
@@ -449,7 +450,7 @@ theorem G_twozeros (l : ListBlank (Fin 2)) (h : G false l) : G true (([0, 0] : L
   cases h with
   | blank =>
     have h_def : ([0, 0] : List (Fin 2)) +> (default : ListBlank (Fin 2)) = default := by
-      simp [zLac, zLan, zZcd]
+      simp
     rw [h_def]; exact G.blank true
   | four _ n q l₀ h₀ =>
     rw [twozeros_append_pow]
@@ -474,7 +475,7 @@ theorem G_twoblocks (q : Nat) (l : ListBlank (Fin 2)) (h : G false l) :
     simpa using G_twozeros l h
   | succ q' =>
     have h_0 : ([0, 0] : List (Fin 2)) = ([0] : List (Fin 2))^((if true then 2 else 3) + 0 * 3) := rfl
-    have h_1 : (q' + 1) * 4 = 4 + q' * 4 := by (try dsimp); omega
+    have h_1 : (q' + 1) * 4 = 4 + q' * 4 := by omega
     rw [h_0, h_1]
     exact G.four true 0 q' l h
 
@@ -491,7 +492,7 @@ theorem G_true_has_zero (l : ListBlank (Fin 2)) (h : G true l) :
   cases h with
   | blank =>
     refine ⟨default, ?_⟩
-    simp [zLac, zLan, zZcd]
+    simp
   | four _ n q l₀ _ =>
     refine ⟨(([0] : List (Fin 2))^(1 + n * 3)) +> ((([1] : List (Fin 2))^(4 + q * 4)) +> l₀), ?_⟩
     have h_exp : ([0] : List (Fin 2))^((if true then 2 else 3) + n * 3) =
@@ -536,7 +537,7 @@ theorem G_calls (p : Bool) (l : ListBlank (Fin 2)) (h : G p l) :
   | blank p =>
     refine ⟨Or.inr t_blank, fun hp => ?_⟩
     have h_def : (default : ListBlank (Fin 2)) = ([0, 0, 0] : List (Fin 2)) +> default := by
-      simp [zLac, zLan, zZcd]
+      simp
     rw [h_def]
     exact h_big default (G.blank true)
   | four p n q l₀ h₀ ih =>
@@ -664,7 +665,7 @@ def cfg (l : ListBlank (Fin 2)) : Cfg (Fin 2) (Fin 6) :=
 
 theorem left_return (l : ListBlank (Fin 2)) :
     (cfgR l ((1 : Fin 2) >> default)) [target_tm]⊢⁺ (cfg l) := by
-  unfold cfg cfgL cfgR hh; simp only [zCal, zLac, zLan]; execute
+  unfold cfg cfgL cfgR hh; simp only [zLac, zLan]; execute
 
 theorem safe_reach (m : Nat) (l : ListBlank (Fin 2)) (hs : Safe l) :
     ∃ N ≥ m, (multiStep target_tm (cfg l) N).isSome := by
@@ -693,7 +694,7 @@ theorem init_to_cfg : (init []) [target_tm]⊢* (cfg default) := by
   have h_init : (init [] : Cfg (Fin 2) (Fin 6)) = (default {{A}}> default) := rfl
   rw [h_init]
   unfold cfg cfgL hh
-  simp only [zCal, zLac, zLan]
+  simp only [zLac, zLan]
   execute
 
 end Solution
@@ -704,7 +705,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   have h_nh : NonHaltFrom (init []) :=

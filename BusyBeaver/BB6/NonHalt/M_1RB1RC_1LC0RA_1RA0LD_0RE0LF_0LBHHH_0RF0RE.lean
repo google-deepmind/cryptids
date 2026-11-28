@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RC_1LC0RA_1RA0LD_0RE0LF_0LBHHH_0RF0RE
@@ -34,7 +37,6 @@ abbrev D : Fin 6 := 3
 abbrev E : Fin 6 := 4
 abbrev F : Fin 6 := 5
 abbrev holdout_0641_tm : Machine (Fin 2) (Fin 6) := target_tm
-set_option maxHeartbeats 8000000
 set_option maxRecDepth 200000
 inductive BTree (α : Type) where
   | leaf (val : α)
@@ -88,7 +90,7 @@ def qau (even : Bool) (g : Nat) (s : Nat) : Option Nat :=
         if 2 <= s then some (2 ^ r * u - 3) else none
       else some (2 ^ (r + 1) * (u + 1) - 3)
 theorem qat (b : Bool) (g s s' t : Nat)
-    (h : qau b g s=some s') (hst : s <= t) :
+    (h : qau b g s = some s') (hst : s <= t) :
     ∃ t',qau b g t=some t' /\ s' <= t':= by
   have hu : (s / 2) * 2 <= (t / 2) * 2:= by omega
   have hp1 : 2 ^ (g / 3) * ((s / 2) * 2) <= 2 ^ (g / 3) * ((t / 2) * 2) :=
@@ -101,14 +103,11 @@ theorem qat (b : Bool) (g s s' t : Nat)
   cases b <;> (
     rcases g with _ | _ | _ | g
     · simp only at h ⊢; split_ifs at h ⊢ <;>
-        (try contradiction) <;> (try omega) <;>
-        (injection h with h; refine ⟨_,rfl,by omega⟩)
+        first | contradiction | omega | (injection h with h; refine ⟨_,rfl,by omega⟩)
     · simp only at h ⊢; split_ifs at h ⊢ <;>
-        (try contradiction) <;> (try omega) <;>
-        (injection h with h; refine ⟨_,rfl,by omega⟩)
+        first | contradiction | (injection h with h; refine ⟨_,rfl,by omega⟩)
     · simp only at h ⊢; split_ifs at h ⊢ <;>
-        (try contradiction) <;> (try omega) <;>
-        (injection h with h; refine ⟨_,rfl,by omega⟩)
+        first | contradiction | omega | (injection h with h; refine ⟨_,rfl,by omega⟩)
     · simp only at h ⊢; split_ifs at h ⊢ <;>
         (try contradiction) <;> (try omega) <;>
         (injection h with h; refine ⟨_,rfl,by omega⟩)
@@ -134,7 +133,7 @@ theorem atom_large (b : Bool) (g s : Nat) (hg : 4 <= g) (hs : 2 <= s) :
     cases b
     · simp only [Bool.false_eq_true,↓reduceIte]
       by_cases hj : ((g + 3) % 3 == 0)=true
-      · rw [hj,if_pos rfl,if_pos hs]
+      · rw [hj,ite_eq_left rfl,ite_eq_left hs]
         have hj0 : (g + 3) % 3=0:=beq_iff_eq.mp hj
         have hr0 : 2 <= (g + 3) / 3:= by omega
         have hp0 : 4 <= 2 ^ ((g + 3) / 3):= by
@@ -144,25 +143,25 @@ theorem atom_large (b : Bool) (g s : Nat) (hg : 4 <= g) (hs : 2 <= s) :
         have hmul0 : 4 * ((s / 2) * 2) <= 2 ^ ((g + 3) / 3) * ((s / 2) * 2) :=
           Nat.mul_le_mul_right _ hp0
         exact ⟨_,rfl,by omega⟩
-      · rw [if_neg hj]
+      · rw [ite_eq_right hj]
         exact ⟨_,rfl,by omega⟩
     · simp only [↓reduceIte]
       by_cases hj : ((g + 3) % 3 == 2)=true
-      · rw [hj,if_pos rfl,if_pos hs]
+      · rw [hj,ite_eq_left rfl,ite_eq_left hs]
         exact ⟨_,rfl,by omega⟩
-      · rw [if_neg hj]
+      · rw [ite_eq_right hj]
         exact ⟨_,rfl,by omega⟩
 def qq (b : Bool) (g s : Nat) : Option Nat :=
   if g < 4 then qau b g s
   else if 2 <= s then some (8 * (s / 2) - (if b then 1 else 3)) else none
 theorem qbj (b : Bool) (g s v t : Nat)
-    (h : qq b (min 4 g) s=some v) (hst : s <= t) :
+    (h : qq b (min 4 g) s = some v) (hst : s <= t) :
     ∃ v',qau b g t=some v' /\ v <= v':= by
   by_cases hg : g < 4
   · have hmin : min 4 g=g:= by omega
     rw [hmin] at h
     unfold qq at h
-    rw [if_pos hg] at h
+    rw [ite_eq_left hg] at h
     exact qat b g s v t h hst
   · have hg4 : 4 <= g:= by omega
     have hmin : min 4 g=4:= by omega
@@ -170,12 +169,12 @@ theorem qbj (b : Bool) (g s v t : Nat)
     unfold qq at h
     simp only [show ¬(4 < 4) by omega,↓reduceIte] at h
     by_cases hs : 2 <= s
-    · rw [if_pos hs] at h
+    · rw [ite_eq_left hs] at h
       injection h with hv
       rcases atom_large b g s hg4 hs with ⟨v0,hv0,hle0⟩
       rcases qat b g s v0 t hv0 hst with ⟨v',hv',hle'⟩
       exact ⟨v',hv',by omega⟩
-    · rw [if_neg hs] at h
+    · rw [ite_eq_right hs] at h
       contradiction
 structure CapRow where
   edges : List (Letter × Nat)
@@ -421,14 +420,14 @@ theorem qaL (q : Nat) (hq : q < q7) :
   unfold qV at h
   simp only [Bool.and_eq_true,beq_iff_eq] at h
   exact h.1.1
-theorem checked_final (q : Nat) (hq : q < q7) (hf : (node q).final=true) :
+theorem checked_final (q : Nat) (hq : q < q7) (hf : (node q).final = true) :
     29 <= qA q 0:= by
   have h:=qa9 q hq
   unfold qV at h
   simp only [Bool.and_eq_true,hf,↓reduceIte,decide_eq_true_eq] at h
   exact h.1.2
 theorem qG (q : Nat) (c : Letter) (q' : Nat)
-    (hq : q < q7) (he : (c,q') ∈ (node q).edges) :
+    (hq : q < q7) (he : (c, q') ∈ (node q).edges) :
     q' < q7 /\ ∀ g,g < 5 -> qy q c q' g=true:= by
   have h:=qa9 q hq
   unfold qV at h
@@ -448,7 +447,7 @@ theorem qG (q : Nat) (c : Letter) (q' : Nat)
   · exact hedge.2
   · omega
 theorem checked_gap (q q' g : Nat) (hq : q < q7)
-    (he : (.G,q') ∈ (node q).edges) (hg : g < 5) (hb : 0 < qA q' g) :
+    (he : (.G, q') ∈ (node q).edges) (hg : g < 5) (hb : 0 < qA q' g) :
     qA q' g <= qA q (min 4 (g + 1)):= by
   have h:=(qG q .Gap q' hq he).2 g hg
   unfold qy at h
@@ -478,7 +477,7 @@ theorem checked_gaps (q n : Nat) (w : List Letter) (f : Nat)
       omega
 theorem checked_digit (q q' : Nat) (b : Bool) (g : Nat)
     (hq : q < q7)
-    (he : ((if b then Letter.Even else Letter.Odd),q') ∈ (node q).edges)
+    (he : ((if b then Letter.Even else Letter.Odd), q') ∈ (node q).edges)
     (hb : 0 < qA q' (min 4 g)) :
     0 < qA q 0 /\ ∀ s,qA q 0 - 1 <= s ->
       ∃ t,qau b g s=some t /\ qA q' (min 4 g) - 1 <= t:= by
@@ -504,7 +503,7 @@ def qaP : List Nat -> List Nat -> Bool
   | _ :: _,[] => false
   | x :: xs,y :: ys =>
     if x == y then qaP xs ys else qaP (x :: xs) ys
-theorem qax {xs ys : List Nat} (h : qaP xs ys=true) {q : Nat} (hq : q ∈ xs) :
+theorem qax {xs ys : List Nat} (h : qaP xs ys = true) {q : Nat} (hq : q ∈ xs) :
     q ∈ ys:= by
   induction ys generalizing xs with
   | nil =>
@@ -1775,7 +1774,7 @@ def qas (vs : List Nat) (c : Letter) : List Nat -> List Nat -> Bool
     vs.any (fun x => x == p) && memEdge (node p).edges c q && qas vs c qs ps
   | _,_ => false
 theorem qbi (vs : List Nat) (c : Letter) (qs ps : List Nat)
-    (h : qas vs c qs ps=true) {q : Nat} (hq : q ∈ qs) :
+    (h : qas vs c qs ps = true) {q : Nat} (hq : q ∈ qs) :
     ∃ p,p ∈ vs /\ (c,q) ∈ (node p).edges:= by
   induction qs generalizing ps with
   | nil => contradiction
@@ -1833,7 +1832,7 @@ theorem qak (k : Nat) (c : Letter) (k' q : Nat) (hk : k < qE)
   rw [List.all_eq_true] at hsub
   exact qbi _ c _ _ hc.1 (qax (hsub k' hk') hq)
 theorem qb1 (k : Nat) (hk : k < qE)
-    (hf : (qe k).accepting=true) :
+    (hf : (qe k).accepting = true) :
     ∃ p,p ∈ (qe k).vertices /\ qz p=true:= by
   have hm:=qa8 k hk
   unfold qT at hm
@@ -1844,7 +1843,7 @@ theorem qb1 (k : Nat) (hk : k < qE)
   exact hacc
 def qb7 (xs ys : List Nat) : Bool :=
   xs.any (fun x => (x < qE) && ys.any (fun y => x == y))
-theorem qbg {xs ys : List Nat} (h : qb7 xs ys=true) :
+theorem qbg {xs ys : List Nat} (h : qb7 xs ys = true) :
     ∃ k,k < qE /\ k ∈ xs /\ k ∈ ys:= by
   unfold qb7 at h
   simp only [List.any_eq_true,Bool.and_eq_true,decide_eq_true_eq,beq_iff_eq] at h
@@ -1863,6 +1862,8 @@ def qae (u v : Nat) : Bool :=
     if qz u && (tnode v).trans_final then (qe k).accepting else true)
 def qar : Bool :=
   (List.range q7).all (fun u => (List.range qa4).all (qae u))
+set_option maxHeartbeats 8000000 in
+-- Deciding the finite automaton cover table `qar` requires extra heartbeats.
 theorem qb9 : qar=true:= by decide
 theorem qaG (u v : Nat) (hu : u < q7) (hv : v < qa4) :
     qae u v=true:= by
@@ -1905,7 +1906,7 @@ def trace_end : Nat -> List (Option Letter × Option Letter × Nat) -> Nat
   | q,[] => q
   | _,(_,_,q') :: es => trace_end q' es
 theorem q2 (q : Nat) (es : List (Option Letter × Option Letter × Nat))
-    (h : qah q es=true) :
+    (h : qah q es = true) :
     TransPath q (qaO es) (qaC es) (trace_end q es):= by
   induction es generalizing q with
   | nil => exact TransPath.nil q
@@ -1931,7 +1932,7 @@ theorem input_path (u : Nat) (i : Option Letter) (xs : List Letter) (q : Nat)
     | cons _ _ u' _ _ he hr =>
       exact ⟨u',(qaX u c u').mpr he,hr⟩
 theorem closure_sound {v : Nat} {xs ys : List Letter} {v' : Nat}
-    (ht : TransPath v xs ys v') (hf : (tnode v').trans_final=true) :
+    (ht : TransPath v xs ys v') (hf : (tnode v').trans_final = true) :
     ∀ u q k,u < q7 -> v < qa4 -> k ∈ cell u v ->
     Path u xs q -> qz q=true ->
     ∃ p q',p ∈ (qe k).vertices /\ Path p ys q' /\ qz q'=true:= by
@@ -1944,7 +1945,7 @@ theorem closure_sound {v : Nat} {xs ys : List Letter} {v' : Nat}
       unfold qae at hc
       rw [List.all_eq_true] at hc
       have hk_ok:=hc k hk
-      simp only [Bool.and_eq_true,decide_eq_true_eq,hq,hf,↓reduceIte] at hk_ok
+      simp only [Bool.and_eq_true, decide_eq_true_eq, hq, hf] at hk_ok
       rcases qb1 k hk_ok.1.1 hk_ok.2 with ⟨p,hp_mem,hp_fin⟩
       exact ⟨p,p,hp_mem,Path.nil p,hp_fin⟩
   | cons v0 i o v1 xs1 ys1 v2 he _ ih =>
@@ -1985,7 +1986,7 @@ def qao : Bool :=
 theorem qb6 : qao=true:= by decide
 theorem qb5 {xs ys : List Letter} {v' : Nat}
     (ht : TransPath qv xs ys v')
-    (hf : (tnode v').trans_final=true)
+    (hf : (tnode v').trans_final = true)
     (hl : qI xs) : qI ys:= by
   rcases hl with ⟨u,q,hu_st,hp,hq⟩
   have hi:=qb6
@@ -2000,7 +2001,7 @@ theorem qb5 {xs ys : List Letter} {v' : Nat}
   rcases closure_sound ht hf u q 0 hu_ok.1.1 hu_ok.1.2 hk0_cell hp hq with ⟨p,q',hp_mem,hp_ys,hq'⟩
   exact ⟨p,q',qax hsub hp_mem,hp_ys,hq'⟩
 theorem path_core (w : List Letter) (u f : Nat) (hu : u < q7)
-    (hp : Path u (w ++ [.Even]) f) (hfin : qz f=true) :
+    (hp : Path u (w ++ [.Even]) f) (hfin : qz f = true) :
     ∃ v,Path u w v /\ (node v).final=true:= by
   induction w generalizing u with
   | nil =>
@@ -2088,7 +2089,7 @@ theorem tail2_prefix : TransPath 12 [.Even] [.Gap,.Gap,.Even,.Even,.Even,.Even] 
   q2 12 [(some .E,none,51),(none,some .G,58),(none,some .G,52),(none,some .E,53),(none,some .E,54),(none,some .E,55),(none,some .E,57)] (by decide)
 theorem tail_loop : TransPath 57 [] [.Even] 57 :=
   q2 57 [(none,some .E,57)] (by decide)
-theorem pump (k n : Nat) (h : TransPath k [.Gap,.Gap,.Gap] [.Even] k) :
+theorem pump (k n : Nat) (h : TransPath k [.Gap, .Gap, .Gap] [.Even] k) :
     TransPath k (List.replicate (n * 3) .Gap) (List.replicate n .Even) k:= by
   induction n with
   | zero => exact TransPath.nil k
@@ -2098,7 +2099,7 @@ theorem pump (k n : Nat) (h : TransPath k [.Gap,.Gap,.Gap] [.Even] k) :
     exact q8 h ih
 theorem qbp (c : Letter) (g : Nat) (pre : List Letter) (k : Nat) (suf : List Letter) (n q : Nat)
     (hpre : TransPath 12 (c :: List.replicate g .Gap) pre k)
-    (hloop : TransPath k [.Gap,.Gap,.Gap] [.Even] k)
+    (hloop : TransPath k [.Gap, .Gap, .Gap] [.Even] k)
     (hsuf : TransPath k [] suf q) :
     TransPath 12 (c :: List.replicate (g + n * 3) .Gap) (pre ++ List.replicate n .Even ++ suf) q:= by
   rw [List.replicate_add,<- List.cons_append,List.append_assoc]
@@ -2227,7 +2228,7 @@ inductive BlocksRun : Nat -> List Block -> Nat -> Prop where
       BlocksRun s' xs s'' ->
       BlocksRun s (b :: xs) s''
 theorem qbh (xs : List Block) (u q : Nat)
-    (hu : u < q7) (hp : Path u (qb xs) q) (hf : (node q).final=true) :
+    (hu : u < q7) (hp : Path u (qb xs) q) (hf : (node q).final = true) :
     0 < qA u 0 /\ ∀ s,qA u 0 - 1 <= s ->
       ∃ t,BlocksRun s xs t /\ 28 <= t:= by
   induction xs generalizing u with
@@ -2321,7 +2322,7 @@ def qac : Nat -> List Letter -> List Nat -> Nat -> Bool
     memEdge (node u).edges c u' && qac u' cs us q
   | _,_,_,_ => false
 theorem qaI (u : Nat) (w : List Letter) (us : List Nat) (q : Nat)
-    (h : qac u w us q=true) : Path u w q:= by
+    (h : qac u w us q = true) : Path u w q:= by
   induction w generalizing u us with
   | nil =>
     cases us with
@@ -2362,7 +2363,7 @@ theorem qb2 (l : List (Fin 2)) : l ^ (0 : Nat)=[]:=rfl
 theorem zLp (l : List (Fin 2)) (n : Nat) : l ^ (n + 1)=l ++ l ^ n:=rfl
 theorem qD (l : List (Fin 2)) (m n : Nat) : l ^ (m + n)=l ^ m ++ l ^ n:= by
   induction m with
-  | zero => simp [qb2]
+  | zero => simp
   | succ m ih => rw [Nat.succ_add,zLp,zLp,ih,List.append_assoc]
 theorem zLp' (l : List (Fin 2)) (n : Nat) : l ^ (n + 1)=l ^ n ++ l:= by
   rw [qD,zLp,qb2,List.append_nil]
@@ -2423,11 +2424,9 @@ def q5 : List (Fin 2):=[0,0,1,0,0,1]
 def qg : List (Fin 2):=[0,1,1,0,0,1]
 theorem qn (l : ListBlank (Fin 2)) (v : List (Fin 2)) (n : Nat) :
     l <+ v ^ (n + 1)=(l <+ v ^ n) <+ v:= by
-  change v ^ (n + 1) +> l=v +> (v ^ n +> l)
   rw [zLp,append_assoc]
 theorem ql (l : ListBlank (Fin 2)) (v : List (Fin 2)) (n : Nat) :
     l <+ v ^ (n + 1)=(l <+ v) <+ v ^ n:= by
-  change v ^ (n + 1) +> l=v ^ n +> (v +> l)
   rw [zLp',append_assoc]
 def J (l l' : ListBlank (Fin 2)) : Prop :=
   ∀ r,(l <{{C}} ((1 : Fin 2) >> r)) [holdout_0641_tm]⊢* (l' {{B}}> ((1 : Fin 2) >> r))
@@ -3003,7 +3002,7 @@ theorem qaN (xs : List Block) (w : List Letter) :
     by_cases h : b=.BQ0
     · subst h
       rw [qaw,qa3,ih,qM,q6,List.reverse_append,List.append_assoc]
-      rcases hflip : q6 xs with _ | _ <;> simp [hflip,qf,qP]
+      rcases hflip : q6 xs with _ | _ <;> simp [qf, qP]
     · have hnf : q6 (b :: xs)=false:= by cases b <;> first | contradiction | rfl
       have hout : qM (b :: xs)=q4 b (q6 xs) ++ qM xs:= by
         cases b <;> first | contradiction | rfl
@@ -3034,7 +3033,7 @@ theorem qaY (a b : Nat) : (a * 2) * (b * 2)=4 * (a * b):= by
 theorem qW (a b : Nat) : (a * 2 * 2) * (b * 2 + 1)=4 * (a * (2 * b + 1)):= by
   calc (a * 2 * 2) * (b * 2 + 1)=(4 * a) * (2 * b + 1):= by congr 1 <;> omega
     _ = 4 * (a * (2 * b + 1)):= by rw [Nat.mul_assoc]
-theorem atom_BP2 (n s s' : Nat) (h : qau true (2 + n * 3) s=some s') :
+theorem atom_BP2 (n s s' : Nat) (h : qau true (2 + n * 3) s = some s') :
     2 <= s /\ s'=4 * (2 ^ n * (s / 2)) - 1:= by
   have hg : 2 + n * 3=n * 3 + 2:= by omega
   have hdiv : (n * 3 + 2) / 3=n:= by omega
@@ -3050,7 +3049,7 @@ theorem atom_BP2 (n s s' : Nat) (h : qau true (2 + n * 3) s=some s') :
       rw [Nat.pow_succ]; exact qaY (2 ^ n) (s / 2)
     rw [hp] at h
     exact ⟨hs,h.symm⟩
-theorem atom_BP3 (n s s' : Nat) (h : qau true (3 + n * 3) s=some s') :
+theorem atom_BP3 (n s s' : Nat) (h : qau true (3 + n * 3) s = some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 1:= by
   have hg : 3 + n * 3=n * 3 + 3:= by omega
   have hdiv : (n * 3 + 3) / 3=n + 1:= by omega
@@ -3064,7 +3063,7 @@ theorem atom_BP3 (n s s' : Nat) (h : qau true (3 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-theorem atom_BP4 (n s s' : Nat) (h : qau true (4 + n * 3) s=some s') :
+theorem atom_BP4 (n s s' : Nat) (h : qau true (4 + n * 3) s = some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 1:= by
   have hg : 4 + n * 3=n * 3 + 4:= by omega
   have hdiv : (n * 3 + 4) / 3=n + 1:= by omega
@@ -3078,19 +3077,19 @@ theorem atom_BP4 (n s s' : Nat) (h : qau true (4 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-theorem atom_BQ0_val (s s' : Nat) (h : qau false 0 s=some s') :
+theorem atom_BQ0_val (s s' : Nat) (h : qau false 0 s = some s') :
     3 <= s /\ s'=s - 3:= by
   unfold qau at h
   simp only [Bool.false_eq_true, ↓reduceIte] at h
   split_ifs at h with hs
   · injection h with h; exact ⟨hs,h.symm⟩
-theorem atom_BQ2_val (s s' : Nat) (h : qau false 2 s=some s') :
+theorem atom_BQ2_val (s s' : Nat) (h : qau false 2 s = some s') :
     2 <= s /\ s'=4 * ((s - 2) / 2) + 3:= by
   unfold qau at h
   simp only [Bool.false_eq_true, ↓reduceIte] at h
   split_ifs at h with hs
   · injection h with h; exact ⟨hs,by omega⟩
-theorem atom_BQ3 (n s s' : Nat) (h : qau false (3 + n * 3) s=some s') :
+theorem atom_BQ3 (n s s' : Nat) (h : qau false (3 + n * 3) s = some s') :
     2 <= s /\ s'=4 * (2 ^ n * (s / 2)) - 3:= by
   have hg : 3 + n * 3=n * 3 + 3:= by omega
   have hdiv : (n * 3 + 3) / 3=n + 1:= by omega
@@ -3106,7 +3105,7 @@ theorem atom_BQ3 (n s s' : Nat) (h : qau false (3 + n * 3) s=some s') :
       rw [Nat.pow_succ]; exact qaY (2 ^ n) (s / 2)
     rw [hp] at h
     exact ⟨hs,h.symm⟩
-theorem atom_BQ4 (n s s' : Nat) (h : qau false (4 + n * 3) s=some s') :
+theorem atom_BQ4 (n s s' : Nat) (h : qau false (4 + n * 3) s = some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 3:= by
   have hg : 4 + n * 3=n * 3 + 4:= by omega
   have hdiv : (n * 3 + 4) / 3=n + 1:= by omega
@@ -3120,7 +3119,7 @@ theorem atom_BQ4 (n s s' : Nat) (h : qau false (4 + n * 3) s=some s') :
     rw [Nat.pow_succ,Nat.pow_succ]; exact qW (2 ^ n) (s / 2)
   rw [hp] at h
   exact h.symm
-theorem atom_BQ5 (n s s' : Nat) (h : qau false (5 + n * 3) s=some s') :
+theorem atom_BQ5 (n s s' : Nat) (h : qau false (5 + n * 3) s = some s') :
     s'=4 * (2 ^ n * (2 * (s / 2) + 1)) - 3:= by
   have hg : 5 + n * 3=n * 3 + 5:= by omega
   have hdiv : (n * 3 + 5) / 3=n + 1:= by omega
@@ -3135,7 +3134,7 @@ theorem atom_BQ5 (n s s' : Nat) (h : qau false (5 + n * 3) s=some s') :
   rw [hp] at h
   exact h.symm
 theorem block_step (b : Block) {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)} {s' : Nat}
-    (hc : Counter w s l) (hs : qau (q3 b) (gaps b) s=some s') :
+    (hc : Counter w s l) (hs : qau (q3 b) (gaps b) s = some s') :
     ∃ l',Counter (qa3 b w) s' l' /\
       ∀ r,(qr l ((([0,1] : List (Fin 2)) ^ (gaps b)) +> (qo b +> r))) [holdout_0641_tm]⊢* (qr l' r):= by
   cases b with
@@ -3334,7 +3333,7 @@ theorem qm (n : Nat) (w : List Letter) (r : ListBlank (Fin 2)) :
   | succ n ih =>
     simp only [List.replicate_succ,List.cons_append,qp,ih,<- append_assoc,<- zLp']
 theorem qaS {w : List Letter} {s : Nat} {l : ListBlank (Fin 2)}
-    (hc : Counter w s l) (hs : s=0) (r : ListBlank (Fin 2)) :
+    (hc : Counter w s l) (hs : s = 0) (r : ListBlank (Fin 2)) :
     (l {{B}}> ((0 : Fin 2) >> r)) [holdout_0641_tm]⊢*
       ((default : ListBlank (Fin 2)) {{B}}> ((0 : Fin 2) >> qp w r)):= by
   induction hc generalizing r with
@@ -3425,7 +3424,7 @@ theorem cycle (xs : List Block) (s : Nat) (l : ListBlank (Fin 2))
   have hc' : Counter (.Even :: ((qb xs').reverse ++ qc)) s2 l2:= by
     have hrev : Letter.Even :: ((qb xs').reverse ++ qc) =
         (qb xs' ++ [Letter.Even]).reverse ++ qc:= by
-      simp [List.reverse_append,List.append_assoc]
+      simp [List.reverse_append]
     rw [hrev,hword]
     simpa [List.reverse_append,List.append_assoc] using! hc2
   refine ⟨xs',s2,l2,hc',by omega,hl',?_⟩
@@ -3511,7 +3510,7 @@ def CycleInv (xs : List Block) (s : Nat) (l : ListBlank (Fin 2)) : Prop :=
   12 <= s /\
   qI (qb xs ++ [.Even])
 theorem zIm {c c' : Cfg (Fin 2) (Fin 6)} {j d : Nat}
-    (h : multiStep holdout_0641_tm c (j + d)=some c') :
+    (h : multiStep holdout_0641_tm c (j + d) = some c') :
     (multiStep holdout_0641_tm c j).isSome:= by
   rw [zMa] at h
   cases h_j : multiStep holdout_0641_tm c j with

@@ -12,6 +12,9 @@ public import BusyBeaver.Calculi.WordCalculusG
 public import BusyBeaver.Calculi.WordCalculusH
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1LC1RA_1LD0LC_1RA0LA_1RA1RF_0RAHHH
@@ -39,7 +42,6 @@ abbrev F : Fin 6 := 5
 @[reducible] def tm : Machine (Fin 2) (Fin 6) := target_tm
 local notation "HalfTape" => ListBlank (Fin 2)
 local notation "BitWord" => List (Fin 2)
-set_option maxHeartbeats 2000000
 
 open WordVKQ Word WordVKQ.Traj103
 
@@ -75,28 +77,28 @@ abbrev Seg := SegP callStep
 
 theorem seg_ch_V : Seg [.ch] [.ch, .ch] V_u V_u :=
   segP_of_step_two (mid1 := [1, 0, 1, 1]) (mid2 := [1, 0, 1, 0])
-    (fun u r => by unfold zCR zCs V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs V_u; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL zCR zCs; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL V_u; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_V : Seg [.ca] [.ch] V_u Vp :=
   segP_of_step_one (mid := [0, 1, 0, 1])
-    (fun u r => by unfold zCR zCs V_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs V_u; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Vp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_Vp : Seg [.ca] [.ca, .ca] Vp Vp :=
   segP_of_step_two (mid1 := [0, 1, 1, 1]) (mid2 := [0, 1, 0, 1])
-    (fun u r => by unfold zCR zCs Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs Vp; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL zCR zCs; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Vp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_K : Seg [.ch] [] K_u Q_u :=
-  segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ch_Q : Seg [.ch] [.ch] Q_u K_u :=
   segP_of_step_one (mid := [1, 1])
-    (fun u r => by unfold zCR zCs Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL K_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs Q_u; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL K_u; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_VpQ : Seg [.ca] [.ca] (Vp ++ Q_u) (Kp ++ Vp) :=
   segP_of_step_one (mid := [0, 1, 0, 1, 1, 1])
@@ -109,16 +111,16 @@ theorem seg_ca_KpVp : Seg [.ca] [] (Kp ++ Vp) (Qp ++ Vp) :=
 theorem seg_ca_QpVp : Seg [.ca] [.ca, .ca] (Qp ++ Vp) (Kp ++ Vp) :=
   segP_of_step_two (mid1 := [0, 1, 1, 1, 1, 1]) (mid2 := [0, 1, 0, 1, 1, 1])
     (fun u r => by unfold zCR zCs Qp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL zCR zCs; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL zCR zCs; simp only [append_cons, append_nil]; execute)
     (fun u r => by unfold zCL Kp Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
 
 theorem seg_ca_Kp : Seg [.ca] [] Kp Qp :=
-  segP_of_step_nil (fun u r => by unfold zCR zCL zCs Kp Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+  segP_of_step_nil (fun u r => by unfold zCR zCL zCs Kp Qp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_Qp : Seg [.ca] [.ca] Qp Kp :=
   segP_of_step_one (mid := [1, 1])
-    (fun u r => by unfold zCR zCs Qp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Kp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCR zCs Qp; simp only [append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Kp; simp only [append_cons, append_nil]; execute)
 
 theorem seg_ca_KQ : Seg [.ca] [] (K_u ++ Q_u) Vp :=
   segP_of_step_nil (fun u r => by unfold zCR zCL zCs K_u Q_u Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
@@ -126,7 +128,7 @@ theorem seg_ca_KQ : Seg [.ca] [] (K_u ++ Q_u) Vp :=
 theorem seg_ca_QQ : Seg [.ca] [.ca] (Q_u ++ Q_u) Vp :=
   segP_of_step_one (mid := [0, 1, 0, 1])
     (fun u r => by unfold zCR zCs Q_u; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
-    (fun u r => by unfold zCL Vp; simp only [List.cons_append, List.nil_append, append_cons, append_nil]; execute)
+    (fun u r => by unfold zCL Vp; simp only [append_cons, append_nil]; execute)
 
 -- Turnaround zP0..zP6
 abbrev tr1 : BitWord := [0,1,1,1,0,1,1,1,1,1,0,1,0,0,1,0,1,0,1,1,0,1,0,1,0,1]
@@ -138,37 +140,37 @@ abbrev tr6 : BitWord := [0,1,0,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1]
 
 theorem zP0 (w : HalfTape) : (zCf w) [tm]⊢⁺ (zCR w .ca (tr1 +> default)) := by
   unfold zCf zCR zCs pref24 tr1
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 theorem zP1 (w : HalfTape) : (zCL w (tr1 +> default)) [tm]⊢⁺ (zCR w .ca (tr2 +> default)) := by
   unfold zCL zCR zCs tr1 tr2
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 theorem zP2 (w : HalfTape) : (zCL w (tr2 +> default)) [tm]⊢⁺ (zCR w .ca (tr3 +> default)) := by
   unfold zCL zCR zCs tr2 tr3
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 theorem zP3 (w : HalfTape) : (zCL w (tr3 +> default)) [tm]⊢⁺ (zCR w .ca (tr4 +> default)) := by
   unfold zCL zCR zCs tr3 tr4
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 theorem zP4 (w : HalfTape) : (zCL w (tr4 +> default)) [tm]⊢⁺ (zCR w .ca (tr5 +> default)) := by
   unfold zCL zCR zCs tr4 tr5
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 theorem zP5 (w : HalfTape) : (zCL w (tr5 +> default)) [tm]⊢⁺ (zCR w .ca (tr6 +> default)) := by
   unfold zCL zCR zCs tr5 tr6
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 theorem zP6 (w : HalfTape) : (zCL w (tr6 +> default)) [tm]⊢⁺ (zCf ([1, 1, 0] +> w)) := by
   unfold zCL zCf tr6 pref24
-  simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq]
+  simp only [append_cons, append_nil]
   execute
 
 -- Section 2: Words, Shift Identity, DigitVal, Parse, Scan, Step
@@ -227,7 +229,7 @@ theorem init_to_u0 : (init []) [tm]⊢* zCf (evalWords u_0 default) := by
   have h0 : (init [] : Cfg (Fin 2) (Fin 6)) = evalCCfgVKQ zInitCCfg := rfl
   have h1 : evalCCfgVKQ zHit6CCfg = zCf (evalWords u_0 default) := by
     dsimp [evalCCfgVKQ, zHit6CCfg, zCf, pref24, u_0, evalWords, V_u, K_u, Q_u]
-    simp only [List.cons_append, List.nil_append, append_cons, append_nil, zero_cons_default_vkq, default_head_vkq, default_tail_vkq]
+    simp only [zero_cons_default_vkq]
   have hPlus := zTc (by decide : 0 < 347) zCm_init_347
   rw [<- h0, h1] at hPlus
   exact stepStar_of_stepPlus_vkq hPlus

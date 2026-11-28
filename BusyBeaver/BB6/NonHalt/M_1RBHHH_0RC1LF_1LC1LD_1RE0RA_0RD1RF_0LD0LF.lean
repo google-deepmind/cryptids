@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RBHHH_0RC1LF_1LC1LD_1RE0RA_0RD1RF_0LD0LF
@@ -30,7 +33,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 def A : Fin 6 := 0
@@ -41,7 +43,6 @@ def E : Fin 6 := 4
 def F : Fin 6 := 5
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
-set_option maxHeartbeats 8000000
 @[simp] theorem zMz (M : Machine zG_ zL_) (config : Cfg zG_ zL_) : multiStep M config 0 = some config := rfl
 @[simp] theorem zMo (M : Machine zG_ zL_) (config : Cfg zG_ zL_) : multiStep M config 1 = step M config := rfl
 @[simp] theorem zMs (M : Machine zG_ zL_) (config : Cfg zG_ zL_) (n : Nat) :
@@ -59,12 +60,11 @@ set_option maxHeartbeats 8000000
   induction l₁ with
   | nil => rfl
   | cons a l₁ ih => simp [ih]
-set_option maxHeartbeats 8000000
 @[simp] theorem zPz (l : List α) : l ^ (0 : Nat) = [] := rfl
 @[simp] theorem z01 (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 theorem pow_add (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [z01,Nat.succ_add,ih,List.append_assoc]
 theorem z02 (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
@@ -289,8 +289,8 @@ theorem z0t (ys : List Token) (l r : zB) :
   have h1 := le1 l r'
   have h2 := z0n ys (l <+ [0,1,0,1]) r
   refine z08 (z0a h1 ?_ rfl) (z0b h2 ?_ (by simp))
-  · simp [z4,enc,tk] at hr' ⊢; rw [hr']
-  · simp at hr' ⊢; rw [hr']
+  · simp only [enc, tk, append_assoc, append_cons, append_nil] at hr' ⊢; rw [hr']
+  · simp only [append_cons, append_nil] at hr' ⊢; rw [hr']
 theorem z0u (ys : List Token) (l r : zB) :
     (l {{D}}> [0] +> z4 +> enc (.a :: (ys ++ [.b])) +> [0] +> r) [target_tm]⊢⁺
     ((l <+ [1,0,1]) {{D}}> [0] +> z4 +> ems ys +> [0,0,1] +> r) := by
@@ -298,8 +298,8 @@ theorem z0u (ys : List Token) (l r : zB) :
   have h1 := le1 l r'
   have h2 := z0o ys (l <+ [0,1,0,1]) r
   refine z08 (z0a h1 ?_ rfl) (z0b h2 ?_ (by simp))
-  · simp [z4,enc,tk] at hr' ⊢; rw [hr']
-  · simp at hr' ⊢; rw [hr']
+  · simp only [enc, tk, append_assoc, append_cons, append_nil] at hr' ⊢; rw [hr']
+  · simp only [append_cons, append_nil] at hr' ⊢; rw [hr']
 theorem z0v (j : Nat) (r : zB) :
     ((default <+ ([1,0,1] ^ j) <+ [1]) <{{D}} z4 +> r) [target_tm]⊢*
     (default {{D}}> [0] +> z4 +> [1,0] +> ([0,1,0] ^ j) +> r) := by
@@ -387,12 +387,12 @@ theorem z0G (ts : List Token) (m : zF) (ts' : List Token) (m' : zF)
     have h1 := z0t (.a :: ts) l (m' +> r)
     refine z0b h1 (by simp) ?_
     dsimp [ems,em]
-    simp only [append_assoc,append_cons,append_nil,z0D]
+    simp only [z0D]
   | EvT ts m0 =>
     have h1 := z0u (.a :: ts) l (m0 +> r)
     refine z0b h1 (by simp) ?_
     dsimp [ems,em]
-    simp only [append_assoc,append_cons,append_nil,z0D]
+    simp only [z0D]
 theorem z0H (j : Nat) (ts : List Token) (m : zF) (ts' : List Token) (m' : zF)
     (r : zB) (h : Ev ts m ts' m') :
     ((default <+ ([1,0,1] ^ j)) {{D}}> [0] +> z4 +> enc (.b :: ts) +> m +> r) [target_tm]⊢⁺
@@ -402,14 +402,14 @@ theorem z0H (j : Nat) (ts : List Token) (m : zF) (ts' : List Token) (m' : zF)
     have h1 := le0 (default <+ ([1,0,1] ^ j)) (enc ts +> [1,1] +> m' +> r)
     have h2 := z0n ts (default <+ ([1,0,1] ^ j) <+ [1,0,1,0,1]) (m' +> r)
     have h3 := z0x j (ems ts +> [0] +> m' +> r)
-    refine z08 (z0a h1 (by simp [z4,enc,tk]) rfl) (z07 h2 (z0a h3 rfl ?_))
+    refine z08 (z0a h1 (by simp [enc, tk]) rfl) (z07 h2 (z0a h3 rfl ?_))
     rw [z0d,z0d,z0f]; dsimp [enc,tk]
     simp only [append_assoc,append_cons,append_nil,z0z,z0D]
   | EvT ts m0 =>
     have h1 := le0 (default <+ ([1,0,1] ^ j)) (enc (ts ++ [.b]) +> [0] +> m0 +> r)
     have h2 := z0o ts (default <+ ([1,0,1] ^ j) <+ [1,0,1,0,1]) (m0 +> r)
     have h3 := z0x j (ems ts +> [0,0,1] +> m0 +> r)
-    refine z08 (z0a h1 (by simp [z4,enc,tk]) rfl) (z07 h2 (z0a h3 rfl ?_))
+    refine z08 (z0a h1 (by simp [enc, tk]) rfl) (z07 h2 (z0a h3 rfl ?_))
     rw [z0d,z0d,z0f]; dsimp [enc,tk]
     simp only [append_assoc,append_cons,append_nil,z0z,z0D]
 def Evs : Nat -> List Token -> zF -> List Token -> zF -> Prop
@@ -628,7 +628,7 @@ theorem z10 (n : Nat) (l r : zB) :
   · have hp : ([1,0,0] : zF) ^ (2 + n * 2) = [1,0,0] ++ ([1,0,0] ^ (1 + n * 2)) := by
       have : 2 + n * 2 = 1 + (1 + n * 2) := by omega
       rw [this,pow_add]; rfl
-    rw [hp]; simp [z4]
+    rw [hp]; simp
   · rw [z0d,z0f]; dsimp [enc,tk]
     rw [z02 [1,0,0] (n * 2)]
     have : n * 2 + 1 = 1 + n * 2 := by omega
@@ -636,7 +636,7 @@ theorem z10 (n : Nat) (l r : zB) :
   · rw [z0g]; dsimp [ems,em]
     have hs := z0B (n * 2) ([0,1] +> r)
     simp only [append_cons,append_nil] at hs
-    simp only [z4,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,append_cons,append_nil]
+    simp only [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons]
     rw [hs]
 theorem z11 (n : Nat) (l r : zB) :
     (l {{D}}> [0] +> z4 +> [0] +> ([1,0,0] ^ (n * 2)) +> [0] +> r) [target_tm]⊢*
@@ -708,7 +708,7 @@ theorem o2 (j : Nat) (ts : List Token) (m : zF) :
   refine z08 (z0a h1 ?_ rfl) (z07 h2 (z0a h3 rfl ?_))
   · simp [OV,enc,tk]
   · dsimp [ck]; rw [z0d,z0f]; dsimp [enc,tk]
-    simp only [append_assoc,append_cons,append_nil,z0D]
+    simp only [append_assoc, append_cons, z0D]
 theorem z16 (l r : zB) :
     (l {{D}}> [0] +> z4 +> [0] +> [1,0,1,0,1] +> r) [target_tm]⊢*
     ((l <+ [0,1,1,0,1,0,1]) {{D}}> [1,0,0,1] +> r) := by
@@ -722,7 +722,7 @@ theorem z17 (ts : List Token) (l r : zB) :
   · simp [enc,tk]
   · simp [enc,tk]
   · dsimp [ems,em]
-    simp only [z4,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,append_assoc,append_cons,append_nil,z0D]
+    simp only [Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, z0D]
 theorem z18 (j : Nat) (r : zB) :
     ((default <+ ([1,0,1] ^ j) <+ [1,1,0,1,0,1] <+ [1,0,1,1,0,1,0,1]) <{{D}} z4 +> r) [target_tm]⊢*
     (default {{D}}> [0] +> z4 +> ([1,0,0] ^ j) +> enc [.a,.b] +> [0] +> enc [.a,.b,.a,.a] +> r) := by
@@ -763,7 +763,7 @@ theorem z1b {ts : List Token} (l r : zB) (ht : z19 ts) :
   · have h1 := z0u (.b :: us) l r
     refine z0b h1 rfl ?_
     dsimp [ems,em]
-    simp only [append_assoc,append_cons,append_nil,z0D]
+    simp only [z0D]
 theorem z1c (w j : Nat) {ts : List Token} (p : Nat) (m : zF) (ht : z19 ts) :
     ((default <+ ([1,0,1] ^ j)) {{D}}> [0] +> z4 +> enc ([.a,.a] ^ w ++ .a :: .b :: ts) +> (0 :: ([1] ^ p ++ m)) +> default) [target_tm]⊢⁺
     (OV (j + w + 1) ts (0 :: ([1] ^ (w + 1 + p) ++ m))) := by
@@ -782,7 +782,7 @@ theorem z1c (w j : Nat) {ts : List Token} (p : Nat) (m : zF) (ht : z19 ts) :
     have h1 := z0G ([.a,.a] ^ w ++ .a :: .b :: ts) (0 :: ([1] ^ p ++ m)) ([.a,.a] ^ w ++ .a :: .b :: ts) (0 :: 1 :: ([1] ^ p ++ m)) (default <+ ([1,0,1] ^ j)) default hev
     have h2 := ih (j + 1) (p + 1)
     refine zPt (z0b h1 ?_ rfl) (z0b h2 ?_ ?_)
-    · simp [z01,List.append_assoc]
+    · simp [z01]
     · have hj : ([1,0,1] : zF) ^ (j + 1) = [1,0,1] ++ ([1,0,1] ^ j) := rfl
       have hp : ([1] : zF) ^ (p + 1) = 1 :: ([1] ^ p) := rfl
       rw [hj,hp]; simp
@@ -825,7 +825,7 @@ theorem z1h (u v : Nat) :
   have h3 := z0R (z0S u) h2
   refine z0Q h3 (by omega) ?_ (by omega) (by simp [List.append_assoc])
   rw [Nat.pow_add,Nat.pow_add,Nat.pow_one]
-  simp [Nat.mul_add,Nat.mul_assoc,Nat.mul_comm,Nat.mul_left_comm]
+  simp [Nat.mul_add, Nat.mul_comm, Nat.mul_left_comm]
 theorem z1i (j : Nat) :
     Num (j + 6) (2 ^ j * 7) 3 ([.b] ^ j ++ [.a,.a] ^ 3 ++ [.b] ^ 3) := by
   have h1 := z0R (z0T 3) (z0S 3)
@@ -863,14 +863,14 @@ theorem z1p (rest ts qs : List Token) (m : zF) :
   refine zPt (z0b h1 ?_ rfl) (z0b h2 ?_ ?_)
   · dsimp [ck]
   · dsimp [ck]; simp only [z0d,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
-  · dsimp [ck]; simp only [z0d,z0f,z01,zPz,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
+  · dsimp [ck]; simp only [z0d, enc, tk, append_assoc, append_cons, append_nil, List.append_assoc, List.cons_append, List.nil_append]
 theorem z1q (xs ts : List Token) (m : zF) :
     (ck (.b :: xs) ts ([1,1] ++ m)) [target_tm]⊢⁺ (ck ([.a,.a] ++ xs) (ts ++ [.b]) m) := by
   have hev : Ev (xs ++ ts) ([1,1] ++ m) ((xs ++ ts) ++ [.b]) m := Ev.EvG (xs ++ ts) m
   have h1 := z0H 0 (xs ++ ts) ([1,1] ++ m) ((xs ++ ts) ++ [.b]) m default hev
   refine z0b h1 ?_ ?_
   · dsimp [ck]
-  · dsimp [ck]; simp only [z0d,enc,tk,zPz,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
+  · dsimp [ck]; simp only [z0d, enc, tk, append_assoc, append_cons, append_nil, List.append_assoc, List.cons_append, List.nil_append]
 @[simp] theorem z1r (xs ts : List Token) (m : zF) :
     ck xs ts (m ++ [0]) = ck xs ts m := by
   dsimp [ck]; simp
@@ -902,7 +902,7 @@ def s_loc_4 : LocalStateLoc := ⟨[(0 : Fin 2), (0 : Fin 2), (0 : Fin 2), (0 : F
 theorem step_loc_01 : ((default {{0}}> default) : Cfg (Fin 2) (Fin 6)) [target_tm]⊢⁺
     (cfg_of_loc s_loc_1.q s_loc_1.d (s_loc_1.l +> default) (s_loc_1.r +> default)) :=
   run_local_plus_eq_loc (n := 199) (s1 := s_loc_0) (s2 := s_loc_1) default default rfl
-    (by simp only [s_loc_0, cfg_of_loc, Counter.cfg_of, append_cons_loc, append_nil_loc, z00]) rfl
+    (by simp only [s_loc_0, Counter.cfg_of, append_cons_loc, append_nil_loc, z00]) rfl
 theorem step_loc_12 : (cfg_of_loc s_loc_1.q s_loc_1.d (s_loc_1.l +> default) (s_loc_1.r +> default)) [target_tm]⊢⁺
     (cfg_of_loc s_loc_2.q s_loc_2.d (s_loc_2.l +> default) (s_loc_2.r +> default)) :=
   run_local_plus_eq_loc (n := 199) (s1 := s_loc_1) (s2 := s_loc_2) default default rfl rfl rfl
@@ -912,12 +912,13 @@ theorem step_loc_23 : (cfg_of_loc s_loc_2.q s_loc_2.d (s_loc_2.l +> default) (s_
 theorem step_loc_34 : (cfg_of_loc s_loc_3.q s_loc_3.d (s_loc_3.l +> default) (s_loc_3.r +> default)) [target_tm]⊢⁺
     (ck [.a,.a,.b,.b,.a,.a] [.a,.b] [0,1]) :=
   run_local_plus_eq_loc (n := 206) (s1 := s_loc_3) (s2 := s_loc_4) default default rfl rfl
-    (by simp only [s_loc_4, cfg_of_loc, Counter.cfg_of, ck, enc, tk, z4, D, append_cons_loc, append_nil_loc, append_cons, append_nil, List.append_assoc, List.cons_append, List.nil_append, z00, zDh, zDt]; rfl)
+    (by simp only [s_loc_4, Counter.cfg_of, ck, enc, tk, z4, D, append_cons_loc, append_nil_loc, List.cons_append, List.nil_append, z00, zDh, zDt]; rfl)
 
 theorem z1W :
     (init []) [target_tm]⊢* (ck [.a,.a,.b,.b,.a,.a] [.a,.b] [0,1]) :=
   zPs (zPt step_loc_01 (zPt step_loc_12 (zPt step_loc_23 step_loc_34)))
-set_option maxRecDepth 4000000 in attribute [-simp] z01
+set_option maxRecDepth 4000000 in
+attribute [-simp] z01
 def z1X (j : Nat) (ts : List Token) (z : Nat) (rest : zF) : Cfg (Fin 2) (Fin 6) :=
   ck ([.a,.a] ++ tb ^ (j + 5) ++ [.a,.a]) [.a,.b]
     (o1 ^ (2 ^ (j + 6) - 4) ++ z1 ++ enc ts ++ z1 ++ o1 ^ z ++ rest)
@@ -1007,18 +1008,18 @@ theorem z26 :
     refine Or.inr ⟨[.a,.a,.b,.a,.a,.a] ++ tb ^ 28,?_⟩
     have h29 : tb ^ 29 = tb ^ 28 ++ tb := (z02 tb 28).symm
     dsimp only [tb] at h29 ⊢
-    simp only [h29,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [h29, List.cons_append, List.nil_append]
   have h2 := z1f (ts := [.a,.a,.b,.a,.a,.a] ++ tb ^ 29) 227 [] 511 (z0S 8) hend (by decide)
   refine zPs (zPt (z0b h1 ?_ rfl) (z0b h2 ?_ ?_))
   · have h29 : tb ^ 29 = tb ^ 28 ++ tb := (z02 tb 28).symm
     dsimp only [tab,tb] at h29 ⊢
-    simp only [z1k,h29,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [z1k, h29, List.cons_append, List.nil_append]
   · have h29 : tb ^ 29 = tb ^ 28 ++ tb := (z02 tb 28).symm
     have h227 : (1 : Fin 2) :: (o1 ^ 226) = o1 ^ 227 ++ [] := by
       rw [List.append_nil]
       exact (z01 o1 226).symm
     dsimp only [o1,tb] at h29 h227 ⊢
-    simp only [h29,h227,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [h29, h227, List.cons_append, List.nil_append]
   · dsimp only [o1]; rw [List.append_nil]
 theorem z27 :
     (OV 9 ([.a,.a,.b,.a,.a,.a] ++ tb ^ 29) (0 :: o1 ^ 738)) [target_tm]⊢*
@@ -1032,17 +1033,17 @@ theorem z27 :
   refine zPs (zPt (z0b h1 ?_ rfl) (z08 (z0a h2 ?_ rfl) (zPt (z0b h3 ?_ ?_) (z08 h4 (z07 (z0b h5 ?_ rfl) (z0a h6 rfl ?_))))))
   · have h29 : tb ^ 29 = tb ^ 28 ++ tb := (z02 tb 28).symm
     dsimp only [OV,tb,p101] at h29 ⊢
-    simp only [h29,z0d,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [h29, z0d, enc, tk, append_assoc, append_cons, append_nil, List.cons_append, List.nil_append]
   · have h29 : tb ^ 29 = tb ^ 28 ++ tb := (z02 tb 28).symm
     dsimp only [tb] at h29 ⊢
-    simp only [h29,z0d,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [h29, z0d, enc, tk, append_assoc, append_cons, append_nil, List.cons_append, List.nil_append]
   · have h29 : tb ^ 29 = tb ^ 28 ++ tb := (z02 tb 28).symm
     dsimp only [tb] at h29 ⊢
-    simp only [h29,z0d,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [h29, z0d, enc, tk, append_assoc, append_cons, append_nil, List.cons_append, List.nil_append]
   · have h28 : tb ^ 28 = tb ++ tb ^ 27 := z01 tb 27
-    simp only [List.cons_append,List.nil_append,ems,em,z4,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,append_assoc,append_cons,append_nil,z0D]
-    rw [h28]; dsimp only [tb]; simp only [z0d,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
-  · simp only [z0d,enc,tk,append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [List.cons_append, List.nil_append, ems, em, z4, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, append_cons, append_nil, z0D]
+    rw [h28]; dsimp only [tb]; simp only [z0d, enc, tk, append_assoc, append_cons, append_nil, List.cons_append, List.nil_append]
+  · simp only [z0d, enc, tk, append_assoc, append_cons, append_nil, List.cons_append, List.nil_append]
   · dsimp only [ck,z1Y,z1,tb,p100]
     have hs := z0B 27 ([0,1,1,1] +> (o1 ^ 738) +> default)
     simp only [append_cons,append_nil] at hs
@@ -1056,8 +1057,9 @@ theorem z27 :
     generalize o1 ^ 738 = g738 at hs ⊢
     generalize ([1,0,0] : zF) ^ 27 = g27 at hs ⊢
     generalize ([0,1,0] : zF) ^ 27 = g27' at hs ⊢
-    simp only [append_assoc,append_cons,append_nil,List.append_assoc,List.cons_append,List.nil_append,hs]
-set_option maxRecDepth 4000000 in attribute [irreducible] ck OV
+    simp only [append_assoc, append_cons, append_nil, hs]
+set_option maxRecDepth 4000000 in
+attribute [irreducible] ck OV
 theorem z28 :
     (ck (tb ^ 9) [.a,.b] (0 :: (enc [.a,.b] ++ z1 ++ z1Y))) [target_tm]⊢*
     (z1X 4 [.b] 0 z1Y) := by
@@ -1101,7 +1103,7 @@ theorem z29 (j : Nat) (q : List Token) (z : Nat) (rest : zF) :
       rw [this,z21 j 6]; rfl
     refine z0Q h (by omega) (by rw [hp]; omega) rfl ?_
     dsimp only [tb]
-    simp only [zPz,List.append_assoc,List.cons_append,List.nil_append]
+    simp only [zPz, List.cons_append, List.nil_append]
   have H1 : Num (j + 7) (2 ^ j * 80) 2 (tb ^ (j + 4) ++ [.a,.a] ++ tb ++ [.a,.a]) := by
     have h := z1h (j + 4) 1
     have hp1 : 2 ^ (j + 4) = 2 ^ j * 16 := by rw [z21 j 4]; rfl
@@ -1213,7 +1215,7 @@ theorem z2b (j : Nat) (q : List Token) (y : Nat) (rest : zF) :
     have hy : (1 : Fin 2) :: 1 :: ([1] ^ (y + 2 ^ j * 1024) ++ rest) = [1] ^ (y + 2 ^ j * 1024 + 2) ++ rest := by
       have : y + 2 ^ j * 1024 + 2 = 2 + (y + 2 ^ j * 1024) := by omega
       rw [this,pow_add [1] 2 (y + 2 ^ j * 1024),z1k]
-      simp only [List.append_assoc,List.cons_append,List.nil_append]
+      simp only [List.cons_append, List.nil_append]
     simp only [List.append_assoc,List.cons_append,List.nil_append,hy]
 theorem z2c (j : Nat) (q : List Token) (z : Nat) (rest : zF) :
     (ck (tb ^ (j + 10)) [.a,.b]
@@ -1289,7 +1291,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 
 

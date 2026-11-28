@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Excursion
 public import BusyBeaver.Calculi.Longitudinal
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver
 
 namespace BusyBeaver.M_1RB1RF_1LC0LF_HHH0LD_0LE1LD_0RF0LB_1RA1RE
@@ -50,7 +53,6 @@ def E : Fin 6 := 4
 def F : Fin 6 := 5
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 4000000
 set_option maxRecDepth 200000
 abbrev gQ:=Fin 2
 abbrev ai:=ListBlank (Fin 2)
@@ -65,7 +67,7 @@ theorem qO {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     (M : Machine Γ Λ) (c₁ c₂ : Cfg Γ Λ) (h : c₁ [M]⊢ c₂) :
     c₁ [M]⊢^{1} c₂ := by simp [h]
 theorem qC {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m:Nat) :
+    (M : Machine Γ Λ) (c₁ : Cfg Γ Λ) (n m : Nat) :
     multiStep M c₁ (n + m) = (multiStep M c₁ n).bind (fun c₂ => multiStep M c₂ m) := by
   induction m with
   | zero => simp
@@ -73,11 +75,11 @@ theorem qC {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
     rw [Nat.add_succ,sm,ih,Option.bind_assoc]
     simp_rw [sm]
 theorem qT {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (c : Cfg Γ Λ) (n:Nat) :
+    (M : Machine Γ Λ) (c : Cfg Γ Λ) (n : Nat) :
     multiStep M c (n + 1) = (step M c).bind (fun c' => multiStep M c' n) := by
   rw [Nat.add_comm n 1,qC,n8]
 theorem qH {Γ Λ : Type*} [Inhabited Γ] [Inhabited Λ]
-    (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m:Nat)
+    (M : Machine Γ Λ) (c₁ c₂ c₃ : Cfg Γ Λ) (n m : Nat)
     (h₁ : c₁ [M]⊢^{n} c₂) (h₂ : c₂ [M]⊢^{m} c₃) :
     c₁ [M]⊢^{n + m} c₃ := by
   rw [qC,h₁]; simp [h₂]
@@ -125,24 +127,24 @@ theorem xV (b : Fin 2) : b = 0∨b = 1 := by
   · left; rfl
   · right; rfl
   · omega
-theorem dW (r:ai) : (∃ r',r = [0]+>r')∨(∃ r',r = [1]+>r') := by
+theorem dW (r : ai) : (∃ r',r = [0]+>r')∨(∃ r',r = [1]+>r') := by
   have h : r.head>>r.tail = r:=Turing.ListBlank.cons_head_tail r
   rcases xV r.head with h0 | h1
   · left; refine ⟨r.tail,?_⟩; rw [append_cons,append_nil,← h0,h]
   · right; refine ⟨r.tail,?_⟩; rw [append_cons,append_nil,← h1,h]
-def bf (l:ai) (w : List gQ) : ai:=w.reverse+>l
-def FR (l r:ai) : aL:=l {{F}}> r
-def DL (l r:ai) : aL:=l <{{D}} r
-def FL (l r:ai) : aL:=l <{{F}} r
-def BL (l r:ai) : aL:=l <{{B}} r
-def CE (r:ai) : aL:=default {{E}}> ([0,0]+>r)
+def bf (l : ai) (w : List gQ) : ai:=w.reverse+>l
+def FR (l r : ai) : aL:=l {{F}}> r
+def DL (l r : ai) : aL:=l <{{D}} r
+def FL (l r : ai) : aL:=l <{{F}} r
+def BL (l r : ai) : aL:=l <{{B}} r
+def CE (r : ai) : aL:=default {{E}}> ([0,0]+>r)
 def wL : List gQ:=[1,1,0]
 def wX : List gQ:=[1,1,0,1,1,0]
 def wY : List gQ:=[1,1,1,1]
 def wa : List gQ:=[1,1,1,0,1,0]
 def wb : List gQ:=[1,0,1,0]
-@[simp] theorem Hm (l:ai) : bf l [] = l:=rfl
-theorem df (l:ai) (u v : List gQ) : bf l (u++v) = bf (bf l u) v := by
+@[simp] theorem Hm (l : ai) : bf l [] = l:=rfl
+theorem df (l : ai) (u v : List gQ) : bf l (u++v) = bf (bf l u) v := by
   simp [bf,List.reverse_append,append_assoc]
 structure pu where
   past : List gQ
@@ -150,7 +152,7 @@ structure pu where
   state : Fin 6
   left_head : Bool
 deriving DecidableEq
-def pu.toBC (x:pu) : BusyBeaver.Longitudinal.BoundedConfig.BCfg gQ (Fin 6) :=
+def pu.toBC (x : pu) : BusyBeaver.Longitudinal.BoundedConfig.BCfg gQ (Fin 6) :=
   match x.left_head with
   | true => ⟨x.front, x.past, x.state, .left⟩
   | false => ⟨x.past, x.front, x.state, .right⟩
@@ -161,11 +163,11 @@ def pu.ofBC (x : BusyBeaver.Longitudinal.BoundedConfig.BCfg gQ (Fin 6)) : pu :=
 theorem pu_toBC_ofBC (x : BusyBeaver.Longitudinal.BoundedConfig.BCfg gQ (Fin 6)) :
     (pu.ofBC x).toBC = x := by
   rcases x with ⟨l, r, s, _ | _⟩ <;> rfl
-def go (x:pu) (l r:ai) : aL :=
+def go (x : pu) (l r : ai) : aL :=
   BusyBeaver.Longitudinal.BoundedConfig.toCfg x.toBC l r
-def qi (x:pu) : Option pu :=
+def qi (x : pu) : Option pu :=
   (BusyBeaver.Longitudinal.BoundedConfig.step tm x.toBC).map pu.ofBC
-theorem x4 {x y : pu} (h : qi x = some y) (l r:ai) :
+theorem x4 {x y : pu} (h : qi x = some y) (l r : ai) :
     (go x l r) [tm]⊢ (go y l r) := by
   rcases Option.map_eq_some_iff.mp h with ⟨b, hb, rfl⟩
   simpa only [go, pu_toBC_ofBC] using
@@ -176,7 +178,7 @@ def v4 : Nat→pu→Option pu
     match qi x with
     | none => none
     | some z => v4 n z
-theorem yH {n : Nat} {x y : pu} (h : v4 n x = some y) (l r:ai) :
+theorem yH {n : Nat} {x y : pu} (h : v4 n x = some y) (l r : ai) :
     (go x l r) [tm]⊢^{n} (go y l r) := by
   induction n generalizing x with
   | zero => injection h with hy; subst hy; rfl
@@ -187,36 +189,36 @@ theorem yH {n : Nat} {x y : pu} (h : v4 n x = some y) (l r:ai) :
     · rw [hs] at h
       rw [Nat.add_comm n 1]
       exact qH tm _ _ _ 1 n (qO tm _ _ (x4 hs l r)) (ih h)
-theorem U (n:Nat) (x y:pu) (h : v4 (n + 1) x = some y) (l r:ai) :
+theorem U (n : Nat) (x y : pu) (h : v4 (n + 1) x = some y) (l r : ai) :
     (go x l r) [tm]⊢⁺ (go y l r) :=
   ⟨n + 1,Nat.succ_pos n,yH h l r⟩
-theorem r1 (l r:ai) : (FR l ([0,0,0]+>r)) [tm]⊢⁺ (DL l ([1,0,1]+>r)) :=
+theorem r1 (l r : ai) : (FR l ([0,0,0]+>r)) [tm]⊢⁺ (DL l ([1,0,1]+>r)) :=
   U 4 ⟨[],[0,0,0],F,false⟩ ⟨[],[1,0,1],D,true⟩ (by decide) l r
-theorem r3 (l r:ai) : (FR l ([0,0,1]+>r)) [tm]⊢⁺ (FR (bf l wL) r) :=
+theorem r3 (l r : ai) : (FR l ([0,0,1]+>r)) [tm]⊢⁺ (FR (bf l wL) r) :=
   U 4 ⟨[],[0,0,1],F,false⟩ ⟨wL.reverse,[],F,false⟩ (by decide) l r
-theorem xA (l r:ai) : (FR l ([0,1]+>r)) [tm]⊢⁺ (FR (bf l [1,1]) r) :=
+theorem xA (l r : ai) : (FR l ([0,1]+>r)) [tm]⊢⁺ (FR (bf l [1,1]) r) :=
   U 1 ⟨[],[0,1],F,false⟩ ⟨[1,1],[],F,false⟩ (by decide) l r
-theorem u8 (l r:ai) : (FR l ([1,0]+>r)) [tm]⊢⁺ (FR (bf l [1,0]) r) :=
+theorem u8 (l r : ai) : (FR l ([1,0]+>r)) [tm]⊢⁺ (FR (bf l [1,0]) r) :=
   U 1 ⟨[],[1,0],F,false⟩ ⟨[0,1],[],F,false⟩ (by decide) l r
-theorem vn (l r:ai) : (FR l ([1,1]+>r)) [tm]⊢⁺ (FL l ([0,0]+>r)) :=
+theorem vn (l r : ai) : (FR l ([1,1]+>r)) [tm]⊢⁺ (FL l ([0,0]+>r)) :=
   U 2 ⟨[],[1,1],F,false⟩ ⟨[],[0,0],F,true⟩ (by decide) l r
-theorem An (l r:ai) : (DL (bf l [1]) r) [tm]⊢⁺ (DL l ([1]+>r)) :=
+theorem An (l r : ai) : (DL (bf l [1]) r) [tm]⊢⁺ (DL l ([1]+>r)) :=
   U 0 ⟨[1],[],D,true⟩ ⟨[],[1],D,true⟩ (by decide) l r
-theorem xE (l r:ai) : (DL (bf l [1,0]) r) [tm]⊢⁺ (BL l ([0,0]+>r)) :=
+theorem xE (l r : ai) : (DL (bf l [1,0]) r) [tm]⊢⁺ (BL l ([0,0]+>r)) :=
   U 1 ⟨[0,1],[],D,true⟩ ⟨[],[0,0],B,true⟩ (by decide) l r
-theorem EA (l r:ai) : (BL (bf l [1]) ([0,0]+>r)) [tm]⊢⁺ (FL l ([0,0,0]+>r)) :=
+theorem EA (l r : ai) : (BL (bf l [1]) ([0,0]+>r)) [tm]⊢⁺ (FL l ([0,0,0]+>r)) :=
   U 0 ⟨[1],[0,0],B,true⟩ ⟨[],[0,0,0],F,true⟩ (by decide) l r
-theorem xN (l r:ai) : (BL (bf l [1,0]) ([0,0]+>r)) [tm]⊢⁺ (DL l ([0,1,0,0]+>r)) :=
+theorem xN (l r : ai) : (BL (bf l [1,0]) ([0,0]+>r)) [tm]⊢⁺ (DL l ([0,1,0,0]+>r)) :=
   U 1 ⟨[0,1],[0,0],B,true⟩ ⟨[],[0,1,0,0],D,true⟩ (by decide) l r
-theorem EX (l r:ai) : (FL (bf l [1]) ([0,0]+>r)) [tm]⊢⁺ (FR (bf l [1,0]) ([0]+>r)) :=
+theorem EX (l r : ai) : (FL (bf l [1]) ([0,0]+>r)) [tm]⊢⁺ (FR (bf l [1,0]) ([0]+>r)) :=
   U 1 ⟨[1],[0,0],F,true⟩ ⟨[0,1],[0],F,false⟩ (by decide) l r
-theorem xR (l r:ai) : (FL (bf l [1,0]) ([0,0]+>r)) [tm]⊢⁺ (DL (bf l [1]) ([1,0,1]+>r)) :=
+theorem xR (l r : ai) : (FL (bf l [1,0]) ([0,0]+>r)) [tm]⊢⁺ (DL (bf l [1]) ([1,0,1]+>r)) :=
   U 4 ⟨[0,1],[0,0],F,true⟩ ⟨[1],[1,0,1],D,true⟩ (by decide) l r
-abbrev d7 (c:aL) (n:Nat) : Prop :=
+abbrev d7 (c : aL) (n : Nat) : Prop :=
   BusyBeaver.Excursion.HaltsIn tm c n
-abbrev cE (c:aL) (P : aL→Prop) : Prop :=
+abbrev cE (c : aL) (P : aL → Prop) : Prop :=
   BusyBeaver.Excursion.Leads tm c P
-abbrev fl (c:aL) (P : aL→Prop) : Prop :=
+abbrev fl (c : aL) (P : aL → Prop) : Prop :=
   BusyBeaver.Excursion.Advances tm c P
 theorem uF {c d : aL} {n : Nat} (hr : c [tm]⊢* d) (hh : d7 c n) :
     ∃ m ≤ n,d7 d m :=
@@ -224,54 +226,54 @@ theorem uF {c d : aL} {n : Nat} (hr : c [tm]⊢* d) (hh : d7 c n) :
 theorem kz {c d : aL} {n : Nat} (hr : c [tm]⊢⁺ d) (hh : d7 c n) :
     ∃ m < n,d7 d m :=
   BusyBeaver.Excursion.haltsIn_reduce_stepPlus hr hh
-theorem dg {c : aL} {P : aL→Prop} (hp : P c) : cE c P :=
+theorem dg {c : aL} {P : aL → Prop} (hp : P c) : cE c P :=
   BusyBeaver.Excursion.Leads.here hp
-theorem bn {c d : aL} {P : aL→Prop} (hr : c [tm]⊢* d) (hp : P d) : cE c P :=
+theorem bn {c d : aL} {P : aL → Prop} (hr : c [tm]⊢* d) (hp : P d) : cE c P :=
   BusyBeaver.Excursion.Leads.of_stepStar hr hp
-theorem bh {c : aL} {P Q : aL→Prop} (h1 : cE c P) (h2 : ∀ d,P d→cE d Q) :
+theorem bh {c : aL} {P Q : aL → Prop} (h1 : cE c P) (h2 : ∀ d, P d → cE d Q) :
     cE c Q :=
   BusyBeaver.Excursion.Leads.trans h1 h2
-theorem xZ {c : aL} {P Q : aL→Prop} (h : cE c P) (hinc : ∀ d,P d→Q d) :
+theorem xZ {c : aL} {P Q : aL → Prop} (h : cE c P) (hinc : ∀ d, P d → Q d) :
     cE c Q :=
   BusyBeaver.Excursion.Leads.mono h hinc
-theorem x3 {c : aL} {P : aL→Prop} (h : fl c P) : cE c P :=
+theorem x3 {c : aL} {P : aL → Prop} (h : fl c P) : cE c P :=
   BusyBeaver.Excursion.Advances.to_leads h
-theorem cr {c d : aL} {P : aL→Prop} (hr : c [tm]⊢⁺ d) (h : cE d P) :
+theorem cr {c d : aL} {P : aL → Prop} (hr : c [tm]⊢⁺ d) (h : cE d P) :
     fl c P :=
   BusyBeaver.Excursion.Advances.of_stepPlus_leads hr h
-theorem cc {c d : aL} {P : aL→Prop} (hr : c [tm]⊢⁺ d) (h : cE d P) :
+theorem cc {c d : aL} {P : aL → Prop} (hr : c [tm]⊢⁺ d) (h : cE d P) :
     cE c P :=
   BusyBeaver.Excursion.Leads.of_stepPlus_leads hr h
-theorem su {c : aL} {P Q : aL→Prop} (h1 : fl c P) (h2 : ∀ d,P d→cE d Q) :
+theorem su {c : aL} {P Q : aL → Prop} (h1 : fl c P) (h2 : ∀ d, P d → cE d Q) :
     fl c Q :=
   BusyBeaver.Excursion.Advances.trans h1 h2
-theorem q2 {P : aL→Prop} (h : ∀ c,P c→fl c P) :
+theorem q2 {P : aL → Prop} (h : ∀ c, P c → fl c P) :
     ∀ n c,P c→¬ d7 c n :=
   BusyBeaver.Excursion.not_haltsIn_of_advances h
 inductive Bs where
   | GoRight | FromD | FromF | FromB
-def sd (b:Bool) : List gQ:=if b then [1,0] else [1]
-def bJ (l:ai) : List Bool→ai
+def sd (b : Bool) : List gQ:=if b then [1,0] else [1]
+def bJ (l : ai) : List Bool→ai
   | [] => l
   | b :: s => bf (bJ l s) (sd b)
-def aq (l:ai) (s : List Bool) (e:Bs) (r:ai) : aL :=
+def aq (l : ai) (s : List Bool) (e : Bs) (r : ai) : aL :=
   match e with
   | .GoRight => FR (bJ l s) r
   | .FromD => DL (bJ l s) r
   | .FromF => FL (bJ l s) ([0,0]+>r)
   | .FromB => BL (bJ l s) ([0,0]+>r)
-inductive ip (l:ai) : aL→Prop where
+inductive ip (l : ai) : aL → Prop where
   | contact_D (r:ai) : ip l (DL l r)
   | contact_F (r:ai) : ip l (FL l ([0,0]+>r))
   | contact_B (r:ai) : ip l (BL l ([0,0]+>r))
-theorem el {c d : aL} {P : aL→Prop} {n : Nat}
+theorem el {c d : aL} {P : aL → Prop} {n : Nat}
     (hr : c [tm]⊢⁺ d)
-    (ih : ∀ m < n,d7 d m→∃ k e,k ≤ m∧P e∧d7 e k)
+    (ih : ∀ m < n, d7 d m → ∃ k e, k ≤ m ∧ P e ∧ d7 e k)
     (hh : d7 c n) : ∃ k e,k ≤ n∧P e∧d7 e k := by
   rcases kz hr hh with ⟨m,hmn,hm⟩
   rcases ih m hmn hm with ⟨k,e,hkm,hp,hk⟩
   exact ⟨k,e,by omega,hp,hk⟩
-theorem uo (n:Nat) :
+theorem uo (n : Nat) :
     ∀ (l:ai) (s : List Bool) (e:Bs) (r:ai),
     d7 (aq l s e r) n →
     ∃ k c,k ≤ n∧ip l c∧d7 c k := by
@@ -332,12 +334,12 @@ theorem uo (n:Nat) :
         · have hr : (aq l (true :: s) .FromB r) [tm]⊢⁺ (aq l s .FromD ([0,1,0,0]+>r)) :=
             xN (bJ l s) r
           exact el hr (fun m hmn hm => ih m hmn l s .FromD ([0,1,0,0]+>r) hm) hhalt
-theorem fv (l r:ai) : cE (FR l r) (ip l) :=
+theorem fv (l r : ai) : cE (FR l r) (ip l) :=
   fun n hn => uo n l [] .GoRight r hn
-theorem jC (l:ai) (s : List Bool) (e:Bs) (r:ai) :
+theorem jC (l : ai) (s : List Bool) (e : Bs) (r : ai) :
     cE (aq l s e r) (ip l) :=
   fun n hn => uo n l s e r hn
-theorem pG (l r:ai) : fl (FR l r) (ip l) := by
+theorem pG (l r : ai) : fl (FR l r) (ip l) := by
   rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
   · rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
     · rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
@@ -352,35 +354,35 @@ theorem pG (l r:ai) : fl (FR l r) (ip l) := by
       simpa only [aq,bJ,sd,df,← append_assoc] using! u8 l r
     · refine cr ?_ (dg (.contact_F r))
       simpa only [← append_assoc] using! vn l r
-inductive gw (l:ai) : aL→Prop where
+inductive gw (l : ai) : aL → Prop where
   | weak_D (r:ai) : gw l (DL l r)
   | weak_F (r:ai) : gw l (FL l ([0,0,0]+>r))
-inductive dU (l:ai) : aL→Prop where
+inductive dU (l : ai) : aL → Prop where
   | strong_D (r:ai) : dU l (DL l (wa+>r))
   | strong_F (r:ai) : dU l (FL l ([0,0,0]+>(wa+>r)))
-theorem GP (l r:ai) : (DL (bf l wL) r) [tm]⊢⁺ (FL l ([0,0,0]+>r)) :=
+theorem GP (l r : ai) : (DL (bf l wL) r) [tm]⊢⁺ (FL l ([0,0,0]+>r)) :=
   U 2 ⟨wL.reverse,[],D,true⟩ ⟨[],[0,0,0],F,true⟩ (by decide) l r
-theorem GZ (l r:ai) : (FL (bf l wL) ([0,0]+>r)) [tm]⊢⁺ (DL l ([1,1,1,0,1]+>r)) :=
+theorem GZ (l r : ai) : (FL (bf l wL) ([0,0]+>r)) [tm]⊢⁺ (DL l ([1,1,1,0,1]+>r)) :=
   U 6 ⟨wL.reverse,[0,0],F,true⟩ ⟨[],[1,1,1,0,1],D,true⟩ (by decide) l r
-theorem GN (l r:ai) : (BL (bf l wL) ([0,0]+>r)) [tm]⊢⁺ (DL l ([1,0,1,0,0]+>r)) :=
+theorem GN (l r : ai) : (BL (bf l wL) ([0,0]+>r)) [tm]⊢⁺ (DL l ([1,0,1,0,0]+>r)) :=
   U 2 ⟨wL.reverse,[0,0],B,true⟩ ⟨[],[1,0,1,0,0],D,true⟩ (by decide) l r
-theorem Ge (l r:ai) : (DL (bf l [1,1]) r) [tm]⊢⁺ (DL l ([1,1]+>r)) :=
+theorem Ge (l r : ai) : (DL (bf l [1,1]) r) [tm]⊢⁺ (DL l ([1,1]+>r)) :=
   U 1 ⟨[1,1],[],D,true⟩ ⟨[],[1,1],D,true⟩ (by decide) l r
-theorem Gd (l r:ai) : (FL (bf l [1,1]) ([0,0]+>r)) [tm]⊢⁺ (FR (bf l wL) ([0]+>r)) :=
+theorem Gd (l r : ai) : (FL (bf l [1,1]) ([0,0]+>r)) [tm]⊢⁺ (FR (bf l wL) ([0]+>r)) :=
   U 1 ⟨[1,1],[0,0],F,true⟩ ⟨wL.reverse,[0],F,false⟩ (by decide) l r
-theorem Hc (l r:ai) : (BL (bf l [1,1]) ([0,0]+>r)) [tm]⊢⁺ (FR (bf l [1,0]) ([0,0]+>r)) :=
+theorem Hc (l r : ai) : (BL (bf l [1,1]) ([0,0]+>r)) [tm]⊢⁺ (FR (bf l [1,0]) ([0,0]+>r)) :=
   U 2 ⟨[1,1],[0,0],B,true⟩ ⟨[0,1],[0,0],F,false⟩ (by decide) l r
-theorem GV (l r:ai) : (DL (bf l wX) r) [tm]⊢⁺ (DL l (wa+>r)) :=
+theorem GV (l r : ai) : (DL (bf l wX) r) [tm]⊢⁺ (DL l (wa+>r)) :=
   U 9 ⟨wX.reverse,[],D,true⟩ ⟨[],wa,D,true⟩ (by decide) l r
-theorem Dp (l r:ai) : (FL (bf l wX) ([0,0,0]+>r)) [tm]⊢⁺ (FL l ([0,0,0]+>(wa+>r))) := by
+theorem Dp (l r : ai) : (FL (bf l wX) ([0,0,0]+>r)) [tm]⊢⁺ (FL l ([0,0,0]+>(wa+>r))) := by
   simpa only [append_assoc] using!
     U 9 ⟨wX.reverse,[0,0,0],F,true⟩ ⟨[],[0,0,0]++wa,F,true⟩ (by decide) l r
-theorem rV (l:ai) (c:aL) (h : ip (bf l wL) c) : cE c (gw l) := by
+theorem rV (l : ai) (c : aL) (h : ip (bf l wL) c) : cE c (gw l) := by
   cases h with
   | contact_D r => exact bn (V (GP l r)) (.weak_F r)
   | contact_F r => exact bn (V (GZ l r)) (.weak_D ([1,1,1,0,1]+>r))
   | contact_B r => exact bn (V (GN l r)) (.weak_D ([1,0,1,0,0]+>r))
-theorem yQ (l r:ai) : cE (FR (bf l wL) r) (gw l) :=
+theorem yQ (l r : ai) : cE (FR (bf l wL) r) (gw l) :=
   bh (fv (bf l wL) r) (rV l)
 def lu (w : List gQ) : Prop :=
   ∀ l c,gw (bf l w) c→cE c (gw l)
@@ -422,14 +424,14 @@ theorem w8 (ps : List b9) : lu (hE ps) := by
     cases p
     · exact Bf
     · exact AK
-theorem DR (l:ai) (c:aL) (h : gw (bf l wX) c) :
+theorem DR (l : ai) (c : aL) (h : gw (bf l wX) c) :
     cE c (dU l) := by
   cases h with
   | weak_D r => exact bn (V (GV l r)) (.strong_D r)
   | weak_F r => exact bn (V (Dp l r)) (.strong_F r)
 def b5 (ps : List b9) : List gQ :=
   (wX++hE ps)++wL
-theorem lI (ps : List b9) (l:ai) (c:aL)
+theorem lI (ps : List b9) (l : ai) (c : aL)
     (h : ip (bf l (b5 ps)) c) : cE c (dU l) := by
   unfold b5 at h
   rw [df,df] at h
@@ -438,25 +440,25 @@ theorem lI (ps : List b9) (l:ai) (c:aL)
   refine bh (w8 ps (bf l wX) d hd) ?_
   intro e he
   exact DR l e he
-theorem r7 (ps : List b9) (l r:ai) :
+theorem r7 (ps : List b9) (l r : ai) :
     cE (FR (bf l (b5 ps)) r) (dU l) :=
   bh (fv (bf l (b5 ps)) r) (lI ps l)
-inductive dA (l:ai) : aL→Prop where
+inductive dA (l : ai) : aL → Prop where
   | phase_D (r:ai) : dA l (DL l r)
   | phase_F (r:ai) : dA l (FL l ([0,0,0]+>r))
   | phase_B101 (r:ai) : dA l (BL l ([0,0,1,0,1]+>r))
   | phase_B11101 (r:ai) : dA l (BL l ([0,0,1,1,1,0,1]+>r))
-theorem xX (l:ai) (c:aL) (h : gw l c) : dA l c := by
+theorem xX (l : ai) (c : aL) (h : gw l c) : dA l c := by
   cases h with
   | weak_D r => exact .phase_D r
   | weak_F r => exact .phase_F r
-theorem GC (l r:ai) : (DL (bf l ([1,0]++wL)) r) [tm]⊢⁺ (DL l ([1,1,0,1,0]+>r)) :=
+theorem GC (l r : ai) : (DL (bf l ([1,0]++wL)) r) [tm]⊢⁺ (DL l ([1,1,0,1,0]+>r)) :=
   U 8 ⟨(([1,0] : List gQ)++wL).reverse,[],D,true⟩ ⟨[],[1,1,0,1,0],D,true⟩ (by decide) l r
-theorem Gy (l r:ai) : (FL (bf l ([1,0]++wL)) ([0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,1,1,0,1]+>r)) :=
+theorem Gy (l r : ai) : (FL (bf l ([1,0]++wL)) ([0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,1,1,0,1]+>r)) :=
   U 8 ⟨(([1,0] : List gQ)++wL).reverse,[0,0],F,true⟩ ⟨[],[0,0,1,1,1,0,1],B,true⟩ (by decide) l r
-theorem Gi (l r:ai) : (BL (bf l ([1,0]++wL)) ([0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,0,1,0,0]+>r)) :=
+theorem Gi (l r : ai) : (BL (bf l ([1,0]++wL)) ([0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,0,1,0,0]+>r)) :=
   U 4 ⟨(([1,0] : List gQ)++wL).reverse,[0,0],B,true⟩ ⟨[],[0,0,1,0,1,0,0],B,true⟩ (by decide) l r
-theorem Cx (l r:ai) : cE (FR (bf l ([1,0]++wL)) r) (dA l) := by
+theorem Cx (l r : ai) : cE (FR (bf l ([1,0]++wL)) r) (dA l) := by
   refine bh (fv (bf l ([1,0]++wL)) r) ?_
   intro c h
   cases h with
@@ -466,11 +468,11 @@ theorem Cx (l r:ai) : cE (FR (bf l ([1,0]++wL)) r) (dA l) := by
     have hp : dA l (BL l ([0,0,1,0,1,0,0]+>r0)) := by
       simpa only [← append_assoc] using! dA.phase_B101 ([0,0]+>r0)
     exact bn (V (Gi l r0)) hp
-theorem A1 (l r:ai) : (FR (bf l [1,0]) ([0,0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,0,1]+>r)) :=
+theorem A1 (l r : ai) : (FR (bf l [1,0]) ([0,0,0]+>r)) [tm]⊢⁺ (BL l ([0,0,1,0,1]+>r)) :=
   U 6 ⟨[0,1],[0,0,0],F,false⟩ ⟨[],[0,0,1,0,1],B,true⟩ (by decide) l r
-theorem AL (l r:ai) : (FR (bf l [1,0]) ([0,0,1]+>r)) [tm]⊢⁺ (FR (bf l ([1,0]++wL)) r) :=
+theorem AL (l r : ai) : (FR (bf l [1,0]) ([0,0,1]+>r)) [tm]⊢⁺ (FR (bf l ([1,0]++wL)) r) :=
   U 4 ⟨[0,1],[0,0,1],F,false⟩ ⟨(([1,0] : List gQ)++wL).reverse,[],F,false⟩ (by decide) l r
-theorem Bd (l r:ai) : cE (FR (bf l [1,0]) ([0,0]+>r)) (dA l) := by
+theorem Bd (l r : ai) : cE (FR (bf l [1,0]) ([0,0]+>r)) (dA l) := by
   rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
   · have hr : (FR (bf l [1,0]) ([0,0]+>([0]+>r))) [tm]⊢⁺ (BL l ([0,0,1,0,1]+>r)) := by
       simpa only [← append_assoc] using! A1 l r
@@ -478,14 +480,14 @@ theorem Bd (l r:ai) : cE (FR (bf l [1,0]) ([0,0]+>r)) (dA l) := by
   · have hr : (FR (bf l [1,0]) ([0,0]+>([1]+>r))) [tm]⊢⁺ (FR (bf l ([1,0]++wL)) r) := by
       simpa only [← append_assoc] using! AL l r
     exact cc hr (Cx l r)
-theorem x1 (l r:ai) : cE (FR (bf l [1,1]) r) (dA l) := by
+theorem x1 (l r : ai) : cE (FR (bf l [1,1]) r) (dA l) := by
   refine bh (fv (bf l [1,1]) r) ?_
   intro c h
   cases h with
   | contact_D r0 => exact bn (V (Ge l r0)) (.phase_D ([1,1]+>r0))
   | contact_F r0 => exact cc (Gd l r0) (xZ (yQ l ([0]+>r0)) (xX l))
   | contact_B r0 => exact cc (Hc l r0) (Bd l r0)
-theorem uK (l r:ai) : cE (FR l ([0]+>r)) (dA l) := by
+theorem uK (l r : ai) : cE (FR l ([0]+>r)) (dA l) := by
   rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
   · rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
     · have hr : (FR l ([0]+>([0]+>([0]+>r)))) [tm]⊢⁺ (DL l ([1,0,1]+>r)) := by
@@ -521,20 +523,20 @@ def HF : List W→List gQ
 def G : List W→List gQ
   | [] => []
   | u :: us => G1 u++G us
-@[simp] theorem B8 (u:W) (us : List W) : HD (u :: us) = y2 u++HD us:=rfl
-@[simp] theorem Ct (u:W) (us : List W) : HF (u :: us) = yL u++HF us:=rfl
+@[simp] theorem B8 (u : W) (us : List W) : HD (u :: us) = y2 u++HD us:=rfl
+@[simp] theorem Ct (u : W) (us : List W) : HF (u :: us) = yL u++HF us:=rfl
 def lX : cm→List gQ
   | .CD => []
   | .CF => wY
-def n9 (d:cm) (us : List W) : List gQ :=
+def n9 (d : cm) (us : List W) : List gQ :=
   match d with
   | .CD => HD us
   | .CF => wb++HF us
-def hF (d:cm) (us : List W) (r:ai) : aL :=
+def hF (d : cm) (us : List W) (r : ai) : aL :=
   CE (n9 d us+>r)
-def lr (c:aL) : Prop :=
+def lr (c : aL) : Prop :=
   ∃ d us r,3 ≤ us.length∧c = hF d us r
-def cn (d:cm) (us : List W) : ai :=
+def cn (d : cm) (us : List W) : ai :=
   bf default ([0]++lX d++G us)
 theorem FQ (us vs : List W) : HD (us++vs) = HD us++HD vs := by
   induction us with
@@ -548,25 +550,25 @@ theorem Gk (us vs : List W) : G (us++vs) = G us++G vs := by
   induction us with
   | nil => rfl
   | cons u us ih => simp [G,ih,List.append_assoc]
-theorem DW (u:W) (l r:ai) :
+theorem DW (u : W) (l r : ai) :
     (FR l ([0]+>(y2 u+>r))) [tm]⊢⁺ (FR (bf l (G1 u)) ([0]+>r)) := by
   cases u
   · simpa only [y2,G1,append_assoc] using!
       U 11 ⟨[],[0]++wa,F,false⟩ ⟨wX.reverse,[0],F,false⟩ (by decide) l r
   · simpa only [y2,G1,append_assoc] using!
       U 17 ⟨[],[0]++(wY++wa),F,false⟩ ⟨(wX++wY).reverse,[0],F,false⟩ (by decide) l r
-theorem DO (u:W) (l r:ai) :
+theorem DO (u : W) (l r : ai) :
     (FR l ([0]+>(yL u+>r))) [tm]⊢⁺ (FR (bf l (G1 u)) ([0]+>r)) := by
   cases u
   · simpa only [yL,G1,append_assoc] using!
       U 11 ⟨[],[0]++wa,F,false⟩ ⟨wX.reverse,[0],F,false⟩ (by decide) l r
   · simpa only [yL,G1,append_assoc] using!
       U 15 ⟨[],[0]++(wa++wb),F,false⟩ ⟨(wX++wY).reverse,[0],F,false⟩ (by decide) l r
-theorem FK (l r:ai) :
+theorem FK (l r : ai) :
     (FR l ([0]+>(wb+>r))) [tm]⊢⁺ (FR (bf l wY) ([0]+>r)) := by
   simpa only [append_assoc] using!
     U 3 ⟨[],[0]++wb,F,false⟩ ⟨wY.reverse,[0],F,false⟩ (by decide) l r
-theorem EG (us : List W) (l r:ai) :
+theorem EG (us : List W) (l r : ai) :
     (FR l ([0]+>(HD us+>r))) [tm]⊢* (FR (bf l (G us)) ([0]+>r)) := by
   induction us generalizing l r with
   | nil => exact mm _
@@ -574,7 +576,7 @@ theorem EG (us : List W) (l r:ai) :
     unfold HD G
     rw [append_assoc,df]
     exact V (ee (DW u l (HD us+>r)) (ih (bf l (G1 u)) r))
-theorem E6 (us : List W) (l r:ai) :
+theorem E6 (us : List W) (l r : ai) :
     (FR l ([0]+>(HF us+>r))) [tm]⊢* (FR (bf l (G us)) ([0]+>r)) := by
   induction us generalizing l r with
   | nil => exact mm _
@@ -582,11 +584,11 @@ theorem E6 (us : List W) (l r:ai) :
     unfold HF G
     rw [append_assoc,df]
     exact V (ee (DO u l (HF us+>r)) (ih (bf l (G1 u)) r))
-theorem E7 (r:ai) : (CE r) [tm]⊢⁺ (FR (bf default [0]) ([0]+>r)) := by
+theorem E7 (r : ai) : (CE r) [tm]⊢⁺ (FR (bf default [0]) ([0]+>r)) := by
   refine ⟨1,by decide,?_⟩
   simp only [CE,FR,bf,List.reverse_singleton,n8,step,append_cons,append_nil,
-    Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5,tm,target_tm,E,F,Option.map,Tape.write,Tape.move]
-theorem ta (d:cm) (us : List W) (r:ai) :
+    Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,tm,target_tm,E,F,Option.map,Tape.write,Tape.move]
+theorem ta (d : cm) (us : List W) (r : ai) :
     (hF d us r) [tm]⊢⁺ (FR (cn d us) ([0]+>r)) := by
   unfold hF
   refine ee (E7 (n9 d us+>r)) ?_
@@ -597,21 +599,21 @@ theorem ta (d:cm) (us : List W) (r:ai) :
   · unfold n9 cn lX
     rw [append_assoc,df,df]
     exact V (ee (FK (bf default [0]) (HF us+>r)) (E6 us (bf (bf default [0]) wY) r))
-theorem G7 (u:W) (l r:ai) :
+theorem G7 (u : W) (l r : ai) :
     (DL (bf l (G1 u)) (wa+>r)) [tm]⊢⁺ (DL l (wa+>(y2 u+>r))) := by
   cases u
   · simpa only [G1,y2,append_assoc] using!
       U 9 ⟨wX.reverse,wa,D,true⟩ ⟨[],wa++wa,D,true⟩ (by decide) l r
   · simpa only [G1,y2,append_assoc] using!
       U 13 ⟨(wX++wY).reverse,wa,D,true⟩ ⟨[],wa++(wY++wa),D,true⟩ (by decide) l r
-theorem G5 (u:W) (l r:ai) :
+theorem G5 (u : W) (l r : ai) :
     (FL (bf l (G1 u)) ([0,0,0]+>(wa+>r))) [tm]⊢⁺ (FL l ([0,0,0]+>(wa+>(yL u+>r)))) := by
   cases u
   · simpa only [G1,yL,append_assoc] using!
       U 9 ⟨wX.reverse,[0,0,0]++wa,F,true⟩ ⟨[],[0,0,0]++wa++wa,F,true⟩ (by decide) l r
   · simpa only [G1,yL,append_assoc] using!
       U 49 ⟨(wX++wY).reverse,[0,0,0]++wa,F,true⟩ ⟨[],[0,0,0]++wa++(wa++wb),F,true⟩ (by decide) l r
-theorem H8 (us : List W) (l r:ai) :
+theorem H8 (us : List W) (l r : ai) :
     (DL (bf l (G us)) (wa+>r)) [tm]⊢* (DL l (wa+>(HD us+>r))) := by
   induction us generalizing l r with
   | nil => exact mm _
@@ -619,7 +621,7 @@ theorem H8 (us : List W) (l r:ai) :
     unfold G HD
     rw [df,append_assoc]
     exact sr (ih (bf l (G1 u)) r) (V (G7 u l (HD us+>r)))
-theorem HJ (us : List W) (l r:ai) :
+theorem HJ (us : List W) (l r : ai) :
     (FL (bf l (G us)) ([0,0,0]+>(wa+>r))) [tm]⊢* (FL l ([0,0,0]+>(wa+>(HF us+>r)))) := by
   induction us generalizing l r with
   | nil => exact mm _
@@ -627,14 +629,14 @@ theorem HJ (us : List W) (l r:ai) :
     unfold G HF
     rw [df,append_assoc]
     exact sr (ih (bf l (G1 u)) r) (V (G5 u l (HF us+>r)))
-theorem HC (l r:ai) : (DL (bf l wY) (wa+>r)) [tm]⊢⁺ (DL l (wY+>(wa+>r))) := by
+theorem HC (l r : ai) : (DL (bf l wY) (wa+>r)) [tm]⊢⁺ (DL l (wY+>(wa+>r))) := by
   simpa only [append_assoc] using!
     U 3 ⟨wY.reverse,wa,D,true⟩ ⟨[],wY++wa,D,true⟩ (by decide) l r
-theorem H0 (l r:ai) :
+theorem H0 (l r : ai) :
     (FL (bf l wY) ([0,0,0]+>(wa+>r))) [tm]⊢⁺ (FL l ([0,0,0]+>(wa+>(wb+>r)))) := by
   simpa only [append_assoc] using!
     U 39 ⟨wY.reverse,[0,0,0]++wa,F,true⟩ ⟨[],[0,0,0]++wa++wb,F,true⟩ (by decide) l r
-theorem BV (r:ai) : (DL (bf default [0]) r) [tm]⊢⁺ (CE r) := by
+theorem BV (r : ai) : (DL (bf default [0]) r) [tm]⊢⁺ (CE r) := by
   refine ⟨1,by decide,?_⟩
   simp only [DL,CE,bf,List.reverse_singleton,n8,step,append_cons,append_nil,
     Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5,tm,target_tm,D,E,Option.map,Tape.write,Tape.move]
@@ -643,9 +645,9 @@ structure f3 where
   front : List gQ
   state : Fin 6
 deriving DecidableEq
-def dw (x:f3) (r:ai) : aL :=
+def dw (x : f3) (r : ai) : aL :=
   ⟨some x.state,⟨(x.front+>r).head,x.past+>default,(x.front+>r).tail⟩⟩
-def mr (x:f3) : Option f3 :=
+def mr (x : f3) : Option f3 :=
   match x.front with
   | [] => none
   | b :: bs =>
@@ -663,7 +665,7 @@ def AD : Nat→f3→Option f3
     match mr x with
     | none => none
     | some y => AD n y
-theorem vQ {x y : f3} (h : mr x = some y) (r:ai) :
+theorem vQ {x y : f3} (h : mr x = some y) (r : ai) :
     (dw x r) [tm]⊢ (dw y r) := by
   rcases x with ⟨ls,fs,s⟩
   cases fs with
@@ -689,7 +691,7 @@ theorem vQ {x y : f3} (h : mr x = some y) (r:ai) :
         · injection h with hy; subst hy
           unfold dw; dsimp only [append_cons]
           simp only [step,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,htm,Option.map,Tape.write,Tape.move]
-theorem C3 {n : Nat} {x y : f3} (h : AD n x = some y) (r:ai) :
+theorem C3 {n : Nat} {x y : f3} (h : AD n x = some y) (r : ai) :
     (dw x r) [tm]⊢^{n} (dw y r) := by
   induction n generalizing x with
   | zero => injection h with hy; subst hy; rfl
@@ -700,7 +702,7 @@ theorem C3 {n : Nat} {x y : f3} (h : AD n x = some y) (r:ai) :
     · rw [hs] at h
       rw [Nat.add_comm n 1]
       exact qH tm _ _ _ 1 n (qO tm _ _ (vQ hs r)) (ih h)
-theorem vD {n : Nat} {x y : f3} (h : AD (n + 1) x = some y) (r:ai) :
+theorem vD {n : Nat} {x y : f3} (h : AD (n + 1) x = some y) (r : ai) :
     (dw x r) [tm]⊢⁺ (dw y r) :=
   ⟨n + 1,Nat.succ_pos n,C3 h r⟩
 def r2 : List gQ→List gQ
@@ -723,20 +725,20 @@ theorem xo (ls : List gQ) : r2 ls+>default = ls+>default := by
         rw [append_cons,append_nil,append_cons,← ih]
     · change (b :: y :: ys)+>default = (b :: ls)+>default
       rw [append_cons,← h,ih,append_cons]
-def kR (x y:f3) : Bool :=
+def kR (x y : f3) : Bool :=
   r2 x.past==r2 y.past&&x.front==y.front&&x.state==y.state
-theorem kE {x y : f3} (h : kR x y = true) (r:ai) :
+theorem kE {x y : f3} (h : kR x y = true) (r : ai) :
     dw x r = dw y r := by
   unfold kR at h
   simp only [Bool.and_eq_true,beq_iff_eq] at h
   rcases h with ⟨⟨hp,hf⟩,hs⟩
   unfold dw
   rw [hf,hs,← xo x.past,← xo y.past,hp]
-def vG (n:Nat) (x y:f3) : Bool :=
+def vG (n : Nat) (x y : f3) : Bool :=
   match AD n x with
   | some z => kR z y
   | none => false
-theorem kC (n:Nat) (x y:f3) (h : vG (n + 1) x y = true) (r:ai) :
+theorem kC (n : Nat) (x y : f3) (h : vG (n + 1) x y = true) (r : ai) :
     (dw x r) [tm]⊢⁺ (dw y r) := by
   unfold vG at h
   rcases hr : AD (n + 1) x with _ | z
@@ -744,14 +746,14 @@ theorem kC (n:Nat) (x y:f3) (h : vG (n + 1) x y = true) (r:ai) :
   · rw [hr] at h
     rw [← kE h r]
     exact vD hr r
-theorem Cc (r:ai) : (FL (bf default [0]) ([0,0,0]+>(wa+>r))) [tm]⊢⁺ (CE (wb+>(wa+>r))) := by
+theorem Cc (r : ai) : (FL (bf default [0]) ([0,0,0]+>(wa+>r))) [tm]⊢⁺ (CE (wb+>(wa+>r))) := by
   have h:=kC 5 ⟨[],0 :: ([0,0,0]++wa),F⟩ ⟨[],[0,0]++wb++wa,E⟩ (by decide) r
   simpa only [dw,FL,CE,bf,List.reverse_singleton,append_cons,append_nil,append_assoc,
     Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons] using h
 def gJ : cm→W
   | .CD => .UA
   | .CF => .UT
-theorem Ec (d:cm) (us : List W) (r:ai) :
+theorem Ec (d : cm) (us : List W) (r : ai) :
     (DL (cn d us) (wa+>r)) [tm]⊢⁺ (hF .CD (gJ d :: us) r) := by
   unfold cn
   rw [df]
@@ -765,7 +767,7 @@ theorem Ec (d:cm) (us : List W) (r:ai) :
     refine sp (HC (bf default [0]) (HD us+>r)) ?_
     simp only [B8,y2,append_assoc]
     exact BV (wY+>(wa+>(HD us+>r)))
-theorem D2 (d:cm) (us : List W) (r:ai) :
+theorem D2 (d : cm) (us : List W) (r : ai) :
     (FL (cn d us) ([0,0,0]+>(wa+>r))) [tm]⊢⁺ (hF .CF (gJ d :: us) r) := by
   unfold cn
   rw [df]
@@ -779,32 +781,32 @@ theorem D2 (d:cm) (us : List W) (r:ai) :
     refine sp (H0 (bf default [0]) (HF us+>r)) ?_
     simp only [Ct,yL,append_assoc]
     exact Cc (wb+>(HF us+>r))
-def A5 (d:cm) (us : List W) (c:aL) : Prop :=
+def A5 (d : cm) (us : List W) (c : aL) : Prop :=
   ∃ d' r,c = hF d' (gJ d :: us) r
-theorem hN (d:cm) (us : List W) (c:aL)
+theorem hN (d : cm) (us : List W) (c : aL)
     (h : dU (cn d us) c) : cE c (A5 d us) := by
   cases h with
   | strong_D r =>
     exact bn (V (Ec d us r)) ⟨.CD,r,rfl⟩
   | strong_F r =>
     exact bn (V (D2 d us r)) ⟨.CF,r,rfl⟩
-theorem i8 (d:cm) (us : List W) (c:aL)
+theorem i8 (d : cm) (us : List W) (c : aL)
     (hlen : 2 ≤ us.length) (h : A5 d us c) : lr c := by
   rcases h with ⟨d',r,rfl⟩
   exact ⟨d',gJ d :: us,r,by simp; omega,rfl⟩
 def Cl : List gQ:=[1,1,1,1,1,1,1,1,1]
 def wh : List gQ:=[1,1,1,1,1,1,0,1,0]
-theorem CB (l r:ai) :
+theorem CB (l r : ai) :
     (FR l ([0]+>(Cl+>r))) [tm]⊢⁺ (FR (bf l (b5 [])) ([0]+>r)) := by
   simpa only [b5,hE,append_assoc] using!
     U 20 ⟨[],[0]++Cl,F,false⟩ ⟨((wX++[])++wL).reverse,[0],F,false⟩ (by decide) l r
-theorem DU (l r:ai) :
+theorem DU (l r : ai) :
     (FR l ([0]+>(wh+>r))) [tm]⊢⁺ (FR (bf l (b5 [])) ([0]+>r)) := by
   simpa only [b5,hE,append_assoc] using!
     U 18 ⟨[],[0]++wh,F,false⟩ ⟨((wX++[])++wL).reverse,[0],F,false⟩ (by decide) l r
-theorem yZ (d:cm) (us : List W) (r:ai) (t : List gQ)
+theorem yZ (d : cm) (us : List W) (r : ai) (t : List gQ)
     (hlen : 2 ≤ us.length)
-    (ht : ∀ l r,(FR l ([0]+>(t+>r))) [tm]⊢⁺ (FR (bf l (b5 [])) ([0]+>r))) :
+    (ht : ∀ l r, (FR l ([0] +> (t +> r))) [tm]⊢⁺ (FR (bf l (b5 [])) ([0] +> r))) :
     cE (hF d us (t+>r)) lr := by
   refine cc (ta d us (t+>r)) ?_
   refine cc (ht (cn d us) r) ?_
@@ -813,13 +815,13 @@ theorem yZ (d:cm) (us : List W) (r:ai) (t : List gQ)
   refine bh (hN d us c hc) ?_
   intro e he
   exact dg (i8 d us e hlen he)
-theorem x6 (d:cm) (us : List W) (r:ai) (hlen : 2 ≤ us.length) :
+theorem x6 (d : cm) (us : List W) (r : ai) (hlen : 2 ≤ us.length) :
     cE (hF d us (Cl+>r)) lr :=
   yZ d us r Cl hlen CB
-theorem y6 (d:cm) (us : List W) (r:ai) (hlen : 2 ≤ us.length) :
+theorem y6 (d : cm) (us : List W) (r : ai) (hlen : 2 ≤ us.length) :
     cE (hF d us (wh+>r)) lr :=
   yZ d us r wh hlen DU
-theorem xG (r:ai) :
+theorem xG (r : ai) :
     (hF .CF [.UA,.UT] ((wY++wa++wa)+>r)) [tm]⊢⁺
     (FR (bf (cn .CF [.UA,.UT]) (b5 [.P11,.P11])) ([0,0,1,0]+>r)) := by
   have h:=kC 57
@@ -827,7 +829,7 @@ theorem xG (r:ai) :
     ⟨([0]++lX .CF++G [.UA,.UT]++b5 [.P11,.P11]).reverse,[0,0,1,0],F⟩
     (by decide) r
   simpa only [dw,hF,CE,FR,cn,df,bf,append_assoc] using! h
-theorem Ah (r:ai) :
+theorem Ah (r : ai) :
     cE (hF .CF [.UA,.UT] ((wY++wa++wa)+>r)) lr := by
   refine cc (xG r) ?_
   refine bh (r7 [.P11,.P11] (cn .CF [.UA,.UT]) ([0,0,1,0]+>r)) ?_
@@ -838,7 +840,7 @@ theorem Ah (r:ai) :
 inductive bR where
   | RD | RF | RB
 deriving DecidableEq
-def jY (e:bR) (l r:ai) : aL :=
+def jY (e : bR) (l r : ai) : aL :=
   match e with
   | .RD => DL l r
   | .RF => FL l r
@@ -852,16 +854,16 @@ def zU : List (bR × List gQ) :=
 def xK : List (bR × List gQ):=[(.RD,[]),(.RF,[0,0])]
 def Bc : List (bR × List gQ):=[(.RD,[]),(.RB,[0,0])]
 def Cm : List (bR × List gQ):=[(.RF,[0,0])]
-def ic (l:ai) (es : List (bR × List gQ)) (c:aL) : Prop :=
+def ic (l : ai) (es : List (bR × List gQ)) (c : aL) : Prop :=
   ∃ e p r,(e,p) ∈ es∧c = jY e l (p+>r)
-theorem v5 (l:ai) (c:aL) (h : ip l c) : ic l vM c := by
+theorem v5 (l : ai) (c : aL) (h : ip l c) : ic l vM c := by
   cases h with
   | contact_D r => exact ⟨.RD,[],r,by decide,rfl⟩
   | contact_F r => exact ⟨.RF,[0,0],r,by decide,rfl⟩
   | contact_B r => exact ⟨.RB,[0,0],r,by decide,rfl⟩
-theorem Bn (l r:ai) : fl (FR l r) (ic l vM) :=
+theorem Bn (l r : ai) : fl (FR l r) (ic l vM) :=
   su (pG l r) (fun c h => dg (v5 l c h))
-theorem CL (l:ai) (c:aL) (h : ip (bf l wL) c) :
+theorem CL (l : ai) (c : aL) (h : ip (bf l wL) c) :
     cE c (ic l pM) := by
   cases h with
   | contact_D r =>
@@ -870,7 +872,7 @@ theorem CL (l:ai) (c:aL) (h : ip (bf l wL) c) :
     exact bn (V (GZ l r)) ⟨.RD,[1,1,1,0,1],r,by decide,rfl⟩
   | contact_B r =>
     exact bn (V (GN l r)) ⟨.RD,[1,0,1,0,0],r,by decide,rfl⟩
-theorem xU (l r:ai) : fl (FR l ([0,0]+>r)) (ic l pM) := by
+theorem xU (l r : ai) : fl (FR l ([0,0]+>r)) (ic l pM) := by
   rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
   · have hr : (FR l ([0,0]+>([0]+>r))) [tm]⊢⁺ (DL l ([1,0,1]+>r)) := by
       simpa only [← append_assoc] using! r1 l r
@@ -878,7 +880,7 @@ theorem xU (l r:ai) : fl (FR l ([0,0]+>r)) (ic l pM) := by
   · have hr : (FR l ([0,0]+>([1]+>r))) [tm]⊢⁺ (FR (bf l wL) r) := by
       simpa only [← append_assoc] using! r3 l r
     exact cr hr (bh (fv (bf l wL) r) (CL l))
-theorem Bh (l:ai) (c:aL) (h : ip (bf l [1,0]) c) :
+theorem Bh (l : ai) (c : aL) (h : ip (bf l [1, 0]) c) :
     cE c (ic l zU) := by
   cases h with
   | contact_D r =>
@@ -886,10 +888,10 @@ theorem Bh (l:ai) (c:aL) (h : ip (bf l [1,0]) c) :
   | contact_F r =>
     refine cc (xR l r) ?_
     refine cc (An l ([1,0,1]+>r)) ?_
-    exact dg ⟨.RD,[1,1,0,1],r,by decide,by simp [jY,← append_assoc]⟩
+    exact dg ⟨.RD,[1,1,0,1],r,by decide,by simp [jY]⟩
   | contact_B r =>
     exact bn (V (xN l r)) ⟨.RD,[0,1,0,0],r,by decide,rfl⟩
-theorem CP (l r:ai) : fl (FR l ([1]+>r)) (ic l zU) := by
+theorem CP (l r : ai) : fl (FR l ([1]+>r)) (ic l zU) := by
   rcases dW r with ⟨r,rfl⟩ | ⟨r,rfl⟩
   · have hr : (FR l ([1]+>([0]+>r))) [tm]⊢⁺ (FR (bf l [1,0]) r) := by
       simpa only [← append_assoc] using! u8 l r
@@ -897,7 +899,7 @@ theorem CP (l r:ai) : fl (FR l ([1]+>r)) (ic l zU) := by
   · have hr : (FR l ([1]+>([1]+>r))) [tm]⊢⁺ (FL l ([0,0]+>r)) := by
       simpa only [← append_assoc] using! vn l r
     exact cr hr (dg ⟨.RF,[0,0],r,by decide,rfl⟩)
-theorem x0 (l:ai) (c:aL) (h : ic l pM c) :
+theorem x0 (l : ai) (c : aL) (h : ic l pM c) :
     ic l xK c := by
   rcases h with ⟨e,p,r,hin,rfl⟩
   simp only [pM,List.mem_cons,List.not_mem_nil,or_false,Prod.mk.injEq] at hin
@@ -905,10 +907,10 @@ theorem x0 (l:ai) (c:aL) (h : ic l pM c) :
   · exact ⟨.RD,[],[1,0,1]+>r,by decide,rfl⟩
   · exact ⟨.RD,[],[1,1,1,0,1]+>r,by decide,rfl⟩
   · exact ⟨.RD,[],[1,0,1,0,0]+>r,by decide,rfl⟩
-  · exact ⟨.RF,[0,0],[0]+>r,by decide,by simp [jY,← append_assoc]⟩
-theorem xe (l r:ai) : fl (FR l ([0,0]+>r)) (ic l xK) :=
+  · exact ⟨.RF,[0,0],[0]+>r,by decide,by simp [jY]⟩
+theorem xe (l r : ai) : fl (FR l ([0,0]+>r)) (ic l xK) :=
   su (xU l r) (fun c h => dg (x0 l c h))
-theorem wW (l r:ai) : fl (FR l ([1,0]+>r)) (ic l Bc) := by
+theorem wW (l r : ai) : fl (FR l ([1,0]+>r)) (ic l Bc) := by
   refine cr (u8 l r) ?_
   refine bh (fv (bf l [1,0]) r) ?_
   intro c h
@@ -918,19 +920,19 @@ theorem wW (l r:ai) : fl (FR l ([1,0]+>r)) (ic l Bc) := by
   | contact_F r0 =>
     refine cc (xR l r0) ?_
     exact bn (V (An l ([1,0,1]+>r0)))
-      ⟨.RD,[],[1,1,0,1]+>r0,by decide,by simp [jY,← append_assoc]⟩
+      ⟨.RD,[],[1,1,0,1]+>r0,by decide,by simp [jY]⟩
   | contact_B r0 =>
     exact bn (V (xN l r0))
       ⟨.RD,[],[0,1,0,0]+>r0,by decide,rfl⟩
-theorem wo (l r:ai) : fl (FR l ([1,1]+>r)) (ic l Cm) :=
+theorem wo (l r : ai) : fl (FR l ([1,1]+>r)) (ic l Cm) :=
   cr (vn l r) (dg ⟨.RF,[0,0],r,by decide,rfl⟩)
 inductive ax where
   | qA | qB | qC | qD | qE | qF
 deriving DecidableEq
-def x8 (b:Bool) : gQ:=if b then 1 else 0
+def x8 (b : Bool) : gQ:=if b then 1 else 0
 def be (bs : List Bool) : List gQ:=bs.map x8
 @[simp] theorem yW : be [] = []:=rfl
-@[simp] theorem m7 (b:Bool) (bs : List Bool) : be (b :: bs) = x8 b :: be bs:=rfl
+@[simp] theorem m7 (b : Bool) (bs : List Bool) : be (b :: bs) = x8 b :: be bs:=rfl
 @[simp] theorem jF (xs ys : List Bool) : be (xs++ys) = be xs++be ys := by simp [be]
 @[simp] theorem sM (xs : List Bool) : be xs.reverse = (be xs).reverse := by simp [be]
 def BB : ax→Fin 6
@@ -940,10 +942,10 @@ structure R where
   front : List Bool
   state : ax
 deriving DecidableEq
-def sy (x:R) : f3 :=
+def sy (x : R) : f3 :=
   ⟨be x.past,be x.front,BB x.state⟩
-def dC (x:R) (r:ai) : aL:=dw (sy x) r
-def vX (x:R) : Option R :=
+def dC (x : R) (r : ai) : aL:=dw (sy x) r
+def vX (x : R) : Option R :=
   match x.front with
   | [] => none
   | false :: bs =>
@@ -980,33 +982,33 @@ def vX (x:R) : Option R :=
       | [] => some ⟨[],false :: false :: bs,.qB⟩
       | a :: ls => some ⟨ls,a :: false :: bs,.qB⟩
     | .qF => some ⟨true :: x.past,bs,.qE⟩
-def AN (q:ax) (ih : List Bool→List Bool→ax→Option R) (bs : List Bool) : Option R :=
+def AN (q : ax) (ih : List Bool → List Bool → ax → Option R) (bs : List Bool) : Option R :=
   ih [] (false :: true :: bs) q
-def zA (a:Bool) (ls : List Bool) (_ : ax→(List Bool→List Bool→ax→Option R)→List Bool→Option R)
-    (q:ax) (ih : List Bool→List Bool→ax→Option R) (bs : List Bool) : Option R :=
+def zA (a : Bool) (ls : List Bool) (_ : ax → (List Bool → List Bool → ax → Option R) → List Bool → Option R)
+    (q : ax) (ih : List Bool → List Bool → ax → Option R) (bs : List Bool) : Option R :=
   ih ls (a :: true :: bs) q
-noncomputable def sS (q:ax) (ih : List Bool→List Bool→ax→Option R) (past bs : List Bool) : Option R :=
+noncomputable def sS (q : ax) (ih : List Bool → List Bool → ax → Option R) (past bs : List Bool) : Option R :=
   List.rec (motive:=fun _ => ax→(List Bool→List Bool→ax→Option R)→List Bool→Option R)
     AN
     zA
     past q ih bs
-def Ac (q:ax) (ih : List Bool→List Bool→ax→Option R) (bs : List Bool) : Option R :=
+def Ac (q : ax) (ih : List Bool → List Bool → ax → Option R) (bs : List Bool) : Option R :=
   ih [] (false :: false :: bs) q
-def ya (a:Bool) (ls : List Bool) (_ : ax→(List Bool→List Bool→ax→Option R)→List Bool→Option R)
-    (q:ax) (ih : List Bool→List Bool→ax→Option R) (bs : List Bool) : Option R :=
+def ya (a : Bool) (ls : List Bool) (_ : ax → (List Bool → List Bool → ax → Option R) → List Bool → Option R)
+    (q : ax) (ih : List Bool → List Bool → ax → Option R) (bs : List Bool) : Option R :=
   ih ls (a :: false :: bs) q
-noncomputable def ln (q:ax) (ih : List Bool→List Bool→ax→Option R) (past bs : List Bool) : Option R :=
+noncomputable def ln (q : ax) (ih : List Bool → List Bool → ax → Option R) (past bs : List Bool) : Option R :=
   List.rec (motive:=fun _ => ax→(List Bool→List Bool→ax→Option R)→List Bool→Option R)
     Ac
     ya
     past q ih bs
-def ll (q:ax) (ih : List Bool→List Bool→ax→Option R) (past bs : List Bool) : Option R :=
+def ll (q : ax) (ih : List Bool → List Bool → ax → Option R) (past bs : List Bool) : Option R :=
   ih (true :: past) bs q
-def xz (q:ax) (ih : List Bool→List Bool→ax→Option R) (past bs : List Bool) : Option R :=
+def xz (q : ax) (ih : List Bool → List Bool → ax → Option R) (past bs : List Bool) : Option R :=
   ih (false :: past) bs q
-def CH (_ : List Bool→List Bool→ax→Option R) (_ _ : List Bool) : Option R :=
+def CH (_ : List Bool → List Bool → ax → Option R) (_ _ : List Bool) : Option R :=
   none
-noncomputable def xq (state:ax) : (List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R :=
+noncomputable def xq (state : ax) : (List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R :=
   ax.rec (motive:=fun _ => (List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R)
     (ll .qB)
     (sS .qC)
@@ -1015,7 +1017,7 @@ noncomputable def xq (state:ax) : (List Bool→List Bool→ax→Option R)→List
     (xz .qF)
     (ll .qA)
     state
-noncomputable def xH (state:ax) : (List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R :=
+noncomputable def xH (state : ax) : (List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R :=
   ax.rec (motive:=fun _ => (List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R)
     (ll .qF)
     (ln .qF)
@@ -1024,46 +1026,46 @@ noncomputable def xH (state:ax) : (List Bool→List Bool→ax→Option R)→List
     (ln .qB)
     (ll .qE)
     state
-noncomputable def B2 (b:Bool) : ax→(List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R :=
+noncomputable def B2 (b : Bool) : ax→(List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R :=
   Bool.rec (motive:=fun _ => ax→(List Bool→List Bool→ax→Option R)→List Bool→List Bool→Option R)
     xq
     xH
     b
-noncomputable def Am (b:Bool) (bs : List Bool)
-    (_ : ax→(List Bool→List Bool→ax→Option R)→List Bool→Option R)
-    (state:ax) (ih : List Bool→List Bool→ax→Option R) (past : List Bool) : Option R :=
+noncomputable def Am (b : Bool) (bs : List Bool)
+    (_ : ax → (List Bool → List Bool → ax → Option R) → List Bool → Option R)
+    (state : ax) (ih : List Bool → List Bool → ax → Option R) (past : List Bool) : Option R :=
   B2 b state ih past bs
-def AT (_:ax) (_ : List Bool→List Bool→ax→Option R) (_ : List Bool) : Option R :=
+def AT (_ : ax) (_ : List Bool → List Bool → ax → Option R) (_ : List Bool) : Option R :=
   none
-noncomputable def lN (ih : List Bool→List Bool→ax→Option R)
-    (past front : List Bool) (state:ax) : Option R :=
+noncomputable def lN (ih : List Bool → List Bool → ax → Option R)
+    (past front : List Bool) (state : ax) : Option R :=
   List.rec (motive:=fun _ => ax→(List Bool→List Bool→ax→Option R)→List Bool→Option R)
     AT
     Am
     front state ih past
-def Ab (past front : List Bool) (state:ax) : Option R :=
+def Ab (past front : List Bool) (state : ax) : Option R :=
   some ⟨past,front,state⟩
-noncomputable def zN (_:Nat) (ih : List Bool→List Bool→ax→Option R) : List Bool→List Bool→ax→Option R :=
+noncomputable def zN (_ : Nat) (ih : List Bool → List Bool → ax → Option R) : List Bool→List Bool→ax→Option R :=
   lN ih
-noncomputable def l7 (n:Nat) : List Bool→List Bool→ax→Option R :=
+noncomputable def l7 (n : Nat) : List Bool→List Bool→ax→Option R :=
   Nat.rec (motive:=fun _ => List Bool→List Bool→ax→Option R)
     Ab
     zN
     n
-noncomputable def xC (n:Nat) (x:R) : Option R :=
+noncomputable def xC (n : Nat) (x : R) : Option R :=
   R.rec (motive:=fun _ => Option R) (l7 n) x
-noncomputable def Ag (n:Nat) (x:R) : Option R :=
+noncomputable def Ag (n : Nat) (x : R) : Option R :=
   R.rec (motive:=fun _ => Option R) (lN (l7 n)) x
-theorem y8 (x:R) : (vX x).map sy = mr (sy x) := by
+theorem y8 (x : R) : (vX x).map sy = mr (sy x) := by
   rcases x with ⟨_ | ⟨a,ls⟩,_ | ⟨_ | _,bs⟩,_ | _ | _ | _ | _ | _⟩ <;> rfl
-theorem wq (ih : List Bool→List Bool→ax→Option R)
-    (past front : List Bool) (state:ax) :
+theorem wq (ih : List Bool → List Bool → ax → Option R)
+    (past front : List Bool) (state : ax) :
     lN ih past front state =
       match vX ⟨past,front,state⟩ with
       | none => none
       | some y => ih y.past y.front y.state := by
   rcases past with _ | ⟨a,ls⟩ <;> rcases front with _ | ⟨_ | _,bs⟩ <;> cases state <;> rfl
-theorem vJ (n:Nat) (past front : List Bool) (state:ax) :
+theorem vJ (n : Nat) (past front : List Bool) (state : ax) :
     (l7 n past front state).map sy = AD n (sy ⟨past,front,state⟩) := by
   induction n generalizing past front state with
   | zero => rfl
@@ -1073,25 +1075,25 @@ theorem vJ (n:Nat) (past front : List Bool) (state:ax) :
     unfold AD
     rw [← y8 ⟨past,front,state⟩]
     rcases vX ⟨past,front,state⟩ with _ | ⟨p',f',s'⟩ <;> simp [ih]
-theorem AP (n:Nat) (x:R) : (xC n x).map sy = AD n (sy x) :=
+theorem AP (n : Nat) (x : R) : (xC n x).map sy = AD n (sy x) :=
   vJ n x.past x.front x.state
 def Cz : ax→ax→Bool
   | .qA,.qA | .qB,.qB | .qC,.qC | .qD,.qD | .qE,.qE | .qF,.qF => true
   | _,_ => false
-theorem zQ (x y:ax) : Cz x y = true↔x = y := by
+theorem zQ (x y : ax) : Cz x y = true↔x = y := by
   cases x <;> cases y <;> decide
-def sw (_:Bool) (_ : List Bool) (_:Bool) : Bool:=false
+def sw (_ : Bool) (_ : List Bool) (_ : Bool) : Bool:=false
 noncomputable def zK (ys : List Bool) : Bool :=
   List.rec (motive:=fun _ => Bool) true sw ys
-noncomputable def zC (b:Bool) (ih : List Bool→Bool) (bs : List Bool) : Bool :=
+noncomputable def zC (b : Bool) (ih : List Bool → Bool) (bs : List Bool) : Bool :=
   Bool.rec (motive:=fun _ => Bool) (ih bs) false b
-noncomputable def yX (b:Bool) (ih : List Bool→Bool) (bs : List Bool) : Bool :=
+noncomputable def yX (b : Bool) (ih : List Bool → Bool) (bs : List Bool) : Bool :=
   Bool.rec (motive:=fun _ => Bool) false (ih bs) b
-noncomputable def ri (b:Bool) (bs : List Bool) (_ : (List Bool→Bool)→Bool→Bool)
-    (ih : List Bool→Bool) (a:Bool) : Bool :=
+noncomputable def ri (b : Bool) (bs : List Bool) (_ : (List Bool → Bool) → Bool → Bool)
+    (ih : List Bool → Bool) (a : Bool) : Bool :=
   Bool.rec (motive:=fun _ => Bool→(List Bool→Bool)→List Bool→Bool) zC yX a b ih bs
-def sl (_ : List Bool→Bool) (_:Bool) : Bool:=false
-noncomputable def pr (a:Bool) (_ : List Bool) (ih : List Bool→Bool) (ys : List Bool) : Bool :=
+def sl (_ : List Bool → Bool) (_ : Bool) : Bool:=false
+noncomputable def pr (a : Bool) (_ : List Bool) (ih : List Bool → Bool) (ys : List Bool) : Bool :=
   List.rec (motive:=fun _ => (List Bool→Bool)→Bool→Bool)
     sl
     ri
@@ -1111,7 +1113,7 @@ theorem oE (xs ys : List Bool) : lp xs ys = true↔xs = ys := by
     | cons b bs =>
       change pr a as (lp as) (b :: bs) = true↔a :: as = b :: bs
       cases a <;> cases b <;> simp [pr,ri,zC,yX,ih]
-def mz (b:Bool) (_ : List Bool) (ih : List Bool) : List Bool :=
+def mz (b : Bool) (_ : List Bool) (ih : List Bool) : List Bool :=
   match ih with
   | [] => if b then [true] else []
   | ys => b :: ys
@@ -1125,13 +1127,13 @@ theorem so (ls : List Bool) : be (mO ls) = r2 (be ls) := by
     unfold mz r2
     rw [← ih]
     rcases mO ls with _ | ⟨y,ys⟩ <;> cases b <;> rfl
-noncomputable def mn (xp xf : List Bool) (xs:ax) (yp yf : List Bool) (ys:ax) : Bool :=
+noncomputable def mn (xp xf : List Bool) (xs : ax) (yp yf : List Bool) (ys : ax) : Bool :=
   Cz xs ys&&lp xf yf&&(lp xp yp||lp (mO xp) (mO yp))
-noncomputable def xk (y:R) (xp xf : List Bool) (xs:ax) : Bool :=
+noncomputable def xk (y : R) (xp xf : List Bool) (xs : ax) : Bool :=
   R.rec (motive:=fun _ => Bool) (mn xp xf xs) y
-noncomputable def tQ (x y:R) : Bool :=
+noncomputable def tQ (x y : R) : Bool :=
   R.rec (motive:=fun _ => Bool) (xk y) x
-theorem wm {x y : R} (h : tQ x y = true) (r:ai) :
+theorem wm {x y : R} (h : tQ x y = true) (r : ai) :
     dC x r = dC y r := by
   rcases x with ⟨xp,xf,xs⟩
   rcases y with ⟨yp,yf,ys⟩
@@ -1149,14 +1151,14 @@ theorem wm {x y : R} (h : tQ x y = true) (r:ai) :
     dsimp only
     rw [← so xp,← so yp,hp,hf,hs]
     simp
-def A6 (_:R) : Bool:=false
-noncomputable def A2 (z y:R) : Bool:=tQ z y
-noncomputable def og (n:Nat) (x y:R) : Bool :=
+def A6 (_ : R) : Bool:=false
+noncomputable def A2 (z y : R) : Bool:=tQ z y
+noncomputable def og (n : Nat) (x y : R) : Bool :=
   Option.rec (motive:=fun _ => R→Bool) A6 A2 (xC n x) y
-noncomputable def eO (n:Nat) (x y:R) : Bool :=
+noncomputable def eO (n : Nat) (x y : R) : Bool :=
   Option.rec (motive:=fun _ => R→Bool) A6 A2 (Ag n x) y
-theorem gi (n:Nat) (x y:R)
-    (h : og (n + 1) x y = true) (r:ai) :
+theorem gi (n : Nat) (x y : R)
+    (h : og (n + 1) x y = true) (r : ai) :
     (dC x r) [tm]⊢⁺ (dC y r) := by
   unfold og at h
   rcases hr : xC (n + 1) x with _ | z
@@ -1195,7 +1197,7 @@ def bG : List W→List Bool
 def bW : cm→List Bool
   | .CD => []
   | .CF => bY
-def xP (d:cm) (us : List W) : List Bool :=
+def xP (d : cm) (us : List W) : List Bool :=
   match d with
   | .CD => FC us
   | .CF => bb++F2 us
@@ -1207,7 +1209,7 @@ def mI : List b9→List Bool
   | p :: ps => wc p++mI ps
 def rS (ps : List b9) : List Bool :=
   (bX++mI ps)++bL
-def Do (b:Bool) : List Bool :=
+def Do (b : Bool) : List Bool :=
   if b then [true,false] else [true]
 def nT : List Bool→List Bool
   | [] => []
@@ -1231,9 +1233,9 @@ def nT : List Bool→List Bool
   induction us with
   | nil => rfl
   | cons u us ih => cases u <;> simp [bG,G,Ho,G1,← ih]
-@[simp] theorem Fr (d:cm) : be (bW d) = lX d := by
+@[simp] theorem Fr (d : cm) : be (bW d) = lX d := by
   cases d <;> rfl
-@[simp] theorem nZ (d:cm) (us : List W) : be (xP d us) = n9 d us := by
+@[simp] theorem nZ (d : cm) (us : List W) : be (xP d us) = n9 d us := by
   cases d <;> simp [xP,n9]
 @[simp] theorem Cw (ps : List b9) : be (mI ps) = hE ps := by
   induction ps with
@@ -1244,14 +1246,14 @@ def nT : List Bool→List Bool
 def lw : List Bool→List gQ
   | [] => []
   | b :: s => lw s++sd b
-theorem xM (l:ai) (s : List Bool) :
+theorem xM (l : ai) (s : List Bool) :
     bJ l s = bf l (lw s) := by
   induction s with
   | nil => rfl
   | cons b s ih =>
     unfold bJ lw
     rw [ih,df]
-theorem xJ (base : List gQ) (ps : List b9) (s : List Bool) (r:ai) :
+theorem xJ (base : List gQ) (ps : List b9) (s : List Bool) (r : ai) :
     cE (FR (bf default ((base++b5 ps)++lw s)) r)
       (dU (bf default base)) := by
   rw [df,df,← xM]
@@ -1262,21 +1264,21 @@ theorem xJ (base : List gQ) (ps : List b9) (s : List Bool) (r:ai) :
   | nil => rfl
   | cons b s ih => cases b <;> simp [nT,lw,Do,sd,x8,← ih]
 def pC (q w : List Bool) : R:=⟨q.reverse,w,.qF⟩
-def hG (q : List Bool) (s:ax) (w : List Bool) : R :=
+def hG (q : List Bool) (s : ax) (w : List Bool) : R :=
   match q.reverse with
   | [] => ⟨[],false :: w,s⟩
   | a :: ls => ⟨ls,a :: w,s⟩
 def jJ (qr w : List Bool) : R:=⟨qr,w,.qF⟩
-def gh (qr : List Bool) (s:ax) (w : List Bool) : R :=
+def gh (qr : List Bool) (s : ax) (w : List Bool) : R :=
   match qr with
   | [] => ⟨[],false :: w,s⟩
   | a :: ls => ⟨ls,a :: w,s⟩
 def xB (w : List Bool) : R:=⟨[],false :: false :: w,.qE⟩
-theorem zG (q w : List Bool) (r:ai) :
+theorem zG (q w : List Bool) (r : ai) :
     dC (pC q w) r = FR (bf default (be q)) (be w+>r) := by
   unfold dC pC sy dw FR bf
   simp [BB]
-theorem pE (q : List Bool) (s:ax) (w : List Bool) (r:ai) :
+theorem pE (q : List Bool) (s : ax) (w : List Bool) (r : ai) :
     dC (hG q s w) r = ((bf default (be q)) <{{BB s}} (be w+>r)) := by
   unfold dC hG sy bf dw
   dsimp only
@@ -1284,11 +1286,11 @@ theorem pE (q : List Bool) (s:ax) (w : List Bool) (r:ai) :
   rcases q.reverse with _ | ⟨a,ls⟩ <;>
     simp only [yW,m7,x8,Bool.false_eq_true,↓reduceIte,
       append_cons,append_nil,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5]
-theorem vP (qr w : List Bool) (r:ai) :
+theorem vP (qr w : List Bool) (r : ai) :
     dC (jJ qr w) r = FR (bf default (be qr.reverse)) (be w+>r) := by
   unfold dC jJ sy dw FR bf
   simp [BB]
-theorem w1 (qr : List Bool) (s:ax) (w : List Bool) (r:ai) :
+theorem w1 (qr : List Bool) (s : ax) (w : List Bool) (r : ai) :
     dC (gh qr s w) r = ((bf default (be qr.reverse)) <{{BB s}} (be w+>r)) := by
   unfold dC gh sy bf dw
   dsimp only
@@ -1296,7 +1298,7 @@ theorem w1 (qr : List Bool) (s:ax) (w : List Bool) (r:ai) :
   rcases qr with _ | ⟨a,ls⟩ <;>
     simp only [yW,m7,x8,Bool.false_eq_true,↓reduceIte,
       append_cons,append_nil,Turing.ListBlank.head_cons,Turing.ListBlank.tail_cons,kX,k5]
-theorem C1 (w : List Bool) (r:ai) :
+theorem C1 (w : List Bool) (r : ai) :
     dC (xB w) r = CE (be w+>r):=rfl
 inductive fZ where
   | Recovered (d:cm) (us : List W) (tail : List Bool)
@@ -1309,13 +1311,13 @@ def j6 : fZ→List Bool
   | .NineGain d us tail => xP d us++EH++tail
   | .SixGain d us tail => xP d us++B0++tail
   | .YaaGain tail => xP .CF [.UA,.UT]++bY++ba++ba++tail
-def f0 (t:fZ) : R:=xB (j6 t)
+def f0 (t : fZ) : R:=xB (j6 t)
 def jj : fZ→Bool
   | .Recovered _ us _ => decide (3 ≤ us.length)
   | .NineGain _ us _ => decide (2 ≤ us.length)
   | .SixGain _ us _ => decide (2 ≤ us.length)
   | .YaaGain _ => true
-theorem nO (t:fZ) (h : jj t = true) (r:ai) :
+theorem nO (t : fZ) (h : jj t = true) (r : ai) :
     cE (dC (f0 t) r) lr := by
   unfold f0
   rw [C1]
@@ -1352,14 +1354,14 @@ structure mB where
   guard_F_steps : Nat
   guard_F_terminal : fZ
 deriving DecidableEq
-def ur (g:mB) : List Bool :=
+def ur (g : mB) : List Bool :=
   (g.guard_base++rS g.guard_pieces)++nT g.guard_stack
-noncomputable def nU (g:mB) : Bool :=
+noncomputable def nU (g : mB) : Bool :=
   jj g.guard_D_terminal &&
   jj g.guard_F_terminal &&
   eO g.guard_D_steps (hG g.guard_base .qD ba) (f0 g.guard_D_terminal) &&
   eO g.guard_F_steps (hG g.guard_base .qF ([false,false,false]++ba)) (f0 g.guard_F_terminal)
-theorem Bm (g:mB) (h : nU g = true) (r:ai) :
+theorem Bm (g : mB) (h : nU g = true) (r : ai) :
     cE (FR (bf default (be (ur g))) r) lr := by
   unfold nU at h
   simp only [Bool.and_eq_true] at h
@@ -1378,7 +1380,7 @@ theorem Bm (g:mB) (h : nU g = true) (r:ai) :
     have hnat:=gi g.guard_F_steps (hG g.guard_base .qF ([false,false,false]++ba)) (f0 g.guard_F_terminal) nf r0
     rw [pE] at hnat
     have h000 : be ([false,false,false]++ba)+>r0 = [0,0,0]+>(wa+>r0) := by
-      simp [append_assoc,x8]
+      simp [x8]
     dsimp only [BB] at hnat
     rw [h000] at hnat
     exact cc hnat (nO g.guard_F_terminal hf r0)
@@ -1399,10 +1401,10 @@ def sn : k1→List (bR × List Bool)
   | .Coarse00 => [(.RD,[]),(.RF,[false,false])]
   | .Coarse10 => [(.RD,[]),(.RB,[false,false])]
   | .Coarse11 => [(.RF,[false,false])]
-theorem vC (s:k1) :
+theorem vC (s : k1) :
     (sn s).map (fun e => (e.1,be e.2)) = iW s := by
   cases s <;> rfl
-noncomputable def kq (s:k1) (w : List Bool) : Bool :=
+noncomputable def kq (s : k1) (w : List Bool) : Bool :=
   match s with
   | .AllCases => true
   | .Cases00 => lp w [false,false]
@@ -1410,7 +1412,7 @@ noncomputable def kq (s:k1) (w : List Bool) : Bool :=
   | .Coarse00 => lp (w.take 2) [false,false]
   | .Coarse10 => lp (w.take 2) [true,false]
   | .Coarse11 => lp (w.take 2) [true,true]
-theorem zc (s:k1) (w : List Bool) (h : kq s w = true) (l r:ai) :
+theorem zc (s : k1) (w : List Bool) (h : kq s w = true) (l r : ai) :
     fl (FR l (be w+>r)) (ic l (iW s)) := by
   cases s with
   | AllCases => exact Bn l (be w+>r)
@@ -1437,7 +1439,7 @@ def Gs : bR→Fin 6
   | .RD => D
   | .RF => F
   | .RB => B
-@[simp] theorem x5 (s:bR) : BB (ny s) = Gs s := by
+@[simp] theorem x5 (s : bR) : BB (ny s) = Gs s := by
   cases s <;> rfl
 inductive Pos where
   | Z : Pos
@@ -1447,7 +1449,7 @@ deriving DecidableEq
 def Fc : bR→bR→Bool
   | .RD,.RD | .RF,.RF | .RB,.RB => true
   | _,_ => false
-theorem CC (x y:bR) : Fc x y = true↔x = y := by
+theorem CC (x y : bR) : Fc x y = true↔x = y := by
   cases x <;> cases y <;> decide
 structure px where
   state : bR
@@ -1456,11 +1458,11 @@ structure px where
   target : Pos
   prep : List Bool
 deriving DecidableEq
-noncomputable def ss (e : bR × List Bool) (b:px) : Bool :=
+noncomputable def ss (e : bR × List Bool) (b : px) : Bool :=
   Fc e.1 b.state&&lp e.2 b.pref
-noncomputable def yh (s:k1) (bs : List px) : Bool :=
+noncomputable def yh (s : k1) (bs : List px) : Bool :=
   (sn s).all (fun e => bs.any (ss e))
-theorem x9 (s:k1) (bs : List px) (e : bR × List gQ)
+theorem x9 (s : k1) (bs : List px) (e : bR × List gQ)
     (hc : yh s bs = true) (hin : e ∈ iW s) :
     ∃ b ∈ bs,e.1 = b.state∧e.2 = be b.pref := by
   rw [← vC s,List.mem_map] at hin
@@ -1476,17 +1478,17 @@ inductive dp where
   | rProt (gc:mB) (w : List Bool)
   | rNat (fin:R) (steps:Nat) (target:Pos) (prep : List Bool)
   | rRet (qr w : List Bool) (s:k1) (bs : List px)
-def FV (t:fZ) : R:=f0 t
-def Cu (gc:mB) (w : List Bool) : R:=pC (ur gc) w
-def FT (fin:R) (_:Nat) (_:Pos) (_ : List Bool) : R:=fin
-def Dz (qr w : List Bool) (_:k1) (_ : List px) : R:=jJ qr w
-noncomputable def fw (r:dp) : R :=
+def FV (t : fZ) : R:=f0 t
+def Cu (gc : mB) (w : List Bool) : R:=pC (ur gc) w
+def FT (fin : R) (_ : Nat) (_ : Pos) (_ : List Bool) : R:=fin
+def Dz (qr w : List Bool) (_ : k1) (_ : List px) : R:=jJ qr w
+noncomputable def fw (r : dp) : R :=
   dp.rec (motive:=fun _ => R) FV Cu FT Dz r
-def D4 (p : List Bool) (xp xf : List Bool) (xs:ax) : R :=
+def D4 (p : List Bool) (xp xf : List Bool) (xs : ax) : R :=
   ⟨xp,xf++p,xs⟩
-noncomputable def jE (p : List Bool) (x:R) : R :=
+noncomputable def jE (p : List Bool) (x : R) : R :=
   R.rec (motive:=fun _ => R) (D4 p) x
-theorem nQ (p : List Bool) (x:R) (r:ai) :
+theorem nQ (p : List Bool) (x : R) (r : ai) :
     dC (jE p x) r = dC x (be p+>r) := by
   rcases x with ⟨xp,xf,xs⟩
   change dC ⟨xp,xf++p,xs⟩ r = dC ⟨xp,xf,xs⟩ (be p+>r)
@@ -1498,29 +1500,29 @@ inductive ab (α : Type) where
 def za (v : Option α) (_ _ : ab α) (_ _ : Option α) : Option α:=v
 noncomputable def B6 (t : ab α) : Option α :=
   ab.rec (motive:=fun _ => Option α) none za t
-def vE (_ : ab α→Option α) : Option α:=none
-def zk (_ : Option α) (l _ : ab α) (_ _ : (ab α→Option α)→Option α) (ih : ab α→Option α) : Option α:=ih l
-def AE (_ : Option α) (_ r : ab α) (_ _ : (ab α→Option α)→Option α) (ih : ab α→Option α) : Option α:=ih r
-noncomputable def BJ (_:Pos) (ih : ab α→Option α) (t : ab α) : Option α :=
+def vE (_ : ab α → Option α) : Option α:=none
+def zk (_ : Option α) (l _ : ab α) (_ _ : (ab α → Option α) → Option α) (ih : ab α → Option α) : Option α:=ih l
+def AE (_ : Option α) (_ r : ab α) (_ _ : (ab α → Option α) → Option α) (ih : ab α → Option α) : Option α:=ih r
+noncomputable def BJ (_ : Pos) (ih : ab α → Option α) (t : ab α) : Option α :=
   ab.rec (motive:=fun _ => (ab α→Option α)→Option α) vE zk t ih
-noncomputable def BZ (_:Pos) (ih : ab α→Option α) (t : ab α) : Option α :=
+noncomputable def BZ (_ : Pos) (ih : ab α → Option α) (t : ab α) : Option α :=
   ab.rec (motive:=fun _ => (ab α→Option α)→Option α) vE AE t ih
-noncomputable def ig (t : ab α) (p:Pos) : Option α :=
+noncomputable def ig (t : ab α) (p : Pos) : Option α :=
   Pos.rec (motive:=fun _ => ab α→Option α)
     B6
     BJ
     BZ
     p t
-def n6 (_ : α→Bool) (ihl ihr:Bool) : Bool:=ihl&&ihr
-def oz (x : α) (p : α→Bool) (ihl ihr:Bool) : Bool:=p x&&ihl&&ihr
-noncomputable def me (p : α→Bool) (v : Option α) (_ _ : ab α) (ihl ihr:Bool) : Bool :=
+def n6 (_ : α → Bool) (ihl ihr : Bool) : Bool:=ihl&&ihr
+def oz (x : α) (p : α → Bool) (ihl ihr : Bool) : Bool:=p x&&ihl&&ihr
+noncomputable def me (p : α → Bool) (v : Option α) (_ _ : ab α) (ihl ihr : Bool) : Bool :=
   Option.rec (motive:=fun _ => (α→Bool)→Bool→Bool→Bool)
     n6
     oz
     v p ihl ihr
-noncomputable def ay (p : α→Bool) (t : ab α) : Bool :=
+noncomputable def ay (p : α → Bool) (t : ab α) : Bool :=
   ab.rec (motive:=fun _ => Bool) true (me p) t
-theorem AR {p : α→Bool} {t : ab α} {i : Pos} {x : α}
+theorem AR {p : α → Bool} {t : ab α} {i : Pos} {x : α}
     (hall : ay p t = true) (hget : ig t i = some x) : p x = true := by
   induction i generalizing t with
   | Z =>
@@ -1550,26 +1552,26 @@ theorem AR {p : α→Bool} {t : ab α} {i : Pos} {x : α}
       have hr : ay p r = true := by
         cases v <;> simp only [me,n6,oz,Bool.and_eq_true] at hall <;> tauto
       exact ih hr hget
-def vH (_:Nat) (_:R) (_ : List Bool) : Bool:=false
-noncomputable def vT (y:dp) (steps:Nat) (fin:R) (prep : List Bool) : Bool :=
+def vH (_ : Nat) (_ : R) (_ : List Bool) : Bool:=false
+noncomputable def vT (y : dp) (steps : Nat) (fin : R) (prep : List Bool) : Bool :=
   eO steps fin (jE prep (fw y))
-noncomputable def mN (opt_y : Option dp) (steps:Nat) (fin:R) (prep : List Bool) : Bool :=
+noncomputable def mN (opt_y : Option dp) (steps : Nat) (fin : R) (prep : List Bool) : Bool :=
   Option.rec (motive:=fun _ => Nat→R→List Bool→Bool)
     vH
     vT
     opt_y steps fin prep
 noncomputable def D6 (g : ab dp) (qr : List Bool)
-    (state:bR) (pref : List Bool) (steps:Nat) (target:Pos) (prep : List Bool) : Bool :=
+    (state : bR) (pref : List Bool) (steps : Nat) (target : Pos) (prep : List Bool) : Bool :=
   mN (ig g target) steps (gh qr (ny state) pref) prep
-noncomputable def pB (g : ab dp) (qr : List Bool) (b:px) : Bool :=
+noncomputable def pB (g : ab dp) (qr : List Bool) (b : px) : Bool :=
   px.rec (motive:=fun _ => Bool) (D6 g qr) b
-def F0 (t:fZ) (_ : ab dp) : Bool:=jj t
-noncomputable def Ex (gc:mB) (_ : List Bool) (_ : ab dp) : Bool:=nU gc
-noncomputable def FD (fin:R) (steps:Nat) (target:Pos) (prep : List Bool) (g : ab dp) : Bool :=
+def F0 (t : fZ) (_ : ab dp) : Bool:=jj t
+noncomputable def Ex (gc : mB) (_ : List Bool) (_ : ab dp) : Bool:=nU gc
+noncomputable def FD (fin : R) (steps : Nat) (target : Pos) (prep : List Bool) (g : ab dp) : Bool :=
   mN (ig g target) steps fin prep
-noncomputable def FH (qr w : List Bool) (s:k1) (bs : List px) (g : ab dp) : Bool :=
+noncomputable def FH (qr w : List Bool) (s : k1) (bs : List px) (g : ab dp) : Bool :=
   kq s w&&yh s bs&&bs.all (pB g qr)
-noncomputable def sf (g : ab dp) (r:dp) : Bool :=
+noncomputable def sf (g : ab dp) (r : dp) : Bool :=
   dp.rec (motive:=fun _ => ab dp→Bool)
     F0 Ex FD FH r g
 theorem Be (g : ab dp) (hg : ay (sf g) g = true) :
@@ -1625,14 +1627,14 @@ theorem Be (g : ab dp) (hg : ay (sf g) g = true) :
 def j9 : W→List b9
   | .UA => [.PL]
   | .UT => [.P11,.P11,.PL]
-theorem Go (u:W) : G1 u++wX = b5 (j9 u) := by
+theorem Go (u : W) : G1 u++wX = b5 (j9 u) := by
   cases u <;> rfl
-theorem CU (u:W) : G [u,.UA] = b5 (j9 u) := by
+theorem CU (u : W) : G [u,.UA] = b5 (j9 u) := by
   cases u <;> rfl
-theorem CW (u:W) : G [u,.UT] = b5 (j9 u)++wY := by
+theorem CW (u : W) : G [u,.UT] = b5 (j9 u)++wY := by
   cases u <;> rfl
-theorem AX (u v:W) (l:ai) (c:aL)
-    (h : ip (bf l (G [u,v])) c) : cE c (dU l) := by
+theorem AX (u v : W) (l : ai) (c : aL)
+    (h : ip (bf l (G [u, v])) c) : cE c (dU l) := by
   cases v
   · rw [CU] at h
     exact lI (j9 u) l c h
@@ -1645,15 +1647,15 @@ theorem AX (u v:W) (l:ai) (c:aL)
     | contact_D r0 => exact hstack .FromD r0
     | contact_F r0 => exact hstack .FromF r0
     | contact_B r0 => exact hstack .FromB r0
-theorem xW (d:cm) (us vs : List W) :
+theorem xW (d : cm) (us vs : List W) :
     cn d (us++vs) = bf (cn d us) (G vs) := by
   unfold cn
   rw [Gk,← List.append_assoc,df]
-theorem Bi (d:cm) (us : List W) (u:W) :
+theorem Bi (d : cm) (us : List W) (u : W) :
     cn d (us++[u]) = bf (cn d us) (G1 u) := by
   rw [xW]
   simp [G]
-theorem B7 (d:cm) (a b c e:W) (r:ai) :
+theorem B7 (d : cm) (a b c e : W) (r : ai) :
     fl (hF d [a,b,c,e] r) lr := by
   refine cr (ta d [a,b,c,e] r) ?_
   have hf : cn d [a,b,c,e] = bf (cn d [a,b]) (G [c,e]) :=
@@ -1666,22 +1668,22 @@ theorem B7 (d:cm) (a b c e:W) (r:ai) :
   refine bh (hN d [a,b] y hy) ?_
   intro z hz
   exact dg (i8 d [a,b] z (by simp) hz)
-theorem F5 (u:W) (l r:ai) :
+theorem F5 (u : W) (l r : ai) :
     (DL (bf l (G1 u)) r) [tm]⊢⁺ (DL l (wa+>((match u with | .UA => [] | .UT => wY)+>r))) := by
   cases u
   · simpa only [G1,append_nil] using! GV l r
   · simpa only [G1,append_assoc] using!
       U 13 ⟨(wX++wY).reverse,[],D,true⟩ ⟨[],wa++wY,D,true⟩ (by decide) l r
-theorem Ea (l r:ai) :
+theorem Ea (l r : ai) :
     (FL (bf l (G1 .UA)) ([0,0,0]+>r)) [tm]⊢⁺ (FL l ([0,0,0]+>(wa+>r))) :=
   Dp l r
-theorem D1 (l r:ai) :
+theorem D1 (l r : ai) :
     (FL (bf l (G1 .UT)) ([0,0,0]+>r)) [tm]⊢⁺ (FR (bf l (b5 [.P11])) ([0,0]+>r)) :=
   U 1 ⟨(wX++wY).reverse,[0,0,0],F,true⟩ ⟨(b5 [.P11]).reverse,[0,0],F,false⟩ (by decide) l r
-theorem A0 (d:cm) (us : List W) (u:W) (c:aL)
+theorem A0 (d : cm) (us : List W) (u : W) (c : aL)
     (h : dA (bf (cn d us) (G1 u)) c)
-    (h1 : ∀ r,cE (BL (bf (cn d us) (G1 u)) ([0,0,1,0,1]+>r)) lr)
-    (h2 : ∀ r,cE (BL (bf (cn d us) (G1 u)) ([0,0,1,1,1,0,1]+>r)) lr)
+    (h1 : ∀ r, cE (BL (bf (cn d us) (G1 u)) ([0, 0, 1, 0, 1] +> r)) lr)
+    (h2 : ∀ r, cE (BL (bf (cn d us) (G1 u)) ([0, 0, 1, 1, 1, 0, 1] +> r)) lr)
     (hlen : 2 ≤ us.length) : cE c lr := by
   cases h with
   | phase_D r =>
@@ -1706,7 +1708,7 @@ theorem A0 (d:cm) (us : List W) (u:W) (c:aL)
 def r8 : Prop:=∀ d a b c r,
   cE (BL (cn d [a,b,c]) ([0,0,1,0,1]+>r)) lr ∧
   cE (BL (cn d [a,b,c]) ([0,0,1,1,1,0,1]+>r)) lr
-theorem Bp (hb:r8) (d:cm) (a b c:W) (r:ai) :
+theorem Bp (hb : r8) (d : cm) (a b c : W) (r : ai) :
     fl (hF d [a,b,c] r) lr := by
   refine cr (ta d [a,b,c] r) ?_
   refine bh (uK (cn d [a,b,c]) r) ?_
@@ -1717,10 +1719,10 @@ theorem Bp (hb:r8) (d:cm) (a b c:W) (r:ai) :
   refine A0 d [a,b] c x hx ?_ ?_ (by simp)
   · intro r'; rw [← hsnoc]; exact (hb d a b c r').1
   · intro r'; rw [← hsnoc]; exact (hb d a b c r').2
-theorem Br (d:cm) (us vs : List W) (r:ai) :
+theorem Br (d : cm) (us vs : List W) (r : ai) :
     hF d (us++vs) r = hF d us ((match d with | .CD => HD vs | .CF => HF vs)+>r) := by
   cases d <;> simp [hF,n9,FQ,FY,append_assoc]
-theorem y3 (hb:r8) (c:aL) (hs : lr c) : fl c lr := by
+theorem y3 (hb : r8) (c : aL) (hs : lr c) : fl c lr := by
   rcases hs with ⟨d,us,r,hlen,rfl⟩
   rcases us with _ | ⟨a,_ | ⟨b,_ | ⟨e,_ | ⟨f,us'⟩⟩⟩⟩
   · contradiction
@@ -1730,7 +1732,7 @@ theorem y3 (hb:r8) (c:aL) (hs : lr c) : fl c lr := by
   · have h4 : [a,b,e,f]++us' = a :: b :: e :: f :: us':=rfl
     rw [← h4,Br]
     exact B7 d a b e f _
-theorem AM (hb:r8) (c:aL) (hs : lr c) (n:Nat) : ¬ d7 c n :=
+theorem AM (hb : r8) (c : aL) (hs : lr c) (n : Nat) : ¬ d7 c n :=
   q2 (y3 hb) n c hs
 theorem CR :
     (init []) [tm]⊢* (hF .CD [.UA,.UT,.UA,.UA] ([1,0,1,0,0,1,1,0,1,0,1,1,0,1,0,0,1,0,1]+>default)) := by
@@ -1753,10 +1755,10 @@ abbrev T_:=ab dp
 def cD : cm:=.CD
 def cF : cm:=.CF
 def Ii : ab dp:=.empty
-def nd (x:dp) (l r : ab dp) : ab dp:=.node (some x) l r
-def aZ (x:dp) (l : ab dp) : ab dp:=.node (some x) l .empty
-def Ij (x:dp) (r : ab dp) : ab dp:=.node (some x) .empty r
-def lf (x:dp) : ab dp:=.node (some x) .empty .empty
+def nd (x : dp) (l r : ab dp) : ab dp:=.node (some x) l r
+def aZ (x : dp) (l : ab dp) : ab dp:=.node (some x) l .empty
+def Ij (x : dp) (r : ab dp) : ab dp:=.node (some x) .empty r
+def lf (x : dp) : ab dp:=.node (some x) .empty .empty
 def z0:Pos:=.Z
 def z1:Pos:=.O z0
 def z2:Pos:=.E z0
@@ -1884,79 +1886,79 @@ def GQ:Pos:=.O FJ
 def G0:Pos:=.E FJ
 def Gf:Pos:=.O Gu
 def Hb:Pos:=.E Gu
-def vx(p:Pos):Pos:=.E (.E (.E p))
-def vA(p:Pos):Pos:=.O (.E (.E p))
-def vu(p:Pos):Pos:=.E (.O (.E p))
-def vq(p:Pos):Pos:=.O (.O (.E p))
-def vw(p:Pos):Pos:=.E (.E (.O p))
-def vp(p:Pos):Pos:=.O (.E (.O p))
-def vt(p:Pos):Pos:=.E (.O (.O p))
-def vB(p:Pos):Pos:=.O (.O (.O p))
+def vx (p : Pos):Pos:=.E (.E (.E p))
+def vA (p : Pos):Pos:=.O (.E (.E p))
+def vu (p : Pos):Pos:=.E (.O (.E p))
+def vq (p : Pos):Pos:=.O (.O (.E p))
+def vw (p : Pos):Pos:=.E (.E (.O p))
+def vp (p : Pos):Pos:=.O (.E (.O p))
+def vt (p : Pos):Pos:=.E (.O (.O p))
+def vB (p : Pos):Pos:=.O (.O (.O p))
 namespace Pos
-def p0(p:Pos):Pos:=vx (vx p)
-def p1(p:Pos):Pos:=vA (vx p)
-def p2(p:Pos):Pos:=vu (vx p)
-def p3(p:Pos):Pos:=vq (vx p)
-def p4(p:Pos):Pos:=vw (vx p)
-def p5(p:Pos):Pos:=vp (vx p)
-def p6(p:Pos):Pos:=vt (vx p)
-def p7(p:Pos):Pos:=vB (vx p)
-def p8(p:Pos):Pos:=vx (vA p)
-def p9(p:Pos):Pos:=vA (vA p)
-def gL(p:Pos):Pos:=vu (vA p)
-def hH(p:Pos):Pos:=vq (vA p)
-def f5(p:Pos):Pos:=vw (vA p)
-def gj(p:Pos):Pos:=vp (vA p)
-def ga(p:Pos):Pos:=vt (vA p)
-def f9(p:Pos):Pos:=vB (vA p)
-def eA(p:Pos):Pos:=vx (vu p)
-def gn(p:Pos):Pos:=vA (vu p)
-def fx(p:Pos):Pos:=vu (vu p)
-def fM(p:Pos):Pos:=vq (vu p)
-def gd(p:Pos):Pos:=vw (vu p)
-def gb(p:Pos):Pos:=vp (vu p)
-def fq(p:Pos):Pos:=vt (vu p)
-def gv(p:Pos):Pos:=vB (vu p)
-def fC(p:Pos):Pos:=vx (vq p)
-def gm(p:Pos):Pos:=vA (vq p)
-def gH(p:Pos):Pos:=vu (vq p)
-def fm(p:Pos):Pos:=vq (vq p)
-def eS(p:Pos):Pos:=vw (vq p)
-def eY(p:Pos):Pos:=vp (vq p)
-def gg(p:Pos):Pos:=vt (vq p)
-def fL(p:Pos):Pos:=vB (vq p)
-def ex(p:Pos):Pos:=vx (vw p)
-def fN(p:Pos):Pos:=vA (vw p)
-def fK(p:Pos):Pos:=vu (vw p)
-def ez(p:Pos):Pos:=vq (vw p)
-def eu(p:Pos):Pos:=vw (vw p)
-def fA(p:Pos):Pos:=vp (vw p)
-def fT(p:Pos):Pos:=vt (vw p)
-def eB(p:Pos):Pos:=vB (vw p)
-def er(p:Pos):Pos:=vx (vp p)
-def gk(p:Pos):Pos:=vA (vp p)
-def e1(p:Pos):Pos:=vu (vp p)
-def gl(p:Pos):Pos:=vq (vp p)
-def fz(p:Pos):Pos:=vw (vp p)
-def f8(p:Pos):Pos:=vp (vp p)
-def eH(p:Pos):Pos:=vt (vp p)
-def eW(p:Pos):Pos:=vB (vp p)
-def fi(p:Pos):Pos:=vx (vt p)
-def fU(p:Pos):Pos:=vA (vt p)
-def fo(p:Pos):Pos:=vu (vt p)
-def eZ(p:Pos):Pos:=vq (vt p)
-def ev(p:Pos):Pos:=vw (vt p)
-def gO(p:Pos):Pos:=vp (vt p)
-def fu(p:Pos):Pos:=vt (vt p)
-def fD(p:Pos):Pos:=vB (vt p)
-def fE(p:Pos):Pos:=vx (vB p)
-def f4(p:Pos):Pos:=vA (vB p)
-def ft(p:Pos):Pos:=vu (vB p)
-def fp(p:Pos):Pos:=vq (vB p)
-def gK(p:Pos):Pos:=vw (vB p)
-def fP(p:Pos):Pos:=vp (vB p)
-def f6(p:Pos):Pos:=vt (vB p)
-def e7(p:Pos):Pos:=vB (vB p)
+def p0 (p : Pos):Pos:=vx (vx p)
+def p1 (p : Pos):Pos:=vA (vx p)
+def p2 (p : Pos):Pos:=vu (vx p)
+def p3 (p : Pos):Pos:=vq (vx p)
+def p4 (p : Pos):Pos:=vw (vx p)
+def p5 (p : Pos):Pos:=vp (vx p)
+def p6 (p : Pos):Pos:=vt (vx p)
+def p7 (p : Pos):Pos:=vB (vx p)
+def p8 (p : Pos):Pos:=vx (vA p)
+def p9 (p : Pos):Pos:=vA (vA p)
+def gL (p : Pos):Pos:=vu (vA p)
+def hH (p : Pos):Pos:=vq (vA p)
+def f5 (p : Pos):Pos:=vw (vA p)
+def gj (p : Pos):Pos:=vp (vA p)
+def ga (p : Pos):Pos:=vt (vA p)
+def f9 (p : Pos):Pos:=vB (vA p)
+def eA (p : Pos):Pos:=vx (vu p)
+def gn (p : Pos):Pos:=vA (vu p)
+def fx (p : Pos):Pos:=vu (vu p)
+def fM (p : Pos):Pos:=vq (vu p)
+def gd (p : Pos):Pos:=vw (vu p)
+def gb (p : Pos):Pos:=vp (vu p)
+def fq (p : Pos):Pos:=vt (vu p)
+def gv (p : Pos):Pos:=vB (vu p)
+def fC (p : Pos):Pos:=vx (vq p)
+def gm (p : Pos):Pos:=vA (vq p)
+def gH (p : Pos):Pos:=vu (vq p)
+def fm (p : Pos):Pos:=vq (vq p)
+def eS (p : Pos):Pos:=vw (vq p)
+def eY (p : Pos):Pos:=vp (vq p)
+def gg (p : Pos):Pos:=vt (vq p)
+def fL (p : Pos):Pos:=vB (vq p)
+def ex (p : Pos):Pos:=vx (vw p)
+def fN (p : Pos):Pos:=vA (vw p)
+def fK (p : Pos):Pos:=vu (vw p)
+def ez (p : Pos):Pos:=vq (vw p)
+def eu (p : Pos):Pos:=vw (vw p)
+def fA (p : Pos):Pos:=vp (vw p)
+def fT (p : Pos):Pos:=vt (vw p)
+def eB (p : Pos):Pos:=vB (vw p)
+def er (p : Pos):Pos:=vx (vp p)
+def gk (p : Pos):Pos:=vA (vp p)
+def e1 (p : Pos):Pos:=vu (vp p)
+def gl (p : Pos):Pos:=vq (vp p)
+def fz (p : Pos):Pos:=vw (vp p)
+def f8 (p : Pos):Pos:=vp (vp p)
+def eH (p : Pos):Pos:=vt (vp p)
+def eW (p : Pos):Pos:=vB (vp p)
+def fi (p : Pos):Pos:=vx (vt p)
+def fU (p : Pos):Pos:=vA (vt p)
+def fo (p : Pos):Pos:=vu (vt p)
+def eZ (p : Pos):Pos:=vq (vt p)
+def ev (p : Pos):Pos:=vw (vt p)
+def gO (p : Pos):Pos:=vp (vt p)
+def fu (p : Pos):Pos:=vt (vt p)
+def fD (p : Pos):Pos:=vB (vt p)
+def fE (p : Pos):Pos:=vx (vB p)
+def f4 (p : Pos):Pos:=vA (vB p)
+def ft (p : Pos):Pos:=vu (vB p)
+def fp (p : Pos):Pos:=vq (vB p)
+def gK (p : Pos):Pos:=vw (vB p)
+def fP (p : Pos):Pos:=vp (vB p)
+def f6 (p : Pos):Pos:=vt (vB p)
+def e7 (p : Pos):Pos:=vB (vB p)
 end Pos
 def e_:Y:=[]
 def bd:Y:=false::e_
@@ -2062,209 +2064,209 @@ def gf:Y:=true::dV
 def gS:Y:=true::aN
 def bK:Y:=true::dZ
 def yn:Y:=true::xL
-def Ic(t:Y):Y:=false::false::false::false::t
-def wi(t:Y):Y:=true::false::false::false::t
-def mx(t:Y):Y:=false::true::false::false::t
-def wM(t:Y):Y:=true::true::false::false::t
-def pn(t:Y):Y:=false::false::true::false::t
-def js(t:Y):Y:=true::false::true::false::t
-def kU(t:Y):Y:=false::true::true::false::t
-def lv(t:Y):Y:=true::true::true::false::t
-def xT(t:Y):Y:=false::false::false::true::t
-def mS(t:Y):Y:=true::false::false::true::t
-def kd(t:Y):Y:=false::true::false::true::t
-def jM(t:Y):Y:=true::true::false::true::t
-def pY(t:Y):Y:=false::false::true::true::t
-def ks(t:Y):Y:=true::false::true::true::t
-def nH(t:Y):Y:=false::true::true::true::t
-def kI(t:Y):Y:=true::true::true::true::t
-def _root_.List.sx(t:Y):Y:=wi (wi t)
-def _root_.List.v9(t:Y):Y:=mx (wi t)
-def _root_.List.H5(t:Y):Y:=pn (wi t)
-def _root_.List.G2(t:Y):Y:=js (wi t)
-def _root_.List.GW(t:Y):Y:=kU (wi t)
-def _root_.List.Dg(t:Y):Y:=lv (wi t)
-def _root_.List.GE(t:Y):Y:=kd (wi t)
-def _root_.List.iG(t:Y):Y:=mx (mx t)
-def _root_.List.GB(t:Y):Y:=wM (mx t)
-def _root_.List.hU(t:Y):Y:=js (mx t)
-def _root_.List.AQ(t:Y):Y:=mS (mx t)
-def _root_.List.wd(t:Y):Y:=kd (mx t)
-def _root_.List.o5(t:Y):Y:=jM (mx t)
-def _root_.List.AV(t:Y):Y:=pY (mx t)
-def _root_.List.xx(t:Y):Y:=ks (mx t)
-def _root_.List.vL(t:Y):Y:=nH (mx t)
-def _root_.List.mu(t:Y):Y:=kI (mx t)
-def _root_.List.HU(t:Y):Y:=pn (wM t)
-def _root_.List.AZ(t:Y):Y:=js (wM t)
-def _root_.List.yb(t:Y):Y:=lv (wM t)
-def _root_.List.y9(t:Y):Y:=pn (pn t)
-def _root_.List.hM(t:Y):Y:=js (pn t)
-def _root_.List.x2(t:Y):Y:=kU (pn t)
-def _root_.List.F4(t:Y):Y:=xT (pn t)
-def _root_.List.D8(t:Y):Y:=mS (pn t)
-def _root_.List.ni(t:Y):Y:=kd (pn t)
-def _root_.List.hK(t:Y):Y:=jM (pn t)
-def _root_.List.jd(t:Y):Y:=mx (js t)
-def _root_.List.vr(t:Y):Y:=wM (js t)
-def _root_.List.bi(t:Y):Y:=js (js t)
-def _root_.List.bg(t:Y):Y:=kU (js t)
-def _root_.List.cJ(t:Y):Y:=lv (js t)
-def _root_.List.kY(t:Y):Y:=mS (js t)
-def _root_.List.aD(t:Y):Y:=kd (js t)
-def _root_.List.b8(t:Y):Y:=jM (js t)
-def _root_.List.pD(t:Y):Y:=pY (js t)
-def _root_.List.bm(t:Y):Y:=ks (js t)
-def _root_.List.ja(t:Y):Y:=nH (js t)
-def _root_.List.bu(t:Y):Y:=kI (js t)
-def _root_.List.fr(t:Y):Y:=pn (kU t)
-def _root_.List.xF(t:Y):Y:=js (kU t)
-def _root_.List.mX(t:Y):Y:=kU (kU t)
-def _root_.List.pT(t:Y):Y:=mS (kU t)
-def _root_.List.aX(t:Y):Y:=kd (kU t)
-def _root_.List.bH(t:Y):Y:=jM (kU t)
-def _root_.List.CJ(t:Y):Y:=pY (kU t)
-def _root_.List.cd(t:Y):Y:=ks (kU t)
-def _root_.List.aS(t:Y):Y:=nH (kU t)
-def _root_.List.b6(t:Y):Y:=kI (kU t)
-def _root_.List.bI(t:Y):Y:=mx (lv t)
-def _root_.List.Cn(t:Y):Y:=wM (lv t)
-def _root_.List.aI(t:Y):Y:=js (lv t)
-def _root_.List.iI(t:Y):Y:=kU (lv t)
-def _root_.List.wj(t:Y):Y:=lv (lv t)
-def _root_.List.FZ(t:Y):Y:=mS (lv t)
-def _root_.List.bw(t:Y):Y:=kd (lv t)
-def _root_.List.dm(t:Y):Y:=jM (lv t)
-def _root_.List.EQ(t:Y):Y:=pY (lv t)
-def _root_.List.hL(t:Y):Y:=ks (lv t)
-def _root_.List.jr(t:Y):Y:=nH (lv t)
-def _root_.List.fy(t:Y):Y:=kI (lv t)
-def _root_.List.Fy(t:Y):Y:=xT (xT t)
-def _root_.List.Gp(t:Y):Y:=mS (xT t)
-def _root_.List.xD(t:Y):Y:=kd (xT t)
-def _root_.List.CI(t:Y):Y:=jM (xT t)
-def _root_.List.FI(t:Y):Y:=ks (xT t)
-def _root_.List.gP(t:Y):Y:=wi (mS t)
-def _root_.List.AO(t:Y):Y:=mx (mS t)
-def _root_.List.Em(t:Y):Y:=pn (mS t)
-def _root_.List.sk(t:Y):Y:=js (mS t)
-def _root_.List.n1(t:Y):Y:=kU (mS t)
-def _root_.List.eC(t:Y):Y:=lv (mS t)
-def _root_.List.vz(t:Y):Y:=kd (mS t)
-def _root_.List.yd(t:Y):Y:=pn (kd t)
-def _root_.List.ib(t:Y):Y:=js (kd t)
-def _root_.List.Eb(t:Y):Y:=kU (kd t)
-def _root_.List.ae(t:Y):Y:=kd (kd t)
-def _root_.List.aF(t:Y):Y:=jM (kd t)
-def _root_.List.kB(t:Y):Y:=pY (kd t)
-def _root_.List.e0(t:Y):Y:=ks (kd t)
-def _root_.List.aC(t:Y):Y:=nH (kd t)
-def _root_.List.bP(t:Y):Y:=kI (kd t)
-def _root_.List.cH(t:Y):Y:=mx (jM t)
-def _root_.List.vv(t:Y):Y:=wM (jM t)
-def _root_.List.cx(t:Y):Y:=js (jM t)
-def _root_.List.S(t:Y):Y:=kU (jM t)
-def _root_.List.cz(t:Y):Y:=lv (jM t)
-def _root_.List.iH(t:Y):Y:=mS (jM t)
-def _root_.List.bQ(t:Y):Y:=kd (jM t)
-def _root_.List.gR(t:Y):Y:=jM (jM t)
-def _root_.List.FN(t:Y):Y:=pY (jM t)
-def _root_.List.fj(t:Y):Y:=ks (jM t)
-def _root_.List.ia(t:Y):Y:=nH (jM t)
-def _root_.List.eK(t:Y):Y:=kI (jM t)
-def _root_.List.r4(t:Y):Y:=xT (pY t)
-def _root_.List.rF(t:Y):Y:=mS (pY t)
-def _root_.List.nh(t:Y):Y:=kd (pY t)
-def _root_.List.gY(t:Y):Y:=jM (pY t)
-def _root_.List.xQ(t:Y):Y:=ks (pY t)
-def _root_.List.Gg(t:Y):Y:=mx (ks t)
-def _root_.List.Gw(t:Y):Y:=wM (ks t)
-def _root_.List.cR(t:Y):Y:=js (ks t)
-def _root_.List.bV(t:Y):Y:=kU (ks t)
-def _root_.List.aO(t:Y):Y:=lv (ks t)
-def _root_.List.mv(t:Y):Y:=mS (ks t)
-def _root_.List.aj(t:Y):Y:=kd (ks t)
-def _root_.List.ag(t:Y):Y:=jM (ks t)
-def _root_.List.Gv(t:Y):Y:=pY (ks t)
-def _root_.List.eP(t:Y):Y:=ks (ks t)
-def _root_.List.b2(t:Y):Y:=nH (ks t)
-def _root_.List.nR(t:Y):Y:=kI (ks t)
-def _root_.List.kv(t:Y):Y:=pn (nH t)
-def _root_.List.pF(t:Y):Y:=js (nH t)
-def _root_.List.nS(t:Y):Y:=kU (nH t)
-def _root_.List.cQ(t:Y):Y:=kd (nH t)
-def _root_.List.bl(t:Y):Y:=jM (nH t)
-def _root_.List.eb(t:Y):Y:=ks (nH t)
-def _root_.List.iF(t:Y):Y:=nH (nH t)
-def _root_.List.q5(t:Y):Y:=kI (nH t)
-def _root_.List.fF(t:Y):Y:=mx (kI t)
-def _root_.List.pl(t:Y):Y:=wM (kI t)
-def _root_.List.eV(t:Y):Y:=js (kI t)
-def _root_.List.a0(t:Y):Y:=kU (kI t)
-def _root_.List.pk(t:Y):Y:=lv (kI t)
-def _root_.List.F1(t:Y):Y:=mS (kI t)
-def _root_.List.eN(t:Y):Y:=kd (kI t)
-def _root_.List.dJ(t:Y):Y:=jM (kI t)
-def _root_.List.HL(t:Y):Y:=pY (kI t)
-def _root_.List.dK(t:Y):Y:=ks (kI t)
-def _root_.List.jq(t:Y):Y:=nH (kI t)
-def _root_.List.ec(t:Y):Y:=kI (kI t)
-def _root_.List.bo(t:Y):Y:=t.eV.aO
-def _root_.List.av(t:Y):Y:=t.aC.bi
-def _root_.List.b0(t:Y):Y:=t.aC.aS
-def _root_.List.eh(t:Y):Y:=t.kv.hK
-def _root_.List.cw(t:Y):Y:=t.bu.aO
-def _root_.List.cY(t:Y):Y:=t.pD.aF
-def _root_.List.bz(t:Y):Y:=t.bm.aI
-def _root_.List.qV(t:Y):Y:=t.bi.aI
-def _root_.List.cK(t:Y):Y:=t.bV.ae
-def _root_.List.cs(t:Y):Y:=t.S.aj
-def _root_.List.eD(t:Y):Y:=t.AQ.bi
-def _root_.List.gD(t:Y):Y:=t.hU.fr
-def _root_.List.cf(t:Y):Y:=t.cd.S
-def _root_.List.k7(t:Y):Y:=t.gY.bm
-def _root_.List.dv(t:Y):Y:=t.ag.aX
-def _root_.List.fQ(t:Y):Y:=t.aO.iG
-def _root_.List.bp(t:Y):Y:=t.ae.S
-def _root_.List.EK(t:Y):Y:=t.gY.bu
-def _root_.List.dB(t:Y):Y:=t.e0.S
-def _root_.List.cv(t:Y):Y:=t.bQ.bl
-def _root_.List.gC(t:Y):Y:=t.ag.S
-def _root_.List.d6(t:Y):Y:=t.bm.bI
-def _root_.List.g8(t:Y):Y:=t.e0.bI
-def _root_.List.Fk(t:Y):Y:=t.bi.cR
-def _root_.List.it(t:Y):Y:=t.eb.S
-def _root_.List.EO(t:Y):Y:=t.b8.AQ
-def _root_.List.dh(t:Y):Y:=t.bm.fy
-def _root_.List.EN(t:Y):Y:=t.nh.bi
-def _root_.List.fg(t:Y):Y:=t.b8.aX
-def _root_.List.gZ(t:Y):Y:=t.cx.S
-def _root_.List.fH(t:Y):Y:=t.bV.ag
-def _root_.List.iV(t:Y):Y:=t.cx.aC
-def _root_.List.Ao(t:Y):Y:=t.bQ.eV
-def _root_.List.ik(t:Y):Y:=t.bH.dm
-def _root_.List.gE(t:Y):Y:=t.eV.gY
-def _root_.List.i9(t:Y):Y:=t.bI.aC
-def _root_.List.kk(t:Y):Y:=t.cR.aI
-def _root_.List.i0(t:Y):Y:=t.cQ.pF
-def _root_.List.ce(t:Y):Y:=t.bl.aC
-def _root_.List.i2(t:Y):Y:=t.aI.gP
-def _root_.List.g6(t:Y):Y:=t.S.ag
-def _root_.List.h8(t:Y):Y:=t.bH.aC
-def _root_.List.ho(t:Y):Y:=t.ag.aD
-def _root_.List.iv(t:Y):Y:=t.n1.hK
-def _root_.List.jQ(t:Y):Y:=t.aI.aO
-def _root_.List.g0(t:Y):Y:=t.bH.bw
-def _root_.List.kl(t:Y):Y:=t.a0.a0
-def _root_.List.db(t:Y):Y:=t.EK.aO
-def _root_.List.dx(t:Y):Y:=t.hL.fy
-def _root_.List.io(t:Y):Y:=t.eh.gD
-def _root_.List.dt(t:Y):Y:=t.EO.qV
-def _root_.List.fd(t:Y):Y:=t.EN.aO
-def _root_.List.gT(t:Y):Y:=t.Fk.aI
-def _root_.List.eF(t:Y):Y:=t.Ao.aO
-def _root_.List.hV(t:Y):Y:=t.k7.aI
-def _root_.List.gB(t:Y):Y:=t.jd.aC
+def Ic (t : Y):Y:=false::false::false::false::t
+def wi (t : Y):Y:=true::false::false::false::t
+def mx (t : Y):Y:=false::true::false::false::t
+def wM (t : Y):Y:=true::true::false::false::t
+def pn (t : Y):Y:=false::false::true::false::t
+def js (t : Y):Y:=true::false::true::false::t
+def kU (t : Y):Y:=false::true::true::false::t
+def lv (t : Y):Y:=true::true::true::false::t
+def xT (t : Y):Y:=false::false::false::true::t
+def mS (t : Y):Y:=true::false::false::true::t
+def kd (t : Y):Y:=false::true::false::true::t
+def jM (t : Y):Y:=true::true::false::true::t
+def pY (t : Y):Y:=false::false::true::true::t
+def ks (t : Y):Y:=true::false::true::true::t
+def nH (t : Y):Y:=false::true::true::true::t
+def kI (t : Y):Y:=true::true::true::true::t
+def _root_.List.sx (t : Y):Y:=wi (wi t)
+def _root_.List.v9 (t : Y):Y:=mx (wi t)
+def _root_.List.H5 (t : Y):Y:=pn (wi t)
+def _root_.List.G2 (t : Y):Y:=js (wi t)
+def _root_.List.GW (t : Y):Y:=kU (wi t)
+def _root_.List.Dg (t : Y):Y:=lv (wi t)
+def _root_.List.GE (t : Y):Y:=kd (wi t)
+def _root_.List.iG (t : Y):Y:=mx (mx t)
+def _root_.List.GB (t : Y):Y:=wM (mx t)
+def _root_.List.hU (t : Y):Y:=js (mx t)
+def _root_.List.AQ (t : Y):Y:=mS (mx t)
+def _root_.List.wd (t : Y):Y:=kd (mx t)
+def _root_.List.o5 (t : Y):Y:=jM (mx t)
+def _root_.List.AV (t : Y):Y:=pY (mx t)
+def _root_.List.xx (t : Y):Y:=ks (mx t)
+def _root_.List.vL (t : Y):Y:=nH (mx t)
+def _root_.List.mu (t : Y):Y:=kI (mx t)
+def _root_.List.HU (t : Y):Y:=pn (wM t)
+def _root_.List.AZ (t : Y):Y:=js (wM t)
+def _root_.List.yb (t : Y):Y:=lv (wM t)
+def _root_.List.y9 (t : Y):Y:=pn (pn t)
+def _root_.List.hM (t : Y):Y:=js (pn t)
+def _root_.List.x2 (t : Y):Y:=kU (pn t)
+def _root_.List.F4 (t : Y):Y:=xT (pn t)
+def _root_.List.D8 (t : Y):Y:=mS (pn t)
+def _root_.List.ni (t : Y):Y:=kd (pn t)
+def _root_.List.hK (t : Y):Y:=jM (pn t)
+def _root_.List.jd (t : Y):Y:=mx (js t)
+def _root_.List.vr (t : Y):Y:=wM (js t)
+def _root_.List.bi (t : Y):Y:=js (js t)
+def _root_.List.bg (t : Y):Y:=kU (js t)
+def _root_.List.cJ (t : Y):Y:=lv (js t)
+def _root_.List.kY (t : Y):Y:=mS (js t)
+def _root_.List.aD (t : Y):Y:=kd (js t)
+def _root_.List.b8 (t : Y):Y:=jM (js t)
+def _root_.List.pD (t : Y):Y:=pY (js t)
+def _root_.List.bm (t : Y):Y:=ks (js t)
+def _root_.List.ja (t : Y):Y:=nH (js t)
+def _root_.List.bu (t : Y):Y:=kI (js t)
+def _root_.List.fr (t : Y):Y:=pn (kU t)
+def _root_.List.xF (t : Y):Y:=js (kU t)
+def _root_.List.mX (t : Y):Y:=kU (kU t)
+def _root_.List.pT (t : Y):Y:=mS (kU t)
+def _root_.List.aX (t : Y):Y:=kd (kU t)
+def _root_.List.bH (t : Y):Y:=jM (kU t)
+def _root_.List.CJ (t : Y):Y:=pY (kU t)
+def _root_.List.cd (t : Y):Y:=ks (kU t)
+def _root_.List.aS (t : Y):Y:=nH (kU t)
+def _root_.List.b6 (t : Y):Y:=kI (kU t)
+def _root_.List.bI (t : Y):Y:=mx (lv t)
+def _root_.List.Cn (t : Y):Y:=wM (lv t)
+def _root_.List.aI (t : Y):Y:=js (lv t)
+def _root_.List.iI (t : Y):Y:=kU (lv t)
+def _root_.List.wj (t : Y):Y:=lv (lv t)
+def _root_.List.FZ (t : Y):Y:=mS (lv t)
+def _root_.List.bw (t : Y):Y:=kd (lv t)
+def _root_.List.dm (t : Y):Y:=jM (lv t)
+def _root_.List.EQ (t : Y):Y:=pY (lv t)
+def _root_.List.hL (t : Y):Y:=ks (lv t)
+def _root_.List.jr (t : Y):Y:=nH (lv t)
+def _root_.List.fy (t : Y):Y:=kI (lv t)
+def _root_.List.Fy (t : Y):Y:=xT (xT t)
+def _root_.List.Gp (t : Y):Y:=mS (xT t)
+def _root_.List.xD (t : Y):Y:=kd (xT t)
+def _root_.List.CI (t : Y):Y:=jM (xT t)
+def _root_.List.FI (t : Y):Y:=ks (xT t)
+def _root_.List.gP (t : Y):Y:=wi (mS t)
+def _root_.List.AO (t : Y):Y:=mx (mS t)
+def _root_.List.Em (t : Y):Y:=pn (mS t)
+def _root_.List.sk (t : Y):Y:=js (mS t)
+def _root_.List.n1 (t : Y):Y:=kU (mS t)
+def _root_.List.eC (t : Y):Y:=lv (mS t)
+def _root_.List.vz (t : Y):Y:=kd (mS t)
+def _root_.List.yd (t : Y):Y:=pn (kd t)
+def _root_.List.ib (t : Y):Y:=js (kd t)
+def _root_.List.Eb (t : Y):Y:=kU (kd t)
+def _root_.List.ae (t : Y):Y:=kd (kd t)
+def _root_.List.aF (t : Y):Y:=jM (kd t)
+def _root_.List.kB (t : Y):Y:=pY (kd t)
+def _root_.List.e0 (t : Y):Y:=ks (kd t)
+def _root_.List.aC (t : Y):Y:=nH (kd t)
+def _root_.List.bP (t : Y):Y:=kI (kd t)
+def _root_.List.cH (t : Y):Y:=mx (jM t)
+def _root_.List.vv (t : Y):Y:=wM (jM t)
+def _root_.List.cx (t : Y):Y:=js (jM t)
+def _root_.List.S (t : Y):Y:=kU (jM t)
+def _root_.List.cz (t : Y):Y:=lv (jM t)
+def _root_.List.iH (t : Y):Y:=mS (jM t)
+def _root_.List.bQ (t : Y):Y:=kd (jM t)
+def _root_.List.gR (t : Y):Y:=jM (jM t)
+def _root_.List.FN (t : Y):Y:=pY (jM t)
+def _root_.List.fj (t : Y):Y:=ks (jM t)
+def _root_.List.ia (t : Y):Y:=nH (jM t)
+def _root_.List.eK (t : Y):Y:=kI (jM t)
+def _root_.List.r4 (t : Y):Y:=xT (pY t)
+def _root_.List.rF (t : Y):Y:=mS (pY t)
+def _root_.List.nh (t : Y):Y:=kd (pY t)
+def _root_.List.gY (t : Y):Y:=jM (pY t)
+def _root_.List.xQ (t : Y):Y:=ks (pY t)
+def _root_.List.Gg (t : Y):Y:=mx (ks t)
+def _root_.List.Gw (t : Y):Y:=wM (ks t)
+def _root_.List.cR (t : Y):Y:=js (ks t)
+def _root_.List.bV (t : Y):Y:=kU (ks t)
+def _root_.List.aO (t : Y):Y:=lv (ks t)
+def _root_.List.mv (t : Y):Y:=mS (ks t)
+def _root_.List.aj (t : Y):Y:=kd (ks t)
+def _root_.List.ag (t : Y):Y:=jM (ks t)
+def _root_.List.Gv (t : Y):Y:=pY (ks t)
+def _root_.List.eP (t : Y):Y:=ks (ks t)
+def _root_.List.b2 (t : Y):Y:=nH (ks t)
+def _root_.List.nR (t : Y):Y:=kI (ks t)
+def _root_.List.kv (t : Y):Y:=pn (nH t)
+def _root_.List.pF (t : Y):Y:=js (nH t)
+def _root_.List.nS (t : Y):Y:=kU (nH t)
+def _root_.List.cQ (t : Y):Y:=kd (nH t)
+def _root_.List.bl (t : Y):Y:=jM (nH t)
+def _root_.List.eb (t : Y):Y:=ks (nH t)
+def _root_.List.iF (t : Y):Y:=nH (nH t)
+def _root_.List.q5 (t : Y):Y:=kI (nH t)
+def _root_.List.fF (t : Y):Y:=mx (kI t)
+def _root_.List.pl (t : Y):Y:=wM (kI t)
+def _root_.List.eV (t : Y):Y:=js (kI t)
+def _root_.List.a0 (t : Y):Y:=kU (kI t)
+def _root_.List.pk (t : Y):Y:=lv (kI t)
+def _root_.List.F1 (t : Y):Y:=mS (kI t)
+def _root_.List.eN (t : Y):Y:=kd (kI t)
+def _root_.List.dJ (t : Y):Y:=jM (kI t)
+def _root_.List.HL (t : Y):Y:=pY (kI t)
+def _root_.List.dK (t : Y):Y:=ks (kI t)
+def _root_.List.jq (t : Y):Y:=nH (kI t)
+def _root_.List.ec (t : Y):Y:=kI (kI t)
+def _root_.List.bo (t : Y):Y:=t.eV.aO
+def _root_.List.av (t : Y):Y:=t.aC.bi
+def _root_.List.b0 (t : Y):Y:=t.aC.aS
+def _root_.List.eh (t : Y):Y:=t.kv.hK
+def _root_.List.cw (t : Y):Y:=t.bu.aO
+def _root_.List.cY (t : Y):Y:=t.pD.aF
+def _root_.List.bz (t : Y):Y:=t.bm.aI
+def _root_.List.qV (t : Y):Y:=t.bi.aI
+def _root_.List.cK (t : Y):Y:=t.bV.ae
+def _root_.List.cs (t : Y):Y:=t.S.aj
+def _root_.List.eD (t : Y):Y:=t.AQ.bi
+def _root_.List.gD (t : Y):Y:=t.hU.fr
+def _root_.List.cf (t : Y):Y:=t.cd.S
+def _root_.List.k7 (t : Y):Y:=t.gY.bm
+def _root_.List.dv (t : Y):Y:=t.ag.aX
+def _root_.List.fQ (t : Y):Y:=t.aO.iG
+def _root_.List.bp (t : Y):Y:=t.ae.S
+def _root_.List.EK (t : Y):Y:=t.gY.bu
+def _root_.List.dB (t : Y):Y:=t.e0.S
+def _root_.List.cv (t : Y):Y:=t.bQ.bl
+def _root_.List.gC (t : Y):Y:=t.ag.S
+def _root_.List.d6 (t : Y):Y:=t.bm.bI
+def _root_.List.g8 (t : Y):Y:=t.e0.bI
+def _root_.List.Fk (t : Y):Y:=t.bi.cR
+def _root_.List.it (t : Y):Y:=t.eb.S
+def _root_.List.EO (t : Y):Y:=t.b8.AQ
+def _root_.List.dh (t : Y):Y:=t.bm.fy
+def _root_.List.EN (t : Y):Y:=t.nh.bi
+def _root_.List.fg (t : Y):Y:=t.b8.aX
+def _root_.List.gZ (t : Y):Y:=t.cx.S
+def _root_.List.fH (t : Y):Y:=t.bV.ag
+def _root_.List.iV (t : Y):Y:=t.cx.aC
+def _root_.List.Ao (t : Y):Y:=t.bQ.eV
+def _root_.List.ik (t : Y):Y:=t.bH.dm
+def _root_.List.gE (t : Y):Y:=t.eV.gY
+def _root_.List.i9 (t : Y):Y:=t.bI.aC
+def _root_.List.kk (t : Y):Y:=t.cR.aI
+def _root_.List.i0 (t : Y):Y:=t.cQ.pF
+def _root_.List.ce (t : Y):Y:=t.bl.aC
+def _root_.List.i2 (t : Y):Y:=t.aI.gP
+def _root_.List.g6 (t : Y):Y:=t.S.ag
+def _root_.List.h8 (t : Y):Y:=t.bH.aC
+def _root_.List.ho (t : Y):Y:=t.ag.aD
+def _root_.List.iv (t : Y):Y:=t.n1.hK
+def _root_.List.jQ (t : Y):Y:=t.aI.aO
+def _root_.List.g0 (t : Y):Y:=t.bH.bw
+def _root_.List.kl (t : Y):Y:=t.a0.a0
+def _root_.List.db (t : Y):Y:=t.EK.aO
+def _root_.List.dx (t : Y):Y:=t.hL.fy
+def _root_.List.io (t : Y):Y:=t.eh.gD
+def _root_.List.dt (t : Y):Y:=t.EO.qV
+def _root_.List.fd (t : Y):Y:=t.EN.aO
+def _root_.List.gT (t : Y):Y:=t.Fk.aI
+def _root_.List.eF (t : Y):Y:=t.Ao.aO
+def _root_.List.hV (t : Y):Y:=t.k7.aI
+def _root_.List.gB (t : Y):Y:=t.jd.aC
 def DA : List W:=[.UA,.UA]
 def kD : List W:=[.UA,.UA,.UA]
 def FW : List W:=[.UA,.UA,.UA,.UA]
@@ -2320,23 +2322,23 @@ def tt : List Bool:=[true,true,true,true]
 def B5 : List Bool:=[true,true,true,true,false,false,false]
 def Bg : List Bool:=[true,true,true,true,true,false,false,false]
 def vy : List Bool:=[true,true,true,true,true,true,false,false,false,true,false,false,false,true,false]
-def aM (d:cm) (us : List W) (w : List Bool) : fZ:=.Recovered d us w
-def t9 (d:cm) (us : List W) (w : List Bool) : fZ:=.NineGain d us w
-def t6 (d:cm) (us : List W) (w : List Bool) : fZ:=.SixGain d us w
+def aM (d : cm) (us : List W) (w : List Bool) : fZ:=.Recovered d us w
+def t9 (d : cm) (us : List W) (w : List Bool) : fZ:=.NineGain d us w
+def t6 (d : cm) (us : List W) (w : List Bool) : fZ:=.SixGain d us w
 def tY (w : List Bool) : fZ:=.YaaGain w
-def eU (d:cm) (us : List W) (w : List Bool) : dp:=.rEnd (aM d us w)
-def Dm (d:cm) (us : List W) (w : List Bool) : dp:=.rEnd (t9 d us w)
-def zj (d:cm) (us : List W) (w : List Bool) : dp:=.rEnd (t6 d us w)
+def eU (d : cm) (us : List W) (w : List Bool) : dp:=.rEnd (aM d us w)
+def Dm (d : cm) (us : List W) (w : List Bool) : dp:=.rEnd (t9 d us w)
+def zj (d : cm) (us : List W) (w : List Bool) : dp:=.rEnd (t6 d us w)
 def kH (w : List Bool) : dp:=.rEnd (tY w)
-def DG (w : List Bool) (s:Nat) (t:Pos) (p : List Bool) : dp:=.rNat (xB w) s t p
-def Id (q w : List Bool) (s:Nat) (t:Pos) (p : List Bool) : dp:=.rNat (jJ q w) s t p
-def F7 (q w : List Bool) (s:Nat) (t:Pos) (p : List Bool) : dp:=.rNat (gh q .qB w) s t p
-def rP (b : List Bool) (ps : List b9) (st : List Bool) (nd:Nat) (td:fZ) (nf:Nat) (tf:fZ) (w : List Bool) : dp:=.rProt ⟨b,ps,st,nd,td,nf,tf⟩ w
-def dH (q w : List Bool) (s1:Nat) (t1:Pos) (p1 : List Bool) (s2:Nat) (t2:Pos) (p2 : List Bool) (s3:Nat) (t3:Pos) (p3 : List Bool) : dp:=.rRet q w .AllCases [⟨.RD,[],s1,t1,p1⟩,⟨.RF,[false,false],s2,t2,p2⟩,⟨.RB,[false,false],s3,t3,p3⟩]
-def eX (q : List Bool) (s1:Nat) (t1:Pos) (p1 : List Bool) (s2:Nat) (t2:Pos) (p2 : List Bool) (s3:Nat) (t3:Pos) (p3 : List Bool) (s4:Nat) (t4:Pos) (p4 : List Bool) : dp:=.rRet q [false,false] .Cases00 [⟨.RD,[true,false,true],s1,t1,p1⟩,⟨.RD,[true,true,true,false,true],s2,t2,p2⟩,⟨.RD,[true,false,true,false,false],s3,t3,p3⟩,⟨.RF,[false,false,false],s4,t4,p4⟩]
-def jL (q : List Bool) (s1:Nat) (t1:Pos) (p1 : List Bool) (s2:Nat) (t2:Pos) (p2 : List Bool) (s3:Nat) (t3:Pos) (p3 : List Bool) (s4:Nat) (t4:Pos) (p4 : List Bool) : dp:=.rRet q [true] .Cases1 [⟨.RD,[true,true,false,true],s1,t1,p1⟩,⟨.RD,[false,true,false,false],s2,t2,p2⟩,⟨.RF,[false,false],s3,t3,p3⟩,⟨.RB,[false,false],s4,t4,p4⟩]
-def FF (q w : List Bool) (s1:Nat) (t1:Pos) (p1 : List Bool) (s2:Nat) (t2:Pos) (p2 : List Bool) : dp:=.rRet q w .Coarse00 [⟨.RD,[],s1,t1,p1⟩,⟨.RF,[false,false],s2,t2,p2⟩]
-def Bj (q w : List Bool) (s1:Nat) (t1:Pos) (p1 : List Bool) (s2:Nat) (t2:Pos) (p2 : List Bool) : dp:=.rRet q w .Coarse10 [⟨.RD,[],s1,t1,p1⟩,⟨.RB,[false,false],s2,t2,p2⟩]
+def DG (w : List Bool) (s : Nat) (t : Pos) (p : List Bool) : dp:=.rNat (xB w) s t p
+def Id (q w : List Bool) (s : Nat) (t : Pos) (p : List Bool) : dp:=.rNat (jJ q w) s t p
+def F7 (q w : List Bool) (s : Nat) (t : Pos) (p : List Bool) : dp:=.rNat (gh q .qB w) s t p
+def rP (b : List Bool) (ps : List b9) (st : List Bool) (nd : Nat) (td : fZ) (nf : Nat) (tf : fZ) (w : List Bool) : dp:=.rProt ⟨b,ps,st,nd,td,nf,tf⟩ w
+def dH (q w : List Bool) (s1 : Nat) (t1 : Pos) (p1 : List Bool) (s2 : Nat) (t2 : Pos) (p2 : List Bool) (s3 : Nat) (t3 : Pos) (p3 : List Bool) : dp:=.rRet q w .AllCases [⟨.RD,[],s1,t1,p1⟩,⟨.RF,[false,false],s2,t2,p2⟩,⟨.RB,[false,false],s3,t3,p3⟩]
+def eX (q : List Bool) (s1 : Nat) (t1 : Pos) (p1 : List Bool) (s2 : Nat) (t2 : Pos) (p2 : List Bool) (s3 : Nat) (t3 : Pos) (p3 : List Bool) (s4 : Nat) (t4 : Pos) (p4 : List Bool) : dp:=.rRet q [false,false] .Cases00 [⟨.RD,[true,false,true],s1,t1,p1⟩,⟨.RD,[true,true,true,false,true],s2,t2,p2⟩,⟨.RD,[true,false,true,false,false],s3,t3,p3⟩,⟨.RF,[false,false,false],s4,t4,p4⟩]
+def jL (q : List Bool) (s1 : Nat) (t1 : Pos) (p1 : List Bool) (s2 : Nat) (t2 : Pos) (p2 : List Bool) (s3 : Nat) (t3 : Pos) (p3 : List Bool) (s4 : Nat) (t4 : Pos) (p4 : List Bool) : dp:=.rRet q [true] .Cases1 [⟨.RD,[true,true,false,true],s1,t1,p1⟩,⟨.RD,[false,true,false,false],s2,t2,p2⟩,⟨.RF,[false,false],s3,t3,p3⟩,⟨.RB,[false,false],s4,t4,p4⟩]
+def FF (q w : List Bool) (s1 : Nat) (t1 : Pos) (p1 : List Bool) (s2 : Nat) (t2 : Pos) (p2 : List Bool) : dp:=.rRet q w .Coarse00 [⟨.RD,[],s1,t1,p1⟩,⟨.RF,[false,false],s2,t2,p2⟩]
+def Bj (q w : List Bool) (s1 : Nat) (t1 : Pos) (p1 : List Bool) (s2 : Nat) (t2 : Pos) (p2 : List Bool) : dp:=.rRet q w .Coarse10 [⟨.RD,[],s1,t1,p1⟩,⟨.RB,[false,false],s2,t2,p2⟩]
 noncomputable section
 def an:=z6.fu
 def ap:=z2.fp
@@ -3342,22 +3344,22 @@ theorem CT : ay bx DE = true := by decide +kernel
 theorem Db : ay bx Dx = true := by decide +kernel
 theorem CK : ay bx Dn = true := by decide +kernel
 theorem Dc : ay bx DK = true := by decide +kernel
-theorem ew (x:dp) {l r : ab dp}
+theorem ew (x : dp) {l r : ab dp}
     (hx : bx x = true) (hl : ay bx l = true) (hr : ay bx r = true) :
     ay bx (nd x l r) = true := by
   change (bx x&&ay bx l&&ay bx r) = true
   rw [hx,hl,hr]; rfl
 theorem AS : ay (sf mC) mC = true :=
   (ew (oH iA.eP.bg 100 z9 225 dn) (by decide +kernel) (ew (m0 hY.aj 16 z3 52 z4 48 z5) (by decide +kernel) (ew (oH d5.ag 46 c5 1 cG) (by decide +kernel) (ew (km kO) (by decide +kernel) (ew (oH il.ec.bQ 19 dj 17 dP) (by decide +kernel) DQ Ee) (ew (m0 cZ.ec.aD 38 c0 63 dI 26 di) (by decide +kernel) DY D9)) (ew (km kW) (by decide +kernel) (ew (km dS) (by decide +kernel) D5 DV) (ew (m0 h3.a0.aj 89 c6 98 dl 94 dL) (by decide +kernel) D0 DS))) (ew (km d8) (by decide +kernel) (ew (Bj fa.jq.iF fY 4 cP e_ 17 cy e_) (by decide +kernel) (ew (wl fY) (by decide +kernel) D3 DX) (ew (q0 oa) (by decide +kernel) Dd Da)) (ew (oH i1.ag 44 dy 1 c9) (by decide +kernel) (ew (rP l4 wN Bq 32 (aM cD fB e_) 145 (aM cF fB e_) bd) (by decide +kernel) CY C9) (ew (q0 b3) (by decide +kernel) C8 CO)))) (ew (oe hY.aS 4 z6 52 z7 48 z8) (by decide +kernel) (ew (km fX) (by decide +kernel) (ew (km tx) (by decide +kernel) (ew (oe j0.dK.aX 28 di 44 da 40 cA) (by decide +kernel) CA C5) (ew (oH cZ.dK.aF 42 dr 1 ds) (by decide +kernel) CZ C7)) (ew (oe jS.S 178 ct 51 cB 47 cV) (by decide +kernel) (ew (w4 jN) (by decide +kernel) C0 C6) (ew (AG nn) (by decide +kernel) CM Cy))) (ew (oH d5.aj 16 cM 50 cq) (by decide +kernel) (ew (m0 tg 224 dT 121 cS 200 cI) (by decide +kernel) (ew (km cj) (by decide +kernel) CQ CS) (ew (q0 om) (by decide +kernel) C4 CV)) (ew (km cg) (by decide +kernel) (ew (oe fk.ec.aX 40 c8 29 cN 60 c7) (by decide +kernel) CT Db) (ew (yw j2 24 65) (by decide +kernel) CK Dc)))))
-def uX (idx:Pos) (q w : List Bool) : Bool :=
+def uX (idx : Pos) (q w : List Bool) : Bool :=
   match ig mC idx with
   | none => false
   | some x =>
     let y:=fw x
     let z:=hG q .qB w
     Cz y.state z.state&&lp y.front z.front&&lp y.past z.past
-theorem am (idx:Pos) (q w : List Bool)
-    (h : uX idx q w = true) (r:ai) :
+theorem am (idx : Pos) (q w : List Bool)
+    (h : uX idx q w = true) (r : ai) :
     cE (BL (bf default (be q)) (be w+>r)) lr := by
   unfold uX at h
   rcases hx : ig mC idx with _ | x
@@ -3376,7 +3378,7 @@ theorem am (idx:Pos) (q w : List Bool)
     have hs_g:=Be mC AS idx x hx r
     rw [heq,pE] at hs_g
     exact hs_g
-theorem AW (d:cm) (us : List W) :
+theorem AW (d : cm) (us : List W) :
     cn d us = bf default (be ([false]++bW d++bG us)) := by
   unfold cn
   simp [x8]

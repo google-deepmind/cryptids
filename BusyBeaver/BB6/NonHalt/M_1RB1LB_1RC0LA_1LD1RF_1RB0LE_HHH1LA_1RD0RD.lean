@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LB_1RC0LA_1LD1RF_1RB0LE_HHH1LA_1RD0RD
@@ -41,7 +44,6 @@ local notation "Γ" => Fin 2
 local notation "Λ" => Fin 6
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 
 abbrev O : Fin 2 := 0
@@ -860,7 +862,7 @@ theorem G_almost (n : ℕ) :
   | succ n ih =>
     have h1 := (G_recycle (3 + 12 * q4 n) G4_T).concat ih
     have h2 := G3_T.concat (F_L.concat (.nil (mw ^ n)))
-    refine SegRLs.congr (SegRLs.trans_eq h1 h2 (by simp only [List.append_assoc]))
+    refine SegRLs.congr (SegRLs.trans_eq h1 h2 (by simp only []))
       ?_ rfl ?_ ?_
     · rw [← pow_add_list]
       congr 1
@@ -1551,7 +1553,7 @@ theorem reset_services (p j k : ℕ) (w v u : List Γ)
       (tw ++ lw ^ (1 + p) ++ kw ++ tw ++ w) (tw ^ (3 + p) ++ v) := by
     have hc := COLUMN p w v [] H
     refine SegRLs.congr hc rfl rfl ?_ ?_
-    · simp only [List.append_nil, List.append_assoc]
+    · simp only [List.append_assoc]
     · rw [show p + 3 = 3 + p by omega]
   have h2 : SegRLs tm (hf ^ (2 * j * 4 ^ (2 + p))) []
       (tw ^ (3 + p) ++ v) (tw ^ (3 + p) ++ jw ^ (1 + k) ++ [O, O] ++ u) := by

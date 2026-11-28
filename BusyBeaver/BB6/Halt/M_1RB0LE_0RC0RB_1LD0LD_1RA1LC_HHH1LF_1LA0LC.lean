@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LE_0RC0RB_1LD0LD_1RA1LC_HHH1LF_1LA0LC
@@ -38,7 +41,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 def LC : List Nat → ListBlank (Fin 2)
   | [] => default
@@ -2754,8 +2756,8 @@ theorem pop_ok (o : Ops) (v : o.num → Nat) (H : Laws o v) (l : List (o.num × 
         have hk := H.sub_ok n (o.con 1) k h2
         rw [H.con_ok] at hk
         cases h3 : o.eq k (o.con 0)
-        · simp only [h3, Bool.false_eq_true, ↓reduceIte, expand, ← hk, List.replicate_succ, List.cons_append, and_self]
-        · simp only [h3, ↓reduceIte, expand, ← hk, H.eq_ok _ _ h3, H.con_ok, List.replicate, List.cons_append, List.nil_append, and_self]
+        · simp only [Bool.false_eq_true, ↓reduceIte, expand, ← hk, List.replicate_succ, List.cons_append, and_self]
+        · simp only [↓reduceIte, expand, ← hk, H.eq_ok _ _ h3, H.con_ok, List.replicate, List.cons_append, List.nil_append, and_self]
     · simp only [h1, ↓reduceIte] at hp
       simp only [expand, H.eq_ok _ _ h1, H.con_ok, List.replicate_zero, List.nil_append]
       exact ih x l' hp
@@ -3137,12 +3139,12 @@ theorem step_PS_odd1_spec (o : Ops) (v : o.num → Nat) (H : Laws o v)
                   rcases d1m with ⟨d1, m⟩
                   dsimp only [qmr2, step_PS_odd1_qmr2]
                   cases hd1 : o.eq d1 (o.con 1)
-                  · simp only [hd1, Bool.false_eq_true, ↓reduceIte]
+                  · simp only [Bool.false_eq_true, ↓reduceIte]
                     have ha_init : v a_init = (v q1 + 0) * 2 + (2 + (v q1 * 2 + v xv)) := by
                       dsimp [a_init, qmr2, step_PS_odd1_qmr2]; simp only [hd1, Bool.false_eq_true, ↓reduceIte, H.add_ok, H.con_ok]; omega
                     rw [ha_init]
                     simpa using S_odd1_q_lemma (v q1) 0 (expand o v l') (v xv) (expand o v ((d1, m) :: r2))
-                  · simp only [hd1, ↓reduceIte]
+                  · simp only [↓reduceIte]
                     have hd1_eq := H.eq_ok _ _ hd1; rw [H.con_ok] at hd1_eq
                     have ha_init : v a_init = (v q1 + v m) * 2 + (2 + (v q1 * 2 + v xv)) := by
                       dsimp [a_init, qmr2, step_PS_odd1_qmr2]; simp only [hd1, ↓reduceIte, H.add_ok, H.con_ok]; omega
@@ -3240,9 +3242,9 @@ theorem step_PS_even_empty_spec (o : Ops) (v : o.num → Nat) (H : Laws o v)
           rcases d1m with ⟨d1, m⟩
           dsimp only
           cases hd1 : o.eq d1 (o.con 1)
-          · simp only [hd1, Bool.false_eq_true, ↓reduceIte]
+          · simp only [Bool.false_eq_true, ↓reduceIte]
             simpa [List.replicate, H.con_ok] using S_even_empty_lemma (v q) 0 (expand o v ((d1, m) :: r2))
-          · simp only [hd1, ↓reduceIte]
+          · simp only [↓reduceIte]
             have hd1v := H.eq_ok _ _ hd1; rw [H.con_ok] at hd1v
             rw [expand, hd1v]
             simpa [List.replicate, H.con_ok, H.add_ok] using S_even_empty_lemma (v q) (v m) (expand o v r2)
@@ -3453,9 +3455,10 @@ theorem cut_spec (o : Ops) (v : o.num → Nat) (H : Laws o v) (x : Frame o.num) 
     (h : cut o x = some a) :
     meaning o v x = CfgS [] (v a) [0, 1] := by
   rcases x with ⟨p, l, b, r⟩
-  cases p <;> try simp [cut] at h
-  cases l <;> try simp [cut] at h
-  rcases r with _ | ⟨⟨z, n⟩, _ | ⟨⟨u, m⟩, _ | _⟩⟩ <;> try simp [cut] at h
+  cases p <;> try simp only [cut, reduceCtorEq] at h
+  cases l <;> try simp only [reduceCtorEq] at h
+  rcases r with _ | ⟨⟨z, n⟩, _ | ⟨⟨u, m⟩, _ | _⟩⟩ <;>
+    try simp only [Option.ite_none_right_eq_some, Option.some.injEq, Bool.and_eq_true, reduceCtorEq] at h
   rcases h with ⟨⟨⟨⟨h1, h2⟩, h3⟩, h4⟩, rfl⟩
   have hz := H.eq_ok _ _ h1; rw [H.con_ok] at hz
   have hn := H.eq_ok _ _ h2; rw [H.con_ok] at hn
@@ -4818,7 +4821,7 @@ theorem emitF_spec (k : Nat → Nat → Nat → P2Res) (q s' d' pos : Nat) (hv :
   · rcases Bool.and_eq_true_iff.mp hc with ⟨h1, h23⟩
     rcases Bool.and_eq_true_iff.mp h23 with ⟨h2, h3⟩
     refine ⟨TabV_succ pos hT ?_, h⟩
-    show valid (tRbF (entF pos)) (tRsF (entF pos)) (tRdF (entF pos))
+    change valid (tRbF (entF pos)) (tRsF (entF pos)) (tRdF (entF pos))
     rw [Nat.eq_of_beq_eq_true h1, Nat.eq_of_beq_eq_true h2, Nat.eq_of_beq_eq_true h3]
     exact hv
 

@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RD_0LC1RA_0RA1LB_1RE1LB_1LF1LB_HHH1LE
@@ -140,7 +143,7 @@ theorem rep01_snoc (m : Nat) (s : ListBlank (Fin 2)) :
     rep01 m (0 >> 1 >> s) = rep01 (m + 1) s := by
   induction m generalizing s with
   | zero => rfl
-  | succ m ih => show 0 >> 1 >> rep01 m (0 >> 1 >> s) = 0 >> 1 >> rep01 (m + 1) s; rw [ih s]
+  | succ m ih => change 0 >> 1 >> rep01 m (0 >> 1 >> s) = 0 >> 1 >> rep01 (m + 1) s; rw [ih s]
 
 /-- Canonical 2-parameter family: `0^∞ 1^a <B 1^(c+1) 0^∞`. -/
 def cfgB : Nat → Nat → Cfg (Fin 2) (Fin 6)
@@ -157,8 +160,8 @@ theorem step_C_left_one (L R : ListBlank (Fin 2)) :
     (mkCfg C 1 (0 >> 1 >> L) R) [target_tm]⊢⁺ (mkCfg C 1 L (0 >> 1 >> R)) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, C]⟩
 
 /-- Sweep left across `rep01 m L` in state `C` (`2m` steps). -/
 theorem sweep_C_left (m : Nat) (L R : ListBlank (Fin 2)) :
@@ -175,8 +178,8 @@ theorem step_A_right_one (L R : ListBlank (Fin 2)) :
     (mkCfg A 1 (1 >> L) (0 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg A 1 (1 >> (0 >> 1 >> L)) R) :=
   ⟨4, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, A]⟩
 
 /-- Sweep right across `rep01 m R` in state `A` (`4m` steps). -/
 theorem sweep_A_right (m : Nat) (L R : ListBlank (Fin 2)) :
@@ -193,8 +196,8 @@ theorem step_AB_right_one (L R : ListBlank (Fin 2)) :
     (mkCfg A 0 L (1 >> 0 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg A 0 (1 >> 1 >> L) (1 >> R)) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, A]⟩
 
 /-- Sweep right across `1 >> rep01 m R` in state `A` (`2m` steps). -/
 theorem sweep_AB_right (m : Nat) (L R : ListBlank (Fin 2)) :
@@ -216,8 +219,8 @@ theorem step_FE_left_one (L R : ListBlank (Fin 2)) :
     (mkCfg F 1 (0 >> 1 >> L) R) [target_tm]⊢⁺ (mkCfg F 1 L (1 >> 1 >> R)) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, F]⟩
 
 /-- Sweep left across `rep01 m L` in state `F` (`2m` steps). -/
 theorem sweep_FE_left (m : Nat) (L R : ListBlank (Fin 2)) :
@@ -239,36 +242,36 @@ theorem peel_entry (L R : ListBlank (Fin 2)) :
     (mkCfg B 1 L (1 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg C 1 L (0 >> 1 >> R)) :=
   ⟨4, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, B, C]⟩
 
 theorem peel_mid (L R : ListBlank (Fin 2)) :
     (mkCfg C 1 (1 >> L) R) [target_tm]⊢⁺ (mkCfg A 1 (1 >> L) R) :=
   ⟨2, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, A, C]⟩
 
 theorem peel_end (L R : ListBlank (Fin 2)) :
     (mkCfg A 1 (1 >> L) (0 >> 1 >> R)) [target_tm]⊢⁺ (mkCfg B 1 (0 >> 1 >> L) (1 >> R)) :=
   ⟨3, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, A, B]⟩
 
 theorem left_turn (R : ListBlank (Fin 2)) :
     (mkCfg C 1 default R) [target_tm]⊢⁺ (mkCfg A 0 default (1 >> R)) :=
   ⟨3, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, zDh, zDt, zZcd, A, C]⟩
 
 theorem right_entry (L : ListBlank (Fin 2)) :
     (mkCfg B 1 L (1 >> default)) [target_tm]⊢⁺ (mkCfg F 1 (0 >> 1 >> L) (1 >> default)) :=
   ⟨4, by decide, by
     simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-      Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-      ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
+      Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+      ListBlank.tail_cons, zDh, zDt, B, F]⟩
 
 /-- Single peel step: `(peelState k (a + 1) (r + 1)) ⊢⁺ (peelState (k + 1) a r)`. -/
 theorem peelState_step (k a r : Nat) :
@@ -306,12 +309,12 @@ theorem rule_lt (a d : Nat) :
   | zero =>
     have hd : 0 + d + 1 = d + 1 := by omega
     rw [hd]
-    show (mkCfg B 0 default (1 >> 1 >> rep1 d default)) [target_tm]⊢⁺
+    change (mkCfg B 0 default (1 >> 1 >> rep1 d default)) [target_tm]⊢⁺
         (mkCfg B 1 (1 >> default) (1 >> rep1 d default))
     exact ⟨3, by decide, by
       simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-        Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-        ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
+        Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+        ListBlank.tail_cons, zDh, zDt, zZcd, B]⟩
   | succ k =>
     have h0 : cfgB (k + 1) (k + 1 + d + 1) = peelState 0 (k + 0) (k + (d + 2)) := by
       rw [peelState_zero]; congr 1; omega
@@ -326,12 +329,12 @@ theorem rule_lt (a d : Nat) :
     have h4 := sweep_AB_right (k + 1) default (1 >> rep1 d default)
     have h5 : (mkCfg A 0 (rep1 (2 * (k + 1)) default) (1 >> 1 >> rep1 d default)) [target_tm]⊢⁺
         (cfgB (2 * (k + 1) + 2) d) := by
-      show (mkCfg A 0 (rep1 (2 * (k + 1)) default) (1 >> 1 >> rep1 d default)) [target_tm]⊢⁺
+      change (mkCfg A 0 (rep1 (2 * (k + 1)) default) (1 >> 1 >> rep1 d default)) [target_tm]⊢⁺
           (mkCfg B 1 (1 >> rep1 (2 * (k + 1)) default) (1 >> rep1 d default))
       exact ⟨1, by decide, by
         simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-          Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-          ListBlank.tail_cons, A, B, C, D, E, F]⟩
+          Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+          ListBlank.tail_cons, A, B]⟩
     exact q7 (q8 (zPs (q7 h1 h2)) (q7 h3 h4)) (zPs h5)
 
 /-- Rule 2 (`a = c`): `(cfgB a a) ⊢⁺ (cfgB (2a + 2) 0)`. -/
@@ -339,12 +342,12 @@ theorem rule_eq (a : Nat) :
     (cfgB a a) [target_tm]⊢⁺ (cfgB (2 * a + 2) 0) := by
   cases a with
   | zero =>
-    show (mkCfg B 0 default (1 >> default)) [target_tm]⊢⁺
+    change (mkCfg B 0 default (1 >> default)) [target_tm]⊢⁺
         (mkCfg B 1 (1 >> default) (1 >> default))
     exact ⟨7, by decide, by
       simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-        Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-        ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
+        Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+        ListBlank.tail_cons, zDh, zDt, zZcd, B]⟩
   | succ k =>
     have h0 : cfgB (k + 1) (k + 1) = peelState 0 (k + 0) (k + 1) := rfl
     rw [h0]
@@ -358,12 +361,12 @@ theorem rule_eq (a : Nat) :
     have h4 := sweep_AB_right (k + 1) default default
     have h5 : (mkCfg A 0 (rep1 (2 * (k + 1)) default) (1 >> default)) [target_tm]⊢⁺
         (cfgB (2 * (k + 1) + 2) 0) := by
-      show (mkCfg A 0 (rep1 (2 * (k + 1)) default) (1 >> default)) [target_tm]⊢⁺
+      change (mkCfg A 0 (rep1 (2 * (k + 1)) default) (1 >> default)) [target_tm]⊢⁺
           (mkCfg B 1 (1 >> rep1 (2 * (k + 1)) default) (1 >> default))
       exact ⟨5, by decide, by
         simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-          Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-          ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
+          Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+          ListBlank.tail_cons, zDh, zDt, zZcd, A, B]⟩
     exact q7 (q8 (zPs (q7 h1 h2)) (q7 h3 h4)) (zPs h5)
 
 /-- Rule 3 (`a ≥ c + 2`): `(cfgB (c + d + 2) c) ⊢⁺ (cfgB d (2c + 4))`. -/
@@ -387,19 +390,19 @@ theorem rule_ge (d c : Nat) :
       (cfgB d (2 * c + 4)) := by
     cases d with
     | zero =>
-      show (mkCfg F 1 (1 >> default) (rep1 (2 * c + 3) default)) [target_tm]⊢⁺
+      change (mkCfg F 1 (1 >> default) (rep1 (2 * c + 3) default)) [target_tm]⊢⁺
           (mkCfg B 0 default (1 >> 1 >> rep1 (2 * c + 3) default))
       exact ⟨2, by decide, by
         simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-          Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-          ListBlank.tail_cons, zDh, zDt, zZcd, A, B, C, D, E, F]⟩
+          Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+          ListBlank.tail_cons, zDh, zDt, B, F]⟩
     | succ d' =>
-      show (mkCfg F 1 (1 >> 1 >> rep1 d' default) (rep1 (2 * c + 3) default)) [target_tm]⊢⁺
+      change (mkCfg F 1 (1 >> 1 >> rep1 d' default) (rep1 (2 * c + 3) default)) [target_tm]⊢⁺
           (mkCfg B 1 (rep1 d' default) (1 >> 1 >> rep1 (2 * c + 3) default))
       exact ⟨2, by decide, by
         simp only [multiStep, Function.iterate_succ', Function.iterate_zero, id_eq, Function.comp_apply,
-          Option.bind, Option.map, step, Tape.mk₂, Tape.mk', target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
-          ListBlank.tail_cons, A, B, C, D, E, F]⟩
+          Option.bind, Option.map, step, target_tm, mkCfg, Tape.write, Tape.move, ListBlank.head_cons,
+          ListBlank.tail_cons, B, F]⟩
   exact q7 (q7 h1 h2) (zPs h3)
 
 @[simp] theorem zEmpty : (ListBlank.mk ([] : List (Fin 2)) : ListBlank (Fin 2)) = default := by
@@ -411,7 +414,7 @@ theorem init_to_cfgB : (init []) [target_tm]⊢⁺ (cfgB 0 0) :=
     simp only [init, Tape.mk₁, Tape.mk₂, Tape.mk', zEmpty, multiStep, Function.iterate_succ',
       Function.iterate_zero, id_eq, Function.comp_apply, Option.bind, Option.map, step, target_tm,
       cfgB, rep1, mkCfg, Tape.write, Tape.move, ListBlank.head_cons, ListBlank.tail_cons,
-      zDh, zDt, zZcd, A, B, C, D, E, F, Fin.default_eq_zero]⟩
+      zDh, zDt, zZcd, B, Fin.default_eq_zero]⟩
 
 /-- Computable macro-stepper for `cfgB a c`. -/
 def stepB : Nat × Nat → Option (Nat × Nat)
@@ -427,21 +430,21 @@ theorem stepB_sound (p p' : Nat × Nat) (h : stepB p = some p') :
   dsimp only
   dsimp only [stepB] at h
   by_cases h1 : a < c
-  · rw [if_pos h1] at h; simp at h; rcases h with ⟨rfl, rfl⟩
+  · rw [ite_eq_left h1] at h; simp only [Option.some.injEq] at h; subst h
     dsimp only
     have hc : c = a + (c - a - 1) + 1 := by omega
     nth_rw 1 [hc]
     exact rule_lt a (c - a - 1)
-  · rw [if_neg h1] at h
+  · rw [ite_eq_right h1] at h
     by_cases h2 : a = c
-    · subst h2; simp at h; rcases h with ⟨rfl, rfl⟩
+    · subst h2; simp only [beq_self_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h
       exact rule_eq a
     · have h2b : (a == c) = false := beq_false_of_ne h2
       rw [h2b] at h; simp only [Bool.false_eq_true, ↓reduceIte] at h
       have h3 : a ≠ c + 1 := by
         intro heq; subst heq; simp at h
       have h3b : (a == c + 1) = false := beq_false_of_ne h3
-      rw [h3b] at h; simp at h; rcases h with ⟨rfl, rfl⟩
+      rw [h3b] at h; simp only [Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h
       dsimp only
       have ha : a = c + (a - c - 2) + 2 := by omega
       nth_rw 1 [ha]
@@ -459,7 +462,7 @@ theorem runStepB_sound (n : Nat) (p p' : Nat × Nat) (h : runStepB n p = some p'
     (cfgB p.1 p.2) [target_tm]⊢* (cfgB p'.1 p'.2) := by
   induction n generalizing p with
   | zero =>
-    simp [runStepB] at h; subst h; exact ⟨0, rfl⟩
+    simp only [runStepB, Option.some.injEq] at h; subst h; exact ⟨0, rfl⟩
   | succ n ih =>
     simp only [runStepB] at h
     cases hst : stepB p with

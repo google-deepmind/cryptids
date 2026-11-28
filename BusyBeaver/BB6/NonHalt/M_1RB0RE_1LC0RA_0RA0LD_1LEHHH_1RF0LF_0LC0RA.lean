@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RE_1LC0RA_0RA0LD_1LEHHH_1RF0LF_0LC0RA
@@ -31,7 +34,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
@@ -51,7 +53,6 @@ abbrev F : Fin 6 := 5
 -- ============================================================================
 /- Transition function for holdout_0504: `1RB0RE_1LC0RA_0RA0LD_1LE---_1RF0LF_0LC0RA` -/
 
-set_option maxHeartbeats 8000000
 
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0 = some config := rfl
 @[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1 = step M config := rfl
@@ -766,7 +767,7 @@ theorem treeW_triple : ∀ (n : Nat),
   | 0 => ⟨fun _ => trivial, fun _ => trivial, fun _ => trivial⟩
   | n + 1 =>
     let ⟨ih100, ih110, ih010⟩ := treeW_triple n
-    ⟨fun {M} h => match h with
+    ⟨fun {_M} h => match h with
       | ⟨true, next, hok, hstep, sub⟩ =>
         ⟨false, next, stepOK_W100_true hok, pass_W100_B hstep, sub⟩
       | ⟨false, K, hok, hstep, sub⟩ =>
@@ -898,7 +899,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine nonhalt_of_inv target_tm Inv0504 ?_ ?_

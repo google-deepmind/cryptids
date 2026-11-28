@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1LA_0RC0RD_1LC1LA_1RE1RD_1LF0LA_HHH0LE
@@ -29,7 +32,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 def A : Fin 6 := 0
@@ -38,7 +40,6 @@ def C : Fin 6 := 2
 def D : Fin 6 := 3
 def E : Fin 6 := 4
 def F : Fin 6 := 5
-set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000000
 namespace Prefix
 def mass (xs : List ℕ) : ℕ:=xs.foldr (· + ·) 0
@@ -79,7 +80,7 @@ theorem step_mass {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
   cases h <;> simp [mass] <;> omega
 theorem step_length {e : ℕ} {xs ys : List ℕ} (h : Step e xs ys) :
     xs.length ≤ ys.length + 2 * e:= by
-  cases h <;> simp <;> omega
+  cases h <;> simp
 theorem run_length {e : ℕ} {xs ys : List ℕ} (h : Run e xs ys) :
     xs.length ≤ ys.length + 2 * e:= by
   induction h with
@@ -94,7 +95,7 @@ theorem qaS {α : Type*} : ∀ (l : List α),l ≠ [] → ∃ p z,l=p ++ [z]
     rcases qaS (y :: r) (by simp) with ⟨p,z,hp⟩
     exact ⟨x :: p,z,by simp [hp]⟩
 theorem qN {α : Type*} {p1 p2 : List α} {z1 z2 : α}
-    (h : p1 ++ [z1]=p2 ++ [z2]) : p1=p2 ∧ z1=z2:= by
+    (h : p1 ++ [z1] = p2 ++ [z2]) : p1=p2 ∧ z1=z2:= by
   have h1:=List.append_inj_left' h rfl
   have h2:=List.append_inj_right' h rfl
   exact ⟨h1,by simpa using! h2⟩
@@ -202,7 +203,7 @@ theorem odd_descent (k t w : ℕ) (r : List ℕ) :
       ((4 + 2 * t) :: geometric k (3 + 2 * t) ++ w :: r):= by
   induction k generalizing w r with
   | zero =>
-    simp only [Nat.pow_zero,Nat.one_mul,Nat.add_sub_cancel_left,geometric,List.nil_append]
+    simp only [Nat.pow_zero, Nat.one_mul, Nat.add_sub_cancel_left, geometric]
     have hstep:=Step.E t 0 1 (w :: r)
     have h1 : 2 * t + 0 + 1 + 3=4 + 2 * t:= by omega
     simpa [h1] using! one hstep
@@ -223,7 +224,7 @@ theorem odd_descent (k t w : ℕ) (r : List ℕ) :
       exact ho
     have h1:=ih (2 ^ k * (3 + 2 * t)) (w :: r)
     simpa [List.append_assoc] using! Run.cons h0 h1
-theorem qcn {k t n v : ℕ} (w : ℕ) (r : List ℕ) (h : n + v + 2=2 ^ k * (3 + 2 * t)) :
+theorem qcn {k t n v : ℕ} (w : ℕ) (r : List ℕ) (h : n + v + 2 = 2 ^ k * (3 + 2 * t)) :
     Run 1 ((2 * n + 1) :: v :: w :: r)
       ((4 + 2 * t) :: geometric k (3 + 2 * t) ++ (w + n + 1) :: r):= by
   have hpow : 1 ≤ 2 ^ k:=Nat.one_le_pow k 2 (by decide)
@@ -236,7 +237,7 @@ theorem qcn {k t n v : ℕ} (w : ℕ) (r : List ℕ) (h : n + v + 2=2 ^ k * (3 +
     exact ho
   exact Run.cons h0 (odd_descent k t (w + n + 1) r)
 theorem odd_lookup {k t n v : ℕ} (w : ℕ) (r : List ℕ) {e : ℕ} {ys : List ℕ} {a : ℕ}
-    (hn : n + v + 2=2 ^ k * (3 + 2 * t))
+    (hn : n + v + 2 = 2 ^ k * (3 + 2 * t))
     (hr : Run e (F (1 + k) (3 + 2 * t)) (ys ++ [a])) :
     Run (1 + e) ((2 * n + 1) :: v :: w :: r) ((ys ++ [a + w - v - 1]) ++ r):= by
   have hf : F (1 + k) (3 + 2 * t)=F k (3 + 2 * t) ++ [2 ^ k * (3 + 2 * t)]:=F_snoc k (3 + 2 * t)
@@ -300,7 +301,7 @@ theorem pow2_mod3 (n : ℕ) : 2 ^ n % 3=1 ∨ 2 ^ n % 3=2:= by
     rw [Nat.pow_succ,Nat.mul_mod]
     rcases ih with h | h <;> rw [h] <;> decide
 theorem single_returns
-    (hG : ∀ k t,∃ e m,Exec e (G (1 + k) (1 + 2 * t)) [m])
+    (hG : ∀ k t, ∃ e m, Exec e (G (1 + k) (1 + 2 * t)) [m])
     (j : ℕ) : ∃ e m,Exec (1 + e) [3 * j] [m]:= by
   rcases Nat.even_or_odd' (3 * j) with ⟨n,hn | hn⟩
   · refine ⟨0,2 * n + 3,?_⟩
@@ -556,7 +557,7 @@ theorem qaw (fuel : ℕ) (x : ℤ) :
       · intro hlt
         exact hodd (by omega)
     · dsimp -failIfUnchanged
-      refine ⟨by omega,by omega,by simp [pow2_zero],?_⟩
+      refine ⟨by omega,by omega,by simp,?_⟩
       intro _
       exact ⟨x / 2,by omega⟩
 theorem qbP (n : ℕ) : (n : ℤ) < q0 (n : ℤ):= by
@@ -696,7 +697,7 @@ theorem qax (k : kernel) (z : summary) (hk : good k) (hz : qA z) :
   refine ⟨⟨by nlinarith,by nlinarith,by nlinarith,by nlinarith,by nlinarith,
     by linarith,by linarith,by linarith⟩,by nlinarith,by nlinarith⟩
 theorem qbx (ks : List kernel) (z : summary)
-    (hks : ∀ k ∈ ks,good k) (hz : qA z) :
+    (hks : ∀ k ∈ ks, good k) (hz : qA z) :
     qA (ks.foldl (fun z k => low_push k z) z):= by
   induction ks generalizing z with
   | nil => exact hz
@@ -727,7 +728,7 @@ theorem high_low_word (h : kernel) (ks : List kernel) :
     qX h (ks.foldl (fun z k => low_push k z) identity):= by
   simp only [List.foldl_cons,← qbe,high_low_fold]
 theorem low_fold_half (ks : List kernel) (z : summary)
-    (hks : ∀ k ∈ ks,good k) (hz : qA z) (hne : ks ≠ []) :
+    (hks : ∀ k ∈ ks, good k) (hz : qA z) (hne : ks ≠ []) :
     -(ks.foldl (fun z k => low_push k z) z).scale ≤ 2 * (ks.foldl (fun z k => low_push k z) z).hc ∧
     2 * (ks.foldl (fun z k => low_push k z) z).hc ≤ (ks.foldl (fun z k => low_push k z) z).scale:= by
   induction ks generalizing z with
@@ -746,8 +747,8 @@ theorem qbT {m z : ℤ} (hm : 0 < m) (hdvd : m ∣ z) (hlt : |z| < m) : z=0:= by
   subst hk; ring
 theorem exact_descent (m S H0 H1 H2 Q0 Q1 A0 A1 B0 B1 C0 C1 mass : ℤ)
     (hm : 0 < m) (hd0 : m ∣ H0) (hd1 : m ∣ H1) (hd2 : m ∣ H2)
-    (E0 : Q0 * H1=A0 * S + B0 * H0 + C0)
-    (E1 : Q1 * H2=A1 * (S + mass) + B1 * H1 + C1)
+    (E0 : Q0 * H1 = A0 * S + B0 * H0 + C0)
+    (E1 : Q1 * H2 = A1 * (S + mass) + B1 * H1 + C1)
     (hbound : |A0 * A1 * mass + A0 * C1 - A1 * C0| < m) :
     A0 * C1=A1 * (C0 - A0 * mass):= by
   have E : A0 * A1 * mass + A0 * C1 - A1 * C0 =
@@ -796,8 +797,8 @@ theorem qci (m D d0 d1 S H0 H1 H2 A0 A1 B0 B1 C0 C1 mass M : ℤ)
     (hC00 : 0 ≤ C0) (hC01 : C0 ≤ q0 d0 * (2 * M + 2))
     (hC10 : 0 ≤ C1) (hC11 : C1 ≤ q0 d1 * (2 * M + 2))
     (hH0 : q0 (m + 1) ∣ H0) (hH1 : q0 (m + 1) ∣ H1) (hH2 : q0 (m + 1) ∣ H2)
-    (E0 : q0 d0 * H1=A0 * S + B0 * H0 + C0)
-    (E1 : q0 d1 * H2=A1 * (S + mass) + B1 * H1 + C1)
+    (E0 : q0 d0 * H1 = A0 * S + B0 * H0 + C0)
+    (E1 : q0 d1 * H2 = A1 * (S + mass) + B1 * H1 + C1)
     (hbound : q0 (2 * D) * (12 * M + 8) < q0 (m + 1)) :
     A0 * C1=A1 * (C0 - A0 * mass):= by
   have hQ0 : 0 < q0 d0:=qc hd00
@@ -812,9 +813,9 @@ theorem qci (m D d0 d1 S H0 H1 H2 A0 A1 B0 B1 C0 C1 mass M : ℤ)
   have hle : q0 d0 * q0 d1 * (12 * M + 8) ≤ q0 (2 * D) * (12 * M + 8):= by nlinarith
   linarith
 theorem qaN (Q A T V K b lam C : ℤ)
-    (hQ0 : 0 < Q) (hQA : Q ≤ A) (hT0 : -Q ≤ 2 * T) (hT1 : 2 * T ≤ Q)
+    (hQ0 : 0 < Q) (hQA : Q ≤ A) (hT0 : -Q ≤ 2 * T) (_hT1 : 2 * T ≤ Q)
     (hV : 0 ≤ V) (hK : 0 ≤ K) (hb0 : 0 ≤ b) (hbl : b ≤ lam)
-    (hC : C=A * lam + 2 * Q * K - V + 3 * Q - T * b) :
+    (hC : C = A * lam + 2 * Q * K - V + 3 * Q - T * b) :
     2 * C ≤ A * (3 * (lam + K) + 2 * K + 6):= by
   have h1 : -2 * T * b ≤ Q * b:= by nlinarith
   have h2 : Q * b ≤ A * lam:= by nlinarith
@@ -822,7 +823,7 @@ theorem qaN (Q A T V K b lam C : ℤ)
   have hAK : 0 ≤ A * K:= by nlinarith
   linarith
 theorem word_contraction (h : kernel) (ks : List kernel)
-    (hh : good h) (hks : ∀ k ∈ ks,good k) :
+    (hh : good h) (hks : ∀ k ∈ ks, good k) :
     let z:=ks.foldl (fun z k => low_push k z) identity
     let r:=(h :: ks).foldl (fun z k => push k z) identity
     2 * r.offset ≤ r.sc * (3 * r.added + 2 * z.added + 6):= by
@@ -849,19 +850,18 @@ theorem word_contraction (h : kernel) (ks : List kernel)
     simp only [qX]
     nlinarith
 theorem qc6 (A C A0 C0 A1 C1 T mass : ℤ)
-    (hA0 : 0 < A0) (h0 : A * C0=A0 * (C - A * T))
-    (h1 : A0 * C1=A1 * (C0 - A0 * mass)) :
+    (hA0 : 0 < A0) (h0 : A * C0 = A0 * (C - A * T))
+    (h1 : A0 * C1 = A1 * (C0 - A0 * mass)) :
     A * C1=A1 * (C - A * (T + mass)):= by
   have h : A0 * (A * C1 - A1 * (C - A * (T + mass)))=0:= by
     have h1' := congr_arg (fun z => A * z) h1
     have h0' := congr_arg (fun z => A1 * z) h0
-    dsimp -failIfUnchanged only at h1' h0'
     linarith
   rcases mul_eq_zero.mp h with hzero | hzero
   · omega
   · linarith
 theorem shrink_bound (f : ℕ → ℤ) (C : ℤ) (n : ℕ)
-    (h : ∀ i < n,3 * f (i + 1) ≤ f i + 2 * C) :
+    (h : ∀ i < n, 3 * f (i + 1) ≤ f i + 2 * C) :
     (3 : ℤ) ^ n * f n ≤ f 0 + ((3 : ℤ) ^ n - 1) * C:= by
   induction n with
   | zero => simp
@@ -873,7 +873,7 @@ theorem shrink_bound (f : ℕ → ℤ) (C : ℤ) (n : ℕ)
     rw [hpow]
     nlinarith
 theorem qcd (f : ℕ → ℤ) (gap : ℤ) (n : ℕ)
-    (h : ∀ i < n,f (i + 1) < f i - gap) :
+    (h : ∀ i < n, f (i + 1) < f i - gap) :
     f n ≤ f 0 - (n : ℤ) * (gap + 1):= by
   induction n with
   | zero => simp
@@ -886,8 +886,8 @@ theorem high_count (f : ℕ → ℤ) (A B V m : ℤ) (t q n : ℕ)
     (hA : 0 < A) (hB : 0 ≤ B) (hm : 0 < m) (hV : 0 ≤ V)
     (hpow : V ≤ (3 : ℤ) ^ t) (hq : B + 4 ≤ (q : ℤ) * m)
     (hstart : f 0 ≤ A * V) (hend : 0 < f n)
-    (hshrink : ∀ i < n,3 * f (i + 1) ≤ f i + 2 * A * (B + 3))
-    (hdrop : ∀ i < n,f (i + 1) < f i - A * m) :
+    (hshrink : ∀ i < n, 3 * f (i + 1) ≤ f i + 2 * A * (B + 3))
+    (hdrop : ∀ i < n, f (i + 1) < f i - A * m) :
     n < t + q:= by
   by_contra hge
   have hnt : t ≤ n:= by omega
@@ -932,7 +932,7 @@ theorem run_even {u v w : ℤ} (r : List ℤ) (hu : 0 ≤ u) (hv : 0 ≤ v) (hw 
 theorem odd_lookup {u v w s q : ℤ} (r : List ℤ) {e : ℕ} {ys : List ℤ} {z : ℤ}
     (hu : 0 ≤ u) (hv : 0 ≤ v) (hw : 0 ≤ w) (hodd : qW u)
     (hs : 1 ≤ s) (hq : 3 ≤ q) (hqo : qW q)
-    (hH : u + 2 * v + 3=q0 s * q)
+    (hH : u + 2 * v + 3 = q0 s * q)
     (hr : Prefix.Run e (F s q) (qbn ys ++ [z.toNat]))
     (hzn : 0 ≤ z) (hz : 0 ≤ z + w - v - 1) :
     run (1 + e) (u :: v :: w :: r) ((ys ++ [z + w - v - 1]) ++ r):= by
@@ -997,7 +997,7 @@ def qa (k : ℤ) (x : pair) (s r : ℤ) : Prop :=
 def qg (k q : ℤ) (x : pair) (s r : ℤ) : ℤ :=
   (q0 (x.d + 1) - x.p) * q0 (k - x.d - s) * q + r
 theorem qz {k q : ℤ} {x : pair} {s r : ℤ}
-    (hx : qaB k x) (hq : 1 ≤ q) (hqo : qW q) (hs : qa k x s r) :
+    (hx : qaB k x) (hq : 1 ≤ q) (_hqo : qW q) (hs : qa k x s r) :
     3 ≤ qg k q x s r ∧ qW (qg k q x s r) ∧
     left k q x + 2 * right k q x + 3=q0 s * qg k q x s r:= by
   rcases hx with ⟨hd0,hdk,hp0,hpd,hpo,hb,hc⟩
@@ -1029,7 +1029,7 @@ theorem qz {k q : ℤ} {x : pair} {s r : ℤ}
 theorem qu (k q : ℤ) (x : pair) :
     left k q x + right k q x=q0 k * q + x.b + x.c:= by
   unfold left right; ring
-theorem left_odd {k q : ℤ} {x : pair} (hx : qaB k x) (hd : x.d < k) (hb : qW x.b) :
+theorem left_odd {k q : ℤ} {x : pair} (_hx : qaB k x) (hd : x.d < k) (hb : qW x.b) :
     qW (left k q x):= by
   rcases hb with ⟨t,hb⟩
   unfold left ql
@@ -1116,7 +1116,6 @@ theorem qaF {k : ℤ} (q : ℤ) {x : pair} {s r : ℤ} {y : pair}
     rw [← q5 (by omega) (by omega)]
     congr 1; omega
   have hP' := congr_arg (fun z => y.p * (q0 (x.d + 1) - x.p) * q * z) hP
-  dsimp -failIfUnchanged only at hP'
   linarith
 theorem next_right {k q : ℤ} {x : pair} {s r : ℤ} {y : pair}
     (hx : qaB k x) (hq : 1 ≤ q) (ho : qW q)
@@ -1148,13 +1147,13 @@ theorem qbS {k q : ℤ} {x : pair} (hx : qaB k x) (hq : qW q) :
     unfold left ql
     rw [hd,sub_self,pow2_zero]; ring
 theorem qaO {k q : ℤ} {x : pair}
-    (hx : qaB k x) (hq : qW q) (he : q3 k x=true) :
+    (hx : qaB k x) (hq : qW q) (he : q3 k x = true) :
     ZEven (left k q x):= by
   rcases qbS hx hq with ⟨a,ha⟩
   rcases (qah _).mp he with ⟨v,hv⟩
   exact ⟨v + a,by linarith⟩
 theorem qb0 {k : ℤ} {x : pair} {s r : ℤ}
-    (hs : qa k x s r) (he : q3 k x=false) :
+    (hs : qa k x s r) (he : q3 k x = false) :
     qW x.b:= by
   rcases hs with ⟨hs1,hsk,_⟩
   unfold q3 qk at he
@@ -1182,7 +1181,7 @@ def qZ (k : ℤ) (f : entry) : Prop :=
   qU k f ∧ realizes k f
 theorem qcp {k q : ℤ} {x : pair} {s r : ℤ} {y : pair} {e w : ℤ}
     (hx : qaB k x) (hq : 1 ≤ q) (ho : qW q)
-    (hs : qa k x s r) (he : q3 k x=false)
+    (hs : qa k x s r) (he : q3 k x = false)
     (hval : qZ s (.Two y e)) (hw : 0 ≤ w) :
     run (1 + e.toNat)
       [left k q x,right k q x,w]
@@ -1207,7 +1206,7 @@ theorem qcp {k q : ℤ} {x : pair} {s r : ℤ} {y : pair} {e w : ℤ}
   rwa [heq] at hrun
 theorem qcq {k q : ℤ} {x : pair} {s r v e w : ℤ}
     (hx : qaB k x) (hq : 1 ≤ q) (ho : qW q)
-    (hs : qa k x s r) (he : q3 k x=false)
+    (hs : qa k x s r) (he : q3 k x = false)
     (hval : qZ s (.One v e)) (hw : 0 ≤ w) :
     run (1 + e.toNat) [left k q x,right k q x,w]
       [q0 k * q + x.b + x.c + v + 2 + w]:= by
@@ -1267,8 +1266,8 @@ theorem valid_add_one {k v e : ℤ} (h : qZ k (.One v e)) :
   change v=1 + 3 * e at hv
   unfold qZ qU qad qo qaB
   dsimp -failIfUnchanged
-  refine ⟨⟨by omega,he,⟨⟨by omega,by omega,by omega,by simp [q0],⟨0,rfl⟩,by omega,by omega⟩,
-    by simp [q0],by omega⟩,by omega⟩,?_⟩
+  refine ⟨⟨by omega,he,⟨⟨by omega,by omega,by omega,by simp,⟨0,rfl⟩,by omega,by omega⟩,
+    by simp,by omega⟩,by omega⟩,?_⟩
   intro q hq ho
   have h:=qP hreal hk hq ho
   change Prefix.Run e.toNat (F (k + 1) q) (qbn [q0 k * q + v,q0 k * q]) at h
@@ -1284,7 +1283,7 @@ theorem valid_add_one {k v e : ℤ} (h : qZ k (.One v e)) :
     congr 1; ring
   rwa [heq]
 theorem qc1 {k : ℤ} {x : pair} {e : ℤ}
-    (h : qZ k (.Two x e)) (heven : q3 k x=true) :
+    (h : qZ k (.Two x e)) (heven : q3 k x = true) :
     qZ (k + 1) (.One (x.b + x.c + 3) (e + 1)):= by
   rcases h with ⟨⟨hk,he,hx,hmass⟩,hreal⟩
   change 0 ≤ e at he
@@ -1310,7 +1309,7 @@ theorem qc1 {k : ℤ} {x : pair} {e : ℤ}
   rwa [heq]
 theorem qaM {k : ℤ} {x : pair} {e s r v f : ℤ}
     (h : qZ k (.Two x e)) (hs : qa k x s r)
-    (ho : q3 k x=false) (hsmall : qZ s (.One v f)) :
+    (ho : q3 k x = false) (hsmall : qZ s (.One v f)) :
     qZ (k + 1) (.One (x.b + x.c + v + 2) (e + 1 + f)):= by
   rcases h with ⟨⟨hk,he,hx,hmass⟩,hreal⟩
   rcases hsmall.1 with ⟨hs0,hf,hv⟩
@@ -1337,7 +1336,7 @@ theorem qaM {k : ℤ} {x : pair} {e s r v f : ℤ}
   rwa [heq]
 theorem qaL {k : ℤ} {x : pair} {e s r : ℤ} {y : pair} {f : ℤ}
     (h : qZ k (.Two x e)) (hs : qa k x s r)
-    (ho : q3 k x=false) (hsmall : qZ s (.Two y f)) :
+    (ho : q3 k x = false) (hsmall : qZ s (.Two y f)) :
     qZ (k + 1) (.Two (qbu (qQ x s r y)) (e + 1 + f)):= by
   rcases h with ⟨⟨hk,he,hx,hmass⟩,hreal⟩
   rcases hsmall.1 with ⟨hs0,hf,hy,hmass'⟩
@@ -1397,7 +1396,7 @@ theorem run_zero {e : ℕ} {xs ys : List ℤ} (h : run e (xs ++ [0]) ys) : exec 
   rw [List.map_append] at h
   exact Prefix.Exec.zero (Prefix.run_exec h)
 theorem qb5 {lib : ℤ → entry → Prop} {k : ℤ} {x : pair} {e : ℤ} {n : ℕ}
-    (hlib : ∀ s f,lib s f → qZ s f)
+    (hlib : ∀ s f, lib s f → qZ s f)
     (hb : Boundary lib k x e n) (hx : qaB k x) :
     0 ≤ e ∧ (n : ℤ) + x.d ≤ k + 1 ∧
     ∀ q,1 ≤ q → qW q → exec e.toNat (qai k q x) [q0 k * q + x.b + x.c + 3 * e]:= by
@@ -1493,7 +1492,7 @@ def qaf (lib : ℤ → entry → Prop) (k : ℤ) (f : entry) : Prop :=
   | .One _ _ => True
   | .Two x _ => ∃ e n,Boundary lib k (qba x) e n
 theorem G_returns {lib : ℤ → entry → Prop} {k : ℤ} {f : entry}
-    (hlib : ∀ s g,lib s g → qZ s g)
+    (hlib : ∀ s g, lib s g → qZ s g)
     (hvalid : qZ k f) (hr : qaf lib k f) (hk : 1 ≤ k) :
     ∀ q,1 ≤ q → qW q → ∃ e m,Prefix.Exec e (G k q) [m]:= by
   intro q hq ho
@@ -1510,7 +1509,7 @@ namespace UniqueTable
 open Table
 theorem qaR {s r t u : ℤ}
     (hs : 0 ≤ s) (ht : 0 ≤ t) (hr : qW r) (hu : qW u)
-    (he : q0 s * r=q0 t * u) : s=t ∧ r=u:= by
+    (he : q0 s * r = q0 t * u) : s=t ∧ r=u:= by
   have hlt : ∀ a b x y,0 ≤ a → a < b → qW x → q0 a * x=q0 b * y → False:= by
     intro a b x y ha hab ⟨z,hz⟩ heq
     have hsp:=pow_split (k:=b) (d:=a) ha (by omega)
@@ -1665,7 +1664,6 @@ end UniqueTable
 namespace CheckTable
 open Table
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 def qb7 (p : pair) (f : pair → Option entry) : Option entry :=
   q2 p.d fun d =>
   q2 p.p fun pp =>
@@ -1687,7 +1685,7 @@ def qaK (k : ℤ) (x : pair) : Option (ℤ × ℤ) :=
       none
   else
     none
-theorem qaY {k : ℤ} {x : pair} {s r : ℤ} (hsep : qaK k x=some (s,r)) :
+theorem qaY {k : ℤ} {x : pair} {s r : ℤ} (hsep : qaK k x = some (s, r)) :
     qa k x s r:= by
   unfold qaK at hsep
   simp only [strictInt_eq] at hsep
@@ -1725,8 +1723,8 @@ def advance (lookup : ℤ → Option entry) (k : ℤ) (f : entry) : Option entry
         | none => none
       | none => none
 theorem advance_spec {lookup : ℤ → Option entry} {k : ℤ} {f g : entry}
-    (hlib : ∀ s x,lookup s=some x → Built s x)
-    (hf : Built k f) (hadv : advance lookup k f=some g) :
+    (hlib : ∀ s x, lookup s = some x → Built s x)
+    (hf : Built k f) (hadv : advance lookup k f = some g) :
     Built (k + 1) g:= by
   cases f with
   | One v e =>
@@ -1827,7 +1825,7 @@ def qa8 : ℕ → Option (List entry)
         | none => none
       | none => none
     | none => none
-theorem qc0 (n : ℕ) (bank : List entry) (hb : qa8 n=some bank) :
+theorem qc0 (n : ℕ) (bank : List entry) (hb : qa8 n = some bank) :
     bank.length=1 + n ∧ bank_ok bank:= by
   induction n generalizing bank with
   | zero =>
@@ -2307,7 +2305,7 @@ theorem step1_nat_spec {k : ℕ} {f g : entry_nat}
           have hbuilt_s := bank_nat_spec s entry_s hsmall
           cases entry_s with
           | One v f_cnt =>
-            simp only [sNat_eq] at hstep
+            simp only [] at hstep
             injection hstep with h; subst h
             refine ⟨?_, hbounded, hqaf⟩
             dsimp -failIfUnchanged only [to_entry]
@@ -2865,7 +2863,6 @@ theorem qb3 (m A B S : ℤ) (hm : 0 ≤ m) (h : qa3 m (A * S - B)) :
   apply qaa hv.1 hv.2
   have heq : q0 (qq m A) * (qab A (qq m A) * S - qab B (qq m A))=A * S - B:= by
     have hA' := congr_arg (fun z => S * z) hA.symm
-    dsimp -failIfUnchanged only at hA'
     linarith
   rwa [heq]
 theorem compatible (m a0 b0 p0 a1 b1 S : ℤ) (hm : 0 ≤ m) (hp : 0 ≤ p0)
@@ -2964,7 +2961,7 @@ def elim_b (z : relation) (B Q : ℤ) : ℤ:=z.q * B - Q * z.c
 def qa2 (z : relation) (A Q : ℤ) : ℤ:=min z.n (z.sn + qq z.n (qb2 z A Q))
 def qa6 (z : relation) (A B Q : ℤ) : ℤ:=z.sa * elim_b z B Q - qb2 z A Q * z.sb
 theorem qaZ (z : relation) (A B Q S U H : ℤ)
-    (hz : qbd z S U) (hH : H=A * S - Q * U + B) :
+    (hz : qbd z S U) (hH : H = A * S - Q * U + B) :
     qa3 (qa2 z A Q) (qa6 z A B Q - z.sa * z.q * H):= by
   rcases hz with ⟨hn,hp,hq,ha,hU,hS⟩
   have hv:=qL (qb2 z A Q) hn
@@ -2983,7 +2980,7 @@ theorem qaZ (z : relation) (A B Q S U H : ℤ)
   rwa [heq] at hsum
 theorem pruning_spec (z : relation) (A B Q S U D s t : ℤ)
     (hz : qbd z S U) (hD : 0 ≤ D) (hs : 0 ≤ s)
-    (hH : A * S - Q * U + B=q0 (D + s) * (2 * t + 1)) :
+    (hH : A * S - Q * U + B = q0 (D + s) * (2 * t + 1)) :
     let bound:=qa2 z A Q
     let v:=qq bound (qa6 z A B Q)
     (v < bound → s=v - D) ∧ (v=bound → bound - D ≤ s):= by
@@ -3022,7 +3019,7 @@ def qV : ℕ → ℤ → entry → Option (List entry)
       | none => none
     | none => none
 theorem qbY (n : ℕ) (k : ℤ) (f : entry) (xs : List entry)
-    (hf : Built k f) (hb : qV n k f=some xs) :
+    (hf : Built k f) (hb : qV n k f = some xs) :
     xs.length=n + 1 ∧
     ∀ (i : ℕ) (g : entry),CheckTable.nth_entry xs i=some g → Built (k + (i : ℤ)) g:= by
   induction n generalizing k f xs with
@@ -3069,7 +3066,7 @@ theorem qbY (n : ℕ) (k : ℤ) (f : entry) (xs : List entry)
 def bank_opt : Option (List entry):=qV 2048 0 (.One 1 0)
 def bank : List entry:=bank_opt.getD []
 theorem bank_opt_some : bank_opt.isSome=true:= by decide +kernel
-theorem qaA {α : Type*} {o : Option α} (d : α) (h : o.isSome=true) :
+theorem qaA {α : Type*} {o : Option α} (d : α) (h : o.isSome = true) :
     o=some (o.getD d):= by
   cases o with
   | none => contradiction
@@ -3077,14 +3074,14 @@ theorem qaA {α : Type*} {o : Option α} (d : α) (h : o.isSome=true) :
 theorem qaJ : bank_opt=some bank :=
   qaA [] bank_opt_some
 theorem qaq (xs : List entry)
-    (hb : qV 2048 0 (.One 1 0)=some xs) :
+    (hb : qV 2048 0 (.One 1 0) = some xs) :
     xs.length=2049 ∧ CheckTable.bank_ok xs:= by
   rcases qbY 2048 0 (.One 1 0) xs Built.built_root hb with ⟨hlen,hok⟩
   refine ⟨hlen,fun i f hget => ?_⟩
   simpa using! hok i f hget
 theorem bank_valid : bank.length=2049 ∧ CheckTable.bank_ok bank :=
   qaq bank qaJ
-theorem qc8 {xs : List entry} {i : ℕ} (h : CheckTable.nth_entry xs i=none) :
+theorem qc8 {xs : List entry} {i : ℕ} (h : CheckTable.nth_entry xs i = none) :
     xs.length ≤ i:= by
   induction xs generalizing i with
   | nil => simp
@@ -3114,9 +3111,9 @@ theorem collect_tail (k : ℤ) (f : entry) (xs : List entry) (z : kernel)
     try dsimp -failIfUnchanged only
     split_ifs <;> simp [hz]
 theorem qbB (k : ℤ) (xs : List entry) (i : ℕ) (x : Table.pair) (e : ℤ)
-    (hget : CheckTable.nth_entry xs i=some (.Two x e))
+    (hget : CheckTable.nth_entry xs i = some (.Two x e))
     (hk : 1 ≤ k + (i : ℤ))
-    (he : q3 (k + (i : ℤ)) x=false) :
+    (he : q3 (k + (i : ℤ)) x = false) :
     ⟨k + (i : ℤ),x⟩ ∈ qaI k xs:= by
   induction xs generalizing k i with
   | nil => contradiction
@@ -3137,7 +3134,7 @@ theorem qbB (k : ℤ) (xs : List entry) (i : ℕ) (x : Table.pair) (e : ℤ)
       rw [heq] at hk he ⊢
       exact ih (k + 1) i hget hk he
 theorem qap (xs : List entry)
-    (hlen : xs.length=2049) (hbank : CheckTable.bank_ok xs)
+    (hlen : xs.length = 2049) (hbank : CheckTable.bank_ok xs)
     (k : kernel) (hk : continuing k) (hmax : k.index ≤ 2048) :
     k ∈ qaI 0 xs:= by
   rcases k with ⟨s,x⟩
@@ -3383,7 +3380,7 @@ theorem push_spec (z : state) (k : kernel) (r : relation) (S0 U0 S U S' U' : ℤ
 def qJ {T : Type*} (f : T → Bool) : List T → Bool
   | [] => true
   | x :: r => if f x then qJ f r else false
-theorem qbf {T : Type*} (f : T → Bool) (xs : List T) (h : qJ f xs=true) :
+theorem qbf {T : Type*} (f : T → Bool) (xs : List T) (h : qJ f xs = true) :
     ∀ x ∈ xs,f x=true:= by
   induction xs with
   | nil => intro x hx; contradiction
@@ -3755,7 +3752,7 @@ theorem int_lt_iff (a b : ℤ) : int_lt a b = true ↔ a < b := by
   cases a <;> cases b <;> simp [int_lt, Nat.ble_eq] <;> omega
 
 theorem int_eq_iff (a b : ℤ) : int_eq a b = true ↔ a = b := by
-  cases a <;> cases b <;> simp [int_eq, Nat.beq_eq] <;> omega
+  cases a <;> cases b <;> simp [int_eq, Nat.beq_eq]
 
 theorem int_min_eq (a b : ℤ) : int_min a b = min a b := by
   unfold int_min
@@ -4036,7 +4033,6 @@ theorem three_step_4k_rel {k0 kp k : kernel} {S0 U0 S1 U1 S2 U2 S3 U3 : ℤ}
   have ht2' : 2 * S2 - U2 + 3 = q0 k.pair.d * q0 (k.index - k.pair.d) * (2 * t2 + 1) := by
     rw [← hsplit_k]; exact ht2
   have hpow' := congr_arg (fun z => q0 (k.index - k.pair.d) * (2 * t2 + 1) * z) hpow_d1
-  dsimp -failIfUnchanged only at hpow'
   linarith
 
 theorem step_rel_div {base m1 : ℤ} {k_last k_next : kernel} {S_cur U_cur S_next U_next : ℤ}
@@ -4576,7 +4572,7 @@ theorem qbA : qJ q9_c library_val=true:= by
   simp only [qbr,ref_0,ref_1,ref_2,ref_3,ref_4,ref_5,ref_6,ref_7,
     ref_8,ref_9,ref_10,ref_11,ref_12,ref_13,ref_14,ref_15,Bool.and_self]
 theorem F2 (word : List kernel) (S U : ℤ)
-    (hall : ∀ k ∈ word,continuing k ∧ k.index ≤ 2048)
+    (hall : ∀ k ∈ word, continuing k ∧ k.index ≤ 2048)
     (htrace : trace word S U) :
     word.length ≤ 6:= by
   cases htrace with
@@ -4794,13 +4790,13 @@ theorem qbp (l B : ℤ) (hl : 1 ≤ l) :
   dsimp -failIfUnchanged
   rw [if_pos (by omega)]
 theorem qbc (l B s r : ℤ) (hs : 1 ≤ s ∧ s < l)
-    (hB : B + 3=q0 s * r) (hr : qW r) :
+    (hB : B + 3 = q0 s * r) (hr : qW r) :
     qa (l + 1) ⟨1,1,B,0⟩ s r:= by
   refine ⟨hs.1,by dsimp -failIfUnchanged; omega,?_,hr⟩
   unfold h
   dsimp -failIfUnchanged
   linarith
-theorem qcf (l B s r : ℤ) (x : pair) (hB : B + 3=q0 s * r) :
+theorem qcf (l B s r : ℤ) (x : pair) (hB : B + 3 = q0 s * r) :
     qct s r (l - s) (qba x) (l + 2) (qbu (qQ ⟨1,1,B,0⟩ s r x)):= by
   refine ⟨rfl,?_,?_⟩
   · change B + 2 * 0 + 3 - (x.p * q0 (s - x.d) * r) + x.c - 0 - 1 =
@@ -4808,7 +4804,7 @@ theorem qcf (l B s r : ℤ) (x : pair) (hB : B + 3=q0 s * r) :
     nlinarith
   · change l + 2 - (1 + x.d + 1)=s - x.d + (l - s)
     omega
-theorem odd_factor (B s r : ℤ) (hs : 1 ≤ s) (hB : B + 3=q0 s * r) :
+theorem odd_factor (B s r : ℤ) (hs : 1 ≤ s) (hB : B + 3 = q0 s * r) :
     qb6 B=false:= by
   rw [qa9]
   refine ⟨q0 (s - 1) * r - 2,?_⟩
@@ -4816,7 +4812,7 @@ theorem odd_factor (B s r : ℤ) (hs : 1 ≤ s) (hB : B + 3=q0 s * r) :
   rw [pow2_one] at hsp
   rw [hsp] at hB
   linarith
-theorem stage_even (l B e : ℤ) (hl : 1 ≤ l) (hB : Built l (.One B e)) (he : qb6 B=true) :
+theorem stage_even (l B e : ℤ) (hl : 1 ≤ l) (hB : Built l (.One B e)) (he : qb6 B = true) :
     Built (l + 2) (.One (B + 3) (e + 1)) ∧ span l 2 1:= by
   have h1:=Built.built_one hB
   have h2 : Built (l + 1 + 1) (.One (B + 3) (e + 1)):= by
@@ -4835,7 +4831,7 @@ theorem stage_even (l B e : ℤ) (hl : 1 ≤ l) (hB : Built l (.One B e)) (he : 
   exact span_zero (l + 1 + 1) (.One (B + 3) (e + 1)) 1 h2 (by simp [CheckTable.depth])
 theorem stage_odd (l B e s r : ℤ) (g : entry)
     (hB : Built l (.One B e)) (hs : 1 ≤ s ∧ s < l)
-    (hfactor : B + 3=q0 s * r) (hr : qW r)
+    (hfactor : B + 3 = q0 s * r) (hr : qW r)
     (hg : Built s g) (hreturn : qaf Built s g) :
     ∃ (n : ℕ) (v f : ℤ),(n : ℤ) ≤ s ∧ Built (l + 2 + (n : ℤ)) (.One v f) ∧ span l (2 + n) (2 * s + 1):= by
   rcases (built_valid hB).1 with ⟨hl,he,hBmass⟩
@@ -5026,7 +5022,7 @@ theorem split2_spec (x : ℤ) (hx : 0 < x) :
   rcases qbH hx with ⟨hs0,heq,hodd⟩
   have hp:=qc hs0
   exact ⟨hs0,by nlinarith,hodd,heq⟩
-theorem qbv (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e)) (ho : qb6 B=false) :
+theorem qbv (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e)) (ho : qb6 B = false) :
     ∃ s r,(1 ≤ s ∧ s < l) ∧ B + 3=q0 s * r ∧ qW r ∧ s ≤ 3 * q1 l + 4:= by
   rcases (built_valid hB).1 with ⟨hl0,he0,hmass⟩
   change 0 ≤ e at he0
@@ -5054,7 +5050,7 @@ theorem qbv (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e)) (ho : qb6 B=
   have hl3 : 0 ≤ l ^ 3:= by positivity
   exact ⟨s,r,⟨hs1,hsl⟩,hfactor,hro,qbo l s (by omega) hs1 (by linarith)⟩
 theorem next_stage (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e))
-    (hsmall : ∀ s,1 ≤ s ∧ s < l → ∃ g,Built s g ∧ qaf Built s g) :
+    (hsmall : ∀ s, 1 ≤ s ∧ s < l → ∃ g, Built s g ∧ qaf Built s g) :
     ∃ (n : ℕ) (v f : ℤ),2 ≤ (n : ℤ) ∧ Built (l + (n : ℤ)) (.One v f) ∧ span l n (6 * q1 l + 9):= by
   cases he : qb6 B
   · rcases qbv l B e hl hB he with ⟨s,r,hs,hfactor,hr,hbound⟩
@@ -5070,7 +5066,7 @@ theorem next_stage (l B e : ℤ) (hl : 16 ≤ l) (hB : Built l (.One B e))
     · have hlog:=qh l
       exact qbI l 2 1 (6 * q1 l + 9) (by omega) hspan
 theorem through (target : ℤ) (htarget : 0 ≤ target)
-    (hreturns : ∀ s,1 ≤ s ∧ s < target → ∃ g,Built s g ∧ qaf Built s g) :
+    (hreturns : ∀ s, 1 ≤ s ∧ s < target → ∃ g, Built s g ∧ qaf Built s g) :
     ∃ f,Built target f ∧ CheckTable.bounded target f:= by
   by_cases hbase : target ≤ 16
   · by_cases htz : target=0
@@ -5121,7 +5117,7 @@ theorem qbV (k : ℤ) (x : pair) (s r : ℤ) (y : pair) (e : ℤ)
     linarith
 theorem qbJ (k : ℤ) (x : pair) (L : ℤ)
     (hx : qaB k x) (hL : 1 ≤ L) (hdepth : x.d + L < k) (hbound : h x < q0 L)
-    (he : q3 k x=false) :
+    (he : q3 k x = false) :
     ∃ s r,qa k x s r ∧ s < L:= by
   rcases hx with ⟨hd,hdk,hp,hpd,ho,hb,hc⟩
   have hpos : 0 < h x:= by unfold h; omega
@@ -5147,8 +5143,8 @@ theorem qbJ (k : ℤ) (x : pair) (L : ℤ)
   exact ⟨s,r,⟨hs1,by omega,hfactor,hro⟩,hsL⟩
 theorem qbD (k L D M : ℤ)
     (hL : 1 ≤ L) (hD : 0 ≤ D) (hM : 0 ≤ M)
-    (hlib : ∀ s,1 ≤ s ∧ s ≤ L → ∃ f,Built s f)
-    (hparams : ∀ s y e,1 ≤ s ∧ s ≤ L → Built s (.Two y e) → y.d ≤ D ∧ y.b + y.c + 2 ≤ M)
+    (hlib : ∀ s, 1 ≤ s ∧ s ≤ L → ∃ f, Built s f)
+    (hparams : ∀ s y e, 1 ≤ s ∧ s ≤ L → Built s (.Two y e) → y.d ≤ D ∧ y.b + y.c + 2 ≤ M)
     (n : ℕ) :
     ∀ x,qaB k x → x.d + (n : ℤ) * D + L < k →
       2 * (x.b + x.c + (n : ℤ) * M) + 3 < q0 L →
@@ -5208,8 +5204,8 @@ theorem qbD (k L D M : ℤ)
       exact ⟨1,1,Boundary.boundary_even x he⟩
 theorem returns_of_bound (k : ℤ) (x : pair) (L D M : ℤ) (n : ℕ)
     (hL : 1 ≤ L) (hD : 0 ≤ D) (hM : 0 ≤ M) (hx : qaB k x)
-    (hlib : ∀ s,1 ≤ s ∧ s ≤ L → ∃ f,Built s f)
-    (hparams : ∀ s y e,1 ≤ s ∧ s ≤ L → Built s (.Two y e) → y.d ≤ D ∧ y.b + y.c + 2 ≤ M)
+    (hlib : ∀ s, 1 ≤ s ∧ s ≤ L → ∃ f, Built s f)
+    (hparams : ∀ s y e, 1 ≤ s ∧ s ≤ L → Built s (.Two y e) → y.d ≤ D ∧ y.b + y.c + 2 ≤ M)
     (hwords : WordLink.bound L ((n : ℤ) - 1))
     (hdepth : x.d + (n : ℤ) * D + L < k)
     (hmass : 2 * (x.b + x.c + (n : ℤ) * M) + 3 < q0 L) :
@@ -5287,7 +5283,7 @@ theorem qae (k : ℤ) (hk : 1 ≤ k) (hprevious : earlier k)
   by_cases hsmall : k ≤ 65536
   · exact CheckTable.base_structured k ⟨hk,hsmall⟩
   · exact close k hk hprevious (hbudget (by omega))
-theorem all_good (hbudget : ∀ k,65536 < k → earlier k → budget k) :
+theorem all_good (hbudget : ∀ k, 65536 < k → earlier k → budget k) :
     ∀ k,1 ≤ k → good k:= by
   have hnat : ∀ n : ℕ,1 ≤ n → good (n : ℤ):= by
     intro n
@@ -5304,7 +5300,7 @@ theorem all_good (hbudget : ∀ k,65536 < k → earlier k → budget k) :
   have hk_eq : k=(k.toNat : ℤ):= by omega
   rw [hk_eq]
   exact hnat k.toNat (by omega)
-theorem G_returns (hbudget : ∀ k,65536 < k → earlier k → budget k) :
+theorem G_returns (hbudget : ∀ k, 65536 < k → earlier k → budget k) :
     ∀ k t : ℕ,∃ e m,Prefix.Exec e (Prefix.G (1 + k) (1 + 2 * t)) [m]:= by
   intro k t
   rcases all_good hbudget ((1 + k : ℕ) : ℤ) (by omega) with ⟨f,hf,hbounds,hreturn⟩
@@ -5471,7 +5467,7 @@ def qw (word : List kernel) : List Block.kernel :=
 def summary (word : List kernel) : Block.summary :=
   (qw word).foldl (fun z k => Block.push k z) Block.identity
 theorem qaj (f : kernel → ℤ) (word : List kernel)
-    (h : ∀ k ∈ word,0 ≤ f k) : 0 ≤ qD f word:= by
+    (h : ∀ k ∈ word, 0 ≤ f k) : 0 ≤ qD f word:= by
   induction word with
   | nil => simp [qD]
   | cons k word ih =>
@@ -5480,7 +5476,7 @@ theorem qaj (f : kernel → ℤ) (word : List kernel)
     rw [qD,List.foldr_cons,← qD]
     omega
 theorem qbF (f : kernel → ℤ) (word : List kernel) (C : ℤ)
-    (h : ∀ k ∈ word,0 ≤ f k ∧ f k ≤ C) :
+    (h : ∀ k ∈ word, 0 ≤ f k ∧ f k ≤ C) :
     0 ≤ qD f word ∧ qD f word ≤ (word.length : ℤ) * C:= by
   induction word with
   | nil => simp [qD]
@@ -5512,7 +5508,7 @@ theorem qca (word : List kernel) (z : Block.summary) :
     dsimp -failIfUnchanged [Block.low_push,Bridge.kernel,gain]
     ring
 theorem fold_scale (word : List kernel) (z : Block.summary)
-    (h : ∀ k ∈ word,0 ≤ depth k) :
+    (h : ∀ k ∈ word, 0 ≤ depth k) :
     ((qw word).foldl (fun z k => Block.push k z) z).scale=z.scale * q0 (qD depth word):= by
   induction word generalizing z with
   | nil => simp [qw,qD,pow2_zero]
@@ -5526,7 +5522,7 @@ theorem fold_scale (word : List kernel) (z : Block.summary)
     dsimp -failIfUnchanged [Block.push,Bridge.kernel,depth]
     ring
 theorem fold_strong (ks : List Block.kernel) (z : Block.summary)
-    (hgood : ∀ k ∈ ks,Block.good k) (hz : Block.bounded z) (hne : ks ≠ []) :
+    (hgood : ∀ k ∈ ks, Block.good k) (hz : Block.bounded z) (hne : ks ≠ []) :
     let r:=ks.foldl (fun z k => Block.push k z) z
     Block.bounded r ∧ r.scale ≤ r.sc ∧ 0 < r.offset:= by
   induction ks generalizing z with
@@ -5542,7 +5538,7 @@ theorem fold_strong (ks : List Block.kernel) (z : Block.summary)
       have hpush:=(Block.push_bounded k z hk hz).1
       exact ih (Block.push k z) (fun x hx => hgood x (by simp [hx])) hpush (by simp)
 theorem summary_data (word : List kernel)
-    (hall : ∀ k ∈ word,continuing k) (hne : word ≠ []) :
+    (hall : ∀ k ∈ word, continuing k) (hne : word ≠ []) :
     0 ≤ qD depth word ∧
     (summary word).scale=q0 (qD depth word) ∧
     Block.bounded (summary word) ∧
@@ -5610,9 +5606,9 @@ theorem high_div (m : ℤ) (k : kernel) (word : List kernel) (S U : ℤ)
     rw [ht,Table.pow_split (by omega : 0 ≤ m + 1) (by omega : m + 1 ≤ k.index)]
     exact ⟨q0 (k.index - (m + 1)) * (2 * t + 1),by ring⟩
 theorem qbX (m r dL dm gL gm : ℤ) (k : kernel) (lows : List kernel) (S U : ℤ)
-    (hm : 0 ≤ m) (hr : 0 ≤ r) (hdm : 0 ≤ dm) (hgm : 0 ≤ gm)
+    (_hm : 0 ≤ m) (_hr : 0 ≤ r) (hdm : 0 ≤ dm) (hgm : 0 ≤ gm)
     (hhigh : m < k.index) (hk : continuing k) (hdk : depth k ≤ dL) (hgk : gain k ≤ gL)
-    (hlow : ∀ z ∈ lows,continuing z ∧ z.index ≤ m ∧ depth z ≤ dm ∧ gain z ≤ gm)
+    (hlow : ∀ z ∈ lows, continuing z ∧ z.index ≤ m ∧ depth z ≤ dm ∧ gain z ≤ gm)
     (htrace : trace lows S U) (hbound : WordLink.bound m r) :
     HighPath.certified m (dL + r * dm) (gL + r * gm) (r * gm) (summary (k :: lows)):= by
   have hall : ∀ z ∈ (k :: lows),continuing z:= by
@@ -5689,8 +5685,8 @@ theorem low_split (m : ℤ) (word : List kernel) :
     · refine ⟨[],k :: word,rfl,by simp,Or.inr ⟨k,word,rfl,by omega⟩⟩
 theorem qc9 (m L dm gm : ℤ) (lows : List kernel)
     (hparams : qC m dm gm)
-    (hall : ∀ k ∈ lows,continuing k ∧ k.index ≤ L)
-    (hlow : ∀ k ∈ lows,k.index ≤ m) :
+    (hall : ∀ k ∈ lows, continuing k ∧ k.index ≤ L)
+    (hlow : ∀ k ∈ lows, k.index ≤ m) :
     ∀ k ∈ lows,continuing k ∧ k.index ≤ m ∧ depth k ≤ dm ∧ gain k ≤ gm:= by
   intro k hk
   have h1:=hall k hk
@@ -5699,8 +5695,8 @@ theorem qc9 (m L dm gm : ℤ) (lows : List kernel)
   exact ⟨h1.1,h2,h3.1,h3.2⟩
 theorem qco (m L r : ℤ) (lows : List kernel) (S U : ℤ)
     (hb : WordLink.bound m r)
-    (hall : ∀ k ∈ lows,continuing k ∧ k.index ≤ L)
-    (hlow : ∀ k ∈ lows,k.index ≤ m)
+    (hall : ∀ k ∈ lows, continuing k ∧ k.index ≤ L)
+    (hlow : ∀ k ∈ lows, k.index ≤ m)
     (htrace : trace lows S U) :
     (lows.length : ℤ) ≤ r:= by
   exact hb lows S U (fun k hk => ⟨(hall k hk).1,hlow k hk⟩) htrace
@@ -5896,7 +5892,7 @@ theorem range120 (L : ℤ) (hL : 2 ≤ L ∧ L ≤ q0 120)
 end SmallScale
 namespace Exponential
 theorem power_ratio (a b : ℤ) (p : ℕ) (c : ℤ)
-    (hab : 0 < b ∧ b ≤ a) (hc : 0 ≤ c) (hbase : (b + 1) ^ p ≤ c * b ^ p) :
+    (hab : 0 < b ∧ b ≤ a) (_hc : 0 ≤ c) (hbase : (b + 1) ^ p ≤ c * b ^ p) :
     (a + 1) ^ p ≤ c * a ^ p:= by
   have hb0 : 0 ≤ b:= by omega
   have ha0 : 0 ≤ a:= by omega
@@ -6260,7 +6256,7 @@ theorem qcc (x : ℤ) (hx : 0 ≤ x) : 30 * x ≤ q0 64 * (x + 1) ^ 4:= by
   have h64 : (30 : ℤ) ≤ q0 64:= by decide
   nlinarith
 theorem qae (k L : ℤ) (hprev : Closure.earlier k) (hL : 2 ≤ L ∧ L < k)
-    (ih : ∀ m,2 ≤ m ∧ m < L → WordLink.bound m (q0 64 * (q1 m + 1) ^ 4)) :
+    (ih : ∀ m, 2 ≤ m ∧ m < L → WordLink.bound m (q0 64 * (q1 m + 1) ^ 4)) :
     WordLink.bound L (q0 64 * (q1 L + 1) ^ 4):= by
   have hparams:=SmallScale.earlier_parameters k L ⟨by omega,hL.2⟩ hprev
   by_cases hsmall : L ≤ q0 120
@@ -6410,7 +6406,7 @@ theorem qao (k L n : ℤ) (hk : 3 ≤ k) (hL : 0 ≤ L ∧ L ≤ k) (hn : 0 ≤ 
   have hmp:=mass_poly k hk
   linarith
 theorem assemble (k x y r : ℤ)
-    (hk : 65536 < k) (hx : x=q1 k) (hy : y=q1 (8 * x))
+    (hk : 65536 < k) (hx : x = q1 k) (hy : y = q1 (8 * x))
     (hr : 0 ≤ r) (hword : WordLink.bound (8 * x) r)
     (hD : 6 * x + 9 + (r + 1) * (6 * y + 9) + 8 * x < k) :
     Closure.budget k:= by
@@ -6527,7 +6523,7 @@ theorem qj (n : ℕ) (s : ListBlank (Fin 2)) :
 theorem o1_pow_add (m n : ℕ) (s : ListBlank (Fin 2)) :
     (o1 ^ (m + n)) +> s=(o1 ^ m) +> ((o1 ^ n) +> s):= by
   induction m with
-  | zero => simp [o1_pow_zero]
+  | zero => simp
   | succ m ih =>
     rw [Nat.succ_add,q6,q6,ih]
 theorem qa1 (n : ℕ) (l r : ListBlank (Fin 2)) :
@@ -6576,7 +6572,7 @@ theorem Inc1 (a b c : ℕ) (r : ListBlank (Fin 2)) :
 theorem Incs1 (n a b c : ℕ) (r : ListBlank (Fin 2)) :
     (S1 a (n * 2 + b) c r) [M]⊢* (S1 (n + a) b (n + c) r):= by
   induction n generalizing a b c with
-  | zero => simp [qF]
+  | zero => simp
   | succ n ih =>
     rw [show (n + 1) * 2 + b=n * 2 + (2 + b) by omega]
     have h1:=ih a (2 + b) c
@@ -6604,7 +6600,7 @@ theorem Inc2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
 theorem Incs2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
     (S2 a b c r) [M]⊢* (S2 (c + a) b 0 r):= by
   induction c generalizing a b with
-  | zero => simp [qF]
+  | zero => simp
   | succ c ih =>
     rw [show c + 1=1 + c by omega]
     have h1:=Inc2 a b c r
@@ -6614,7 +6610,7 @@ theorem Incs2 (a b c : ℕ) (r : ListBlank (Fin 2)) :
 theorem Ov0_start (a c d : ℕ) (r' : ListBlank (Fin 2)) :
     (S1 a 0 c ((0 : Fin 2) >> ((o1 ^ d) +> r'))) [M]⊢⁺ (S2 0 (2 + a + c) d r'):= by
   unfold S1 S2
-  simp only [o1_pow_zero,zero_add]
+  simp only [o1_pow_zero]
   cases c with
   | zero =>
     simp only [o1_pow_zero,Nat.add_zero]
@@ -6723,17 +6719,17 @@ theorem step_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Step e xs ys) :
     exact MacroO n v w (qr r) hnv
 theorem qbG (xs : List ℕ) : qr (xs ++ [0])=qr xs:= by
   induction xs with
-  | nil => simp [qr,o1_pow_zero,zero_cons_default]
+  | nil => simp [qr]
   | cons x xs ih => simp [qr,ih]
 theorem qaW (xs : List ℕ) : qT (xs ++ [0])=qT xs:= by
   rcases xs with _ | ⟨u,_ | ⟨v,_ | ⟨w,xs⟩⟩⟩
-  · simp [qT,S1,o1_pow_zero,zero_cons_default]
-  · simp [qT,S1,o1_pow_zero,zero_cons_default]
-  · simp [qT,S1,qr,o1_pow_zero,zero_cons_default]
+  · simp [qT, S1]
+  · simp [qT, S1]
+  · simp [qT, S1, qr]
   · simp [qT,qbG]
 theorem init_eq : init []=qT []:= by
   unfold init qT S1
-  simp [Tape.mk₁,o1_pow_zero,zero_cons_default,A]
+  simp [Tape.mk₁, A]
   rfl
 theorem exec_spec {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) :
     (qT xs) [M]⊢* (qT ys):= by
@@ -6751,7 +6747,7 @@ theorem exec_progress {e : ℕ} {xs ys : List ℕ} (h : Prefix.Exec e xs ys) (he
     rw [← qaW]
     exact ih he
 theorem qau {c c' : Cfg (Fin 2) (Fin 6)} {j d : ℕ}
-    (h : multiStep M c (j + d)=some c') :
+    (h : multiStep M c (j + d) = some c') :
     (multiStep M c j).isSome:= by
   rw [qb1] at h
   cases h_j : multiStep M c j with
@@ -6770,7 +6766,7 @@ theorem nonhalt_of_returns (hreturn : ∀ k : ℕ,∃ e m : ℕ,Prefix.Exec (1 +
       rcases ih with ⟨N,hN,k,h_ms⟩
       rcases hreturn k with ⟨e,m_out,hex⟩
       have hmass:=Prefix.exec_mass hex
-      simp [Prefix.mass] at hmass
+      simp only [Prefix.mass_cons, Prefix.mass_nil, Nat.add_zero] at hmass
       have hm_eq : m_out=3 * (k + 1 + e):= by omega
       rw [hm_eq] at hex
       rcases exec_progress hex (by omega) with ⟨qad,hsteps_pos,hsteps⟩
@@ -6790,7 +6786,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 
 

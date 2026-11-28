@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Longitudinal
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0LF_0RCHHH_1RD0RA_1LE0RC_0LA0LE_1LE1LB
@@ -33,7 +36,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 def A : Fin 6 := 0
 def B : Fin 6 := 1
@@ -307,7 +309,7 @@ def retf (m : Fin 6) : List ptok → List tok → Fin 6 × List ptok × List tok
   cases ps with
   | nil => rfl
   | cons p ps' =>
-    cases p <;> (try rfl) <;> cases rs <;> (try rfl) <;> rename_i r0 _ <;> cases r0 <;> rfl
+    cases p <;> rfl
 
 @[simp] theorem retf_F_PZ_P (ps : List ptok) (rs : List tok) :
     retf F (.PZ :: .P :: ps) (.T0 :: rs) = retf E ps (.T0 :: .TZ :: .T1 :: rs) := rfl
@@ -495,7 +497,7 @@ theorem IncC (gs : List Nat) : ∀ (v : Nat), v + 1 < 2 ^ (gs.length + 1) →
     rcases BusyBeaver.nat_even_or_odd_two_mul v with ⟨w, rfl⟩ | ⟨w, rfl⟩
     · rcases ctr_hd_even (g :: gs) w with ⟨rest, h0, h1⟩
       rw [h0, h1]
-      simp only [List.cons_append, tw, tokw, str_app_assoc]
+      simp only [List.cons_append, tw, tokw]
       exact CT0 l (tw (rest ++ t) +> r)
     · have hsucc : 2 * w + 1 + 1 = 2 * (w + 1) := by omega
       rw [ctr_odd, hsucc, ctr_even]
@@ -536,7 +538,7 @@ theorem TwoInc (gs : List Nat) (v p : Nat) (t : List tok) (L r : ListBlank (Fin 
   have s4 := ENDl (([0] : List (Fin 2)) +> L) (tw (.T0 :: (rep .TZ p ++ (ctr gs (v + 2) ++ t))) +> r)
   have h_rhs : ((([0] : List (Fin 2)) +> L) <{{A}} (([0, 1] : List (Fin 2)) +> (tw (.T0 :: (rep .TZ p ++ (ctr gs (v + 2) ++ t))) +> r))) =
       (L {{A}}> (tw (.T0 :: (rep .TZ (p + 1) ++ (ctr gs (v + 2) ++ t))) +> r)) := by
-    simp [rep, tw, tokw, str_app_assoc]
+    simp [rep, tw, tokw]
   rw [h_rhs] at s4
   exact stepStar_trans s1 (stepStar_trans s2 (stepStar_trans s3 s4))
 
@@ -776,7 +778,7 @@ theorem TailRet_eq (w1 w2 : List tok) (m : Fin 6) (S' : ListBlank (Fin 2)) (l : 
 theorem list_hs1_aux (xs : List tok) (j : Nat) (e' : List Bool) :
     xs ++ ((rep true j ++ (false :: e')).map bt ++ [.T1]) =
     (xs ++ rep .T1 j) ++ (.T0 :: (e'.map bt ++ [.T1])) := by
-  simp only [List.map_append, map_bt_true, List.map_cons, bt_false, List.cons_append, List.nil_append, List.append_assoc]
+  simp only [List.map_append, map_bt_true, List.map_cons, bt_false, List.cons_append, List.append_assoc]
 
 theorem Tail11_end_hs1 (j : Nat) (e' : List Bool) :
     tailw true true true true true true true true true true true true true true true (rep true j ++ (false :: e')) =
@@ -1134,7 +1136,7 @@ theorem LD_ones (b : tok) (r : Nat) : LD b (rep 1 r) = ([b, .TZ, .T1, .TZ] : Lis
 theorem ctr_zero (gs : List Nat) : ctr gs 0 = LD .T0 gs ++ [.T0] := by
   induction gs with
   | nil => rfl
-  | cons g gs ih => simp only [ctr, bit, LD, dig, ih, List.cons_append, List.nil_append, List.append_assoc]; rfl
+  | cons g gs ih => simp only [ctr, bit, LD, dig, ih, List.cons_append, List.append_assoc]; rfl
 
 theorem pow_pos (n : Nat) : 0 < 2 ^ n := Nat.two_pow_pos n
 
@@ -1212,7 +1214,7 @@ theorem retf_dig (g : Nat) (ps : List ptok) (rs : List tok) :
   | succ g ih =>
     rw [rep, List.cons_append, retf_E_PZ, ih (.TZ :: rs)]
     have hdig : dig .T0 g ++ (.TZ :: rs) = dig .T0 (g + 1) ++ rs := by
-      simp only [dig, List.cons_append, List.append_assoc]
+      simp only [dig, List.cons_append]
       congr 3
       change rep tok.TZ g ++ ([.TZ] ++ rs) = _
       rw [← List.append_assoc, repeat_snoc]; rfl
@@ -2423,7 +2425,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm := by
   refine BusyBeaver.Counter.does_not_halt_of_invariant

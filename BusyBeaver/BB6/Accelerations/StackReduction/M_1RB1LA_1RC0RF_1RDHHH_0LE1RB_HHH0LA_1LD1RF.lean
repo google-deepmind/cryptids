@@ -230,7 +230,7 @@ private theorem rule_D_zero_ge2 (L R : List ℕ) (d : ℕ) :
     ((encStack (bumpHead (bumpHead (bumpHead (bumpHead L))))).cons 0) ((encStack R).cons 0)).trans
     ?_
   rw [← encStack_cons d (bumpHead (bumpHead (bumpHead (bumpHead L)))), ← encStack_cons_one R]
-  exact ⟨0, by simp only [Cfg.headRight, ListBlank.head_cons, ListBlank.tail_cons, multiStep_zero]⟩
+  exact ⟨0, by simp only [ListBlank.head_cons, ListBlank.tail_cons, multiStep_zero]⟩
 
 private theorem rule_D_one (L R : List ℕ) :
     (cfg_D (1 :: L) R) [target]⊢⁺ (cfg_D (bumpHead L) (0 :: R)) := by
@@ -312,7 +312,7 @@ private theorem rule_FR_cons_succ (L R : List ℕ) (a d : ℕ) :
   refine h_pre.trans_star ?_
   refine (f_walk_right (d + 1) ((encStack (a :: L)).cons 0) ((encStack R).cons 0)).trans ?_
   rw [← encStack_cons d (a :: L), ← encStack_cons_one R]
-  exact ⟨0, by simp only [Cfg.headRight, ListBlank.head_cons, ListBlank.tail_cons, multiStep_zero]⟩
+  exact ⟨0, by simp only [ListBlank.head_cons, ListBlank.tail_cons, multiStep_zero]⟩
 
 /-! ## Initial Reachability and Stack Reduction Closure -/
 

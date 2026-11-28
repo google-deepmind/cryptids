@@ -29,7 +29,6 @@ local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
 
 set_option linter.unusedSectionVars false
-set_option maxHeartbeats 2000000
 
 @[simp] theorem zMz (M : Machine (Fin 2) (Fin 6)) (config : Cfg (Fin 2) (Fin 6)) :
     multiStep M config 0 = some config := rfl
@@ -84,8 +83,12 @@ macro "finish" : tactic =>
   `(tactic| exact ⟨0, rfl⟩)
 macro "step" : tactic =>
   `(tactic| (try refine zPs ?_) <;>
-    refine z03 (by (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.ListBlank.head_cons, zDh]); rfl) ?_ <;>
-    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move, Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt])
+    refine z03 (by
+      (try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft,
+        Turing.ListBlank.head_cons, zDh])
+      rfl) ?_ <;>
+    simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, Turing.Tape.move,
+      Turing.ListBlank.head_cons, Turing.ListBlank.tail_cons, Tape.write, z00, zDh, zDt])
 macro "execute" : tactic =>
   `(tactic| repeat (any_goals (first | finish | step)))
 
@@ -95,10 +98,10 @@ abbrev d1 : zF := [1, 0, 0]
 abbrev w1ld : zF := [1, 1, 1, 0]
 abbrev lh : zB := [1] +> default
 
-@[simp] theorem zDd : d0 +> (default : zB) = default := by simp [d0]
+@[simp] theorem zDd : d0 +> (default : zB) = default := by simp
 
-theorem z1_eq : [1] +> (d1 +> (default : zB)) = ld +> default := by simp [d1, ld]
-theorem z0_eq : [1] +> (d0 +> (default : zB)) = d1 +> default := by simp [d0, d1]
+theorem z1_eq : [1] +> (d1 +> (default : zB)) = ld +> default := by simp
+theorem z0_eq : [1] +> (d0 +> (default : zB)) = d1 +> default := by simp
 
 abbrev A : Fin 6 := 0
 abbrev B : Fin 6 := 1
@@ -186,7 +189,8 @@ theorem seg_d1_even (k : Nat) : Seg ([ch] ^ (k * 2)) ([ch] ^ k) d1 d1 :=
 theorem seg_d0_odd (k : Nat) : Seg ([ch] ^ (1 + k * 2)) ([ch] ^ k) d0 d1 := by
   simpa only [zLp', List.cons_append, List.nil_append] using zSg seg_ch_d0 (seg_d1_even k)
 
-theorem seg_hx_ld (k : Nat) : Seg ([ch'] ++ [ch] ^ k) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) ld ld := by
+theorem seg_hx_ld (k : Nat) :
+    Seg ([ch'] ++ [ch] ^ k) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) ld ld := by
   simpa only [zLp', List.cons_append, List.nil_append] using zSg seg_ch'_ld_atom (seg_wall_ld k)
 
 theorem seg_h1_ld (k : Nat) : Seg ([ch] ^ (1 + k)) ([ch] ++ ([ch'] ++ [ch] ^ (1 + k))) w1ld ld := by

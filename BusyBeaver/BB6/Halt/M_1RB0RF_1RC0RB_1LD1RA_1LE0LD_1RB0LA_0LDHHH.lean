@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RF_1RC0RB_1LD1RA_1LE0LD_1RB0LA_0LDHHH
@@ -37,7 +40,6 @@ def F : Fin 6 := 5
 
 local notation "zB" => ListBlank (Fin 2)
 local notation "zF" => List (Fin 2)
-set_option maxHeartbeats 2000000
 
 def tm15 : Machine (Fin 2) (Fin 6)
   | 0, 0 => some (some 1, Stmt.write 1 Dir.left)
@@ -101,7 +103,7 @@ theorem multiStep_map_0155 (c : Cfg (Fin 2) (Fin 6)) (n : Nat) :
 @[simp] theorem z0j (l : List α) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 theorem z0k (l : List α) (m n : Nat) : l ^ (m + n) = l ^ m ++ l ^ n := by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [z0j, Nat.succ_add, ih, List.append_assoc]
 theorem z0l (l : List α) (n : Nat) : l ^ n ++ l = l ^ (n + 1) := by
   induction n with
@@ -169,7 +171,7 @@ theorem z0y' (d0 d1 : zF) (len n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n + 1) * 2 ^ 0 - 1 = n := by omega
-    simp [h1]
+    simp
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 ≤ (n + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -208,7 +210,7 @@ theorem MC_lsb_1 (h n i : Nat) (r : zB) :
   induction i with
   | zero =>
     have h1 : (n + 1) * 2 ^ 0 - 1 = n := by omega
-    simp [h1]
+    simp
   | succ i ih =>
     have hp := z0v i
     have hpos : 1 ≤ (n + 1) * 2 ^ i := Nat.mul_pos (by omega) hp
@@ -632,7 +634,7 @@ theorem rot_mod_eq (w n p : Nat) : rot_mod w n p = rot_k w n p := by
   split_ifs with hw h
   · induction n generalizing p with
     | zero => rfl
-    | succ n ih => rw [rot_k, rot1, if_pos hw, ← ih p]
+    | succ n ih => rw [rot_k, rot1, ite_eq_left hw, ← ih p]
   · have hdiv := Nat.div_add_mod n w
     conv_rhs => rw [← hdiv]
     exact (rot_k_period w p h (n / w) (n % w)).symm
@@ -813,7 +815,7 @@ theorem pop_word_sound (pat w : Nat) (s s' : Stack) (h : pop_word pat w s = some
     stack_to_tape s = word_of pat w +> stack_to_tape s' := by
   induction w generalizing pat s with
   | zero =>
-    simp [pop_word] at h
+    simp only [pop_word, Option.some.injEq] at h
     subst h; rfl
   | succ w ih =>
     simp only [pop_word, with_prod_eq] at h
@@ -935,7 +937,7 @@ theorem eval_cons_lsb (b : Bool) (k : Nat) (xs : PartList) :
   unfold cons_lsb
   simp only [with_bool_eq, with_nat_eq, with_list_eq]
   by_cases hk : k = 0
-  · subst hk; simp [eval_lsb]
+  · subst hk; simp
   · simp only [hk, ↓reduceIte]
     cases xs with
     | nil => cases b <;> simp [eval_lsb]
@@ -964,7 +966,7 @@ theorem bsize_cons_lsb_le (b : Bool) (k : Nat) (xs : PartList) :
   unfold cons_lsb
   simp only [with_bool_eq, with_nat_eq, with_list_eq]
   by_cases hk : k = 0
-  · subst hk; simp [bsize_parts]
+  · subst hk; simp
   · simp only [hk, ↓reduceIte]
     cases xs with
     | nil => cases b <;> simp [bsize_parts]
@@ -1050,7 +1052,7 @@ theorem z0o_pad_zero (xs : PartList) (extra : Nat) (r : zB) :
     z0o ld0 ld1 (bsize_parts xs + extra) (eval_lsb xs) r =
       z0o ld0 ld1 (bsize_parts xs) (eval_lsb xs) ((ld1 ^ extra) +> r) := by
   induction xs with
-  | nil => simp [bsize_parts, eval_lsb, z0o, z0u]
+  | nil => simp [bsize_parts, eval_lsb, z0u]
   | cons p xs ih =>
     rcases p with ⟨b, k⟩
     simp only [bsize_parts, eval_lsb]
@@ -1360,7 +1362,7 @@ theorem parse_r_sound (fuel limit : Nat) (s : Stack)
           rw [hstep] at hne
           dsimp only at hne ⊢
           by_cases hp0 : (pop1 (top :: rest)).1 = 0
-          · simp only [hp0, ↓reduceIte, bsize_parts, eval_lsb, MC]
+          · simp only [hp0, ↓reduceIte, bsize_parts, eval_lsb]
             refine ⟨by omega, ?_⟩
             rw [pop1_sound (top :: rest), hp0]; rfl
           · simp [hp0] at hne
@@ -1456,7 +1458,7 @@ theorem eval_split_part (p : Bool) (k n : Nat) (rest : PartList) (hn : n ≤ k) 
       rw [hd]; omega
   · have heq : k = n := by omega
     subst heq
-    simp [hlt, eval_lsb]
+    simp [eval_lsb]
 
 theorem bsize_sub_chunk_out (px qy c : Bool) (n : Nat) (out : PartList) (hn : 1 ≤ n) :
     bsize_parts (sub_chunk_out px qy c n out) ≤ n + bsize_parts out := by
@@ -1521,12 +1523,12 @@ theorem sub_lsb_sound (fuel : Nat) (c : Bool) (xs ys out : PartList)
       rcases xhead with ⟨px, kx⟩
       simp only [sub_lsb, with_nat_eq, with_list_eq] at h
       if hyc : (ys.isEmpty && !c) = true then
-        rw [if_pos hyc] at h
+        rw [ite_eq_left hyc] at h
         simp only [Option.some.injEq] at h
         subst h
         cases ys <;> cases c <;> simp [eval_lsb] at hyc ⊢
       else
-      rw [if_neg hyc] at h
+      rw [ite_eq_right hyc] at h
       have hn_kx : min kx (head_l kx ys) ≤ kx := Nat.min_le_left kx (head_l kx ys)
       have hsplit_x : eval_lsb ((px, kx) :: xrest) =
           (if px then 2 ^ (min kx (head_l kx ys)) - 1 else 0) +
@@ -1545,12 +1547,12 @@ theorem sub_lsb_sound (fuel : Nat) (c : Bool) (xs ys out : PartList)
         dsimp [next_x, bsize_parts]
         split_ifs with hlt <;> simp [bsize_parts] <;> omega
       by_cases hn0 : min kx (head_l kx ys) = 0
-      · rw [if_pos hn0] at h
+      · rw [ite_eq_left hn0] at h
         rcases ih c (next_x px kx (min kx (head_l kx ys)) xrest) (next_y (min kx (head_l kx ys)) ys) out h with ⟨hbs_out, heval_out⟩
         rw [hn0] at hsplit_x hsplit_y hbs_nx hbs_out heval_out
         simp only [Nat.pow_zero, Nat.sub_self, ite_self, Nat.zero_add, Nat.mul_one] at hsplit_x hsplit_y hbs_nx
         exact ⟨by omega, by omega⟩
-      · rw [if_neg hn0] at h
+      · rw [ite_eq_right hn0] at h
         cases hrec : sub_lsb fuel (sub_chunk_c px (head_q ys) c (min kx (head_l kx ys)))
             (next_x px kx (min kx (head_l kx ys)) xrest) (next_y (min kx (head_l kx ys)) ys) with
         | none => rw [hrec] at h; contradiction
@@ -1642,7 +1644,7 @@ theorem eval_build_vprime (n m' : Nat) :
   dsimp only
   by_cases h1 : 1 < m' + 1
   · simp only [h1, ↓reduceIte, eval_cons_lsb, eval_lsb, Nat.add_sub_cancel,
-      Nat.mul_zero, Nat.zero_mul, Nat.add_zero, Bool.false_eq_true, Nat.zero_add, Nat.pow_one]
+      Nat.zero_mul, Nat.add_zero, Bool.false_eq_true, Nat.zero_add, Nat.pow_one]
     rw [Nat.mul_assoc, ← Nat.pow_succ]
   · have hm0 : m' = 0 := by omega
     subst hm0
@@ -2057,7 +2059,7 @@ theorem step_prim_sound (s s' : MState) (h : step_prim s = some s') :
       rw [htm] at h
       cases d with
       | left =>
-        simp only [with_prod_eq, some_mstate_eq, Option.some.injEq] at h
+        simp only [some_mstate_eq, Option.some.injEq] at h
         subst h
         refine z0P tm15 _ _ ?_
         unfold mstate_to_cfg step
@@ -2114,7 +2116,7 @@ def run_prim : Nat → MState → Option MState
 theorem run_prim_sound (fuel : Nat) (s s' : MState) (h : run_prim fuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   induction fuel generalizing s with
-  | zero => simp [run_prim] at h; subst h; exact ⟨0, rfl⟩
+  | zero => simp only [run_prim, Option.some.injEq] at h; subst h; exact ⟨0, rfl⟩
   | succ fuel ih =>
     unfold run_prim at h
     split_ifs at h with hstop
@@ -2236,7 +2238,7 @@ theorem run_m_sound (fuel : Nat) (s s' : MState) (h : run_m fuel s = some s') :
     (mstate_to_cfg s) [tm15]⊢* (mstate_to_cfg s') := by
   induction fuel generalizing s with
   | zero =>
-    simp [run_m] at h; subst h; exact ⟨0, rfl⟩
+    simp only [run_m, Option.some.injEq] at h; subst h; exact ⟨0, rfl⟩
   | succ fuel ih =>
     simp only [run_m] at h
     cases hs : step_m s with
@@ -2267,7 +2269,6 @@ theorem is_halt_m_sound (s : MState) (h : is_halt_m s = true) :
 set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
-set_option maxHeartbeats 2000000
 
 noncomputable def bnot_fast (x : Bool) : Bool :=
   @Bool.rec (fun _ => Bool) true false x
@@ -2600,7 +2601,7 @@ noncomputable def parse_r_f_p (push_stack_f : Nat → Nat → Nat → Stack → 
       ([], s)
       (Nat.beq limit 0))
 
-noncomputable def sub_lsb_f_p(mkPart_f : Bool → Nat → PartList → PartList) : Nat → Bool → PartList → PartList → Option PartList :=
+noncomputable def sub_lsb_f_p (mkPart_f : Bool → Nat → PartList → PartList) : Nat → Bool → PartList → PartList → Option PartList :=
 @Nat.rec (fun _ => Bool → PartList → PartList → Option PartList)
   (fun _ _ _ => none)
   (fun _ ih c xs ys =>
@@ -2901,7 +2902,7 @@ fun s =>
       (band_fast (pre_absorb_l_fn s.l) (can_parse_r_fn s.r)))
     (Nat.beq s.q.val 0)
 
-noncomputable def step_prim_f_p(push_stack_f : Nat → Nat → Nat → Stack → Stack) (pop1_b_f : Stack → Bool × Stack) : MState → Option MState :=
+noncomputable def step_prim_f_p (push_stack_f : Nat → Nat → Nat → Stack → Stack) (pop1_b_f : Stack → Bool × Stack) : MState → Option MState :=
 fun s =>
   withProdFast (pop1_b_f s.r) (fun pr1 pr2 =>
     let step_r := fun (nq : Fin 6) (br : Nat) =>
@@ -3059,7 +3060,7 @@ fun s =>
   unfold nat_min_fast
   simp only [bool_rec_eq, nat_ble_def]
   by_cases h : x ≤ y
-  · simp [h, Nat.min_eq_left h]
+  · simp [h]
   · have h2 : y ≤ x := by omega
     simp [h, Nat.min_eq_right h2]
 
@@ -3067,7 +3068,7 @@ fun s =>
   unfold nat_max_fast
   simp only [bool_rec_eq, nat_ble_def]
   by_cases h : x ≤ y
-  · simp [h, Nat.max_eq_right h]
+  · simp [h]
   · have h2 : y ≤ x := by omega
     simp [h, Nat.max_eq_left h2]
 
@@ -3266,7 +3267,7 @@ theorem drop_stack_aux_fast_eq (s : Stack) (n : Nat) (hn : n ≠ 0) :
     simp only [bool_rec_eq, nat_ble_def, nat_beq_def, nat_sub_def, withNatFast_eq, with_nat_eq,
       consBlock1_eq, rot_mod_p_eq, hn, ↓reduceIte]
     by_cases hle : top.len ≤ n
-    · simp only [hle, decide_true, if_true_eq_true, ↓reduceIte]
+    · simp only [hle, decide_true, ↓reduceIte]
       by_cases hrem : n - top.len = 0
       · simp [hrem, drop_stack_zero]
       · have hne : (n - top.len == 0) = false := beq_eq_false_iff_ne.mpr hrem
@@ -3922,7 +3923,7 @@ theorem try_pair_stack_p_eq
               | cons b_hd b_tl =>
                 dsimp only [isEmptyPartListFast, List.isEmpty, Bool.false_eq_true, ↓reduceIte]
                 rw [withNatFast_eq, with_nat_eq]
-                simp only [withOptionFast_eq, someMStateFast_eq, fin6_0_eq, some_mstate_eq]
+                simp only [someMStateFast_eq, fin6_0_eq, some_mstate_eq]
                 cases sub_lsb_checked kfuel n (bsize_parts (b_hd :: b_tl)) (a_hd :: a_tl) (b_hd :: b_tl) with
                 | some out => rfl
                 | none =>
@@ -4086,7 +4087,7 @@ theorem can_any_macro_f_eq
     cases r with
     | nil => simp [bor_fast_eq, band_fast_eq, matchStackFast_eq]
     | cons top rest =>
-      simp only [matchStackFast_eq, bor_fast_eq, band_fast_eq, bnot_fast_eq, nat_land_def, nat_beq_def, nat_ble_def, Nat.and_one_is_mod]
+      simp only [matchStackFast_eq, bor_fast_eq, band_fast_eq, bnot_fast_eq, nat_land_def, nat_ble_def, Nat.and_one_is_mod]
       rfl
   · -- q = 1
     simp only [band_fast_eq, has_head_bit1_f_eq]
@@ -4098,7 +4099,7 @@ theorem can_any_macro_f_eq
     cases r with
     | nil => rfl
     | cons top rest =>
-      simp only [matchStackFast_eq, band_fast_eq, bnot_fast_eq, bool_rec_eq, nat_beq_def, nat_ble_def, has_head_bit1_f_eq, Bool.and_assoc]
+      simp only [matchStackFast_eq, band_fast_eq, bnot_fast_eq, nat_ble_def, has_head_bit1_f_eq, Bool.and_assoc]
       have h30 : ((0 + 1 + 1 + 1 == 0) = true) = False := by decide
       have h31 : ((0 + 1 + 1 + 1 == 1) = true) = False := by decide
       have h32 : ((0 + 1 + 1 + 1 == 2) = true) = False := by decide
@@ -4166,7 +4167,7 @@ theorem step_m_p_eq
     have hq_eq : (⟨0, hq⟩ : Fin 6) = 0 := rfl
     have h00 : ((0 == 0) = true) = True := by decide
     rw [hq_eq]
-    simp only [h00, ↓reduceIte]
+    simp only []
     cases try_pair_stack (Nat.add (Nat.add l.length r.length) 4) ⟨0, l, r⟩ <;>
       cases try_absorb_stack (Nat.add (Nat.add l.length r.length) 4) ⟨0, l, r⟩ <;>
       cases do_shift_right 0 3 1 1 1 ⟨0, l, r⟩ <;> rfl
@@ -4175,7 +4176,7 @@ theorem step_m_p_eq
     have h10 : ((0 + 1 == 0) = true) = False := by decide
     have h11 : ((0 + 1 == 1) = true) = True := by decide
     rw [hq_eq]
-    simp only [h10, h11, ↓reduceIte]
+    simp only []
     cases do_shift_left 1 1 1 0 1 ⟨1, l, r⟩ <;> rfl
   · unfold step_m_q2
     have hq_eq : (⟨0 + 1 + 1, hq⟩ : Fin 6) = 2 := rfl
@@ -4183,7 +4184,7 @@ theorem step_m_p_eq
     have h21 : ((0 + 1 + 1 == 1) = true) = False := by decide
     have h22 : ((0 + 1 + 1 == 2) = true) = True := by decide
     rw [hq_eq]
-    simp only [h20, h21, h22, ↓reduceIte]
+    simp only []
     cases do_shift_left 2 2 3 1 2 ⟨2, l, r⟩ <;> rfl
   · unfold step_m_q3
     have hq_eq : (⟨0 + 1 + 1 + 1, hq⟩ : Fin 6) = 3 := rfl
@@ -4192,7 +4193,7 @@ theorem step_m_p_eq
     have h32 : ((0 + 1 + 1 + 1 == 2) = true) = False := by decide
     have h33 : ((0 + 1 + 1 + 1 == 3) = true) = True := by decide
     rw [hq_eq]
-    simp only [h30, h31, h32, h33, ↓reduceIte]
+    simp only []
     cases do_shift_right 3 1 1 0 1 ⟨3, l, r⟩ <;>
       cases do_shift_right 3 3 2 1 1 ⟨3, l, r⟩ <;>
         cases do_shift_right 3 4 10 14 4 ⟨3, l, r⟩ <;>
@@ -4352,12 +4353,12 @@ theorem run_m_trans {m n : Nat} {s1 s2 s3 : MState}
     run_m (m + n) s1 = some s3 := by
   induction m generalizing s1 with
   | zero =>
-    simp [run_m] at h1; subst h1; simpa using! h2
+    simp only [run_m, Option.some.injEq] at h1; subst h1; simpa using! h2
   | succ m ih =>
     simp only [run_m, Nat.succ_add] at h1 ⊢
     cases hs : step_m s1 with
     | none => simp [hs] at h1
-    | some s' => simp [hs] at h1 ⊢; exact ih h1
+    | some s' => simp only [hs] at h1 ⊢; exact ih h1
 
 def MReach (s1 s2 : MState) : Prop :=
   ∃ fuel, run_m fuel s1 = some s2

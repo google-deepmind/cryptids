@@ -173,6 +173,7 @@ def rwVConfigLR : VConfig Γ Λ → VConfig Γ Λ
   | .R l .inf q => .mid l .inf default q
   | x => x
 
+omit [Inhabited Λ] in
 theorem rwVConfigLR_spec (fN : ℕ → ℕ) (fS : ℕ → ListBlank Γ) (x : VConfig Γ Λ) :
     (rwVConfigLR x).toCfg fN fS = x.toCfg fN fS := by
   rcases x with ⟨l, r, q⟩ | ⟨l, r, q⟩ | ⟨l, r, m, q⟩
@@ -331,6 +332,7 @@ def rwLpowRotate : VConfig Γ Λ → VConfig Γ Λ
   | .R l r q => .R (vsideRwLpowRotate l) (vsideRwLpowRotate r) q
   | .mid l r m q => .mid (vsideRwLpowRotate l) (vsideRwLpowRotate r) m q
 
+omit [Inhabited Λ] [DecidableEq Λ] in
 theorem rwLpowRotate_spec (fN : ℕ → ℕ) (fS : ℕ → ListBlank Γ) (x : VConfig Γ Λ) :
     (rwLpowRotate x).toCfg fN fS = x.toCfg fN fS := by
   rcases x with ⟨l, r, q⟩ | ⟨l, r, q⟩ | ⟨l, r, m, q⟩ <;>
@@ -346,6 +348,7 @@ def vconfigStep1 (M : Machine Γ Λ) : VConfig Γ Λ → Option (VConfig Γ Λ)
     | some (some q', Stmt.write m' .right) => some (.R (.cons m' l) r q')
   | _ => none
 
+omit [DecidableEq Γ] [DecidableEq Λ] in
 theorem vconfigStep1_spec (M : Machine Γ Λ) (fN : ℕ → ℕ) (fS : ℕ → ListBlank Γ)
     {x x₀ : VConfig Γ Λ} (h : vconfigStep1 M x = some x₀) :
     Multistep' M true (x.toCfg fN fS) (x₀.toCfg fN fS) := by
@@ -434,6 +437,7 @@ def vsideSplit (x : VSide Γ) : ℕ → Option (VSide Γ × List Γ)
     | .inf => some (.inf, ([default] : List Γ) ^ (n + 1))
     | _ => none
 
+omit [DecidableEq Γ] in
 theorem vsideSplit_spec (fN : ℕ → ℕ) (fS : ℕ → ListBlank Γ)
     {x x₁ : VSide Γ} {n : ℕ} {x₀ : List Γ}
     (h : vsideSplit x n = some (x₁, x₀)) :
@@ -465,6 +469,7 @@ theorem vsideSplit_spec (fN : ℕ → ℕ) (fS : ℕ → ListBlank Γ)
       exact (lpow_all0 [default] (n + 1) lb_cons_default).symm
     · cases h
 
+omit [DecidableEq Γ] [DecidableEq Λ] in
 /-- Left-moving shift-rule induction (`shift_rule_L` in `Individual.v`). -/
 theorem shift_rule_L {M : Machine Γ Λ} {q : Λ} {l₀ r₀ w : List Γ}
     (hstep : ∀ l r : ListBlank Γ,
@@ -479,6 +484,7 @@ theorem shift_rule_L {M : Machine Γ Λ} {q : Λ} {l₀ r₀ w : List Γ}
     have h1 := hstep l ((w ^ n) +> r)
     rwa [← append_assoc w (w ^ n) r, ← pow_succ_list w n] at h1
 
+omit [DecidableEq Γ] [DecidableEq Λ] in
 /-- Right-moving shift-rule induction (`shift_rule_R` in `Individual.v`). -/
 theorem shift_rule_R {M : Machine Γ Λ} {q : Λ} {l₀ r₀ w : List Γ}
     (hstep : ∀ l r : ListBlank Γ,

@@ -162,7 +162,7 @@ def bump1L : List ℕ → List ℕ
 
 theorem one_cons_encLeft (xs : List ℕ) :
     (1 : Fin 2) >> encLeft xs = encLeft (bump1L xs) := by
-  cases xs <;> simp [bump1L, encLeft, lWord, onesSep0, ListBlank.append, zero_cons_default]
+  cases xs <;> simp [bump1L, encLeft, lWord, onesSep0, ListBlank.append]
 
 @[simp]
 def push0R : List ℕ → List ℕ
@@ -171,7 +171,7 @@ def push0R : List ℕ → List ℕ
 
 theorem zero_cons_encRight (xs : List ℕ) :
     (0 : Fin 2) >> encRight xs = encRight (push0R xs) := by
-  cases xs <;> simp [push0R, encRight, rWord, ListBlank.append, zero_cons_default]
+  cases xs <;> simp [push0R, encRight, rWord]
 
 local macro "execute_in_1" : tactic => `(tactic| (
   iterate 1 step_in

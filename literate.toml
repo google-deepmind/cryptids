@@ -5,7 +5,6 @@ extra_css = ["literate-overrides.css"]
 # dotted subsection prefixes where `[order_children]` TOML keys wouldn't split.
 order = [
   "Cryptids",
-  "BusyBeaver",
   # BusyBeaver.Defs
   "BusyBeaver.Defs.Core",
   "BusyBeaver.Defs.Patterns",
@@ -18,9 +17,6 @@ order = [
   "BusyBeaver.BB6.Equivalences",
   "BusyBeaver.BB6.Hardness",
   "BusyBeaver.BB6.HardnessEvidence",
-  "BusyBeaver.BB6.Accelerations",
-  "BusyBeaver.BB6.A6",
-  "BusyBeaver.BB6.Pomme",
   # Cryptids.Semantics
   "Cryptids.Semantics.Goldbach",
   "Cryptids.Semantics.Zf",
@@ -159,8 +155,6 @@ module = "BusyBeaver.BB33.WilyCoyote"
   "BusyBeaver.AffRLE",
   "BusyBeaver.WordRunStack",
   "BusyBeaver.ElabRLE",
-  "BusyBeaver.BB6",
-  "BusyBeaver.BB33",
 ]
 "Cryptids" = [
   "Cryptids.Propositions",
@@ -183,8 +177,6 @@ module = "BusyBeaver.BB33.WilyCoyote"
   "Cryptids.WeakCollatz15",
   "Cryptids.Legendre21",
   "Cryptids.Kurepa19",
-  "Cryptids.Semantics",
-  "Cryptids.ReductionSupport",
 ]
 
 # Verso's dark mode leaves code tokens black on a dark background.

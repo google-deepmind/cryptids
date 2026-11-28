@@ -689,7 +689,7 @@ theorem k5_gen (L1 : List ℕ) (m p : ℕ) (rest : List ℕ)
   refine tg OK 5 p rest L1 m ?_ ?_
   · intro i a L3
     refine ⟨_, rfl, ?_⟩
-    simp only [Inv, pushB, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+    simp only [Inv, pushB, List.replicate, List.cons_append, List.nil_append, 
       nth0_zero_cons, nth0_succ_cons]
     exact Hub.H4 _ (i + m) _ rfl (by simp) ⟨by omega, hrest⟩ (fun hq => by omega)
   · intro i L4 _ _
@@ -697,7 +697,7 @@ theorem k5_gen (L1 : List ℕ) (m p : ℕ) (rest : List ℕ)
     have het : ns + (i + m) = (ns + (i + m) - 1) + 1 := by omega
     rw [Aout_S _ _ _ 4 _ _ _ het]
     refine ⟨_, rfl, ?_⟩
-    simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+    simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, 
       nth0_zero_cons, nth0_succ_cons]
     rcases nat_even_or_odd_two_mul (i + m) with ⟨e, he⟩ | ⟨e, he⟩
     · refine Hub.H3e _ e _ (by omega) (by simp) ⟨by omega, hrest⟩ ?_
@@ -716,7 +716,7 @@ theorem k1_gen (L1 : List ℕ) (m p : ℕ) (rest : List ℕ)
   refine tg OK 1 p rest L1 m ?_ ?_
   · intro i a L3
     refine ⟨_, rfl, ?_⟩
-    simp only [Inv, pushB, List.replicate, List.nil_append, nth0_nil, nth0_zero_cons,
+    simp only [Inv, pushB, List.replicate, List.nil_append, nth0_zero_cons,
       nth0_succ_cons]
     exact Hub.H0 _ _ (by omega) ⟨by omega, hrest⟩
       (fun h1 => by omega) (fun h2 => by omega) (fun hnil => by simp at hnil) (fun hnil => by simp
@@ -726,7 +726,7 @@ theorem k1_gen (L1 : List ℕ) (m p : ℕ) (rest : List ℕ)
     have het : ns + (i + m) = (ns + (i + m) - 1) + 1 := by omega
     rw [Aout_S _ _ _ 0 _ _ _ het]
     refine ⟨_, rfl, ?_⟩
-    simp only [Inv, pushC, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+    simp only [Inv, pushC, nth0_zero_cons, nth0_succ_cons]
     refine Hub.H0 _ _ (by omega) hrest (fun h1 => by omega) (fun h2 => by omega) ?_ (fun _ h3 =>
       by omega)
     intro hrest0 h5 ⟨hx0, _⟩
@@ -746,24 +746,24 @@ theorem k5_zero (L1 : List ℕ) (p : ℕ) (rest : List ℕ)
     OK (mturnE 0 L1 5 p rest) := by
   cases L1 with
   | nil =>
-    simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons, Zr] at hz
+    simp only [nth0_nil, Zr] at hz
     have hy := (hz trivial).1
     omega
   | cons a L1 =>
     rcases a with _ | _ | a
-    · simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons, Zr] at hz
+    · simp only [nth0_zero_cons, nth0_succ_cons, Zr] at hz
       obtain ⟨hy, hu⟩ := hz trivial
       cases L1 with
       | nil =>
-        simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy
+        simp only [nth0_nil] at hy
         omega
       | cons ns L4 =>
-        simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy hu
+        simp only [nth0_zero_cons, nth0_succ_cons] at hy hu
         dsimp only [mturnE]
         have het : ns + 0 = (ns - 1) + 1 := by omega
         rw [Aout_S 0 ns L4 4 p rest (ns - 1) het]
         refine ⟨_, rfl, ?_⟩
-        simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+        simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, 
           nth0_zero_cons, nth0_succ_cons]
         refine Hub.H3e _ 0 _ rfl (by simp) ⟨by omega, hrest⟩ ?_
         dsimp only [S3e]
@@ -774,10 +774,10 @@ theorem k5_zero (L1 : List ℕ) (p : ℕ) (rest : List ℕ)
     · dsimp only [mturnE]
       exact k5_gen L1 1 p rest (by omega) hrest hne
     · refine ⟨_, rfl, ?_⟩
-      simp only [mturnE, Inv, pushB, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+      simp only [Inv, pushB, List.replicate, List.cons_append, List.nil_append, 
         nth0_zero_cons, nth0_succ_cons]
       refine Hub.H4 _ 0 _ rfl (by simp) ⟨by omega, hrest⟩ (fun _ => ?_)
-      simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons, Zr] at hz ⊢
+      simp only [nth0_zero_cons, nth0_succ_cons, Zr] at hz ⊢
       intro hev
       exact hz (by omega)
 
@@ -800,7 +800,7 @@ theorem inv_t5 (L2 : List ℕ) (w : ℕ) (W : List ℕ)
       cases W with
       | nil =>
         refine ⟨_, rfl, ?_⟩
-        simp only [mturnE, top, Inv, pushB, List.replicate, List.nil_append, nth0_nil,
+        simp only [Inv, pushB, List.replicate, List.nil_append, 
           nth0_zero_cons, nth0_succ_cons]
         exact Hub.H0 _ _ (by omega) ⟨by omega, trivial⟩
           (fun _ => ⟨by omega, by simp⟩) (fun h2 => by omega)
@@ -808,7 +808,7 @@ theorem inv_t5 (L2 : List ℕ) (w : ℕ) (W : List ℕ)
       | cons p rest =>
         obtain ⟨hp, hrest⟩ := hW
         refine ⟨_, rfl, ?_⟩
-        simp only [mturnE, top, Inv, pushB, List.replicate, List.nil_append, nth0_nil,
+        simp only [Inv, pushB, List.replicate, List.nil_append, 
           nth0_zero_cons, nth0_succ_cons]
         exact Hub.H0 _ _ (by omega) ⟨by omega, hrest⟩
           (fun _ => ⟨by omega, by simp⟩) (fun h2 => by omega)
@@ -826,8 +826,8 @@ theorem inv_t5 (L2 : List ℕ) (w : ℕ) (W : List ℕ)
         have h41 : 4 + 1 = 5 := rfl
         rw [h41, mturnE_rep]
         refine ⟨_, rfl, ?_⟩
-        simp only [mturnE, Inv, pushB, List.replicate, List.cons_append, List.nil_append,
-          nth0_nil, nth0_zero_cons, nth0_succ_cons]
+        simp only [Inv, pushB, List.replicate, List.cons_append, List.nil_append,
+          nth0_zero_cons, nth0_succ_cons]
         exact Hub.H4 _ (q + 0) _ (by omega) (by simp) ⟨by omega, trivial⟩ (fun _ hev => by omega)
     | cons p rest =>
       obtain ⟨hp, hrest⟩ := hW
@@ -837,12 +837,12 @@ theorem inv_t5 (L2 : List ℕ) (w : ℕ) (W : List ℕ)
         refine ⟨_, rfl, ?_⟩
         cases q with
         | zero =>
-          simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+          simp only [rep1, bump, Inv, Tr, Zr]
           exact ⟨⟨by omega, fun hev => by omega, fun h3 => by omega⟩, TR.T1 p rest hrest⟩
         | succ q =>
-          simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+          simp only [rep1, bump, Inv, Tr, Zr]
           refine ⟨⟨by omega, fun hev => by omega, fun _ ⟨hy, _⟩ => ?_⟩, TR.T1 p rest hrest⟩
-          cases q <;> simp only [rep1, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy <;> omega
+          cases q <;> simp only [rep1, nth0_zero_cons] at hy <;> omega
 
 theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
     (ht : Tr a (nth0 0 L2) (nth0 1 L2)) (hr : TR p W) :
@@ -864,7 +864,7 @@ theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
           cases W with
           | nil =>
             refine ⟨_, rfl, ?_⟩
-            simp only [mread, mturn, top, mturnE, Inv, pushB, nth0_nil, nth0_zero_cons,
+            simp only [top, Inv, pushB, nth0_zero_cons,
               nth0_succ_cons]
             exact Hub.H0 _ _ (by omega) trivial
               (fun h1 => by omega) (fun _ hev => (hz' hev).1)
@@ -872,7 +872,7 @@ theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
           | cons p2 rest =>
             obtain ⟨hp, hrest⟩ := hW
             refine ⟨_, rfl, ?_⟩
-            simp only [mread, mturn, top, mturnE, Inv, pushB, nth0_nil, nth0_zero_cons,
+            simp only [top, Inv, pushB, nth0_zero_cons,
               nth0_succ_cons]
             refine Hub.H0 _ _ (by omega) hrest
               (fun h1 => by omega) (fun h2 => by omega)
@@ -895,7 +895,7 @@ theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
             have het : (a + 2) + (q + 0) = ((a + 1) + (q + 0)) + 1 := by omega
             rw [Aout_S _ _ _ 0 _ _ _ het]
             refine ⟨_, rfl, ?_⟩
-            simp only [Inv, pushC, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+            simp only [Inv, pushC, nth0_zero_cons, nth0_succ_cons]
             refine Hub.H0 _ _ (by omega) trivial
               (fun h1 => by omega) (fun h2 => by omega)
               (fun _ h5 ⟨hx0, _⟩ => by omega) (fun _ h3' ⟨hx1, hy0, _⟩ => ?_)
@@ -909,7 +909,7 @@ theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
             have het : (a + 2) + (q + 0) = ((a + 1) + (q + 0)) + 1 := by omega
             rw [Aout_S _ _ _ 0 _ _ _ het]
             refine ⟨_, rfl, ?_⟩
-            simp only [Inv, pushC, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+            simp only [Inv, pushC, nth0_zero_cons, nth0_succ_cons]
             exact Hub.H0 _ _ (by omega) hrest
               (fun h1 => by omega) (fun h2 => by omega)
               (fun _ _ ⟨hx0, _⟩ => by omega) (fun _ h3' => by omega)
@@ -934,7 +934,7 @@ theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
             have het : (a + 2) + (q + 0) = ((a + 1) + (q + 0)) + 1 := by omega
             rw [Aout_S _ _ _ 4 _ _ _ het]
             refine ⟨_, rfl, ?_⟩
-            simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+            simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, 
               nth0_zero_cons, nth0_succ_cons]
             rcases nat_even_or_odd_two_mul (q + 0) with ⟨e, he⟩ | ⟨e, he⟩
             · refine Hub.H3e _ e _ (by omega) (by simp) ⟨by omega, trivial⟩ ?_
@@ -958,26 +958,26 @@ theorem inv_t0 (a : ℕ) (L2 : List ℕ) (p : ℕ) (W : List ℕ)
             refine ⟨_, rfl, ?_⟩
             cases q with
             | zero =>
-              simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+              simp only [rep1, bump, Inv, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
               refine ⟨⟨by omega, fun _ => ⟨by omega, fun hev => (hz' (by omega)).1⟩,
                 fun h3' => by omega⟩, TR.T1 p2 rest hrest⟩
             | succ q =>
-              simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+              simp only [rep1, bump, Inv, Tr, Zr]
               refine ⟨⟨by omega, fun hev => by omega, fun _ ⟨hy, hu⟩ => ?_⟩, TR.T1 p2 rest hrest⟩
-              cases q <;> simp only [rep1, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy hu <;>
+              cases q <;> simp only [rep1, nth0_zero_cons, nth0_succ_cons] at hy hu <;>
                 omega
     | T2 W hn hW =>
       cases W with
       | nil => exact False.elim (hn rfl)
       | cons w W' =>
         refine ⟨_, rfl, ?_⟩
-        simp only [mread, mturn, top, mturnE, Inv, pushB, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+        simp only [top, Inv, pushB, nth0_zero_cons, nth0_succ_cons]
         exact Hub.H0 _ _ (by omega) hW
           (fun h1 => by omega) (fun _ hev => (hz' hev).1)
           (fun hnil => by simp at hnil) (fun hnil => by simp at hnil)
     | T3 W hn hW =>
       refine ⟨_, rfl, ?_⟩
-      simp only [mread, mturn, top, mturnE, Inv, pushB, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+      simp only [top, Inv, pushB, nth0_zero_cons, nth0_succ_cons]
       exact Hub.H1 _ 0 _ rfl hn hW
 
 theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
@@ -1024,7 +1024,7 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
           refine tg OK 5 0 [] L1 (q + 0 + 1) ?_ ?_
           · intro i a L3
             refine ⟨_, rfl, ?_⟩
-            simp only [Inv, pushB, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+            simp only [Inv, pushB, List.replicate, List.cons_append, List.nil_append, 
               nth0_zero_cons, nth0_succ_cons]
             exact Hub.H4 _ (i + (q + 0 + 1)) _ rfl (by simp) ⟨by omega, trivial⟩ (fun hq0 => by
               omega)
@@ -1033,7 +1033,7 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
             have het : ns + (i + (q + 0 + 1)) = (ns + (i + (q + 0 + 1)) - 1) + 1 := by omega
             rw [Aout_S _ _ _ 4 _ _ _ het]
             refine ⟨_, rfl, ?_⟩
-            simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, nth0_nil,
+            simp only [Inv, pushC, List.replicate, List.cons_append, List.nil_append, 
               nth0_zero_cons, nth0_succ_cons]
             rcases nat_even_or_odd_two_mul (i + (q + 0 + 1)) with ⟨e, he⟩ | ⟨e, he⟩
             · refine Hub.H3e _ e _ (by omega) (by simp) ⟨by omega, trivial⟩ ?_
@@ -1063,13 +1063,13 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
           refine ⟨_, rfl, ?_⟩
           cases q with
           | zero =>
-            simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+            simp only [rep1, bump, Inv, Tr, Zr]
             exact ⟨⟨by omega, fun hev => by omega, fun _ ⟨hx0, _⟩ => (h1z rfl).1 hx0⟩,
               TR.T1 p rest hrest⟩
           | succ q =>
-            simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+            simp only [rep1, bump, Inv, Tr, Zr]
             refine ⟨⟨by omega, fun hev => by omega, fun _ ⟨hy, _⟩ => ?_⟩, TR.T1 p rest hrest⟩
-            cases q <;> simp only [rep1, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy <;> omega
+            cases q <;> simp only [rep1, nth0_zero_cons] at hy <;> omega
   | H1 q W he hn hW =>
     subst he
     rw [mread_even]
@@ -1094,14 +1094,14 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
     dsimp only [mturnE]
     cases L1 with
     | nil =>
-      simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons] at hx
+      simp only [nth0_nil] at hx
       omega
     | cons a L2 =>
-      rcases a with _ | _ | a <;> simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons] at hx
+      rcases a with _ | _ | a <;> simp only [nth0_zero_cons] at hx
       · omega
       · omega
       · refine ⟨_, rfl, ?_⟩
-        simp only [mturnE, top, Inv, pushB, List.replicate, List.nil_append, nth0_nil,
+        simp only [Inv, pushB, List.replicate, List.nil_append, 
           nth0_zero_cons, nth0_succ_cons]
         exact Hub.HQ _ (q + 0) _ (by omega) hn hW
   | H2o q W he hn hW hne =>
@@ -1129,36 +1129,36 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
     dsimp only [mturnE]
     cases L1 with
     | nil =>
-      rcases q with _ | _ | q <;> simp only [S3e, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hs
+      rcases q with _ | _ | q <;> simp only [S3e, nth0_nil] at hs
         <;> omega
     | cons a L2 =>
       rcases a with _ | _ | a
       · rcases q with _ | _ | q
-          <;> simp only [S3e, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hs
+          <;> simp only [S3e, nth0_zero_cons, nth0_succ_cons] at hs
           <;> omega
       · dsimp only [mturnE]
         rcases q with _ | _ | q
-        · simp only [S3e, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hs
+        · simp only [S3e, nth0_zero_cons, nth0_succ_cons] at hs
           have hy := hs.2 trivial
           cases L2 with
           | nil =>
-            simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy
+            simp only [nth0_nil] at hy
             omega
           | cons b L3 =>
-            simp only [nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy
+            simp only [nth0_zero_cons] at hy
             rcases b with _ | _ | b
             · omega
             · omega
             · refine ⟨_, rfl, ?_⟩
-              simp only [mturnE, top, Inv, pushB, List.replicate, List.nil_append, nth0_nil,
+              simp only [Inv, pushB, List.replicate, List.nil_append, 
                 nth0_zero_cons, nth0_succ_cons]
               exact Hub.HP _ 1 _ (by omega) hn hW
-        · simp only [S3e, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hs
+        · simp only [S3e, nth0_zero_cons] at hs
           have hne := hs.2 trivial
           refine tg OK 1 0 (0 :: 0 :: W) L2 3 ?_ ?_
           · intro i a' L3
             refine ⟨_, rfl, ?_⟩
-            simp only [top, Inv, pushB, List.replicate, List.nil_append, nth0_nil, nth0_zero_cons,
+            simp only [Inv, pushB, List.replicate, List.nil_append, nth0_zero_cons,
               nth0_succ_cons]
             exact Hub.HP _ (i + 2) _ (by omega) hn hW
           · intro i L4 _ _
@@ -1166,14 +1166,14 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
             have het : ns + (i + 3) = (ns + (i + 3) - 1) + 1 := by omega
             rw [Aout_S _ _ _ 0 _ _ _ het]
             refine ⟨_, rfl, ?_⟩
-            simp only [Inv, pushC, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+            simp only [Inv, pushC, nth0_zero_cons, nth0_succ_cons]
             rcases nat_even_or_odd_two_mul (i + 3) with ⟨e, he'⟩ | ⟨e, he'⟩
             · exact Hub.H2o _ (e + 1) _ (by omega) hn hW hne
             · exact Hub.H2e _ (e + 1) _ (by omega) hn hW (by omega)
-        · simp only [S3e, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hs
+        · simp only [S3e, nth0_zero_cons] at hs
           omega
       · refine ⟨_, rfl, ?_⟩
-        simp only [mturnE, top, Inv, pushB, List.replicate, List.nil_append, nth0_nil,
+        simp only [Inv, pushB, List.replicate, List.nil_append, 
           nth0_zero_cons, nth0_succ_cons]
         exact Hub.HP _ (q + 0) _ (by omega) hn hW
   | H3o q W he hn hW hq =>
@@ -1230,16 +1230,16 @@ theorem inv_hub (L1 : List ℕ) (z : ℕ) (R1 : List ℕ)
     subst he
     rw [mread_odd]
     refine ⟨_, rfl, ?_⟩
-    simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+    simp only [rep1, bump, Inv, Tr, Zr]
     refine ⟨⟨by omega, fun hev => by omega, fun _ ⟨hy, _⟩ => ?_⟩, TR.T3 W hn hW⟩
-    cases q <;> simp only [rep1, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy <;> omega
+    cases q <;> simp only [rep1, nth0_zero_cons] at hy <;> omega
   | HQ q W he hn hW =>
     subst he
     rw [mread_odd]
     refine ⟨_, rfl, ?_⟩
-    simp only [mone, rep1, bump, Inv, nth0_nil, nth0_zero_cons, nth0_succ_cons, Tr, Zr]
+    simp only [rep1, bump, Inv, Tr, Zr]
     refine ⟨⟨by omega, fun hev => by omega, fun _ ⟨hy, _⟩ => ?_⟩, TR.T2 W hn hW⟩
-    cases q <;> simp only [rep1, nth0_nil, nth0_zero_cons, nth0_succ_cons] at hy <;> omega
+    cases q <;> simp only [rep1, nth0_zero_cons] at hy <;> omega
 
 theorem inv_step (s : List ℕ × List ℕ) (h : Inv s) :
     ∃ s', mstep s = some s' ∧ Inv s' := by
@@ -1278,7 +1278,7 @@ theorem init_reaches_s0 : (init []) [target_tm]⊢* CC s0 := by
   bb_steps
 
 theorem inv0 : Inv s0 := by
-  simp only [Inv, s0, nth0_nil, nth0_zero_cons, nth0_succ_cons]
+  simp only [Inv, s0, nth0_zero_cons, nth0_succ_cons]
   exact Hub.H0 2 [] (by omega) trivial
     (fun h1 => by omega) (fun _ _ => by omega) (fun _ h5 => by omega) (fun _ h3 => by omega)
 

@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RF_1LC0RA_HHH0LD_1RE1LD_0LF0LB_1RA1LE
@@ -1357,9 +1360,9 @@ theorem mkActive2_sound (k n c1 d1 c2 d2 : Nat) (rest : RBlocks) :
 
 def pow2_256 : Nat := 115792089237316195423570985008687907853269984665640564039457584007913129639936
 def pow2_128 : Nat := 340282366920938463463374607431768211456
-def pow2_64  : Nat := 18446744073709551616
-def pow2_32  : Nat := 4294967296
-def pow2_16  : Nat := 65536
+def pow2_64 : Nat := 18446744073709551616
+def pow2_32 : Nat := 4294967296
+def pow2_16 : Nat := 65536
 
 def stepBSearch (K c bit powBit r p : Nat) (cont : Nat → Nat → HState) : HState :=
   bindNat (bit + r) fun r' =>
@@ -2058,6 +2061,7 @@ theorem holdout_halt_of_runPow (h_halt : runPow 13 s0 = HState.halted) : IsHalt 
   exact ReachHalt.to_isHalt (reach_init_s0 h_s0)
 
 set_option maxHeartbeats 10000000 in
+-- Increased heartbeat limit for heavy kernel/tactic evaluation.
 theorem reaches_halt : runPow 13 s0 = HState.halted := by decide +kernel
 
 public section

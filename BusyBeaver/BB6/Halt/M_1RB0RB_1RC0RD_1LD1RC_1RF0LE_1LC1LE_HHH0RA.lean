@@ -7,6 +7,9 @@ module
 public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 @[expose] public section
 
 open Mathlib Relation Nat Turing BusyBeaver SixState
@@ -586,23 +589,23 @@ theorem step_spec_trans {c₁ c₂ : Cfg (Fin 2) (Fin 6)} {res : StepRes}
 
 theorem S_nil_l (a b : Nat) (r : List Nat) :
     S [] a b r = S [0] a b r := by
-  simp [S, LC, W1, z0i]
+  simp [S, LC, W1]
 
 theorem S_nil_l1 (x0 a b : Nat) (r : List Nat) :
     S [x0] a b r = S [x0, 0] a b r := by
-  simp [S, LC, W1, z0i]
+  simp [S, LC, W1]
 
 theorem S_nil_l2 (x0 x1 a b : Nat) (r : List Nat) :
     S [x0, x1] a b r = S [x0, x1, 0] a b r := by
-  simp [S, LC, W1, z0i]
+  simp [S, LC, W1]
 
 theorem S_nil_l3 (x0 x1 x2 a b : Nat) (r : List Nat) :
     S [x0, x1, x2] a b r = S [x0, x1, x2, 0] a b r := by
-  simp [S, LC, W1, z0i]
+  simp [S, LC, W1]
 
 theorem S_nil_r (l : List Nat) (a b : Nat) :
     S l a b [] = S l a b [0] := by
-  simp [S, RC, W1, z0i]
+  simp [S, RC, W1]
 
 theorem pop_l_spec {a b : Nat} {r : List Nat} {k : Nat → NList → StepRes} (l : NList)
     (hk : ∀ x0 l1, StepSpec (S (x0 :: denote_list l1) a b r) (k x0 l1)) :
@@ -1177,7 +1180,7 @@ theorem do_odd_step_sound (x0 x1 x2 : Nat) (rest1 : NList) (y0 y1 : Nat) (rest' 
         rw [S_nil_r]
         have h1 := Odd_S02_S12_Spos x0 x1 0 [x2, 0] [] hodd hge
         have h1' : S (x0 :: x1 :: [x2]) 0 2 [0] = S (x0 :: x1 :: x2 :: [0]) 0 2 [0] := by
-          simp [S, LC, W1, z0i]
+          simp [S, LC, W1]
         have h2 := Even_S02_S01 (x1 + x0 / 2 - 3) x2 0 1 [] [x0 / 2 + 1] hu
         have h3 := S03 (x2 + (x1 + x0 / 2 - 3) / 2 + 3) 1 ((x1 + x0 / 2 - 3) / 2) (x0 / 2 + 1) [] []
         have h4 := S03 ((x1 + x0 / 2 - 3) / 2) (x2 + (x1 + x0 / 2 - 3) / 2 + 5) (x0 / 2) 0 [2] []
@@ -1409,7 +1412,7 @@ theorem do_odd_k_sound
           have h1 := Odd_S02_S12_Spos x0 x1 0 (x2 :: denote_list rest1) [] hodd hge
           have h2 := rec_step_fuel_sound 20 (x1 + x0 / 2 - 3) x2 rest1 z0 z1 zrest (x0 / 2 + 1) [] hrec
           have h3 := S03 z0 z1 (x0 / 2) 0 (denote_list zrest) []
-          simp only [denote_list, Nat.zero_add] at *
+          simp only [Nat.zero_add] at *
           exact zSt h1 (zSt h2 (by simpa [← S_nil_r, Nat.add_assoc] using! h3))
         exact zSt hstep1 (hcont _ _ _ _ h)
 

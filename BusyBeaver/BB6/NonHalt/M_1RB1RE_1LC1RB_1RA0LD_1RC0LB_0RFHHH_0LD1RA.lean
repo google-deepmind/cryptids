@@ -10,6 +10,9 @@ public import BusyBeaver.Calculi.Counter
 public import BusyBeaver.Calculi.Excursion
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RE_1LC1RB_1RA0LD_1RC0LB_0RFHHH_0LD1RA
@@ -48,7 +51,6 @@ abbrev qi : Machine (Fin 2) (Fin 6)
   | 4,1 => none
   | 5,0 => some (some 3,Stmt.write 0 Dir.right)
   | 5,1 => some (some 0,Stmt.write 1 Dir.left)
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 200000
 @[simp] theorem multiStep_zero (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 0=some config:=rfl
 @[simp] theorem multiStep_one (M : Machine Γ Λ) (config : Cfg Γ Λ) : multiStep M config 1=step M config:=rfl
@@ -71,7 +73,7 @@ set_option maxRecDepth 200000
 @[simp] theorem pow_succ_list (l : List α) (n : ℕ) : l ^ (n + 1)=l ++ l ^ n:=rfl
 theorem qh (l : List α) (m n : ℕ) : l ^ (m + n)=l ^ m ++ l ^ n:= by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih => simp [pow_succ_list,Nat.succ_add,ih,List.append_assoc]
 theorem pow_shift (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
   induction n with
@@ -82,10 +84,10 @@ theorem pow_shift (l : List α) (n : ℕ) : l ^ n ++ l=l ^ (n + 1):= by
   | zero => rfl
   | succ n ih => exact ih
 theorem commute_power {x v w : List (Fin 2)} {a b : ℕ}
-    (h : x ++ v ^ a=w ^ b ++ x) (k : ℕ) :
+    (h : x ++ v ^ a = w ^ b ++ x) (k : ℕ) :
     x ++ v ^ (k * a)=w ^ (k * b) ++ x:=
   BusyBeaver.Excursion.commute_pow_left h k
-theorem qZ {w : List (Fin 2)} (h : w.all (fun b => b == 0)=true) :
+theorem qZ {w : List (Fin 2)} (h : w.all (fun b => b == 0) = true) :
     w +> default=default:= by
   induction w with
   | nil => rfl
@@ -93,7 +95,7 @@ theorem qZ {w : List (Fin 2)} (h : w.all (fun b => b == 0)=true) :
     simp only [List.all_cons,Bool.and_eq_true,beq_iff_eq] at h
     rcases h with ⟨rfl,hw⟩
     rw [append_cons,ih hw,zero_cons_default]
-theorem qaa {w : List (Fin 2)} (h : w.all (fun b => b == 0)=true) (n : ℕ) :
+theorem qaa {w : List (Fin 2)} (h : w.all (fun b => b == 0) = true) (n : ℕ) :
     (w ^ n) +> default=default:= by
   induction n with
   | zero => rfl

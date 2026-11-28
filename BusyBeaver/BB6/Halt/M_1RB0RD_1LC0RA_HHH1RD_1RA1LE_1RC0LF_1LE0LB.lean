@@ -8,6 +8,9 @@ public import BusyBeaver.Basic
 public import BusyBeaver.Bridge
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB0RD_1LC0RA_HHH1RD_1RA1LE_1RC0LF_1LE0LB
@@ -46,7 +49,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 20000000
-set_option maxHeartbeats 0
 
 def A : Fin 6 := 0
 def B : Fin 6 := 1
@@ -103,13 +105,13 @@ omit [Inhabited Γ] in
 omit [Inhabited Γ] in
 theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
   induction n with
-  | zero => simp [pow_zero_list]
+  | zero => simp
   | succ n ih =>
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
 theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
-  rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
+  rw [list_pow_add]; simp [pow_succ_list]
 
 omit [Inhabited Γ] in
 theorem pow_comm_one (l : List Γ) (n : Nat) : l ^ n ++ l = l ++ l ^ n := by
@@ -1089,7 +1091,7 @@ theorem root_step (t : ℕ) (X X' : ListBlank (Fin 2)) (h : sideRL B D X X') :
 
 theorem root_steps : ∀ (n t : ℕ) (X X' : ListBlank (Fin 2)),
     sideRLs n X X' → (root t X) [tm_coq]⊢* (root (n + t) X')
-  | 0, t, X, _, .zero _ => by simp [stepStar_refl]
+  | 0, t, X, _, .zero _ => by simp
   | n + 1, t, X, X', .succ h₁ hs => by
     have hstep := root_step t X _ h₁
     have hrest := root_steps n (t + 1) _ X' hs
@@ -1139,7 +1141,7 @@ theorem cstopF (a x : ℕ) (far : List (Fin 2)) :
   | zero =>
     refine ⟨([1, 1, 1] ++ [0] ++ [1, 0] ^ x) ++ far, ?_, ?_⟩
     · simpa [lead0, List.append_assoc] using segRL_frame far (leadstop0 x)
-    · simp [lead1, blk, List.append_assoc]
+    · simp [lead1, blk]
   | succ a =>
     refine ⟨lead1 a x ++ far, ?_, ?_⟩
     · simpa [lead0, List.append_assoc] using segRL_frame far (leadstopS a x)
@@ -2356,7 +2358,7 @@ theorem closedU_spec (n : ℕ) (u u' : UnitN) (p : ℕ) (h : closedU n u = .some
     have hn : n ≠ 0 := by intro h0; subst h0; nomatch hn0
     rcases u with ⟨⟨_ | ⟨⟨c, j⟩ | _, r⟩, back⟩ | _, _ | _, ua, ux, ug⟩ | _
     · -- front = [], ubit = false
-      simp only [strictBool_eq, strictNat_eq] at h
+      simp only [strictBool_eq] at h
       try dsimp at h
       cases hn1 : Nat.beq n 1 with
       | true =>
@@ -2398,7 +2400,7 @@ theorem closedU_spec (n : ℕ) (u u' : UnitN) (p : ℕ) (h : closedU n u = .some
               rw [hn_eq, hua] at hcl
               simpa [uwN, bsqToList] using hcl
     · -- front = [], ubit = true
-      simp only [strictBool_eq, strictNat_eq] at h
+      simp only [strictBool_eq] at h
       try dsimp at h
       cases hug : Nat.beq ug 0 with
       | false => rw [hug] at h; nomatch h
@@ -2420,7 +2422,7 @@ theorem closedU_spec (n : ℕ) (u u' : UnitN) (p : ℕ) (h : closedU n u = .some
           rw [hn_eq, hua] at hcl
           simpa [uwN, bsqToList] using hcl
     · -- front = (c, j) :: r, ubit = false
-      simp only [strictBool_eq, strictNat_eq] at h
+      simp only [strictBool_eq] at h
       try dsimp at h
       cases hn1 : Nat.beq n 1 with
       | true =>
@@ -2464,7 +2466,7 @@ theorem closedU_spec (n : ℕ) (u u' : UnitN) (p : ℕ) (h : closedU n u = .some
               rw [hc_eq, hn_eq] at hcl
               simpa [uwN, bsqToList, pairToProd] using hcl
     · -- front = (c, j) :: r, ubit = true
-      simp only [strictBool_eq, strictNat_eq] at h
+      simp only [strictBool_eq] at h
       try dsimp at h
       cases hug : Nat.beq ug 0 with
       | false => rw [hug] at h; nomatch h
@@ -3185,7 +3187,6 @@ def cmd_401 : Cmd := (.l 1358392837229425809441 (.l 679196418614712904720 (.l 33
 def fullProg : Prog := (.inc (.inc (.inc (.inc (.hier cmd_4 (.inc (.inc (.inc (.hier cmd_8 (.inc (.inc (.inc (.hier cmd_12 (.inc (.inc (.inc (.hier cmd_16 (.inc (.inc (.inc (.hier cmd_20 (.inc (.inc (.inc (.hier cmd_24 (.inc (.inc (.inc (.hier cmd_28 (.inc (.inc (.inc (.hier cmd_32 (.inc (.inc (.inc (.hier cmd_36 (.inc (.inc (.inc (.hier cmd_40 (.inc (.inc (.inc (.hier cmd_44 (.inc (.inc (.inc (.hier cmd_48 (.inc (.inc (.inc (.hier cmd_52 (.inc (.inc (.inc (.hier cmd_56 (.inc (.inc (.inc (.hier cmd_60 (.inc (.inc (.inc (.hier cmd_64 (.inc (.inc (.inc (.hier cmd_68 (.inc (.inc (.inc (.hier cmd_72 (.inc (.inc (.inc (.hier cmd_76 (.inc (.inc (.inc (.hier cmd_80 (.inc (.inc (.inc (.hier cmd_84 (.inc (.inc (.inc (.hier cmd_88 (.inc (.inc (.inc (.hier cmd_92 (.inc (.inc (.inc (.hier cmd_96 (.inc (.inc (.inc (.hier cmd_100 (.inc (.inc (.inc (.hier cmd_104 (.inc (.inc (.inc (.hier cmd_108 (.inc (.inc (.inc (.hier cmd_112 (.inc (.inc (.inc (.hier cmd_116 (.inc (.inc (.inc (.hier cmd_120 (.inc (.inc (.inc (.hier cmd_124 (.inc (.inc (.inc (.hier cmd_128 (.inc (.inc (.inc (.hier cmd_132 (.inc (.inc (.inc (.hier cmd_136 (.inc (.inc (.inc (.hier cmd_140 (.inc (.inc (.inc (.hier cmd_144 (.hier cmd_145 (.inc (.inc (.inc (.hier cmd_149 (.inc (.inc (.inc (.hier cmd_153 (.inc (.inc (.inc (.hier cmd_157 (.hier cmd_158 (.inc (.inc (.inc (.hier cmd_162 (.hier cmd_163 (.inc (.inc (.inc (.hier cmd_167 (.inc (.inc (.inc (.hier cmd_171 (.hier cmd_172 (.inc (.inc (.inc (.hier cmd_176 (.hier cmd_177 (.inc (.inc (.inc (.hier cmd_181 (.inc (.inc (.inc (.hier cmd_185 (.hier cmd_186 (.inc (.inc (.inc (.hier cmd_190 (.hier cmd_191 (.inc (.inc (.inc (.hier cmd_195 (.hier cmd_196 (.inc (.inc (.inc (.hier cmd_200 (.inc (.inc (.inc (.hier cmd_204 (.hier cmd_205 (.inc (.inc (.inc (.hier cmd_209 (.hier cmd_210 (.hier cmd_211 (.inc (.inc (.inc (.hier cmd_215 (.inc (.inc (.inc (.hier cmd_219 (.hier cmd_220 (.hier cmd_221 (.inc (.inc (.inc (.hier cmd_225 (.hier cmd_226 (.hier cmd_227 (.inc (.inc (.inc (.hier cmd_231 (.inc (.inc (.inc (.hier cmd_235 (.hier cmd_236 (.hier cmd_237 (.inc (.inc (.inc (.hier cmd_241 (.hier cmd_242 (.hier cmd_243 (.inc (.inc (.inc (.hier cmd_247 (.inc (.inc (.inc (.hier cmd_251 (.hier cmd_252 (.hier cmd_253 (.inc (.inc (.inc (.hier cmd_257 (.inc (.inc (.inc (.hier cmd_261 (.hier cmd_262 (.hier cmd_263 (.inc (.inc (.inc (.hier cmd_267 (.hier cmd_268 (.hier cmd_269 (.inc (.inc (.inc (.hier cmd_273 (.hier cmd_274 (.inc (.inc (.inc (.hier cmd_278 (.hier cmd_279 (.hier cmd_280 (.inc (.inc (.inc (.hier cmd_284 (.hier cmd_285 (.hier cmd_286 (.hier cmd_287 (.inc (.inc (.inc (.hier cmd_291 (.hier cmd_292 (.hier cmd_293 (.hier cmd_294 (.inc (.inc (.inc (.hier cmd_298 (.hier cmd_299 (.inc (.inc (.inc (.hier cmd_303 (.hier cmd_304 (.hier cmd_305 (.hier cmd_306 (.inc (.inc (.inc (.hier cmd_310 (.hier cmd_311 (.hier cmd_312 (.hier cmd_313 (.inc (.inc (.inc (.hier cmd_317 (.hier cmd_318 (.hier cmd_319 (.hier cmd_320 (.inc (.inc (.inc (.hier cmd_324 (.hier cmd_325 (.hier cmd_326 (.hier cmd_327 (.hier cmd_328 (.inc (.inc (.inc (.hier cmd_332 (.inc (.inc (.inc (.hier cmd_336 (.hier cmd_337 (.hier cmd_338 (.hier cmd_339 (.hier cmd_340 (.inc (.inc (.inc (.hier cmd_344 (.hier cmd_345 (.hier cmd_346 (.hier cmd_347 (.hier cmd_348 (.inc (.inc (.inc (.hier cmd_352 (.inc (.inc (.inc (.hier cmd_356 (.hier cmd_357 (.hier cmd_358 (.hier cmd_359 (.hier cmd_360 (.inc (.inc (.inc (.hier cmd_364 (.hier cmd_365 (.hier cmd_366 (.hier cmd_367 (.hier cmd_368 (.inc (.inc (.inc (.hier cmd_372 (.inc (.inc (.inc (.hier cmd_376 (.hier cmd_377 (.hier cmd_378 (.hier cmd_379 (.hier cmd_380 (.inc (.inc (.inc (.hier cmd_384 (.inc (.inc (.inc (.hier cmd_388 (.hier cmd_389 (.hier cmd_390 (.hier cmd_391 (.hier cmd_392 (.inc (.inc (.inc (.hier cmd_396 (.hier cmd_397 (.hier cmd_398 (.hier cmd_399 (.hier cmd_400 (.hier cmd_401 (.inc .nil)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 set_option maxRecDepth 20000000
-set_option maxHeartbeats 0
 set_option smartUnfolding false
 
 theorem full_halt : isHaltCfg (evalProg fullProg c342) = true := by decide +kernel

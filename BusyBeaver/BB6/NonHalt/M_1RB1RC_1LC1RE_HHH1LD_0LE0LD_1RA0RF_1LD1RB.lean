@@ -9,6 +9,9 @@ public import BusyBeaver.Bridge
 public import BusyBeaver.Calculi.Counter
 
 
+-- Auto-generated/packed proof lines exceed 100 characters.
+set_option linter.style.longLine false
+
 open Mathlib Relation Nat Turing BusyBeaver SixState
 
 namespace BusyBeaver.M_1RB1RC_1LC1RE_HHH1LD_0LE0LD_1RA0RF_1LD1RB
@@ -30,7 +33,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 
 variable {zG_ zL_ α β γ : Type*} [Inhabited zG_] [Inhabited zL_]
 abbrev A : Fin 6 := 0
@@ -54,7 +56,6 @@ abbrev F : Fin 6 := 5
 -- Section 6: Step & Execution Infrastructure
 -- ============================================================================
 
-set_option maxHeartbeats 8000000
 set_option maxRecDepth 4000000
 
 open Counter
@@ -88,14 +89,14 @@ theorem append_assoc_lb (l₁ l₂ : List (Fin 2)) (s : ListBlank (Fin 2)) :
 theorem pow_add_list (w : List (Fin 2)) (m n : Nat) :
     w ^ (m + n) = w ^ m ++ w ^ n := by
   induction m with
-  | zero => simp [Nat.zero_add]
+  | zero => simp
   | succ m ih =>
     have h1 : m + 1 + n = (m + n) + 1 := by omega
     rw [h1, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 theorem pow_succ_right_lb (w : List (Fin 2)) (a : Nat) (r : ListBlank (Fin 2)) :
     (w ^ a) +> (w +> r) = (w ^ (a + 1)) +> r := by
-  have h1 : w +> r = (w ^ 1) +> r := by simp [pow_succ_list]
+  have h1 : w +> r = (w ^ 1) +> r := by simp
   rw [h1, ← append_assoc_lb, ← pow_add_list, Nat.add_comm a 1]
 
 -- ============================================================================
@@ -260,7 +261,7 @@ theorem deficit26_budget (C j t A : Nat) (hC : 3 * 3 ^ (j + 1 + t) ≤ C) (hA : 
   | zero =>
     have h1 : 3 * 3 ^ (j + 1 + 0) = 9 * 3 ^ j := by
       rw [Nat.add_zero, Nat.pow_succ]; ring
-    simp at *
+    simp only [Nat.pow_zero, Nat.mul_one]
     (try omega)
   | succ t =>
     have h1 : 3 * 3 ^ (j + 1 + (t + 1)) = 9 * (3 ^ j * 3 ^ (t + 1)) := by
@@ -2058,7 +2059,6 @@ set_option linter.deprecated false
 set_option linter.dupNamespace false
 set_option quotPrecheck false
 set_option maxRecDepth 4000000
-set_option maxHeartbeats 8000000
 open Solution in
 theorem is_does_not_halt : IsNotHalt target_tm :=
   does_not_halt_of_invariant Allowed

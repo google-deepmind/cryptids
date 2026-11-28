@@ -185,8 +185,7 @@ private theorem stepWin_sound {bL bR : Bool} {l r : ListBlank (Fin 2)}
           | true =>
               simp only [hbR, ↓reduceIte] at hs
               have hr0 := hR hbR; subst hr0
-              exact h_exec 0 ls [] (by simp [evalWin, ListBlank.append, head_def_fin,
-                tail_def_fin]) hs
+              exact h_exec 0 ls [] (by simp [evalWin, ListBlank.append]) hs
   | false =>
       cases ls with
       | cons a ls₀ =>
@@ -198,8 +197,7 @@ private theorem stepWin_sound {bL bR : Bool} {l r : ListBlank (Fin 2)}
           | true =>
               simp only [hbL, ↓reduceIte, List.singleton_append] at hs
               have hl0 := hL hbL; subst hl0
-              exact h_exec 0 [] rs (by simp [evalWin, ListBlank.append, head_def_fin,
-                tail_def_fin]) hs
+              exact h_exec 0 [] rs (by simp [evalWin, ListBlank.append]) hs
 
 private theorem checkWin_sound {bL bR : Bool} {l r : ListBlank (Fin 2)}
     (hL : bL = true → l = default) (hR : bR = true → r = default) :
@@ -236,11 +234,11 @@ private theorem walkWordRight (s : ℕ) (q : Fin 6) (dR : Bool) (pL u pR v : Lis
     ∀ (k : ℕ) (l r : ListBlank (Fin 2)),
       (evalWin l ((v ^ k) +> r) q dR pL pR) [target_tm]⊢^{s * k}
         (evalWin ((u ^ k) +> l) r q dR pL pR)
-  | 0, _, _ => by simp [list_pow_succ, list_pow_zero, list_pow_one]
+  | 0, _, _ => by simp [list_pow_zero]
   | k + 1, l, r => by
       have hstart : evalWin l ((v ^ (k + 1)) +> r) q dR pL pR =
           evalWin l ((v ^ k) +> r) q dR pL (pR ++ v) := by
-        simp only [evalWin, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq, app_assoc]
+        simp only [evalWin, list_pow_succ, app_assoc]
       have hmid : evalWin l ((v ^ k) +> r) q dR (pL ++ u) pR =
           evalWin (u +> l) ((v ^ k) +> r) q dR pL pR := by
         simp only [evalWin, app_assoc]
@@ -261,11 +259,11 @@ private theorem walkWordLeft (s : ℕ) (q : Fin 6) (dR : Bool) (pL u pR v : List
     ∀ (k : ℕ) (l r : ListBlank (Fin 2)),
       (evalWin ((u ^ k) +> l) r q dR pL pR) [target_tm]⊢^{s * k}
         (evalWin l ((v ^ k) +> r) q dR pL pR)
-  | 0, _, _ => by simp [list_pow_succ, list_pow_zero, list_pow_one]
+  | 0, _, _ => by simp [list_pow_zero]
   | k + 1, l, r => by
       have hstart : evalWin ((u ^ (k + 1)) +> l) r q dR pL pR =
           evalWin ((u ^ k) +> l) r q dR (pL ++ u) pR := by
-        simp only [evalWin, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq, app_assoc]
+        simp only [evalWin, list_pow_succ, app_assoc]
       have hmid : evalWin ((u ^ k) +> l) r q dR pL (pR ++ v) =
           evalWin ((u ^ k) +> l) (v +> r) q dR pL pR := by
         simp only [evalWin, app_assoc]
@@ -509,40 +507,40 @@ private theorem evalWin_b0_flip (l r : ListBlank (Fin 2)) (rs : List (Fin 2)) :
 
 private theorem evalWin_b0_def (r : ListBlank (Fin 2)) :
     evalWin default r 1 false [] [0] = evalWin default ([0] +> r) 1 true [] [0] := by
-  simp [evalWin, ListBlank.append, head_def_fin, tail_def_fin]
+  simp [evalWin, ListBlank.append]
 
 private theorem eL_peelM8 (k : ℕ) (xs : List LTok) :
     eL (peelM8 k xs) = (u8 ^ k) +> eL xs := by
   cases k with
-  | zero => simp [peelM8, list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+  | zero => simp [peelM8, list_pow_zero]
   | succ _ => rfl
 
 private theorem eL_peelM06 (k : ℕ) (xs : List LTok) :
     eL (peelM06 k xs) = (u06 ^ k) +> eL xs := by
   cases k with
-  | zero => simp [peelM06, list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+  | zero => simp [peelM06, list_pow_zero]
   | succ _ => rfl
 
 private theorem eW_peelT010 (k : ℕ) (xs : List WTok) :
     eW (peelT010 k xs) = (t010 ^ k) +> eW xs := by
   cases k with
-  | zero => simp [peelT010, list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+  | zero => simp [peelT010, list_pow_zero]
   | succ _ => rfl
 
 private theorem eW_peelMW (k : ℕ) (xs : List WTok) :
     eW (peelMW k xs) = (v10 ^ k) +> eW xs := by
   cases k with
-  | zero => simp [peelMW, list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+  | zero => simp [peelMW, list_pow_zero]
   | succ _ => rfl
 
 private theorem eL_u8 (xs : List LTok) :
     eL (.U 8 :: xs) = u8 +> eL xs := by
-  simp [eL, u8, u8Pref, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq,
+  simp [eL, u8, u8Pref, list_pow_succ, list_pow_zero, 
     ListBlank.append]
 
 private theorem eL_u06 (xs : List LTok) :
     eL (.U 0 :: .U 6 :: xs) = u06 +> eL xs := by
-  simp [eL, u06, u06Tail, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq,
+  simp [eL, u06, u06Tail, list_pow_succ, list_pow_zero, 
     ListBlank.append]
 
 private theorem eW_v10 (xs : List WTok) :
@@ -562,15 +560,17 @@ private theorem unconsL_some {l rest : List LTok} {a : ℕ}
   | nil => simp [unconsL] at h
   | cons t xs =>
       cases t with
-      | U m => simp [unconsL] at h; obtain ⟨rfl, rfl⟩ := h; rfl
+      | U m =>
+          simp only [unconsL, Option.some.injEq, Prod.mk.injEq] at h
+          obtain ⟨rfl, rfl⟩ := h; rfl
       | M8 k =>
-          simp [unconsL] at h
+          simp only [unconsL, Option.some.injEq, Prod.mk.injEq] at h
           obtain ⟨rfl, rfl⟩ := h
           rw [eL_u8, eL_peelM8]
           dsimp only [eL]
           rw [pow_succ_left u8 k, app_assoc]
       | M06 k =>
-          simp [unconsL] at h
+          simp only [unconsL, Option.some.injEq, Prod.mk.injEq] at h
           obtain ⟨rfl, rfl⟩ := h
           rw [eL_u06, eL_peelM06]
           dsimp only [eL]
@@ -587,15 +587,17 @@ private theorem unconsW_some {w rest : List WTok} {b : Bool}
   | nil => simp [unconsW] at h
   | cons t xs =>
       cases t with
-      | B b0 => simp [unconsW] at h; obtain ⟨rfl, rfl⟩ := h; rfl
+      | B b0 =>
+          simp only [unconsW, Option.some.injEq, Prod.mk.injEq] at h
+          obtain ⟨rfl, rfl⟩ := h; rfl
       | T010 k =>
-          simp [unconsW] at h
+          simp only [unconsW, Option.some.injEq, Prod.mk.injEq] at h
           obtain ⟨rfl, rfl⟩ := h
           dsimp only [eW]
           rw [eW_peelT010, pow_succ_left t010 k, app_assoc]
           simp [t010, ListBlank.append]
       | MW k =>
-          simp [unconsW] at h
+          simp only [unconsW, Option.some.injEq, Prod.mk.injEq] at h
           obtain ⟨rfl, rfl⟩ := h
           have hv : eW (.B true :: mwTail k xs) = v10 +> eW (peelMW k xs) := by
             dsimp only [mwTail]
@@ -608,8 +610,7 @@ private theorem eL_bump1L (l : List LTok) :
   unfold bump1L
   rcases hl : unconsL l with _ | ⟨a, rest⟩
   · rw [unconsL_none hl]
-    simp [eL, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq, ListBlank.append,
-      zero_cons_def]
+    simp [eL, list_pow_succ, list_pow_zero, ListBlank.append]
   · rw [unconsL_some hl]
     dsimp only [eL]
     rw [pow_succ_left ([1] : List (Fin 2)) (a + 1), app_assoc]
@@ -724,9 +725,9 @@ private theorem w24_pow_eq :
       (w24 ^ (k + 1)) +> s = wPref5 +> ((v10 ^ k) +> (wSuff5 +> s))
   | 0, s => by
       have hw1 : w24 ^ 1 = wPref5 ++ wSuff5 := by
-        simp [w24, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq]
+        simp [w24, list_pow_succ, list_pow_zero]
       rw [hw1, app_assoc wPref5 wSuff5]
-      simp [list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+      simp [list_pow_zero]
   | k' + 1, s => by
       rw [pow_succ_left w24 (k' + 1), app_assoc w24 (w24 ^ (k' + 1)), w24_pow_eq k' s]
       have hw : w24 = wPref5 ++ wSuff5 := rfl
@@ -758,7 +759,7 @@ private theorem eW_pushW24 (k : ℕ) (w : List WTok) :
     | zero =>
         dsimp only [List.cons_append, List.nil_append]
         rw [hpref, hsuff]
-        simp [list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+        simp [list_pow_zero]
     | succ k' =>
         dsimp only [List.cons_append, List.nil_append]
         rw [hpref]
@@ -773,7 +774,7 @@ private theorem eW_pushW24 (k : ℕ) (w : List WTok) :
 private theorem u8Rot_pow_eq :
     ∀ (n : ℕ) (s : ListBlank (Fin 2)),
       [1] +> ((u8Rot ^ n) +> s) = (u8 ^ n) +> ([1] +> s)
-  | 0, s => by simp [list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+  | 0, s => by simp [list_pow_zero, ListBlank.append]
   | n' + 1, s => by
       rw [pow_succ_left u8Rot n', app_assoc u8Rot (u8Rot ^ n')]
       have hstep : u8Rot +> ((u8Rot ^ n') +> s) = u8Pref +> ([1] +> ((u8Rot ^ n') +> s)) := by
@@ -788,13 +789,13 @@ private theorem drain3_loop :
         (evalWin ((([1] : List (Fin 2)) ^ (3 * q + m + 1)) +> sL) sW 1 false [0] [])
         (evalWin ((([1] : List (Fin 2)) ^ (m + 1)) +> sL) ((t010 ^ q) +> sW) 1 false [0] [])
   | 0, m, sL, sW => by
-      simp [list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+      simp [list_pow_succ, list_pow_zero]
   | q' + 1, m, sL, sW => by
       have hsplit : ((([1] : List (Fin 2)) ^ (3 * (q' + 1) + m + 1)) +> sL) =
           ([1, 1, 1, 1] : List (Fin 2)) +> ((([1] : List (Fin 2)) ^ (3 * q' + m)) +> sL) := by
         rw [show 3 * (q' + 1) + m + 1 = 4 + (3 * q' + m) by omega,
           pow_add_list ([1] : List (Fin 2)) 4 (3 * q' + m), app_assoc]
-        simp [list_pow_succ, list_pow_zero, list_pow_one, List.append_eq]
+        simp [list_pow_succ, list_pow_zero]
       have h9 : ReachesIn target_tm 9
           (evalWin ((([1] : List (Fin 2)) ^ (3 * (q' + 1) + m + 1)) +> sL) sW 1 false [0] [])
           (evalWin ((([1] : List (Fin 2)) ^ (3 * q' + m + 1)) +> sL) (t010 +> sW) 1 false [0] []) :=
@@ -860,7 +861,7 @@ private theorem stepB0_sound (l : List LTok) (w : List WTok) :
       exact chkWin_eq true false 1 1 true [] [0] 2 false [] [0]
         default (eW w) (fun _ => rfl) (fun hc => nomatch hc)
         (by rw [encodeBase, heL]; simp [eL])
-        (by simp [encodeBase, evalWin, ListBlank.append, head_def_fin, tail_def_fin])
+        (by simp [encodeBase, evalWin, ListBlank.append])
         rfl
     · have hal : eL l = eL (.U a :: lp) := heL.trans (unconsL_some hu)
       dsimp only
@@ -870,8 +871,7 @@ private theorem stepB0_sound (l : List LTok) (w : List WTok) :
           dsimp only [encodeBase]
           rw [hal, eL_u8]
           dsimp only [eL]
-          have hu1 : u8 ^ 1 = u8 := by simp [list_pow_succ, list_pow_zero, list_pow_one,
-            List.append_eq]
+          have hu1 : u8 ^ 1 = u8 := by simp [list_pow_succ, list_pow_zero]
           rw [hu1]
         rw [hm0]
         exact motifB0_sound 0 lp w
@@ -897,23 +897,23 @@ private theorem stepB0_sound (l : List LTok) (w : List WTok) :
       · subst h0
         exact chkWin_eq false false 7 1 true [1, 0] [0] 5 true [0, 1, 1] []
           (eL lp) (eW w) (fun hc => nomatch hc) (fun hc => nomatch hc)
-          (by rw [encodeBase, hal]; simp [evalWin, eL, list_pow_succ, list_pow_zero, list_pow_one,
-            List.append_eq, ListBlank.append])
+          (by rw [encodeBase, hal]; simp [evalWin, eL, list_pow_succ, list_pow_zero, 
+            ListBlank.append])
           (by rw [encodeBase, eL_bump2L]; simp [evalWin, ListBlank.append])
           rfl
       · subst h1
         exact chkWin_eq false false 7 1 true [1, 1, 0] [0] 0 true [1, 1, 1, 1] []
           (eL lp) (eW w) (fun hc => nomatch hc) (fun hc => nomatch hc)
-          (by rw [encodeBase, hal]; simp [evalWin, eL, list_pow_succ, list_pow_zero, list_pow_one,
-            List.append_eq, ListBlank.append])
+          (by rw [encodeBase, hal]; simp [evalWin, eL, list_pow_succ, list_pow_zero, 
+            ListBlank.append])
           (by rw [encodeBase, eL_bump4L]; simp [evalWin, ListBlank.append])
           rfl
       · have ha2 : a = 2 := by omega
         subst ha2
         exact chkWin_eq false false 6 1 true [1, 1, 1, 0] [0] 1 false [0] [0, 1, 1, 0]
           (eL lp) (eW w) (fun hc => nomatch hc) (fun hc => nomatch hc)
-          (by rw [encodeBase, hal]; simp [evalWin, eL, list_pow_succ, list_pow_zero, list_pow_one,
-            List.append_eq, ListBlank.append])
+          (by rw [encodeBase, hal]; simp [evalWin, eL, list_pow_succ, list_pow_zero, 
+            ListBlank.append])
           (by rw [encodeBase, ← evalWin_b0_flip]; simp [evalWin, eW, ListBlank.append])
           rfl
   cases l with
@@ -970,13 +970,13 @@ private theorem motifM06_sound (k : ℕ) (lp : List LTok) (wRest : List WTok) :
     (eL lp) (eW wRest)
   have hstart : encodeBase (.A0, .U 4 :: lp, .B false :: .MW k :: wRest) =
       evalWin (eL lp) ((v10 ^ (k + 1)) +> eW wRest) 0 true [1, 1, 1, 1, 1, 0] [0] := by
-    simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq,
+    simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, 
       ListBlank.append]
   have hend : encodeBase (.A0, .U 4 :: pushM06 k lp, .B false :: wRest) =
       evalWin ((u06 ^ (k + 1)) +> eL lp) (eW wRest) 0 true [1, 1, 1, 1, 1, 0] [0] := by
     dsimp only [encodeBase]
     rw [show eL (.U 4 :: pushM06 k lp) = [1, 1, 1, 1, 1, 0] +> eL (pushM06 k lp) by
-      simp [eL, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq, ListBlank.append]]
+      simp [eL, list_pow_succ, list_pow_zero, ListBlank.append]]
     rw [eL_pushM06]
     simp [evalWin, eW, ListBlank.append]
   rw [hstart, hend]
@@ -1022,7 +1022,7 @@ private theorem stepMotifA0_sound (l : List LTok) (w : List WTok) (s' : BaseStat
                       rw [eW_v10]
                       dsimp only [eW]
                       have hv1 : v10 ^ 1 = v10 := by
-                        simp [list_pow_succ, list_pow_zero, list_pow_one, List.append_eq]
+                        simp [list_pow_succ, list_pow_zero]
                       rw [hv1]
                     rw [henc]
                     exact motifA0_sound 0 t lp wRest'
@@ -1064,27 +1064,27 @@ private theorem stepRight_sound (m : Mode)
       exact chkWin_eq false true 1 0 true [] [] 1 true [1] []
         (eL l) default (fun hc => nomatch hc) (fun _ => rfl)
         (by simp [encodeBase, eW])
-        (by rw [encodeBase, eL_bump1L]; simp [evalWin, eW, ListBlank.append, zero_cons_def])
+        (by rw [encodeBase, eL_bump1L]; simp [evalWin, eW, ListBlank.append])
         rfl
     · dsimp only [stepRightNil]
       exact chkWin_eq false true 3 4 true [] [] 1 true [1, 1, 0] []
         (eL l) default (fun hc => nomatch hc) (fun _ => rfl)
         (by simp [encodeBase, eW])
-        (by simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, list_pow_one,
-          List.append_eq, ListBlank.append, zero_cons_def])
+        (by simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, 
+          ListBlank.append])
         rfl
     · dsimp only [stepRightNil]
       exact chkWin_eq false true 2 5 true [] [] 1 true [1, 1] []
         (eL l) default (fun hc => nomatch hc) (fun _ => rfl)
         (by simp [encodeBase, eW])
-        (by rw [encodeBase, eL_bump2L]; simp [evalWin, eW, ListBlank.append, zero_cons_def])
+        (by rw [encodeBase, eL_bump2L]; simp [evalWin, eW, ListBlank.append])
         rfl
     · dsimp only [stepRightNil]
       exact chkWin_eq false true 2 5 true [0] [] 1 true [1, 1, 0] []
         (eL l) default (fun hc => nomatch hc) (fun _ => rfl)
         (by simp [encodeBase, eW])
-        (by simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, list_pow_one,
-          List.append_eq, ListBlank.append, zero_cons_def])
+        (by simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, 
+          ListBlank.append])
         rfl
   · have hew := unconsW_some hw
     cases b with
@@ -1098,7 +1098,7 @@ private theorem stepRight_sound (m : Mode)
             exact chkWin_eq false true 1 0 true [] [0] 1 true [1] []
               (eL l) default (fun hc => nomatch hc) (fun _ => rfl)
               (by rw [encodeBase, hew]; simp [evalWin, eW, ListBlank.append])
-              (by rw [encodeBase, eL_bump1L]; simp [evalWin, eW, ListBlank.append, zero_cons_def])
+              (by rw [encodeBase, eL_bump1L]; simp [evalWin, eW, ListBlank.append])
               rfl
           · have hew1 := unconsW_some hw1
             cases b2 with
@@ -1134,8 +1134,8 @@ private theorem stepRight_sound (m : Mode)
           exact chkWin_eq false false 1 5 true [0] [0] 0 true [1, 0] []
             (eL l) (eW w1) (fun hc => nomatch hc) (fun hc => nomatch hc)
             (by rw [encodeBase, hew]; simp [evalWin, eW, ListBlank.append])
-            (by simp [encodeBase, evalWin, eL, list_pow_succ, list_pow_zero, list_pow_one,
-              List.append_eq, ListBlank.append])
+            (by simp [encodeBase, evalWin, eL, list_pow_succ, list_pow_zero, 
+              ListBlank.append])
             rfl
     | true =>
         rcases hm with rfl | rfl | rfl | rfl
@@ -1196,8 +1196,8 @@ private theorem stepSys_sound :
       exact chkWin_eq true true 1 0 true [] [] 1 true [1] []
         default default (fun _ => rfl) (fun _ => rfl)
         (by rfl)
-        (by simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, list_pow_one,
-          List.append_eq, ListBlank.append, zero_cons_def])
+        (by simp [encodeBase, evalWin, eL, eW, list_pow_succ, list_pow_zero, 
+          ListBlank.append])
         rfl
   | B0 =>
       simp only [stepSys, Option.some.injEq] at h
@@ -1507,15 +1507,15 @@ private theorem eL_encLayers :
 
 private theorem eL_parse8 :
     ∀ (l : List LTok), eL l = (u8 ^ (parse8 l).1) +> eL (parse8 l).2
-  | [] => by simp [parse8, list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
-  | .M06 m :: rest => by simp [parse8, list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+  | [] => by simp [parse8, list_pow_zero]
+  | .M06 m :: rest => by simp [parse8, list_pow_zero]
   | .M8 m :: rest => by
       dsimp only [parse8, eL]
       rw [eL_parse8 rest, ← app_assoc (u8 ^ (m + 1)) (u8 ^ (parse8 rest).1), ← pow_add_list]
   | .U a :: rest => by
       dsimp only [parse8]
       cases ha : (a == 8) with
-      | false => simp [list_pow_succ, list_pow_zero, list_pow_one, ListBlank.append]
+      | false => simp [list_pow_zero]
       | true =>
           have ha8 : a = 8 := eq_of_beq ha
           subst ha8
@@ -1750,7 +1750,7 @@ private theorem unitStep_m8 {c a : ℕ} {sX sY : ListBlank (Fin 2)}
       (by
         have hlt : [0, 1, 1, 1, 0, 1] +> ((u8Rot ^ km1) +> s6) =
             [0] +> (uBits [2] +> ([1] +> ((u8Rot ^ km1) +> s6))) := by
-          simp [uBits, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq, ListBlank.append]
+          simp [uBits, list_pow_succ, list_pow_zero, ListBlank.append]
         rw [evalWin, (ite_eq_left_of_eq_true _ _ (eq_true rfl)), evalWin, (ite_eq_left_of_eq_true
           _ _ (eq_true rfl)), hlt, u8Rot_pow_eq km1 s6, hu_a6])
       m8_exit_body
@@ -1817,7 +1817,7 @@ private theorem wrap_Top0 {c1 : ℕ} {sL sR : ListBlank (Fin 2)}
       1 true (topBits true ++ u8) []
       sR default (fun hc => nomatch hc) (fun _ => rfl)
       (by simp [evalWin, ListBlank.append])
-      (by simp [evalWin, app_assoc, ListBlank.append, zero_cons_def])
+      (by simp [evalWin, app_assoc, ListBlank.append])
       (by decide +kernel)
   have habc := ms_trans (ms_trans ha hb) hc
   rw [show 33 + c1 + 48 = c1 + 81 by omega] at habc
@@ -1885,7 +1885,7 @@ private theorem wrap_Top1 {c1 c2 : ℕ} {sL sR1 sR2 : ListBlank (Fin 2)}
       1 true (topBits false) []
       sR2 default (fun hc => nomatch hc) (fun _ => rfl)
       (by simp [evalWin, ListBlank.append])
-      (by simp [evalWin, ListBlank.append, zero_cons_def])
+      (by simp [evalWin, ListBlank.append])
       (by decide +kernel)
   have hall := ms_trans (ms_trans (ms_trans (ms_trans ha hb) hc) hd) he
   rw [show 21 + c1 + 29 + c2 + 24 = c1 + c2 + 74 by omega] at hall
@@ -3021,7 +3021,7 @@ private theorem th_spawn1 {q : Bool} (j : Sep) {rest : List ℕ} {s : ListBlank 
   rw [uBits_append ([8] ++ sepList j) rest s, uBits_append [8] (sepList j) _,
       uBits_eight, uBits_sepList j]
   have heq : u8 +> (sepBits j +> (uBits rest +> s)) = layerBits 0 j (uBits rest +> s) := by
-    simp [layerBits, list_pow_succ, list_pow_zero, list_pow_one, List.append_eq]
+    simp [layerBits, list_pow_succ, list_pow_zero]
   rw [heq]
   exact lift_layer ht
 
@@ -3056,7 +3056,7 @@ private theorem halt_bottom :
         evalWin_b0_pfx _ default sW)
       rfl halt_bottom_win
   refine ⟨evalWin default sW 2 false [] rsHaltBottom, ⟨304, hrun⟩, ?_⟩
-  simp [evalWin, step, target_tm, head_def_fin]
+  simp [evalWin, step, target_tm]
 private theorem tr_00 (s : ListBlank (Fin 2)) :
     CarrySem false false 119 (uBits [0, 6] +> s) (uBits [14] +> s) :=
   mkRule0 119 [0, 6] [14] (by decide +kernel) s
@@ -3342,7 +3342,7 @@ private theorem th_peel_m06_1 {q : Bool} {hd : List ℕ} {cs : List Chunk}
     TailHalts q (uBits hd +> eChunks (.m06 1 :: cs)) := by
   dsimp only [eChunks]
   have h1 : u06 ^ 1 = uBits [0, 6] := by
-    simp [list_pow_succ, list_pow_zero, list_pow_one, List.append_eq, u06_eq_uBits]
+    simp [list_pow_succ, list_pow_zero, u06_eq_uBits]
   rw [h1, ← uBits_append hd [0, 6] (eChunks cs)]
   exact h
 

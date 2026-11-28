@@ -92,13 +92,13 @@ theorem pow_succ_list (l : List Γ) (n : Nat) : l ^ (n + 1) = l ++ l ^ n := rfl
 omit [Inhabited Γ] in
 @[simp] theorem list_pow_add (l : List Γ) (n m : Nat) : l ^ (n + m) = l ^ n ++ l ^ m := by
   induction n with
-  | zero => simp [pow_zero_list]
+  | zero => simp
   | succ n ih =>
     rw [Nat.succ_add, pow_succ_list, pow_succ_list, ih, List.append_assoc]
 
 omit [Inhabited Γ] in
 theorem pow_succ_right (l : List Γ) (n : Nat) : l ^ (n + 1) = l ^ n ++ l := by
-  rw [list_pow_add]; simp [pow_succ_list, pow_zero_list]
+  rw [list_pow_add]; simp [pow_succ_list]
 
 @[simp] theorem listblank_append_nil (s : ListBlank Γ) : ([] : List Γ) +> s = s := rfl
 
@@ -184,7 +184,8 @@ theorem data_ones (n : Nat) (w : List Bool) :
   simp [data, pairs_ones]
 
 macro "step1" : tactic => `(tactic| (
-  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, rd0, rd1, rds, bit_false, bit_true,
+  try simp only [BusyBeaver.Cfg.headRight, BusyBeaver.Cfg.headLeft, init_nil, rd0, rd1, rds,
+    bit_false, bit_true,
     pairs_nil, pairs_cons, data, insert_false, insert_true,
     pow_succ_list, pow_zero_list,
     List.singleton_append, List.nil_append, List.cons_append,
@@ -246,7 +247,8 @@ theorem DScan (l r : ListBlank (Fin 2)) (n : Nat) :
   | succ n ih =>
     rw [show (n + 1) * 2 = 2 + n * 2 by omega, left_pow_add l [1, 1] 2 (n * 2),
         right_pow_succ_right rd0 n r]
-    exact stepStar_trans (stepPlus_to_stepStar (DScan_step (l <+ ([1, 1] : List (Fin 2)) ^ (n * 2)) r))
+    exact stepStar_trans
+      (stepPlus_to_stepStar (DScan_step (l <+ ([1, 1] : List (Fin 2)) ^ (n * 2)) r))
       (ih (rd0 +> r))
 
 theorem RInc4 (l r : ListBlank (Fin 2)) (n : Nat) :
@@ -581,7 +583,8 @@ theorem width_length (k p : Nat) (w : List Bool) (hp : p ≤ 2) (hl : w.length =
     width w = k + (if p = 2 then 1 else 0) := by
   induction k generalizing w with
   | zero =>
-    rcases w with _ | ⟨a, _ | ⟨b, _ | ⟨c, w⟩⟩⟩ <;> dsimp [width] <;> simp at hl <;> split_ifs <;> omega
+    rcases w with _ | ⟨a, _ | ⟨b, _ | ⟨c, w⟩⟩⟩ <;>
+      dsimp [width] <;> simp at hl <;> split_ifs <;> omega
   | succ k ih =>
     rcases w with _ | ⟨a, _ | ⟨b, _ | ⟨c, w⟩⟩⟩
     · simp at hl; omega
@@ -750,7 +753,7 @@ theorem strong (k z : Nat) (w : List Bool) (hl : w.length = 3 * k + 2)
   rcases marker_gaps k w hl h0 h2 with ⟨hg1, hg2⟩
   have hsum := value_gap0 w
   have hw := width_length k 2 w (by omega) hl
-  simp at hw
+  simp only [↓reduceIte] at hw
   rw [hw, hv] at hsum
   have hpz0 := pow2_pos z
   have hpz : 2 ≤ 2 ^ (z + 1) := by rw [Nat.pow_succ]; omega
@@ -795,7 +798,7 @@ theorem entry (k z : Nat) (hz : z ≤ k) :
   refine ⟨w, hs, strong k z w hl h0 h2 ?_ hz⟩
   have hv := value_gap0 w
   have hwidth := width_length k 2 w (by omega) hl
-  simp at hwidth
+  simp only [↓reduceIte] at hwidth
   rw [hwidth] at hv
   omega
 
@@ -876,7 +879,8 @@ theorem shifted_prefix (n : Nat) {w v : List Bool} (r : ListBlank (Fin 2))
     have hs1_eq : s1 = rd1 ^ n +> (rds +> r) := FC_full_unique (FC_eq hs1 rfl (by omega) rfl)
     subst hs1_eq
     rcases finite_steps hu1v (FC_zero rd1 ([1, 0, 0, 1] +> r) n) (by omega) with ⟨s2, hs2, hS2⟩
-    have hs2_eq : s2 = rd1 ^ n +> ([1, 0, 0, 1] +> r) := FC_full_unique (FC_eq hs2 rfl (by omega) rfl)
+    have hs2_eq : s2 = rd1 ^ n +> ([1, 0, 0, 1] +> r) :=
+      FC_full_unique (FC_eq hs2 rfl (by omega) rfl)
     subst hs2_eq
     have hm := RZero u ([0, 0, 1] +> r) n
     rw [hinc] at hm
@@ -954,7 +958,7 @@ theorem phase12 (k p : Nat) (w : List Bool) (x : Nat) (r : ListBlank (Fin 2))
       (Conf w r) [target_tm]⊢⁺ (Conf (List.replicate (3 * k + 2) false) ([1] +> s)) := by
   rcases first_capacity k p w hp2 hl with ⟨u, hs, _, _, he⟩
   have hp0 : p ≠ 0 := by omega
-  simp [hp0] at he
+  simp only [hp0, ↓reduceIte] at he
   rcases right_steps hs hr with ⟨s1, hr1, hR1⟩
   rcases right_step he hr1 with ⟨s2, hr2, hR2⟩
   have hb := (gap_bounds w).1
@@ -965,7 +969,7 @@ theorem phase0_extend (k : Nat) (w : List Bool) (x : Nat) (r : ListBlank (Fin 2)
     ∃ s, RC rd1 (x + gap0 w) s ∧
       (Conf w r) [target_tm]⊢⁺ (Conf (List.replicate (3 * k + 1) false) s) := by
   rcases first_capacity k 0 w (by omega) (by omega) with ⟨u, hs, _, _, he⟩
-  simp at he
+  simp only [↓reduceIte] at he
   rcases right_steps hs hr with ⟨s1, hr1, hR1⟩
   rcases right_step he hr1 with ⟨s2, hr2, hR2⟩
   have hb := (gap_bounds w).1
@@ -988,7 +992,8 @@ inductive Allowed : Cfg (Fin 2) (Fin 6) → Prop
       0 < n → RC rds n r → guard (2 * n) w → Allowed (Conf w r)
 
 theorem last_signal (n : Nat) (w : List Bool) (b : Bool) :
-    ∃ c', Allowed c' ∧ (Conf w (rd1 ^ n +> ([1, 0, 0, 1] +> insert b default))) [target_tm]⊢⁺ c' := by
+    ∃ c', Allowed c' ∧
+      (Conf w (rd1 ^ n +> ([1, 0, 0, 1] +> insert b default))) [target_tm]⊢⁺ c' := by
   have hs := R1001 w (insert b default) n
   dsimp only at hs
   rcases inc_head (List.replicate (2 * n) true ++ false :: w) with ⟨u, hu⟩
@@ -1169,7 +1174,7 @@ theorem blank_step (w : List Bool) :
   have hb := capacity_bound k p w hp hl
   have hg := (gap_bounds w).1
   rcases Nat.eq_zero_or_pos p with rfl | hp_pos
-  · simp at hl hb
+  · simp only [Nat.add_zero, OfNat.zero_ne_ofNat, ↓reduceIte] at hl hb
     rcases phase0 k w 0 default hl RC.zero with ⟨s, hr, hS⟩
     have hle : 0 + gap0 w + 2 ^ k ≤ 2 ^ (k + 1) := by rw [pow_twice]; omega
     rcases post_first k (0 + gap0 w + 2 ^ k) hr (by omega) hle with ⟨c', hA, hT⟩
@@ -1190,7 +1195,7 @@ theorem one_step (u : List Bool) :
   rcases length_split w with ⟨k, p, hp, hl⟩
   have hb := capacity_bound k p w hp hl
   rcases Nat.eq_zero_or_pos p with rfl | hp_pos
-  · simp at hl hb
+  · simp only [Nat.add_zero, OfNat.zero_ne_ofNat, ↓reduceIte] at hl hb
     have hk : 1 ≤ k := by
       have : 2 ≤ w.length := by simp [w]
       omega
