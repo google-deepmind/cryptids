@@ -21,24 +21,24 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
 - **Zero-axiom gate (`comparator/zero_axioms.json`; `permitted_axioms = []`):**
   Specification definitions (`ListBlank`, `Tape`, `Halts`, `Machine`, `BundledMachine`, `candidate`,
   `reference`, `PAProvable`) are quotient-free and axiom-free (`ListBlank` stores a canonical
-  blank-trimmed `List Γ`), and all nine `candidate_fewer_states` theorems together with syntactic
+  blank-trimmed `List Γ`), and all ten `candidate_fewer_states` theorems together with syntactic
   `PA` consistency (`Semantics.PA.not_paProvable_false`) depend on **zero axioms (`[]`)**.
 - **Constructive gate (`comparator/constructive.json`, `goldbach_21.json`, `zf_380.json`,
   `riemann_104.json`, `riemann_95_reduction.json`, `weak_collatz_41_reduction.json`,
   `weak_collatz_27_reduction.json`, `weak_collatz_17_reduction.json`,
-  `weak_collatz_16_reduction.json`;
+  `weak_collatz_16_reduction.json`, `weak_collatz_15_reduction.json`;
   `permitted_axioms = ["propext", "Quot.sound"]`):**
-  All nine state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`,
-  `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`),
+  All ten state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`,
+  `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`, `WeakCollatz15`),
   all ZF machine-to-proof-search equivalences (`Zf393.halts_zf393_iff_zfInconsistent`,
   `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
   the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, the
-  `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`
-  cycle and Böhm–Sontacchi Diophantine equivalences, and the `legendre_21` equivalence
-  `Legendre21.halts_legendre21_iff_exists_gap`
+  `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
+  and `weak_collatz_15` cycle and Böhm–Sontacchi Diophantine equivalences, and the `legendre_21`
+  equivalence `Legendre21.halts_legendre21_iff_exists_gap`
   are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
   `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
   choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
@@ -46,14 +46,14 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 61 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  Audits all 66 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
   negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
   `RiemannHypothesis` equivalences, the `erdos_ternary_15` and `erdos_ternary_14` equivalences
   with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
   also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, the
-  `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, and `weak_collatz_16`
-  equivalences with `¬ WeakCollatzConjecture`, and the `legendre_21` equivalence with
-  `¬ LegendreConjecture` (Markov's Principle).
+  `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
+  and `weak_collatz_15` equivalences with `¬ WeakCollatzConjecture`, and the `legendre_21`
+  equivalence with `¬ LegendreConjecture` (Markov's Principle).
 -/
 
 meta section
@@ -377,6 +377,11 @@ def weakCollatz16Rows : List (List (Option (Fin 2 × Dir × Fin 16))) :=
   load_machine_rows% "artifacts/weak_collatz_16/machine.txt"
 /-- 16-state Weak Collatz candidate. -/
 def weakCollatz16 : Machine 16 2 := Machine.ofRows weakCollatz16Rows
+/-- Rows of `weakCollatz15`. -/
+def weakCollatz15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
+  load_machine_rows% "artifacts/weak_collatz_15/machine.txt"
+/-- 15-state Weak Collatz candidate. -/
+def weakCollatz15 : Machine 15 2 := Machine.ofRows weakCollatz15Rows
 /-- Rows of `legendre21`. -/
 def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
   load_machine_rows% "artifacts/legendre_21/machine.txt"
@@ -1143,6 +1148,28 @@ theorem halts_candidate_iff_not_weakCollatz :
     Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
 end Semantics
 end WeakCollatz16
+
+namespace WeakCollatz15
+/-- 16-state Weak Collatz reference machine (`weak_collatz_16`). -/
+abbrev reference : BundledMachine 2 := Machines.weakCollatz16.bundle
+/-- 15-state Weak Collatz candidate machine (`weak_collatz_15`). -/
+abbrev candidate : BundledMachine 2 := Machines.weakCollatz15.bundle
+theorem candidate_fewer_states : candidate.states < reference.states := by sorry
+theorem candidate_equivalent : Halts candidate ↔ Halts reference := by sorry
+namespace Semantics
+theorem halts_candidate_iff_exists_cycle :
+    Halts candidate ↔
+      ∃ x k : ℕ, 1 ≤ x ∧ 1 ≤ k ∧ terras^[k] x = x ∧ x ≠ 1 ∧ x ≠ 2 := by sorry
+theorem halts_candidate_iff_bohmSontacchi :
+    Halts candidate ↔
+      ∃ x n : ℕ, 3 ≤ x ∧ 1 ≤ n ∧
+        3 ^ (terrasParityWord n x).sum < 2 ^ n ∧
+        (2 ^ n - 3 ^ (terrasParityWord n x).sum) * x =
+          collatzCycleNum (terrasParityWord n x) := by sorry
+theorem halts_candidate_iff_not_weakCollatz :
+    Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
+end Semantics
+end WeakCollatz15
 
 namespace Legendre21
 /-- 21-state Legendre machine (`legendre_21`, Veljjanoski 2026). -/

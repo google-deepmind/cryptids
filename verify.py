@@ -330,6 +330,23 @@ CANDIDATES = [
             "8deddb7f5a1cd0d17b7ea644c370178f3447a700dfbb2a99903e43da58dd9f3b"
         ),
     },
+    {
+        "id": "weak_collatz_15",
+        "instance": "weak_collatz_16",
+        "path": "artifacts/weak_collatz_15",
+        "lean_file": "Cryptids/Machines.lean",
+        "lean_def": "weakCollatz15",
+        "proof_path": "Cryptids/WeakCollatz15.lean",
+        "challenge_path": "Challenge.lean",
+        "states": 15,
+        "baseline_states": 16,
+        "machine_sha256": (
+            "123e838a700c39e5f7dd59ef1d9b88a504fb4868b071ca0ac58b531b4494a3ec"
+        ),
+        "table_file_sha256": (
+            "123e838a700c39e5f7dd59ef1d9b88a504fb4868b071ca0ac58b531b4494a3ec"
+        ),
+    },
 ]
 
 
@@ -1646,6 +1663,142 @@ def verify_weak_collatz_16(machine: Machine, steps: int) -> dict[str, object]:
   }
 
 
+def verify_weak_collatz_15(machine: Machine, steps: int) -> dict[str, object]:
+  """Simulates weak_collatz_15 on the blank tape and verifies even-stage d+n=x-1 checkpoints & halts."""
+  proof_text = (ROOT / "Cryptids/WeakCollatz15.lean").read_text(encoding="utf-8")
+  assert (
+      "theorem halts_weakCollatz15_iff_bounded_cycle" in proof_text
+      and "theorem candidate_equivalent : Halts candidate ↔ Halts reference"
+      in proof_text
+  )
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  assert halting == [(14, 0)], f"weak_collatz_15 halting entries: {halting}"
+
+  tape: set[int] = set()
+  head = 0
+  state = 0
+  visited: set[tuple[int, int]] = set()
+  checkpoints = 0
+  boot_6_verified = False
+  boot_35_verified = False
+
+  def expected_schedule():
+    x = 4
+    while True:
+      yield ("stage", x, 0, x - 1)
+      y = x // 2
+      while True:
+        yield ("round", x, x - y, y - 1)
+        if y == 2:
+          break
+        z = y // 2 if y % 2 == 0 else (3 * y + 1) // 2
+        if z > x:
+          break
+        assert z != x
+        y = z
+      x += 2
+
+  sched = expected_schedule()
+  exp_kind, exp_x, exp_d, exp_n = next(sched)
+  last_x = 4
+
+  for step in range(steps):
+    sym = 1 if head in tape else 0
+    if state == 3 and sym == 1 and tape and head == min(tape):
+      ones_sorted = sorted(tape)
+      if ones_sorted == list(range(head, head + len(ones_sorted))):
+        assert exp_kind == "stage", (
+            f"weak_collatz_15 unexpected stageCfg at step {step}: expected {(exp_kind, exp_x, exp_d, exp_n)}"
+        )
+        assert len(tape) == exp_x - 1, (
+            f"weak_collatz_15 stage popcount mismatch at step {step}: {len(tape)} vs {exp_x - 1}"
+        )
+        if step == 6:
+          assert exp_x == 4
+          boot_6_verified = True
+        if step == 35:
+          assert exp_x == 6
+          boot_35_verified = True
+        checkpoints += 1
+        last_x = exp_x
+        exp_kind, exp_x, exp_d, exp_n = next(sched)
+    elif state == 5 and sym == 1 and tape and head == max(tape):
+      assert exp_kind == "round", (
+          f"weak_collatz_15 unexpected roundCfg at step {step}: expected {(exp_kind, exp_x, exp_d, exp_n)}"
+      )
+      lo = min(tape)
+      gaps = [p for p in range(lo, head + 1) if p not in tape]
+      assert len(gaps) == 1, f"weak_collatz_15 roundCfg gap count {len(gaps)} at step {step}"
+      sep = gaps[0]
+      d_val = sep - lo
+      n_val = head - sep
+      assert (d_val, n_val) == (exp_d, exp_n), (
+          f"weak_collatz_15 (d, n) mismatch at step {step}: {(d_val, n_val)} vs {(exp_d, exp_n)}"
+      )
+      checkpoints += 1
+      last_x = exp_x
+      exp_kind, exp_x, exp_d, exp_n = next(sched)
+
+    tr = machine.table[state][sym]
+    assert tr is not None and tr.next_state is not None, (
+        f"weak_collatz_15 unexpectedly halted at step {step}"
+    )
+    visited.add((state, sym))
+    if tr.write:
+      tape.add(head)
+    else:
+      tape.discard(head)
+    head += tr.direction
+    state = tr.next_state
+
+  assert boot_6_verified and boot_35_verified, (
+      "weak_collatz_15 did not verify step 6 (stageCfg 4) and step 35 (stageCfg 6)"
+  )
+  assert checkpoints >= 200, f"weak_collatz_15 too few checkpoints: {checkpoints}"
+  if steps >= 100:
+    assert len(visited) == 29, (
+        f"weak_collatz_15 transition coverage {len(visited)}/29"
+    )
+
+  # Planted cycle maxima: (x=8, y=5), (x=14, y=9), (x=20, y=13) starting at roundCfg (x-y) (y-1).
+  for x_val, y_val in ((8, 5), (14, 9), (20, 13)):
+    d_val = x_val - y_val
+    n_val = y_val - 1
+    ptape = set(range(-d_val - 1, -1)) | set(range(0, n_val))
+    phead = n_val - 1
+    pstate = 5
+    halted = False
+    for _ in range(2_000):
+      psym = 1 if phead in ptape else 0
+      ptr = machine.table[pstate][psym]
+      if ptr is None:
+        assert (pstate, psym) == (14, 0), f"wrong halt {(pstate, psym)}"
+        halted = True
+        break
+      if ptr.write:
+        ptape.add(phead)
+      else:
+        ptape.discard(phead)
+      phead += ptr.direction
+      assert ptr.next_state is not None
+      pstate = ptr.next_state
+    assert halted, f"weak_collatz_15 planted cycle {(x_val, y_val)} failed to halt"
+
+  return {
+      "steps_simulated": steps,
+      "boot_step_cand": 6,
+      "checkpoints_verified": checkpoints,
+      "last_x": last_x,
+      "active_transitions_visited": len(visited),
+      "planted_cycle_halts": True,
+  }
+
+
 def verify_legendre_21(machine: Machine, steps: int) -> dict[str, object]:
   """Checks the interval layout of `Cryptids/Legendre21.lean`.
 
@@ -2182,6 +2335,15 @@ def run_verification(
         " transitions visited); planted cycles halt in state 15"
     )
 
+  wc15_sim = verify_weak_collatz_15(cand_machines["weak_collatz_15"], steps)
+  report["simulations"]["weak_collatz_15"] = wc15_sim
+  if verbose:
+    print(
+        f"[PASS] Weak Collatz 15 stage simulation ({steps:,} steps):"
+        f" boot at t=6 + {wc15_sim['checkpoints_verified']} Terras checkpoints"
+        f" verified (up to x = {wc15_sim['last_x']}, {wc15_sim['active_transitions_visited']}/29"
+        " transitions visited); planted cycles halt in state 14"
+    )
 
   # Legendre: table, SHA-256, Lean definitions, and simulation.
   lspec = LEGENDRE_21
