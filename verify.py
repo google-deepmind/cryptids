@@ -47,10 +47,14 @@ It independently:
      `2^k` and the count of powers without a digit 2 (`Cryptids/ErdosTernary15.lean`).
    - Erdos (14 states): at every entry to the division state `D` the tape is
      the configuration predicted by `Cryptids/ErdosTernary14.lean`.
-   - Brocard (28 states): the 46-step start writes `1111 0 111`, then at every entry to the
-     test state `TLx` the tape holds `n` cells of `N` and `n!/8 + 1` cells of `B`
-     (`Cryptids/Brocard28.lean`), and from a prepared tape a triangular `B` with a
+   - Brocard (27 states): the 45-step start ends at the test of round 4, and at every later
+     entry to the test state `TLx` the tape holds `n` cells of `N` and `n!/8 + 1` cells of `B`
+     (`Cryptids/Brocard27.lean`), and from a prepared tape a triangular `B` with a
      multiple of `4` cells halts in `M0`.
+   - Legendre (21 states): the first test events are at steps 14 and 17, and at every test
+     event (`q16` reading `0`) the tape is the block, separator, flag and walker area of
+     `Cryptids/Legendre21.lean`; from a prepared tape an interval in which no prime was
+     seen halts in `X`.
 """
 
 from __future__ import annotations
@@ -348,19 +352,19 @@ CANDIDATES = [
 
 # A new machine with no reference: checked like a candidate (table, SHA-256, Lean
 # definitions in `Machines.lean` and `Challenge.lean`) plus its own stage simulation.
-BROCARD_28 = {
-    "id": "brocard_28",
-    "path": "artifacts/brocard_28",
+BROCARD_27 = {
+    "id": "brocard_27",
+    "path": "artifacts/brocard_27",
     "lean_file": "Cryptids/Machines.lean",
-    "lean_def": "brocard28",
-    "proof_path": "Cryptids/Brocard28.lean",
+    "lean_def": "brocard27",
+    "proof_path": "Cryptids/Brocard27.lean",
     "challenge_path": "Challenge.lean",
-    "states": 28,
+    "states": 27,
     "machine_sha256": (
-        "957e52ef4b8f40da12c9d840ea4a28369f76cbf10c384fb65012f121edc03d39"
+        "97fe0a3e279374757975bada0c3e8d057cf4e47ecba28d0afa3013b3e7c439a6"
     ),
     "table_file_sha256": (
-        "957e52ef4b8f40da12c9d840ea4a28369f76cbf10c384fb65012f121edc03d39"
+        "97fe0a3e279374757975bada0c3e8d057cf4e47ecba28d0afa3013b3e7c439a6"
     ),
 }
 
@@ -379,6 +383,25 @@ WEAK_COLLATZ_75 = {
         "a4ff22c976b077d8afcc3f2db9589ea772a019f00d75ba35ad312fc9d82d549c"
     ),
 }
+
+
+# A new machine with no reference, checked like `brocard_27`.
+LEGENDRE_21 = {
+    "id": "legendre_21",
+    "path": "artifacts/legendre_21",
+    "lean_file": "Cryptids/Machines.lean",
+    "lean_def": "legendre21",
+    "proof_path": "Cryptids/Legendre21.lean",
+    "challenge_path": "Challenge.lean",
+    "states": 21,
+    "machine_sha256": (
+        "5366c36eb3032c5bd10775874aeac0a4182a817eeaf51ad945b523099929c2f9"
+    ),
+    "table_file_sha256": (
+        "5366c36eb3032c5bd10775874aeac0a4182a817eeaf51ad945b523099929c2f9"
+    ),
+}
+
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1011,29 +1034,31 @@ def verify_erdos_ternary_14_stages(machine: Machine, steps: int) -> dict[str, ob
   }
 
 
-def verify_brocard_28(machine: Machine, steps: int) -> dict[str, object]:
-  """Checks the round layout of `Cryptids/Brocard28.lean`.
+def verify_brocard_27(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the round layout of `Cryptids/Brocard27.lean`.
 
-  On the blank tape, the first 46 steps (the start, which passes through the test state
-  twice) write `1111 0 111` and end in state 3 (`LN1`) on the blank left of `N`. After
-  that, every time `brocard_28` enters state 1 (`TLx`, the start of a test) the head is
-  on cell `p` with `B = n!/8 + 1` ones on cells `p, ..., p+B-1`, a `0` on `p-1`, the `n`
-  cells of `N` on `p-n-1, ..., p-2`, and nothing else; the first entry is at step 318
-  with `n = 5`. Then, from a prepared tape with eight cells of `N` and `1 + T_8 = 37`
-  cells of `B` in state 1 (`36 = T_8` is triangular and a multiple of `4`), the machine
-  halts in state 23 (`M0`); with `2 + T_8` cells it reaches the next test with `9` cells
-  of `N` and `9 * 37 + 1` cells of `B`.
+  `brocard_27` starts in state 0 (`TLx`), the state that begins a test. On the blank
+  tape the first 45 steps (the start, which enters `TLx` once more on a blank cell) end
+  in `TLx` at the test of round 4. From then on, every time the machine enters state 0
+  the head is on cell `p` with `B = n!/8 + 1` ones on cells `p, ..., p+B-1`, a `0` on
+  `p-1`, the `n` cells of `N` on `p-n-1, ..., p-2`, and nothing else: `n = 4` at step 45
+  and `n = 5` at step 391. Then, from a prepared tape with eight cells of `N` and
+  `1 + T_8 = 37` cells of `B` in state 0 (`36 = T_8` is triangular and a multiple of
+  `4`), the machine halts in state 22 (`M0`); with `2 + T_8` cells it reaches the next
+  test with `9` cells of `N` and `9 * 37 + 1` cells of `B`. With `1 + T_3 = 7` cells
+  (`6 = T_3` is triangular, but `6 % 4 = 2`) the gate (`M2` reading `0`) lets the machine
+  go on: it reaches the next test with `9` cells of `N` and `9 * 6 + 1` cells of `B`.
   """
-  proof_text = (ROOT / "Cryptids/Brocard28.lean").read_text(encoding="utf-8")
-  assert "theorem halts_brocard28_iff_exists_tri" in proof_text
+  proof_text = (ROOT / BROCARD_27["proof_path"]).read_text(encoding="utf-8")
+  assert "theorem halts_brocard27_iff_exists_tri" in proof_text
   halting = [
       (q, sym)
       for q, row in enumerate(machine.table)
       for sym, tr in enumerate(row)
       if tr is None
   ]
-  # Only `M0` (state 23) on `0` halts.
-  assert halting == [(23, 0)], f"brocard_28 halting entries: {halting}"
+  # Only `M0` (state 22) on `0` halts.
+  assert halting == [(22, 0)], f"brocard_27 halting entries: {halting}"
 
   def run(ones: set[int], head: int, state: int, limit: int, stop_state: int | None):
     """Runs until `stop_state` is entered (after a step), a halt, or `limit` steps."""
@@ -1057,42 +1082,48 @@ def verify_brocard_28(machine: Machine, steps: int) -> dict[str, object]:
       f *= i
     return f
 
-  # The start: 46 steps, no stop.
+  def test_tape(head: int, n: int) -> set[int]:
+    b = factorial(n) // 8 + 1
+    return {head + i for i in range(b)} | {head - 2 - i for i in range(n)}
+
+  # The start: 45 steps, no stop; it ends at the test of round 4.
   ones: set[int] = set()
-  status, state, head, total = run(ones, 0, 0, 46, None)
-  assert status == "limit" and state == 3, f"brocard_28 start: {status} in state {state}"
-  seed = {head + 1 + i for i in range(4)} | {head + 6 + i for i in range(3)}
-  assert ones == seed, "brocard_28 start: tape is not 1111 0 111"
+  status, state, head, total = run(ones, 0, 0, 45, None)
+  assert status == "limit" and state == 0, f"brocard_27 start: {status} in state {state}"
+  assert ones == test_tape(head, 4), "brocard_27 start: tape is not the test of round 4"
 
   # Blank-tape rounds: n = 5, 6, ... as far as `steps` allows.
-  n, tests = 4, 0
+  n, tests = 4, 1
   while True:
-    status, state, head, t = run(ones, head, state, steps - total, 1)
+    status, state, head, t = run(ones, head, state, steps - total, 0)
     total += t
     if status != "stop":
-      assert status == "limit", f"brocard_28 halted at step {total}"
+      assert status == "limit", f"brocard_27 halted at step {total}"
       break
     n += 1
-    b = factorial(n) // 8 + 1
-    expected = {head + i for i in range(b)} | {head - 2 - i for i in range(n)}
-    assert ones == expected, f"brocard_28 test n={n}: tape mismatch at step {total}"
+    assert ones == test_tape(head, n), f"brocard_27 test n={n}: tape mismatch at step {total}"
     tests += 1
-    if tests == 1:
-      assert total == 318, f"brocard_28 first test at step {total}"
-  if steps >= 8_000:
-    assert tests >= 2, f"brocard_28: only {tests} tests in {steps} steps"
+    if tests == 2:
+      assert total == 391, f"brocard_27 test n=5 at step {total}"
+  if steps >= 8_100:
+    assert tests >= 3, f"brocard_27: only {tests} tests in {steps} steps"
 
   # Planted tests at a live round (eight cells of N): T_8 = 36 = 4 * 9.
   def planted(b: int):
     cells = {i for i in range(b)} | {-2 - i for i in range(8)}
-    return run(cells, 0, 1, 3_000_000, 1), cells
+    return run(cells, 0, 0, 3_000_000, 0), cells
 
   (status, state, _, _), _ = planted(1 + 36)
-  assert (status, state) == ("halt", 23), f"brocard_28 planted square: {status} in {state}"
+  assert (status, state) == ("halt", 22), f"brocard_27 planted square: {status} in {state}"
   (status, state, head, _), cells = planted(2 + 36)
-  assert status == "stop", f"brocard_28 planted non-square: {status}"
+  assert status == "stop", f"brocard_27 planted non-square: {status}"
   expected = {head + i for i in range(9 * 37 + 1)} | {head - 2 - i for i in range(9)}
-  assert cells == expected, "brocard_28 planted non-square: wrong next tape"
+  assert cells == expected, "brocard_27 planted non-square: wrong next tape"
+  # A triangular value with residue 2: T_3 = 6. The gate (`M2` reading `0`) must not halt.
+  (status, state, head, _), cells = planted(1 + 6)
+  assert status == "stop", f"brocard_27 planted residue-2 triangular: {status} in {state}"
+  expected = {head + i for i in range(9 * 6 + 1)} | {head - 2 - i for i in range(9)}
+  assert cells == expected, "brocard_27 planted residue-2 triangular: wrong next tape"
   return {
       "steps_simulated": total,
       "tests_verified": tests,
@@ -1767,6 +1798,119 @@ def verify_weak_collatz_15(machine: Machine, steps: int) -> dict[str, object]:
       "planted_cycle_halts": True,
   }
 
+
+def verify_legendre_21(machine: Machine, steps: int) -> dict[str, object]:
+  """Checks the interval layout of `Cryptids/Legendre21.lean`.
+
+  State numbers are those of `machine.txt`: `11` is `q16` and `20` is `X`. A test event is
+  `q16` reading `0`. At a test event with the head on cell `p` the tape holds a block of
+  `t` ones on `p+1, ..., p+t` (the number under test), a `0` on `p+t+1` (the separator),
+  the flag `f` on `p+t+2`, and the walker area from `p+t+3` on: `h` ones, a hole, `r` ones;
+  nothing else. On the blank tape the events follow the model of the Lean proof: `t < 2`
+  goes to `t + 1`; the first prime of an interval (`f = 0`) is tested again with `f = 1`
+  and `r + 1`; otherwise the hole moves one cell left (`h - 1`, `r + 1`) and `t` grows by
+  one, and with `h = 0` and `f = 1` the next interval starts with `f = 0`, `h = r + 1`,
+  `r = 0`. The first events are at steps 14 (`t = 0`) and 17 (`t = 1`), both with the
+  walker area `1 0 1`. Then, from a prepared event tape with `t = 8`, `f = 0`, `h = 0`,
+  `r = 4` (the end of an interval in which no prime was seen), the machine halts in state
+  `20` (`X`); with `f = 1`, `r = 5` (the tape the blank-tape run has at `8`) it reaches
+  the test of `9` with the flag clear and six ones in the walker area.
+  """
+  proof_text = (ROOT / LEGENDRE_21["proof_path"]).read_text(encoding="utf-8")
+  assert "theorem halts_legendre21_iff" in proof_text
+  halting = [
+      (q, sym)
+      for q, row in enumerate(machine.table)
+      for sym, tr in enumerate(row)
+      if tr is None
+  ]
+  # Only `X` (state 20) on `0` halts.
+  assert halting == [(20, 0)], f"legendre_21 halting entries: {halting}"
+  q16 = 11
+
+  def is_prime(x: int) -> bool:
+    return x >= 2 and all(x % d for d in range(2, int(x**0.5) + 1))
+
+  def layout(p: int, t: int, f: int, h: int, r: int) -> set[int]:
+    a = p + t + 3
+    cells = {p + 1 + i for i in range(t)}
+    cells |= {a + i for i in range(h)} | {a + h + 1 + i for i in range(r)}
+    if f:
+      cells.add(p + t + 2)
+    return cells
+
+  def advance(t: int, f: int, h: int, r: int):
+    """The next test event by the model, or `None` for a halt."""
+    if t < 2:
+      return (t + 1, f, h, r)
+    if is_prime(t) and f == 0:
+      return (t, 1, h, r + 1)
+    if h > 0:
+      return (t + 1, f, h - 1, r + 1)
+    if f == 1:
+      return (t + 1, 0, r + 1, 0)
+    return None
+
+  def run(ones: set[int], head: int, state: int, limit: int):
+    """Runs until the next test event (after a step), a halt, or `limit` steps."""
+    for t in range(limit):
+      tr = machine.table[state][int(head in ones)]
+      if tr is None:
+        return "halt", state, head, t
+      if tr.write:
+        ones.add(head)
+      else:
+        ones.discard(head)
+      head += tr.direction
+      state = tr.next_state
+      if state == q16 and head not in ones:
+        return "event", state, head, t + 1
+    return "limit", state, head, limit
+
+  # Blank tape: every test event as far as `steps` allows.
+  ones: set[int] = set()
+  head, state, total, events = 0, 0, 0, 0
+  model = (0, 0, 1, 1)
+  last = 0
+  while True:
+    status, state, head, t = run(ones, head, state, steps - total)
+    total += t
+    if model is None:
+      # The model says the interval had no prime: the machine must halt, not go on.
+      assert status != "event", "legendre_21: the model halts, the machine goes on"
+      break
+    if status != "event":
+      assert status == "limit", f"legendre_21 halted at step {total}"
+      break
+    assert ones == layout(head, *model), (
+        f"legendre_21 test event {events} (number {model[0]}): tape mismatch"
+        f" at step {total}"
+    )
+    if events < 2:
+      assert total == (14, 17)[events], f"legendre_21 event {events} at step {total}"
+    last = model[0]
+    events += 1
+    model = advance(*model)
+  if steps >= 250_000:
+    assert events >= 40, f"legendre_21: only {events} test events in {steps} steps"
+
+  # Planted: the end of interval 2 (the number 8) with and without a prime seen.
+  cells = layout(0, 8, 0, 0, 4)
+  status, state, _, _ = run(cells, 0, q16, 100_000)
+  assert (status, state) == ("halt", 20), f"legendre_21 planted gap: {status} in {state}"
+  cells = layout(0, 8, 1, 0, 5)
+  status, state, head, _ = run(cells, 0, q16, 100_000)
+  assert status == "event", f"legendre_21 planted interval end: {status}"
+  assert cells == layout(head, 9, 0, 6, 0), "legendre_21 planted interval end: wrong tape"
+  return {
+      "steps_simulated": total,
+      "events_verified": events,
+      "last_number": last,
+      "planted_gap_halts": True,
+  }
+
+
+
 def extract_goldbach_chk0(
     machine: Machine, steps: int, is_candidate: bool
 ) -> dict[str, object]:
@@ -2078,15 +2222,15 @@ def run_verification(
     )
 
   # Brocard: table, SHA-256, Lean definitions, and simulation.
-  bspec = BROCARD_28
+  bspec = BROCARD_27
   b_text = (ROOT / str(bspec["path"]) / "machine.txt").read_text(encoding="utf-8")
   assert sha256_bytes(b_text.encode("utf-8")) == bspec["table_file_sha256"], (
-      "brocard_28 table file SHA-256 mismatch"
+      "brocard_27 table file SHA-256 mismatch"
   )
   bm = parse_canonical_machine(b_text)
-  assert bm.states == bspec["states"], f"brocard_28 state count mismatch: {bm.states}"
+  assert bm.states == bspec["states"], f"brocard_27 state count mismatch: {bm.states}"
   assert bm.sha256 == bspec["machine_sha256"], (
-      f"brocard_28 machine SHA-256 mismatch: {bm.sha256}"
+      f"brocard_27 machine SHA-256 mismatch: {bm.sha256}"
   )
   for lean_path in (bspec["lean_file"], bspec["challenge_path"]):
     assert (
@@ -2096,19 +2240,19 @@ def run_verification(
             expected_table_path=f"{bspec['path']}/machine.txt",
         ).table
         == bm.table
-    ), f"{lean_path} brocard_28 table mismatch"
-  assert "theorem halts_brocard28_iff_exists_square" in (
+    ), f"{lean_path} brocard_27 table mismatch"
+  assert "theorem halts_brocard27_iff_exists_square" in (
       ROOT / "Challenge.lean"
   ).read_text(encoding="utf-8")
-  brocard_sim = verify_brocard_28(bm, steps)
-  report["candidates"]["brocard_28"] = {
+  brocard_sim = verify_brocard_27(bm, steps)
+  report["candidates"]["brocard_27"] = {
       "states": bm.states,
       "machine_sha256": bm.sha256,
   }
-  report["simulations"]["brocard_28"] = brocard_sim
+  report["simulations"]["brocard_27"] = brocard_sim
   if verbose:
     print(
-        f"[PASS] Brocard 28 ({bm.states} states, SHA-256 {bm.sha256[:16]}...):"
+        f"[PASS] Brocard 27 ({bm.states} states, SHA-256 {bm.sha256[:16]}...):"
         f" {brocard_sim['tests_verified']} tests verified on the blank tape"
         f" ({brocard_sim['steps_simulated']:,} steps, up to n = {brocard_sim['last_n']});"
         " planted square halts in M0"
@@ -2200,6 +2344,44 @@ def run_verification(
         f" verified (up to x = {wc15_sim['last_x']}, {wc15_sim['active_transitions_visited']}/29"
         " transitions visited); planted cycles halt in state 14"
     )
+
+  # Legendre: table, SHA-256, Lean definitions, and simulation.
+  lspec = LEGENDRE_21
+  l_text = (ROOT / str(lspec["path"]) / "machine.txt").read_text(encoding="utf-8")
+  assert sha256_bytes(l_text.encode("utf-8")) == lspec["table_file_sha256"], (
+      "legendre_21 table file SHA-256 mismatch"
+  )
+  lm = parse_canonical_machine(l_text)
+  assert lm.states == lspec["states"], f"legendre_21 state count mismatch: {lm.states}"
+  assert lm.sha256 == lspec["machine_sha256"], (
+      f"legendre_21 machine SHA-256 mismatch: {lm.sha256}"
+  )
+  for lean_path in (lspec["lean_file"], lspec["challenge_path"]):
+    assert (
+        parse_lean_machine_def(
+            (ROOT / str(lean_path)).read_text(encoding="utf-8"),
+            str(lspec["lean_def"]),
+            expected_table_path=f"{lspec['path']}/machine.txt",
+        ).table
+        == lm.table
+    ), f"{lean_path} legendre_21 table mismatch"
+  assert "theorem halts_legendre21_iff_exists_gap" in (
+      ROOT / "Challenge.lean"
+  ).read_text(encoding="utf-8")
+  legendre_sim = verify_legendre_21(lm, steps)
+  report["candidates"]["legendre_21"] = {
+      "states": lm.states,
+      "machine_sha256": lm.sha256,
+  }
+  report["simulations"]["legendre_21"] = legendre_sim
+  if verbose:
+    print(
+        f"[PASS] Legendre 21 ({lm.states} states, SHA-256 {lm.sha256[:16]}...):"
+        f" {legendre_sim['events_verified']} test events verified on the blank tape"
+        f" ({legendre_sim['steps_simulated']:,} steps, up to the number"
+        f" {legendre_sim['last_number']}); planted gap halts in X"
+    )
+
 
   # 5. Concrete blank-tape lockstep simulations
   gb_ref_sim = extract_goldbach_chk0(

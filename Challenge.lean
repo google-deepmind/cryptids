@@ -35,9 +35,10 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   `Semantics.Zf.halts_zf432_iff_wadeZFInconsistent`), first-order Peano Arithmetic (`PA`)
   consistency and $\Sigma_1^0$ standard-model adequacy (`Semantics.PA.not_paProvable_false`,
   `Semantics.PA.paHalts_holds_iff_halts`, `Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent`),
-  the `brocard_28` equivalence `Brocard28.halts_brocard28_iff_exists_square`, and the
+  the `brocard_27` equivalence `Brocard27.halts_brocard27_iff_exists_square`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
-  and `weak_collatz_15` cycle and Böhm–Sontacchi Diophantine equivalences
+  and `weak_collatz_15` cycle and Böhm–Sontacchi Diophantine equivalences, and the `legendre_21`
+  equivalence `Legendre21.halts_legendre21_iff_exists_gap`
   are verified **without `Classical.choice`**. Because `Zf/Soundness.lean` proves
   `not_zfInconsistent` via `ZFSet.{0}` (`Classical.choice`)—and `CIC + EM` proves `Con(ZF)` without
   choice (`digama0/ConZF`)—disallowing `Classical.choice` blocks classical `Con(ZF)` shortcuts for
@@ -45,13 +46,14 @@ Self-contained specification module audited against `Cryptids` by `leanprover/co
   metatheory that cannot prove `Con(PA)` or `Con(ZF)` (see `Cryptids/Semantics/README.md`).
 - **Full gate (`comparator/all.json`; `permitted_axioms = ["propext", "Quot.sound",
   "Classical.choice"]`):**
-  Audits all 64 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
+  Audits all 66 theorems, including classical `PA` and `ZFSet.{0}` soundness/non-halting,
   negated-`Π₁⁰` Goldbach (`¬ GoldbachConjecture`, which uses Markov's Principle), analytic
   `RiemannHypothesis` equivalences, the `erdos_ternary_15` and `erdos_ternary_14` equivalences
   with `ErdosTernaryConjecture` (`Nat.digits` uses `Classical.choice`; `¬ ErdosTernaryConjecture`
-  also uses Markov's Principle), the `brocard_28` equivalence with `¬ BrocardConjecture`, and the
+  also uses Markov's Principle), the `brocard_27` equivalence with `¬ BrocardConjecture`, the
   `weak_collatz_75`, `weak_collatz_41`, `weak_collatz_27`, `weak_collatz_17`, `weak_collatz_16`,
-  and `weak_collatz_15` equivalences with `¬ WeakCollatzConjecture` (Markov's Principle).
+  and `weak_collatz_15` equivalences with `¬ WeakCollatzConjecture`, and the `legendre_21`
+  equivalence with `¬ LegendreConjecture` (Markov's Principle).
 -/
 
 meta section
@@ -345,11 +347,11 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
-/-- Rows of `brocard28`. -/
-def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
-  load_machine_rows% "artifacts/brocard_28/machine.txt"
-/-- 28-state Brocard machine. -/
-def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `brocard27`. -/
+def brocard27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/brocard_27/machine.txt"
+/-- 27-state Brocard machine. -/
+def brocard27 : Machine 27 2 := Machine.ofRows brocard27Rows
 /-- Rows of `weakCollatz75`. -/
 def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
   load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
@@ -380,6 +382,11 @@ def weakCollatz15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
   load_machine_rows% "artifacts/weak_collatz_15/machine.txt"
 /-- 15-state Weak Collatz candidate. -/
 def weakCollatz15 : Machine 15 2 := Machine.ofRows weakCollatz15Rows
+/-- Rows of `legendre21`. -/
+def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
+  load_machine_rows% "artifacts/legendre_21/machine.txt"
+/-- 21-state Legendre machine. -/
+def legendre21 : Machine 21 2 := Machine.ofRows legendre21Rows
 end Machines
 
 /-- **Goldbach's Conjecture**: every even integer greater than 2 is the sum of two primes. -/
@@ -877,6 +884,11 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
+/-- **Legendre's conjecture** (one of Landau's four problems, 1912): for every `n ≥ 1` there is
+a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
+def LegendreConjecture : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
+
 /-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
 for odd `n`. -/
 def terras (n : ℕ) : ℕ :=
@@ -1023,14 +1035,14 @@ theorem halts_candidate_iff_not_erdosTernary :
 end Semantics
 end ErdosTernary14
 
-namespace Brocard28
-/-- 28-state Brocard machine (`brocard_28`, Veljjanoski 2026). -/
-abbrev brocard28 : Machine 28 2 := Machines.brocard28
-theorem halts_brocard28_iff_exists_square :
-    ConjectureMachines.Halts brocard28 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
-theorem halts_brocard28_iff_not_brocard :
-    ConjectureMachines.Halts brocard28 ↔ ¬ BrocardConjecture := by sorry
-end Brocard28
+namespace Brocard27
+/-- 27-state Brocard machine (`brocard_27`, Veljjanoski 2026). -/
+abbrev brocard27 : Machine 27 2 := Machines.brocard27
+theorem halts_brocard27_iff_exists_square :
+    ConjectureMachines.Halts brocard27 ↔ ∃ n : ℕ, 7 < n ∧ IsSquare (n.factorial + 1) := by sorry
+theorem halts_brocard27_iff_not_brocard :
+    ConjectureMachines.Halts brocard27 ↔ ¬ BrocardConjecture := by sorry
+end Brocard27
 
 namespace WeakCollatz75
 /-- 75-state Weak Collatz machine (`weak_collatz_75`), improving on the unverified 124-state
@@ -1158,5 +1170,15 @@ theorem halts_candidate_iff_not_weakCollatz :
     Halts candidate ↔ ¬ WeakCollatzConjecture := by sorry
 end Semantics
 end WeakCollatz15
+
+namespace Legendre21
+/-- 21-state Legendre machine (`legendre_21`, Veljjanoski 2026). -/
+abbrev legendre21 : Machine 21 2 := Machines.legendre21
+theorem halts_legendre21_iff_exists_gap :
+    ConjectureMachines.Halts legendre21 ↔
+      ∃ n : ℕ, 1 ≤ n ∧ ∀ p : ℕ, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2) := by sorry
+theorem halts_legendre21_iff_not_legendre :
+    ConjectureMachines.Halts legendre21 ↔ ¬ LegendreConjecture := by sorry
+end Legendre21
 
 end ConjectureMachines

@@ -11,7 +11,7 @@ using [`leanprover/comparator`](https://github.com/leanprover/comparator).
   defines all conjecture-checking baseline and candidate machines (`reference` and `candidate`),
   states the target mathematical propositions (`GoldbachConjecture`,
   `MatiyasevichRiemannCounterexample`, `ZFProvable`, `WadeZFProvable`, `PAProvable`, `paHalts`,
-  `paZFInconsistent`, `ErdosTernaryConjecture`, etc.), and states all 64 target
+  `paZFInconsistent`, `ErdosTernaryConjecture`, etc.), and states all 66 target
   state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics
   theorems with `sorry`.
 - [`BusyBeaverChallenge.lean`](../BusyBeaverChallenge.lean) imports **only** Mathlib and Lean core
@@ -59,9 +59,10 @@ that:
      `Zf380.Semantics.halts_candidate_iff_zfInconsistent`,
      `halts_zf432_iff_wadeZFInconsistent`), first-order `PA` consistency and $\Sigma_1^0$
      adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`,
-     `paZFInconsistent_holds_iff_zfInconsistent`), the `brocard_28` equivalence
-     `Brocard28.halts_brocard28_iff_exists_square`, and the Weak Collatz nontrivial-cycle and
-     Böhm–Sontacchi Diophantine equivalences (39 theorems total). Disallowing
+     `paZFInconsistent_holds_iff_zfInconsistent`), the `brocard_27` equivalence
+     `Brocard27.halts_brocard27_iff_exists_square`, the Weak Collatz nontrivial-cycle and
+     Böhm–Sontacchi Diophantine equivalences, and the `legendre_21` equivalence
+     `Legendre21.halts_legendre21_iff_exists_gap` (40 theorems total). Disallowing
      `Classical.choice` blocks classical `Con(ZF)` shortcuts (`not_zfInconsistent` in `ZFSet.{0}` or
      `Classical.em` + `digama0/ConZF`) for `Halts M ↔ ZFInconsistent`, while deeply embedded
      `PAProvable` provides a weak first-order metatheory strictly below `ZF` (see
@@ -70,9 +71,9 @@ that:
      [`busy_beaver.json`](./busy_beaver.json), and the classical model-theoretic /
      analytic configs (`pa_semantics.json`, `zf_393.json`, `zf_semantics.json`,
      `goldbach_semantics.json`, `riemann_95.json`, `riemann_120.json`, `riemann_semantics.json`,
-     `erdos_ternary_15.json`, `erdos_ternary_14.json`, `brocard_28.json`, `weak_collatz_75.json`,
+     `erdos_ternary_15.json`, `erdos_ternary_14.json`, `brocard_27.json`, `weak_collatz_75.json`,
      `weak_collatz_41.json`, `weak_collatz_27.json`, `weak_collatz_17.json`,
-     `weak_collatz_16.json`, `weak_collatz_15.json`).
+     `weak_collatz_16.json`, `weak_collatz_15.json`, `legendre_21.json`).
 3. The exported proof terms are accepted by the Lean default kernel.
 
 ## Configurations
@@ -80,8 +81,8 @@ that:
 | Config File | Challenge Module | Solution Module | Permitted Axioms | Verified Theorems |
 | :--- | :--- | :--- | :--- | :--- |
 | [`zero_axioms.json`](./zero_axioms.json) | `Challenge` | `Cryptids` | *(none)* (`[]`) | All 11 zero-axiom theorems: all 10 `candidate_fewer_states` theorems (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`, `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`, `WeakCollatz15`) and syntactic `PA` consistency (`not_paProvable_false`) |
-| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 39 constructive theorems: all 10 state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`, `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`, `WeakCollatz15`), all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard28.halts_brocard28_iff_exists_square`, and the `WeakCollatz75`, `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`, and `WeakCollatz15` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences |
-| [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 64 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
+| [`constructive.json`](./constructive.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound` | All 40 constructive theorems: all 10 state reductions (`Goldbach21`, `Zf380`, `Riemann104`, `Riemann95`, `ErdosTernary14`, `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`, `WeakCollatz15`), all 3 ZF proof-search equivalences (`zf_393`, `zf_380`, `zf_432`), first-order `PA` consistency & $\Sigma_1^0$ adequacy (`not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`), `Brocard27.halts_brocard27_iff_exists_square`, the `WeakCollatz75`, `WeakCollatz41`, `WeakCollatz27`, `WeakCollatz17`, `WeakCollatz16`, and `WeakCollatz15` nontrivial-cycle and Böhm–Sontacchi Diophantine equivalences, and `Legendre21.halts_legendre21_iff_exists_gap` |
+| [`all.json`](./all.json) | `Challenge` | `Cryptids` | `propext`, `Quot.sound`, `Classical.choice` | All 66 conjecture-checking state-reduction, equivalence, `PA` metatheory & internalized `ZF` provability, and semantics theorems |
 | [`pa_semantics.json`](./pa_semantics.json) | `Challenge` | `Cryptids.Semantics.PA` | `propext`, `Quot.sound`, `Classical.choice` | `not_paProvable_false`, `paHalts_holds_iff_halts`, `paZFInconsistent_holds_iff_zfInconsistent`, `paProvable_sound_nat`, `paProvable_halts_zf380_iff_zf393`, `paProvable_halts_zf393_iff_zfInconsistent`, `paProvable_halts_zf380_iff_zfInconsistent` |
 | [`busy_beaver.json`](./busy_beaver.json) | `BusyBeaverChallenge` | `BusyBeaver` | `propext`, `Quot.sound`, `Classical.choice` | All 752 `BB(6)` and `BB(3, 3)` holdout Level A, Level B, equivalence, A6 `is_not_halt`, and hardness-evidence theorems (`is_closed_pattern_set`, `has_collatz_reduction`, `is_closed_stack_pattern_set`, `has_stacked_collatz_reduction`, `has_stack_reduction`, `has_odometer_reduction`, `has_transducer_reduction`, `is_closed_segmented_system`, `is_valid_acceleration`, `isHalt_iff_acceleration`, `is_valid_highLevel_acceleration`, `isHalt_iff_highLevel_acceleration`, `acceleration_iff_highLevel_acceleration`, `is_halt`, `is_not_halt`, `isHalt_HHH1LC_iff_HHH0LA`, `HardnessEvidence.*`, `is_word_run_cryptid`, `is_segmented_cryptid`, `is_odometer_cryptid`, `is_stack_cryptid`, `is_cryptid`) |
 | [`a6.json`](./a6.json) | `BusyBeaverChallenge` | `BusyBeaver.BB6.NonHalt.M_1RB0LF_1RC0RA_1LD0RB_0LE0LC_0LA0LC_0LBHHH` | `propext`, `Quot.sound`, `Classical.choice` | A6 `is_not_halt` |
@@ -97,7 +98,7 @@ that:
 | [`riemann_semantics.json`](./riemann_semantics.json) | `Challenge` | `Cryptids.Semantics.Riemann` | `propext`, `Quot.sound`, `Classical.choice` | `halts_riemann744_iff_exists_counterexample`, `halts_riemann744_iff_not_riemannHypothesis` |
 | [`erdos_ternary_15.json`](./erdos_ternary_15.json) | `Challenge` | `Cryptids.Semantics.ErdosTernary15` | `propext`, `Quot.sound`, `Classical.choice` | `halts_erdosTernary15_iff_exists_counterexample`, `halts_erdosTernary15_iff_not_erdosTernary` |
 | [`erdos_ternary_14.json`](./erdos_ternary_14.json) | `Challenge` | `Cryptids.Semantics.ErdosTernary14` | `propext`, `Quot.sound`, `Classical.choice` | `candidate_fewer_states`, `candidate_equivalent`, `halts_candidate_iff_not_erdosTernary` |
-| [`brocard_28.json`](./brocard_28.json) | `Challenge` | `Cryptids.Semantics.Brocard28` | `propext`, `Quot.sound`, `Classical.choice` | `halts_brocard28_iff_exists_square`, `halts_brocard28_iff_not_brocard` |
+| [`brocard_27.json`](./brocard_27.json) | `Challenge` | `Cryptids.Semantics.Brocard27` | `propext`, `Quot.sound`, `Classical.choice` | `halts_brocard27_iff_exists_square`, `halts_brocard27_iff_not_brocard` |
 | [`weak_collatz_75.json`](./weak_collatz_75.json) | `Challenge` | `Cryptids.Semantics.WeakCollatz75` | `propext`, `Quot.sound`, `Classical.choice` | `halts_weakCollatz75_iff_exists_cycle`, `halts_weakCollatz75_iff_bohmSontacchi`, `halts_weakCollatz75_iff_not_weakCollatz` |
 | [`weak_collatz_41_reduction.json`](./weak_collatz_41_reduction.json) | `Challenge` | `Cryptids.WeakCollatz41` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`weak_collatz_41.json`](./weak_collatz_41.json) | `Challenge` | `Cryptids.Semantics.WeakCollatz41` | `propext`, `Quot.sound`, `Classical.choice` | `candidate_fewer_states`, `candidate_equivalent`, `halts_candidate_iff_exists_cycle`, `halts_candidate_iff_bohmSontacchi`, `halts_candidate_iff_not_weakCollatz` |
@@ -109,6 +110,7 @@ that:
 | [`weak_collatz_16.json`](./weak_collatz_16.json) | `Challenge` | `Cryptids.Semantics.WeakCollatz16` | `propext`, `Quot.sound`, `Classical.choice` | `candidate_fewer_states`, `candidate_equivalent`, `halts_candidate_iff_exists_cycle`, `halts_candidate_iff_bohmSontacchi`, `halts_candidate_iff_not_weakCollatz` |
 | [`weak_collatz_15_reduction.json`](./weak_collatz_15_reduction.json) | `Challenge` | `Cryptids.WeakCollatz15` | `propext`, `Quot.sound` | `candidate_fewer_states`, `candidate_equivalent` |
 | [`weak_collatz_15.json`](./weak_collatz_15.json) | `Challenge` | `Cryptids.Semantics.WeakCollatz15` | `propext`, `Quot.sound`, `Classical.choice` | `candidate_fewer_states`, `candidate_equivalent`, `halts_candidate_iff_exists_cycle`, `halts_candidate_iff_bohmSontacchi`, `halts_candidate_iff_not_weakCollatz` |
+| [`legendre_21.json`](./legendre_21.json) | `Challenge` | `Cryptids.Semantics.Legendre21` | `propext`, `Quot.sound`, `Classical.choice` | `halts_legendre21_iff_exists_gap`, `halts_legendre21_iff_not_legendre` |
 
 The focused [`a6.json`](a6.json) configuration checks the A6 `IsNotHalt`
 theorem against `BusyBeaverChallenge`, using only its machine module as the

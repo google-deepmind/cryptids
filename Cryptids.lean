@@ -23,8 +23,8 @@ public import Cryptids.ErdosTernary15
 public import Cryptids.Semantics.ErdosTernary15
 public import Cryptids.ErdosTernary14
 public import Cryptids.Semantics.ErdosTernary14
-public import Cryptids.Brocard28
-public import Cryptids.Semantics.Brocard28
+public import Cryptids.Brocard27
+public import Cryptids.Semantics.Brocard27
 public import Cryptids.WeakCollatz75
 public import Cryptids.Semantics.WeakCollatz75
 public import Cryptids.WeakCollatz41
@@ -37,6 +37,8 @@ public import Cryptids.WeakCollatz16
 public import Cryptids.Semantics.WeakCollatz16
 public import Cryptids.WeakCollatz15
 public import Cryptids.Semantics.WeakCollatz15
+public import Cryptids.Legendre21
+public import Cryptids.Semantics.Legendre21
 
 /-!
 # Certified State Reductions & Formalized Conjecture-Checking Turing Machines
@@ -44,10 +46,10 @@ public import Cryptids.Semantics.WeakCollatz15
 This library formalizes record smaller 2-symbol Turing machines for **Goldbach's Conjecture**
 (`25 → 21` states), **ZF Set Theory Consistency** (`393 → 380` states), the **Riemann
 Hypothesis** (`120 → 104 → 95` states), **Erdős's ternary conjecture** (`15 → 14` states),
-and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16 → 15` states), a 28-state
-machine for **Brocard's problem** (`brocard_28`), as well as complete Lean 4 formalizations of all
-publicly known baseline machines (`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`,
-`erdos_ternary_15`),
+and **Tao's Weak Collatz Conjecture** (`124 → 75 → 41 → 27 → 17 → 16 → 15` states), a 27-state
+machine for **Brocard's problem** (`brocard_27`), a 21-state machine for **Legendre's conjecture**
+(`legendre_21`), as well as complete Lean 4 formalizations of all publicly known baseline machines
+(`goldbach_25`, `zf_432`, `zf_393`, `riemann_744`, `riemann_120`, `erdos_ternary_15`),
 linking every machine's blank-tape halting problem to Mathlib's statements:
 
 - `Cryptids.Propositions` — Shared definitions of `GoldbachConjecture`,
@@ -88,11 +90,11 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   `Halts erdosTernary14 ↔ ∃ n, 8 < n ∧ 2 ∉ pw n` and `Halts candidate ↔ Halts reference` relative to
   `erdosTernary15`, and
   `ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary`.
-- `Cryptids.Brocard28`, `Cryptids.Semantics.Brocard28` — A 28-state machine for Brocard's problem
-  (`brocard28`), with constructive proofs of `Halts brocard28 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)`
-  (`V n = n! / 8`) and `ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square`
-  (`Halts brocard28 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
-  `ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard`.
+- `Cryptids.Brocard27`, `Cryptids.Semantics.Brocard27` — A 27-state machine for Brocard's problem
+  (`brocard27`), with constructive proofs of `Halts brocard27 ↔ ∃ n, 8 ≤ n ∧ IsTri (V n)`
+  (`V n = n! / 8`) and `ConjectureMachines.Brocard27.halts_brocard27_iff_exists_square`
+  (`Halts brocard27 ↔ ∃ n, 7 < n ∧ IsSquare (n! + 1)`), and
+  `ConjectureMachines.Brocard27.halts_brocard27_iff_not_brocard`.
 - `Cryptids.WeakCollatz75`, `Cryptids.Semantics.WeakCollatz75` — A 75-state reference machine for
   Tao's Weak Collatz Conjecture (`weakCollatz75`), with constructive proofs of halting equivalence
   to nontrivial `terras` cycles (`halts_weakCollatz75_iff_exists_cycle`) and the Böhm–Sontacchi
@@ -128,6 +130,12 @@ linking every machine's blank-tape halting problem to Mathlib's statements:
   6-step boot, `29/29` active cells visited by step `93`), with constructive
   `Halts candidate ↔ Halts reference` (`candidate_equivalent`), cycle and Böhm–Sontacchi
   equivalences, and `halts_candidate_iff_not_weakCollatz`.
+- `Cryptids.Legendre21`, `Cryptids.Semantics.Legendre21` — A 21-state machine for Legendre's
+  conjecture (`legendre21`), built on the primality test of `goldbach_21`, with constructive
+  proofs of `Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ EmptyInterval n` and
+  `ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap`
+  (`Halts legendre21 ↔ ∃ n, 1 ≤ n ∧ ∀ p, p.Prime → ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2)`), and
+  `ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre`.
 - `Cryptids.Semantics.Goldbach`, `Cryptids.Semantics.Zf`, `Cryptids.Semantics.Riemann` —
   End-to-end proofs linking halting from the blank tape to the corresponding mathematical
   conjectures across all baseline machines (`goldbach25`, `zf432`, `riemann744`).
