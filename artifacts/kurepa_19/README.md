@@ -21,7 +21,7 @@ like Reams's machine, tests every number without a primality test. What is diffe
   skip `n = 2`; `4` does not divide `!2 = 2`, so this machine skips nothing, the tape holds half
   factorials, and the first tape is `11 0 11 0 1`.
 - The hole of the sum starts on the marker itself, so the test and the merge are one walk.
-- The multiplication is the copy loop of [`brocard_28`](../brocard_28/README.md).
+- The multiplication is the copy loop of [`brocard_27`](../brocard_27/README.md).
 - The table was shrunk by a computer search (delete a state, redirect its transitions, change at
   most two cells) from a 21-state loop to an 18-state loop that needs one start state.
 

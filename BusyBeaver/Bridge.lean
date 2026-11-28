@@ -28,11 +28,11 @@ meta section
 namespace BusyBeaver
 open Lean Elab Term
 
-private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
+private def parseRleBlock (numStates numSymbols : Nat) (block : String) :
+    TermElabM (TSyntax `term) := do
   let chars := block.toList
-  if chars.length == 0 || chars.length % 3 != 0 then
+  if numSymbols == 0 || chars.length != 3 * numSymbols then
     throwError "Invalid RLE state block length: {block}"
-  let numSymbols := chars.length / 3
   let mut cellStxs : Array (TSyntax `term) := #[]
   for i in [:numSymbols] do
     let wChar := chars[3 * i]!
@@ -44,6 +44,8 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
     else
       if !wChar.isDigit then
         throwError "Invalid symbol character '{wChar}' in RLE block: {block}"
+      if wChar.toNat - '0'.toNat >= numSymbols then
+        throwError "Out-of-range symbol in RLE block: {block}"
       let wLit := Syntax.mkNumLit (String.singleton wChar)
       let dirStx ← match dChar with
         | 'L' => `(Turing.Dir.left)
@@ -52,32 +54,32 @@ private def parseRleBlock (block : String) : TermElabM (TSyntax `term) := do
       if sChar < 'A' || sChar > 'Z' then
         throwError "Invalid state letter '{sChar}' in RLE block: {block}"
       let stateIdx := sChar.toNat - 'A'.toNat
+      if stateIdx >= numStates then
+        throwError "Out-of-range state in RLE block: {block}"
       let sLit := Syntax.mkNumLit (toString stateIdx)
       cellStxs := cellStxs.push (← `(some ($wLit, $dirStx, $sLit)))
   `([$cellStxs,*])
+
+private def parseRleRows (rle : String) : TermElabM (TSyntax `term) := do
+  let blocks := rle.trimAscii.toString.splitOn "_"
+  let numSymbols := (blocks.headD "").length / 3
+  let mut rowStxs : Array (TSyntax `term) := #[]
+  for b in blocks do
+    rowStxs := rowStxs.push (← parseRleBlock blocks.length numSymbols b)
+  let states := Syntax.mkNumLit (toString blocks.length)
+  let symbols := Syntax.mkNumLit (toString numSymbols)
+  `(([$rowStxs,*] : List (List (Option (Fin $symbols × Turing.Dir × Fin $states)))))
 
 /-- Elaboration-time parser turning a standard `bbchallenge.org` RLE string (e.g.
 `"1RB1RA_0LC1LE_1LD1LC_1LA0LB_1LF1RE_---0RA"`) into transition rows for
 `ConjectureMachines.Machine.ofRows`. -/
 elab "load_rle_rows% " rle:str : term <= expectedType? => do
-  let blocks := rle.getString.trimAscii.toString.splitOn "_"
-  if blocks.isEmpty then
-    throwError "Empty RLE string"
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for b in blocks do
-    rowStxs := rowStxs.push (← parseRleBlock b)
-  elabTerm (← `([$rowStxs,*])) expectedType?
+  elabTerm (← parseRleRows rle.getString) expectedType?
 
 /-- Elaboration-time parser turning a standard `bbchallenge.org` RLE string directly into a
 `ConjectureMachines.Machine`. -/
 elab "load_rle_machine% " rle:str : term <= expectedType? => do
-  let blocks := rle.getString.trimAscii.toString.splitOn "_"
-  if blocks.isEmpty then
-    throwError "Empty RLE string"
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for b in blocks do
-    rowStxs := rowStxs.push (← parseRleBlock b)
-  elabTerm (← `(ConjectureMachines.Machine.ofRows [$rowStxs,*])) expectedType?
+  elabTerm (← `(ConjectureMachines.Machine.ofRows $(← parseRleRows rle.getString))) expectedType?
 
 end BusyBeaver
 end
@@ -105,28 +107,88 @@ variable {states symbols : ℕ} [NeZero states] [NeZero symbols]
 
 /-- Embed `ConjectureMachines.ListBlank Γ` into Mathlib's `Turing.ListBlank Γ`. -/
 def ListBlank.toTuring {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : Turing.ListBlank Γ :=
-  l.liftOn Turing.ListBlank.mk fun _ _ h => Quotient.sound' (Or.inl h)
+  Turing.ListBlank.mk l.toList
+
+private theorem ListBlank.not_isTrimmed_replicate {Γ : Type*} [Inhabited Γ] :
+    ∀ i : ℕ, 1 ≤ i → ¬ ListBlank.IsTrimmed (List.replicate i (default : Γ))
+  | 0, h => absurd h (Nat.not_succ_le_zero 0)
+  | 1, _ => fun ht => ht rfl
+  | i + 2, _ => fun ht => ListBlank.not_isTrimmed_replicate (i + 1) (Nat.succ_pos i) ht
+
+private theorem ListBlank.eq_of_isTrimmed_blankExtends {Γ : Type*} [Inhabited Γ] :
+    ∀ {xs ys : List Γ}, ListBlank.IsTrimmed xs → ListBlank.IsTrimmed ys →
+      Turing.BlankExtends xs ys → xs = ys
+  | [], [], _, _, _ => rfl
+  | [], [b], _, hy, ⟨i, hi⟩ => by
+    cases i with
+    | zero => cases hi
+    | succ j =>
+      simp only [List.nil_append, List.replicate_succ] at hi
+      injection hi with hb _
+      exact False.elim (hy hb)
+  | [], b :: c :: ys, _, hy, ⟨i, hi⟩ => by
+    cases i with
+    | zero => cases hi
+    | succ j =>
+      simp only [List.nil_append] at hi
+      exact False.elim (ListBlank.not_isTrimmed_replicate (j + 1) (Nat.succ_pos j) (hi ▸ hy))
+  | _ :: _, [], _, _, ⟨_, hi⟩ => by cases hi
+  | [a], [b], _, _, ⟨i, hi⟩ => by
+    cases i with
+    | zero =>
+      simp only [List.replicate_zero, List.append_nil] at hi
+      exact hi.symm
+    | succ j =>
+      simp only [List.singleton_append, List.replicate_succ] at hi
+      injection hi with _ hnil
+      cases hnil
+  | [_], _ :: c :: ys, _, hy, ⟨i, hi⟩ => by
+    simp only [List.singleton_append] at hi
+    injection hi with _ htl
+    cases i with
+    | zero => cases htl
+    | succ j =>
+      exact False.elim (ListBlank.not_isTrimmed_replicate (j + 1) (Nat.succ_pos j) (htl ▸ hy))
+  | _ :: _ :: _, [_], _, _, ⟨_, hi⟩ => by
+    injection hi with _ htl
+    cases htl
+  | _ :: b :: xs, c :: d :: ys, hx, hy, ⟨i, hi⟩ => by
+    injection hi with hac htl
+    rw [← hac]
+    exact congrArg (c :: ·) (ListBlank.eq_of_isTrimmed_blankExtends hx hy ⟨i, htl⟩)
 
 @[simp]
 theorem ListBlank.toTuring_inj {Γ : Type*} [Inhabited Γ] {l₁ l₂ : ListBlank Γ} :
-    l₁.toTuring = l₂.toTuring ↔ l₁ = l₂ :=
-  ⟨l₁.induction_on fun _ => l₂.induction_on fun _ h => Quot.sound (Quotient.exact' h),
-   congrArg _⟩
+    l₁.toTuring = l₂.toTuring ↔ l₁ = l₂ := by
+  constructor
+  · intro h
+    apply ListBlank.ext
+    rcases Quotient.exact' h with h₁ | h₂
+    · exact ListBlank.eq_of_isTrimmed_blankExtends l₁.isTrimmed l₂.isTrimmed h₁
+    · exact (ListBlank.eq_of_isTrimmed_blankExtends l₂.isTrimmed l₁.isTrimmed h₂).symm
+  · exact congrArg _
 
 @[simp]
 theorem ListBlank.toTuring_head {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) :
     l.toTuring.head = l.head :=
-  l.induction_on fun _ => rfl
+  rfl
 
 @[simp]
 theorem ListBlank.toTuring_tail {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) :
     l.toTuring.tail = l.tail.toTuring :=
-  l.induction_on fun _ => rfl
+  rfl
 
 @[simp]
-theorem ListBlank.toTuring_cons {Γ : Type*} [Inhabited Γ] (a : Γ) (l : ListBlank Γ) :
-    l.toTuring.cons a = (l.cons a).toTuring :=
-  l.induction_on fun _ => rfl
+theorem ListBlank.toTuring_cons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    (a : Γ) (l : ListBlank Γ) :
+    l.toTuring.cons a = (l.cons a).toTuring := by
+  rcases l with ⟨_ | ⟨b, xs⟩, _⟩
+  · change Turing.ListBlank.mk [a] = Turing.ListBlank.mk (if a = default then [] else [a])
+    by_cases ha : a = default
+    · rw [ite_eq_left ha, ha]
+      exact Quotient.sound' (Or.inr ⟨1, rfl⟩)
+    · rw [ite_eq_right ha]
+  · rfl
 
 /-- Embed `ConjectureMachines.Tape Γ` into Mathlib's `Turing.Tape Γ`. -/
 def Tape.toTuring {Γ : Type*} [Inhabited Γ] (T : Tape Γ) : Turing.Tape Γ :=

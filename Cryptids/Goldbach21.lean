@@ -152,7 +152,7 @@ theorem step_one {M : Machine 25 2} {c c₁ : Cfg 25 2} (h : step M c = some c�
 
 theorem mk_append_replicate_zero (l : List (Fin 2)) (n : ℕ) :
     ListBlank.mk (l ++ List.replicate n 0) = ListBlank.mk l :=
-  Quot.sound (Or.inr ⟨n, rfl⟩)
+  ListBlank.mk_append_replicate_default l n
 
 theorem boot_reference_47 :
     nSteps refM 47 init =

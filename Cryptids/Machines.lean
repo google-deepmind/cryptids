@@ -26,28 +26,39 @@ meta section
 namespace ConjectureMachines.Machines
 open Lean Elab Term
 
-private def parseCellStx (cell : String) : TermElabM (TSyntax `term) := do
+private def parseCellStx (numStates : Nat) (cell : String) : TermElabM (TSyntax `term) := do
   if cell == "---" then `(none)
   else match cell.toList with
     | wChar :: dChar :: rest =>
-      if rest.isEmpty then throwError "Malformed transition cell: {cell}"
+      if wChar != '0' && wChar != '1' then
+        throwError "Invalid write symbol in transition cell: {cell}"
+      let some state := (String.ofList rest).toNat?
+        | throwError "Invalid destination state in transition cell: {cell}"
+      if state >= numStates then
+        throwError "Out-of-range destination state in transition cell: {cell}"
       let wLit := Syntax.mkNumLit (String.singleton wChar)
       let dirStx ← match dChar with
         | 'L' => `(Turing.Dir.left) | 'R' => `(Turing.Dir.right)
         | _ => throwError "Invalid direction in transition cell: {cell}"
-      `(some ($wLit, $dirStx, $(Syntax.mkNumLit (String.ofList rest))))
+      `(some ($wLit, $dirStx, $(Syntax.mkNumLit (toString state))))
     | _ => throwError "Malformed transition cell: {cell}"
 
 elab "load_machine_rows% " path:str : term <= expectedType? => do
   let contents ← liftM (m := IO) (IO.FS.readFile path.getString)
-  let mut rowStxs : Array (TSyntax `term) := #[]
-  for rawLine in contents.splitOn "\n" do
+  let lines := (contents.splitOn "\n").filterMap fun rawLine =>
     let line := ((rawLine.splitOn "#").headD "").trimAscii.toString
-    if !line.isEmpty then
-      match (line.splitOn " ").filter (fun s => !s.isEmpty) with
-      | [c0, c1] => rowStxs := rowStxs.push (← `([$(← parseCellStx c0), $(← parseCellStx c1)]))
-      | _ => throwError "Expected 2 columns in transition table line: {rawLine}"
-  elabTerm (← `([$rowStxs,*])) expectedType?
+    if line.isEmpty then none else some line
+  if lines.isEmpty then throwError "Empty transition table"
+  let mut rowStxs : Array (TSyntax `term) := #[]
+  for line in lines do
+    match (line.splitOn " ").filter (fun s => !s.isEmpty) with
+    | [c0, c1] =>
+      rowStxs := rowStxs.push (← `([$(← parseCellStx lines.length c0),
+        $(← parseCellStx lines.length c1)]))
+    | _ => throwError "Expected 2 columns in transition table line: {line}"
+  let states := Syntax.mkNumLit (toString lines.length)
+  elabTerm (← `(([$rowStxs,*] : List (List (Option (Fin 2 × Turing.Dir × Fin $states))))))
+    expectedType?
 end ConjectureMachines.Machines
 end
 
@@ -57,6 +68,28 @@ open Turing (Dir)
 open StateTransition
 export Turing (Dir)
 
+scoped instance (priority := 10000) instZeroNatConstructive : Zero ℕ := ⟨0⟩
+scoped instance (priority := 10000) instLTNatConstructive : LT ℕ := instLTNat
+scoped instance (priority := 10000) instLENatConstructive : LE ℕ := instLENat
+scoped instance (priority := 10000) instDecidableLTNatConstructive : DecidableLT ℕ :=
+  fun a b => Nat.decLt a b
+scoped instance (priority := 10000) instDecidableLENatConstructive : DecidableLE ℕ :=
+  fun a b => Nat.decLe a b
+
+theorem pos_of_neZero (n : ℕ) [h : NeZero n] : 0 < n :=
+  Nat.casesOn (motive := fun k => NeZero k → 0 < k) n
+    (fun h0 => False.elim (h0.out rfl))
+    (fun k _ => Nat.zero_lt_succ k)
+    h
+
+scoped instance (priority := 10000) instNeZeroSuccConstructive (n : ℕ) : NeZero (n + 1) :=
+  ⟨fun h => Nat.noConfusion h⟩
+scoped instance (priority := 10000) instOfNatFinConstructive (n : ℕ) [NeZero n] (i : ℕ) :
+    OfNat (Fin n) i :=
+  ⟨⟨i % n, Nat.mod_lt i (pos_of_neZero n)⟩⟩
+scoped instance (priority := 10000) instInhabitedFinConstructive (n : ℕ) [NeZero n] :
+    Inhabited (Fin n) :=
+  ⟨0⟩
 scoped instance (priority := 10000) instLTFinConstructive (n : ℕ) : LT (Fin n) := instLTFin
 scoped instance (priority := 10000) instLEFinConstructive (n : ℕ) : LE (Fin n) := instLEFin
 scoped instance (priority := 10000) instDecidableEqFinConstructive (n : ℕ) : DecidableEq (Fin n) :=
@@ -84,42 +117,80 @@ scoped instance (priority := 10000) instLinearOrderFinConstructive (n : ℕ) :
   compare a b := compareOfLessAndEq a b
   compare_eq_compareOfLessAndEq _ _ := rfl
 
-/-- Half-tape of a Turing machine, quotienting `List Γ` by trailing blank symbols
-(`Turing.BlankRel`) via Lean's primitive `Quot` rather than `Quotient (BlankRel.setoid Γ)` so that
-`ListBlank`, `Tape`, and `Halts` carry zero `Classical.choice` dependency. -/
-def ListBlank (Γ : Type*) [Inhabited Γ] :=
-  Quot (@Turing.BlankRel Γ _)
+/-- Predicate that a `List Γ` has no trailing blank (`default`) symbol. -/
+def ListBlank.IsTrimmed {Γ : Type*} [Inhabited Γ] : List Γ → Prop
+  | [] => True
+  | [a] => a ≠ default
+  | _ :: b :: xs => ListBlank.IsTrimmed (b :: xs)
+
+/-- Prepend `a` onto a blank-trimmed `List Γ`, dropping `a` iff `a = default` on `[]`. -/
+def ListBlank.trimCons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ) : List Γ → List Γ
+  | [] => if a = default then [] else [a]
+  | b :: xs => a :: b :: xs
+
+/-- Half-tape of a Turing machine, represented concretely as a `List Γ` in canonical blank-trimmed
+normal form (no trailing `default` symbols) so `ListBlank`, `Tape`, and `Halts` require zero
+axioms (`Quot`, `Quot.sound`, `propext`, and `Classical.choice` are all avoided). -/
+structure ListBlank (Γ : Type*) [Inhabited Γ] where
+  ofTrimmed ::
+  toList : List Γ
+  isTrimmed : ListBlank.IsTrimmed toList
 
 instance ListBlank.inhabited {Γ : Type*} [Inhabited Γ] : Inhabited (ListBlank Γ) :=
-  ⟨Quot.mk _ []⟩
-
-/-- Quotient map turning a `List Γ` into a `ListBlank Γ`. -/
-def ListBlank.mk {Γ : Type*} [Inhabited Γ] : List Γ → ListBlank Γ :=
-  Quot.mk _
+  ⟨⟨[], trivial⟩⟩
 
 /-- Lift a blank-extension-invariant function from `List Γ` to `ListBlank Γ`. -/
 protected abbrev ListBlank.liftOn {Γ : Type*} [Inhabited Γ] {α : Sort*} (l : ListBlank Γ)
-    (f : List Γ → α) (H : ∀ a b, Turing.BlankExtends a b → f a = f b) : α :=
-  Quot.liftOn l f fun a b h => h.elim (H a b) fun h' => (H b a h').symm
+    (f : List Γ → α) (_H : ∀ a b, Turing.BlankExtends a b → f a = f b) : α :=
+  f l.toList
 
 /-- Head symbol of a `ListBlank`. -/
 def ListBlank.head {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : Γ :=
-  l.liftOn List.headI <| by
-    rintro (_ | _) _ ⟨_ | _, rfl⟩ <;> rfl
+  l.toList.headI
+
+theorem ListBlank.isTrimmed_tail {Γ : Type*} [Inhabited Γ] {l : List Γ} :
+    ListBlank.IsTrimmed l → ListBlank.IsTrimmed l.tail :=
+  List.casesOn (motive := fun xs => ListBlank.IsTrimmed xs → ListBlank.IsTrimmed xs.tail) l
+    (fun _ => trivial)
+    (fun a tl =>
+      List.casesOn (motive := fun ys => ListBlank.IsTrimmed (a :: ys) → ListBlank.IsTrimmed ys) tl
+        (fun _ => trivial)
+        (fun _ _ h => h))
 
 /-- Tail of a `ListBlank`. -/
 def ListBlank.tail {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) : ListBlank Γ :=
-  l.liftOn (fun l => ListBlank.mk l.tail) <| by
-    rintro (_ | _) _ ⟨i, rfl⟩
-    · rcases i with - | i <;>
-        [exact Quot.sound (Or.inl ⟨0, rfl⟩); exact Quot.sound (Or.inl ⟨i, rfl⟩)]
-    · exact Quot.sound (Or.inl ⟨i, rfl⟩)
+  ⟨l.toList.tail, ListBlank.isTrimmed_tail l.isTrimmed⟩
+
+theorem ListBlank.isTrimmed_trimCons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ)
+    {l : List Γ} : ListBlank.IsTrimmed l → ListBlank.IsTrimmed (ListBlank.trimCons a l) :=
+  List.casesOn (motive := fun xs =>
+      ListBlank.IsTrimmed xs → ListBlank.IsTrimmed (ListBlank.trimCons a xs)) l
+    (fun _ => by
+      change ListBlank.IsTrimmed (if a = default then [] else [a])
+      by_cases h : a = default
+      · rw [ite_eq_left h]; exact trivial
+      · rw [ite_eq_right h]; exact h)
+    (fun b tl =>
+      List.casesOn (motive := fun ys =>
+          ListBlank.IsTrimmed (b :: ys) → ListBlank.IsTrimmed (a :: b :: ys)) tl
+        (fun h => h)
+        (fun _ _ h => h))
 
 /-- Prepend a symbol onto a `ListBlank`. -/
-def ListBlank.cons {Γ : Type*} [Inhabited Γ] (a : Γ) (l : ListBlank Γ) : ListBlank Γ :=
-  l.liftOn (fun l => ListBlank.mk (a :: l)) <| by
-    rintro _ _ ⟨i, rfl⟩
-    exact Quot.sound (Or.inl ⟨i, rfl⟩)
+def ListBlank.cons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ) (l : ListBlank Γ) :
+    ListBlank Γ :=
+  ⟨ListBlank.trimCons a l.toList, ListBlank.isTrimmed_trimCons a l.isTrimmed⟩
+
+/-- Prepend a finite `List` of symbols onto a `ListBlank`. -/
+@[simp]
+def ListBlank.append {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] :
+    List Γ → ListBlank Γ → ListBlank Γ
+  | [], L => L
+  | a :: l, L => ListBlank.cons a (ListBlank.append l L)
+
+/-- Canonical map turning a `List Γ` into a `ListBlank Γ` by trimming trailing blanks. -/
+def ListBlank.mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : List Γ) : ListBlank Γ :=
+  ListBlank.append l default
 
 /-- Bidirectional Turing machine tape over alphabet `Γ`. -/
 structure Tape (Γ : Type*) [Inhabited Γ] where
@@ -131,7 +202,7 @@ instance Tape.inhabited {Γ : Type*} [Inhabited Γ] : Inhabited (Tape Γ) :=
   ⟨⟨default, default, default⟩⟩
 
 /-- Shift the tape in response to a head movement `Dir.left` or `Dir.right`. -/
-def Tape.move {Γ : Type*} [Inhabited Γ] : Dir → Tape Γ → Tape Γ
+def Tape.move {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] : Dir → Tape Γ → Tape Γ
   | Dir.left, ⟨a, L, R⟩ => ⟨L.head, L.tail, R.cons a⟩
   | Dir.right, ⟨a, L, R⟩ => ⟨R.head, L.cons a, R.tail⟩
 
@@ -144,12 +215,18 @@ def Tape.mk' {Γ : Type*} [Inhabited Γ] (L R : ListBlank Γ) : Tape Γ :=
   ⟨R.head, L, R.tail⟩
 
 /-- Construct a tape from left and inclusive-right `List`s. -/
-def Tape.mk₂ {Γ : Type*} [Inhabited Γ] (L R : List Γ) : Tape Γ :=
+def Tape.mk₂ {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (L R : List Γ) : Tape Γ :=
   Tape.mk' (ListBlank.mk L) (ListBlank.mk R)
 
 /-- Construct a tape with `l` starting at the head and blanks to the left. -/
-def Tape.mk₁ {Γ : Type*} [Inhabited Γ] (l : List Γ) : Tape Γ :=
+def Tape.mk₁ {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : List Γ) : Tape Γ :=
   Tape.mk₂ [] l
+
+@[simp]
+def listGetD {α : Type*} : List α → ℕ → α → α
+  | [], _, d => d
+  | a :: _, 0, _ => a
+  | _ :: xs, n + 1, d => listGetD xs n d
 
 /-- A transition table: for a state and the symbol under the head, either the
 symbol to write, the direction to move and the state to enter, or `none` to
@@ -177,7 +254,7 @@ def Halts (M : Machine states symbols) : Prop := (StateTransition.eval (step M) 
 
 /-- Build a `Machine states symbols` from a list of per-state transition rows. -/
 def Machine.ofRows (rows : List (List (Option (Fin symbols × Dir × Fin states)))) :
-    Machine states symbols := ⟨fun q a => (rows.getD q.val []).getD a.val none⟩
+    Machine states symbols := ⟨fun q a => listGetD (listGetD rows q.val []) a.val none⟩
 
 /-- A Turing machine over `symbols` tape symbols bundled with its non-zero state count. -/
 structure BundledMachine (symbols : ℕ) where
@@ -189,13 +266,20 @@ attribute [instance] BundledMachine.neZeroStates
 
 /-- Bundle a `Machine (states + 1) symbols` into a `BundledMachine symbols`. -/
 abbrev Machine.bundle {states symbols : ℕ} (M : Machine (states + 1) symbols) :
-    BundledMachine symbols := ⟨states + 1, M⟩
+    BundledMachine symbols :=
+  { states := states + 1
+    neZeroStates := ⟨fun h => Nat.noConfusion h⟩
+    toMachine := M }
 
 /-- `M` halts when started in state `0` on the all-blank tape. -/
 abbrev BundledMachine.Halts {symbols : ℕ} [NeZero symbols] (M : BundledMachine symbols) : Prop :=
   ConjectureMachines.Halts M.toMachine
 
 export BundledMachine (Halts)
+
+/-- info: 'ConjectureMachines.BundledMachine.Halts' does not depend on any axioms -/
+#guard_msgs in
+#print axioms ConjectureMachines.BundledMachine.Halts
 
 namespace Machines
 /-- Rows of `goldbach25`. -/ def goldbach25Rows : List (List (Option (Fin 2 × Dir × Fin 25))) :=
@@ -235,11 +319,46 @@ def erdosTernary14Rows : List (List (Option (Fin 2 × Dir × Fin 14))) :=
   load_machine_rows% "artifacts/erdos_ternary_14/machine.txt"
 /-- 14-state Erdős candidate. -/
 def erdosTernary14 : Machine 14 2 := Machine.ofRows erdosTernary14Rows
-/-- Rows of `brocard28`. -/
-def brocard28Rows : List (List (Option (Fin 2 × Dir × Fin 28))) :=
-  load_machine_rows% "artifacts/brocard_28/machine.txt"
-/-- 28-state Brocard machine. -/
-def brocard28 : Machine 28 2 := Machine.ofRows brocard28Rows
+/-- Rows of `brocard27`. -/
+def brocard27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/brocard_27/machine.txt"
+/-- 27-state Brocard machine. -/
+def brocard27 : Machine 27 2 := Machine.ofRows brocard27Rows
+/-- Rows of `weakCollatz75`. -/
+def weakCollatz75Rows : List (List (Option (Fin 2 × Dir × Fin 75))) :=
+  load_machine_rows% "artifacts/weak_collatz_75/machine.txt"
+/-- 75-state Weak Collatz machine. -/
+def weakCollatz75 : Machine 75 2 := Machine.ofRows weakCollatz75Rows
+/-- Rows of `weakCollatz41`. -/
+def weakCollatz41Rows : List (List (Option (Fin 2 × Dir × Fin 41))) :=
+  load_machine_rows% "artifacts/weak_collatz_41/machine.txt"
+/-- 41-state Weak Collatz candidate. -/
+def weakCollatz41 : Machine 41 2 := Machine.ofRows weakCollatz41Rows
+/-- Rows of `weakCollatz27`. -/
+def weakCollatz27Rows : List (List (Option (Fin 2 × Dir × Fin 27))) :=
+  load_machine_rows% "artifacts/weak_collatz_27/machine.txt"
+/-- 27-state Weak Collatz candidate. -/
+def weakCollatz27 : Machine 27 2 := Machine.ofRows weakCollatz27Rows
+/-- Rows of `weakCollatz17`. -/
+def weakCollatz17Rows : List (List (Option (Fin 2 × Dir × Fin 17))) :=
+  load_machine_rows% "artifacts/weak_collatz_17/machine.txt"
+/-- 17-state Weak Collatz candidate. -/
+def weakCollatz17 : Machine 17 2 := Machine.ofRows weakCollatz17Rows
+/-- Rows of `weakCollatz16`. -/
+def weakCollatz16Rows : List (List (Option (Fin 2 × Dir × Fin 16))) :=
+  load_machine_rows% "artifacts/weak_collatz_16/machine.txt"
+/-- 16-state Weak Collatz candidate. -/
+def weakCollatz16 : Machine 16 2 := Machine.ofRows weakCollatz16Rows
+/-- Rows of `weakCollatz15`. -/
+def weakCollatz15Rows : List (List (Option (Fin 2 × Dir × Fin 15))) :=
+  load_machine_rows% "artifacts/weak_collatz_15/machine.txt"
+/-- 15-state Weak Collatz candidate. -/
+def weakCollatz15 : Machine 15 2 := Machine.ofRows weakCollatz15Rows
+/-- Rows of `legendre21`. -/
+def legendre21Rows : List (List (Option (Fin 2 × Dir × Fin 21))) :=
+  load_machine_rows% "artifacts/legendre_21/machine.txt"
+/-- 21-state Legendre machine. -/
+def legendre21 : Machine 21 2 := Machine.ofRows legendre21Rows
 /-- Rows of `kurepa19`. -/
 def kurepa19Rows : List (List (Option (Fin 2 × Dir × Fin 19))) :=
   load_machine_rows% "artifacts/kurepa_19/machine.txt"
@@ -349,46 +468,108 @@ def Runs (M : Machine states symbols) (n : ℕ) : Prop := (run M n).isSome
 instance (M : Machine states symbols) (n : ℕ) : Decidable (Runs M n) :=
   inferInstanceAs (Decidable ((run M n).isSome = true))
 
-@[elab_as_elim]
-protected theorem ListBlank.induction_on {Γ : Type*} [Inhabited Γ] {p : ListBlank Γ → Prop}
-    (q : ListBlank Γ) (h : ∀ a, p (ListBlank.mk a)) : p q :=
-  Quot.ind h q
+@[ext]
+theorem ListBlank.ext {Γ : Type*} [Inhabited Γ] {l₁ l₂ : ListBlank Γ}
+    (h : l₁.toList = l₂.toList) : l₁ = l₂ := by
+  cases l₁; cases l₂; cases h; rfl
 
 @[simp]
-theorem ListBlank.head_mk {Γ : Type*} [Inhabited Γ] (l : List Γ) :
-    ListBlank.head (ListBlank.mk l) = l.headI :=
-  rfl
+theorem ListBlank.cons_default_default {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] :
+    (default : ListBlank Γ).cons default = default := by
+  apply ListBlank.ext
+  exact ite_eq_left rfl
 
 @[simp]
-theorem ListBlank.tail_mk {Γ : Type*} [Inhabited Γ] (l : List Γ) :
-    ListBlank.tail (ListBlank.mk l) = ListBlank.mk l.tail :=
-  rfl
+theorem ListBlank.head_cons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ)
+    (l : ListBlank Γ) : (l.cons a).head = a := by
+  rcases l with ⟨_ | ⟨b, xs⟩, _⟩
+  · change (if a = default then [] else [a]).headI = a
+    by_cases h : a = default
+    · rw [ite_eq_left h]; exact h.symm
+    · rw [ite_eq_right h]; rfl
+  · rfl
 
 @[simp]
-theorem ListBlank.cons_mk {Γ : Type*} [Inhabited Γ] (a : Γ) (l : List Γ) :
+theorem ListBlank.tail_cons {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ)
+    (l : ListBlank Γ) : (l.cons a).tail = l := by
+  apply ListBlank.ext
+  rcases l with ⟨_ | ⟨b, xs⟩, _⟩
+  · change (if a = default then [] else [a]).tail = []
+    by_cases h : a = default
+    · rw [ite_eq_left h]; rfl
+    · rw [ite_eq_right h]; rfl
+  · rfl
+
+@[simp]
+theorem ListBlank.cons_head_tail {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    (l : ListBlank Γ) : l.tail.cons l.head = l := by
+  apply ListBlank.ext
+  rcases l with ⟨_ | ⟨a, _ | ⟨b, xs⟩⟩, h⟩
+  · exact ite_eq_left rfl
+  · exact ite_eq_right h
+  · rfl
+
+@[simp]
+theorem ListBlank.cons_mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (a : Γ) (l : List Γ) :
     ListBlank.cons a (ListBlank.mk l) = ListBlank.mk (a :: l) :=
   rfl
 
 @[simp]
-theorem ListBlank.head_cons {Γ : Type*} [Inhabited Γ] (a : Γ) :
-    ∀ l : ListBlank Γ, (l.cons a).head = a :=
-  Quot.ind fun _ => rfl
+theorem ListBlank.head_mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : List Γ) :
+    ListBlank.head (ListBlank.mk l) = l.headI := by
+  cases l with
+  | nil => rfl
+  | cons a xs => exact ListBlank.head_cons a (ListBlank.mk xs)
 
 @[simp]
-theorem ListBlank.tail_cons {Γ : Type*} [Inhabited Γ] (a : Γ) :
-    ∀ l : ListBlank Γ, (l.cons a).tail = l :=
-  Quot.ind fun _ => rfl
+theorem ListBlank.tail_mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : List Γ) :
+    ListBlank.tail (ListBlank.mk l) = ListBlank.mk l.tail := by
+  cases l with
+  | nil => rfl
+  | cons a xs => exact ListBlank.tail_cons a (ListBlank.mk xs)
+
+private theorem ListBlank.mk_list_aux {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] :
+    ∀ (xs : List Γ) (h : ListBlank.IsTrimmed xs), ListBlank.mk xs = ⟨xs, h⟩
+  | [], _ => rfl
+  | [a], h => by
+    apply ListBlank.ext
+    exact ite_eq_right h
+  | a :: b :: xs, h => by
+    change ListBlank.cons a (ListBlank.mk (b :: xs)) = ⟨a :: b :: xs, h⟩
+    rw [ListBlank.mk_list_aux (b :: xs) h]
+    rfl
 
 @[simp]
-theorem ListBlank.cons_head_tail {Γ : Type*} [Inhabited Γ] :
-    ∀ l : ListBlank Γ, l.tail.cons l.head = l :=
-  Quot.ind fun l => by
-    change ListBlank.cons (ListBlank.mk l).head (ListBlank.mk l).tail = ListBlank.mk l
-    rw [ListBlank.head_mk, ListBlank.tail_mk, ListBlank.cons_mk]
-    refine Quot.sound (Or.inr ?_)
-    cases l
-    · exact ⟨1, rfl⟩
-    · exact ⟨0, by simp⟩
+theorem ListBlank.mk_toList {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l : ListBlank Γ) :
+    ListBlank.mk l.toList = l :=
+  ListBlank.mk_list_aux l.toList l.isTrimmed
+
+@[elab_as_elim]
+protected theorem ListBlank.induction_on {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    {p : ListBlank Γ → Prop} (q : ListBlank Γ) (h : ∀ a, p (ListBlank.mk a)) : p q :=
+  q.mk_toList ▸ h q.toList
+
+theorem ListBlank.blankExtends_toList_mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    (l : List Γ) : Turing.BlankExtends (ListBlank.mk l).toList l := by
+  induction l with
+  | nil => exact ⟨0, rfl⟩
+  | cons a xs ih =>
+    obtain ⟨i, hi⟩ := ih
+    change Turing.BlankExtends (ListBlank.trimCons a (ListBlank.mk xs).toList) (a :: xs)
+    rcases hmk : (ListBlank.mk xs).toList with _ | ⟨b, ys⟩
+    · rw [hmk, List.nil_append] at hi
+      dsimp only [ListBlank.trimCons]
+      by_cases ha : a = default
+      · refine ⟨i + 1, ?_⟩
+        rw [ite_eq_left ha, ha, hi, List.nil_append, List.replicate_succ]
+      · exact ⟨i, by rw [ite_eq_right ha, hi]; rfl⟩
+    · rw [hmk] at hi
+      exact ⟨i, by rw [hi]; rfl⟩
+
+theorem ListBlank.liftOn_mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] {α : Sort*}
+    (l : List Γ) (f : List Γ → α) (H : ∀ a b, Turing.BlankExtends a b → f a = f b) :
+    (ListBlank.mk l).liftOn f H = f l :=
+  H _ _ (ListBlank.blankExtends_toList_mk l)
 
 /-- The `n`-th symbol of a `ListBlank`. -/
 def ListBlank.nth {Γ : Type*} [Inhabited Γ] : ListBlank Γ → ℕ → Γ
@@ -404,22 +585,29 @@ theorem ListBlank.nth_succ {Γ : Type*} [Inhabited Γ] (l : ListBlank Γ) (n : �
     l.nth (n + 1) = l.tail.nth n :=
   rfl
 
-/-- Prepend a finite `List` of symbols onto a `ListBlank`. -/
 @[simp]
-def ListBlank.append {Γ : Type*} [Inhabited Γ] : List Γ → ListBlank Γ → ListBlank Γ
-  | [], L => L
-  | a :: l, L => ListBlank.cons a (ListBlank.append l L)
-
-@[simp]
-theorem ListBlank.append_mk {Γ : Type*} [Inhabited Γ] (l₁ l₂ : List Γ) :
+theorem ListBlank.append_mk {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (l₁ l₂ : List Γ) :
     ListBlank.append l₁ (ListBlank.mk l₂) = ListBlank.mk (l₁ ++ l₂) := by
   induction l₁ <;>
     simp only [*, ListBlank.append, List.nil_append, List.cons_append, ListBlank.cons_mk]
 
-theorem ListBlank.append_assoc {Γ : Type*} [Inhabited Γ] (l₁ l₂ : List Γ) (l₃ : ListBlank Γ) :
+theorem ListBlank.append_assoc {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    (l₁ l₂ : List Γ) (l₃ : ListBlank Γ) :
     ListBlank.append (l₁ ++ l₂) l₃ = ListBlank.append l₁ (ListBlank.append l₂ l₃) := by
-  refine l₃.induction_on fun l => ?_
-  simp only [ListBlank.append_mk, List.append_assoc]
+  induction l₁ with
+  | nil => rfl
+  | cons a xs ih => exact congrArg (ListBlank.cons a) ih
+
+theorem ListBlank.mk_append_replicate_default {Γ : Type*} [Inhabited Γ] [DecidableEq Γ]
+    (l : List Γ) (n : ℕ) :
+    ListBlank.mk (l ++ List.replicate n default) = ListBlank.mk l := by
+  have hrep : ListBlank.mk (List.replicate n (default : Γ)) = default := by
+    induction n with
+    | zero => rfl
+    | succ n ih =>
+      rw [List.replicate_succ, ← ListBlank.cons_mk, ih, ListBlank.cons_default_default]
+  rw [← ListBlank.append_mk, hrep]
+  rfl
 
 @[simp]
 theorem Tape.write_self {Γ : Type*} [Inhabited Γ] : ∀ T : Tape Γ, T.write T.1 = T
@@ -445,18 +633,18 @@ theorem Tape.mk'_right {Γ : Type*} [Inhabited Γ] (L R : ListBlank Γ) :
   rfl
 
 @[simp]
-theorem Tape.move_left_mk' {Γ : Type*} [Inhabited Γ] (L R : ListBlank Γ) :
+theorem Tape.move_left_mk' {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (L R : ListBlank Γ) :
     (Tape.mk' L R).move Dir.left = Tape.mk' L.tail (R.cons L.head) := by
   simp only [Tape.move, Tape.mk', ListBlank.head_cons, ListBlank.cons_head_tail,
     ListBlank.tail_cons]
 
 @[simp]
-theorem Tape.move_right_mk' {Γ : Type*} [Inhabited Γ] (L R : ListBlank Γ) :
+theorem Tape.move_right_mk' {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (L R : ListBlank Γ) :
     (Tape.mk' L R).move Dir.right = Tape.mk' (L.cons R.head) R.tail :=
   rfl
 
 @[simp]
-theorem Tape.write_mk' {Γ : Type*} [Inhabited Γ] (b : Γ) (L R : ListBlank Γ) :
+theorem Tape.write_mk' {Γ : Type*} [Inhabited Γ] [DecidableEq Γ] (b : Γ) (L R : ListBlank Γ) :
     (Tape.mk' L R).write b = Tape.mk' L (R.tail.cons b) := by
   simp only [Tape.write, Tape.mk', ListBlank.head_cons, ListBlank.tail_cons]
 
@@ -534,7 +722,7 @@ private theorem rtg_cases_head {α : Type*} {r : α → α → Prop} {a b : α}
     · exact Or.inr ⟨y, hxy, Relation.ReflTransGen.refl⟩
     · exact Or.inr ⟨c, hac, Relation.ReflTransGen.tail hcx hxy⟩
 
-private theorem reaches_total_det {σ : Type*} {f : σ → Option σ} {a b c : σ}
+theorem reaches_total_det {σ : Type*} {f : σ → Option σ} {a b c : σ}
     (hab : Reaches f a b) (hac : Reaches f a c) : Reaches f b c ∨ Reaches f c b := by
   induction hab using Relation.ReflTransGen.head_induction_on generalizing c with
   | refl => exact Or.inl hac
@@ -544,11 +732,17 @@ private theorem reaches_total_det {σ : Type*} {f : σ → Option σ} {a b c : �
     · cases Option.mem_unique hx₁ hc₁
       exact ih hc₁c
 
-private theorem reaches_of_none {σ : Type*} {f : σ → Option σ} {b c : σ}
+theorem reaches_of_none {σ : Type*} {f : σ → Option σ} {b c : σ}
     (hb : f b = none) (hbc : Reaches f b c) : b = c := by
   rcases rtg_cases_head hbc with rfl | ⟨d, hbd, _⟩
   · rfl
   · cases hb.symm.trans hbd
+
+theorem list_length_five {α : Type*} : ∀ (l : List α), l.length = 5 →
+    ∃ a b c d e, l = [a, b, c, d, e]
+  | [a, b, c, d, e], _ => ⟨a, b, c, d, e, rfl⟩
+  | [], h | [_], h | [_, _], h | [_, _, _], h | [_, _, _, _], h
+  | _ :: _ :: _ :: _ :: _ :: _ :: _, h => nomatch h
 
 theorem reaches_eval' {σ : Type*} {f : σ → Option σ} {a b : σ} (ab : Reaches f a b) :
     eval f a = eval f b := by

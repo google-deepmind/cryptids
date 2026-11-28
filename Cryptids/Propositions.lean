@@ -39,8 +39,10 @@ constructions and halting proofs:
 4. **Erdős's Ternary Conjecture** (`ErdosTernaryConjecture`):
    For every `n > 8`, the base-3 expansion of `2 ^ n` contains the digit `2` (`erdos_ternary_15`).
 5. **Brocard's Problem** (`BrocardConjecture`):
-   `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_28`).
-6. **Kurepa's Left Factorial Conjecture** (`KurepaConjecture`):
+   `n! + 1` is a perfect square only for `n = 4, 5, 7` (`brocard_27`).
+6. **Legendre's Conjecture** (`LegendreConjecture`):
+   For every `n ≥ 1` there is a prime strictly between `n ^ 2` and `(n + 1) ^ 2` (`legendre_21`).
+7. **Kurepa's Left Factorial Conjecture** (`KurepaConjecture`):
    For every `n > 2`, the left factorial `!n = 0! + 1! + ⋯ + (n - 1)!` (`leftFactorial`) is not
    divisible by `n` (`kurepa_19`).
 -/
@@ -719,7 +721,41 @@ solutions; none exist for `n ≤ 10 ^ 12` (Matson 2017). -/
 def BrocardConjecture : Prop :=
   ∀ n : ℕ, 7 < n → ¬ IsSquare (n.factorial + 1)
 
-/-! ## 7. Kurepa's Left Factorial Conjecture -/
+/-! ## 7. Weak Collatz Conjecture & Böhm–Sontacchi Cycle Equation -/
+
+/-- **Shortcut Collatz / Terras map** (Terras 1976): `n / 2` for even `n` and `(3 * n + 1) / 2`
+for odd `n`. -/
+def terras (n : ℕ) : ℕ :=
+  if n % 2 = 0 then n / 2 else (3 * n + 1) / 2
+
+/-- **Weak Collatz Conjecture** (Steiner 1977; Böhm & Sontacchi 1978; Eliahou 1993; Tao 2019;
+`ccchallenge.org`): the shortcut Collatz map `terras` admits no positive integer cycle outside the
+trivial cycle `{1, 2}` (`1 ↦ 2 ↦ 1`). -/
+def WeakCollatzConjecture : Prop :=
+  ∀ x k : ℕ, 1 ≤ x → 1 ≤ k → terras^[k] x = x → x = 1 ∨ x = 2
+
+/-- Length-`n` parity word of `terras` starting from `x`. -/
+def terrasParityWord : ℕ → ℕ → List ℕ
+  | 0, _ => []
+  | n + 1, x => (x % 2) :: terrasParityWord n (terras x)
+
+/-- Böhm–Sontacchi (1978) Diophantine cycle numerator `g(v)` for a parity word `v ∈ {0, 1}^*`:
+satisfies `2 ^ n * terras^[n] x = 3 ^ v.sum * x + collatzCycleNum v` along
+`v = terrasParityWord n x`. -/
+def collatzCycleNum : List ℕ → ℕ
+  | [] => 0
+  | b :: rest =>
+    if b = 0 then 2 * collatzCycleNum rest
+    else 3 ^ rest.sum + 2 * collatzCycleNum rest
+
+/-! ## 8. Legendre's Conjecture -/
+
+/-- **Legendre's conjecture** (one of Landau's four problems, 1912): for every `n ≥ 1` there is
+a prime `p` with `n ^ 2 < p < (n + 1) ^ 2`. -/
+def LegendreConjecture : Prop :=
+  ∀ n : ℕ, 1 ≤ n → ∃ p : ℕ, p.Prime ∧ n ^ 2 < p ∧ p < (n + 1) ^ 2
+
+/-! ## 9. Kurepa's Left Factorial Conjecture -/
 
 /-- The left factorial `!n = 0! + 1! + ⋯ + (n - 1)!`. -/
 def leftFactorial : ℕ → ℕ

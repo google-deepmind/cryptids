@@ -49,7 +49,8 @@ namespace ConjectureMachines.Riemann120.Layer2
 open Turing (Dir)
 open StateTransition
 open ConjectureMachines.Riemann120
-  (rh121Trans primorial shuniaProd offsetDigits shuniaDeficit quarterClock ShuniaCounterexample)
+  (rh121Trans isPrimeBool primorial shuniaProd offsetDigits shuniaDeficit quarterClock
+   ShuniaCounterexample)
 
 set_option linter.style.setOption false
 set_option linter.flexible false
@@ -94,8 +95,10 @@ theorem mem_dagExactPaths_of_walkInternal {P : List (Fin 2)} {q q' : Fin 121}
           · simp only [hcond, ↓reduceIte] at h
             have hmem := ih h
             simp only [List.length_cons, dagExactPaths, hi, ↓reduceIte, List.mem_flatMap]
-            refine ⟨b, by fin_cases b <;> simp, ?_⟩
-            simp [htr, hcond, hmem]
+            refine ⟨b, ?_, ?_⟩
+            · rcases ConjectureMachines.Semantics.Riemann.Layer1.fin2_cases b with rfl | rfl <;>
+                simp
+            · simp [htr, hcond, hmem]
           · simp [hcond] at h
     · simp [hi] at h
 
@@ -303,42 +306,80 @@ theorem primorial_pos (n : ℕ) : 0 < primorial n := by
   | zero => decide
   | succ n ih =>
     unfold primorial
-    split
-    · exact Nat.mul_pos (Nat.succ_pos n) ih
+    cases isPrimeBool (n + 1) <;> simp only [Bool.false_eq_true, ↓reduceIte]
     · exact ih
+    · exact Nat.mul_pos (Nat.succ_pos n) ih
 
 theorem shuniaProd_pos (n : ℕ) : 0 < shuniaProd n :=
   Nat.mul_pos (Nat.factorial_pos n) (primorial_pos n)
 
-theorem prime_le_of_dvd_primorial {p m : ℕ} (hp : p.Prime) :
+private theorem isPrimeBool_two_le {p : ℕ} (hp : isPrimeBool p = true) : 2 ≤ p := by
+  simp only [isPrimeBool, Bool.and_eq_true, decide_eq_true_eq] at hp
+  exact hp.1
+
+private theorem isPrimeBool_not_dvd {p d : ℕ} (hp : isPrimeBool p = true)
+    (hd2 : 2 ≤ d) (hdp : d < p) : ¬ (d ∣ p) := by
+  simp only [isPrimeBool, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true,
+    List.mem_range, Bool.or_eq_true, bne_iff_ne, ne_eq, ← Nat.dvd_iff_mod_eq_zero] at hp
+  rcases hp.2 d hdp with hlt | hndvd
+  · omega
+  · exact hndvd
+
+private theorem isPrimeBool_dvd_mul {p a b : ℕ} (hp : isPrimeBool p = true)
+    (h : p ∣ a * b) : p ∣ a ∨ p ∣ b := by
+  have hp2 := isPrimeBool_two_le hp
+  let g := Nat.gcd p a
+  have hgp : g ∣ p := Nat.gcd_dvd_left p a
+  have hga : g ∣ a := Nat.gcd_dvd_right p a
+  have hg_pos : 0 < g := Nat.pos_of_dvd_of_pos hgp (by omega)
+  have hg_le : g ≤ p := Nat.le_of_dvd (by omega) hgp
+  by_cases hg1 : g = 1
+  · exact Or.inr (Nat.Coprime.dvd_of_dvd_mul_left hg1 h)
+  · by_cases hgp_eq : g = p
+    · exact Or.inl (hgp_eq ▸ hga)
+    · exfalso
+      exact isPrimeBool_not_dvd hp (by omega) (by omega) hgp
+
+private theorem exists_of_all_false : ∀ (l : List ℕ) (f : ℕ → Bool),
+    l.all f = false → ∃ x ∈ l, f x = false
+  | [], _, h => by cases h
+  | x :: xs, f, h => by
+    simp only [List.all_cons] at h
+    cases hfx : f x
+    · exact ⟨x, List.mem_cons_self, hfx⟩
+    · rw [hfx, Bool.true_and] at h
+      obtain ⟨y, hy, hfy⟩ := exists_of_all_false xs f h
+      exact ⟨y, List.mem_cons_of_mem x hy, hfy⟩
+
+theorem prime_le_of_dvd_primorial {p m : ℕ} (hp : isPrimeBool p = true) :
     p ∣ primorial m → p ≤ m := by
+  have hp2 := isPrimeBool_two_le hp
   induction m with
   | zero =>
     intro h
     have h1 : p = 1 := Nat.eq_one_of_dvd_one h
-    have hgt := hp.one_lt
     omega
   | succ m ih =>
     unfold primorial
-    split
+    cases isPrimeBool (m + 1) <;> simp only [Bool.false_eq_true, ↓reduceIte]
+    · exact fun h => Nat.le_succ_of_le (ih h)
     · intro h
-      rcases hp.dvd_mul.mp h with h1 | h2
+      rcases isPrimeBool_dvd_mul hp h with h1 | h2
       · exact Nat.le_of_dvd (by omega) h1
       · exact Nat.le_succ_of_le (ih h2)
-    · exact fun h => Nat.le_succ_of_le (ih h)
 
-theorem prime_le_of_dvd_factorial {p m : ℕ} (hp : p.Prime) :
+theorem prime_le_of_dvd_factorial {p m : ℕ} (hp : isPrimeBool p = true) :
     p ∣ m.factorial → p ≤ m := by
+  have hp2 := isPrimeBool_two_le hp
   induction m with
   | zero =>
     intro h
     have h1 : p = 1 := Nat.eq_one_of_dvd_one h
-    have hgt := hp.one_lt
     omega
   | succ m ih =>
     rw [Nat.factorial_succ]
     intro h
-    rcases hp.dvd_mul.mp h with h1 | h2
+    rcases isPrimeBool_dvd_mul hp h with h1 | h2
     · exact Nat.le_of_dvd (by omega) h1
     · exact Nat.le_succ_of_le (ih h2)
 
@@ -356,34 +397,35 @@ theorem mul_dvd_factorial_of_lt {a b n : ℕ} (ha : 1 ≤ a) (hab : a < b) (hbn 
 
 /-- Lemma 2.1 of `rhtm.tex`: $J \ge 2$ is prime iff $J \nmid A_{J - 1}$. -/
 theorem prime_iff_not_dvd_shuniaProd {J : ℕ} (hJ : 2 ≤ J) :
-    J.Prime ↔ ¬ (J ∣ shuniaProd (J - 1)) := by
+    isPrimeBool J = true ↔ ¬ (J ∣ shuniaProd (J - 1)) := by
   constructor
   · intro hprime hdvd
     unfold shuniaProd at hdvd
-    rcases hprime.dvd_mul.mp hdvd with hfac | hprim
+    rcases isPrimeBool_dvd_mul hprime hdvd with hfac | hprim
     · have hle := prime_le_of_dvd_factorial hprime hfac
       omega
     · have hle := prime_le_of_dvd_primorial hprime hprim
       omega
   · intro hnotdvd
-    if hnotprime : J.Prime then
-      exact hnotprime
-    else
-      exfalso
+    cases hpb : isPrimeBool J
+    · exfalso
       apply hnotdvd
       by_cases hJ4 : J = 4
       · subst hJ4; decide
-      · have hfac_dvd : J ∣ (J - 1).factorial := by
-          let d := J.minFac
-          have hd_prime : d.Prime := Nat.minFac_prime (by omega)
-          have hd_gt1 : 1 < d := hd_prime.one_lt
-          have hd_dvd : d ∣ J := Nat.minFac_dvd J
-          have hd_ne : d ≠ J := fun heq => hnotprime (heq ▸ hd_prime)
-          have hd_le : d ≤ J := Nat.minFac_le (by omega)
-          have hd_lt : d < J := lt_of_le_of_ne hd_le hd_ne
+      · have hall_false :
+            ((List.range J).all fun d => decide (d < 2) || (J % d != 0)) = false := by
+          unfold isPrimeBool at hpb
+          rw [decide_eq_true hJ, Bool.true_and] at hpb
+          exact hpb
+        obtain ⟨d, hd_mem, hd_false⟩ := exists_of_all_false _ _ hall_false
+        have hd_lt : d < J := List.mem_range.mp hd_mem
+        simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not, bne_eq_false_iff_eq] at hd_false
+        have hd_ge2 : 2 ≤ d := by omega
+        have hd_dvd : d ∣ J := Nat.dvd_of_mod_eq_zero hd_false.2
+        have hfac_dvd : J ∣ (J - 1).factorial := by
           let q := J / d
           have hdq : d * q = J := Nat.mul_div_cancel' hd_dvd
-          have hq_lt : q < J := Nat.div_lt_self (by omega) hd_gt1
+          have hq_lt : q < J := Nat.div_lt_self (by omega) (by omega)
           have hq_ge1 : 1 ≤ q := by
             rcases q with _ | _
             · simp at hdq; omega
@@ -395,10 +437,10 @@ theorem prime_iff_not_dvd_shuniaProd {J : ℕ} (hJ : 2 ≤ J) :
               rw [h2] at hdq
               omega
             have hd_ge3 : 3 ≤ d := by omega
-            have h2d_lt : 2 * d < d * d := by nlinarith
+            have h2d_lt : 2 * d < d * d := Nat.mul_lt_mul_of_pos_right hd_ge3 (by omega)
             have h2d_le : 2 * d ≤ J - 1 := by omega
             have hmul := mul_dvd_factorial_of_lt (a := d) (b := 2 * d) (by omega) (by omega) h2d_le
-            have h2J : d * (2 * d) = 2 * J := by nlinarith
+            have h2J : d * (2 * d) = 2 * J := by rw [← hdq, Nat.mul_left_comm]
             rw [h2J] at hmul
             exact dvd_trans (dvd_mul_left J 2) hmul
           · rcases lt_or_gt_of_ne heq_dq with hlt | hgt
@@ -408,9 +450,10 @@ theorem prime_iff_not_dvd_shuniaProd {J : ℕ} (hJ : 2 ≤ J) :
                 mul_dvd_factorial_of_lt hq_ge1 hgt (by omega : d ≤ J - 1)
               rwa [mul_comm, hdq] at hmul
         exact dvd_mul_of_dvd_left hfac_dvd (primorial (J - 1))
+    · rfl
 
 theorem primorial_step {J : ℕ} (hJ : 2 ≤ J) :
-    primorial J = if J.Prime then J * primorial (J - 1) else primorial (J - 1) := by
+    primorial J = if isPrimeBool J then J * primorial (J - 1) else primorial (J - 1) := by
   rcases J with _ | n
   · omega
   · rfl
@@ -427,14 +470,14 @@ theorem shuniaProd_step {J : ℕ} (hJ : 2 ≤ J) :
     | succ J' => simp [Nat.factorial_succ]
   have hp_iff := prime_iff_not_dvd_shuniaProd hJ
   by_cases hdvd : J ∣ shuniaProd (J - 1)
-  · have hnotp : ¬ J.Prime := fun hp => (hp_iff.mp hp) hdvd
+  · have hnotp : ¬ isPrimeBool J = true := fun hp => (hp_iff.mp hp) hdvd
     simp only [hdvd, ↓reduceIte]
-    simp only [shuniaProd, hfac, primorial_step hJ, hnotp, ↓reduceIte]
-    ring
-  · have hp : J.Prime := hp_iff.mpr hdvd
+    simp only [shuniaProd, hfac, primorial_step hJ, hnotp]
+    exact Nat.mul_assoc _ _ _
+  · have hp : isPrimeBool J = true := hp_iff.mpr hdvd
     simp only [hdvd, ↓reduceIte]
     simp only [shuniaProd, hfac, primorial_step hJ, hp, ↓reduceIte]
-    ring
+    rw [Nat.pow_two, Nat.mul_assoc, Nat.mul_assoc, Nat.mul_left_comm (J - 1).factorial J]
 
 /-! ## Section 5: Subroutine Specification (`SubEval`) & Combinators -/
 
@@ -455,7 +498,7 @@ theorem popContinueRev_zero_eq_dropLeadingZeros (rev : List (Fin 2)) :
   induction rev with
   | nil => rfl
   | cons b rest ih =>
-    fin_cases b
+    rcases ConjectureMachines.Semantics.Riemann.Layer1.fin2_cases b with rfl | rfl
     · simp [popContinueRev, dropLeadingZeros, ih]
     · rfl
 
@@ -1050,14 +1093,23 @@ theorem subEval_seed_deficit :
       regs.getD 3 0 + regs.getD 1 0, regs.getD 4 0 + regs.getD 1 0])
     (fun _ _ => by simp)
     (fun regs hlen hj => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hj; subst hj; simp)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.getD_cons_zero, List.getD_cons_succ] at hj
+      subst hj
+      simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero])
     (fun regs k hlen hj => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp [leafReg] at hj ⊢; omega)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      rw [show leafReg 70 = 4 from rfl, show leafReg 36 = 3 from rfl]
+      simp only [List.set_cons_zero, List.set_cons_succ,
+        List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+      subst hj
+      simp only [Nat.add_assoc, Nat.add_comm 1 k])
     (fun regs k hlen hj => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp [leafReg] at hj ⊢)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      rw [show leafReg 70 = 4 from rfl, show leafReg 36 = 3 from rfl]
+      simp only [List.set_cons_zero, List.set_cons_succ,
+        List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+      omega)
 
 /-- `dec_f` (State `96`): saturating decrement of register `f` (`regs[3]`). -/
 theorem subEval_dec_f :
@@ -1105,14 +1157,24 @@ theorem subEval_fold_loop :
       regs.getD 3 0, regs.getD 4 0 + regs.getD 1 0])
     (fun _ _ => by simp)
     (fun regs hlen hj => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hj; subst hj; simp)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.getD_cons_zero, List.getD_cons_succ] at hj
+      subst hj
+      simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero])
     (fun regs k hlen hj => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hj ⊢; omega)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.set_cons_zero, List.set_cons_succ,
+        List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+      subst hj
+      congr 1; congr 1
+      · congr 1
+        · omega
+        · congr 1; congr 1; omega)
     (fun regs k hlen hj => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hj ⊢)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.set_cons_zero, List.set_cons_succ,
+        List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+      omega)
 
 /-- `fold` (State `102`): `(m, j, x, f, v) ↦ (m, j + v, x + j, f, 0)`. -/
 theorem subEval_fold :
@@ -1169,7 +1231,8 @@ theorem subEval_transform_loop :
       obtain ⟨sk, hsk, hsteps_k⟩ := ih (j + v) (x + j + 1) f 0
       have h1 : j + v + 0 = j + v := by omega
       have h2 : x + j + 1 + k * (j + v + 0 + 1) + (j + v) =
-          x + (k + 1) * (j + v + 1) + j := by ring
+          x + (k + 1) * (j + v + 1) + j := by
+        rw [h1, Nat.succ_mul]; omega
       rw [h1] at h2 hsteps_k
       rw [h2] at hsteps_k
       have tail := step_rhRegNSteps hs_m (step_rhRegNSteps hs_x (step_rhRegNSteps hs_c hsteps_k))
@@ -1276,14 +1339,15 @@ theorem subEval_divide_loop :
       rcases v with _ | v'
       · simp only [List.set, List.getD_cons_zero, List.getD_cons_succ, ↓reduceIte,
           Nat.zero_add, Nat.add_zero]
-        have hN : (x + 1) * (j + 1) + k = x * (j + 1) + j + (k + 1) := by ring
+        have hN : (x + 1) * (j + 1) + k = x * (j + 1) + j + (k + 1) := by
+          rw [Nat.succ_mul]; omega
         rw [hN]
       · simp only [List.set, List.getD_cons_zero, List.getD_cons_succ, Nat.succ_ne_zero,
           ↓reduceIte, Nat.add_sub_cancel]
         have hJ : j + 1 + v' + 1 = j + (v' + 1) + 1 := by omega
         have hJ2 : j + 1 + v' = j + (v' + 1) := by omega
         have hN : x * (j + (v' + 1) + 1) + (j + 1) + k =
-            x * (j + (v' + 1) + 1) + j + (k + 1) := by ring
+            x * (j + (v' + 1) + 1) + j + (k + 1) := by omega
         rw [hJ, hJ2, hN])
     (fun regs k hlen hm => by
       rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;>
@@ -1305,7 +1369,7 @@ theorem subEval_divide :
   intro regs hlen
   rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
   simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.zero_add, Nat.add_zero]
-  have h1 : m + x = x + m := by ring
+  have h1 : m + x = x + m := Nat.add_comm m x
   have h2 : j + v + 1 - 1 = j + v := by omega
   have h3 : v + j = j + v := by omega
   simp [h1, h2, h3]
@@ -1384,16 +1448,22 @@ theorem product_step_shuniaProd {K : ℕ} (hK : 2 ≤ K) (f : ℕ) :
     obtain ⟨m, hm⟩ := hdvd
     rcases m with _ | m'
     · simp at hm; omega
-    · have hB_eq : B = (K - 1) + m' * K := by nlinarith [hK1]
+    · have hm' : B + 1 = m' * K + K := by rw [hBA, hm, Nat.mul_succ, Nat.mul_comm]
+      have hB_eq : B = (K - 1) + m' * K := by omega
       have hdiv : B / K = m' := by
         rw [hB_eq, Nat.add_mul_div_right _ _ (by omega),
           Nat.div_eq_of_lt (by omega : K - 1 < K), Nat.zero_add]
-      have hK_mul_div : B / K * K + (K - 1) = B := by rw [hdiv]; nlinarith [hK1]
-      have hr_eq : B % K = K - 1 := by nlinarith [hK1]
+      have hK_mul_div : B / K * K + (K - 1) = B := by rw [hdiv, hB_eq, Nat.add_comm]
+      have hr_eq : B % K = K - 1 := by
+        rw [hB_eq, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt (by omega)]
       have hv0 : K - 1 - B % K = 0 := by omega
       rw [ite_eq_left hv0, hK_mul_div]
       have hfin : B * K + (K - 1) = K * A - 1 := by
-        have h1 : B * K + (K - 1) + 1 = K * A := by nlinarith [hK1]
+        have h1 : B * K + (K - 1) + 1 = K * A := by
+          calc B * K + (K - 1) + 1
+            _ = B * K + K := by omega
+            _ = (B + 1) * K := (Nat.succ_mul B K).symm
+            _ = K * A := by rw [hBA, Nat.mul_comm]
         omega
       rw [hfin]
   · rw [ite_eq_right hdvd]
@@ -1402,11 +1472,20 @@ theorem product_step_shuniaProd {K : ℕ} (hK : 2 ≤ K) (f : ℕ) :
       have hr_eq : B % K = K - 1 := by omega
       apply hdvd
       refine ⟨B / K + 1, ?_⟩
-      nlinarith [hK1]
-    have hqK : B / K * K + B % K = B := by nlinarith [hK1]
+      calc A = B + 1 := hBA.symm
+        _ = K * (B / K) + B % K + 1 := by rw [hdiv_mod]
+        _ = K * (B / K) + K := by omega
+        _ = K * (B / K + 1) := (Nat.mul_succ K (B / K)).symm
+    have hqK : B / K * K + B % K = B := by rw [Nat.mul_comm]; exact hdiv_mod
     rw [ite_eq_right hv_ne, hqK]
     have hfin : (B * K + (K - 1)) * K + (K - 1) = K ^ 2 * A - 1 := by
-      have h1 : (B * K + (K - 1)) * K + (K - 1) + 1 = K ^ 2 * A := by nlinarith [hK1]
+      have h1 : (B * K + (K - 1)) * K + (K - 1) + 1 = K ^ 2 * A := by
+        calc (B * K + (K - 1)) * K + (K - 1) + 1
+          _ = (B * K + (K - 1)) * K + K := by omega
+          _ = (B * K + (K - 1) + 1) * K := (Nat.succ_mul _ K).symm
+          _ = (B * K + K) * K := by rw [Nat.add_assoc, hK1]
+          _ = (B + 1) * K * K := by rw [← Nat.succ_mul B K]
+          _ = K ^ 2 * A := by rw [hBA, Nat.pow_two, Nat.mul_assoc, Nat.mul_comm A (K * K)]
       omega
     rw [hfin]
 
@@ -1546,23 +1625,41 @@ theorem subEval_halve_j :
         0, regs.getD 2 0, regs.getD 3 0, regs.getD 4 0 + regs.getD 1 0 / 2])
       (fun _ _ => by simp)
       (fun regs hlen hj => by
-        rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-        simp at hj; subst hj; simp)
-      (fun regs k hlen hj => by
-        rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-        simp only [leafReg, List.set, List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+        obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+        simp only [List.getD_cons_zero, List.getD_cons_succ] at hj
         subst hj
-        rcases k with _ | _ <;> (simp; try omega))
+        simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero,
+          Nat.zero_add, Nat.div_eq_of_lt (by decide : 1 < 2)])
       (fun regs k hlen hj => by
-        rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-        simp only [leafReg, List.set, List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+        obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+        rw [show leafReg 4 = 0 from rfl, show leafReg 47 = 1 from rfl,
+          show leafReg 70 = 4 from rfl]
+        simp only [List.set_cons_zero, List.set_cons_succ,
+          List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
         subst hj
-        rcases k with _ | _ <;> simp)
+        rcases k with _ | k'
+        · simp only [↓reduceIte, List.getD_cons_zero, List.getD_cons_succ]
+        · simp only [Nat.succ_ne_zero, ↓reduceIte, Nat.add_sub_cancel,
+            List.getD_cons_zero, List.getD_cons_succ]
+          have h1 : m + 1 + (k' + 1) / 2 = m + (k' + 1 + 1 + 1) / 2 := by omega
+          have h2 : v + 1 + k' / 2 = v + (k' + 1 + 1) / 2 := by omega
+          rw [h1, h2])
+      (fun regs k hlen hj => by
+        obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+        rw [show leafReg 4 = 0 from rfl, show leafReg 47 = 1 from rfl,
+          show leafReg 70 = 4 from rfl]
+        simp only [List.set_cons_zero, List.set_cons_succ,
+          List.getD_cons_zero, List.getD_cons_succ] at hj ⊢
+        subst hj
+        rcases k with _ | k' <;>
+          (simp only [↓reduceIte, Nat.succ_ne_zero, Nat.add_sub_cancel,
+             List.getD_cons_zero, List.getD_cons_succ]
+           omega))
   refine (subEval_seq (q := 104) (q₀ := 110) (q₁ := 60) rfl rfl rfl rfl
     h110 subEval_move_v_j).congr ?_
   intro regs hlen
-  rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;>
-    (simp at hlen ⊢; try omega)
+  obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+  simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.zero_add]
 
 /-- `halve(f)` (State `111`): `(m, j, x, f, v) ↦ (m, j, x, v + f/2, 0)`. -/
 theorem subEval_halve_f :
@@ -1576,23 +1673,37 @@ theorem subEval_halve_f :
         0, regs.getD 4 0 + regs.getD 3 0 / 2])
       (fun _ _ => by simp)
       (fun regs hlen hf => by
-        rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-        simp at hf; subst hf; simp)
-      (fun regs k hlen hf => by
-        rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-        simp only [leafReg, List.set, List.getD_cons_zero, List.getD_cons_succ] at hf ⊢
+        obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+        simp only [List.getD_cons_zero, List.getD_cons_succ] at hf
         subst hf
-        rcases k with _ | _ <;> (simp; try omega))
+        simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.zero_div, Nat.add_zero])
       (fun regs k hlen hf => by
-        rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-        simp only [leafReg, List.set, List.getD_cons_zero, List.getD_cons_succ] at hf ⊢
+        obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+        rw [show leafReg 46 = 3 from rfl, show leafReg 70 = 4 from rfl]
+        simp only [List.set_cons_zero, List.set_cons_succ,
+          List.getD_cons_zero, List.getD_cons_succ] at hf ⊢
         subst hf
-        rcases k with _ | _ <;> simp)
+        rcases k with _ | k'
+        · simp only [↓reduceIte, List.getD_cons_zero, List.getD_cons_succ]
+        · simp only [Nat.succ_ne_zero, ↓reduceIte, Nat.add_sub_cancel,
+            List.getD_cons_zero, List.getD_cons_succ]
+          have h1 : v + 1 + k' / 2 = v + (k' + 1 + 1) / 2 := by omega
+          rw [h1])
+      (fun regs k hlen hf => by
+        obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+        rw [show leafReg 46 = 3 from rfl, show leafReg 70 = 4 from rfl]
+        simp only [List.set_cons_zero, List.set_cons_succ,
+          List.getD_cons_zero, List.getD_cons_succ] at hf ⊢
+        subst hf
+        rcases k with _ | k' <;>
+          (simp only [↓reduceIte, Nat.succ_ne_zero, Nat.add_sub_cancel,
+             List.getD_cons_zero, List.getD_cons_succ]
+           omega))
   refine (subEval_seq (q := 111) (q₀ := 115) (q₁ := 116) rfl rfl rfl rfl
     h115 subEval_move_v_f).congr ?_
   intro regs hlen
-  rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;>
-    (simp at hlen ⊢; try omega)
+  obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+  simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.zero_add]
 
 /-- Scaling loop inside `width` (State `61`): when `v = 0`, scales `j` by 4 each tick,
 conserving `m + j`, counting `q = quarterClock j` in `x`, and dividing `f` by $2^q$. -/
@@ -1672,14 +1783,21 @@ theorem subEval_compare_sub :
       regs.getD 3 0 - regs.getD 2 0, regs.getD 4 0])
     (fun _ _ => by simp)
     (fun regs hlen hx => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hx; subst hx; simp)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.getD_cons_zero, List.getD_cons_succ] at hx
+      subst hx
+      simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.sub_zero])
     (fun regs k hlen hx => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hx ⊢; omega)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.set_cons_zero, List.set_cons_succ,
+        List.getD_cons_zero, List.getD_cons_succ] at hx ⊢
+      subst hx
+      congr 1; congr 1; congr 1; congr 1; omega)
     (fun regs k hlen hx => by
-      rcases regs with _ | ⟨m, _ | ⟨j, _ | ⟨x, _ | ⟨f, _ | ⟨v, _ | _⟩⟩⟩⟩⟩ <;> try simp at hlen
-      simp at hx ⊢)
+      obtain ⟨m, j, x, f, v, rfl⟩ := list_length_five regs hlen
+      simp only [List.set_cons_zero, List.set_cons_succ,
+        List.getD_cons_zero, List.getD_cons_succ] at hx ⊢
+      omega)
 
 theorem shuniaCounterexample_iff_sub_pos (n : ℕ) :
     ShuniaCounterexample n ↔
@@ -1688,7 +1806,7 @@ theorem shuniaCounterexample_iff_sub_pos (n : ℕ) :
   set q := quarterClock (n - 1)
   have hpow : 0 < 2 ^ q := Nat.pow_pos (by decide)
   rw [← Nat.le_div_iff_mul_le hpow]
-  omega
+  constructor <;> intro h <;> omega
 
 /-- Full `compare` subroutine at State `62` (`[1, 1, 1, 1, 1]`): subtracts `x` from `f`,
 then returns to `[]` if `f - x = 0`, or halts at State `77` (`[1^7]`) if `0 < f - x`. -/

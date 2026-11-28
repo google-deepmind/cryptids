@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.Semantics.WeakCollatz75",
+  "theorem_names": [
+    "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_exists_cycle",
+    "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_bohmSontacchi",
+    "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_not_weakCollatz"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

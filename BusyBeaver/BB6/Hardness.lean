@@ -15,7 +15,7 @@ Lucy's Moonlight), applied uniformly to the machines formalized in this reposito
 cited here is kernel-verified (`HasCollatzReduction`, `HasStackReduction`, `IsValidAcceleration`),
 machine-level halting equivalences are proved in `BusyBeaver.BB6.Equivalences`, and kernel-checked
 live-hazard witnesses (`highLevelNext s = none` / `next s = none`) and parametric halting residue
-classes across 26 core machines (the 24 hard-core machines that have `IsValidAcceleration`,
+classes across 24 core machines (the 22 hard-core machines that have `IsValidAcceleration`,
 plus `#568` and `1RB1RF_1LC1LF_---1LD_1LE0RA_1RE1LB_1RD0LD`) are proved in
 `BusyBeaver.BB6.HardnessEvidence`; every hazard statement below is a *heuristic* computed from the
 certified rules by exact accelerated simulation and is marked as such. The full dossiers, with
@@ -44,7 +44,7 @@ see the calibration case below.
 
 ## 2. The core
 
-Thirty-three classes of the 2026-10-24 holdout list (623 classes) are hard in this sense: the five
+Thirty-one classes of the 2026-10-24 holdout list (623 classes) are hard in this sense: the five
 first-order problems of the report, the shielded single-base exponential cascades, and the
 Collatz-like stacked cryptids. Eight were known to the community before our campaign; the rest are
 new. Problem S1 (`#72`) is listed last because the community has since **proved that it halts**.
@@ -52,109 +52,120 @@ new. Problem S1 (`#72`) is listed last because the community has since **proved 
 Not listed below, but counted as hard by our solvability census, is the base-3 odometer family of
 [BMO Problem 11](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad): the holdout
 `1RB0LD_0RC---_1LD0RF_0LE0RA_0RA1LF_0LA1LB` (#15, macro-equivalent to the wiki's Problem 11 machine,
-[`HasOdometerReduction`](./Accelerations/M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean)) together
+[`HasOdometerReduction`][bmo11])
+together
 with eleven holdout classes that run the same odometer up to a proof isomorphism (`#14`, `#49`,
 `#118`, `#223`, `#278`, `#301`, `#304`, `#313`, `#325`, `#566`, `#652`; `#118` is
-[formalized here](./Accelerations/M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean)). Their hazard
+[formalized
+here](./Accelerations/TransducerReduction/M_1RBHHH_1LC0RF_0RA0LD_1LE1LA_1RF0LF_0LC0RA.lean)). Their
+hazard
 has not been re-measured with the method of this page, so they carry no verdict here.
 
 ### Problems 1-5 (first-order, this campaign)
 
 * `1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LF---_0RA1LA`
-  ([#330](./M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA.lean)) (ours): Problem 1; Tetrational
+  ([#330](./Accelerations/FixedArityReduction/M_1RB1LC_1RC0RF_1RD0LB_1RE0LD_1LFHHH_0RA1LA.lean))
+  (ours): Problem 1; Tetrational
   Hydra-Reset (Racheline / ShiftOv6). Trigger RES + competing sinks; growth tetrational
   ($10 \uparrow\uparrow k$, $N_7 \approx 2.86\times10^{771}$); shield none. undecided type (second
   known after Racheline's #424). Status: cryptid; `HasCollatzReduction`; open (on the
   2026-10-24 holdout list).
 * `1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_---0RE`
-  ([#183](./M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE.lean)) (ours): Problem 2; Single-Base
+  ([#183](./Accelerations/FixedArityReduction/M_1RB1RD_0LC1RA_1LA1LC_1RA1LE_1RF0LD_HHH0RE.lean))
+  (ours): Problem 2; Single-Base
   Exponential Cascade. Trigger EQ (shrinking target) with leaky parity shield; growth linear (mass
   $2k+c$, drift $+2$/cycle); shield leaky (odd-$c$ regime blocks the coincidence). probviously
   non-halting. Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_---0RE`
-  ([#352](./M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE.lean)) (ours): Problem 2; Single-Base
+  ([#352](./Accelerations/FixedArityReduction/M_1RB1RD_0LC1RA_1RA1LC_0RB1LE_1RF0LD_HHH0RE.lean))
+  (ours): Problem 2; Single-Base
   Exponential Cascade. Trigger EQ with leaky parity shield; growth linear ($2^n$ fuel bursts,
   intermittent resets); shield leaky. probviously non-halting. Status: cryptid;
   `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_---0RE`
-  ([#530](./M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE.lean)) (ours): Problem 2; Single-Base
+  ([#530](./Accelerations/FixedArityReduction/M_1RB1RD_0LC1RA_0RA1LC_1RA1LE_1RF0LD_HHH0RE.lean))
+  (ours): Problem 2; Single-Base
   Exponential Cascade. Trigger EQ with leaky parity shield; growth linear; shield leaky. probviously
   non-halting. Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB0LF_1RC1RA_0RD0RB_1LE---_0LA1LE_1RD1LA`
-  ([#429](./M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA.lean)) (ours): Problem 3; Single-Base
+  ([#429](./Accelerations/FixedArityReduction/M_1RB0LF_1RC1RA_0RD0RB_1LEHHH_0LA1LE_1RD1LA.lean))
+  (ours): Problem 3; Single-Base
   Exponential Cascade. Trigger EQ, critical; growth linear ($2v+w \approx 43.66\,T$); shield none
   (parity flips every step). probviously halting, but only at $\sim 10^{110}$ steps. Status:
   cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1LF_0RC1RD_1LA1LD_1LE0RA_---1LC_0LA1LA`
-  ([#184](./M_1RB1LF_0RC1RD_1LA1LD_1LE0RA_HHH1LC_0LA1LA.lean)) (ours): Problem 4; Single-Base
+  ([#184](./Accelerations/FixedArityReduction/M_1RB1LF_0RC1RD_1LA1LD_1LE0RA_HHH1LC_0LA1LA.lean))
+  (ours): Problem 4; Single-Base
   Exponential Cascade. Trigger EQ (2-wide window at turnaround); growth exponential
   ($\gamma\approx1.4246$ per era, base 3); shield none. probviously non-halting. Status:
   cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1RB_1LC0RE_---1LD_0RA1LB_1RA1LF_0LE1LE`
-  ([#724](./M_1RB1RB_1LC0RE_HHH1LD_0RA1LB_1RA1LF_0LE1LE.lean)) (ours): Problem 4; Single-Base
+  ([#724](./Accelerations/FixedArityReduction/M_1RB1RB_1LC0RE_HHH1LD_0RA1LB_1RA1LF_0LE1LE.lean))
+  (ours): Problem 4; Single-Base
   Exponential Cascade. Trigger EQ (2-wide window); growth exponential ($\gamma\approx1.4589$ per
   era); shield none. probviously non-halting. Status: cryptid; `HasCollatzReduction`; open (on
   the 2026-10-24 holdout list).
 * `1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_---1RA`
-  ([#73](./M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA.lean)) (ours): Problem 5; Tetrational
+  ([#73](./Accelerations/FixedArityReduction/M_1RB0LC_0LC1RF_1LE1RD_0RC1RC_0LA1LA_HHH1RA.lean))
+  (ours): Problem 5; Tetrational
   Hydra-Reset (Racheline / ShiftOv6). Trigger EQ (rebound trap); growth exponential
   ($\gamma\approx1.9538$ per era); shield none. probviously non-halting. Status: cryptid;
   `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 
 ### Shielded single-base exponential cascades
 
-* `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE`
-  ([#79](./M_1RB0LF_1LC0LD_1RD1LB_HHH1RE_0RA1RE_1LA0LE.lean)) (ours): Cascade; Single-Base
-  Exponential Cascade. Trigger EQ; growth super-exponential (two-stage $2^n$ doubling tower); shield
-  none. probviously non-halting. Status: cryptid; `HasCollatzReduction`; open (on the
-  2026-10-24 holdout list).
 * `1RB1LF_1RC1RF_0LD1RE_---1LC_0RB1RE_1LA0LE`
-  ([#116](./M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE.lean)) (wiki): Cascade; Single-Base
+  ([#116](./Accelerations/FixedArityReduction/M_1RB1LF_1RC1RF_0LD1RE_HHH1LC_0RB1RE_1LA0LE.lean))
+  (wiki): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential; shield see family. wiki rediscovery
   (RobinCodes *Next Steps* list). Status: cryptid / stack cryptid; `HasCollatzReduction`;
   open (on the 2026-10-24 holdout list).
 * `1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_---1RD`
-  ([#153](./M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD.lean)) (ours): Cascade; Single-Base
+  ([#153](./Accelerations/FixedArityReduction/M_1RB1LD_1RC0RA_1LA1RE_0LA0LB_0RB1RF_HHH1RD.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential (two-base: $2^n$ doubling then $4^n$
   quadrupling, $\times2.3917$ per launch); shield none. probviously non-halting. Status:
   cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_---0RD`
-  ([#464](./M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD.lean)) (ours): Cascade; Single-Base
+  ([#464](./Accelerations/FixedArityReduction/M_1RB0RC_1LC1RE_1RA1LD_0LC0LA_1RF1RD_HHH0RD.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential ($4^n$ inner cascades, $(4/3)^k$ sweeps);
   shield partial (odd-$a$ invariant kills 2 of 4 halting rules and 12 of 34 rules). probviously
   non-halting. Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
-* `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC`
-  ([#590](./M_1RB0RE_1LC0RA_1RF0RD_HHH1LE_0LB1LE_1LE1RC.lean)) (ours): Cascade; Single-Base
-  Exponential Cascade. Trigger EQ; growth super-exponential; shield none. probviously non-halting.
-  Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB`
-  ([#614](./M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean)) (ours): Cascade; Single-Base
+  ([#614](./Accelerations/FixedArityReduction/M_1RB1RF_1LCHHH_1LE1RD_1RA0RC_0LF0LA_0LD0RB.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ ($2^n$ remainder coincidence); growth exponential ($\times1.4069$
   per cascade); shield partial ($a\ge1$ kills `rule_1_halt`). probviously non-halting. Status:
   cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_---0LA`
-  ([#623](./M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean)) (ours): Cascade; Single-Base
+  ([#623](./Accelerations/FixedArityReduction/M_1RB0LE_0RC1RC_0RD1LA_1LD0LA_1LF1LC_HHH0LA.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential (4-counter $3^n$ cascade); shield full
   (odd-$a_H$ parity shield blocks every `closes_H_mid` halt). probviously non-halting; strong
   `IsDoesNotHalt` candidate. Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24
   holdout list).
 * `1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_---0RE`
-  ([#644](./M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE.lean)) (ours): Cascade; Single-Base
+  ([#644](./Accelerations/FixedArityReduction/M_1RB1LE_1RC1RA_0LD1RB_1LE1LD_1RF0LA_HHH0RE.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ (second-order coincidence); growth exponential ($2^n$ cascade);
   shield partial (even-$c$ parity shield blocks 99.8% of visits). probviously non-halting. Status:
   cryptid; `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
 * `1RB1RF_1LC1LF_0RE1LD_0LB1LD_---1RC_1RA0RD`
-  ([#688](./M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD.lean)) (wiki): Cascade; Single-Base
+  ([#688](./Accelerations/FixedArityReduction/M_1RB1RF_1LC1LF_0RE1LD_0LB1LD_HHH1RC_1RA0RD.lean))
+  (wiki): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential; shield see family. wiki rediscovery
   (RobinCodes *Next Steps* list). Status: cryptid / stack cryptid; `HasCollatzReduction`;
   open (on the 2026-10-24 holdout list).
 * `1RB1RC_1LC1LC_1RE0LD_1LB1RF_---1RA_0RD1RD`
-  ([#693](./M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD.lean)) (ours): Cascade; Single-Base
+  ([#693](./Accelerations/FixedArityReduction/M_1RB1RC_1LC1LC_1RE0LD_1LB1RF_HHH1RA_0RD1RD.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential ($\times1.2402$ per step); shield none.
   probviously non-halting. Status: cryptid; `HasCollatzReduction`; open (on the 2026-10-24
   holdout list).
 * `1RB0LF_1LC1RA_0RE0RD_---1LE_1LF1RC_1LC1LA`
-  ([#746](./M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean)) (ours): Cascade; Single-Base
+  ([#746](./Accelerations/FixedArityReduction/M_1RB0LF_1LC1RA_0RE0RD_HHH1LE_1LF1RC_1LC1LA.lean))
+  (ours): Cascade; Single-Base
   Exponential Cascade. Trigger EQ; growth exponential ($2^n$ cascade + base-$3/2$ underflow drain);
   shield partial (exact even-$c$ invariant). probviously non-halting. Status: cryptid;
   `HasCollatzReduction`; open (on the 2026-10-24 holdout list).
@@ -162,63 +173,74 @@ has not been re-measured with the method of this page, so they carry no verdict 
 ### Collatz-like stacked cryptids (S2-S5 and their siblings)
 
 * `1RB1LA_1LA0RC_1RD1RC_1LE0RC_---0LF_1LE0LA`
-  ([#391](./Accelerations/M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean)) (ours): Problem S2;
+  ([#391](./Accelerations/StackReduction/M_1RB1LA_1LA0RC_1RD1RC_1LE0RC_HHH0LF_1LE0LA.lean)) (ours):
+  Problem S2;
   Unary-Binary Bounded Stack Counter. Trigger POW (bottom funnel $x+2 = 2^k$); growth power-law
   regime; shield partial (mode $D$ never halts). probviously non-halting (clean
   race). Status: stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0RB_1RC0LE_1LD1LA_---0LC_1RF1LE_1RA0RA`
-  ([#129](./Accelerations/M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA.lean)) (ours): Problem S3;
+  ([#129](./Accelerations/StackReduction/M_1RB0RB_1RC0LE_1LD1LA_HHH0LC_1RF1LE_1RA0RA.lean)) (ours):
+  Problem S3;
   Halving Tower (2-Adic Stack). Trigger EQ (depth-two gate); growth —; shield partial
   (unreachable states include $\mathrm{CR}\,[]\,R$ and all $0::0::L$ configurations).
   probviously non-halting
   (weak race). Status: stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0LD_1LC1RD_0LE1LA_0RB1RD_---0LF_1RA1LF`
-  ([#660](./Accelerations/M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean)) (ours): Problem S4;
+  ([#660](./Accelerations/StackReduction/M_1RB0LD_1LC1RD_0LE1LA_0RB1RD_HHH0LF_1RA1LF.lean)) (ours):
+  Problem S4;
   Halving Tower (2-Adic Stack). Trigger POW (power-of-two bottom exposure); growth mass-conserving
   ($\Delta M = 0$), log-depth tower; shield partial
   (the empty-left configuration $C([],R)$ is unreachable). probviously
   non-halting. Status: stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RA---_1RB1LF`
-  ([#659](./Accelerations/M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF.lean)) (ours): Problem S4;
+  ([#659](./Accelerations/StackReduction/M_1RB1RA_1LC0RC_1RE0LD_0RE0LF_1RAHHH_1RB1LF.lean)) (ours):
+  Problem S4;
   Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial.
   probviously non-halting. Status: stack cryptid; `Accelerations`; open (on the 2026-10-24
   holdout list).
 * `1RB1RC_1LC0LE_1RD1RC_1LB0RA_---0LF_1RD1LF`
-  ([#209](./Accelerations/M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF.lean)) (ours): Problem S4;
+  ([#209](./Accelerations/StackReduction/M_1RB1RC_1LC0LE_1RD1RC_1LB0RA_HHH0LF_1RD1LF.lean)) (ours):
+  Problem S4;
   Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial.
   probviously non-halting. Status: stack cryptid; `Accelerations`; open (on the 2026-10-24
   holdout list).
 * `1RB1RA_1RC1LB_1LD0RA_---0LE_1LC0LF_1RE0LB`
-  ([#680](./Accelerations/M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean)) (ours): Problem S4;
+  ([#680](./Accelerations/StackReduction/M_1RB1RA_1RC1LB_1LD0RA_HHH0LE_1LC0LF_1RE0LB.lean)) (ours):
+  Problem S4;
   Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial
   (the empty-left configuration $C([],R)$ is unreachable; strict digit positivity at mode $C$).
   probviously non-halting.
   Status: stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0LC_1LC0RE_1LD1LC_1LA1RD_---0RF_0LB0RD`
-  ([#480](./Accelerations/M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD.lean)) (ours): S4 sibling;
+  ([#480](./Accelerations/StackReduction/M_1RB0LC_1LC0RE_1LD1LC_1LA1RD_HHH0RF_0LB0RD.lean)) (ours):
+  S4 sibling;
   Halving Tower (2-Adic Stack). Trigger POW; growth mass-conserving sandpile; shield partial (strict
   digit positivity blocks the sole $d=0$ halt). probviously non-halting. Status: stack cryptid;
   `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB1LA_1RC0RF_1RD---_0LE1RB_---0LA_1LD1RF`
-  ([#549](./Accelerations/M_1RB1LA_1RC0RF_1RDHHH_0LE1RB_HHH0LA_1LD1RF.lean)) (wiki): Problem S5;
+  ([#549](./Accelerations/StackReduction/M_1RB1LA_1RC0RF_1RDHHH_0LE1RB_HHH0LA_1LD1RF.lean)) (wiki):
+  Problem S5;
   Halving Tower (2-Adic Stack). Trigger POW (Mersenne bottom rung $2^k-1$); growth —; shield partial
   (the empty-stack halt is unreachable). probviously non-halting, slowly critical. Status:
   stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB---_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA`
-  ([#80](./Accelerations/M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA.lean)) (ours): S5 sibling;
+  ([#80](./Accelerations/StackReduction/M_1RBHHH_0RC0LD_1LB1RC_0LE0LF_1RD1LE_1RF1RA.lean)) (ours):
+  S5 sibling;
   Halving Tower (2-Adic Stack). Trigger POW; growth —; shield partial. probviously non-halting.
   Status: stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 
 ### Wiki stack families
 
 * `1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_---0LB`
-  ([#33](./Accelerations/M_1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_HHH0LB.lean)) (wiki): Wiki stack;
+  ([#33](./Accelerations/StackReduction/M_1RB1LD_1RC0LE_1LA1RE_0LF1LA_1RB0RB_HHH0LB.lean)) (wiki):
+  Wiki stack;
   2nd-Order Stride-k Digit-Stack. Trigger era-recursive (3-case bottom-extension recurrence); growth
   doubly-exponential era lengths ($T_0..T_3 = 1, 2, 8, 256$); shield none closed (all-even $R$ +
   $L.\mathrm{last}=0$ refuted across eras). probviously non-halting (wiki cryptid). Status:
   stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA`
-  ([#85](./Accelerations/M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA.lean)) (wiki): Wiki stack;
+  ([#85](./Accelerations/StackReduction/M_1RBHHH_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA.lean)) (wiki):
+  Wiki stack;
   Unary-Binary Bounded Stack Counter. Trigger RES (a particular sequence of $\approx 107$–$110$
   residues mod 3 must occur while the left side is empty; wiki); growth exponential (the main number
   is multiplied by $8/3$ per era; wiki); shield none (every return to an empty left side is a fresh
@@ -227,20 +249,23 @@ has not been re-measured with the method of this page, so they carry no verdict 
   #85/#285/#490/#500 as one cryptid. Status: stack cryptid; `Accelerations`; open (on the
   2026-10-24 holdout list).
 * `1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1RE---`
-  ([#285](./Accelerations/M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH.lean)) (wiki): Wiki stack;
+  ([#285](./Accelerations/StackReduction/M_1RB1RD_1LC0LE_1RA0LB_1RA1RF_0RA0RC_1REHHH.lean)) (wiki):
+  Wiki stack;
   Unary-Binary Bounded Stack Counter. Trigger as #85 (same table, started from its state `C`);
   growth as #85; shield as #85. same dynamics as `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85)
   (wiki: "when the TM starts on any starting state, it exhibits the same probviously halting
   behaviour"). Status: stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LE---`
-  ([#490](./Accelerations/M_1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LEHHH.lean)) (wiki): Wiki stack;
+  ([#490](./Accelerations/StackReduction/M_1RB0RE_1LC0RA_1LA1LD_1LC1LF_0LC0LB_1LEHHH.lean)) (wiki):
+  Wiki stack;
   Unary-Binary Bounded Stack Counter. Trigger as #85 (same table, started from its state `D`,
   mirrored); growth as #85; shield as #85. same dynamics as
   `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85); this is the start state analysed by @-d on the
   wiki (halting path of length 108, $\approx 235{,}000$ right-side words explored). Status:
   stack cryptid; `Accelerations`; open (on the 2026-10-24 holdout list).
 * `1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RD---`
-  ([#500](./Accelerations/M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH.lean)) (wiki): Wiki stack;
+  ([#500](./Accelerations/StackReduction/M_1RB0LC_1RC1RE_1LA0LD_0RB0RA_1RB1RF_1RDHHH.lean)) (wiki):
+  Wiki stack;
   Unary-Binary Bounded Stack Counter. Trigger as #85 (same table, started from its state `E`);
   growth as #85; shield as #85. same dynamics as `1RB---_0RC0RE_1RD1RF_1LE0LB_1RC0LD_1RC1RA` (#85)
   (wiki: the start states `E` and `F` share one trajectory). Status: stack cryptid;
@@ -321,13 +346,6 @@ has not been re-measured with the method of this page, so they carry no verdict 
   ((3/2)^{\nu_2(k+4)} 2-adic bursts, the expanding dual of Tao's Syracuse step) alternating with
   even-$c$ subtraction drains; halts iff $c_j - 2k_j \in \lbrace -4,+2 \rbrace$
 
-### `1RB0LF_1LC0LD_1RD1LB_---1RE_0RA1RE_1LA0LE` (#79, Cascade)
-
-* **Hazard:** $P(\text{halt}) \ll 10^{-600}$
-* **Simulated horizon:** $> 3.46\times10^{1204}$ TM steps in 12 cascades
-* **Why it is hard / what a proof needs:** coupled outer `D1` and inner `Modd` $2^n$ cascades; halts
-  iff $D_1(2,u,0)$
-
 ### `1RB1LF_1RC1RF_0LD1RE_---1LC_0RB1RE_1LA0LE` (#116, Cascade)
 
 * **Hazard:** not re-measured in our dossiers
@@ -348,14 +366,6 @@ has not been re-measured with the method of this page, so they carry no verdict 
 * **Simulated horizon:** exact rule simulation
 * **Why it is hard / what a proof needs:** remaining halts `rule_4/12_halt` need $c_{\text{rem}}=1$:
   a $(4/3)^k$ Mahler-type residue problem
-
-### `1RB0RE_1LC0RA_1RF0RD_---1LE_0LB1LE_1LE1RC` (#590, Cascade)
-
-* **Hazard:** $P(\text{halt}) \ll 10^{-600}$
-* **Simulated horizon:** 10 cascades (exact; reaches $A(65490, 3)$)
-* **Why it is hard / what a proof needs:** shares the exact `highLevelNext` transition map with #79,
-  but starts from $A(4, 3)$ rather than $A(5, 2)$; the two orbits remain disjoint
-  (`(4,3) → (19,3) → (13,11) → (28,3)` vs. `(5,2) → (10,3) → (4,11) → (27,3)`)
 
 ### `1RB1RF_1LC---_1LE1RD_1RA0RC_0LF0LA_0LD0RB` (#614, Cascade)
 
@@ -542,5 +552,9 @@ inductive invariants, closed on all abstract states, count; the pumping test (ex
 identical digits, or shift a large digit by the modulus, and see whether the machine halts) is the
 cheap way to tell a shape-based shield from a value-dependent survival, and it correctly flags the
 exponential stack ladders and halving towers as value-dependent.
+
+
+[bmo11]:
+  ./Accelerations/OdometerReduction/M_1RB0LD_0RCHHH_1LD0RF_0LE0RA_0RA1LF_0LA1LB.lean
 
 -/

@@ -1,0 +1,12 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Cryptids.WeakCollatz27",
+  "theorem_names": [
+    "ConjectureMachines.WeakCollatz27.candidate_fewer_states",
+    "ConjectureMachines.WeakCollatz27.candidate_equivalent"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound"
+  ]
+}

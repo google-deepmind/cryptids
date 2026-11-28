@@ -50,6 +50,16 @@ abbrev primorial : ℕ → ℕ := ConjectureMachines.Riemann120.primorial
 ## 2. Arithmetic & Logarithmic Lemmas
 -/
 
+theorem isPrimeBool_eq_true_iff (p : ℕ) :
+    ConjectureMachines.Riemann120.isPrimeBool p = true ↔ Nat.Prime p := by
+  simp only [ConjectureMachines.Riemann120.isPrimeBool, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, List.mem_range, Bool.or_eq_true, bne_iff_ne, ne_eq,
+    ← Nat.dvd_iff_mod_eq_zero]
+  rw [Nat.prime_def_lt']
+  exact ⟨fun ⟨hp, hall⟩ => ⟨hp, fun m hm hmp hdiv => (hall m hmp).resolve_left (by omega) hdiv⟩,
+    fun ⟨hp, hall⟩ => ⟨hp, fun d hdp =>
+      if hd2 : d < 2 then Or.inl hd2 else Or.inr (hall d (by omega) hdp)⟩⟩
+
 theorem primorial_eq_root_primorial (n : ℕ) : primorial n = _root_.primorial n := by
   induction n with
   | zero => rfl
@@ -57,10 +67,13 @@ theorem primorial_eq_root_primorial (n : ℕ) : primorial n = _root_.primorial n
     dsimp only [primorial] at ih ⊢
     rw [ConjectureMachines.Riemann120.primorial, ih]
     conv_rhs => rw [_root_.primorial, Finset.range_add_one, Finset.filter_insert]
-    split_ifs with hp
-    · rw [Finset.prod_insert (by simp)]
-      rfl
-    · rfl
+    by_cases hp : Nat.Prime (n + 1)
+    · have hpb : ConjectureMachines.Riemann120.isPrimeBool (n + 1) = true :=
+        (isPrimeBool_eq_true_iff (n + 1)).mpr hp
+      simp [hp, hpb, _root_.primorial]
+    · have hpb : ConjectureMachines.Riemann120.isPrimeBool (n + 1) = false :=
+        Bool.eq_false_iff.mpr fun h => hp ((isPrimeBool_eq_true_iff (n + 1)).mp h)
+      simp [hp, hpb, _root_.primorial]
 
 theorem primorial_pos (n : ℕ) : 0 < primorial n := by
   rw [primorial_eq_root_primorial]

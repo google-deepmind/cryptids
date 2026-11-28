@@ -26,7 +26,7 @@ of the conjecture to a test without primality (`!n ≡ !m (mod m)` for `m ≤ n`
 What is different: it tests `2 S ∣ !S` for every `S ≥ 2`, so that `S = 2` is no exception and
 the tape holds half factorials, with `11 0 11 0 1` as the first tape; the hole of the sum
 starts on the marker itself, so that the test and the merge are one walk; the multiplication is
-the copy loop of `brocard_28`; and the table was shrunk by a computer search (delete a state,
+the copy loop of `brocard_27`; and the table was shrunk by a computer search (delete a state,
 redirect its transitions, change at most two cells) from a 21-state loop to an 18-state loop
 that needs one start state.
 

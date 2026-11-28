@@ -12,9 +12,13 @@ project:
     the 2016 744-state machine riemann_744), and Erdős's ternary conjecture
     (15 -> 14 states: Tristan Stérin and Damien Woods's 2021 15-state
     machine erdos_ternary_15 and Tristan Stérin's October 2026 14-state machine
-    erdos_ternary_14), Brocard's problem (a new 28-state machine brocard_28,
-    November 2026), and Kurepa's left factorial conjecture (a new 19-state machine
-    kurepa_19, November 2026),
+    erdos_ternary_14), Brocard's problem (a new 27-state machine brocard_27,
+    November 2026), Tao's Weak Collatz Conjecture
+    (75 -> 41 -> 27 -> 17 -> 16 -> 15 states: weak_collatz_75, weak_collatz_41,
+    weak_collatz_27, weak_collatz_17, weak_collatz_16, and weak_collatz_15),
+    Legendre's conjecture (a new 21-state machine legendre_21, November 2026),
+    and Kurepa's left factorial conjecture (a new 19-state machine kurepa_19,
+    November 2026),
     proving halting equivalences and connecting every machine's blank-tape
     halting behavior to the corresponding statement in Mathlib.
   authors:
@@ -167,6 +171,18 @@ sources:
       First Lean 4 proof that erdos_ternary_14 halts iff erdos_ternary_15 halts, and hence iff
       Erdős's ternary conjecture is false (Cryptids/ErdosTernary14.lean,
       Cryptids/Semantics/ErdosTernary14.lean).
+  - title: "The Busy Beaver Rank of Arithmetical Statements (busybeaver, 51-state Brocard machine)"
+    authors:
+      - "Joseph Jabbour"
+      - "Ralph Razzouk"
+    id: "https://github.com/ralphrazzouk/busybeaver"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 51-state, 2-symbol hand-built machine with a Lean proof
+      BBRank.Brocard51.halts_iff_not_brocard, published in September 2026;
+      an earlier machine for the problem, with a Lean proof. Not used by brocard_27.
   - title: "A Turing machine for Brocard's problem (tinycryptids, brocard_61)"
     authors:
       - "Charlie Reams"
@@ -177,7 +193,7 @@ sources:
     note: >-
       A 61-state, 2-symbol machine (a 98-state design merged by exact SAT) with a
       Lean proof TM.Brocard.M61.halts_iff in core Lean, published in November 2026;
-      an earlier machine for the problem, with a Lean proof. Not used by brocard_28.
+      an earlier machine for the problem, with a Lean proof. Not used by brocard_27.
   - title: "Measuring Decidability as Related to Busy Beaver Numbers"
     authors:
       - "Gurpreet Tandi"
@@ -200,16 +216,75 @@ sources:
     note: >-
       SIGACT News 57(3), September 2026. Open Problem 6.2 asks to improve the
       43-state count for Brocard's problem and reports Jonathan Brown's conjecture
-      that about 30 states may suffice. brocard_28 improves the count to 28.
-  - title: "A 28-state Turing machine for Brocard's problem with Lean 4 proofs (brocard_28)"
+      that about 30 states may suffice. brocard_27 improves the count to 27.
+  - title: "A 27-state Turing machine for Brocard's problem with Lean 4 proofs (brocard_27)"
     authors:
       - "Daniel Veljjanoski"
     type: "original-proof"
     relationship: "other"
     note: >-
-      New machine (artifacts/brocard_28/machine.txt) and first Lean 4 proofs that it halts
-      iff n! + 1 is a perfect square for some n > 7 (Cryptids/Brocard28.lean,
-      Cryptids/Semantics/Brocard28.lean).
+      New machine (artifacts/brocard_27/machine.txt) and first Lean 4 proofs that it halts
+      iff n! + 1 is a perfect square for some n > 7 (Cryptids/Brocard27.lean,
+      Cryptids/Semantics/Brocard27.lean).
+  - title: "On the existence of cycles of given length in integer sequences like x_{n+1} = x_n / 2 if x_n even, and x_{n+1} = 3x_n + 1 otherwise"
+    authors:
+      - "Corrado Böhm"
+      - "Giovanna Sontacchi"
+    type: "article"
+    location: "Atti Accad. Naz. Lincei Rend. Cl. Sci. Fis. Mat. Nat. (8) 64 (1978), 260-264"
+    relationship: "background"
+    author_endorsement: "n/a"
+  - title: "Weak Collatz Turing machines and state reductions (weak_collatz_75 -> weak_collatz_41 -> weak_collatz_27 -> weak_collatz_17 -> weak_collatz_16 -> weak_collatz_15)"
+    authors:
+      - "Tom Zahavy"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      Constructs and kernel-verifies a 75-state reference machine weak_collatz_75
+      for Tao's Weak Collatz Conjecture (improving on the unverified 124-state
+      bbchallenge wiki entry), a 41-state compression weak_collatz_41 (75 -> 41
+      states), a 27-state zero-counter compression weak_collatz_27 (41 -> 27
+      states), a 17-state conservation-law compression weak_collatz_17 (27 -> 17
+      states), a 16-state even-stage compression weak_collatz_16 (17 -> 16
+      states), and a 15-state Parity-Back + Left-to-Right Pair-Eater compression
+      weak_collatz_15 (16 -> 15 states), with constructive Lean 4 halting
+      equivalences to nontrivial Terras cycles and the Böhm-Sontacchi (1978)
+      Diophantine cycle equation.
+  - title: "Legendre's conjecture (busybeaver, problems/legendre)"
+    authors:
+      - "Joseph Jabbour"
+      - "Ralph Razzouk"
+    id: "https://github.com/ralphrazzouk/busybeaver/tree/master/problems/legendre"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 26-state, 2-symbol machine (after a 29-state one) with Lean 4 proofs
+      BBRank.Legendre26.halts_iff_not_legendre and BBRank.Legendre29.halts_iff_not_legendre,
+      published in September 2026; an earlier machine for the conjecture. Not used by
+      legendre_21.
+  - title: "A Turing machine for Legendre's conjecture (tinycryptids, legendre_44)"
+    authors:
+      - "Charlie Reams"
+    id: "https://github.com/calr3/tinycryptids/tree/main/legendre"
+    type: "web post"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      A 44-state, 2-symbol machine (reduced from a 71-state design) with a Lean proof
+      TM.Legendre.M44.halts_iff of an equivalent statement, published in November 2026;
+      an earlier machine for the conjecture. Not used by legendre_21.
+  - title: "A 21-state Turing machine for Legendre's conjecture with Lean 4 proofs (legendre_21)"
+    authors:
+      - "Daniel Veljjanoski"
+    type: "original-proof"
+    relationship: "other"
+    note: >-
+      New machine (artifacts/legendre_21/machine.txt) built on the primality test of
+      goldbach_21, and first Lean 4 proofs that it halts iff some n >= 1 has no prime
+      strictly between n^2 and (n+1)^2 (Cryptids/Legendre21.lean,
+      Cryptids/Semantics/Legendre21.lean). The proof uses the lemmas of
+      Cryptids/Goldbach21.lean for the test.
   - title: "A Turing machine for Kurepa's conjecture (tinycryptids, kurepa_38)"
     authors:
       - "Charlie Reams"
@@ -255,35 +330,49 @@ related_formalizations:
 
 status:
   scope: >-
-    All three ZF machine-to-proof-search equivalences (zf_393, zf_380, zf_432)
-    and the state-reduction halting equivalences for goldbach_21, zf_380,
-    riemann_104, and erdos_ternary_14 (along with all five candidate_fewer_states
-    theorems, 12 theorems total) are proved constructively using only propext and Quot.sound
-    (zero Classical.choice, audited via comparator/constructive.json so
-    classical Con(ZF) shortcuts such as Soundness.lean's not_zfInconsistent are
-    excluded; this establishes a constructive meta-level correspondence in Lean
-    rather than internalizing the reduction inside PA/ZF). The classical
-    end-to-end
-    semantics—unconditional ZF non-halting via soundness in Mathlib's ZFSet.{0}
-    (Cryptids/Semantics/Zf/Soundness.lean), negated-Pi_1^0 Goldbach semantics
-    (Cryptids/Semantics/Goldbach.lean), and complex-analytic Riemann Hypothesis
-    semantics for riemann_744 (Cryptids/Semantics/Riemann.lean), Shunia's
-    120-state machine riemann_120, riemann_104
-    (Cryptids/Semantics/Riemann120.lean), and the 95-state arithmetic-stage
-    reduction riemann_95 (Cryptids/Riemann95.lean,
-    Cryptids/Semantics/Riemann95.lean)—are proved with zero sorrys. The
-    15-state machine erdos_ternary_15 satisfies Halts erdosTernary15 <-> ∃ n, 8 < n ∧ 2 ∉ pw n
+    Specification definitions (ListBlank, Tape, Halts, Machine, BundledMachine,
+    PAProvable), all ten candidate_fewer_states theorems, and syntactic
+    first-order Peano Arithmetic consistency (not_paProvable_false) depend on
+    zero axioms ([], audited via comparator/zero_axioms.json). All ten
+    state-reduction halting equivalences (goldbach_21, zf_380, riemann_104,
+    riemann_95, erdos_ternary_14, weak_collatz_41, weak_collatz_27,
+    weak_collatz_17, weak_collatz_16, weak_collatz_15), all three
+    ZF machine-to-proof-search equivalences (zf_393, zf_380, zf_432), Sigma_1^0
+    PA standard-model adequacy, the brocard_27 square equivalence, the
+    weak_collatz_75, weak_collatz_41, weak_collatz_27, weak_collatz_17,
+    weak_collatz_16, and weak_collatz_15 nontrivial-cycle and Böhm-Sontacchi
+    Diophantine equivalences, the legendre_21 gap equivalence, and the kurepa_19
+    divisibility equivalence (41 theorems total) are
+    proved constructively using at most
+    propext and Quot.sound (zero Classical.choice, audited via
+    comparator/constructive.json). Object-level first-order PA provability of
+    the zf_380 and zf_393 halting equivalences (PAProvable,
+    Cryptids/Semantics/PA/), unconditional ZF non-halting in Mathlib's
+    ZFSet.{0} (Cryptids/Semantics/Zf/Soundness.lean), negated-Pi_1^0 Goldbach
+    semantics (Cryptids/Semantics/Goldbach.lean), and complex-analytic Riemann
+    Hypothesis semantics for riemann_744, riemann_120, riemann_104, and
+    riemann_95 are all proved with zero sorrys. The 15-state machine
+    erdos_ternary_15 satisfies Halts erdosTernary15 <-> ∃ n, 8 < n ∧ 2 ∉ pw n
     constructively (Cryptids/ErdosTernary15.lean, pw = base-3 digits of 2^n by
     repeated doubling) and Halts erdosTernary15 <-> ¬ ErdosTernaryConjecture via
     Mathlib's Nat.digits (Cryptids/Semantics/ErdosTernary15.lean). The 14-state
     machine erdos_ternary_14 satisfies Halts erdosTernary14 <-> ∃ n, 8 < n ∧ 2 ∉ pw n and
     hence Halts candidate <-> Halts reference against erdos_ternary_15 constructively
     (Cryptids/ErdosTernary14.lean), and Halts candidate <-> ¬
-    ErdosTernaryConjecture (Cryptids/Semantics/ErdosTernary14.lean). The 28-state
-    machine brocard_28 satisfies Halts brocard28 <-> ∃ n, 8 ≤ n ∧ IsTri (n! / 8) and
-    Halts brocard28 <-> ∃ n, 7 < n ∧ IsSquare (n! + 1) constructively
-    (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean), and
-    Halts brocard28 <-> ¬ BrocardConjecture with Markov's Principle. The 19-state
+    ErdosTernaryConjecture (Cryptids/Semantics/ErdosTernary14.lean). The 27-state
+    machine brocard_27 satisfies Halts brocard27 <-> ∃ n, 8 ≤ n ∧ IsTri (n! / 8) and
+    Halts brocard27 <-> ∃ n, 7 < n ∧ IsSquare (n! + 1) constructively
+    (Cryptids/Brocard27.lean, Cryptids/Semantics/Brocard27.lean), and
+    Halts brocard27 <-> ¬ BrocardConjecture with Markov's Principle. The
+    75-state, 41-state, 27-state, 17-state, 16-state, and 15-state Weak Collatz
+    machines (weak_collatz_75, weak_collatz_41, weak_collatz_27, weak_collatz_17,
+    weak_collatz_16, weak_collatz_15) constructively satisfy halting equivalence
+    with nontrivial Terras cycles and the Böhm-Sontacchi Diophantine cycle
+    equation, and Halts M <-> ¬ WeakCollatzConjecture with Markov's Principle.
+    The 21-state machine legendre_21 satisfies Halts legendre21 <-> ∃ n, 1 ≤ n ∧
+    ∀ p, p.Prime -> ¬ (n ^ 2 < p ∧ p < (n + 1) ^ 2) constructively
+    (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean), and Halts
+    legendre21 <-> ¬ LegendreConjecture with Markov's Principle. The 19-state
     machine kurepa_19 satisfies Halts kurepa19 <-> ∃ n, 2 < n ∧ n ∣ leftFactorial n
     constructively (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean), and
     Halts kurepa19 <-> ¬ KurepaConjecture with Markov's Principle.
@@ -297,8 +386,8 @@ status:
     - declaration: "ConjectureMachines.Goldbach21.candidate_fewer_states"
       file: "Cryptids/Goldbach21.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/goldbach_21.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Goldbach21.candidate_equivalent"
       file: "Cryptids/Goldbach21.lean"
       sorry_count: 0
@@ -327,8 +416,8 @@ status:
     - declaration: "ConjectureMachines.Zf380.candidate_fewer_states"
       file: "Cryptids/Zf380.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/zf_380.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Zf380.candidate_equivalent"
       file: "Cryptids/Zf380.lean"
       sorry_count: 0
@@ -359,6 +448,41 @@ status:
       sorry_count: 0
       axioms: ["propext", "Quot.sound"]
       comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Semantics.PA.not_paProvable_false"
+      file: "Cryptids/Semantics/PA/Syntax.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paHalts_holds_iff_halts"
+      file: "Cryptids/Semantics/PA/Adequacy.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent"
+      file: "Cryptids/Semantics/PA/Adequacy.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_sound_nat"
+      file: "Cryptids/Semantics/PA/Syntax.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zf393"
+      file: "Cryptids/Semantics/PA/Zf380.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_halts_zf393_iff_zfInconsistent"
+      file: "Cryptids/Semantics/PA/Zf393/Soundness.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
+    - declaration: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zfInconsistent"
+      file: "Cryptids/Semantics/PA/Zf393/Soundness.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/pa_semantics.json"
     - declaration: "ConjectureMachines.Semantics.Riemann.halts_riemann744_iff_exists_counterexample"
       file: "Cryptids/Semantics/Riemann.lean"
       sorry_count: 0
@@ -377,8 +501,8 @@ status:
     - declaration: "ConjectureMachines.Riemann104.candidate_fewer_states"
       file: "Cryptids/Riemann104.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/riemann_104.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Riemann104.candidate_equivalent"
       file: "Cryptids/Riemann104.lean"
       sorry_count: 0
@@ -392,13 +516,13 @@ status:
     - declaration: "ConjectureMachines.Riemann95.candidate_fewer_states"
       file: "Cryptids/Riemann95.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/constructive.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.Riemann95.candidate_equivalent"
       file: "Cryptids/Riemann95.lean"
       sorry_count: 0
-      axioms: ["propext", "Classical.choice", "Quot.sound"]
-      comparator_config: "comparator/riemann_95.json"
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/riemann_95_reduction.json"
     - declaration: "ConjectureMachines.Riemann95.Semantics.halts_candidate_iff_not_riemannHypothesis"
       file: "Cryptids/Semantics/Riemann95.lean"
       sorry_count: 0
@@ -417,8 +541,8 @@ status:
     - declaration: "ConjectureMachines.ErdosTernary14.candidate_fewer_states"
       file: "Cryptids/ErdosTernary14.lean"
       sorry_count: 0
-      axioms: ["propext"]
-      comparator_config: "comparator/constructive.json"
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
     - declaration: "ConjectureMachines.ErdosTernary14.candidate_equivalent"
       file: "Cryptids/ErdosTernary14.lean"
       sorry_count: 0
@@ -429,16 +553,166 @@ status:
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator/erdos_ternary_14.json"
-    - declaration: "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square"
-      file: "Cryptids/Semantics/Brocard28.lean"
+    - declaration: "ConjectureMachines.Brocard27.halts_brocard27_iff_exists_square"
+      file: "Cryptids/Semantics/Brocard27.lean"
       sorry_count: 0
       axioms: ["propext", "Quot.sound"]
       comparator_config: "comparator/constructive.json"
-    - declaration: "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
-      file: "Cryptids/Semantics/Brocard28.lean"
+    - declaration: "ConjectureMachines.Brocard27.halts_brocard27_iff_not_brocard"
+      file: "Cryptids/Semantics/Brocard27.lean"
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
-      comparator_config: "comparator/brocard_28.json"
+      comparator_config: "comparator/brocard_27.json"
+    - declaration: "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz75.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz75.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz75.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_75.json"
+    - declaration: "ConjectureMachines.WeakCollatz41.candidate_fewer_states"
+      file: "Cryptids/WeakCollatz41.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.WeakCollatz41.candidate_equivalent"
+      file: "Cryptids/WeakCollatz41.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_41_reduction.json"
+    - declaration: "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz41.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz41.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz41.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_41.json"
+    - declaration: "ConjectureMachines.WeakCollatz27.candidate_fewer_states"
+      file: "Cryptids/WeakCollatz27.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.WeakCollatz27.candidate_equivalent"
+      file: "Cryptids/WeakCollatz27.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_27_reduction.json"
+    - declaration: "ConjectureMachines.WeakCollatz27.Semantics.halts_candidate_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz27.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz27.Semantics.halts_candidate_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz27.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz27.Semantics.halts_candidate_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz27.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_27.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.candidate_fewer_states"
+      file: "Cryptids/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.candidate_equivalent"
+      file: "Cryptids/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_17_reduction.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz17.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_17.json"
+    - declaration: "ConjectureMachines.WeakCollatz16.candidate_fewer_states"
+      file: "Cryptids/WeakCollatz16.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.WeakCollatz16.candidate_equivalent"
+      file: "Cryptids/WeakCollatz16.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_16_reduction.json"
+    - declaration: "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz16.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz16.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz16.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_16.json"
+    - declaration: "ConjectureMachines.WeakCollatz15.candidate_fewer_states"
+      file: "Cryptids/WeakCollatz15.lean"
+      sorry_count: 0
+      axioms: []
+      comparator_config: "comparator/zero_axioms.json"
+    - declaration: "ConjectureMachines.WeakCollatz15.candidate_equivalent"
+      file: "Cryptids/WeakCollatz15.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_15_reduction.json"
+    - declaration: "ConjectureMachines.WeakCollatz15.Semantics.halts_candidate_iff_exists_cycle"
+      file: "Cryptids/Semantics/WeakCollatz15.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz15.Semantics.halts_candidate_iff_bohmSontacchi"
+      file: "Cryptids/Semantics/WeakCollatz15.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.WeakCollatz15.Semantics.halts_candidate_iff_not_weakCollatz"
+      file: "Cryptids/Semantics/WeakCollatz15.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/weak_collatz_15.json"
+    - declaration: "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap"
+      file: "Cryptids/Semantics/Legendre21.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound"]
+      comparator_config: "comparator/constructive.json"
+    - declaration: "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre"
+      file: "Cryptids/Semantics/Legendre21.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator/legendre_21.json"
     - declaration: "ConjectureMachines.Kurepa19.halts_kurepa19_iff_exists_dvd"
       file: "Cryptids/Semantics/Kurepa19.lean"
       sorry_count: 0
@@ -471,8 +745,9 @@ automation:
         Used as assistant for the erdos_ternary_15 and erdos_ternary_14 proofs
         (Cryptids/ErdosTernary15.lean, Cryptids/Semantics/ErdosTernary15.lean,
         Cryptids/ErdosTernary14.lean, Cryptids/Semantics/ErdosTernary14.lean) and for
-        the design, simulation checks and proofs of brocard_28
-        (Cryptids/Brocard28.lean, Cryptids/Semantics/Brocard28.lean) and of kurepa_19
+        the design, simulation checks and proofs of brocard_27
+        (Cryptids/Brocard27.lean, Cryptids/Semantics/Brocard27.lean), of legendre_21
+        (Cryptids/Legendre21.lean, Cryptids/Semantics/Legendre21.lean), and of kurepa_19
         (Cryptids/Kurepa19.lean, Cryptids/Semantics/Kurepa19.lean).
   spend_usd: ""
   notes: >-
@@ -481,7 +756,7 @@ automation:
     semantics proofs were developed interactively using Gemini Argon. The
     erdos_ternary_15 machine is by Tristan Stérin and Damien Woods and the erdos_ternary_14
     machine by Tristan Stérin; the erdos_ternary_15 and erdos_ternary_14 proofs, and the
-    brocard_28 and kurepa_19 machines and proofs, were written by Daniel Veljjanoski with Claude
+    brocard_27, legendre_21, and kurepa_19 machines and proofs, were written by Daniel Veljjanoski with Claude
     (Anthropic) as assistant.
 
 fidelity:
@@ -558,6 +833,34 @@ alignment:
       lean: "ConjectureMachines.Semantics.Zf.halts_zf432_iff_wadeZFInconsistent"
       module: "Cryptids.Semantics.Zf"
       status: "proved"
+    - source: "Syntactic consistency of first-order PA (¬ PAProvable ⊥)"
+      lean: "ConjectureMachines.Semantics.PA.not_paProvable_false"
+      module: "Cryptids.Semantics.PA.Syntax"
+      status: "proved"
+    - source: "Sigma_1^0 adequacy of paHalts M on ℕ"
+      lean: "ConjectureMachines.Semantics.PA.paHalts_holds_iff_halts"
+      module: "Cryptids.Semantics.PA.Adequacy"
+      status: "proved"
+    - source: "Sigma_1^0 adequacy of paZFInconsistent on ℕ"
+      lean: "ConjectureMachines.Semantics.PA.paZFInconsistent_holds_iff_zfInconsistent"
+      module: "Cryptids.Semantics.PA.Adequacy"
+      status: "proved"
+    - source: "Standard-model soundness of PAProvable on ℕ"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_sound_nat"
+      module: "Cryptids.Semantics.PA.Syntax"
+      status: "proved"
+    - source: "Object-level PA proof: PA |- Halts(zf_380) <-> Halts(zf_393)"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zf393"
+      module: "Cryptids.Semantics.PA.Zf380"
+      status: "proved"
+    - source: "Object-level PA proof: PA |- Halts(zf_393) <-> ~Con(ZF)"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_halts_zf393_iff_zfInconsistent"
+      module: "Cryptids.Semantics.PA.Zf393.Soundness"
+      status: "proved"
+    - source: "Object-level PA proof: PA |- Halts(zf_380) <-> ~Con(ZF)"
+      lean: "ConjectureMachines.Semantics.PA.paProvable_halts_zf380_iff_zfInconsistent"
+      module: "Cryptids.Semantics.PA.Zf393.Soundness"
+      status: "proved"
     - source: "riemann_744 <-> ∃ x, MatiyasevichRiemannCounterexample x"
       lean: "ConjectureMachines.Semantics.Riemann.halts_riemann744_iff_exists_counterexample"
       module: "Cryptids.Semantics.Riemann"
@@ -614,17 +917,101 @@ alignment:
       lean: "ConjectureMachines.ErdosTernary14.Semantics.halts_candidate_iff_not_erdosTernary"
       module: "Cryptids.Semantics.ErdosTernary14"
       status: "proved"
-    - source: "brocard_28 <-> ∃ n ≥ 8, n! / 8 triangular"
-      lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_tri"
-      module: "Cryptids.Brocard28"
+    - source: "brocard_27 <-> ∃ n ≥ 8, n! / 8 triangular"
+      lean: "ConjectureMachines.Brocard27.halts_brocard27_iff_exists_tri"
+      module: "Cryptids.Brocard27"
       status: "proved"
-    - source: "brocard_28 <-> ∃ n > 7, IsSquare (n! + 1)"
-      lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_exists_square"
-      module: "Cryptids.Semantics.Brocard28"
+    - source: "brocard_27 <-> ∃ n > 7, IsSquare (n! + 1)"
+      lean: "ConjectureMachines.Brocard27.halts_brocard27_iff_exists_square"
+      module: "Cryptids.Semantics.Brocard27"
       status: "proved"
-    - source: "brocard_28 <-> ¬ BrocardConjecture"
-      lean: "ConjectureMachines.Brocard28.halts_brocard28_iff_not_brocard"
-      module: "Cryptids.Semantics.Brocard28"
+    - source: "brocard_27 <-> ¬ BrocardConjecture"
+      lean: "ConjectureMachines.Brocard27.halts_brocard27_iff_not_brocard"
+      module: "Cryptids.Semantics.Brocard27"
+      status: "proved"
+    - source: "weak_collatz_75 <-> nontrivial Terras cycle"
+      lean: "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_exists_cycle"
+      module: "Cryptids.Semantics.WeakCollatz75"
+      status: "proved"
+    - source: "weak_collatz_75 <-> Böhm-Sontacchi Diophantine cycle equation"
+      lean: "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_bohmSontacchi"
+      module: "Cryptids.Semantics.WeakCollatz75"
+      status: "proved"
+    - source: "weak_collatz_75 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz75.halts_weakCollatz75_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz75"
+      status: "proved"
+    - source: "weak_collatz_41 < weak_collatz_75 state reduction"
+      lean: "ConjectureMachines.WeakCollatz41.candidate_fewer_states"
+      module: "Cryptids.WeakCollatz41"
+      status: "proved"
+    - source: "weak_collatz_41 <-> weak_collatz_75 halting equivalence"
+      lean: "ConjectureMachines.WeakCollatz41.candidate_equivalent"
+      module: "Cryptids.WeakCollatz41"
+      status: "proved"
+    - source: "weak_collatz_41 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz41.Semantics.halts_candidate_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz41"
+      status: "proved"
+    - source: "weak_collatz_27 < weak_collatz_41 state reduction"
+      lean: "ConjectureMachines.WeakCollatz27.candidate_fewer_states"
+      module: "Cryptids.WeakCollatz27"
+      status: "proved"
+    - source: "weak_collatz_27 <-> weak_collatz_41 halting equivalence"
+      lean: "ConjectureMachines.WeakCollatz27.candidate_equivalent"
+      module: "Cryptids.WeakCollatz27"
+      status: "proved"
+    - source: "weak_collatz_27 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz27.Semantics.halts_candidate_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz27"
+      status: "proved"
+    - source: "weak_collatz_17 < weak_collatz_27 state reduction"
+      lean: "ConjectureMachines.WeakCollatz17.candidate_fewer_states"
+      module: "Cryptids.WeakCollatz17"
+      status: "proved"
+    - source: "weak_collatz_17 <-> weak_collatz_27 halting equivalence"
+      lean: "ConjectureMachines.WeakCollatz17.candidate_equivalent"
+      module: "Cryptids.WeakCollatz17"
+      status: "proved"
+    - source: "weak_collatz_17 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz17.Semantics.halts_candidate_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz17"
+      status: "proved"
+    - source: "weak_collatz_16 < weak_collatz_17 state reduction"
+      lean: "ConjectureMachines.WeakCollatz16.candidate_fewer_states"
+      module: "Cryptids.WeakCollatz16"
+      status: "proved"
+    - source: "weak_collatz_16 <-> weak_collatz_17 halting equivalence"
+      lean: "ConjectureMachines.WeakCollatz16.candidate_equivalent"
+      module: "Cryptids.WeakCollatz16"
+      status: "proved"
+    - source: "weak_collatz_16 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz16.Semantics.halts_candidate_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz16"
+      status: "proved"
+    - source: "weak_collatz_15 < weak_collatz_16 state reduction"
+      lean: "ConjectureMachines.WeakCollatz15.candidate_fewer_states"
+      module: "Cryptids.WeakCollatz15"
+      status: "proved"
+    - source: "weak_collatz_15 <-> weak_collatz_16 halting equivalence"
+      lean: "ConjectureMachines.WeakCollatz15.candidate_equivalent"
+      module: "Cryptids.WeakCollatz15"
+      status: "proved"
+    - source: "weak_collatz_15 <-> ¬ WeakCollatzConjecture"
+      lean: "ConjectureMachines.WeakCollatz15.Semantics.halts_candidate_iff_not_weakCollatz"
+      module: "Cryptids.Semantics.WeakCollatz15"
+      status: "proved"
+    - source: "legendre_21 <-> ∃ n ≥ 1, no IsPrime x with n * n < x < (n + 1) * (n + 1)"
+      lean: "ConjectureMachines.Legendre21.halts_legendre21_iff"
+      module: "Cryptids.Legendre21"
+      status: "proved"
+    - source: "legendre_21 <-> ∃ n ≥ 1, no prime p with n ^ 2 < p < (n + 1) ^ 2"
+      lean: "ConjectureMachines.Legendre21.halts_legendre21_iff_exists_gap"
+      module: "Cryptids.Semantics.Legendre21"
+      status: "proved"
+    - source: "legendre_21 <-> ¬ LegendreConjecture"
+      lean: "ConjectureMachines.Legendre21.halts_legendre21_iff_not_legendre"
+      module: "Cryptids.Semantics.Legendre21"
       status: "proved"
     - source: "kurepa_19 <-> ∃ S ≥ 2, 2 S ∣ !S"
       lean: "ConjectureMachines.Kurepa19.halts_kurepa19_iff"
